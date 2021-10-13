@@ -11,9 +11,9 @@
 using System;
 using System.Reflection;
 
-[assembly: System.Reflection.AssemblyCompanyAttribute("Sniku")]
+[assembly: System.Reflection.AssemblyCompanyAttribute("Jotpe")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
-[assembly: System.Reflection.AssemblyCopyrightAttribute("Copyright 2021 © Sniku. All rights reserved.")]
+[assembly: System.Reflection.AssemblyCopyrightAttribute("Copyright 2021 © Jotpe. All rights reserved.")]
 [assembly: System.Reflection.AssemblyDescriptionAttribute("An official asynchronous .NET API Wrapper for the Shinden APIs.")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("0.3.8.0")]
 [assembly: System.Reflection.AssemblyInformationalVersionAttribute("0.3.8-beta")]

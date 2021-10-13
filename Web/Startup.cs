@@ -104,6 +104,24 @@ namespace Sanakan
                 c.CustomSchemaIds(x => x.FullName);
             });
 
+            services.AddSingleton<IExecutor>(_executor);
+            services.AddSingleton(_shindenClient);
+            services.AddSingleton(_sessions);
+            services.AddSingleton(_profile);
+            services.AddSingleton(_config);
+            services.AddSingleton(_logger);
+            services.AddSingleton(_client);
+            services.AddSingleton(_helper);
+            services.AddSingleton(_events);
+            services.AddSingleton(_chaos);
+            services.AddSingleton(_waifu);
+            services.AddSingleton(_spawn);
+            services.AddSingleton(_mod);
+            services.AddSingleton(_exp);
+            services.AddSingleton(_img)
+            services.AddSingleton<Services.Fun>();
+            services.AddSingleton<Services.Shinden>();
+            services.AddSingleton<Services.LandManager>();
             services.AddHostedService<DiscordBotHostedService>();
         }
 

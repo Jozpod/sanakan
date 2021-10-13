@@ -1,6 +1,4 @@
-﻿#pragma warning disable 1591
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -8,40 +6,22 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using Microsoft.EntityFrameworkCore;
-using Sanakan.Config;
-using Sanakan.Database.Models.Configuration;
-using Sanakan.Database.Models.Management;
+using Microsoft.Extensions.Logging;
 using Sanakan.Extensions;
-using Shinden.Logger;
-using Z.EntityFramework.Plus;
 
 namespace Sanakan.Services
 {
-    public enum ConfigType
-    {
-        Global,
-        SelfRoles,
-        Lands,
-        LevelRoles,
-        CmdChannels,
-        NonExpChannels,
-        NonSupChannels,
-        WaifuCmdChannels,
-        WaifuFightChannels,
-        RichMessages,
-        ModeratorRoles,
-        IgnoredChannels
-    }
-
     public class Moderator
     {
-        private DiscordSocketClient _client;
-        private ILogger _logger;
-        private IConfig _config;
-        private Timer _timer;
+        private readonly DiscordSocketClient _client;
+        private readonly ILogger _logger;
+        private readonly IConfig _config;
+        private readonly Timer _timer;
 
-        public Moderator(ILogger logger, IConfig config, DiscordSocketClient client)
+        public Moderator(
+            ILogger<Moderator> logger,
+            IConfig config,
+            DiscordSocketClient client)
         {
             _logger = logger;
             _config = config;
@@ -366,12 +346,15 @@ namespace Sanakan.Services
             }
             catch (Exception ex)
             {
-                _logger.Log($"in notify: {ex}");
+                _logger.LogError($"in notify: {ex}", ex);
             }
         }
 
-        public async Task NotifyAboutPenaltyAsync(SocketGuildUser user, ITextChannel channel,
-            PenaltyInfo info, string byWho = "automat")
+        public async Task NotifyAboutPenaltyAsync(
+            SocketGuildUser user,
+            ITextChannel channel,
+            PenaltyInfo info,
+            string byWho = "automat")
         {
             var embed = new EmbedBuilder
             {
@@ -575,8 +558,15 @@ namespace Sanakan.Services
             return info;
         }
 
-        public async Task<PenaltyInfo> MuteUserAysnc(SocketGuildUser user, SocketRole muteRole, SocketRole muteModRole, SocketRole userRole,
-            Database.ManagmentContext db, long duration, string reason = "nie podano", IEnumerable<ModeratorRoles> modRoles = null)
+        public async Task<PenaltyInfo> MuteUserAysnc(
+            SocketGuildUser user,
+            SocketRole muteRole,
+            SocketRole muteModRole,
+            SocketRole userRole,
+            Database.ManagmentContext db,
+            long duration,
+            string reason = "nie podano",
+            IEnumerable<ModeratorRoles> modRoles = null)
         {
             var info = new PenaltyInfo
             {

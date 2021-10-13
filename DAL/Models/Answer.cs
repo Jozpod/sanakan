@@ -1,8 +1,6 @@
-﻿#pragma warning disable 1591
+﻿using Newtonsoft.Json;
 
-using Newtonsoft.Json;
-
-namespace Sanakan.Database.Models
+namespace Sanakan.DAL.Models
 {
     public class Answer
     {

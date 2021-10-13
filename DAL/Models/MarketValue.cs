@@ -4,13 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DAL.Models
+namespace Sanakan.DAL.Models
 {
-    public enum ProfileType
+    public enum MarketValue
     {
-        Stats,
-        Img,
-        StatsWithImg,
-        Cards
+        Normal = 0,
+        Low = -1,
+        High = 1
     }
 }

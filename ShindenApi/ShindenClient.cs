@@ -1,18 +1,17 @@
+using Microsoft.Extensions.Logging;
 using Shinden.API;
 using Shinden.Extensions;
-using Shinden.Logger;
-using Shinden.Logger.In;
 using Shinden.Models;
 using Shinden.Modules;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Shinden
+namespace Sanakan.ShindenApi
 {
-    public class ShindenClient
+    public class ShindenClient : IShindenClient
     {
         private readonly RequestManager _manager;
-        private readonly InLogger _logger;
+        private readonly ILogger<ShindenClient> _logger;
 
         public TitleModule Title { get; }
         public SearchModule Search { get; }
@@ -21,7 +20,6 @@ namespace Shinden
 
         public ShindenClient(Auth authenticator)
         {
-            _logger = new InLogger();
             _manager = new RequestManager(authenticator, _logger);
 
             Title = new TitleModule(_manager);

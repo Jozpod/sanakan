@@ -2051,6 +2051,26 @@
         "runtime": {
           "lib/netstandard2.1/Z.Expressions.Eval.dll": {}
         }
+      },
+      "Common/1.0.0": {
+        "type": "project",
+        "framework": "Unsupported,Version=v0.0",
+        "compile": {
+          "bin/placeholder/Common.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Common.dll": {}
+        }
+      },
+      "DiscordBot/1.0.0": {
+        "type": "project",
+        "framework": "Unsupported,Version=v0.0",
+        "compile": {
+          "bin/placeholder/DiscordBot.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/DiscordBot.dll": {}
+        }
       }
     }
   },
@@ -6844,10 +6864,22 @@
         "z.expressions.eval.4.0.29.nupkg.sha512",
         "z.expressions.eval.nuspec"
       ]
+    },
+    "Common/1.0.0": {
+      "type": "project",
+      "path": "../Common/Common.csproj",
+      "msbuildProject": "../Common/Common.csproj"
+    },
+    "DiscordBot/1.0.0": {
+      "type": "project",
+      "path": "../DiscordBot/DiscordBot.csproj",
+      "msbuildProject": "../DiscordBot/DiscordBot.csproj"
     }
   },
   "projectFileDependencyGroups": {
     ".NETCoreApp,Version=v3.1": [
+      "Common >= 1.0.0",
+      "DiscordBot >= 1.0.0",
       "Microsoft.AspNetCore.Authentication.JwtBearer >= 3.1.18",
       "Microsoft.AspNetCore.Identity >= 2.2.0",
       "Microsoft.AspNetCore.Mvc.NewtonsoftJson >= 3.1.11",
@@ -6890,7 +6922,14 @@
       "frameworks": {
         "netcoreapp3.1": {
           "targetAlias": "netcoreapp3.1",
-          "projectReferences": {}
+          "projectReferences": {
+            "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\Common\\Common.csproj": {
+              "projectPath": "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\Common\\Common.csproj"
+            },
+            "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\DiscordBot\\DiscordBot.csproj": {
+              "projectPath": "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\DiscordBot\\DiscordBot.csproj"
+            }
+          }
         }
       },
       "warningProperties": {
@@ -6965,5 +7004,25 @@
         "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.401\\RuntimeIdentifierGraph.json"
       }
     }
-  }
+  },
+  "logs": [
+    {
+      "code": "NU1201",
+      "level": "Error",
+      "message": "Project Common is not compatible with netcoreapp3.1 (.NETCoreApp,Version=v3.1). Project Common supports: net5.0 (.NETCoreApp,Version=v5.0)",
+      "libraryId": "Common",
+      "targetGraphs": [
+        ".NETCoreApp,Version=v3.1"
+      ]
+    },
+    {
+      "code": "NU1201",
+      "level": "Error",
+      "message": "Project DiscordBot is not compatible with netcoreapp3.1 (.NETCoreApp,Version=v3.1). Project DiscordBot supports: net5.0 (.NETCoreApp,Version=v5.0)",
+      "libraryId": "DiscordBot",
+      "targetGraphs": [
+        ".NETCoreApp,Version=v3.1"
+      ]
+    }
+  ]
 }

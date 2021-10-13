@@ -1,7 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 
-namespace Web.Tests
+namespace Sanakan.Web.Tests
 {
     [TestClass]
     public class RichMessageControllerTests

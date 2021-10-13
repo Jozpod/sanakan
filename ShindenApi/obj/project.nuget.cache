@@ -1,9 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "qfJ9U0r5u7BJVAqIH8H7H+2ME6Y5adiRhb/G5S3+469bXPUnsO3tSCYt3BGcKAA0FVgnsZYJ+8NDabHHWu8ngw==",
+  "dgSpecHash": "ay3tmqDGQ1vckUoRZ24eDpr/2S6TwqodNBptuz79valnwfb0EpxvXrPOvN/2gsPKiEpu7Ud8eODMbEkqzOn+bA==",
   "success": true,
   "projectFilePath": "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\ShindenApi\\ShindenApi.csproj",
   "expectedPackageFiles": [
+    "C:\\Users\\jozefpodlecki\\.nuget\\packages\\microsoft.extensions.logging.abstractions\\5.0.0\\microsoft.extensions.logging.abstractions.5.0.0.nupkg.sha512",
     "C:\\Users\\jozefpodlecki\\.nuget\\packages\\microsoft.netcore.app\\2.0.0\\microsoft.netcore.app.2.0.0.nupkg.sha512",
     "C:\\Users\\jozefpodlecki\\.nuget\\packages\\microsoft.netcore.dotnetapphost\\2.0.0\\microsoft.netcore.dotnetapphost.2.0.0.nupkg.sha512",
     "C:\\Users\\jozefpodlecki\\.nuget\\packages\\microsoft.netcore.dotnethostpolicy\\2.0.0\\microsoft.netcore.dotnethostpolicy.2.0.0.nupkg.sha512",

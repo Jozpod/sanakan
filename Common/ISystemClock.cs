@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Common
+namespace Sanakan.Common
 {
     public interface ISystemClock
     {

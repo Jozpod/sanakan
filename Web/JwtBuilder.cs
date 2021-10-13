@@ -1,5 +1,3 @@
-#pragma warning disable 1591
-
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -7,17 +5,16 @@ using System.Text;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Sanakan.Api.Models;
-using Sanakan.Config;
 
 namespace Sanakan.Api
 {
-    public class UserTokenBuilder
+    public class JwtBuilder : IJwtBuilder
     {
         private readonly Encoding _encoding;
         private readonly ISystemClock systemClock;
 
-        public UserTokenBuilder(
-            IOptions<> options,
+        public JwtBuilder(
+            IOptions<JwtConfig> options,
             Encoding encoding,
             ISystemClock systemClock)
         {
@@ -27,13 +24,13 @@ namespace Sanakan.Api
             _signingCredentials = new SigningCredentials(_securityKey, SecurityAlgorithms.HmacSha256);
         }
 
-        public static TokenData BuildUserToken(User user)
+        public TokenData Build(ulong userId)
         {
             var config = conf.Get();
 
             var claims = new[] {
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim("DiscordId", user.Id.ToString()),
+                new Claim("DiscordId", userId.ToString()),
                 new Claim("Player", "waifu_player"),
             };
 

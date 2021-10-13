@@ -39,8 +39,6 @@ namespace Sanakan
         {
             Services.Dir.Create();
 
-            _logger = new ConsoleLogger();
-
             _client = new DiscordSocketClient(new DiscordSocketConfig()
             {
                 AlwaysDownloadUsers = true,
@@ -87,24 +85,7 @@ namespace Sanakan
         private IServiceProvider BuildServiceProvider()
         {
             return new ServiceCollection()
-                .AddSingleton<IExecutor>(_executor)
-                .AddSingleton(_shindenClient)
-                .AddSingleton(_sessions)
-                .AddSingleton(_profile)
-                .AddSingleton(_config)
-                .AddSingleton(_logger)
-                .AddSingleton(_client)
-                .AddSingleton(_helper)
-                .AddSingleton(_events)
-                .AddSingleton(_chaos)
-                .AddSingleton(_waifu)
-                .AddSingleton(_spawn)
-                .AddSingleton(_mod)
-                .AddSingleton(_exp)
-                .AddSingleton(_img)
-                .AddSingleton<Services.Fun>()
-                .AddSingleton<Services.Shinden>()
-                .AddSingleton<Services.LandManager>()
+               
                 .BuildServiceProvider();
         }
 
@@ -139,7 +120,6 @@ namespace Sanakan
             await _client.StartAsync();
 
             var services = BuildServiceProvider();
-            BotWebHost.RunWebHost(_client, _shindenClient, _waifu, _config, _helper, _executor, _logger);
 
             _executor.Initialize(services);
             _sessions.Initialize(services);

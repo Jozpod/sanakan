@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "dgSpecHash": "z8z/d20RCPf6Xv9E+xxg3gb5MdaMkXveoHErh7QEEMIVKWeb+g08T85g0CB6k/0d5QvUWIma45dgy3AKPMz+2g==",
-  "success": true,
+  "dgSpecHash": "d209FccMcdKCo2UhWhiBvRGqCHyUyPPF9khSrsu22oaeYrGatqRtANgczb+9cPlDFVkp3r4nPGwD365qfVj9AQ==",
+  "success": false,
   "projectFilePath": "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\Web\\Web.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\jozefpodlecki\\.nuget\\packages\\microsoft.aspnetcore.authentication\\2.2.0\\microsoft.aspnetcore.authentication.2.2.0.nupkg.sha512",
@@ -143,5 +143,24 @@
     "C:\\Users\\jozefpodlecki\\.nuget\\packages\\z.entityframework.plus.efcore\\5.1.15\\z.entityframework.plus.efcore.5.1.15.nupkg.sha512",
     "C:\\Users\\jozefpodlecki\\.nuget\\packages\\z.expressions.eval\\4.0.29\\z.expressions.eval.4.0.29.nupkg.sha512"
   ],
-  "logs": []
+  "logs": [
+    {
+      "code": "NU1201",
+      "level": "Error",
+      "message": "Project Common is not compatible with netcoreapp3.1 (.NETCoreApp,Version=v3.1). Project Common supports: net5.0 (.NETCoreApp,Version=v5.0)",
+      "libraryId": "Common",
+      "targetGraphs": [
+        ".NETCoreApp,Version=v3.1"
+      ]
+    },
+    {
+      "code": "NU1201",
+      "level": "Error",
+      "message": "Project DiscordBot is not compatible with netcoreapp3.1 (.NETCoreApp,Version=v3.1). Project DiscordBot supports: net5.0 (.NETCoreApp,Version=v5.0)",
+      "libraryId": "DiscordBot",
+      "targetGraphs": [
+        ".NETCoreApp,Version=v3.1"
+      ]
+    }
+  ]
 }

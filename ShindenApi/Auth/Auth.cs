@@ -1,4 +1,4 @@
-﻿namespace Shinden
+﻿namespace Sanakan.ShindenApi
 {
     public class Auth
     {

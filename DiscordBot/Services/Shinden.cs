@@ -7,9 +7,11 @@ using System.Net;
 using System.Threading.Tasks;
 using Discord.Commands;
 using Discord.WebSocket;
+using Sanakan.DiscordBot.Services;
 using Sanakan.Extensions;
 using Sanakan.Services.Session;
 using Sanakan.Services.Session.Models;
+using Sanakan.ShindenApi;
 using Shinden;
 
 namespace Sanakan.Services
@@ -21,11 +23,14 @@ namespace Sanakan.Services
 
     public class Shinden
     {
-        private ShindenClient _shClient;
-        private SessionManager _session;
-        private ImageProcessing _img;
+        private readonly IShindenClient _shClient;
+        private readonly SessionManager _session;
+        private readonly IImageProcessing _img;
 
-        public Shinden(ShindenClient client, SessionManager session, ImageProcessing img)
+        public Shinden(
+            IShindenClient client,
+            SessionManager session,
+            IImageProcessing img)
         {
             _shClient = client;
             _session = session;

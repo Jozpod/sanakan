@@ -1,4 +1,4 @@
-﻿namespace DAL.Models
+﻿namespace Sanakan.DAL.Models
 {
     public enum CardCurse
     {

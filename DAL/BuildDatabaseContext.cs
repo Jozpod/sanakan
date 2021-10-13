@@ -1,6 +1,4 @@
-﻿#pragma warning disable 1591
-
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Sanakan.Config;
@@ -75,25 +73,6 @@ namespace Sanakan.DAL
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-
-            // User
-            modelBuilder.Entity<Question>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-            });
-
-            modelBuilder.Entity<Answer>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-
-                entity.HasOne(e => e.Question)
-                    .WithMany(u => u.Answers);
-            });
-
-            modelBuilder.Entity<User>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-            });
 
             modelBuilder.Entity<UserStats>(entity =>
             {

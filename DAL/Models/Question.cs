@@ -1,8 +1,6 @@
-﻿#pragma warning disable 1591
+﻿using System.Collections.Generic;
 
-using System.Collections.Generic;
-
-namespace Sanakan.Database.Models
+namespace Sanakan.DAL.Models
 {
     public class Question
     {

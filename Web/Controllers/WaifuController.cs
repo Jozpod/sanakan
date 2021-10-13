@@ -625,7 +625,7 @@ namespace Sanakan.Api.Controllers
                 var currUser = ControllerContext.HttpContext.User;
                 if (currUser.HasClaim(x => x.Type == ClaimTypes.Webpage))
                 {
-                    tokenData = UserTokenBuilder.BuildUserToken(_config, user);
+                    tokenData = JwtBuilder.BuildUserToken(_config, user);
                 }
 
                 return new UserWithToken()

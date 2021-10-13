@@ -2,7 +2,7 @@
 
 using Newtonsoft.Json;
 
-namespace Sanakan.Database.Models
+namespace Sanakan.DAL.Models
 {
     public enum ItemType
     {

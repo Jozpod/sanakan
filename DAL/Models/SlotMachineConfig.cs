@@ -1,23 +1,7 @@
-﻿#pragma warning disable 1591
+﻿using Newtonsoft.Json;
 
-using Newtonsoft.Json;
-
-namespace Sanakan.Database.Models
+namespace Sanakan.DAL.Models
 {
-    public enum SlotMachineBeat : int
-    {
-        b1 = 1, b10 = 10, b100 = 100
-    }
-
-    public enum SlotMachineBeatMultiplier : int
-    {
-        x1 = 1, x2 = 2, x3 = 3
-    }
-
-    public enum SlotMachineSelectedRows : int
-    {
-        r1 = 1, r2 = 2, r3 = 3
-    }
 
     public class SlotMachineConfig
     {

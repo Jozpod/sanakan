@@ -18,9 +18,9 @@ namespace Sanakan.Modules
     [Name("Shinden"), RequireUserRole]
     public class Shinden : SanakanModuleBase<SocketCommandContext>
     {
-        private Shden.ShindenClient _shclient;
-        private SessionManager _session;
-        private Services.Shinden _shinden;
+        private readonly Shden.ShindenClient _shclient;
+        private readonly SessionManager _session;
+        private readonly Services.Shinden _shinden;
 
         public Shinden(Shden.ShindenClient client, SessionManager session, Services.Shinden shinden)
         {

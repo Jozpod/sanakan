@@ -34,7 +34,10 @@ namespace Sanakan.Api.Controllers
         [HttpPost, AllowAnonymous]
         public IActionResult CreateToken([FromBody]string apikey)
         {
-            if (apikey == null) return "API Key Not Provided".ToResponse(401);
+            if (apikey == null)
+            {
+                return "API Key Not Provided".ToResponse(401);
+            }
 
             IActionResult response = "API Key Is Invalid".ToResponse(403);
             var user = Authenticate(apikey);

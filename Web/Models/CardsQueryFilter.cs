@@ -1,6 +1,4 @@
-﻿#pragma warning disable 1591
-
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Sanakan.Database.Models;
 

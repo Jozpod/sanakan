@@ -1,6 +1,4 @@
-﻿#pragma warning disable 1591
-
-namespace Sanakan.Config.Model
+﻿namespace Sanakan.Config.Model
 {
     public class SanakanApiKey
     {

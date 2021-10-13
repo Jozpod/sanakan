@@ -23,4 +23,8 @@
     <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta0006" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\ShindenApi\ShindenApi.csproj" />
+  </ItemGroup>
+
 </Project>

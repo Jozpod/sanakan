@@ -1,4 +1,4 @@
-﻿namespace Sanakan.Configuration
+﻿namespace Sanakan.Web.Configuration
 {
     /// <summary>
     /// 

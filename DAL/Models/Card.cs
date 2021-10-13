@@ -1,47 +1,9 @@
-﻿#pragma warning disable 1591
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace Sanakan.Database.Models
 {
-    public enum Rarity
-    {
-        SSS, SS, S, A, B, C, D, E
-    }
-
-    public enum Dere
-    {
-        Tsundere, Kamidere, Deredere, Yandere, Dandere, Kuudere, Mayadere, Bodere, Yami, Raito, Yato
-    }
-
-    public enum CardSource
-    {
-        Activity, Safari, Shop, GodIntervention, Api, Other, Migration, PvE, Daily, Crafting, PvpShop, Figure, Expedition, ActivityShop
-    }
-
-    public enum StarStyle
-    {
-        Full, White, Black, Empty, Pig, Snek
-    }
-
-    public enum MarketValue
-    {
-        Normal = 0,
-        Low = -1,
-        High = 1
-    }
-
-    public enum PreAssembledFigure
-    {
-        None, Megumin, Asuna, Gintoki
-    }
-
-    
-
-   
-
     public class Card
     {
         public ulong Id { get; set; }

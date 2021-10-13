@@ -22,8 +22,8 @@ namespace Sanakan.Modules
     [Name("Profil"), RequireUserRole]
     public class Profile : SanakanModuleBase<SocketCommandContext>
     {
-        private Services.Profile _profile;
-        private SessionManager _session;
+        private readonly Services.Profile _profile;
+        private readonly SessionManager _session;
 
         public Profile(Services.Profile prof, SessionManager session)
         {

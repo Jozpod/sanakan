@@ -1,18 +1,7 @@
-﻿#pragma warning disable 1591
+﻿using Newtonsoft.Json;
 
-using Newtonsoft.Json;
-
-namespace Sanakan.Database.Models
+namespace Sanakan.DAL.Models
 {
-    public enum FightType
-    {
-        Versus, BattleRoyale, NewVersus
-    }
-
-    public enum FightResult
-    {
-        Win, Lose, Draw
-    }
 
     public class CardPvPStats
     {

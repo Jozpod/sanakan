@@ -26,15 +26,20 @@ namespace Sanakan.Modules
     [Name("PocketWaifu"), RequireUserRole]
     public class PocketWaifu : SanakanModuleBase<SocketCommandContext>
     {
-        private Sden.ShindenClient _shclient;
-        private SessionManager _session;
-        private IExecutor _executor;
-        private ILogger _logger;
-        private IConfig _config;
-        private Waifu _waifu;
+        private readonly Sden.ShindenClient _shclient;
+        private readonly SessionManager _session;
+        private readonly IExecutor _executor;
+        private readonly ILogger _logger;
+        private readonly IConfig _config;
+        private readonly Waifu _waifu;
 
-        public PocketWaifu(Waifu waifu, Sden.ShindenClient client, ILogger logger,
-            SessionManager session, IConfig config, IExecutor executor)
+        public PocketWaifu(
+            Waifu waifu,
+            Sden.ShindenClient client,
+            ILogger logger,
+            SessionManager session,
+            IConfig config,
+            IExecutor executor)
         {
             _waifu = waifu;
             _logger = logger;

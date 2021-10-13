@@ -1,8 +1,6 @@
-﻿#pragma warning disable 1591
+﻿using System;
 
-using System;
-
-namespace Sanakan.Database.Models.Analytics
+namespace Sanakan.DAL.Models.Analytics
 {
     public class CommandsAnalytics
     {

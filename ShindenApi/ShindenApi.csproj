@@ -3,10 +3,11 @@
   <PropertyGroup>
     <TargetFrameworks>netcoreapp2.0;netstandard2.0</TargetFrameworks>
     <LangVersion>9.0</LangVersion>
+    <Nullable>enable</Nullable>
     <Version>0.3.8-beta</Version>
-    <Authors>Sniku</Authors>
-    <Copyright>Copyright 2021 © Sniku. All rights reserved.</Copyright>
-    <PackageTags>shinden rest api .net shinden.pl wrapper</PackageTags>
+    <Authors>Jotpe</Authors>
+    <Copyright>Copyright 2021 © Jotpe. All rights reserved.</Copyright>
+    <PackageTags>Shinden REST API .NET shinden.pl wrapper</PackageTags>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Description>An official asynchronous .NET API Wrapper for the Shinden APIs.</Description>
     <PackageId>Shinden.NET</PackageId>
@@ -15,6 +16,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
 
   </ItemGroup>

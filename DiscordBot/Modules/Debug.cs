@@ -12,6 +12,7 @@ using Sanakan.Preconditions;
 using Sanakan.Services.Commands;
 using Sanakan.Services.Executor;
 using Sanakan.Services.PocketWaifu;
+using Sanakan.ShindenApi;
 using Shinden;
 using System;
 using System.Collections.Generic;
@@ -27,14 +28,20 @@ namespace Sanakan.Modules
     [Name("Debug"), Group("dev"), DontAutoLoad, RequireDev]
     public class Debug : SanakanModuleBase<SocketCommandContext>
     {
-        private Waifu _waifu;
-        private IConfig _config;
-        private IExecutor _executor;
-        private Services.Helper _helper;
-        private ShindenClient _shClient;
-        private Services.ImageProcessing _img;
+        private readonly Waifu _waifu;
+        private readonly IConfig _config;
+        private readonly IExecutor _executor;
+        private readonly Services.Helper _helper;
+        private readonly IShindenClient _shClient;
+        private readonly Services.IImageProcessing _img;
 
-        public Debug(Waifu waifu, ShindenClient shClient, Services.Helper helper, Services.ImageProcessing img, IConfig config, IExecutor executor)
+        public Debug(
+            Waifu waifu,
+            IShindenClient shClient,
+            Services.Helper helper,
+            Services.IImageProcessing img,
+            IConfig config,
+            IExecutor executor)
         {
             _shClient = shClient;
             _executor = executor;

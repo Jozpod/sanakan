@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Sanakan.Database.Models;
 using Sanakan.Extensions;
 using Sanakan.Services.PocketWaifu;
+using Sanakan.ShindenApi;
 using Shinden;
 using Shinden.Models;
 using SixLabors.Fonts;
@@ -17,50 +18,55 @@ using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.Primitives;
 
-namespace Sanakan.Services
+namespace Sanakan.DiscordBot.Services
 {
-    public class ImageProcessing
+    public class ImageProcessing : IImageProcessing
     {
         private FontFamily _digital = new FontCollection().Install("Fonts/Digital.ttf");
         private FontFamily _latoBold = new FontCollection().Install("Fonts/Lato-Bold.ttf");
         private FontFamily _latoLight = new FontCollection().Install("Fonts/Lato-Light.ttf");
         private FontFamily _latoRegular = new FontCollection().Install("Fonts/Lato-Regular.ttf");
 
-        private readonly ShindenClient _shclient;
+        private readonly IShindenClient _shclient;
 
-        public ImageProcessing(ShindenClient shinden)
+        public ImageProcessing(IShindenClient shinden)
         {
             _shclient = shinden;
         }
 
         private async Task<Stream> GetImageFromUrlAsync(string url, bool fixExt = false)
         {
-            using (var client = new HttpClient())
+            using var client = new HttpClient();
+            
+            try
             {
-                try
+                var res = await client.GetAsync(url);
+                
+                if (res.IsSuccessStatusCode)
                 {
-                    var res = await client.GetAsync(url);
-                    if (res.IsSuccessStatusCode)
-                        return await res.Content.ReadAsStreamAsync();
+                    return await res.Content.ReadAsStreamAsync();
+                }
+                    
+                if (fixExt)
+                {
+                    var splited = url.Split(".");
+                    var exts = new[] { "png", "jpeg", "gif", "jpg" };
 
-                    if (fixExt)
+                    foreach (var ext in exts)
                     {
-                        var splited = url.Split(".");
-                        var exts = new[] { "png", "jpeg", "gif", "jpg" };
-                        foreach (var ext in exts)
-                        {
-                            splited[splited.Length - 1] = ext;
-                            res = await client.GetAsync(string.Join(".", splited));
+                        splited[splited.Length - 1] = ext;
+                        res = await client.GetAsync(string.Join(".", splited));
 
-                            if (res.IsSuccessStatusCode)
-                                return await res.Content.ReadAsStreamAsync();
+                        if (res.IsSuccessStatusCode)
+                        {
+                            return await res.Content.ReadAsStreamAsync();
                         }
                     }
                 }
-                catch (Exception)
-                {
-                    return null;
-                }
+            }
+            catch (Exception)
+            {
+                return null;
             }
 
             return null;

@@ -49,6 +49,8 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="JwtBuilderTests.cs" />
+    <Compile Include="DebugControllerTests.cs" />
     <Compile Include="WaifuControllerTests.cs" />
     <Compile Include="UserControllerTests.cs" />
     <Compile Include="RichMessageControllerTests.cs" />
