@@ -1,8 +1,7 @@
-﻿#pragma warning disable 1591
-
-using Discord.WebSocket;
+﻿using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
-using Sanakan.Config;
+using Microsoft.Extensions.Options;
+using Sanakan.DiscordBot.Services;
 using Sanakan.Extensions;
 using Sanakan.Services.Executor;
 using System;
@@ -26,13 +25,17 @@ namespace Sanakan.Services
         private DiscordSocketClient _client;
         private ImageProcessing _img;
         private IExecutor _executor;
-        private IConfig _config;
+        private object _config;
 
-        public ExperienceManager(DiscordSocketClient client, IExecutor executor, IConfig config, ImageProcessing img)
+        public ExperienceManager(
+            DiscordSocketClient client,
+            IExecutor executor,
+            IOptions<object> config,
+            IImageProcessing img)
         {
             _executor = executor;
             _client = client;
-            _config = config;
+            _config = config.Value;
             _img = img;
 
             _exp = new Dictionary<ulong, double>();

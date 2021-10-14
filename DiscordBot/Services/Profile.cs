@@ -1,13 +1,12 @@
-﻿#pragma warning disable 1591
-
-using Discord;
+﻿using Discord;
 using Discord.WebSocket;
+using DiscordBot.Services;
 using Microsoft.EntityFrameworkCore;
-using Sanakan.Config;
-using Sanakan.Database.Models;
+using Microsoft.Extensions.Logging;
+using Sanakan.DAL.Models;
+using Sanakan.DiscordBot.Services;
 using Sanakan.Extensions;
-using Shinden;
-using Shinden.Logger;
+using Sanakan.ShindenApi;
 using SixLabors.Primitives;
 using System;
 using System.Collections.Generic;
@@ -15,96 +14,24 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Z.EntityFramework.Plus;
 
 namespace Sanakan.Services
 {
-    public enum TopType
-    {
-        Level, ScCnt, TcCnt, Posts, PostsMonthly, PostsMonthlyCharacter, Commands, Cards, CardsPower, Card, Karma, KarmaNegative, Pvp, PvpSeason, PcCnt, AcCnt
-    }
-
-    public enum SCurrency
-    {
-        Sc, Tc
-    }
-
-    public enum SaveResult
-    {
-        Error,
-        BadUrl,
-        Success
-    }
-
-    public enum FColor : uint
-    {
-        None = 0x000000,
-        CleanColor = 0x111111,
-
-        Violet = 0xFF2BDF,
-        LightPink = 0xDBB0EF,
-        Pink = 0xFF0090,
-        Green = 0x33CC66,
-        LightGreen = 0x93F600,
-        LightOrange = 0xFFC125,
-        Orange = 0xFF731C,
-        DarkGreen = 0x808000,
-        LightYellow = 0xE2E1A3,
-        Yellow = 0xFDE456,
-        Grey = 0x828282,
-        LightBlue = 0x7FFFD4,
-        Purple = 0x9A49EE,
-        Brown = 0xA85100,
-        Red = 0xF31400,
-        AgainBlue = 0x11FAFF,
-        AgainPinkish = 0xFF8C8C,
-        DefinitelyNotWhite = 0xFFFFFE,
-
-        GrassGreen = 0x66FF66,
-        SeaTurquoise = 0x33CCCC,
-        Beige = 0xA68064,
-        Pistachio = 0x8FBC8F,
-        DarkSkyBlue = 0x5959AB,
-        Lilac = 0xCCCCFF,
-        SkyBlue = 0x99CCFF,
-
-        NeonPink = 0xE1137A,
-        ApplePink = 0xFF0033,
-        RosePink = 0xFF3366,
-        LightLilac = 0xFF99CC,
-        PowderPink = 0xFF66CC,
-        CherryPurple = 0xCC0099,
-        BalloonPurple = 0xBE4DCC,
-        SoftPurple = 0xE37EEB,
-        CleanSkyBlue = 0x6666FF,
-        WeirdGreen = 0x97F5AE,
-        DirtyGreen = 0x739546,
-        LightBeige = 0xCCCC66,
-        TrueYellow = 0xFFFF00,
-        OrangeFox = 0xFF9900,
-        Salmon = 0xFF8049,
-        BearBrown = 0xCC3300,
-        DarkRose = 0x993333,
-        LightRose = 0xAD4A4A,
-        DarkBeige = 0x996633,
-        SkinColor = 0xFFC18A,
-        DirtyLilac = 0x996666,
-        Silver = 0xC0C0C0,
-
-        Ejzur = 0x007FFF,
-        BlueBlueBlue = 0x1F75FE,
-    }
-
     public class Profile
     {
-        private DiscordSocketClient _client;
-        private ShindenClient _shClient;
-        private ImageProcessing _img;
+        private readonly DiscordSocketClient _client;
+        private readonly IShindenClient _shClient;
+        private readonly IImageProcessing _img;
         private ILogger _logger;
-        private IConfig _config;
+        private object _config;
         private Timer _timer;
 
-        public Profile(DiscordSocketClient client, ShindenClient shClient, ImageProcessing img, ILogger logger, IConfig config)
+        public Profile(
+            DiscordSocketClient client,
+            IShindenClient shClient,
+            IImageProcessing img,
+            ILogger<Profile > logger,
+            IConfig config)
         {
             _shClient = shClient;
             _client = client;
@@ -126,7 +53,7 @@ namespace Sanakan.Services
                 }
                 catch (Exception ex)
                 {
-                    _logger.Log($"in profile check: {ex}");
+                    _logger.LogError($"in profile check: {ex}", ex);
                 }
             },
             null,

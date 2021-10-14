@@ -1,8 +1,7 @@
-﻿#pragma warning disable 1591
-
-using Discord;
+﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using Microsoft.Extensions.Options;
 using Sanakan.Config;
 using Sanakan.Extensions;
 using System;
@@ -14,14 +13,14 @@ namespace Sanakan.Services
 {
     public class Helper
     {
-        private IConfig _config;
+        private object _config;
 
         public IEnumerable<ModuleInfo> PublicModulesInfo { get; set; }
         public Dictionary<string, ModuleInfo> PrivateModulesInfo { get; set; }
 
-        public Helper(IConfig config)
+        public Helper(IOptions<object> config)
         {
-            _config = config;
+            _config = config.Value;
 
             PublicModulesInfo = new List<ModuleInfo>();
             PrivateModulesInfo = new Dictionary<string, ModuleInfo>();

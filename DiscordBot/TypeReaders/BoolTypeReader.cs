@@ -1,11 +1,12 @@
-﻿#pragma warning disable 1591
-
-using Discord.Commands;
+﻿using Discord.Commands;
 using System;
 using System.Threading.Tasks;
 
 namespace Sanakan.TypeReaders
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class BoolTypeReader : TypeReader
     {
         public override Task<TypeReaderResult> ReadAsync(ICommandContext context, string input, IServiceProvider services)

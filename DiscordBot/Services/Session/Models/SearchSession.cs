@@ -1,10 +1,9 @@
-#pragma warning disable 1591
-
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Sanakan.Extensions;
+using Sanakan.ShindenApi;
 using Shinden;
 using Shinden.Models;
 
@@ -15,7 +14,7 @@ namespace Sanakan.Services.Session.Models
         public IMessage[] Messages { get; set; }
         public List<IQuickSearch> SList { get; set; }
         public List<IPersonSearch> PList { get; set; }
-        public ShindenClient ShindenClient { get; set; }
+        public IShindenClient ShindenClient { get; set; }
 
         public SearchSession(IUser owner, ShindenClient client) : base(owner)
         {

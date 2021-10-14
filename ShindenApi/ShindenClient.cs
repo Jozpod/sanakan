@@ -28,11 +28,11 @@ namespace Sanakan.ShindenApi
             User = new LoggedInUserModule.UserModule(_manager, _logger);
         }
 
-        public ShindenClient(Auth authenticator, ILogger logger,
-            LogLevel level = LogLevel.Information) : this(authenticator)
+        public ShindenClient(
+            Auth authenticator,
+            ILogger<ShindenClient> logger) : this(authenticator)
         {
-            _logger.EnableLogger(level, logger);
-            _logger.Log(LogLevel.Information, $"Runing as: {authenticator.GetUserAgent()}");
+            _logger.LogInformation($"Runing as: {authenticator.GetUserAgent()}");
         }
 
         public async Task<Response<List<INewEpisode>>> GetNewEpisodesAsync()

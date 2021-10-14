@@ -1,9 +1,5 @@
-﻿#pragma warning disable 1591
-
-using Discord.Commands;
+﻿using Discord.Commands;
 using Discord.WebSocket;
-using Sanakan.Config;
-using Sanakan.Extensions;
 using System;
 using System.Linq;
 using System.Threading.Tasks;

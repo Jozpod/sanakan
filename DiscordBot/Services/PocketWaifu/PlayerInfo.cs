@@ -1,7 +1,5 @@
-#pragma warning disable 1591
-
 using Discord.WebSocket;
-using Sanakan.Database.Models;
+using Sanakan.DAL.Models;
 using System.Collections.Generic;
 
 namespace Sanakan.Services.PocketWaifu

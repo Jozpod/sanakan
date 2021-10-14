@@ -1,32 +1,37 @@
-﻿#pragma warning disable 1591
-
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
-using Sanakan.Config;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Sanakan.Common;
 using Sanakan.Extensions;
 using Sanakan.Services.Executor;
-using Shinden.Logger;
-using Z.EntityFramework.Plus;
 
 namespace Sanakan.Services
 {
     public class Greeting
     {
-        private DiscordSocketClient _client { get; set; }
-        private IExecutor _executor { get; set; }
-        private ILogger _logger { get; set; }
-        private IConfig _config { get; set; }
+        private readonly DiscordSocketClient _client;
+        private readonly IExecutor _executor;
+        private readonly ILogger _logger;
+        private readonly object _config;
+        private readonly ICacheManager _cacheManager;
 
-        public Greeting(DiscordSocketClient client, ILogger logger, IConfig config, IExecutor exe)
+        public Greeting(
+            DiscordSocketClient client,
+            ILogger<Greeting> logger,
+            IOptions<object> config,
+            IExecutor exe,
+            ICacheManager _cacheManager)
         {
             _client = client;
             _logger = logger;
             _config = config;
             _executor = exe;
+            _cacheManager = cacheManager;
 
 #if !DEBUG
             _client.LeftGuild += BotLeftGuildAsync;
@@ -126,7 +131,7 @@ namespace Sanakan.Services
 
                     await db.SaveChangesAsync();
 
-                    QueryCacheManager.ExpireTag(new string[] { "users" });
+                    _cacheManager.ExpireTag(new string[] { "users" });
                 }
             });
 

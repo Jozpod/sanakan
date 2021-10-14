@@ -1,15 +1,8 @@
-﻿#pragma warning disable 1591
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 
-namespace Sanakan.Database.Models.Management
+namespace Sanakan.DAL.Models.Management
 {
-    public enum PenaltyType
-    {
-        Mute, Ban
-    }
-
     public class PenaltyInfo
     {
         public ulong Id { get; set; }

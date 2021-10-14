@@ -1,6 +1,4 @@
-﻿#pragma warning disable 1591
-
-using Discord.Commands;
+﻿using Discord.Commands;
 using Discord.WebSocket;
 
 namespace Sanakan.Services.Session

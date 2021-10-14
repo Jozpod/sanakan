@@ -1,9 +1,6 @@
-﻿#pragma warning disable 1591
-
+﻿using DAL.Repositories.Abstractions;
 using Discord.Commands;
 using Discord.WebSocket;
-using Sanakan.Config;
-using Sanakan.Extensions;
 using System;
 using System.Threading.Tasks;
 
@@ -11,18 +8,35 @@ namespace Sanakan.Preconditions
 {
     public class RequireWaifuMarketChannel : PreconditionAttribute
     {
-        public async override Task<PreconditionResult> CheckPermissionsAsync(ICommandContext context, CommandInfo command, IServiceProvider services)
+        private readonly IRepository _repository;
+
+        public RequireWaifuMarketChannel(IRepository repository)
+        {
+            _repository = repository;
+        }
+
+        public async override Task<PreconditionResult> CheckPermissionsAsync(
+            ICommandContext context, CommandInfo command, IServiceProvider services)
         {
             var user = context.User as SocketGuildUser;
-            if (user == null) return PreconditionResult.FromError($"To polecenie działa tylko z poziomu serwera.");
+
+            if (user == null)
+            {
+                return PreconditionResult.FromError($"To polecenie działa tylko z poziomu serwera.");
+            }
 
             await Task.CompletedTask;
 
             var config = (IConfig)services.GetService(typeof(IConfig));
+
             using (var db = new Database.GuildConfigContext(config))
             {
                 var gConfig = await db.GetCachedGuildFullConfigAsync(context.Guild.Id);
-                if (gConfig == null) return PreconditionResult.FromSuccess();
+                
+                if (gConfig == null)
+                {
+                    return PreconditionResult.FromSuccess();
+                }
 
                 if (gConfig?.WaifuConfig?.MarketChannel != null)
                 {
@@ -35,6 +49,7 @@ namespace Sanakan.Preconditions
                     var channel = await context.Guild.GetTextChannelAsync(gConfig.WaifuConfig.MarketChannel);
                     return PreconditionResult.FromError($"To polecenie działa na kanale {channel?.Mention}");
                 }
+
                 return PreconditionResult.FromSuccess();
             }
         }

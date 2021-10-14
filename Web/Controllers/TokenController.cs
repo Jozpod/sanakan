@@ -1,6 +1,4 @@
-﻿#pragma warning disable 1591
-
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using System.Linq;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
@@ -18,11 +16,11 @@ namespace Sanakan.Api.Controllers
     [Route("api/[controller]")]
     public class TokenController : ControllerBase
     {
-        private readonly IConfig _config;
+        private readonly IJwtBuilder _jwtBuilder;
 
-        public TokenController(IConfig config)
+        public TokenController(IJwtBuilder jwtBuilder)
         {
-            _config = config;
+            _jwtBuilder = jwtBuilder;
         }
 
         /// <summary>
@@ -44,7 +42,7 @@ namespace Sanakan.Api.Controllers
 
             if (user != null)
             {
-                var tokenData = BuildToken(user);
+                var tokenData = _jwtBuilder.Build(user.Id);
                 response = Ok(new { token = tokenData.Token, expire = tokenData.Expire });
             }
 

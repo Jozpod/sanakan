@@ -1,16 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Sanakan.Database.Models;
+using Sanakan.DAL.Models;
 
 namespace Sanakan.Api.Models
 {
-    public enum OrderType
-    {
-        Id, IdDes, Name, NameDes, Rarity, RarityDes, Title, TitleDes, Health, HealthDes, HealthBase, HealthBaseDes,
-        Atack, AtackDes, Defence, DefenceDes, Exp, ExpDes, Dere, DereDes, Picture, PictureDes, Relation, RelationDes,
-        CardPower, CardPowerDes
-    }
-
     public enum FilterTagsMethodType
     {
         And, Or

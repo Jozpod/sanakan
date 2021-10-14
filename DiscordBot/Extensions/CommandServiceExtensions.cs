@@ -1,6 +1,4 @@
-﻿#pragma warning disable 1591
-
-using Discord.Commands;
+﻿using Discord.Commands;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -14,7 +12,11 @@ namespace Sanakan.Extensions
         public static async Task<Services.Commands.SearchResult> GetExecutableCommandAsync(this CommandService cmd, ICommandContext context, int argPos, IServiceProvider services)
             => await GetExecutableCommandAsync(cmd, context, context.Message.Content.Substring(argPos), services).ConfigureAwait(false);
 
-        public static async Task<Services.Commands.SearchResult> GetExecutableCommandAsync(this CommandService cmd, ICommandContext context, string input, IServiceProvider services)
+        public static async Task<Services.Commands.SearchResult> GetExecutableCommandAsync(
+            this CommandService cmd,
+            ICommandContext context,
+            string input,
+            IServiceProvider services)
         {
             var searchResult = cmd.Search(input);
 

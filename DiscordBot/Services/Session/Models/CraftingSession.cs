@@ -1,17 +1,15 @@
-﻿#pragma warning disable 1591
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using Sanakan.Config;
-using Sanakan.Database.Models;
+using Microsoft.Extensions.Options;
+using Sanakan.Common;
+using Sanakan.DAL.Models;
 using Sanakan.Extensions;
 using Sanakan.Services.PocketWaifu;
-using Z.EntityFramework.Plus;
 
 namespace Sanakan.Services.Session.Models
 {
@@ -23,8 +21,9 @@ namespace Sanakan.Services.Session.Models
         public string Name { get; set; }
         public string Tips { get; set; }
 
-        private IConfig _config;
-        private Waifu _waifu;
+        private readonly object _config;
+        private readonly Waifu _waifu;
+        private readonly ICacheManager _cacheManager;
 
         private readonly Emoji AcceptEmote = new Emoji("✅");
         private readonly Emote DeclineEmote = Emote.Parse("<:redcross:581152766655856660>");
@@ -35,13 +34,18 @@ namespace Sanakan.Services.Session.Models
 
         public IEmote[] StartReactions => new IEmote[] { AcceptEmote, DeclineEmote };
 
-        public CraftingSession(IUser owner, Waifu waifu, IConfig config) : base(owner)
+        public CraftingSession(
+            IUser owner,
+            Waifu waifu,
+            IOptions<object> config,
+            ICacheManager cacheManager) : base(owner)
         {
             Event = ExecuteOn.AllEvents;
             RunMode = RunMode.Sync;
             TimeoutMs = 120000;
             _config = config;
             _waifu = waifu;
+            _cacheManager = cacheManager;
 
             Message = null;
 
@@ -238,7 +242,7 @@ namespace Sanakan.Services.Session.Models
                 {
                     await msg.ModifyAsync(x => x.Embed = $"{Name}\n\nOdrzucono tworzenie karty.".ToEmbedMessage(EMType.Bot).Build());
 
-                    QueryCacheManager.ExpireTag(new string[] { $"user-{P1.User.Id}", "users" });
+                    _cacheManager.ExpireTag(new string[] { $"user-{P1.User.Id}", "users" });
 
                     return true;
                 }
@@ -289,7 +293,7 @@ namespace Sanakan.Services.Session.Models
 
                     if (error) await msg.ModifyAsync(x => x.Embed = $"{Name}\n\nBrakuje przedmiotów, tworzenie karty nie powiodło się.".ToEmbedMessage(EMType.Bot).Build());
 
-                    QueryCacheManager.ExpireTag(new string[] { $"user-{P1.User.Id}", "users" });
+                    _cacheManager.ExpireTag(new string[] { $"user-{P1.User.Id}", "users" });
 
                     return true;
                 }

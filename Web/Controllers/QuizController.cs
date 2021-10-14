@@ -1,12 +1,9 @@
-#pragma warning disable 1591
-
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Sanakan.Extensions;
 using Microsoft.EntityFrameworkCore;
-using Z.EntityFramework.Plus;
 using Sanakan.Config;
 
 namespace Sanakan.Web.Controllers
@@ -15,11 +12,15 @@ namespace Sanakan.Web.Controllers
     [Route("api/[controller]")]
     public class QuizController : ControllerBase
     {
-        private IConfig _config;
+        private object _config;
+        private readonly ICacheManager _cacheManager;
 
-        public QuizController(IConfig config)
+        public QuizController(
+            IOptions<object> config,
+            ICacheManager cacheManager)
         {
-            _config = config;
+            _config = config.Value;
+            _cacheManager = cacheManager;
         }
 
         /// <summary>
@@ -61,7 +62,7 @@ namespace Sanakan.Web.Controllers
                 db.Questions.Add(question);
                 await db.SaveChangesAsync();
 
-                QueryCacheManager.ExpireTag(new string[] { $"quiz" });
+                _cacheManager.ExpireTag(new string[] { $"quiz" });
             }
             await "Question added!".ToResponse(200).ExecuteResultAsync(ControllerContext);
         }
@@ -83,7 +84,7 @@ namespace Sanakan.Web.Controllers
                     db.Questions.Remove(question);
                     await db.SaveChangesAsync();
 
-                    QueryCacheManager.ExpireTag(new string[] { $"quiz" });
+                    _cacheManager.ExpireTag(new string[] { $"quiz" });
 
                     await "Question removed!".ToResponse(200).ExecuteResultAsync(ControllerContext);
                     return;

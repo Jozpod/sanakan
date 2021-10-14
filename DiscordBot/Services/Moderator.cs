@@ -6,7 +6,12 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using DiscordBot.Services;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Sanakan.Common;
+using Sanakan.DAL.Models.Configuration;
+using Sanakan.DAL.Models.Management;
 using Sanakan.Extensions;
 
 namespace Sanakan.Services
@@ -15,17 +20,20 @@ namespace Sanakan.Services
     {
         private readonly DiscordSocketClient _client;
         private readonly ILogger _logger;
-        private readonly IConfig _config;
+        private readonly object _config;
         private readonly Timer _timer;
+        private readonly ICacheManager _cacheManager;
 
         public Moderator(
             ILogger<Moderator> logger,
-            IConfig config,
-            DiscordSocketClient client)
+            IOptions<object> config,
+            DiscordSocketClient client,
+            ICacheManager cacheManager)
         {
             _logger = logger;
-            _config = config;
+            _config = config.Value;
             _client = client;
+            _cacheManager = cacheManager;
 
             _timer = new Timer(async _ =>
             {
@@ -38,7 +46,7 @@ namespace Sanakan.Services
                 }
                 catch (Exception ex)
                 {
-                    _logger.Log($"in penalty: {ex}");
+                    _logger.LogError($"in penalty: {ex}", ex);
                 }
             },
             null,
@@ -477,7 +485,7 @@ namespace Sanakan.Services
 
             await db.SaveChangesAsync();
 
-            QueryCacheManager.ExpireTag(new string[] { $"mute" });
+            _cacheManager.ExpireTag(new string[] { $"mute" });
         }
 
         private async Task MuteUserGuildAsync(SocketGuildUser user, SocketRole muteRole, IEnumerable<OwnedRole> roles, SocketRole modMuteRole = null)
@@ -551,7 +559,7 @@ namespace Sanakan.Services
 
             await db.SaveChangesAsync();
 
-            QueryCacheManager.ExpireTag(new string[] { $"mute" });
+            _cacheManager.ExpireTag(new string[] { $"mute" });
 
             await user.Guild.AddBanAsync(user, 0, reason);
 
@@ -619,7 +627,7 @@ namespace Sanakan.Services
 
             await db.SaveChangesAsync();
 
-            QueryCacheManager.ExpireTag(new string[] { $"mute" });
+            _cacheManager.ExpireTag(new string[] { $"mute" });
 
             return info;
         }

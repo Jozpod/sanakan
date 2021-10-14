@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Sanakan.Database.Models.Analytics
+namespace Sanakan.DAL.Models.Analytics
 {
     public enum SystemAnalyticsEventType
     {

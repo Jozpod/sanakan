@@ -1,15 +1,13 @@
-﻿#pragma warning disable 1591
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
-using Sanakan.Config;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Sanakan.Extensions;
-using Shinden.Logger;
 
 namespace Sanakan.Services.Supervisor
 {
@@ -26,17 +24,21 @@ namespace Sanakan.Services.Supervisor
         private SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
         private Dictionary<ulong, Dictionary<ulong, SupervisorEntity>> _guilds;
 
-        private DiscordSocketClient _client;
-        private Moderator _moderator;
-        private ILogger _logger;
-        private IConfig _config;
+        private readonly DiscordSocketClient _client;
+        private readonly Moderator _moderator;
+        private readonly ILogger _logger;
+        private readonly object _config;
         private Timer _timer;
 
-        public Supervisor(DiscordSocketClient client, IConfig config, ILogger logger, Moderator moderator)
+        public Supervisor(
+            DiscordSocketClient client,
+            IOptions<object> config,
+            ILogger logger,
+            Moderator moderator)
         {
             _moderator = moderator;
             _client = client;
-            _config = config;
+            _config = config.Value;
             _logger = logger;
 
             _guilds = new Dictionary<ulong, Dictionary<ulong, SupervisorEntity>>();

@@ -1,6 +1,4 @@
-﻿#pragma warning disable 1591
-
-using Sanakan.Database.Models;
+﻿using Sanakan.DAL.Models;
 using System.Collections.Generic;
 
 namespace Sanakan.Api.Models
@@ -14,22 +12,27 @@ namespace Sanakan.Api.Models
         /// Definuje czy kartami otrzymanymi z pakietu będzie można się wymieć
         /// </summary>
         public bool Tradable { get; set; }
+        
         /// <summary>
         /// Gwarantowana jakość jednej z kart, E - 100% losowanei
         /// </summary>
         public Rarity Rarity { get; set; }
+        
         /// <summary>
         /// Wykluczone jakości z losowania, Gwarantowana ma wyższy priorytet
         /// </summary>
         public List<Rarity> RarityExcluded { get; set; }
+        
         /// <summary>
         /// Nazwa pakietu
         /// </summary>
         public string Name { get; set; }
+        
         /// <summary>
         /// Liczba kart w pakiecie (min. 1)
         /// </summary>
         public int Count { get; set; }
+        
         /// <summary>
         /// Definuje jak będą losowane postacie do kart
         /// </summary>

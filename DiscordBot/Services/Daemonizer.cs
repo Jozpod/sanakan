@@ -1,12 +1,10 @@
-﻿#pragma warning disable 1591
-
-using System;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
-using Sanakan.Config;
-using Shinden.Logger;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Sanakan.Services
 {
@@ -17,9 +15,12 @@ namespace Sanakan.Services
         private CancellationTokenSource _cts { get; set; }
         private DiscordSocketClient _client { get; set; }
         private ILogger _logger { get; set; }
-        private IConfig _config { get; set; }
+        private object _config { get; set; }
 
-        public Daemonizer(DiscordSocketClient client, ILogger logger, IConfig config)
+        public Daemonizer(
+            DiscordSocketClient client,
+            ILogger<Daemonizer> logger,
+            IOptions<object> config)
         {
             _client = client;
             _logger = logger;

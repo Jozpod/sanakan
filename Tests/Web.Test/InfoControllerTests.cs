@@ -1,16 +1,25 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Threading.Tasks;
 
 namespace Sanakan.Web.Tests
 {
     [TestClass]
     public class InfoControllerTests
     {
-        private readonly DebugController _controller;
+        private readonly InfoController _controller;
+
+        public InfoControllerTests()
+        {
+            _controller = new InfoController();
+        }
 
         [TestMethod]
-        public void TestMethod1()
+        public async Task Should_Retrieve_Commands()
         {
+
+            var commands = await _controller.GetCommandsInfoAsync();
+            commands;
         }
     }
 }

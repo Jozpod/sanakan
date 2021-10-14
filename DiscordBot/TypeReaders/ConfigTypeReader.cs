@@ -1,6 +1,5 @@
-﻿#pragma warning disable 1591
-
-using Discord.Commands;
+﻿using Discord.Commands;
+using DiscordBot.Services;
 using Sanakan.Services;
 using System;
 using System.Threading.Tasks;
@@ -9,7 +8,8 @@ namespace Sanakan.TypeReaders
 {
     public class ConfigTypeReader : TypeReader
     {
-        public override Task<TypeReaderResult> ReadAsync(ICommandContext context, string input, IServiceProvider services)
+        public override Task<TypeReaderResult> ReadAsync(
+            ICommandContext context, string input, IServiceProvider services)
         {
             switch (input.ToLower())
             {

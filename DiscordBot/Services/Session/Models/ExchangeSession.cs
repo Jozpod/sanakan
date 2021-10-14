@@ -1,13 +1,11 @@
-﻿#pragma warning disable 1591
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using Sanakan.Config;
+using Microsoft.Extensions.Options;
 using Sanakan.Extensions;
 using Sanakan.Services.PocketWaifu;
 using Z.EntityFramework.Plus;
@@ -28,7 +26,7 @@ namespace Sanakan.Services.Session.Models
         public string Tips { get; set; }
 
         private ExchangeStatus State;
-        private IConfig _config;
+        private object _config;
 
         private readonly Emoji AcceptEmote = new Emoji("✅");
         private readonly Emote DeclineEmote = Emote.Parse("<:redcross:581152766655856660>");
@@ -42,7 +40,10 @@ namespace Sanakan.Services.Session.Models
 
         public IEmote[] StartReactions => new IEmote[] { OneEmote, TwoEmote };
 
-        public ExchangeSession(IUser owner, IUser exchanger, IConfig config) : base(owner)
+        public ExchangeSession(
+            IUser owner,
+            IUser exchanger,
+            IOptions<object> config) : base(owner)
         {
             State = ExchangeStatus.Add;
             Event = ExecuteOn.AllEvents;
@@ -430,7 +431,7 @@ namespace Sanakan.Services.Session.Models
                             await db.SaveChangesAsync();
 
                             State = ExchangeStatus.End;
-                            QueryCacheManager.ExpireTag(new string[] { $"user-{P1.User.Id}", $"user-{P2.User.Id}", "users" });
+                            _cacheManager.ExpireTag(new string[] { $"user-{P1.User.Id}", $"user-{P2.User.Id}", "users" });
                         }
                     }
                 }

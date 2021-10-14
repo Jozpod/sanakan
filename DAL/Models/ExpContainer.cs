@@ -1,18 +1,7 @@
-﻿#pragma warning disable 1591
+﻿using Newtonsoft.Json;
 
-using Newtonsoft.Json;
-
-namespace Sanakan.Database.Models
+namespace Sanakan.DAL.Models
 {
-    public enum ExpContainerLevel
-    {
-        Disabled,
-        Level1,
-        Level2,
-        Level3,
-        Level4
-    }
-
     public class ExpContainer
     {
         public ulong Id { get; set; }
@@ -20,6 +9,7 @@ namespace Sanakan.Database.Models
         public ExpContainerLevel Level { get; set; }
 
         public ulong GameDeckId { get; set; }
+
         [JsonIgnore]
         public virtual GameDeck GameDeck { get; set; }
     }

@@ -1,6 +1,4 @@
-﻿#pragma warning disable 1591
-
-using Discord;
+﻿using Discord;
 
 namespace Sanakan.Extensions
 {

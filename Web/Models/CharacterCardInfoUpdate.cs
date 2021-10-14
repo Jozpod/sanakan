@@ -1,6 +1,4 @@
-﻿#pragma warning disable 1591
-
-namespace Sanakan.Api.Models
+﻿namespace Sanakan.Api.Models
 {
     /// <summary>
     /// Informacje o karcie

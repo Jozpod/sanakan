@@ -1,15 +1,13 @@
-﻿#pragma warning disable 1591
-
-using Discord;
+﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using Sanakan.Config;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Sanakan.Extensions;
 using Sanakan.Preconditions;
 using Sanakan.Services.Commands;
 using Sanakan.Services.Session;
 using Sanakan.Services.Session.Models;
-using Shinden.Logger;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -23,15 +21,20 @@ namespace Sanakan.Modules
         private SessionManager _session;
         private Services.Helper _helper;
         private ILogger _logger;
-        private IConfig _config;
+        private object _config;
 
-        public Helper(Services.Helper helper, Services.Moderator moderation, SessionManager session, ILogger logger, IConfig config)
+        public Helper(
+            Services.Helper helper,
+            Services.Moderator moderation,
+            SessionManager session,
+            ILogger<Helper> logger,
+            IOptions<object> config)
         {
             _moderation = moderation;
             _session = session;
             _helper = helper;
             _logger = logger;
-            _config = config;
+            _config = config.Value;
         }
 
         [Command("pomoc", RunMode = RunMode.Async)]
@@ -41,39 +44,43 @@ namespace Sanakan.Modules
         public async Task GiveHelpAsync([Summary("nazwa polecenia (opcjonalne)")][Remainder]string command = null)
         {
             var gUser = Context.User as SocketGuildUser;
-            if (gUser == null) return;
-
-            if (command != null)
+            
+            if (gUser == null)
             {
-                try
-                {
-                    bool admin = false;
-                    bool dev = false;
-
-                    string prefix = _config.Get().Prefix;
-                    if (Context.Guild != null)
-                    {
-                        using (var db = new Database.GuildConfigContext(_config))
-                        {
-                            var gConfig = await db.GetCachedGuildFullConfigAsync(Context.Guild.Id);
-                            if (gConfig?.Prefix != null) prefix = gConfig.Prefix;
-
-                            admin = (gUser.Roles.Any(x => x.Id == gConfig?.AdminRole) || gUser.GuildPermissions.Administrator);
-                            dev = _config.Get().Dev.Any(x => x == gUser.Id);
-                        }
-                    }
-
-                    await ReplyAsync(_helper.GiveHelpAboutPublicCmd(command, prefix, admin, dev));
-                }
-                catch (Exception ex)
-                {
-                    await ReplyAsync("", embed: ex.Message.ToEmbedMessage(EMType.Error).Build());
-                }
-
+                return;
+            }
+            
+            if (command == null)
+            {
+                await ReplyAsync(_helper.GivePublicHelp());
                 return;
             }
 
-            await ReplyAsync(_helper.GivePublicHelp());
+            try
+            {
+                bool admin = false;
+                bool dev = false;
+
+                string prefix = _config.Get().Prefix;
+                if (Context.Guild != null)
+                {
+                    using (var db = new Database.GuildConfigContext(_config))
+                    {
+                        var gConfig = await db.GetCachedGuildFullConfigAsync(Context.Guild.Id);
+                        if (gConfig?.Prefix != null) prefix = gConfig.Prefix;
+
+                        admin = (gUser.Roles.Any(x => x.Id == gConfig?.AdminRole) || gUser.GuildPermissions.Administrator);
+                        dev = _config.Get().Dev.Any(x => x == gUser.Id);
+                    }
+                }
+
+                await ReplyAsync(_helper.GiveHelpAboutPublicCmd(command, prefix, admin, dev));
+            }
+            catch (Exception ex)
+            {
+                await ReplyAsync("", embed: ex.Message.ToEmbedMessage(EMType.Error).Build());
+            }
+            
         }
 
         [Command("ktoto", RunMode = RunMode.Async)]

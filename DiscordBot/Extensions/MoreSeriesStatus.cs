@@ -1,6 +1,4 @@
-﻿#pragma warning disable 1591
-
-using Shinden.Models;
+﻿using Shinden.Models;
 
 namespace Sanakan.Extensions
 {

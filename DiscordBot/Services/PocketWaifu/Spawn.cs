@@ -1,5 +1,3 @@
-#pragma warning disable 1591
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -7,36 +5,42 @@ using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
-using Sanakan.Config;
-using Sanakan.Database.Models;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Sanakan.DAL.Models;
 using Sanakan.Extensions;
 using Sanakan.Services.Executor;
-using Shinden.Logger;
 using Shinden.Models;
-using Z.EntityFramework.Plus;
 
 namespace Sanakan.Services.PocketWaifu
 {
     public class Spawn
     {
-        private DiscordSocketClient _client;
-        private IExecutor _executor;
-        private ILogger _logger;
-        private IConfig _config;
-        private Waifu _waifu;
+        private readonly DiscordSocketClient _client;
+        private readonly IExecutor _executor;
+        private readonly ILogger _logger;
+        private readonly object _config;
+        private readonly Waifu _waifu;
 
         private Dictionary<ulong, long> ServerCounter;
         private Dictionary<ulong, long> UserCounter;
 
         private Emoji ClaimEmote = new Emoji("🖐");
 
-        public Spawn(DiscordSocketClient client, IExecutor executor, Waifu waifu, IConfig config, ILogger logger)
+        public Spawn(
+            DiscordSocketClient client,
+            IExecutor executor,
+            Waifu waifu,
+            IOptions<object> config,
+            ILogger<Spawn> logger,
+            _cacheManager)
         {
             _executor = executor;
             _client = client;
             _logger = logger;
             _config = config;
             _waifu = waifu;
+            _cacheManager = cacheManager;
 
             ServerCounter = new Dictionary<ulong, long>();
             UserCounter = new Dictionary<ulong, long>();
@@ -152,7 +156,7 @@ namespace Sanakan.Services.PocketWaifu
                     botUser.GameDeck.Cards.Add(newCard);
                     await db.SaveChangesAsync();
 
-                    QueryCacheManager.ExpireTag(new string[] { $"user-{botUser.Id}", "users" });
+                    _cacheManager.ExpireTag(new string[] { $"user-{botUser.Id}", "users" });
 
                     using (var dba = new Database.AnalyticsContext(_config))
                     {
@@ -197,9 +201,10 @@ namespace Sanakan.Services.PocketWaifu
         private async Task SpawnCardAsync(ITextChannel spawnChannel, ITextChannel trashChannel, string mention, SocketRole muteRole)
         {
             var character = await _waifu.GetRandomCharacterAsync();
+            
             if (character == null)
             {
-                _logger.Log("In Satafi: bad shinden connection");
+                _logger.LogInformation("In Satafi: bad shinden connection");
                 return;
             }
 
@@ -289,7 +294,7 @@ namespace Sanakan.Services.PocketWaifu
                                 UserId = user.Id,
                                 MeasureDate = DateTime.Now,
                                 GuildId = gUser?.Guild?.Id ?? 0,
-                                Type = Database.Models.Analytics.UserAnalyticsEventType.Pack
+                                Type = DAL.Models.Analytics.UserAnalyticsEventType.Pack
                             });
                             await dba.SaveChangesAsync();
                         }
@@ -315,16 +320,30 @@ namespace Sanakan.Services.PocketWaifu
 
         private async Task HandleMessageAsync(SocketMessage message)
         {
-            var msg = message as SocketUserMessage;
-            if (msg == null) return;
+            var userMessage = message as SocketUserMessage;
+            
+            if (userMessage == null)
+            {
+                return;
+            }
 
-            if (msg.Author.IsBot || msg.Author.IsWebhook) return;
+            var author = userMessage.Author;
 
-            var user = msg.Author as SocketGuildUser;
-            if (user == null) return;
+            if (author.IsBot || author.IsWebhook)
+            {
+                return;
+            };
+
+            var user = userMessage.Author as SocketGuildUser;
+
+            if (user == null) {
+                return;
+            };
 
             if (_config.Get().BlacklistedGuilds.Any(x => x == user.Guild.Id))
+            {
                 return;
+            }
 
             using (var db = new Database.GuildConfigContext(_config))
             {

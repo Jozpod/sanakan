@@ -1,7 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
-using Sanakan.Config;
-using Sanakan.Database.Models.Management;
+using Sanakan.DAL.Models.Management;
 
 namespace Sanakan.DAL
 {

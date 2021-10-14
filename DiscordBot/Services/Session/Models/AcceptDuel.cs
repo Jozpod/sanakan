@@ -1,8 +1,7 @@
-﻿#pragma warning disable 1591
-
-using Discord;
+﻿using Discord;
+using Microsoft.Extensions.Options;
 using Sanakan.Config;
-using Sanakan.Database.Models;
+using Sanakan.DAL.Models;
 using Sanakan.Extensions;
 using Sanakan.Services.PocketWaifu;
 using System.Collections.Generic;
@@ -19,9 +18,9 @@ namespace Sanakan.Services.Session.Models
         public PlayerInfo P2 { get; set; }
 
         private Waifu _waifu;
-        private IConfig _config;
+        private readonly IOptions<object> _config;
 
-        public AcceptDuel(Waifu waifu, IConfig config)
+        public AcceptDuel(Waifu waifu, IOptions<object> config)
         {
             _waifu = waifu;
             _config = config;
@@ -61,7 +60,7 @@ namespace Sanakan.Services.Session.Models
 
                 await db.SaveChangesAsync();
 
-                QueryCacheManager.ExpireTag(new string[] { $"user-{user1.Id}", $"user-{user2.Id}","users" });
+                _cacheManager.ExpireTag(new string[] { $"user-{user1.Id}", $"user-{user2.Id}","users" });
             }
 
             Dispose();

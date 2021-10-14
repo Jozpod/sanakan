@@ -1,7 +1,5 @@
-﻿#pragma warning disable 1591
-
-using Discord.Commands;
-using Sanakan.Database.Models;
+﻿using Discord.Commands;
+using Sanakan.DAL.Models;
 using System;
 using System.Threading.Tasks;
 
@@ -9,7 +7,10 @@ namespace Sanakan.TypeReaders
 {
     public class ProfileTypeReader : TypeReader
     {
-        public override Task<TypeReaderResult> ReadAsync(ICommandContext context, string input, IServiceProvider services)
+        public override Task<TypeReaderResult> ReadAsync(
+            ICommandContext context,
+            string input,
+            IServiceProvider services)
         {
             switch (input.ToLower())
             {

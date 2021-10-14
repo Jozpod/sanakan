@@ -1,9 +1,7 @@
-﻿#pragma warning disable 1591
-
-using Discord;
+﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using Sanakan.Database.Models;
+using Sanakan.DAL.Models;
 using Sanakan.Extensions;
 using Sanakan.Preconditions;
 using Sanakan.Services;
@@ -15,22 +13,29 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Z.EntityFramework.Plus;
+using Sanakan.DiscordBot.Services;
+using Sanakan.Common;
 
 namespace Sanakan.Modules
 {
     [Name("Zabawy"), RequireUserRole]
     public class Fun : SanakanModuleBase<SocketCommandContext>
     {
-        private Services.Fun _fun;
-        private Moderator _moderation;
-        private SessionManager _session;
+        private readonly Services.Fun _fun;
+        private readonly Moderator _moderation;
+        private readonly SessionManager _session;
+        private readonly ICacheManager _cacheManager;
 
-        public Fun(Services.Fun fun, Moderator moderation, SessionManager session)
+        public Fun(
+            Services.Fun fun,
+            Moderator moderation,
+            SessionManager session,
+            ICacheManager cacheManager)
         {
             _fun = fun;
             _session = session;
             _moderation = moderation;
+            _cacheManager = cacheManager;
         }
 
         [Command("drobne")]
@@ -45,7 +50,7 @@ namespace Sanakan.Modules
                 var daily = botuser.TimeStatuses.FirstOrDefault(x => x.Type == Database.Models.StatusType.Daily);
                 if (daily == null)
                 {
-                    daily = Database.Models.StatusType.Daily.NewTimeStatus();
+                    daily = StatusType.Daily.NewTimeStatus();
                     botuser.TimeStatuses.Add(daily);
                 }
 
@@ -56,10 +61,10 @@ namespace Sanakan.Modules
                     return;
                 }
 
-                var mission = botuser.TimeStatuses.FirstOrDefault(x => x.Type == Database.Models.StatusType.WDaily);
+                var mission = botuser.TimeStatuses.FirstOrDefault(x => x.Type == StatusType.WDaily);
                 if (mission == null)
                 {
-                    mission = Database.Models.StatusType.WDaily.NewTimeStatus();
+                    mission = StatusType.WDaily.NewTimeStatus();
                     botuser.TimeStatuses.Add(mission);
                 }
                 mission.Count();
@@ -69,7 +74,7 @@ namespace Sanakan.Modules
 
                 await db.SaveChangesAsync();
 
-                QueryCacheManager.ExpireTag(new string[] { $"user-{botuser.Id}" });
+                _cacheManager.ExpireTag(new string[] { $"user-{botuser.Id}" });
 
                 await ReplyAsync("", embed: $"{Context.User.Mention} łap drobne na waciki!".ToEmbedMessage(EMType.Success).Build());
             }
@@ -155,17 +160,17 @@ namespace Sanakan.Modules
                 hourly.EndsAt = DateTime.Now.AddHours(1);
                 botuser.ScCnt += 5;
 
-                var mission = botuser.TimeStatuses.FirstOrDefault(x => x.Type == Database.Models.StatusType.DHourly);
+                var mission = botuser.TimeStatuses.FirstOrDefault(x => x.Type == StatusType.DHourly);
                 if (mission == null)
                 {
-                    mission = Database.Models.StatusType.DHourly.NewTimeStatus();
+                    mission = StatusType.DHourly.NewTimeStatus();
                     botuser.TimeStatuses.Add(mission);
                 }
                 mission.Count();
 
                 await db.SaveChangesAsync();
 
-                QueryCacheManager.ExpireTag(new string[] { $"user-{botuser.Id}", "users" });
+                _cacheManager.ExpireTag(new string[] { $"user-{botuser.Id}", "users" });
 
                 await ReplyAsync("", embed: $"{Context.User.Mention} łap piątaka!".ToEmbedMessage(EMType.Success).Build());
             }
@@ -235,7 +240,7 @@ namespace Sanakan.Modules
 
                 await db.SaveChangesAsync();
 
-                QueryCacheManager.ExpireTag(new string[] { $"user-{botuser.Id}", "users" });
+                _cacheManager.ExpireTag(new string[] { $"user-{botuser.Id}", "users" });
 
                 await ReplyAsync("", embed: embed.Build());
                 await Context.Channel.SendFileAsync($"./Pictures/coin{(int)thrown}.png");
@@ -265,7 +270,7 @@ namespace Sanakan.Modules
 
                 await db.SaveChangesAsync();
 
-                QueryCacheManager.ExpireTag(new string[] { $"user-{botuser.Id}", "users" });
+                _cacheManager.ExpireTag(new string[] { $"user-{botuser.Id}", "users" });
             }
 
             await ReplyAsync("", embed: $"{Context.User.Mention} zmienił nastawy automatu.".ToEmbedMessage(EMType.Success).Build());
@@ -300,7 +305,7 @@ namespace Sanakan.Modules
 
                 await db.SaveChangesAsync();
 
-                QueryCacheManager.ExpireTag(new string[] { $"user-{botuser.Id}", "users" });
+                _ca.ExpireTag(new string[] { $"user-{botuser.Id}", "users" });
 
                 await ReplyAsync("", embed: $"{_fun.GetSlotMachineResult(machine.Draw(), Context.User, botuser, win)}".ToEmbedMessage(EMType.Bot).Build());
             }
@@ -348,7 +353,7 @@ namespace Sanakan.Modules
 
                 await db.SaveChangesAsync();
 
-                QueryCacheManager.ExpireTag(new string[] { $"user-{thisUser.Id}", "users", $"user-{targetUser.Id}" });
+                _cacheManager.ExpireTag(new string[] { $"user-{thisUser.Id}", "users", $"user-{targetUser.Id}" });
 
                 await ReplyAsync("", embed: $"{Context.User.Mention} podarował {user.Mention} {newScCnt} SC".ToEmbedMessage(EMType.Success).Build());
             }

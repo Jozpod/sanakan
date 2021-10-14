@@ -1,10 +1,6 @@
-﻿#pragma warning disable 1591
-
-using Microsoft.EntityFrameworkCore;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
-using Sanakan.Config;
-using Sanakan.Database.Models;
-using Sanakan.Database.Models.Configuration;
+﻿using Microsoft.EntityFrameworkCore;
+using Sanakan.DAL.Models;
+using Sanakan.DAL.Models.Configuration;
 
 namespace Sanakan.DAL
 {

@@ -14,5 +14,10 @@
         /// 
         /// </summary>
         public string Issuer { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public TimeSpan ExpiresOn { get; set; } = TimeSpan.Parse("");
     }
 }

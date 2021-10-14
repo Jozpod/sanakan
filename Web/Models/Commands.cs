@@ -3,6 +3,7 @@
 namespace Sanakan.Api.Models
 {
     /// <summary>
+    /// Encapsulates all discord bot commands.
     /// Wszystkie publiczne polecenia bota
     /// </summary>
     public class Commands
@@ -11,6 +12,7 @@ namespace Sanakan.Api.Models
         /// Prefix bota
         /// </summary>
         public string Prefix { get; set; }
+
         /// <summary>
         /// Moduły
         /// </summary>

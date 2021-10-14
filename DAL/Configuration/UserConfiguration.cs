@@ -4,11 +4,22 @@ using Sanakan.DAL.Models;
 
 namespace Sanakan.DAL.Configuration
 {
-    public class UserConfiguration : IEntityTypeConfiguration<User>
+    public class UserConfiguration : 
+        IEntityTypeConfiguration<User>,
+        IEntityTypeConfiguration<UserStats>
     {
         public void Configure(EntityTypeBuilder<User> builder)
         {
             builder.HasKey(e => e.Id);
+        }
+
+        public void Configure(EntityTypeBuilder<UserStats> builder)
+        {
+            builder.HasKey(e => e.Id);
+
+            builder
+                .HasOne(e => e.User)
+                .WithOne(u => u.Stats);
         }
     }
 }

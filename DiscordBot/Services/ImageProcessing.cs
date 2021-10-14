@@ -1,12 +1,11 @@
-﻿#pragma warning disable 1591
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Sanakan.Database.Models;
+using Sanakan.Common.Models;
+using Sanakan.DAL.Models;
 using Sanakan.Extensions;
 using Sanakan.Services.PocketWaifu;
 using Sanakan.ShindenApi;
@@ -130,7 +129,10 @@ namespace Sanakan.DiscordBot.Services
             }
         }
 
-        public async Task<Image<Rgba32>> GetUserProfileAsync(IUserInfo shindenUser, User botUser, string avatarUrl, long topPos, string nickname, Discord.Color color)
+        public async Task<Image<Rgba32>> GetUserProfileAsync(
+            IUserInfo shindenUser,
+            User botUser,
+            string avatarUrl, long topPos, string nickname, Discord.Color color)
         {
             if (color == Discord.Color.Default)
                 color = Discord.Color.DarkerGrey;

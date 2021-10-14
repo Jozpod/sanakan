@@ -1,6 +1,4 @@
-﻿#pragma warning disable 1591
-
-using Sanakan.Config.Model;
+﻿using Sanakan.Config.Model;
 
 namespace Sanakan.Config
 {

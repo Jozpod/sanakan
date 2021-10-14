@@ -1,8 +1,6 @@
-﻿#pragma warning disable 1591
-
-using Discord;
+﻿using Discord;
 using Discord.WebSocket;
-using Sanakan.Config;
+using Microsoft.Extensions.Options;
 using Sanakan.Extensions;
 using System.Threading.Tasks;
 
@@ -17,9 +15,9 @@ namespace Sanakan.Services.Session.Models
         public Moderator Moderation { get; set; }
         public SocketTextChannel NotifChannel { get; set; }
 
-        private IConfig _config;
+        private readonly object _config;
 
-        public AcceptMute(IConfig config)
+        public AcceptMute(IOptions<object> config)
         {
             _config = config;
         }

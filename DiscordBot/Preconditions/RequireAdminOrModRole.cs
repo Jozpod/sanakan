@@ -1,9 +1,6 @@
-﻿#pragma warning disable 1591
-
+﻿using DAL.Repositories.Abstractions;
 using Discord.Commands;
 using Discord.WebSocket;
-using Sanakan.Config;
-using Sanakan.Extensions;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -12,12 +9,25 @@ namespace Sanakan.Preconditions
 {
     public class RequireAdminOrModRole : PreconditionAttribute
     {
+        private readonly IRepository _repository;
+
+        public RequireAdminOrModRole(IRepository repository)
+        {
+            _repository = repository;
+        }
+
         public async override Task<PreconditionResult> CheckPermissionsAsync(ICommandContext context, CommandInfo command, IServiceProvider services)
         {
             var user = context.User as SocketGuildUser;
-            if (user == null) return PreconditionResult.FromError($"To polecenie działa tylko z poziomu serwera.");
+
+            if (user == null)
+            {
+                return PreconditionResult.FromError($"To polecenie działa tylko z poziomu serwera.");
+            }
 
             await Task.CompletedTask;
+
+            _repository.
 
             var config = (IConfig)services.GetService(typeof(IConfig));
             using (var db = new Database.GuildConfigContext(config))
@@ -38,7 +48,11 @@ namespace Sanakan.Preconditions
 
         private PreconditionResult CheckUser(SocketGuildUser user)
         {
-            if (user.GuildPermissions.Administrator) return PreconditionResult.FromSuccess();
+            if (user.GuildPermissions.Administrator)
+            {
+                return PreconditionResult.FromSuccess();
+            }
+            
             return PreconditionResult.FromError($"|IMAGE|https://i.giphy.com/RX3vhj311HKLe.gif");
         }
     }

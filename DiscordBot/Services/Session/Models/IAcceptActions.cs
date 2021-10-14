@@ -1,6 +1,4 @@
-﻿#pragma warning disable 1591
-
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 namespace Sanakan.Services.Session.Models
 {

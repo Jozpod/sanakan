@@ -1,32 +1,36 @@
-﻿#pragma warning disable 1591
-
-using Discord.Commands;
+﻿using Discord.Commands;
 using Discord.WebSocket;
 using Sanakan.Extensions;
 using Sanakan.Preconditions;
 using Sanakan.Services.Commands;
 using Sanakan.Services.Session;
 using Sanakan.Services.Session.Models;
-using Shden = Shinden;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Z.EntityFramework.Plus;
+using Sanakan.Common;
+using Sanakan.ShindenApi;
 
 namespace Sanakan.Modules
 {
     [Name("Shinden"), RequireUserRole]
     public class Shinden : SanakanModuleBase<SocketCommandContext>
     {
-        private readonly Shden.ShindenClient _shclient;
+        private readonly IShindenClient _shclient;
         private readonly SessionManager _session;
         private readonly Services.Shinden _shinden;
+        private readonly ICacheManager _cacheManager;
 
-        public Shinden(Shden.ShindenClient client, SessionManager session, Services.Shinden shinden)
+        public Shinden(
+            IShindenClient client,
+            SessionManager session,
+            Services.Shinden shinden,
+            ICacheManager cacheManager)
         {
             _shclient = client;
             _session = session;
             _shinden = shinden;
+            _cacheManager = cacheManager;
         }
 
         [Command("odcinki", RunMode = RunMode.Async)]
@@ -197,7 +201,7 @@ namespace Sanakan.Modules
 
                     await db.SaveChangesAsync();
 
-                    QueryCacheManager.ExpireTag(new string[] { $"user-{botuser.Id}" });
+                    _cacheManager.ExpireTag(new string[] { $"user-{botuser.Id}" });
                 }
 
                 await ReplyAsync("", embed: "Konta zostały połączone.".ToEmbedMessage(EMType.Success).Build());

@@ -1,9 +1,7 @@
-﻿#pragma warning disable 1591
-
-using Discord;
+﻿using Discord;
 using Discord.Commands;
+using Microsoft.Extensions.Logging;
 using Sanakan.Services.Executor;
-using Shinden.Logger;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -117,7 +115,7 @@ namespace Sanakan.Services.Session
                     if (_logger != null)
                     {
                         string sessionName = Id ?? this.ToString();
-                        _logger.Log($"In {sessionName} session: {ex}");
+                        _logger.LogError($"In {sessionName} session: {ex}", ex);
                     }
                     return Task.FromResult(false);
                 }

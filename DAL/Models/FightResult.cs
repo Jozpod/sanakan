@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DAL.Models
+﻿namespace Sanakan.DAL.Models
 {
     public enum FightResult
     {
-        Win, Lose, Draw
+        Win = 1,
+        Lose = 1,
+        Draw = 2
     }
 }

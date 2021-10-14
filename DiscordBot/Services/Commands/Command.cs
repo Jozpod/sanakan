@@ -1,6 +1,4 @@
-﻿#pragma warning disable 1591
-
-using Discord.Commands;
+﻿using Discord.Commands;
 using Sanakan.Services.Executor;
 using System;
 using System.Threading.Tasks;

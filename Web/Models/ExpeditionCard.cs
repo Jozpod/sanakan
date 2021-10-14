@@ -5,7 +5,7 @@ using Sanakan.Extensions;
 namespace Sanakan.Api.Models
 {
     /// <summary>
-    /// Karta na ekspedycji
+    /// Describes expedition card.
     /// </summary>
     public class ExpeditionCard
     {
@@ -13,10 +13,12 @@ namespace Sanakan.Api.Models
         /// Moment wyruszenia na ekspedycję
         /// </summary>
         public DateTime StartTime { get; set; }
+
         /// <summary>
         /// Rodzaj wyprawy
         /// </summary>
         public string Expedition { get; set; }
+        
         /// <summary>
         /// Czas po którym przestaje karta otrzymywać bonusy w minutach
         /// </summary>

@@ -1,6 +1,4 @@
-﻿#pragma warning disable 1591
-
-using Discord;
+﻿using Discord;
 using Sanakan.Api.Models;
 using System;
 using System.Collections.Generic;

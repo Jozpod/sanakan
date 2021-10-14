@@ -1,11 +1,10 @@
-﻿#pragma warning disable 1591
-
+﻿using DiscordBot.Services.Executor;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using Shinden.Logger;
 
 namespace Sanakan.Services.Executor
 {
@@ -13,8 +12,8 @@ namespace Sanakan.Services.Executor
     {
         private const int QueueLength = 100;
 
-        private IServiceProvider _provider;
-        private ILogger _logger;
+        private readonly IServiceProvider _provider;
+        private readonly ILogger _logger;
 
         private SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
         private BlockingCollection<IExecutable> _queue = new BlockingCollection<IExecutable>(QueueLength);
@@ -23,7 +22,7 @@ namespace Sanakan.Services.Executor
         private Timer _timer;
         private CancellationTokenSource _cts { get; set; }
 
-        public SynchronizedExecutor(ILogger logger)
+        public SynchronizedExecutor(ILogger<SynchronizedExecutor> logger)
         {
             _logger = logger;
             _cts = new CancellationTokenSource();
@@ -44,7 +43,7 @@ namespace Sanakan.Services.Executor
 
         public Task<bool> TryAdd(IExecutable task, TimeSpan timeout)
         {
-            _logger.Log($"Executor: adding new task, on pool: {_queue.Count} /hi: {_hiQueue.Count}");
+            _logger.LogInformation($"Executor: adding new task, on pool: {_queue.Count} /hi: {_hiQueue.Count}");
             if (AddToQueue(task, timeout))
             {
                 return Task.FromResult(true);
@@ -104,21 +103,19 @@ namespace Sanakan.Services.Executor
                 var taskName = cmd.GetName();
                 try
                 {
-                    _logger.Log($"Executor: running {taskName}");
+                    _logger.LogInformation($"Executor: running {taskName}");
 
                     var watch = Stopwatch.StartNew();
                     await cmd.ExecuteAsync(_provider);
-                    _logger.Log($"Executor: completed {taskName} in {watch.ElapsedMilliseconds}ms");
+                    _logger.LogInformation($"Executor: completed {taskName} in {watch.ElapsedMilliseconds}ms");
                 }
                 catch (Exception ex)
                 {
-                    _logger.Log($"Executor: {taskName} - {ex}");
+                    _logger.LogInformation($"Executor: {taskName} - {ex}");
                 }
 
-                using (var proc = Process.GetCurrentProcess())
-                {
-                    _logger.Log($"mem usage: {proc.WorkingSet64 / 1048576} MiB");
-                }
+                using var proc = Process.GetCurrentProcess();
+                _logger.LogInformation($"mem usage: {proc.WorkingSet64 / 1048576} MiB");
             }
         }
     }

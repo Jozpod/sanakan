@@ -11,7 +11,8 @@ namespace Sanakan.Api
     public class JwtBuilder : IJwtBuilder
     {
         private readonly Encoding _encoding;
-        private readonly ISystemClock systemClock;
+        private readonly JwtConfig _config;
+        private readonly ISystemClock _systemClock;
 
         public JwtBuilder(
             IOptions<JwtConfig> options,
@@ -21,10 +22,11 @@ namespace Sanakan.Api
             _encoding = encoding; // Encoding.UTF8
             _securityKey = new SymmetricSecurityKey(_encoding.GetBytes(config.Jwt.Key));
             _systemClock = systemClock;
+            _options = options;
             _signingCredentials = new SigningCredentials(_securityKey, SecurityAlgorithms.HmacSha256);
         }
 
-        public TokenData Build(ulong userId)
+        public TokenData Build(param Claim[] claims)
         {
             var config = conf.Get();
 
@@ -34,10 +36,10 @@ namespace Sanakan.Api
                 new Claim("Player", "waifu_player"),
             };
 
-            var token = new JwtSecurityToken(config.Jwt.Issuer,
-              config.Jwt.Issuer,
+            var token = new JwtSecurityToken(config.Issuer,
+              config.Issuer,
               claims,
-              expires: DateTime.Now.AddMinutes(30),
+              expires: _systemClock.Now + _config, //DateTime.Now.AddMinutes(30),
               signingCredentials: _signingCredentials);
 
             return new TokenData()

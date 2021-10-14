@@ -1,19 +1,17 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
-using Sanakan.Config;
-using Sanakan.Database.Models;
-using Sanakan.Database.Models.Analytics;
-using Sanakan.Database.Models.Configuration;
-using Sanakan.Database.Models.Management;
+using Sanakan.DAL.Models;
+using Sanakan.DAL.Models.Analytics;
+using Sanakan.DAL.Models.Configuration;
+using Sanakan.DAL.Models.Management;
 using System;
-using Z.EntityFramework.Plus;
 
 namespace Sanakan.DAL
 {
     public class BuildDatabaseContext : DbContext
     {
-        private IConfig _config;
+        private Options<object> _config;
 
         public BuildDatabaseContext(IConfig config) : base()
         {
@@ -60,282 +58,15 @@ namespace Sanakan.DAL
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            QueryCacheManager.DefaultMemoryCacheEntryOptions = new MemoryCacheEntryOptions()
-            {
-                SlidingExpiration = TimeSpan.FromHours(4),
-                AbsoluteExpirationRelativeToNow  = TimeSpan.FromHours(24)
-            };
             optionsBuilder.UseMySql(_config.Get().ConnectionString,
-                new MySqlServerVersion(new System.Version(5, 7)),
+                new MySqlServerVersion(Version.Parse("5.7")),
                 mySqlOptions => mySqlOptions.CharSetBehavior(CharSetBehavior.NeverAppend));
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-
-            modelBuilder.Entity<UserStats>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-
-                entity.HasOne(e => e.User)
-                    .WithOne(u => u.Stats);
-            });
-
-            modelBuilder.Entity<SlotMachineConfig>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-
-                entity.HasOne(e => e.User)
-                    .WithOne(u => u.SMConfig);
-            });
-
-            modelBuilder.Entity<TimeStatus>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-
-                entity.HasOne(e => e.User)
-                    .WithMany(u => u.TimeStatuses);
-            });
-
-            modelBuilder.Entity<GameDeck>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-                entity.HasIndex(e => e.DeckPower);
-
-                entity.HasOne(e => e.User)
-                    .WithOne(u => u.GameDeck);
-            });
-
-            modelBuilder.Entity<ExpContainer>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-
-                entity.HasOne(e => e.GameDeck)
-                    .WithOne(u => u.ExpContainer);
-            });
-
-            modelBuilder.Entity<Figure>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-
-                entity.HasOne(e => e.GameDeck)
-                    .WithMany(u => u.Figures);
-            });
-
-            modelBuilder.Entity<Card>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-                entity.HasIndex(e => e.Active);
-
-                entity.HasOne(e => e.GameDeck)
-                    .WithMany(d => d.Cards);
-            });
-
-            modelBuilder.Entity<Item>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-
-                entity.HasOne(e => e.GameDeck)
-                    .WithMany(d => d.Items);
-            });
-
-            modelBuilder.Entity<WishlistObject>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-
-                entity.HasOne(e => e.GameDeck)
-                    .WithMany(d => d.Wishes);
-            });
-
-            modelBuilder.Entity<BoosterPack>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-
-                entity.HasOne(e => e.GameDeck)
-                    .WithMany(d => d.BoosterPacks);
-            });
-
-            modelBuilder.Entity<CardPvPStats>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-
-                entity.HasOne(e => e.GameDeck)
-                    .WithMany(d => d.PvPStats);
-            });
-
-            modelBuilder.Entity<CardTag>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-
-                entity.HasOne(e => e.Card)
-                    .WithMany(d => d.TagList);
-            });
-
-            modelBuilder.Entity<CardArenaStats>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-
-                entity.HasOne(e => e.Card)
-                    .WithOne(c => c.ArenaStats);
-            });
-
-            modelBuilder.Entity<BoosterPackCharacter>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-
-                entity.HasOne(e => e.BoosterPack)
-                    .WithMany(p => p.Characters);
-            });
-
-            modelBuilder.Entity<RarityExcluded>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-
-                entity.HasOne(e => e.BoosterPack)
-                    .WithMany(p => p.RarityExcludedFromPack);
-            });
-
-            // GuildConfig
-            modelBuilder.Entity<GuildOptions>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-            });
-
-            modelBuilder.Entity<Waifu>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-
-                entity.HasMany(e => e.CommandChannels)
-                    .WithOne(w => w.Waifu);
-                entity.HasMany(e => e.FightChannels)
-                    .WithOne(w => w.Waifu);
-                entity.HasOne(e => e.GuildOptions)
-                    .WithOne(g => g.WaifuConfig);
-            });
-
-            modelBuilder.Entity<Raport>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-
-                entity.HasOne(e => e.GuildOptions)
-                    .WithMany(g => g.Raports);
-            });
-
-            modelBuilder.Entity<SelfRole>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-
-                entity.HasOne(e => e.GuildOptions)
-                    .WithMany(g => g.SelfRoles);
-            });
-
-            modelBuilder.Entity<CommandChannel>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-
-                entity.HasOne(e => e.GuildOptions)
-                    .WithMany(g => g.CommandChannels);
-            });
-
-            modelBuilder.Entity<WithoutMsgCntChannel>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-
-                entity.HasOne(e => e.GuildOptions)
-                    .WithMany(g => g.IgnoredChannels);
-            });
-
-            modelBuilder.Entity<LevelRole>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-
-                entity.HasOne(e => e.GuildOptions)
-                    .WithMany(g => g.RolesPerLevel);
-            });
-
-            modelBuilder.Entity<ModeratorRoles>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-
-                entity.HasOne(e => e.GuildOptions)
-                    .WithMany(g => g.ModeratorRoles);
-            });
-
-            modelBuilder.Entity<WithoutExpChannel>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-
-                entity.HasOne(e => e.GuildOptions)
-                    .WithMany(g => g.ChannelsWithoutExp);
-            });
-
-            modelBuilder.Entity<WithoutSupervisionChannel>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-
-                entity.HasOne(e => e.GuildOptions)
-                    .WithMany(g => g.ChannelsWithoutSupervision);
-            });
-
-            modelBuilder.Entity<MyLand>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-
-                entity.HasOne(e => e.GuildOptions)
-                     .WithMany(g => g.Lands);
-            });
-
-            modelBuilder.Entity<WaifuCommandChannel>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-
-                entity.HasOne(e => e.Waifu)
-                    .WithMany(w => w.CommandChannels);
-            });
-
-            modelBuilder.Entity<WaifuFightChannel>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-
-                entity.HasOne(e => e.Waifu)
-                    .WithMany(w => w.FightChannels);
-            });
-
-            // Managment
-            modelBuilder.Entity<PenaltyInfo>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-            });
-
-            modelBuilder.Entity<OwnedRole>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-
-                entity.HasOne(e => e.PenaltyInfo)
-                    .WithMany(p => p.Roles);
-            });
-
-            // Analytics
-            modelBuilder.Entity<UserAnalytics>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-            });
-
-            modelBuilder.Entity<SystemAnalytics>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-            });
-
-            modelBuilder.Entity<TransferAnalytics>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-            });
-
-            modelBuilder.Entity<CommandsAnalytics>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-            });
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(BuildDatabaseContext).Assembly);
         }
     }
 }

@@ -1,6 +1,4 @@
-﻿#pragma warning disable 1591
-
-namespace Sanakan.Services.PocketWaifu.Fight
+﻿namespace Sanakan.Services.PocketWaifu.Fight
 {
     public class HpSnapshot
     {

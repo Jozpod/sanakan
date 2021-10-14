@@ -1,26 +1,13 @@
-﻿#pragma warning disable 1591
-
-using Discord;
+﻿using Discord;
 using Discord.Commands;
+using Microsoft.Extensions.Logging;
 using Sanakan.Services.Executor;
-using Shinden.Logger;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Sanakan.Services.Session
 {
-    [Flags]
-    public enum ExecuteOn
-    {
-        None            = 0,
-        Message         = 1 << 0,
-        ReactionAdded   = 1 << 1,
-        ReactionRemoved = 1 << 2,
-        
-        AllReactions    = ReactionAdded | ReactionRemoved,
-        AllEvents       = Message | AllReactions,
-    }
 
     public interface ISession
     {

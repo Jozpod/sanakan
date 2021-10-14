@@ -1,9 +1,8 @@
-﻿#pragma warning disable 1591
-
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
+using DiscordBot.Services.Session;
 
 namespace Sanakan.Services.Session.Models
 {

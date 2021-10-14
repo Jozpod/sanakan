@@ -1,6 +1,4 @@
-﻿#pragma warning disable 1591
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
@@ -11,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Sanakan.Api.Models;
 using Sanakan.Config;
-using Sanakan.Database.Models;
+using Sanakan.DAL.Models;
 using Sanakan.Extensions;
 using Sanakan.Services.Executor;
 using Sanakan.Services.PocketWaifu;
@@ -292,7 +290,7 @@ namespace Sanakan.Api.Controllers
 
                     await db.SaveChangesAsync();
 
-                    QueryCacheManager.ExpireTag(userRelease.ToArray());
+                    _cacheManager.ExpireTag(userRelease.ToArray());
                 }
             }), Priority.High);
 
@@ -338,7 +336,7 @@ namespace Sanakan.Api.Controllers
 
                     await db.SaveChangesAsync();
 
-                    QueryCacheManager.ExpireTag(userRelease.ToArray());
+                    _cacheManager.ExpireTag(userRelease.ToArray());
                 }
             }), Priority.High);
 
@@ -391,7 +389,7 @@ namespace Sanakan.Api.Controllers
 
                         await db.SaveChangesAsync();
 
-                        QueryCacheManager.ExpireTag(userRelease.ToArray());
+                        _cacheManager.ExpireTag(userRelease.ToArray());
                     }
                 }));
 
@@ -555,7 +553,7 @@ namespace Sanakan.Api.Controllers
 
                         await dbs.SaveChangesAsync();
 
-                        QueryCacheManager.ExpireTag(new string[] { $"user-{botUser.Id}", "users" });
+                        _cacheManager.ExpireTag(new string[] { $"user-{botUser.Id}", "users" });
                     }
                 }));
 
@@ -615,7 +613,7 @@ namespace Sanakan.Api.Controllers
 
                         await dbs.SaveChangesAsync();
 
-                        QueryCacheManager.ExpireTag(new string[] { $"user-{botUser.Id}", "users" });
+                        _cacheManager.ExpireTag(new string[] { $"user-{botUser.Id}", "users" });
                     }
                 }));
 
@@ -711,7 +709,7 @@ namespace Sanakan.Api.Controllers
 
                     await db.SaveChangesAsync();
 
-                    QueryCacheManager.ExpireTag(new string[] { $"user-{botUser.Id}", "users" });
+                    _cacheManager.ExpireTag(new string[] { $"user-{botUser.Id}", "users" });
                 }
             }));
 
@@ -805,7 +803,7 @@ namespace Sanakan.Api.Controllers
 
                             await db.SaveChangesAsync();
 
-                            QueryCacheManager.ExpireTag(new string[] { $"user-{botUser.Id}", "users" });
+                            _cacheManager.ExpireTag(new string[] { $"user-{botUser.Id}", "users" });
                         }
                     }));
 
@@ -867,7 +865,7 @@ namespace Sanakan.Api.Controllers
 
                             await db.SaveChangesAsync();
 
-                            QueryCacheManager.ExpireTag(new string[] { $"user-{botUser.Id}", "users" });
+                            _cacheManager.ExpireTag(new string[] { $"user-{botUser.Id}", "users" });
                         }
                     }));
 

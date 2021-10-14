@@ -1,6 +1,4 @@
-﻿#pragma warning disable 1591
-
-using Discord.Commands;
+﻿using Discord.Commands;
 using Sanakan.Services;
 using Sanakan.Extensions;
 using Sanakan.Services.Commands;
@@ -15,7 +13,7 @@ namespace Sanakan.Modules
     [Name("Kraina"), RequireUserRole]
     public class Lands : SanakanModuleBase<SocketCommandContext>
     {
-        private LandManager _manager;
+        private readonly LandManager _manager;
 
         public Lands(LandManager manager)
         {
@@ -50,7 +48,9 @@ namespace Sanakan.Modules
         [Alias("land add")]
         [Summary("dodaje użytkownika do krainy")]
         [Remarks("Karna Kotleciki")]
-        public async Task AddPersonAsync([Summary("użytkownik")]SocketGuildUser user, [Summary("nazwa krainy (opcjonalne)")][Remainder]string name = null)
+        public async Task AddPersonAsync(
+            [Summary("użytkownik")]SocketGuildUser user,
+            [Summary("nazwa krainy (opcjonalne)")][Remainder]string name = null)
         {
             using (var db = new Database.GuildConfigContext(Config))
             {

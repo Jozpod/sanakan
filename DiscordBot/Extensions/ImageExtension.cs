@@ -1,6 +1,4 @@
-﻿#pragma warning disable 1591
-
-using System.IO;
+﻿using System.IO;
 using System.Linq;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats;

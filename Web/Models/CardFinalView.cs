@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Sanakan.Database.Models;
+using Sanakan.DAL.Models;
 using Sanakan.Extensions;
 
 namespace Sanakan.Api.Models

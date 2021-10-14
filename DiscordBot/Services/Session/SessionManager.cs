@@ -1,10 +1,8 @@
-﻿#pragma warning disable 1591
-
-using Discord;
+﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using Microsoft.Extensions.Logging;
 using Sanakan.Services.Executor;
-using Shinden.Logger;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,16 +13,19 @@ namespace Sanakan.Services.Session
 {
     public class SessionManager
     {
-        private DiscordSocketClient _client;
-        private IServiceProvider _provider;
-        private IExecutor _executor;
-        private ILogger _logger;
-        private Timer _timer;
+        private readonly DiscordSocketClient _client;
+        private readonly IServiceProvider _provider;
+        private readonly IExecutor _executor;
+        private readonly ILogger _logger;
+        private readonly Timer _timer;
 
         private SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
         private List<ISession> _sessions = new List<ISession>();
 
-        public SessionManager(DiscordSocketClient client, IExecutor executor, ILogger logger)
+        public SessionManager(
+            DiscordSocketClient client,
+            IExecutor executor,
+            ILogger<SessionManager> logger)
         {
             _client = client;
             _logger = logger;

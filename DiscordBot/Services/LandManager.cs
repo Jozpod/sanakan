@@ -1,10 +1,8 @@
-#pragma warning disable 1591
-
 using System.Collections.Generic;
 using System.Linq;
 using Discord;
 using Discord.WebSocket;
-using Sanakan.Database.Models.Configuration;
+using Sanakan.DAL.Models.Configuration;
 using Sanakan.Extensions;
 
 namespace Sanakan.Services
@@ -13,7 +11,11 @@ namespace Sanakan.Services
     {
         public MyLand DetermineLand(IEnumerable<MyLand> lands, SocketGuildUser user, string name)
         {
-            if (user == null) return null;
+            if (user == null)
+            {
+                return null;
+            }
+            
             if (name != null)
             {
                 var land = lands.FirstOrDefault(x => x.Name == name);
@@ -23,7 +25,13 @@ namespace Sanakan.Services
             }
 
             var all = lands.Where(x => user.Roles.Any(c => c.Id == x.Manager));
-            if (all.Count() < 1) return null;
+            
+            if (all.Count() < 1)
+            {
+                return null;
+            }
+            
+            
             return all.First();
         }
 

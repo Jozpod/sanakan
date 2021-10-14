@@ -1,17 +1,21 @@
-﻿#pragma warning disable 1591
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
-using Sanakan.Database.Models;
+using Sanakan.DAL.Models;
 
 namespace Sanakan.Extensions
 {
     public static class CardExtension
     {
-        public static string GetString(this Card card, bool withoutId = false, bool withUpgrades = false, bool nameAsUrl = false, bool allowZero = false, bool showBaseHp = false)
+        public static string GetString(
+            this Card card,
+            bool withoutId = false,
+            bool withUpgrades = false,
+            bool nameAsUrl = false,
+            bool allowZero = false,
+            bool showBaseHp = false)
         {
             string idStr = withoutId ? "" : $"**[{card.Id}]** ";
             string name = nameAsUrl ? card.GetNameWithUrl() : card.Name;
@@ -34,7 +38,11 @@ namespace Sanakan.Extensions
             return card.Rarity.ToString();
         }
 
-        public static string GetCardParams(this Card card, bool showBaseHp = false, bool allowZero = false, bool inNewLine = false)
+        public static string GetCardParams(
+            this Card card,
+            bool showBaseHp = false,
+            bool allowZero = false,
+            bool inNewLine = false)
         {
             string hp = showBaseHp ? $"**({card.Health})**{card.GetHealthWithPenalty(allowZero)}" : $"{card.GetHealthWithPenalty(allowZero)}";
             var param = new string[] { $"❤{hp}", $"🔥{card.GetAttackWithBonus()}", $"🛡{card.GetDefenceWithBonus()}" };

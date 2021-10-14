@@ -1,5 +1,4 @@
-﻿#pragma warning disable 1591
-
+﻿using Sanakan.DAL.Models;
 using Sanakan.Database.Models;
 
 namespace Sanakan.Extensions

@@ -1,8 +1,5 @@
-﻿#pragma warning disable 1591
-
-using Discord.Commands;
+﻿using Discord.Commands;
 using Discord.WebSocket;
-using Sanakan.Config;
 using Sanakan.Extensions;
 using System;
 using System.Threading.Tasks;
@@ -11,10 +8,20 @@ namespace Sanakan.Preconditions
 {
     public class RequireWaifuDuelChannel : PreconditionAttribute
     {
+        public RequireWaifuDuelChannel()
+        {
+
+        }
+
         public async override Task<PreconditionResult> CheckPermissionsAsync(ICommandContext context, CommandInfo command, IServiceProvider services)
         {
             var user = context.User as SocketGuildUser;
-            if (user == null) return PreconditionResult.FromError($"To polecenie działa tylko z poziomu serwera.");
+            
+            if (user == null)
+            {
+                return PreconditionResult.FromError($"To polecenie działa tylko z poziomu serwera.");
+            }
+            
 
             await Task.CompletedTask;
 

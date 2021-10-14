@@ -11,6 +11,7 @@ namespace Sanakan.DAL.Models
         public WishlistObjectType Type { get; set; }
 
         public ulong GameDeckId { get; set; }
+
         [JsonIgnore]
         public virtual GameDeck GameDeck { get; set; }
     }

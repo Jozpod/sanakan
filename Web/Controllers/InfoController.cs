@@ -1,5 +1,3 @@
-#pragma warning disable 1591
-
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -31,7 +29,7 @@ namespace Sanakan.Web.Controllers
         /// </summary>
         /// <response code="500">Internal Server Error</response>
         [HttpGet("commands")]
-        public async Task<Commands> GetCommansInfoAsync()
+        public async Task<Commands> GetCommandsInfoAsync()
         {
             try
             {

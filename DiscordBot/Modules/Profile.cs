@@ -3,7 +3,9 @@
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using DiscordBot.Services;
 using Microsoft.EntityFrameworkCore;
+using Sanakan.Common;
 using Sanakan.Database.Models;
 using Sanakan.Extensions;
 using Sanakan.Preconditions;
@@ -15,7 +17,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Z.EntityFramework.Plus;
 
 namespace Sanakan.Modules
 {
@@ -24,11 +25,16 @@ namespace Sanakan.Modules
     {
         private readonly Services.Profile _profile;
         private readonly SessionManager _session;
+        private readonly ICacheManager _cacheManager;
 
-        public Profile(Services.Profile prof, SessionManager session)
+        public Profile(
+            Services.Profile prof,
+            SessionManager session,
+            ICacheManager cacheManager)
         {
             _profile = prof;
             _session = session;
+            _cacheManager = cacheManager;
         }
 
         [Command("portfel", RunMode = RunMode.Async)]
@@ -249,7 +255,7 @@ namespace Sanakan.Modules
 
                 await db.SaveChangesAsync();
 
-                QueryCacheManager.ExpireTag(new string[] { $"user-{botuser.Id}", "users" });
+                _cacheManager.ExpireTag(new string[] { $"user-{botuser.Id}", "users" });
 
                 await ReplyAsync("", embed: $"Podgląd waifu w profilu {Context.User.Mention} został {result}.".ToEmbedMessage(EMType.Success).Build());
             }
@@ -324,7 +330,7 @@ namespace Sanakan.Modules
 
                     if (rewards.Count > 0)
                     {
-                        QueryCacheManager.ExpireTag(new string[] { $"user-{botuser.Id}", "users" });
+                        _cacheManager.ExpireTag(new string[] { $"user-{botuser.Id}", "users" });
 
                         await ReplyAsync("", embed: $"**Odebrane nagrody:**\n\n{string.Join("\n", rewards)}".ToEmbedMessage(EMType.Success).WithUser(Context.User).Build());
                         await db.SaveChangesAsync();
@@ -401,7 +407,7 @@ namespace Sanakan.Modules
 
                 await db.SaveChangesAsync();
 
-                QueryCacheManager.ExpireTag(new string[] { $"user-{botuser.Id}", "users" });
+                _cacheManager.ExpireTag(new string[] { $"user-{botuser.Id}", "users" });
 
                 await ReplyAsync("", embed: $"Zmieniono styl profilu użytkownika: {Context.User.Mention}!".ToEmbedMessage(EMType.Success).Build());
             }
@@ -457,7 +463,7 @@ namespace Sanakan.Modules
 
                 await db.SaveChangesAsync();
 
-                QueryCacheManager.ExpireTag(new string[] { $"user-{botuser.Id}", "users" });
+                _cacheManager.ExpireTag(new string[] { $"user-{botuser.Id}", "users" });
 
                 await ReplyAsync("", embed: $"Zmieniono tło profilu użytkownika: {Context.User.Mention}!".ToEmbedMessage(EMType.Success).Build());
             }
@@ -508,7 +514,7 @@ namespace Sanakan.Modules
 
                 await db.SaveChangesAsync();
 
-                QueryCacheManager.ExpireTag(new string[] { $"user-{botuser.Id}", "users" });
+                _cacheManager.ExpireTag(new string[] { $"user-{botuser.Id}", "users" });
 
                 await ReplyAsync("", embed: $"{user.Mention} wykupił miesiąc globalnych emotek!".ToEmbedMessage(EMType.Success).Build());
             }
@@ -588,7 +594,7 @@ namespace Sanakan.Modules
 
                 await db.SaveChangesAsync();
 
-                QueryCacheManager.ExpireTag(new string[] { $"user-{botuser.Id}", "users" });
+                _cacheManager.ExpireTag(new string[] { $"user-{botuser.Id}", "users" });
 
                 await ReplyAsync("", embed: $"{user.Mention} wykupił kolor!".ToEmbedMessage(EMType.Success).Build());
             }

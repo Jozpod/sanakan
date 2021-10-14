@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Sanakan.Database.Models
+namespace Sanakan.DAL.Models
 {
     public class Card
     {

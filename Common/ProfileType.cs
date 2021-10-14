@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Sanakan.DAL.Models
+namespace Sanakan.Common.Models
 {
     public enum ProfileType
     {

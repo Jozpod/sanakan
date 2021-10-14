@@ -1,14 +1,12 @@
-﻿#pragma warning disable 1591
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Discord.WebSocket;
-using Sanakan.Config;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Sanakan.Extensions;
-using Shinden.Logger;
 
 namespace Sanakan.Services
 {
@@ -16,11 +14,14 @@ namespace Sanakan.Services
     {
         private DiscordSocketClient _client;
         private List<ulong> _changed;
-        private IConfig _config;
+        private object _config;
         private ILogger _logger;
         private Timer _timer;
 
-        public Chaos(DiscordSocketClient client, IConfig config, ILogger logger)
+        public Chaos(
+            DiscordSocketClient client,
+            IOptions<object> config,
+            ILogger<Chaos> logger)
         {
             _client = client;
             _config = config;
@@ -34,7 +35,7 @@ namespace Sanakan.Services
                 }
                 catch (Exception ex)
                 {
-                    _logger.Log($"in chaos: {ex}");
+                    _logger.LogError($"in chaos: {ex}", ex);
                     _changed.Clear();
                 }
             },
@@ -50,15 +51,28 @@ namespace Sanakan.Services
         private async Task HandleMessageAsync(SocketMessage message)
         {
             var msg = message as SocketUserMessage;
-            if (msg == null) return;
+            
+            if (msg == null)
+            {
+                return;
+            }
 
-            if (msg.Author.IsBot || msg.Author.IsWebhook) return;
+            if (msg.Author.IsBot || msg.Author.IsWebhook)
+            {
+                return;
+            }
 
             var user = msg.Author as SocketGuildUser;
-            if (user == null) return;
+            
+            if (user == null)
+            {
+                return;
+            }
 
             if (_config.Get().BlacklistedGuilds.Any(x => x == user.Guild.Id))
+            {
                 return;
+            }
 
             using (var db = new Database.GuildConfigContext(_config))
             {

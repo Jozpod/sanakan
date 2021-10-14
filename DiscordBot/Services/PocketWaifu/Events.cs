@@ -1,21 +1,22 @@
-#pragma warning disable 1591
-
 using System;
 using System.Collections.Generic;
-using Sanakan.Database.Models;
+using DiscordBot.Services.PocketWaifu;
+using Sanakan.DAL.Models;
 using Sanakan.Extensions;
+using Sanakan.ShindenApi;
 using Shinden;
 
 namespace Sanakan.Services.PocketWaifu
 {
-    public enum EventType
-    {
-        MoreItems, MoreExp, IncAtk, IncDef, AddReset, NewCard,     // +
-        None, ChangeDere, DecAtk, DecDef, DecAff, LoseCard, Fight  // -
-    }
-
     public class Events
     {
+        private readonly IShindenClient _shindenClient;
+
+        public Events(ShindenClient shindenClient)
+        {
+            _shindenClient = shindenClient;
+        }
+
         private static List<ulong> _titles = new List<ulong>
         {
             7431, 50646, 10831, 54081, 53776, 12434, 44867, 51100, 4961, 55260, 53382, 53685, 35405, 54195, 2763, 43864, 52427, 52111, 53257, 45085
@@ -152,13 +153,6 @@ namespace Sanakan.Services.PocketWaifu
                 }
             }
         };
-
-        private ShindenClient _shClient;
-
-        public Events(ShindenClient client)
-        {
-            _shClient = client;
-        }
 
         private EventType CheckChanceBasedOnTime(CardExpedition expedition, Tuple<double, double> duration)
         {

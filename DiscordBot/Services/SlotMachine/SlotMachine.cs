@@ -1,7 +1,5 @@
-#pragma warning disable 1591
-
 using System.Collections.Generic;
-using Sanakan.Database.Models;
+using Sanakan.DAL.Models;
 using Sanakan.Extensions;
 
 namespace Sanakan.Services.SlotMachine

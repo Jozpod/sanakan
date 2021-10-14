@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DAL.Models
+namespace Sanakan.DAL.Models
 {
     public enum WishlistObjectType
     {

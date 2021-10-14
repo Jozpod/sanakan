@@ -1,8 +1,15 @@
 {
   "version": 2,
-  "dgSpecHash": "yKC4OXXeP85VM2apaRZXnepyc/Z3o8YY51S8ClQigyygBqTkWZtiAk3bMY9Js+8XYwucm05ckG69mjrXviGaEg==",
+  "dgSpecHash": "/+eAbad+GbJxnhSoJdmxkNVjGObnWhpjBzHOfrX9haQR3hFkb/U+jjrCaWPV3LBGxqxk/I/8J/nGWfYvHY9Vxg==",
   "success": true,
   "projectFilePath": "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\Common\\Common.csproj",
-  "expectedPackageFiles": [],
+  "expectedPackageFiles": [
+    "C:\\Users\\jozefpodlecki\\.nuget\\packages\\microsoft.extensions.caching.abstractions\\5.0.0\\microsoft.extensions.caching.abstractions.5.0.0.nupkg.sha512",
+    "C:\\Users\\jozefpodlecki\\.nuget\\packages\\microsoft.extensions.caching.memory\\5.0.0\\microsoft.extensions.caching.memory.5.0.0.nupkg.sha512",
+    "C:\\Users\\jozefpodlecki\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\5.0.0\\microsoft.extensions.dependencyinjection.abstractions.5.0.0.nupkg.sha512",
+    "C:\\Users\\jozefpodlecki\\.nuget\\packages\\microsoft.extensions.logging.abstractions\\5.0.0\\microsoft.extensions.logging.abstractions.5.0.0.nupkg.sha512",
+    "C:\\Users\\jozefpodlecki\\.nuget\\packages\\microsoft.extensions.options\\5.0.0\\microsoft.extensions.options.5.0.0.nupkg.sha512",
+    "C:\\Users\\jozefpodlecki\\.nuget\\packages\\microsoft.extensions.primitives\\5.0.0\\microsoft.extensions.primitives.5.0.0.nupkg.sha512"
+  ],
   "logs": []
 }

@@ -1,7 +1,5 @@
-﻿#pragma warning disable 1591
-
-using Discord.Commands;
-using Sanakan.Database.Models;
+﻿using Discord.Commands;
+using Sanakan.DAL.Models;
 using System;
 using System.Threading.Tasks;
 

@@ -1,5 +1,3 @@
-#pragma warning disable 1591
-
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -7,36 +5,36 @@ using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
+using DiscordBot.Services.PocketWaifu;
+using Sanakan.Common;
+using Sanakan.DAL.Models;
+using Sanakan.DiscordBot.Services;
 using Sanakan.Extensions;
 using Sanakan.Services.PocketWaifu.Fight;
-using Shinden;
+using Sanakan.ShindenApi;
 using Shinden.Models;
-using Z.EntityFramework.Plus;
 
 namespace Sanakan.Services.PocketWaifu
 {
-    public enum FightWinner
-    {
-        Card1, Card2, Draw
-    }
-
-    public enum HaremType
-    {
-        Rarity, Cage, Affection, Attack, Defence, Health, Tag, NoTag, Blocked, Broken, Picture, NoPicture, CustomPicture, Unique
-    }
-
-    public enum ShopType
-    {
-        Normal, Pvp, Activity
-    }
-
-    public enum CardImageType
-    {
-        Normal, Small, Profile
-    }
-
     public class Waifu
     {
+        private readonly Events _events;
+        private readonly IImageProcessing _img;
+        private readonly IShindenClient _shClient;
+        private readonly ICacheManager _cacheManager;
+
+        public Waifu(
+            IImageProcessing img,
+            IShindenClient client,
+            Events events,
+            ICacheManager cacheManager)
+        {
+            _img = img;
+            _events = events;
+            _shClient = client;
+            _cacheManager = cacheManager;
+        }
+
         private const int DERE_TAB_SIZE = ((int) Dere.Yato) + 1;
         private static CharacterIdUpdate CharId = new CharacterIdUpdate();
 
@@ -143,17 +141,6 @@ namespace Sanakan.Services.PocketWaifu
                 }
             }
         };
-
-        private Events _events;
-        private ImageProcessing _img;
-        private ShindenClient _shClient;
-
-        public Waifu(ImageProcessing img, ShindenClient client, Events events)
-        {
-            _img = img;
-            _events = events;
-            _shClient = client;
-        }
 
         static public double GetDereDmgMultiplier(Card atk, Card def) => _dereDmgRelation[(int)def.Dere, (int)atk.Dere];
 
@@ -641,7 +628,7 @@ namespace Sanakan.Services.PocketWaifu
 
                 await db.SaveChangesAsync();
 
-                QueryCacheManager.ExpireTag(new string[] { $"user-{bUser.Id}", "users" });
+                _cacheManager.ExpireTag(new string[] { $"user-{bUser.Id}", "users" });
 
                 return $"{discordUser.Mention} zakupił: _{thisItem.Item.Name}{boosterPackTitleName}{count}_.".ToEmbedMessage(EMType.Success).Build();
             }

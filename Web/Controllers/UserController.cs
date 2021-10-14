@@ -1,6 +1,4 @@
-﻿#pragma warning disable 1591
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.IdentityModel.Tokens.Jwt;
@@ -31,21 +29,27 @@ namespace Sanakan.Api.Controllers
         private readonly IConfig _config;
         private readonly ILogger _logger;
         private readonly IExecutor _executor;
-        private readonly ShindenClient _shClient;
+        private readonly IShindenClient _shClient;
         private readonly DiscordSocketClient _client;
+        private readonly ISystemClock _systemClock;
+        private readonly ICacheManager _cacheManager;
 
         public UserController(
             DiscordSocketClient client,
-            ShindenClient shClient,
+            IShindenClient shClient,
             ILogger<UserController> logger,
             IExecutor executor,
-            IConfig config)
+            IConfig config,
+            ISystemClock systemClock,
+            ICacheManager cacheManager)
         {
             _config = config;
             _client = client;
             _logger = logger;
             _executor = executor;
             _shClient = shClient;
+            _systemClock = systemClock;
+            _cacheManager = cacheManager;
         }
 
         /// <summary>
@@ -294,7 +298,7 @@ namespace Sanakan.Api.Controllers
 
                         await dbs.SaveChangesAsync();
 
-                        QueryCacheManager.ExpireTag(new string[] { $"user-{user.Id}", "users" });
+                        _cacheManager.ExpireTag(new string[] { $"user-{user.Id}", "users" });
                     }
                 }), Priority.High);
 
@@ -344,7 +348,7 @@ namespace Sanakan.Api.Controllers
 
                         dbs.SaveChanges();
 
-                        QueryCacheManager.ExpireTag(new string[] { $"user-{user.Id}", "users" });
+                        _cacheManager.ExpireTag(new string[] { $"user-{user.Id}", "users" });
                     }
                 }), Priority.High);
 
@@ -380,7 +384,7 @@ namespace Sanakan.Api.Controllers
 
                         await dbs.SaveChangesAsync();
 
-                        QueryCacheManager.ExpireTag(new string[] { $"user-{user.Id}", "users" });
+                        _cacheManager.ExpireTag(new string[] { $"user-{user.Id}", "users" });
                     }
 
                     using (var dbc = new Database.AnalyticsContext(_config))

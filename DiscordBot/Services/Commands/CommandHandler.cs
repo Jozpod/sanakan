@@ -1,11 +1,10 @@
-﻿#pragma warning disable 1591
-
-using Discord;
+﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using Sanakan.Config;
-using Sanakan.Database.Models;
-using Sanakan.Database.Models.Analytics;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Sanakan.DAL.Models.Analytics;
+using Sanakan.DiscordBot.Services;
 using Sanakan.Extensions;
 using Sanakan.Services.Executor;
 using Sanakan.Services.PocketWaifu;
@@ -20,19 +19,23 @@ namespace Sanakan.Services.Commands
 {
     public class CommandHandler
     {
-        private DiscordSocketClient _client;
-        private IServiceProvider _provider;
-        private CommandService _cmd;
-        private IExecutor _executor;
-        private ILogger _logger;
-        private IConfig _config;
+        private readonly DiscordSocketClient _client;
+        private readonly IServiceProvider _provider;
+        private readonly CommandService _cmd;
+        private readonly IExecutor _executor;
+        private readonly ILogger _logger;
+        private object _config;
         private Helper _helper;
         private Timer _timer;
 
-        public CommandHandler(DiscordSocketClient client, IConfig config, ILogger logger, IExecutor executor)
+        public CommandHandler(
+            DiscordSocketClient client,
+            IOptions<object> config,
+            ILogger<CommandHandler> logger,
+            IExecutor executor)
         {
             _client = client;
-            _config = config;
+            _config = config.Value;
             _logger = logger;
             _executor = executor;
             _cmd = new CommandService();
@@ -41,24 +44,23 @@ namespace Sanakan.Services.Commands
             {
                 try
                 {
-                    using (var proc = System.Diagnostics.Process.GetCurrentProcess())
+                    using var process = System.Diagnostics.Process.GetCurrentProcess();
+                    var memoryUsage = process.WorkingSet64 / 1048576;
+
+                    _logger.LogInformation($"Memory Usage: {} MiB");
+                    using var dba = new Database.AnalyticsContext(_config);
+
+                    dba.SystemData.Add(new SystemAnalytics
                     {
-                        _logger.Log($"mem usage: {proc.WorkingSet64 / 1048576} MiB");
-                        using (var dba = new Database.AnalyticsContext(_config))
-                        {
-                            dba.SystemData.Add(new SystemAnalytics
-                            {
-                                MeasureDate = DateTime.Now,
-                                Value = proc.WorkingSet64 / 1048576,
-                                Type = SystemAnalyticsEventType.Ram,
-                            });
-                            await dba.SaveChangesAsync();
-                        }
-                    }
+                        MeasureDate = DateTime.Now,
+                        Value = memoryUsage,
+                        Type = SystemAnalyticsEventType.Ram,
+                    });
+                    await dba.SaveChangesAsync();
                 }
                 catch (Exception ex)
                 {
-                    _logger.Log($"in mem check: {ex}");
+                    _logger.LogError($"in mem check: {ex}", ex);
                 }
             },
             null,
@@ -118,7 +120,7 @@ namespace Sanakan.Services.Commands
                 var res = await _cmd.GetExecutableCommandAsync(context, argPos, _provider);
                 if (res.IsSuccess())
                 {
-                    _logger.Log($"Run cmd: u{msg.Author.Id} {res.Command.Match.Command.Name}");
+                    _logger.LogInformation($"Run cmd: u{msg.Author.Id} {res.Command.Match.Command.Name}");
                     using (var dbc = new Database.AnalyticsContext(_config))
                     {
                         string param = null;
@@ -194,7 +196,7 @@ namespace Sanakan.Services.Commands
                     break;
 
                 default:
-                    _logger.Log(result.ErrorReason);
+                    _logger.LogInformation(result.ErrorReason);
                     break;
             }
         }

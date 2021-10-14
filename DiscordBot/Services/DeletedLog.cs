@@ -1,12 +1,9 @@
-﻿#pragma warning disable 1591
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
-using Sanakan.Config;
 using Sanakan.Extensions;
 
 namespace Sanakan.Services
@@ -14,12 +11,14 @@ namespace Sanakan.Services
     public class DeletedLog
     {
         private DiscordSocketClient _client;
-        private IConfig _config;
+        private object _config;
 
-        public DeletedLog(DiscordSocketClient client, IConfig config)
+        public DeletedLog(
+            DiscordSocketClient client,
+            IOptions<object> config)
         {
             _client = client;
-            _config = config;
+            _config = config.Value;
 
             _client.MessageDeleted += HandleDeletedMsgAsync;
             _client.MessageUpdated += HandleUpdatedMsgAsync;
@@ -27,7 +26,11 @@ namespace Sanakan.Services
 
         private async Task HandleUpdatedMsgAsync(Cacheable<IMessage, ulong> oldMessage, SocketMessage newMessage, ISocketMessageChannel channel)
         {
-            if (!oldMessage.HasValue) return;
+            if (!oldMessage.HasValue)
+            {
+                return;
+            }
+            
 
             if (newMessage.Author.IsBot || newMessage.Author.IsWebhook) return;
 
@@ -71,7 +74,10 @@ namespace Sanakan.Services
 
         private async Task LogMessageAsync(SocketGuildChannel channel, IMessage oldMessage, IMessage newMessage = null)
         {
-            if (oldMessage.Content.IsEmotikunEmote() && newMessage == null) return;
+            if (oldMessage.Content.IsEmotikunEmote() && newMessage == null)
+            {
+                return;
+            }
 
             using (var db = new Database.GuildConfigContext(_config))
             {

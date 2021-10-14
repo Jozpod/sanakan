@@ -1,9 +1,5 @@
-﻿#pragma warning disable 1591
-
-using Discord.Commands;
+﻿using Discord.Commands;
 using Discord.WebSocket;
-using Sanakan.Config;
-using Sanakan.Extensions;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -12,6 +8,11 @@ namespace Sanakan.Preconditions
 {
     public class RequireAnyCommandChannelOrLevel : PreconditionAttribute
     {
+        public RequireAnyCommandChannelOrLevel()
+        {
+
+        }
+
         private readonly long _level;
 
         public RequireAnyCommandChannelOrLevel(long level) => _level = level;
@@ -19,44 +20,54 @@ namespace Sanakan.Preconditions
         public async override Task<PreconditionResult> CheckPermissionsAsync(ICommandContext context, CommandInfo command, IServiceProvider services)
         {
             var user = context.User as SocketGuildUser;
-            if (user == null) return PreconditionResult.FromSuccess();
-
+            
+            if (user == null)
+            {
+                return PreconditionResult.FromSuccess();
+            }
+            
             await Task.CompletedTask;
 
             var config = (IConfig)services.GetService(typeof(IConfig));
             using (var db = new Database.GuildConfigContext(config))
             {
                 var gConfig = await db.GetCachedGuildFullConfigAsync(context.Guild.Id);
-                if (gConfig == null) return PreconditionResult.FromSuccess();
-
-                if (gConfig.CommandChannels != null)
+                if (gConfig == null)
                 {
-                    if (gConfig.CommandChannels.Any(x => x.Channel == context.Channel.Id))
-                        return PreconditionResult.FromSuccess();
+                    return PreconditionResult.FromSuccess();
+                }
 
-                    if (user.GuildPermissions.Administrator)
-                        return PreconditionResult.FromSuccess();
 
-                    if (gConfig?.WaifuConfig?.CommandChannels != null)
+                if (gConfig.CommandChannels == null)
+                {
+                    return PreconditionResult.FromSuccess();
+                }
+
+                if (gConfig.CommandChannels.Any(x => x.Channel == context.Channel.Id))
+                    return PreconditionResult.FromSuccess();
+
+                if (user.GuildPermissions.Administrator)
+                    return PreconditionResult.FromSuccess();
+
+                if (gConfig?.WaifuConfig?.CommandChannels != null)
+                {
+                    if (gConfig.WaifuConfig.CommandChannels.Any(x => x.Channel == context.Channel.Id))
+                        return PreconditionResult.FromSuccess();
+                }
+
+                using (var dbu = new Database.UserContext(config))
+                {
+                    var botUser = await dbu.GetBaseUserAndDontTrackAsync(user.Id);
+                    if (botUser != null)
                     {
-                        if (gConfig.WaifuConfig.CommandChannels.Any(x => x.Channel == context.Channel.Id))
+                        if (botUser.Level >= _level)
                             return PreconditionResult.FromSuccess();
                     }
-
-                    using (var dbu = new Database.UserContext(config))
-                    {
-                        var botUser = await dbu.GetBaseUserAndDontTrackAsync(user.Id);
-                        if (botUser != null)
-                        {
-                            if (botUser.Level >= _level)
-                                return PreconditionResult.FromSuccess();
-                        }
-                    }
-
-                    var channel = await context.Guild.GetTextChannelAsync(gConfig.CommandChannels.First().Channel);
-                    return PreconditionResult.FromError($"To polecenie działa na kanale {channel?.Mention}, możesz użyć go tutaj po osiągnięciu {_level} poziomu.");
                 }
-                return PreconditionResult.FromSuccess();
+
+                var channel = await context.Guild.GetTextChannelAsync(gConfig.CommandChannels.First().Channel);
+                return PreconditionResult.FromError($"To polecenie działa na kanale {channel?.Mention}, możesz użyć go tutaj po osiągnięciu {_level} poziomu.");
+                
             }
         }
     }

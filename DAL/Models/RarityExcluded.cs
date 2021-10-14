@@ -1,8 +1,6 @@
-﻿#pragma warning disable 1591
+﻿using Newtonsoft.Json;
 
-using Newtonsoft.Json;
-
-namespace Sanakan.Database.Models
+namespace Sanakan.DAL.Models
 {
     public class RarityExcluded
     {
@@ -10,6 +8,7 @@ namespace Sanakan.Database.Models
         public Rarity Rarity { get; set; }
 
         public ulong BoosterPackId { get; set; }
+
         [JsonIgnore]
         public virtual BoosterPack BoosterPack { get; set; }
     }

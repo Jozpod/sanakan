@@ -1,10 +1,6 @@
-﻿#pragma warning disable 1591
-
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
-using Sanakan.Config;
-using Sanakan.Database.Models;
-using Sanakan.Database.Models.Configuration;
+using Sanakan.DAL.Models;
 
 namespace Sanakan.DAL
 {
@@ -12,7 +8,7 @@ namespace Sanakan.DAL
     {
         private IConfig _config;
 
-        public UserContext(IConfig config) : base()
+        public UserContext(IOptions<object> config) : base()
         {
             _config = config;
         }

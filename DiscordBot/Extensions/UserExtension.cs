@@ -1,7 +1,9 @@
-﻿#pragma warning disable 1591
-
-using Discord;
-using Sanakan.Database.Models;
+﻿using Discord;
+using DiscordBot.Services;
+using Sanakan.Common.Models;
+using Sanakan.DAL.Models;
+using Sanakan.DiscordBot.Extensions;
+using Sanakan.DiscordBot.Services;
 using Sanakan.Services;
 using System;
 using System.Collections.Generic;
@@ -9,10 +11,6 @@ using System.Linq;
 
 namespace Sanakan.Extensions
 {
-    public enum DeckPowerStatus
-    {
-        Ok, TooLow, TooHigh
-    }
 
     public static class UserExtension
     {

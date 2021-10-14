@@ -1,10 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Shinden.API;
 using Shinden.Extensions;
-using Shinden.Logger;
-using Shinden.Logger.In;
 using Shinden.Models;
 
 namespace Shinden.Modules
@@ -14,11 +13,11 @@ namespace Shinden.Modules
         public class UserModule
         {
             private readonly RequestManager _manager;
-            private readonly IInLogger _logger;
+            private readonly ILogger _logger;
 
             public LoggedInUserModule OnLoggedIn { get; set; }
 
-            public UserModule(RequestManager manager, IInLogger logger)
+            public UserModule(RequestManager manager, ILogger logger)
             {
                 _logger = logger;
                 _manager = manager;
