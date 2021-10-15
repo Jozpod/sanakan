@@ -8,6 +8,7 @@ using Sanakan.Services;
 using Sanakan.Config;
 using Sanakan.Extensions;
 using Sanakan.Api.Models;
+using Microsoft.Extensions.Options;
 
 namespace Sanakan.Web.Controllers
 {
@@ -16,12 +17,14 @@ namespace Sanakan.Web.Controllers
     public class InfoController : ControllerBase
     {
         private readonly Helper _helper;
-        private readonly IConfig _config;
+        private readonly object _config;
 
-        public InfoController(Helper helper, IConfig config)
+        public InfoController(
+            Helper helper,
+            IOptions<object> config)
         {
             _helper = helper;
-            _config = config;
+            _config = config.Value;
         }
 
         /// <summary>
@@ -29,20 +32,24 @@ namespace Sanakan.Web.Controllers
         /// </summary>
         /// <response code="500">Internal Server Error</response>
         [HttpGet("commands")]
-        public async Task<Commands> GetCommandsInfoAsync()
+        public async Task<IActionResult> GetCommandsInfoAsync()
         {
             try
             {
-                return new Commands
+                var result = new Commands
                 {
-                    Prefix = _config.Get().Prefix,
+                    Prefix = _con.Prefix,
                     Modules = GetInfoAboutModules(_helper.PublicModulesInfo)
                 };
+
+                return Ok(result);
             }
             catch(Exception ex)
             {
-                await ex.Message.ToResponse(500).ExecuteResultAsync(ControllerContext);
-                return null;
+                return new ObjectResult(ex.Message)
+                {
+                    StatusCode = 500,
+                };
             }
         }
 

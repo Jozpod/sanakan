@@ -19,5 +19,11 @@ namespace DAL.Repositories.Abstractions
         Task<User> GetUserAndDontTrackAsync(ulong userId);
         Task<List<Question>> GetCachedAllQuestionsAsync();
         Task<Question> GetCachedQuestionAsync(ulong id);
+        Task<Card> GetCardAsync(ulong wid);
+        Task<IEnumerable<ulong>> GetUserShindenIdsByHavingCharacterAsync(ulong id);
+        Task AddQuestionAsync(Question question);
+        Task RemoveQuestionAsync(Question question);
+        Task<Question> GetQuestionAsync(ulong id);
+        Task<User?> GetUserCardsAsync(ulong id);
     }
 }

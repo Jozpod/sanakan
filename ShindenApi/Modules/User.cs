@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Sanakan.ShindenApi;
 using Shinden.API;
 using Shinden.Extensions;
 using Shinden.Models;

@@ -8,11 +8,6 @@ namespace Sanakan.Preconditions
 {
     public class RequireAdminRole : PreconditionAttribute
     {
-        public RequireAdminRole()
-        {
-
-        }
-
         public async override Task<PreconditionResult> CheckPermissionsAsync(ICommandContext context, CommandInfo command, IServiceProvider services)
         {
             var user = context.User as SocketGuildUser;

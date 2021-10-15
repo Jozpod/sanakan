@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
+using DiscordBot.Services.Session;
 using Sanakan.Extensions;
 using Sanakan.ShindenApi;
 using Shinden;
@@ -14,13 +15,13 @@ namespace Sanakan.Services.Session.Models
         public IMessage[] Messages { get; set; }
         public List<IQuickSearch> SList { get; set; }
         public List<IPersonSearch> PList { get; set; }
-        public IShindenClient ShindenClient { get; set; }
+        public readonly IShindenClient _shindenClient;
 
-        public SearchSession(IUser owner, ShindenClient client) : base(owner)
+        public SearchSession(IUser owner, IShindenClient client) : base(owner)
         {
             Event = ExecuteOn.Message;
             RunMode = RunMode.Async;
-            ShindenClient = client;
+            _shindenClient = client;
             TimeoutMs = 120000;
 
             Messages = null;
@@ -45,7 +46,7 @@ namespace Sanakan.Services.Session.Models
                 {
                     if (number > 0 && SList.Count >= number)
                     {
-                        var info = (await ShindenClient.Title.GetInfoAsync(SList.ToArray()[number - 1])).Body;
+                        var info = (await _shindenClient.Title.GetInfoAsync(SList.ToArray()[number - 1])).Body;
                         await context.Channel.SendMessageAsync("", false, info.ToEmbed());
                         await context.Message.DeleteAsync();
                         return true;
@@ -55,7 +56,7 @@ namespace Sanakan.Services.Session.Models
                 {
                     if (number > 0 && PList.Count >= number)
                     {
-                        var info = (await ShindenClient.GetCharacterInfoAsync(PList.ToArray()[number - 1])).Body;
+                        var info = (await _shindenClient.GetCharacterInfoAsync(PList.ToArray()[number - 1])).Body;
                         await context.Channel.SendMessageAsync("", false, info.ToEmbed());
                         await context.Message.DeleteAsync();
                         return true;

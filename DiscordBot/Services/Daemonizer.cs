@@ -51,8 +51,13 @@ namespace Sanakan.Services
 
         private async Task CheckStateAsync()
         {
-            if (!_config.Get().Demonization) return;
-            _logger.Log("Disconnected! Running demonization check.");
+            if (!_config.Get().Demonization)
+            {
+                return;
+            }
+            
+            _logger.LogInformation("Disconnected! Running demonization check.");
+
             if (_client.ConnectionState == ConnectionState.Connected) return;
 
             var timeout = Task.Delay(_timeout);
@@ -61,11 +66,11 @@ namespace Sanakan.Services
 
             if (task != timeout && connect.IsCompletedSuccessfully)
             {
-                _logger.Log("Reconnected!");
+                _logger.LogInformation("Reconnected!");
                 return;
             }
 
-            _logger.Log("Timeout! Shutting down!");
+            _logger.LogInformation("Timeout! Shutting down!");
             Environment.Exit(1);
         }
     }

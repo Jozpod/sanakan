@@ -247,7 +247,7 @@ namespace Sanakan.Services.Supervisor
             }
             catch (Exception ex)
             {
-                _logger.Log($"Supervisor: autovalidate error {ex}");
+                _logger.LogInformation($"Supervisor: autovalidate error {ex}");
             }
         }
     }

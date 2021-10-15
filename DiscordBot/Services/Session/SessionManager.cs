@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using DiscordBot.Services.Session;
 using Microsoft.Extensions.Logging;
 using Sanakan.Services.Executor;
 using System;
@@ -127,7 +128,10 @@ namespace Sanakan.Services.Session
                     case RunMode.Sync:
                         session.SetDestroyer(DisposeAsync);
                         if (!await _executor.TryAdd(session.GetExecutable(context), TimeSpan.FromSeconds(1)))
-                                _logger.Log($"Sessions: {session.GetEventType()}-{session.GetOwner().Id} waiting time has been exceeded!");
+                        {
+                            _logger.LogInformation($"Sessions: {session.GetEventType()}-{session.GetOwner().Id} waiting time has been exceeded!");
+                        }
+                                
                         break;
                 }
             }
@@ -222,7 +226,7 @@ namespace Sanakan.Services.Session
             }
             catch(Exception ex)
             {
-                _logger.Log($"Session: autovalidate error {ex}");
+                _logger.LogInformation($"Session: autovalidate error {ex}");
             }
         }
     }

@@ -11,9 +11,9 @@
 using System;
 using System.Reflection;
 
-[assembly: System.Reflection.AssemblyCompanyAttribute("Snikul;Jotpe")]
+[assembly: System.Reflection.AssemblyCompanyAttribute("Jotpe")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
-[assembly: System.Reflection.AssemblyCopyrightAttribute("Sniku")]
+[assembly: System.Reflection.AssemblyCopyrightAttribute("Jotpe")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.3.17.19")]
 [assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.3.17.19")]
 [assembly: System.Reflection.AssemblyProductAttribute("Sanakan")]

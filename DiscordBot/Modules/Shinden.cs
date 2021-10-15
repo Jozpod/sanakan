@@ -10,6 +10,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Sanakan.Common;
 using Sanakan.ShindenApi;
+using DAL.Repositories.Abstractions;
 
 namespace Sanakan.Modules
 {
@@ -20,17 +21,20 @@ namespace Sanakan.Modules
         private readonly SessionManager _session;
         private readonly Services.Shinden _shinden;
         private readonly ICacheManager _cacheManager;
+        private readonly IRepository _repository;
 
         public Shinden(
             IShindenClient client,
             SessionManager session,
             Services.Shinden shinden,
-            ICacheManager cacheManager)
+            ICacheManager cacheManager,
+            IRepository repository)
         {
             _shclient = client;
             _session = session;
             _shinden = shinden;
             _cacheManager = cacheManager;
+            _repository = repository;
         }
 
         [Command("odcinki", RunMode = RunMode.Async)]
@@ -40,33 +44,36 @@ namespace Sanakan.Modules
         public async Task ShowNewEpisodesAsync()
         {
             var response = await _shclient.GetNewEpisodesAsync();
+
             if (response.IsSuccessStatusCode())
             {
-                var episodes = response.Body;
-                if (episodes?.Count > 0)
-                {
-                    var msg = await ReplyAsync("", embed: "Lista poszła na PW!".ToEmbedMessage(EMType.Success).Build());
-
-                    try
-                    {
-                        var dm = await Context.User.GetOrCreateDMChannelAsync();
-                        foreach (var ep in episodes)
-                        {
-                            await dm.SendMessageAsync("", false, ep.ToEmbed());
-                            await Task.Delay(500);
-                        }
-                        await dm.CloseAsync();
-                    }
-                    catch (Exception ex)
-                    {
-                        await msg.ModifyAsync(x => x.Embed = $"{Context.User.Mention} nie udało się wyłać PW! ({ex.Message})".ToEmbedMessage(EMType.Error).Build());
-                    }
-
-                    return;
-                }
+                await ReplyAsync("", embed: "Nie udało się pobrać listy odcinków.".ToEmbedMessage(EMType.Error).Build());
+                return;
             }
+            
+            var episodes = response.Body;
 
-            await ReplyAsync("", embed: "Nie udało się pobrać listy odcinków.".ToEmbedMessage(EMType.Error).Build());
+            if (episodes?.Count > 0)
+            {
+                var msg = await ReplyAsync("", embed: "Lista poszła na PW!".ToEmbedMessage(EMType.Success).Build());
+
+                try
+                {
+                    var dm = await Context.User.GetOrCreateDMChannelAsync();
+                    foreach (var ep in episodes)
+                    {
+                        await dm.SendMessageAsync("", false, ep.ToEmbed());
+                        await Task.Delay(500);
+                    }
+                    await dm.CloseAsync();
+                }
+                catch (Exception ex)
+                {
+                    await msg.ModifyAsync(x => x.Embed = $"{Context.User.Mention} nie udało się wyłać PW! ({ex.Message})".ToEmbedMessage(EMType.Error).Build());
+                }
+
+                return;
+            }
         }
 
         [Command("anime", RunMode = RunMode.Async)]
@@ -125,34 +132,36 @@ namespace Sanakan.Modules
         public async Task ShowSiteStatisticAsync([Summary("użytkownik (opcjonalne)")]SocketGuildUser user = null)
         {
             var usr = user ?? Context.User as SocketGuildUser;
-            if (usr == null) return;
-
-            using (var db = new Database.UserContext(Config))
+            
+            if (usr == null)
             {
-                var botUser = await db.GetCachedFullUserAsync(usr.Id);
-                if (botUser == null)
-                {
-                    await ReplyAsync("", embed: "Ta osoba nie ma profilu bota.".ToEmbedMessage(EMType.Error).Build());
-                    return;
-                }
-
-                if (botUser?.Shinden == 0)
-                {
-                    await ReplyAsync("", embed: "Ta osoba nie połączyła konta bota z kontem na stronie.".ToEmbedMessage(EMType.Error).Build());
-                    return;
-                }
-
-                using (var stream = await _shinden.GetSiteStatisticAsync(botUser.Shinden, usr))
-                {
-                    if (stream == null)
-                    {
-                        await ReplyAsync("", embed: $"Brak połączenia z Shindenem!".ToEmbedMessage(EMType.Error).Build());
-                        return;
-                    }
-
-                    await Context.Channel.SendFileAsync(stream, $"{usr.Id}.png", $"{Shden.API.Url.GetProfileURL(botUser.Shinden)}");
-                }
+                return;
             }
+            
+
+            var botUser = await db.GetCachedFullUserAsync(usr.Id);
+
+            if (botUser == null)
+            {
+                await ReplyAsync("", embed: "Ta osoba nie ma profilu bota.".ToEmbedMessage(EMType.Error).Build());
+                return;
+            }
+
+            if (botUser?.Shinden == 0)
+            {
+                await ReplyAsync("", embed: "Ta osoba nie połączyła konta bota z kontem na stronie.".ToEmbedMessage(EMType.Error).Build());
+                return;
+            }
+
+            using var stream = await _shinden.GetSiteStatisticAsync(botUser.Shinden, usr);
+                
+            if (stream == null)
+            {
+                await ReplyAsync("", embed: $"Brak połączenia z Shindenem!".ToEmbedMessage(EMType.Error).Build());
+                return;
+            }
+
+            await Context.Channel.SendFileAsync(stream, $"{usr.Id}.png", $"{Shden.API.Url.GetProfileURL(botUser.Shinden)}");
         }
 
         [Command("połącz")]
@@ -177,38 +186,38 @@ namespace Sanakan.Modules
             }
 
             var response = await _shclient.User.GetAsync(shindenId);
+
             if (response.IsSuccessStatusCode())
             {
-                var user = response.Body;
-                var userNameInDiscord = (Context.User as SocketGuildUser).Nickname ?? Context.User.Username;
-
-                if (!user.Name.Equals(userNameInDiscord))
-                {
-                    await ReplyAsync("", embed: "Wykryto próbę podszycia się. Nieładnie!".ToEmbedMessage(EMType.Error).Build());
-                    return;
-                }
-
-                using (var db = new Database.UserContext(Config))
-                {
-                    if (db.Users.Any(x => x.Shinden == shindenId))
-                    {
-                        await ReplyAsync("", embed: "Wygląda na to, że ktoś już połączył się z tym kontem.".ToEmbedMessage(EMType.Error).Build());
-                        return;
-                    }
-
-                    var botuser = await db.GetUserOrCreateAsync(Context.User.Id);
-                    botuser.Shinden = shindenId;
-
-                    await db.SaveChangesAsync();
-
-                    _cacheManager.ExpireTag(new string[] { $"user-{botuser.Id}" });
-                }
-
-                await ReplyAsync("", embed: "Konta zostały połączone.".ToEmbedMessage(EMType.Success).Build());
+                await ReplyAsync("", embed: $"Brak połączenia z Shindenem! ({response.Code})".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
-            await ReplyAsync("", embed: $"Brak połączenia z Shindenem! ({response.Code})".ToEmbedMessage(EMType.Error).Build());
+            var user = response.Body;
+            var userNameInDiscord = (Context.User as SocketGuildUser).Nickname ?? Context.User.Username;
+
+            if (!user.Name.Equals(userNameInDiscord))
+            {
+                await ReplyAsync("", embed: "Wykryto próbę podszycia się. Nieładnie!".ToEmbedMessage(EMType.Error).Build());
+                return;
+            }
+
+            if (db.Users.Any(x => x.Shinden == shindenId))
+            {
+                await ReplyAsync("", embed: "Wygląda na to, że ktoś już połączył się z tym kontem.".ToEmbedMessage(EMType.Error).Build());
+                return;
+            }
+
+            var botuser = await db.GetUserOrCreateAsync(Context.User.Id);
+            botuser.Shinden = shindenId;
+
+            await db.SaveChangesAsync();
+
+            _cacheManager.ExpireTag(new string[] { $"user-{botuser.Id}" });
+
+            await ReplyAsync("", embed: "Konta zostały połączone.".ToEmbedMessage(EMType.Success).Build());
+            return;
+            
         }
     }
 }

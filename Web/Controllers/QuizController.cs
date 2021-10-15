@@ -5,34 +5,37 @@ using Microsoft.AspNetCore.Authorization;
 using Sanakan.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Sanakan.Config;
+using Sanakan.Common;
+using DAL.Repositories.Abstractions;
+using Sanakan.DAL.Models;
 
 namespace Sanakan.Web.Controllers
 {
-    [ApiController, Authorize(Policy = "Site")]
+    [ApiController, Authorize(Policy = AuthorizePolicies.Site)]
     [Route("api/[controller]")]
+    [Produces("application/json")]
     public class QuizController : ControllerBase
     {
-        private object _config;
+        private readonly IRepository _repository;
         private readonly ICacheManager _cacheManager;
 
         public QuizController(
-            IOptions<object> config,
+            IRepository repository,
             ICacheManager cacheManager)
         {
-            _config = config.Value;
+            _repository = repository;
             _cacheManager = cacheManager;
         }
 
         /// <summary>
-        /// Pobiera liste pytań
+        /// Gets the collection of questions.
         /// </summary>
         [HttpGet("questions")]
-        public async Task<List<Database.Models.Question>> GetQuestionsAsync()
+        public async Task<IActionResult> GetQuestionsAsync()
         {
-            using (var db = new Database.UserContext(_config))
-            {
-                return await db.GetCachedAllQuestionsAsync();
-            }
+            var result = await _repository.GetCachedAllQuestionsAsync();
+
+            return Ok(result);
         }
 
         /// <summary>
@@ -41,56 +44,47 @@ namespace Sanakan.Web.Controllers
         /// <param name="id">id pytania</param>
         /// <response code="500">Internal Server Error</response>
         [HttpGet("question/{id}")]
-        public async Task<Database.Models.Question> GetQuestionAsync(ulong id)
+        public async Task<IActionResult> GetQuestionAsync(ulong id)
         {
-            using (var db = new Database.UserContext(_config))
-            {
-                return await db.GetCachedQuestionAsync(id);
-            }
+            var result = await _repository.GetCachedQuestionAsync(id);
+            return Ok(result);
         }
 
         /// <summary>
-        /// Dodaje nowe pytanie
+        /// Add new question
         /// </summary>
-        /// <param name="question">pytanie</param>
-        /// <response code="500">Internal Server Error</response>
+        /// <param name="question">The question</param>
         [HttpPost("question")]
-        public async Task AddQuestionAsync([FromBody]Database.Models.Question question)
+        public async Task<IActionResult> AddQuestionAsync([FromBody]Question question)
         {
-            using (var db = new Database.UserContext(_config))
-            {
-                db.Questions.Add(question);
-                await db.SaveChangesAsync();
+            await _repository.AddQuestionAsync(question);
 
-                _cacheManager.ExpireTag(new string[] { $"quiz" });
-            }
-            await "Question added!".ToResponse(200).ExecuteResultAsync(ControllerContext);
+            _cacheManager.ExpireTag(new string[] { $"quiz" });
+
+            return Ok("Question added!");
         }
 
         /// <summary>
-        /// Usuwa pytanie
+        /// Deletes the question.
         /// </summary>
-        /// <param name="id">id pytania</param>
+        /// <param name="id">The question identifier</param>
         /// <response code="404">Question not found</response>
         /// <response code="500">Internal Server Error</response>
         [HttpDelete("question/{id}")]
-        public async Task RemoveQuestionAsync(ulong id)
+        public async Task<IActionResult> RemoveQuestionAsync(ulong id)
         {
-            using (var db = new Database.UserContext(_config))
+            var question = await _repository.GetQuestionAsync(id);
+            
+            if (question != null)
             {
-                var question = await db.Questions.Include(x => x.Answer).FirstOrDefaultAsync(x => x.Id == id);
-                if (question != null)
-                {
-                    db.Questions.Remove(question);
-                    await db.SaveChangesAsync();
+                await _repository.RemoveQuestionAsync(question);
 
-                    _cacheManager.ExpireTag(new string[] { $"quiz" });
+                _cacheManager.ExpireTag(new string[] { $"quiz" });
 
-                    await "Question removed!".ToResponse(200).ExecuteResultAsync(ControllerContext);
-                    return;
-                }
+                return Ok("Question removed!");
             }
-            await "Question not found!".ToResponse(404).ExecuteResultAsync(ControllerContext);
+
+            return NotFound("Question not found!");
         }
     }
 }

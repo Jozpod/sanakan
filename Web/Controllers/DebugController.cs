@@ -4,9 +4,8 @@ using Discord.WebSocket;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Shinden.Logger;
 
-namespace Sanakan.Api.Controllers
+namespace Sanakan.Web.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
@@ -15,7 +14,9 @@ namespace Sanakan.Api.Controllers
         private readonly ILogger _logger;
         private readonly DiscordSocketClient _client;
 
-        public DebugController(DiscordSocketClient client, ILogger logger)
+        public DebugController(
+            DiscordSocketClient client,
+            ILogger<DebugController> logger)
         {
             _client = client;
             _logger = logger;
@@ -24,26 +25,24 @@ namespace Sanakan.Api.Controllers
         /// <summary>
         /// Zabija bota
         /// </summary>
-        [HttpPost("kill"), Authorize(Policy = "Site")]
-        public async Task RestartBotAsync()
+        [HttpPost("kill"), Authorize(Policy = AuthorizePolicies.Site)]
+        public async Task<IActionResult> RestartBotAsync()
         {
             await _client.LogoutAsync();
-            _logger.Log("Kill app from web.");
-            await Task.Delay(1500);
-            Environment.Exit(0);
+            _logger.LogDebug("Kill app from web.");
+            return Ok();
         }
 
         /// <summary>
         /// Aktualizuje bota
         /// </summary>
         [HttpPost("update"), Authorize(Policy = "Site")]
-        public async Task UpdateBotAsync()
+        public async Task<IActionResult> UpdateBotAsync()
         {
             await _client.LogoutAsync();
-            System.IO.File.Create("./updateNow");
-            _logger.Log("Update app from web.");
-            await Task.Delay(1500);
-            Environment.Exit(200);
+            //System.IO.File.Create("./updateNow");
+            _logger.LogDebug("Update app from web.");
+            return Ok();
         }
     }
 }

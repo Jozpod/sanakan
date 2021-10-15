@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Models.Analytics;
@@ -11,13 +12,19 @@ namespace Sanakan.DAL
 {
     public class BuildDatabaseContext : DbContext
     {
-        private Options<object> _config;
+        private object _config;
 
-        public BuildDatabaseContext(IConfig config) : base()
+        public BuildDatabaseContext(IOptions<object> config) : base()
         {
             _config = config;
         }
 
+        #region Management
+        public DbSet<PenaltyInfo> Penalties { get; set; }
+        public DbSet<OwnedRole> OwnedRoles { get; set; }
+        #endregion
+
+        #region User
         public DbSet<User> Users { get; set; }
         public DbSet<UserStats> UsersStats { get; set; }
         public DbSet<TimeStatus> TimeStatuses { get; set; }
@@ -36,6 +43,8 @@ namespace Sanakan.DAL
         public DbSet<Question> Questions { get; set; }
         public DbSet<Answer> Answers { get; set; }
         public DbSet<RarityExcluded> RaritysExcludedFromPacks { get; set; }
+        #endregion
+        #region GuildConfig
         public DbSet<SelfRole> SelfRoles { get; set; }
         public DbSet<GuildOptions> Guilds { get; set; }
         public DbSet<LevelRole> LevelRoles { get; set; }
@@ -49,12 +58,13 @@ namespace Sanakan.DAL
         public DbSet<Raport> Raports { get; set; }
         public DbSet<WaifuCommandChannel> WaifuCommandChannels { get; set; }
         public DbSet<WaifuFightChannel> WaifuFightChannels { get; set; }
-        public DbSet<PenaltyInfo> Penalties { get; set; }
-        public DbSet<OwnedRole> OwnedRoles { get; set; }
+        #endregion
+        #region Analytics
         public DbSet<UserAnalytics> UsersData { get; set; }
         public DbSet<SystemAnalytics> SystemData { get; set; }
         public DbSet<TransferAnalytics> TransferData { get; set; }
         public DbSet<CommandsAnalytics> CommandsData { get; set; }
+        #endregion
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

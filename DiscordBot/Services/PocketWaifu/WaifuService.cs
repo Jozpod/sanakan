@@ -5,7 +5,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
+using DiscordBot.Services;
 using DiscordBot.Services.PocketWaifu;
+using DiscordBot.Services.PocketWaifu.Abstractions;
 using Sanakan.Common;
 using Sanakan.DAL.Models;
 using Sanakan.DiscordBot.Services;
@@ -16,14 +18,14 @@ using Shinden.Models;
 
 namespace Sanakan.Services.PocketWaifu
 {
-    public class Waifu
+    public class WaifuService : IWaifuService
     {
         private readonly Events _events;
         private readonly IImageProcessing _img;
         private readonly IShindenClient _shClient;
         private readonly ICacheManager _cacheManager;
 
-        public Waifu(
+        public WaifuService(
             IImageProcessing img,
             IShindenClient client,
             Events events,

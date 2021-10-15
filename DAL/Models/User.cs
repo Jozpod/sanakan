@@ -1,5 +1,4 @@
-﻿using DAL.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace Sanakan.DAL.Models
@@ -7,6 +6,10 @@ namespace Sanakan.DAL.Models
     public class User
     {
         public ulong Id { get; set; }
+
+        /// <summary>
+        /// The user identifer in Shinden system.
+        /// </summary>
         public ulong Shinden { get; set; }
         public bool IsBlacklisted { get; set; }
         public long AcCnt { get; set; }

@@ -1,4 +1,4 @@
-using Sanakan.Database.Models;
+using Sanakan.DAL.Models;
 
 namespace Sanakan.Services.PocketWaifu
 {

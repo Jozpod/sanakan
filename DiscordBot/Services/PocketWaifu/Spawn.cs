@@ -7,6 +7,7 @@ using Discord;
 using Discord.WebSocket;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Sanakan.Common;
 using Sanakan.DAL.Models;
 using Sanakan.Extensions;
 using Sanakan.Services.Executor;
@@ -21,6 +22,7 @@ namespace Sanakan.Services.PocketWaifu
         private readonly ILogger _logger;
         private readonly object _config;
         private readonly Waifu _waifu;
+        private readonly ICacheManager _cacheManager;
 
         private Dictionary<ulong, long> ServerCounter;
         private Dictionary<ulong, long> UserCounter;
@@ -33,7 +35,7 @@ namespace Sanakan.Services.PocketWaifu
             Waifu waifu,
             IOptions<object> config,
             ILogger<Spawn> logger,
-            _cacheManager)
+            ICacheManager cacheManager)
         {
             _executor = executor;
             _client = client;
@@ -67,8 +69,17 @@ namespace Sanakan.Services.PocketWaifu
             }
 
             int chance = noExp ? 285 : 85;
-            if (daily > 0 && ServerCounter[spawnChannel.GuildId] >= daily) return;
-            if (!_config.Get().SafariEnabled) return;
+            
+            if (daily > 0 && ServerCounter[spawnChannel.GuildId] >= daily)
+            {
+                return;
+            }
+
+            if (!_config.Get().SafariEnabled)
+            {
+                return;
+            }
+            
             if (!Fun.TakeATry(chance)) return;
 
             ServerCounter[spawnChannel.GuildId] += 1;
@@ -192,7 +203,7 @@ namespace Sanakan.Services.PocketWaifu
                     }
                     catch (Exception ex)
                     {
-                        _logger.Log($"In Safari: {ex}");
+                        _logger.LogInformation($"In Safari: {ex}");
                     }
                 });
             }));
@@ -350,8 +361,12 @@ namespace Sanakan.Services.PocketWaifu
                 var config = await db.GetCachedGuildFullConfigAsync(user.Guild.Id);
                 if (config == null) return;
 
-                var noExp = config.ChannelsWithoutExp.Any(x => x.Channel == msg.Channel.Id);
-                if (!noExp) HandleUserAsync(msg);
+                var noExp = config.ChannelsWithoutExp.Any(x => x.Channel == userMessage.Channel.Id);
+                
+                if (!noExp)
+                {
+                    HandleUserAsync(userMessage);
+                }
 
                 var sch = user.Guild.GetTextChannel(config.WaifuConfig.SpawnChannel);
                 var tch = user.Guild.GetTextChannel(config.WaifuConfig.TrashSpawnChannel);

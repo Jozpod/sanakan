@@ -9,14 +9,8 @@ namespace Sanakan.Preconditions
 {
     public class RequireAdminOrModRole : PreconditionAttribute
     {
-        private readonly IRepository _repository;
-
-        public RequireAdminOrModRole(IRepository repository)
-        {
-            _repository = repository;
-        }
-
-        public async override Task<PreconditionResult> CheckPermissionsAsync(ICommandContext context, CommandInfo command, IServiceProvider services)
+        public async override Task<PreconditionResult> CheckPermissionsAsync(
+            ICommandContext context, CommandInfo command, IServiceProvider services)
         {
             var user = context.User as SocketGuildUser;
 
@@ -25,25 +19,28 @@ namespace Sanakan.Preconditions
                 return PreconditionResult.FromError($"To polecenie działa tylko z poziomu serwera.");
             }
 
-            await Task.CompletedTask;
+
+            await context.Channel.SendFileAsync();
 
             _repository.
 
             var config = (IConfig)services.GetService(typeof(IConfig));
-            using (var db = new Database.GuildConfigContext(config))
+     
+            var gConfig = await db.GetCachedGuildFullConfigAsync(context.Guild.Id);
+            if (gConfig == null) return CheckUser(user);
+
+            if (gConfig.ModeratorRoles.Any(x => user.Roles.Any(r => r.Id == x.Role)))
+                return PreconditionResult.FromSuccess();
+
+            var role = context.Guild.GetRole(gConfig.AdminRole);
+            if (role == null) return CheckUser(user);
+
+            if (user.Roles.Any(x => x.Id == role.Id))
             {
-                var gConfig = await db.GetCachedGuildFullConfigAsync(context.Guild.Id);
-                if (gConfig == null) return CheckUser(user);
-
-                if (gConfig.ModeratorRoles.Any(x => user.Roles.Any(r => r.Id == x.Role)))
-                    return PreconditionResult.FromSuccess();
-
-                var role = context.Guild.GetRole(gConfig.AdminRole);
-                if (role == null) return CheckUser(user);
-
-                if (user.Roles.Any(x => x.Id == role.Id)) return PreconditionResult.FromSuccess();
-                return CheckUser(user);
+                return PreconditionResult.FromSuccess();
             }
+
+            return CheckUser(user);
         }
 
         private PreconditionResult CheckUser(SocketGuildUser user)

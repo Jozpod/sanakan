@@ -102,20 +102,5 @@ namespace Sanakan.Extensions
             prefix = prefix.Replace(".", @"\.").Replace("?", @"\?");
             return new Regex($@"^{prefix}\w+", RegexOptions.Compiled).Matches(message).Count > 0;
         }
-
-        public static IActionResult ToResponse(this string str, int Code = 200)
-        {
-            return new ObjectResult(new { message = str, success = (Code >= 200 && Code < 300) }) { StatusCode = Code };
-        }
-
-        public static IActionResult ToResponseRich(this string str, ulong msgId)
-        {
-            return new ObjectResult(new { message = str, success = true, id = msgId }) { StatusCode = 200 };
-        }
-
-        public static IActionResult ToResponseRich(this string str, List<ulong> msgId)
-        {
-            return new ObjectResult(new { message = str, success = true, ids = msgId }) { StatusCode = 200 };
-        }
     }
 }

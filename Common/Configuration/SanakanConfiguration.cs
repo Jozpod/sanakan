@@ -1,16 +1,21 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Sanakan.Web.Configuration
 {
-    public class ConfigModel
+    public class SanakanConfiguration
     {
+
+        public TimeSpan CaptureMemoryUsageDueTime { get; set; } = TimeSpan.FromMinutes(1);
+        public TimeSpan CaptureMemoryUsagePeriod { get; set; } = TimeSpan.FromMinutes(1);
+
         /// <summary>
-        /// 
+        /// Runs commands on Discord only when they start with given prefix.
         /// </summary>
         public string Prefix { get; set; }
 
         /// <summary>
-        /// 
+        /// The Discord bot token.
         /// </summary>
         public string BotToken { get; set; }
 
@@ -25,7 +30,7 @@ namespace Sanakan.Web.Configuration
         public bool Demonization { get; set; }
 
         /// <summary>
-        ///  Generates cards from user messages.
+        /// If enabled it allows generating cards from user messages.
         /// </summary>
         public bool SafariEnabled { get; set; }
 
@@ -33,10 +38,11 @@ namespace Sanakan.Web.Configuration
         /// Character for one cards packet.
         /// </summary>
         public long CharPerPacket { get; set; }
-        public ConfigShinden Shinden { get; set; }
-        public ConfigExp Exp { get; set; }
+        
+        /// <summary>
+        /// The list of discord user identifier which can access Debug module.
+        /// </summary>
         public List<ulong> Dev { get; set; }
-        public JwtConfig Jwt { get; set; }
         
         /// <summary>
         /// 
@@ -49,7 +55,7 @@ namespace Sanakan.Web.Configuration
         public List<RichMessageConfig> RMConfig { get; set; }
 
         /// <summary>
-        /// 
+        /// The list of discord guild identifiers to blacklist
         /// </summary>
         public List<ulong> BlacklistedGuilds { get; set; }
     }

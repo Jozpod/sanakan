@@ -18,21 +18,15 @@ namespace Sanakan.ShindenApi
         public ExperimentalModule Ex { get; }
         public LoggedInUserModule.UserModule User { get; }
 
-        public ShindenClient(Auth authenticator)
+        public ShindenClient(Auth authenticator, ILogger<ShindenClient> logger)
         {
-            _manager = new RequestManager(authenticator, _logger);
+            //_logger.LogInformation($"Runing as: {authenticator.GetUserAgent()}");
+            _manager = new RequestManager(authenticator, logger);
 
             Title = new TitleModule(_manager);
             Search = new SearchModule(_manager);
             Ex = new ExperimentalModule(_manager);
             User = new LoggedInUserModule.UserModule(_manager, _logger);
-        }
-
-        public ShindenClient(
-            Auth authenticator,
-            ILogger<ShindenClient> logger) : this(authenticator)
-        {
-            _logger.LogInformation($"Runing as: {authenticator.GetUserAgent()}");
         }
 
         public async Task<Response<List<INewEpisode>>> GetNewEpisodesAsync()

@@ -4,9 +4,12 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using DiscordBot.Services;
+using DiscordBot.Services.PocketWaifu;
 using Sanakan.Common.Models;
 using Sanakan.DAL.Models;
 using Sanakan.Extensions;
+using Sanakan.Services;
 using Sanakan.Services.PocketWaifu;
 using Sanakan.ShindenApi;
 using Shinden;
@@ -722,7 +725,12 @@ namespace Sanakan.DiscordBot.Services
                 var val = (uint)arrayOfColours.GetValue(i);
 
                 var thisColor = (FColor)val;
-                if (thisColor == FColor.None) continue;
+                
+                if (thisColor == FColor.None)
+                {
+                    continue;
+                }
+                
 
                 var name = $"{thisColor.ToString()} ({thisColor.Price(currency)} {currency.ToString().ToUpper()})";
                 var nLen = TextMeasurer.Measure(name, new RendererOptions(message));
@@ -1160,7 +1168,7 @@ namespace Sanakan.DiscordBot.Services
             int Yi = 131;
             int Xil = 876;
 
-            if (info.Side == DuelInfo.WinnerSide.Right)
+            if (info.Side == WinnerSide.Right)
             {
                 Xiw = 876;
                 Xil = 76;
@@ -1181,7 +1189,7 @@ namespace Sanakan.DiscordBot.Services
                 Size = new Size(450, 0)
             }));
 
-            if (info.Side != DuelInfo.WinnerSide.Draw)
+            if (info.Side != WinnerSide.Draw)
                 los.Mutate(x => x.Grayscale());
 
             img.Mutate(x => x.DrawImage(win, new Point(Xiw, Yi), 1));

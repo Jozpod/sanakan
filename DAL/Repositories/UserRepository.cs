@@ -26,6 +26,15 @@ namespace DAL.Repositories
 
         public async Task<User> GetCachedFullUserAsync(ulong userId)
         {
+            var key = $"user-{userId}";
+
+            var cached = _cacheManager.Get<User>(key);
+
+            if (cached != null)
+            {
+                return cached;
+            }
+
             var result = await _dbContext.Users
                 .AsQueryable()
                 .Where(x => x.Id == userId)
@@ -58,7 +67,9 @@ namespace DAL.Repositories
                 .AsSplitQuery()
                 .FirstOrDefaultAsync();
 
-            _cacheManager.AddTag(new string[] { $"user-{userId}", "users" });
+            _cacheManager.Add(key, result);
+
+            return result;
         }
 
         public async Task<User> GetCachedFullUserByShindenIdAsync(ulong userId)
@@ -72,7 +83,7 @@ namespace DAL.Repositories
                 return cached;
             }
 
-            var result = (await _dbContext.Users
+            var result = await _dbContext.Users
                 .AsQueryable()
                 .Where(x => x.Shinden == userId)
                 .Include(x => x.Stats)
@@ -104,17 +115,21 @@ namespace DAL.Repositories
                 .AsSplitQuery()
                 .FirstOrDefaultAsync();
 
-            _cacheManager.AddTag(new string[] { key, "users" });
+            _cacheManager.Add(key, result);
+
+            return result;
         }
 
         public async Task<List<User>> GetCachedAllUsersLiteAsync()
         {
-            return (await _dbContext.Users
+            var result = await _dbContext.Users
                 .AsQueryable()
                 .AsNoTracking()
                 .AsSplitQuery()
-                .FromCacheAsync(new MemoryCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1) }))
-                .ToList();
+                //.FromCacheAsync(new MemoryCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1) }))
+                .ToListAsync();
+
+            return result;
         }
 
 

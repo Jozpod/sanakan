@@ -108,7 +108,10 @@ namespace Sanakan.Modules
         [Command("ban")]
         [Summary("banuje użytkownika")]
         [Remarks("karna"), RequireAdminRole, Priority(1)]
-        public async Task BanUserAsync([Summary("użytkownik")]SocketGuildUser user, [Summary("czas trwania w godzinach")]long duration, [Summary("powód (opcjonalne)")][Remainder]string reason = "nie podano")
+        public async Task BanUserAsync(
+            [Summary("użytkownik")]SocketGuildUser user,
+            [Summary("czas trwania w godzinach")]long duration,
+            [Summary("powód (opcjonalne)")][Remainder]string reason = "nie podano")
         {
             if (duration < 1) return;
 

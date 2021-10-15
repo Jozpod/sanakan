@@ -30,7 +30,7 @@ namespace Sanakan.Services
             DiscordSocketClient client,
             IShindenClient shClient,
             IImageProcessing img,
-            ILogger<Profile > logger,
+            ILogger<Profile> logger,
             IConfig config)
         {
             _shClient = shClient;

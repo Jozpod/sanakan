@@ -7,16 +7,20 @@ namespace Sanakan.Web.Tests
     public class DebugControllerTests
     {
         private readonly DebugController _controller;
+        private readonly Mock<DiscordSocketClient> _discordSocketClientMock;
 
         public DebugControllerTests()
         {
-            _controller = new DebugController();
+            _discordSocketClientMock = new();
+            _controller = new DebugController(
+                _discordSocketClientMock,
+                NullLogger.Instance);
         }
 
         [TestMethod]
         public void TestMethod1()
         {
-            _controller.
+            _controller.RestartBotAsync();
         }
     }
 }

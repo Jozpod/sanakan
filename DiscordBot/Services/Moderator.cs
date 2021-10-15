@@ -59,9 +59,14 @@ namespace Sanakan.Services
             foreach (var penalty in await db.GetCachedFullPenalties())
             {
                 var guild = _client.GetGuild(penalty.Guild);
-                if (guild == null) continue;
+
+                if (guild == null)
+                {
+                    continue;
+                }
 
                 var user = guild.GetUser(penalty.User);
+
                 if (user != null)
                 {
                     using (var conf = new Database.GuildConfigContext(_config))
@@ -413,23 +418,30 @@ namespace Sanakan.Services
             }
             catch (Exception ex)
             {
-                _logger.Log($"in mute: {ex}");
+                _logger.LogInformation($"in mute: {ex}");
             }
         }
 
-        public async Task<Embed> GetMutedListAsync(Database.ManagmentContext db, SocketCommandContext context)
+        public async Task<Embed> GetMutedListAsync(SocketCommandContext context)
         {
             string mutedList = "Brak";
 
-            var list = (await db.Penalties.Include(x => x.Roles).FromCacheAsync(new string[] { $"mute" })).Where(x => x.Guild == context.Guild.Id && x.Type == PenaltyType.Mute);
-            if (list.Count() > 0)
+            var list = (await db.Penalties.Include(x => x.Roles)
+                .FromCacheAsync(new string[] { $"mute" }))
+                .Where(x => x.Guild == context.Guild.Id && x.Type == PenaltyType.Mute);
+
+            if (list.Any())
             {
                 mutedList = "";
                 foreach (var penalty in list)
                 {
                     var endDate = penalty.StartDate.AddHours(penalty.DurationInHours);
                     var name = context.Guild.GetUser(penalty.User)?.Mention;
-                    if (name is null) continue;
+                    
+                    if (name is null)
+                    {
+                        continue;
+                    }
 
                     mutedList += $"{name} [DO: {endDate.ToShortDateString()} {endDate.ToShortTimeString()}] - {penalty.Reason}\n";
                 }
@@ -542,7 +554,10 @@ namespace Sanakan.Services
             }
         }
 
-        public async Task<PenaltyInfo> BanUserAysnc(SocketGuildUser user, Database.ManagmentContext db, long duration, string reason = "nie podano")
+        public async Task<PenaltyInfo> BanUserAysnc(
+            SocketGuildUser user, Database.ManagmentContext db,
+            long duration,
+            string reason = "nie podano")
         {
             var info = new PenaltyInfo
             {

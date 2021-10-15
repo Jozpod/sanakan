@@ -1147,7 +1147,9 @@ namespace Sanakan.Modules
         [Remarks("")]
         public async Task ShowRMConfigAsync()
         {
-            var serverConfig = Config.Get().RMConfig.Where(x => x.GuildId == Context.Guild.Id || x.GuildId == 0).ToList();
+            var serverConfig = Config.Get().RMConfig
+                .Where(x => x.GuildId == Context.Guild.Id || x.GuildId == 0).ToList();
+
             if (serverConfig.Count > 0)
             {
                 await ReplyAsync("", embed: $"**RMC:**\n{string.Join("\n\n", serverConfig)}".TrimToLength(1900).ToEmbedMessage(EMType.Bot).Build());

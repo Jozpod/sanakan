@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using DAL.Repositories.Abstractions;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -32,7 +33,8 @@ namespace Sanakan
             var tmpCnf = config.Get();
             services.AddSingleton(config);
 
-            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(opt =>
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(opt =>
             {
                 opt.TokenValidationParameters = new TokenValidationParameters
                 {
@@ -53,7 +55,8 @@ namespace Sanakan
                     policy.AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme);
                     policy.RequireAuthenticatedUser();
 
-                    policy.RequireAssertion(context => context.User.HasClaim(c => c.Type == "Player" && c.Value == "waifu_player"));
+                    policy.RequireAssertion(context => context.User.HasClaim(c => c.Type == "Player" 
+                        && c.Value == "waifu_player"));
                 });
 
                 op.AddPolicy("Site", policy =>
@@ -109,7 +112,6 @@ namespace Sanakan
             services.AddSingleton(_sessions);
             services.AddSingleton(_profile);
             services.AddSingleton(_config);
-            services.AddSingleton(_logger);
             services.AddSingleton(_client);
             services.AddSingleton(_helper);
             services.AddSingleton(_events);
@@ -118,10 +120,15 @@ namespace Sanakan
             services.AddSingleton(_spawn);
             services.AddSingleton(_mod);
             services.AddSingleton(_exp);
-            services.AddSingleton(_img)
+            services.AddSingleton(_img);
             services.AddSingleton<Services.Fun>();
             services.AddSingleton<Services.Shinden>();
             services.AddSingleton<Services.LandManager>();
+            services.AddScoped<IRepository, Repository>();
+            services.AddScoped<IUserRepository, UserRepository>();
+            services.AddHostedService<DiscordBotHostedService>();
+            services.AddHostedService<DiscordBotHostedService>();
+            services.AddHostedService<DiscordBotHostedService>();
             services.AddHostedService<DiscordBotHostedService>();
         }
 

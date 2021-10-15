@@ -1,11 +1,14 @@
-﻿using Microsoft.Extensions.Hosting;
+﻿using Discord;
+using Microsoft.Extensions.Hosting;
+using Sanakan.Common;
+using Sanakan.Services.Commands;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Sanakan
+namespace Sanakan.Web.HostedService
 {
     public class DiscordBotHostedService : BackgroundService
     {
@@ -29,15 +32,21 @@ namespace Sanakan
         private readonly Waifu _waifu;
         private readonly Spawn _spawn;
         private readonly Chaos _chaos;
+        private readonly IFileSystem _fileSystem;
 
-        public DiscordBotHostedService()
+        public DiscordBotHostedService(
+            IFileSystem fileSystem,
+            IServiceProvider)
         {
-
+            _fileSystem = fileSystem;
         }
 
         private void CreateModules()
         {
-            Services.Dir.Create();
+            _fileSystem.CreateDirectory(Paths.CardsMiniatures);
+            _fileSystem.CreateDirectory(Paths.CardsInProfiles);
+            _fileSystem.CreateDirectory(Paths.SavedData);
+            _fileSystem.CreateDirectory(Paths.Profiles);
 
             _client = new DiscordSocketClient(new DiscordSocketConfig()
             {
@@ -73,46 +82,11 @@ namespace Sanakan
             _profile = new Profile(_client, _shindenClient, _img, _logger, _config);
         }
 
-        private void LoadConfig()
-        {
-#if !DEBUG
-            _config = new ConfigManager("Config.json");
-#else
-            _config = new ConfigManager("ConfigDebug.json");
-#endif
-        }
-
-        private IServiceProvider BuildServiceProvider()
-        {
-            return new ServiceCollection()
-               
-                .BuildServiceProvider();
-        }
-
-        private void AddSigTermHandler()
-        {
-            Console.CancelKeyPress += delegate
-            {
-                _ = Task.Run(async () =>
-                {
-                    _logger.Log("SIGTERM Received!");
-                    await _client.LogoutAsync();
-                    await Task.Delay(1000);
-                    Environment.Exit(0);
-                });
-            };
-        }
-
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            LoadConfig();
             CreateModules();
-            AddSigTermHandler();
 
-            using (var db = new Database.BuildDatabaseContext(_config))
-            {
-                db.Database.EnsureCreated();
-            }
+            db.Database.EnsureCreated();
 
             var tmpCnf = _config.Get();
             await _client.LoginAsync(TokenType.Bot, tmpCnf.BotToken);

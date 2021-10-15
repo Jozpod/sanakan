@@ -5,5 +5,6 @@
         void ExpireTag(params string[] tags);
         void AddTag(params string[] tags);
         T? Get<T>(string key);
+        void Add<T>(string key, T entity);
     }
 }

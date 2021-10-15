@@ -5,10 +5,10 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using DiscordBot.Services.Session;
 using Microsoft.Extensions.Options;
 using Sanakan.Extensions;
 using Sanakan.Services.PocketWaifu;
-using Z.EntityFramework.Plus;
 
 namespace Sanakan.Services.Session.Models
 {
@@ -26,7 +26,8 @@ namespace Sanakan.Services.Session.Models
         public string Tips { get; set; }
 
         private ExchangeStatus State;
-        private object _config;
+        private readonly object _config;
+        private readonly ICacheManager _cacheManager;
 
         private readonly Emoji AcceptEmote = new Emoji("✅");
         private readonly Emote DeclineEmote = Emote.Parse("<:redcross:581152766655856660>");

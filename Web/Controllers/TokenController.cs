@@ -9,74 +9,60 @@ using System.Security.Claims;
 using Sanakan.Config;
 using Sanakan.Extensions;
 using Sanakan.Api.Models;
+using Microsoft.AspNetCore.Http;
+using static Sanakan.Web.ResponseExtensions;
+using Microsoft.Extensions.Options;
+using Sanakan.Web.Configuration;
 
-namespace Sanakan.Api.Controllers
+namespace Sanakan.Web.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
     public class TokenController : ControllerBase
     {
+        private readonly SanakanConfiguration _config;
         private readonly IJwtBuilder _jwtBuilder;
 
-        public TokenController(IJwtBuilder jwtBuilder)
+        public TokenController(
+            IOptions<SanakanConfiguration> config,
+            IJwtBuilder jwtBuilder)
         {
+            _config = config.Value;
             _jwtBuilder = jwtBuilder;
         }
 
         /// <summary>
-        /// Zwraca token ważny jeden dzień
+        /// Returns json web token.
         /// </summary>
-        /// <param name="apikey">Key aplikacji</param>
-        /// <response code="401">API Key Not Provided</response>
-        /// <response code="403">API Key Is Invalid</response>
+        /// <param name="apikey">API keyi</param>
         [HttpPost, AllowAnonymous]
+        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(TokenData), StatusCodes.Status200OK)]
         public IActionResult CreateToken([FromBody]string apikey)
         {
             if (apikey == null)
             {
-                return "API Key Not Provided".ToResponse(401);
+                return ShindenUnauthorized("API Key Not Provided");
             }
 
-            IActionResult response = "API Key Is Invalid".ToResponse(403);
-            var user = Authenticate(apikey);
+            var user = _config.ApiKeys
+                .FirstOrDefault(x => x.Key.Equals(apikey))?.Bearer;
+
+            var claims = new[]
+            {
+                new Claim(JwtRegisteredClaimNames.Website, user),
+                new Claim("Player", "waifu_player"),
+            };
 
             if (user != null)
             {
-                var tokenData = _jwtBuilder.Build(user.Id);
-                response = Ok(new { token = tokenData.Token, expire = tokenData.Expire });
+                // expires: DateTime.Now.AddHours(24),
+                var tokenData = _jwtBuilder.Build(claims);
+                return Ok(tokenData);
             }
 
-            return response;
-        }
-
-        private TokenData BuildToken(string user)
-        {
-            var config = _config.Get();
-
-            var claims = new[] {
-                new Claim(JwtRegisteredClaimNames.Website, user),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            };
-
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config.Jwt.Key));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-            var token = new JwtSecurityToken(config.Jwt.Issuer,
-              config.Jwt.Issuer,
-              claims,
-              expires: DateTime.Now.AddHours(24),
-              signingCredentials: creds);
-
-            return new TokenData()
-            {
-                Token = new JwtSecurityTokenHandler().WriteToken(token),
-                Expire = token.ValidTo
-            };
-        }
-
-        private string Authenticate(string apikey)
-        {
-            return _config.Get().ApiKeys.FirstOrDefault(x => x.Key.Equals(apikey))?.Bearer;
+            return ShindenForbidden(Strings.ApiKeyInvalid);
         }
     }
 }

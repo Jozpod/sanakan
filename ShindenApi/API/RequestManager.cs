@@ -3,19 +3,21 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Sanakan.ShindenApi;
+using Shinden.API;
 using Shinden.Extensions;
 
-namespace Shinden.API
+namespace Sanakan.ShindenApi
 {
     public class RequestManager
     {
         private Uri _baseUri;
-        private Models.ISession _session;
+        private Shinden.Models.ISession _session;
         private readonly CookieContainer _cookies;
-        private readonly ILogger<RequestManager> _logger; 
+        private readonly ILogger _logger; 
         private readonly Auth _auth;
 
-        public RequestManager(Auth auth, ILogger<RequestManager> logger)
+        public RequestManager(Auth auth, ILogger logger)
         {
             _auth = auth;
             _session = null;

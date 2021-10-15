@@ -6,28 +6,35 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using DAL.Repositories.Abstractions;
 using Discord.WebSocket;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Sanakan.Api.Models;
+using Sanakan.Common;
 using Sanakan.Config;
+using Sanakan.DAL.Models;
+using Sanakan.DAL.Models.Analytics;
 using Sanakan.Extensions;
 using Sanakan.Services.Executor;
+using Sanakan.ShindenApi;
 using Shinden;
-using Shinden.Logger;
-using Z.EntityFramework.Plus;
+using Shinden.Models;
+using static Sanakan.Web.ResponseExtensions;
 
-namespace Sanakan.Api.Controllers
+namespace Sanakan.Web.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
     public class UserController : ControllerBase
     {
-        private readonly IConfig _config;
         private readonly ILogger _logger;
+        private readonly IUserRepository _userRepository;
+        private readonly IRepository _repository;
         private readonly IExecutor _executor;
         private readonly IShindenClient _shClient;
         private readonly DiscordSocketClient _client;
@@ -36,15 +43,17 @@ namespace Sanakan.Api.Controllers
 
         public UserController(
             DiscordSocketClient client,
+            IUserRepository userRepository,
+            IRepository repository,
             IShindenClient shClient,
             ILogger<UserController> logger,
             IExecutor executor,
-            IConfig config,
             ISystemClock systemClock,
             ICacheManager cacheManager)
         {
-            _config = config;
             _client = client;
+            _userRepository = userRepository;
+            _repository = repository;
             _logger = logger;
             _executor = executor;
             _shClient = shClient;
@@ -53,84 +62,89 @@ namespace Sanakan.Api.Controllers
         }
 
         /// <summary>
-        /// Pobieranie użytkownika bota
+        /// Gets the user.
         /// </summary>
-        /// <param name="id">id użytkownika discorda</param>
-        /// <returns>użytkownik bota</returns>
-        [HttpGet("discord/{id}"), Authorize(Policy = "Site")]
-        public async Task<Database.Models.User> GetUserByDiscordIdAsync(ulong id)
+        /// <param name="id">The user identifier in Discord.</param>
+        [HttpGet("discord/{id}"), Authorize(Policy = AuthorizePolicies.Site)]
+        [ProducesResponseType(typeof(User), 200)]
+        public async Task<IActionResult> GetUserByDiscordIdAsync(ulong id)
         {
-            using (var db = new Database.UserContext(_config))
-            {
-                return await db.GetCachedFullUserAsync(id);
-            }
+            var result = await _userRepository.GetCachedFullUserAsync(id);
+            return Ok(result);
         }
 
         /// <summary>
-        /// Wyszukuje id użytkownika na shinden
+        /// Find the user in Shinden.
         /// </summary>
-        /// <param name="name">nazwa użytkownika</param>
-        /// <returns>id użytkownika</returns>
+        /// <param name="name">The name of the user</param>
         [HttpPost("find")]
-        public async Task<IEnumerable<Shinden.Models.IUserSearch>> GetUserIdByNameAsync([FromBody, Required]string name)
+        [ProducesResponseType(typeof(IEnumerable<IUserSearch>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetUserIdByNameAsync([FromBody, Required]string name)
         {
-            var res = await _shClient.Search.UserAsync(name);
-            if (!res.IsSuccessStatusCode())
+            var response = await _shClient.Search.UserAsync(name);
+
+            if (!response.IsSuccessStatusCode())
             {
-                await "User not found!".ToResponse(404).ExecuteResultAsync(ControllerContext);
-                return null;
+                return ShindenNotFound("User not found!");
             }
-            return res.Body;
+
+            return Ok(response.Body);
         }
 
         /// <summary>
-        /// Pobieranie nazwę użytkownika z shindena
+        /// Gets the username from Shinden.
         /// </summary>
-        /// <param name="id">id użytkownika shindena</param>
-        /// <returns>nazwa użytkownika</returns>
+        /// <param name="id">The Shinden user identifier.</param>
         [HttpGet("shinden/{id}/username")]
-        public async Task<string> GetShindenUsernameByShindenId(ulong id)
+        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetShindenUsernameByShindenId(ulong id)
         {
-            var res = await _shClient.User.GetAsync(id);
-            if (!res.IsSuccessStatusCode())
+            var response = await _shClient.User.GetAsync(id);
+
+            if (!response.IsSuccessStatusCode())
             {
-                await "User not found!".ToResponse(404).ExecuteResultAsync(ControllerContext);
-                return null;
+                return ShindenNotFound("User not found!");
             }
-            return res.Body.Name;
+
+            var username = response.Body.Name;
+
+            return Ok(username);
         }
 
         /// <summary>
-        /// Pobieranie użytkownika bota
+        /// Gets the user
         /// </summary>
-        /// <param name="id">id użytkownika shindena</param>
-        /// <returns>użytkownik bota</returns>
-        [HttpGet("shinden/{id}"), Authorize(Policy = "Site")]
-        public async Task<UserWithToken> GetUserByShindenIdAsync(ulong id)
+        /// <param name="id">The Shinden user identifier.</param>
+        [HttpGet("shinden/{id}"), Authorize(Policy = AuthorizePolicies.Site)]
+        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(UserWithToken), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetUserByShindenIdAsync(ulong id)
         {
-            using (var db = new Database.UserContext(_config))
+            var user = await _userRepository.GetCachedFullUserByShindenIdAsync(id);
+
+            if (user == null)
             {
-                var user = await db.GetCachedFullUserByShindenIdAsync(id);
-                if (user == null)
-                {
-                    await "User not found!".ToResponse(404).ExecuteResultAsync(ControllerContext);
-                    return null;
-                }
-
-                TokenData tokenData = null;
-                var currUser = ControllerContext.HttpContext.User;
-                if (currUser.HasClaim(x => x.Type == ClaimTypes.Webpage))
-                {
-                    tokenData = JwtBuilder.BuildUserToken(_config, user);
-                }
-
-                return new UserWithToken()
-                {
-                    Expire = tokenData?.Expire,
-                    Token = tokenData?.Token,
-                    User = user,
-                };
+                return ShindenNotFound("User not found!");
             }
+
+            TokenData tokenData = null;
+            var currUser = ControllerContext.HttpContext.User;
+
+            if (currUser.HasClaim(x => x.Type == ClaimTypes.Webpage))
+            {
+                tokenData = JwtBuilder.BuildUserToken(_config, user);
+            }
+
+            var result = new UserWithToken()
+            {
+                Expire = tokenData?.Expire,
+                Token = tokenData?.Token,
+                User = user,
+            };
+
+            return Ok(result);
         }
 
         /// <summary>
@@ -313,7 +327,7 @@ namespace Sanakan.Api.Controllers
         /// <param name="id">id użytkownika discorda</param>
         /// <param name="value">liczba TC</param>
         /// <response code="404">User not found</response>
-        [HttpPut("discord/{id}/tc"), Authorize(Policy = "Site")]
+        [HttpPut("discord/{id}/tc"), Authorize(Policy = AuthorizePolicies.Site)]
         public async Task ModifyPointsTCDiscordAsync(ulong id, [FromBody, Required]long value)
         {
             using (var db = new Database.UserContext(_config))
@@ -333,9 +347,9 @@ namespace Sanakan.Api.Controllers
                         {
                             Value = value,
                             DiscordId = user.Id,
-                            Date = DateTime.Now,
+                            Date = _systemClock.UtcNow,
                             ShindenId = user.Shinden,
-                            Source = Database.Models.Analytics.TransferSource.ByDiscordId,
+                            Source = TransferSource.ByDiscordId,
                         });
 
                         await dbc.SaveChangesAsync();
@@ -393,7 +407,7 @@ namespace Sanakan.Api.Controllers
                         {
                             Value = value,
                             DiscordId = user.Id,
-                            Date = DateTime.Now,
+                            Date = _systemClock.UtcNow,
                             ShindenId = user.Shinden,
                             Source = Database.Models.Analytics.TransferSource.ByShindenId,
                         });

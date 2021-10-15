@@ -1,4 +1,4 @@
-﻿using DAL.Models;
+﻿using DAL.Repositories.Abstractions;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
@@ -34,6 +34,8 @@ namespace Sanakan.Modules
         private readonly object _config;
         private readonly Waifu _waifu;
         private readonly ICacheManager _cacheManager;
+        private readonly IUserRepository _userRepository;
+        private readonly IRepository _repository;
 
         public PocketWaifu(
             Waifu waifu,
@@ -42,7 +44,9 @@ namespace Sanakan.Modules
             SessionManager session,
             IOptions<object> config,
             IExecutor executor,
-            ICacheManager cacheManager)
+            ICacheManager cacheManager,
+            IUserRepository userRepository,
+            IRepository repository)
         {
             _waifu = waifu;
             _logger = logger;
@@ -51,13 +55,18 @@ namespace Sanakan.Modules
             _session = session;
             _executor = executor;
             _cacheManager = cacheManager;
+            _userRepository = userRepository;
+            _repository = repository;
         }
 
         [Command("harem", RunMode = RunMode.Async)]
         [Alias("cards", "karty")]
         [Summary("wyświetla wszystkie posiadane karty")]
         [Remarks("tag konie"), RequireWaifuCommandChannel]
-        public async Task ShowCardsAsync([Summary("typ sortowania (klatka/jakość/atak/obrona/relacja/życie/tag(-)/uszkodzone/niewymienialne/obrazek(-/c)/unikat)")]HaremType type = HaremType.Rarity, [Summary("tag)")][Remainder]string tag = null)
+        public async Task ShowCardsAsync(
+            [Summary("typ sortowania (klatka/jakość/atak/obrona/relacja/życie/tag(-)/uszkodzone/niewymienialne/obrazek(-/c)/unikat)")]
+            HaremType type = HaremType.Rarity,
+            [Summary("tag)")][Remainder]string tag = null)
         {
             var session = new ListSession<Card>(Context.User, Context.Client.CurrentUser);
             await _session.KillSessionIfExistAsync(session);
@@ -68,38 +77,35 @@ namespace Sanakan.Modules
                 return;
             }
 
-            using (var db = new Database.UserContext(Config))
+            var user = await _userRepository.GetCachedFullUserAsync(Context.User.Id);
+            if (user?.GameDeck?.Cards?.Count() < 1)
             {
-                var user = await db.GetCachedFullUserAsync(Context.User.Id);
-                if (user?.GameDeck?.Cards?.Count() < 1)
-                {
-                    await ReplyAsync("", embed: $"{Context.User.Mention} nie masz żadnych kart.".ToEmbedMessage(EMType.Error).Build());
-                    return;
-                }
+                await ReplyAsync("", embed: $"{Context.User.Mention} nie masz żadnych kart.".ToEmbedMessage(EMType.Error).Build());
+                return;
+            }
 
-                session.Enumerable = false;
-                session.ListItems = _waifu.GetListInRightOrder(user.GameDeck.Cards, type, tag);
-                session.Embed = new EmbedBuilder
-                {
-                    Color = EMType.Info.Color(),
-                    Title = "Harem"
-                };
+            session.Enumerable = false;
+            session.ListItems = _waifu.GetListInRightOrder(user.GameDeck.Cards, type, tag);
+            session.Embed = new EmbedBuilder
+            {
+                Color = EMType.Info.Color(),
+                Title = "Harem"
+            };
 
-                try
-                {
-                    var dm = await Context.User.GetOrCreateDMChannelAsync();
-                    var msg = await dm.SendMessageAsync("", embed: session.BuildPage(0));
-                    await msg.AddReactionsAsync( new [] { new Emoji("⬅"), new Emoji("➡") });
+            try
+            {
+                var dm = await Context.User.GetOrCreateDMChannelAsync();
+                var msg = await dm.SendMessageAsync("", embed: session.BuildPage(0));
+                await msg.AddReactionsAsync( new [] { new Emoji("⬅"), new Emoji("➡") });
 
-                    session.Message = msg;
-                    await _session.TryAddSession(session);
+                session.Message = msg;
+                await _session.TryAddSession(session);
 
-                    await ReplyAsync("", embed: $"{Context.User.Mention} lista poszła na PW!".ToEmbedMessage(EMType.Success).Build());
-                }
-                catch (Exception)
-                {
-                    await ReplyAsync("", embed: $"{Context.User.Mention} nie można wysłać do Ciebie PW!".ToEmbedMessage(EMType.Error).Build());
-                }
+                await ReplyAsync("", embed: $"{Context.User.Mention} lista poszła na PW!".ToEmbedMessage(EMType.Success).Build());
+            }
+            catch (Exception)
+            {
+                await ReplyAsync("", embed: $"{Context.User.Mention} nie można wysłać do Ciebie PW!".ToEmbedMessage(EMType.Error).Build());
             }
         }
 
@@ -109,66 +115,64 @@ namespace Sanakan.Modules
         [Remarks("1"), RequireWaifuCommandChannel]
         public async Task ShowItemsAsync([Summary("nr przedmiotu")]int numberOfItem = 0)
         {
-            using (var db = new Database.UserContext(Config))
+            var bUser = await _userRepository.GetCachedFullUserAsync(Context.User.Id);
+            var itemList = bUser.GameDeck.Items.OrderBy(x => x.Type).ToList();
+
+            if (itemList.Count < 1)
             {
-                var bUser = await db.GetCachedFullUserAsync(Context.User.Id);
-                var itemList = bUser.GameDeck.Items.OrderBy(x => x.Type).ToList();
-
-                if (itemList.Count < 1)
-                {
-                    await ReplyAsync("", embed: $"{Context.User.Mention} nie masz żadnych przemiotów.".ToEmbedMessage(EMType.Error).Build());
-                    return;
-                }
-
-                if (numberOfItem <= 0)
-                {
-                    await ReplyAsync("", embed: _waifu.GetItemList(Context.User, itemList));
-                    return;
-                }
-
-                if (bUser.GameDeck.Items.Count < numberOfItem)
-                {
-                    await ReplyAsync("", embed: $"{Context.User.Mention} nie masz aż tylu przedmiotów.".ToEmbedMessage(EMType.Error).Build());
-                    return;
-                }
-
-                var item = itemList[numberOfItem - 1];
-                var embed = new EmbedBuilder
-                {
-                    Color = EMType.Info.Color(),
-                    Author = new EmbedAuthorBuilder().WithUser(Context.User),
-                    Description = $"**{item.Name}**\n_{item.Type.Desc()}_\n\nLiczba: **{item.Count}**".TrimToLength(1900)
-                };
-
-                await ReplyAsync("", embed: embed.Build());
+                await ReplyAsync("", embed: $"{Context.User.Mention} nie masz żadnych przemiotów.".ToEmbedMessage(EMType.Error).Build());
+                return;
             }
+
+            if (numberOfItem <= 0)
+            {
+                await ReplyAsync("", embed: _waifu.GetItemList(Context.User, itemList));
+                return;
+            }
+
+            if (bUser.GameDeck.Items.Count < numberOfItem)
+            {
+                await ReplyAsync("", embed: $"{Context.User.Mention} nie masz aż tylu przedmiotów.".ToEmbedMessage(EMType.Error).Build());
+                return;
+            }
+
+            var item = itemList[numberOfItem - 1];
+            var embed = new EmbedBuilder
+            {
+                Color = EMType.Info.Color(),
+                Author = new EmbedAuthorBuilder().WithUser(Context.User),
+                Description = $"**{item.Name}**\n_{item.Type.Desc()}_\n\nLiczba: **{item.Count}**".TrimToLength(1900)
+            };
+
+            await ReplyAsync("", embed: embed.Build());
         }
 
         [Command("karta obrazek", RunMode = RunMode.Async)]
         [Alias("card image", "ci", "ko")]
         [Summary("pozwala wyświetlić obrazek karty")]
         [Remarks("685 nie"), RequireAnyCommandChannelOrLevel(40)]
-        public async Task ShowCardImageAsync([Summary("WID")]ulong wid, [Summary("czy wyświetlić statystyki?")]bool showStats = true)
+        public async Task ShowCardImageAsync(
+            [Summary("WID")]ulong wid,
+            [Summary("czy wyświetlić statystyki?")]bool showStats = true)
         {
-            using (var db = new Database.UserContext(Config))
+            var card = await _repository.GetCardAsync(wid);
+
+            if (card == null)
             {
-                var card = db.Cards.Include(x => x.GameDeck).Include(x => x.ArenaStats).Include(x => x.TagList).AsNoTracking().FirstOrDefault(x => x.Id == wid);
-                if (card == null)
-                {
-                    await ReplyAsync("", embed: $"{Context.User.Mention} taka karta nie istnieje.".ToEmbedMessage(EMType.Error).Build());
-                    return;
-                }
-
-                SocketUser user = Context.Guild.GetUser(card.GameDeck.UserId);
-                if (user == null) user = Context.Client.GetUser(card.GameDeck.UserId);
-
-                using (var cdb = new Database.GuildConfigContext(Config))
-                {
-                    var gConfig = await cdb.GetCachedGuildFullConfigAsync(Context.Guild.Id);
-                    var trashChannel = Context.Guild.GetTextChannel(gConfig.WaifuConfig.TrashCommandsChannel);
-                    await ReplyAsync("", embed: await _waifu.BuildCardImageAsync(card, trashChannel, user, showStats));
-                }
+                await ReplyAsync("", embed: $"{Context.User.Mention} taka karta nie istnieje.".ToEmbedMessage(EMType.Error).Build());
+                return;
             }
+
+            SocketUser user = Context.Guild.GetUser(card.GameDeck.UserId);
+
+            if (user == null)
+            {
+                user = Context.Client.GetUser(card.GameDeck.UserId);
+            }
+
+            var gConfig = await _repository.GetCachedGuildFullConfigAsync(Context.Guild.Id);
+            var trashChannel = Context.Guild.GetTextChannel(gConfig.WaifuConfig.TrashCommandsChannel);
+            await ReplyAsync("", embed: await _waifu.BuildCardImageAsync(card, trashChannel, user, showStats));
         }
 
         [Command("karta-", RunMode = RunMode.Async)]

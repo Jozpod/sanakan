@@ -39,33 +39,6 @@ namespace Sanakan.Services.Commands
             _logger = logger;
             _executor = executor;
             _cmd = new CommandService();
-
-            _timer = new Timer(async _ =>
-            {
-                try
-                {
-                    using var process = System.Diagnostics.Process.GetCurrentProcess();
-                    var memoryUsage = process.WorkingSet64 / 1048576;
-
-                    _logger.LogInformation($"Memory Usage: {} MiB");
-                    using var dba = new Database.AnalyticsContext(_config);
-
-                    dba.SystemData.Add(new SystemAnalytics
-                    {
-                        MeasureDate = DateTime.Now,
-                        Value = memoryUsage,
-                        Type = SystemAnalyticsEventType.Ram,
-                    });
-                    await dba.SaveChangesAsync();
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError($"in mem check: {ex}", ex);
-                }
-            },
-            null,
-            TimeSpan.FromMinutes(1),
-            TimeSpan.FromMinutes(1));
         }
 
         public async Task InitializeAsync(IServiceProvider provider, Helper helper)
@@ -93,70 +66,84 @@ namespace Sanakan.Services.Commands
 
         private async Task HandleCommandAsync(SocketMessage message)
         {
-            var msg = message as SocketUserMessage;
-            if (msg == null) return;
+            var userMessage = message as SocketUserMessage;
+            
+            if (userMessage == null)
+            {
+                return;
+            }
 
-            if (msg.Author.IsBot || msg.Author.IsWebhook) return;
+
+            if (userMessage.Author.IsBot || userMessage.Author.IsWebhook)
+            {
+                return;
+            }
 
             var conf = _config.Get();
             string prefix = conf.Prefix;
             var context = new SocketCommandContext(_client, msg);
+
             if (context.Guild != null)
             {
-                using (var db = new Database.GuildConfigContext(_config))
-                {
-                    var gConfig = await db.GetCachedGuildFullConfigAsync(context.Guild.Id);
-                    if (gConfig?.Prefix != null) prefix = gConfig.Prefix;
-                }
+                var gConfig = await db.GetCachedGuildFullConfigAsync(context.Guild.Id);
+                if (gConfig?.Prefix != null) prefix = gConfig.Prefix;
             }
 
             int argPos = 0;
-            if (msg.HasStringPrefix(prefix, ref argPos, StringComparison.OrdinalIgnoreCase))
+            if (!userMessage.HasStringPrefix(prefix, ref argPos, StringComparison.OrdinalIgnoreCase))
             {
-                var isDev = conf.Dev.Any(x => x == context.User.Id);
-                var isOnBlacklist = conf.BlacklistedGuilds.Any(x => x == (context.Guild?.Id ?? 0));
-                if (isOnBlacklist && !isDev) return;
+                return;
+            }
 
-                var res = await _cmd.GetExecutableCommandAsync(context, argPos, _provider);
-                if (res.IsSuccess())
-                {
-                    _logger.LogInformation($"Run cmd: u{msg.Author.Id} {res.Command.Match.Command.Name}");
-                    using (var dbc = new Database.AnalyticsContext(_config))
-                    {
-                        string param = null;
-                        try
-                        {
-                            var paramStart = argPos + res.Command.Match.Command.Name.Length;
-                            var textBigger = context.Message.Content.Length > paramStart;
-                            param = textBigger ? context.Message.Content.Substring(paramStart) : null;
-                        }
-                        catch (Exception) { }
+            var isDev = conf.Dev.Any(x => x == context.User.Id);
+            var isOnBlacklist = conf.BlacklistedGuilds.Any(x => x == (context.Guild?.Id ?? 0));
 
-                        dbc.CommandsData.Add(new CommandsAnalytics()
-                        {
-                            CmdName = res.Command.Match.Command.Name,
-                            GuildId = context.Guild?.Id ?? 0,
-                            UserId = context.User.Id,
-                            Date = DateTime.Now,
-                            CmdParams = param,
-                        });
-                        await dbc.SaveChangesAsync();
-                    }
+            if (isOnBlacklist && !isDev)
+            {
+                return;
+            }
 
-                    switch (res.Command.Match.Command.RunMode)
-                    {
-                        case RunMode.Async:
-                            await res.Command.ExecuteAsync(_provider);
-                            break;
+            var res = await _cmd.GetExecutableCommandAsync(context, argPos, _provider);
 
-                        default:
-                        case RunMode.Sync:
-                            if (!await _executor.TryAdd(res.Command, TimeSpan.FromSeconds(1)))
-                                    await context.Channel.SendMessageAsync("", embed: "Odrzucono polecenie!".ToEmbedMessage(EMType.Error).Build());
-                            break;
-                    }
-                }
+            if (!res.IsSuccess())
+            {
                 else await ProcessResultAsync(res.Result, context, argPos, prefix);
+                return;
+            }
+     
+            _logger.LogInformation($"Run cmd: u{msg.Author.Id} {res.Command.Match.Command.Name}");
+
+            string param = null;
+            try
+            {
+                var paramStart = argPos + res.Command.Match.Command.Name.Length;
+                var textBigger = context.Message.Content.Length > paramStart;
+                param = textBigger ? context.Message.Content.Substring(paramStart) : null;
+            }
+            catch (Exception) { }
+
+            dbc.CommandsData.Add(new CommandsAnalytics()
+            {
+                CmdName = res.Command.Match.Command.Name,
+                GuildId = context.Guild?.Id ?? 0,
+                UserId = context.User.Id,
+                Date = DateTime.Now,
+                CmdParams = param,
+            });
+
+            await dbc.SaveChangesAsync();
+
+            switch (res.Command.Match.Command.RunMode)
+            {
+                case RunMode.Async:
+                    await res.Command.ExecuteAsync(_provider);
+                    break;
+
+                default:
+                case RunMode.Sync:
+                    if (!await _executor.TryAdd(res.Command, TimeSpan.FromSeconds(1)))
+                            await context.Channel.SendMessageAsync("", embed: "Odrzucono polecenie!".ToEmbedMessage(EMType.Error).Build());
+                    break;
             }
         }
 
