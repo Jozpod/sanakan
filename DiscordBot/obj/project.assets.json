@@ -1162,6 +1162,7 @@
     ".NETCoreApp,Version=v3.1": [
       "DAL >= 1.0.0",
       "Discord.Net >= 2.4.0",
+      "Microsoft.Extensions.DependencyInjection >= 5.0.2",
       "Microsoft.Extensions.Options >= 5.0.0",
       "Sanakan.Common >= 1.0.0",
       "Shinden.NET >= 0.3.8-beta",
@@ -1224,6 +1225,10 @@
           "Discord.Net": {
             "target": "Package",
             "version": "[2.4.0, )"
+          },
+          "Microsoft.Extensions.DependencyInjection": {
+            "target": "Package",
+            "version": "[5.0.2, )"
           },
           "Microsoft.Extensions.Options": {
             "target": "Package",

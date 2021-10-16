@@ -41,17 +41,19 @@ namespace Sanakan.Preconditions
             
 
             var config = (IConfig)services.GetService(typeof(IConfig));
-            using (var db = new Database.GuildConfigContext(config))
+
+            var gConfig = await db.GetCachedGuildFullConfigAsync(context.Guild.Id);
+            
+            if (gConfig == null)
             {
-                var gConfig = await db.GetCachedGuildFullConfigAsync(context.Guild.Id);
-                if (gConfig == null) return CheckUser(user, channel);
-
-                var role = context.Guild.GetRole(gConfig.AdminRole);
-                if (role == null) return CheckUser(user, channel);
-
-                if (user.Roles.Any(x => x.Id == role.Id)) return PreconditionResult.FromSuccess();
                 return CheckUser(user, channel);
             }
+
+            var role = context.Guild.GetRole(gConfig.AdminRole);
+            if (role == null) return CheckUser(user, channel);
+
+            if (user.Roles.Any(x => x.Id == role.Id)) return PreconditionResult.FromSuccess();
+            return CheckUser(user, channel);
         }
 
         private PreconditionResult CheckUser(SocketGuildUser user, IGuildChannel channel)
@@ -65,7 +67,8 @@ namespace Sanakan.Preconditions
             {
                 return PreconditionResult.FromSuccess();
             }
-            
+
+            // YouHaveNoPowerHere.gif
             return PreconditionResult.FromError($"|IMAGE|https://i.giphy.com/RX3vhj311HKLe.gif");
         }
     }

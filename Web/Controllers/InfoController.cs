@@ -9,36 +9,40 @@ using Sanakan.Config;
 using Sanakan.Extensions;
 using Sanakan.Api.Models;
 using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Http;
+using Sanakan.Web.Configuration;
 
 namespace Sanakan.Web.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Produces("application/json")]
     public class InfoController : ControllerBase
     {
         private readonly Helper _helper;
-        private readonly object _config;
+        private readonly SanakanConfiguration _config;
 
         public InfoController(
             Helper helper,
-            IOptions<object> config)
+            IOptions<SanakanConfiguration> config)
         {
             _helper = helper;
             _config = config.Value;
         }
 
         /// <summary>
-        /// Pobiera publiczną liste poleceń bota
+        /// Gets the list of discord bot commands.
         /// </summary>
-        /// <response code="500">Internal Server Error</response>
         [HttpGet("commands")]
+        [ProducesResponseType(typeof(ObjectResult), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(Commands), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetCommandsInfoAsync()
         {
             try
             {
                 var result = new Commands
                 {
-                    Prefix = _con.Prefix,
+                    Prefix = _config.Prefix,
                     Modules = GetInfoAboutModules(_helper.PublicModulesInfo)
                 };
 
@@ -53,20 +57,25 @@ namespace Sanakan.Web.Controllers
             }
         }
 
-        private List<Models.Module> GetInfoAboutModules(IEnumerable<ModuleInfo> modules)
+        private List<Module> GetInfoAboutModules(IEnumerable<ModuleInfo> modules)
         {
-            var mod = new List<Models.Module>();
+            var mod = new List<Module>();
             foreach (var item in modules)
             {
-                var mInfo = new Models.Module
+                var mInfo = new Module
                 {
                     Name = item.Name,
                     SubModules = new List<SubModule>()
                 };
 
                 if (mod.Any(x => x.Name.Equals(item.Name)))
+                {
                     mInfo = mod.First(x => x.Name.Equals(item.Name));
-                else mod.Add(mInfo);
+                }
+                else
+                {
+                    mod.Add(mInfo);
+                }
 
                 var subMInfo = new SubModule()
                 {
@@ -91,12 +100,12 @@ namespace Sanakan.Web.Controllers
                             Example = cmd.Remarks,
                             Description = cmd.Summary,
                             Aliases = new List<string>(),
-                            Attributes = new List<Models.CommandAttribute>()
+                            Attributes = new List<Api.Models.CommandAttribute>(),
                         };
 
                         foreach(var atr in cmd.Parameters)
                         {
-                            cc.Attributes.Add(new Models.CommandAttribute
+                            cc.Attributes.Add(new Api.Models.CommandAttribute
                             {
                                 Name = atr.Name,
                                 Description = atr.Summary

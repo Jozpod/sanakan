@@ -18,6 +18,7 @@ namespace Sanakan.Web.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Produces("application/json")]
     public class TokenController : ControllerBase
     {
         private readonly SanakanConfiguration _config;
@@ -52,7 +53,7 @@ namespace Sanakan.Web.Controllers
             var claims = new[]
             {
                 new Claim(JwtRegisteredClaimNames.Website, user),
-                new Claim("Player", "waifu_player"),
+                new Claim(RegisteredClaimNames.Player, "waifu_player"),
             };
 
             if (user != null)

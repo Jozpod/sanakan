@@ -15,27 +15,34 @@ using System.Linq;
 using System.Threading.Tasks;
 using Sanakan.DiscordBot.Services;
 using Sanakan.Common;
+using DAL.Repositories.Abstractions;
 
 namespace Sanakan.Modules
 {
     [Name("Zabawy"), RequireUserRole]
-    public class Fun : SanakanModuleBase<SocketCommandContext>
+    public class FunModule : ModuleBase<SocketCommandContext>
     {
         private readonly Services.Fun _fun;
         private readonly Moderator _moderation;
         private readonly SessionManager _session;
         private readonly ICacheManager _cacheManager;
+        private readonly IRepository _repository;
+        private readonly ISystemClock _systemClock;
 
-        public Fun(
+        public FunModule(
             Services.Fun fun,
             Moderator moderation,
             SessionManager session,
-            ICacheManager cacheManager)
+            ICacheManager cacheManager,
+            IRepository repository,
+            ISystemClock systemClock)
         {
             _fun = fun;
             _session = session;
             _moderation = moderation;
             _cacheManager = cacheManager;
+            _repository = repository;
+            _systemClock = systemClock;
         }
 
         [Command("drobne")]
@@ -44,40 +51,43 @@ namespace Sanakan.Modules
         [Remarks(""), RequireCommandChannel]
         public async Task GiveDailyScAsync()
         {
-            using (var db = new Database.UserContext(Config))
+            var botuser = await _repository.GetUserOrCreateAsync(Context.User.Id);
+            
+            var daily = botuser.TimeStatuses.FirstOrDefault(x => x.Type == StatusType.Daily);
+            
+            if (daily == null)
             {
-                var botuser = await db.GetUserOrCreateAsync(Context.User.Id);
-                var daily = botuser.TimeStatuses.FirstOrDefault(x => x.Type == Database.Models.StatusType.Daily);
-                if (daily == null)
-                {
-                    daily = StatusType.Daily.NewTimeStatus();
-                    botuser.TimeStatuses.Add(daily);
-                }
-
-                if (daily.IsActive())
-                {
-                    var timeTo = (int)daily.RemainingMinutes();
-                    await ReplyAsync("", embed: $"{Context.User.Mention} następne drobne możesz otrzymać dopiero za {timeTo / 60}h {timeTo % 60}m!".ToEmbedMessage(EMType.Error).Build());
-                    return;
-                }
-
-                var mission = botuser.TimeStatuses.FirstOrDefault(x => x.Type == StatusType.WDaily);
-                if (mission == null)
-                {
-                    mission = StatusType.WDaily.NewTimeStatus();
-                    botuser.TimeStatuses.Add(mission);
-                }
-                mission.Count();
-
-                daily.EndsAt = DateTime.Now.AddHours(20);
-                botuser.ScCnt += 100;
-
-                await db.SaveChangesAsync();
-
-                _cacheManager.ExpireTag(new string[] { $"user-{botuser.Id}" });
-
-                await ReplyAsync("", embed: $"{Context.User.Mention} łap drobne na waciki!".ToEmbedMessage(EMType.Success).Build());
+                daily = StatusType.Daily.NewTimeStatus();
+                botuser.TimeStatuses.Add(daily);
             }
+
+            if (daily.IsActive())
+            {
+                var timeTo = (int)daily.RemainingMinutes();
+                var content = $"{Context.User.Mention} następne drobne możesz otrzymać dopiero za {timeTo / 60}h {timeTo % 60}m!"
+                    .ToEmbedMessage(EMType.Error).Build();
+                await ReplyAsync("", embed: content);
+                return;
+            }
+
+            var mission = botuser.TimeStatuses
+                .FirstOrDefault(x => x.Type == StatusType.WDaily);
+            
+            if (mission == null)
+            {
+                mission = StatusType.WDaily.NewTimeStatus();
+                botuser.TimeStatuses.Add(mission);
+            }
+
+
+            daily.EndsAt = _systemClock.UtcNow.AddHours(20);
+            botuser.ScCnt += 100;
+
+            await _repository.SaveChangesAsync();
+
+            _cacheManager.ExpireTag(new string[] { $"user-{botuser.Id}" });
+
+            await ReplyAsync("", embed: $"{Context.User.Mention} łap drobne na waciki!".ToEmbedMessage(EMType.Success).Build());
         }
 
         [Command("chce muta", RunMode = RunMode.Async)]
@@ -87,51 +97,55 @@ namespace Sanakan.Modules
         public async Task GiveMuteAsync()
         {
             var user = Context.User as SocketGuildUser;
-            if (user == null) return;
-
-            using (var db = new Database.GuildConfigContext(Config))
+            
+            if (user == null)
             {
-                var config = await db.GetCachedGuildFullConfigAsync(Context.Guild.Id);
-                if (config == null)
-                {
-                    await ReplyAsync("", embed: "Serwer nie jest poprawnie skonfigurowany.".ToEmbedMessage(EMType.Bot).Build());
-                    return;
-                }
-
-                var notifChannel = Context.Guild.GetTextChannel(config.NotificationChannel);
-                var userRole = Context.Guild.GetRole(config.UserRole);
-                var muteRole = Context.Guild.GetRole(config.MuteRole);
-
-                if (muteRole == null)
-                {
-                    await ReplyAsync("", embed: "Rola wyciszająca nie jest ustawiona.".ToEmbedMessage(EMType.Bot).Build());
-                    return;
-                }
-
-                if (user.Roles.Contains(muteRole))
-                {
-                    await ReplyAsync("", embed: $"{user.Mention} już jest wyciszony.".ToEmbedMessage(EMType.Error).Build());
-                    return;
-                }
-
-                var session = new AcceptSession(user, null, Context.Client.CurrentUser);
-                await _session.KillSessionIfExistAsync(session);
-
-                var msg = await ReplyAsync("", embed: $"{user.Mention} na pewno chcesz muta?".ToEmbedMessage(EMType.Error).Build());
-                await msg.AddReactionsAsync(session.StartReactions);
-                session.Actions = new AcceptMute(Config)
-                {
-                    NotifChannel = notifChannel,
-                    Moderation = _moderation,
-                    MuteRole = muteRole,
-                    UserRole = userRole,
-                    Message = msg,
-                    User = user,
-                };
-                session.Message = msg;
-
-                await _session.TryAddSession(session);
+                return;
             }
+
+            var config = await db.GetCachedGuildFullConfigAsync(Context.Guild.Id);
+
+            if (config == null)
+            {
+                await ReplyAsync("", embed: "Serwer nie jest poprawnie skonfigurowany.".ToEmbedMessage(EMType.Bot).Build());
+                return;
+            }
+
+            var notifChannel = Context.Guild.GetTextChannel(config.NotificationChannel);
+            var userRole = Context.Guild.GetRole(config.UserRole);
+            var muteRole = Context.Guild.GetRole(config.MuteRole);
+
+            if (muteRole == null)
+            {
+                await ReplyAsync("", embed: "Rola wyciszająca nie jest ustawiona.".ToEmbedMessage(EMType.Bot).Build());
+                return;
+            }
+
+            if (user.Roles.Contains(muteRole))
+            {
+                await ReplyAsync("", embed: $"{user.Mention} już jest wyciszony.".ToEmbedMessage(EMType.Error).Build());
+                return;
+            }
+
+            var session = new AcceptSession(user, null, Context.Client.CurrentUser);
+            await _session.KillSessionIfExistAsync(session);
+
+            var content = $"{user.Mention} na pewno chcesz muta?".ToEmbedMessage(EMType.Error).Build();
+            var msg = await ReplyAsync("", embed: content);
+            await msg.AddReactionsAsync(session.StartReactions);
+
+            session.Actions = new AcceptMute(Config)
+            {
+                NotifChannel = notifChannel,
+                Moderation = _moderation,
+                MuteRole = muteRole,
+                UserRole = userRole,
+                Message = msg,
+                User = user,
+            };
+            session.Message = msg;
+
+            await _session.TryAddSession(session);
         }
 
         [Command("zaskórniaki")]

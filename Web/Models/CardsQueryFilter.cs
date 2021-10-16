@@ -1,14 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Sanakan.DAL.Models;
+using Sanakan.Web.Models;
 
 namespace Sanakan.Api.Models
 {
-    public enum FilterTagsMethodType
-    {
-        And, Or
-    }
-
     /// <summary>
     /// Filtrowanie listy kart
     /// </summary>
@@ -18,18 +14,22 @@ namespace Sanakan.Api.Models
         /// Sortowanie po parametrze
         /// </summary>
         public OrderType OrderBy { get; set; }
+
         /// <summary>
         /// Tekst wyszukiwania
         /// </summary>
         public string SearchText { get; set; }
+
         /// <summary>
         /// Tagi jakie ma zawierać karta
         /// </summary>
         public List<string> IncludeTags { get; set; }
+
         /// <summary>
         /// Tagi jakich karta ma nie mieć
         /// </summary>
         public List<string> ExcludeTags { get; set; }
+
         /// <summary>
         /// W jaki sposów filtrować po tagach
         /// </summary>

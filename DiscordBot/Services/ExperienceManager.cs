@@ -1,6 +1,7 @@
 ﻿using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Sanakan.DAL.Models;
 using Sanakan.DiscordBot.Services;
 using Sanakan.Extensions;
 using Sanakan.Services.Executor;
@@ -79,51 +80,53 @@ namespace Sanakan.Services
 
         private async Task HandleMessageAsync(SocketMessage message)
         {
-            if (message.Author.IsBot || message.Author.IsWebhook) return;
+            if (message.Author.IsBot || message.Author.IsWebhook)
+            {
+                return;
+            }
 
             var user = message.Author as SocketGuildUser;
-            if (user == null) return;
+
+            if (user == null)
+            {
+                return;
+            }
 
             if (_config.Get().BlacklistedGuilds.Any(x => x == user.Guild.Id))
                 return;
 
-            bool countMsg = true;
-            bool calculateExp = true;
-            using (var db = new Database.GuildConfigContext(_config))
+            var countMsg = true;
+            var calculateExp = true;
+
+            var config = await db.GetCachedGuildFullConfigAsync(user.Guild.Id);
+            if (config != null)
             {
-                var config = await db.GetCachedGuildFullConfigAsync(user.Guild.Id);
-                if (config != null)
+                var role = user.Guild.GetRole(config.UserRole);
+                if (role != null)
                 {
-                    var role = user.Guild.GetRole(config.UserRole);
-                    if (role != null)
-                    {
-                        if (!user.Roles.Contains(role))
-                            return;
-                    }
+                    if (!user.Roles.Contains(role))
+                        return;
+                }
 
-                    if (config.ChannelsWithoutExp != null)
-                    {
-                        if (config.ChannelsWithoutExp.Any(x => x.Channel == message.Channel.Id))
-                            calculateExp = false;
-                    }
+                if (config.ChannelsWithoutExp != null)
+                {
+                    if (config.ChannelsWithoutExp.Any(x => x.Channel == message.Channel.Id))
+                        calculateExp = false;
+                }
 
-                    if (config.IgnoredChannels != null)
-                    {
-                        if (config.IgnoredChannels.Any(x => x.Channel == message.Channel.Id))
-                            countMsg = false;
-                    }
+                if (config.IgnoredChannels != null)
+                {
+                    if (config.IgnoredChannels.Any(x => x.Channel == message.Channel.Id))
+                        countMsg = false;
                 }
             }
 
             if (!_messages.Any(x => x.Key == user.Id))
             {
-                using (var db = new Database.UserContext(_config))
+                if (!db.Users.AsNoTracking().Any(x => x.Id == user.Id))
                 {
-                    if (!db.Users.AsNoTracking().Any(x => x.Id == user.Id))
-                    {
-                        var task = CreateUserTask(user);
-                        await _executor.TryAdd(new Executable("add user", task), TimeSpan.FromSeconds(1));
-                    }
+                    var task = CreateUserTask(user);
+                    await _executor.TryAdd(new Executable("add user", task), TimeSpan.FromSeconds(1));
                 }
             }
 
@@ -222,12 +225,15 @@ namespace Sanakan.Services
             return experience;
         }
 
-        private long CheckFloodAndReturnExp(long exp, Database.Models.User botUser)
+        private long CheckFloodAndReturnExp(long exp, User botUser)
         {
-            var fMn = botUser.TimeStatuses.FirstOrDefault(x => x.Type == Database.Models.StatusType.Flood);
+            var fMn = botUser
+                .TimeStatuses
+                .FirstOrDefault(x => x.Type == StatusType.Flood);
+
             if (fMn == null)
             {
-                fMn = Database.Models.StatusType.Flood.NewTimeStatus();
+                fMn = StatusType.Flood.NewTimeStatus();
                 botUser.TimeStatuses.Add(fMn);
             }
 

@@ -195,6 +195,10 @@
               "target": "Package",
               "version": "[2.4.0, )"
             },
+            "Microsoft.Extensions.DependencyInjection": {
+              "target": "Package",
+              "version": "[5.0.2, )"
+            },
             "Microsoft.Extensions.Options": {
               "target": "Package",
               "version": "[5.0.0, )"
@@ -389,6 +393,10 @@
               "target": "Package",
               "version": "[4.2.0, )"
             },
+            "Microsoft.Extensions.DependencyInjection": {
+              "target": "Package",
+              "version": "[5.0.2, )"
+            },
             "Microsoft.IdentityModel.Tokens": {
               "target": "Package",
               "version": "[6.8.0, )"
@@ -399,7 +407,7 @@
             },
             "Newtonsoft.Json": {
               "target": "Package",
-              "version": "[12.0.2, )"
+              "version": "[13.0.1, )"
             },
             "Swashbuckle.AspNetCore.SwaggerGen": {
               "target": "Package",

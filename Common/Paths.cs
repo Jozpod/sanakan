@@ -8,5 +8,6 @@ namespace Sanakan.Common
         public static string CardsInProfiles = $"{Cards}/Profile";
         public static string SavedData = $"{BaseOutput}/Saved";
         public static string Profiles = $"{BaseOutput}/Profile";
+        public static string PokeList = $"./Pictures/Poke/List.json";
     }
 }

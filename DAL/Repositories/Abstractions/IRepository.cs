@@ -1,13 +1,16 @@
 ﻿using Sanakan.DAL.Models;
+using Sanakan.DAL.Models.Analytics;
 using Sanakan.DAL.Models.Configuration;
 using Sanakan.DAL.Models.Management;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace DAL.Repositories.Abstractions
 {
     public interface IRepository
     {
+
         Task<GuildOptions> GetGuildConfigOrCreateAsync(ulong guildId);
         Task<GuildOptions> GetCachedGuildFullConfigAsync(ulong guildId);
         Task<IEnumerable<PenaltyInfo>> GetCachedFullPenalties();
@@ -25,5 +28,13 @@ namespace DAL.Repositories.Abstractions
         Task RemoveQuestionAsync(Question question);
         Task<Question> GetQuestionAsync(ulong id);
         Task<User?> GetUserCardsAsync(ulong id);
+        Task AddSystemAnalyticsAsync(SystemAnalytics record);
+        Task<User> GetUsersCardsByShindenIdWithOffsetAndFilterAsync1(ulong id);
+        Task<IQueryable<Card>> GetUsersCardsByShindenIdWithOffsetAndFilterAsync2(ulong id);
+        Task<List<Card>> GetCardsWithTagAsync(string tag);
+        Task<List<Card>> GetCardsByCharacterIdAsync(ulong id);
+        Task SaveChangesAsync();
+        Task<User?> GetUserWaifuProfileAsync(ulong id);
+        Task AddTransferAnalyticsAsync(TransferAnalytics record);
     }
 }

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Security.Cryptography;
 
 namespace Sanakan.Common
@@ -27,6 +29,13 @@ namespace Sanakan.Common
             }
 
             return (int)(min + ((max - min) * (scale / (double)uint.MaxValue)));
+        }
+
+        public T GetOneRandomFrom<T>(IEnumerable<T> enumerable)
+        {
+            var randomIndex = GetRandomValue(enumerable.Count());
+
+            return enumerable.ElementAt(randomIndex);
         }
     }
 }

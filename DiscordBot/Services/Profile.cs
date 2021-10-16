@@ -43,13 +43,7 @@ namespace Sanakan.Services
             {
                 try
                 {
-                    using (var db = new Database.UserContext(_config))
-                    {
-                        using (var dbg = new Database.GuildConfigContext(_config))
-                        {
-                            await CyclicCheckAsync(db, dbg);
-                        }
-                    }
+                    await CyclicCheckAsync(db, dbg);
                 }
                 catch (Exception ex)
                 {
@@ -63,7 +57,11 @@ namespace Sanakan.Services
 
         private async Task CyclicCheckAsync(Database.UserContext context, Database.GuildConfigContext guildContext)
         {
-            var subs = context.TimeStatuses.AsNoTracking().FromCache(new[] { "users" }).Where(x => x.Type.IsSubType());
+            var subs = context.TimeStatuses
+                .AsNoTracking()
+                .FromCache(new[] { "users" })
+                .Where(x => x.Type.IsSubType());
+
             foreach (var sub in subs)
             {
                 if (sub.IsActive())
@@ -237,12 +235,17 @@ namespace Sanakan.Services
         {
             bool isConnected = botUser.Shinden != 0;
             var response = _shClient.User.GetAsync(botUser.Shinden);
+            var roleColor = user.Roles.OrderByDescending(x => x.Position)
+                .FirstOrDefault()?.Color ?? Discord.Color.DarkerGrey;
 
-            using (var image = await _img.GetUserProfileAsync(isConnected ? (await response).Body : null, botUser, user.GetUserOrDefaultAvatarUrl(),
-                topPosition, user.Nickname ?? user.Username, user.Roles.OrderByDescending(x => x.Position).FirstOrDefault()?.Color ?? Discord.Color.DarkerGrey))
-            {
-                return image.ToPngStream();
-            }
+            using var image = await _img.GetUserProfileAsync(
+                isConnected ? (await response).Body : null,
+                botUser,
+                user.GetUserOrDefaultAvatarUrl(),
+                topPosition,
+                user.Nickname ?? user.Username,
+                roleColor);
+            return image.ToPngStream();
         }
 
         public async Task<SaveResult> SaveProfileImageAsync(string imgUrl, string path, int width = 0, int height = 0, bool streach = false)

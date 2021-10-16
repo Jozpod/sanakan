@@ -5,22 +5,29 @@ using Sanakan.Web.Configuration;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Sanakan.Common;
 
 namespace Sanakan.Preconditions
 {
     public class RequireDev : PreconditionAttribute
     {
-
-
         public async override Task<PreconditionResult> CheckPermissionsAsync(ICommandContext context, CommandInfo command, IServiceProvider services)
         {
-            var config = services.GetService<IOptions<SanakanConfiguration>>().Value;
+            var config = services.GetRequiredService<IOptions<SanakanConfiguration>>().Value;
 
             if (config.Dev.Any(x => x == context.User.Id))
+            {
                 return PreconditionResult.FromSuccess();
+            }
 
-            context.Client.Send
-            return PreconditionResult.FromError($"|IMAGE|https://i.giphy.com/d1E1msx7Yw5Ne1Fe.gif");
+            var resourceManager = services.GetRequiredService<IResourceManager>();
+
+            using var stream = resourceManager.GetResourceStream(Resources.ManWaggingFinger);
+
+            await context.Channel.SendFileAsync(stream, "no.gif");
+
+            return PreconditionResult.FromError("Insufficient permission");
         }
     }
 }

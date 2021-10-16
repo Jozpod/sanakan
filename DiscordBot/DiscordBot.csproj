@@ -12,6 +12,8 @@
     <None Remove="Fonts\Lato-Bold.ttf" />
     <None Remove="Fonts\Lato-Light.ttf" />
     <None Remove="Fonts\Lato-Regular.ttf" />
+    <None Remove="Pictures\ManWaggingFinger.gif" />
+    <None Remove="Pictures\YouHaveNoPowerHere.gif" />
   </ItemGroup>
 
   <ItemGroup>
@@ -19,12 +21,15 @@
     <EmbeddedResource Include="Fonts\Lato-Bold.ttf" />
     <EmbeddedResource Include="Fonts\Lato-Light.ttf" />
     <EmbeddedResource Include="Fonts\Lato-Regular.ttf" />
+    <EmbeddedResource Include="Pictures\ManWaggingFinger.gif" />
+    <EmbeddedResource Include="Pictures\YouHaveNoPowerHere.gif" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Discord.Net" Version="2.4.0" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="5.0.0" />
     <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta0006" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.2" />
   </ItemGroup>
 
   <ItemGroup>

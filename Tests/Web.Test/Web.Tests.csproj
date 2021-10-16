@@ -53,14 +53,15 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="HostedServices\MemoryUsageHostedServiceTests.cs" />
     <Compile Include="JwtBuilderTests.cs" />
-    <Compile Include="DebugControllerTests.cs" />
-    <Compile Include="WaifuControllerTests.cs" />
-    <Compile Include="UserControllerTests.cs" />
-    <Compile Include="RichMessageControllerTests.cs" />
-    <Compile Include="TokenControllerTests.cs" />
-    <Compile Include="QuizControllerTests.cs" />
-    <Compile Include="InfoControllerTests.cs" />
+    <Compile Include="Controllers\DebugControllerTests.cs" />
+    <Compile Include="Controllers\WaifuControllerTests.cs" />
+    <Compile Include="Controllers\UserControllerTests.cs" />
+    <Compile Include="Controllers\RichMessageControllerTests.cs" />
+    <Compile Include="Controllers\TokenControllerTests.cs" />
+    <Compile Include="Controllers\QuizControllerTests.cs" />
+    <Compile Include="Controllers\InfoControllerTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

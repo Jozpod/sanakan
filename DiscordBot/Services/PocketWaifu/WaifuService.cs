@@ -21,20 +21,29 @@ namespace Sanakan.Services.PocketWaifu
     public class WaifuService : IWaifuService
     {
         private readonly Events _events;
+        private readonly IFileSystem _fileSystem;
+        private readonly ISystemClock _systemClock;
         private readonly IImageProcessing _img;
         private readonly IShindenClient _shClient;
         private readonly ICacheManager _cacheManager;
+        private readonly IRandomNumberGenerator _randomNumberGenerator;
 
         public WaifuService(
             IImageProcessing img,
+            IFileSystem fileSystem,
+            ISystemClock systemClock,
             IShindenClient client,
             Events events,
-            ICacheManager cacheManager)
+            ICacheManager cacheManager,
+            IRandomNumberGenerator randomNumberGenerator)
         {
             _img = img;
+            _fileSystem = fileSystem;
+            _systemClock = systemClock;
             _events = events;
             _shClient = client;
             _cacheManager = cacheManager;
+            _randomNumberGenerator = randomNumberGenerator;
         }
 
         private const int DERE_TAB_SIZE = ((int) Dere.Yato) + 1;
@@ -506,7 +515,11 @@ namespace Sanakan.Services.PocketWaifu
             }
         }
 
-        public async Task<Embed> ExecuteShopAsync(ShopType type, Config.IConfig config, IUser discordUser, int selectedItem, string specialCmd)
+        public async Task<Embed> ExecuteShopAsync(
+            ShopType type,
+            IUser discordUser,
+            int selectedItem,
+            string specialCmd)
         {
             var itemsToBuy = GetItemsWithCostForShop(type);
             if (selectedItem <= 0)
@@ -536,13 +549,20 @@ namespace Sanakan.Services.PocketWaifu
             switch (thisItem.Item.Type)
             {
                 case ItemType.RandomTitleBoosterPackSingleE:
-                    if (itemCount < 0) itemCount = 0;
+                    if (itemCount < 0)
+                    {
+                        itemCount = 0;
+                    }
+                    
                     var response = await _shClient.Title.GetInfoAsync((ulong)itemCount);
+
                     if (!response.IsSuccessStatusCode())
                     {
                         return $"{discordUser.Mention} nie odnaleziono tytułu o podanym id.".ToEmbedMessage(EMType.Error).Build();
                     }
+
                     var response2 = await _shClient.Title.GetCharactersAsync(response.Body);
+                    
                     if (!response2.IsSuccessStatusCode())
                     {
                         return $"{discordUser.Mention} nie odnaleziono postaci pod podanym tytułem.".ToEmbedMessage(EMType.Error).Build();
@@ -574,66 +594,67 @@ namespace Sanakan.Services.PocketWaifu
             var realCost = itemCount * thisItem.Cost;
             string count = (itemCount > 1) ? $" x{itemCount}" : "";
 
-            using (var db = new Database.UserContext(config))
+
+            var bUser = await db.GetUserOrCreateAsync(discordUser.Id);
+            if (!CheckIfUserCanBuy(type, bUser, realCost))
             {
-                var bUser = await db.GetUserOrCreateAsync(discordUser.Id);
-                if (!CheckIfUserCanBuy(type, bUser, realCost))
-                {
-                    return $"{discordUser.Mention} nie posiadasz wystarczającej liczby {GetShopCurrencyName(type)}!".ToEmbedMessage(EMType.Error).Build();
-                }
-
-                if (thisItem.Item.Type.IsBoosterPack())
-                {
-                    for (int i = 0; i < itemCount; i++)
-                    {
-                        var booster = thisItem.Item.Type.ToBoosterPack();
-                        if (boosterPackTitleId != 0)
-                        {
-                            booster.Title = boosterPackTitleId;
-                            booster.Name += boosterPackTitleName;
-                        }
-                        if (booster != null)
-                        {
-                            booster.CardSourceFromPack = GetBoosterpackSource(type);
-                            bUser.GameDeck.BoosterPacks.Add(booster);
-                        }
-                    }
-
-                    bUser.Stats.WastedPuzzlesOnCards += realCost;
-                }
-                else if (thisItem.Item.Type.IsPreAssembledFigure())
-                {
-                    if (bUser.GameDeck.Figures.Any(x => x.PAS == thisItem.Item.Type.ToPASType()))
-                    {
-                        return $"{discordUser.Mention} masz już taką figurkę.".ToEmbedMessage(EMType.Error).Build();
-                    }
-
-                    var figure = thisItem.Item.Type.ToPAFigure();
-                    if (figure != null) bUser.GameDeck.Figures.Add(figure);
-
-                    IncreaseMoneySpentOnCards(type, bUser, realCost);
-                }
-                else
-                {
-                    var inUserItem = bUser.GameDeck.Items.FirstOrDefault(x => x.Type == thisItem.Item.Type && x.Quality == thisItem.Item.Quality);
-                    if (inUserItem == null)
-                    {
-                        inUserItem = thisItem.Item.Type.ToItem(itemCount, thisItem.Item.Quality);
-                        bUser.GameDeck.Items.Add(inUserItem);
-                    }
-                    else inUserItem.Count += itemCount;
-
-                    IncreaseMoneySpentOnCookies(type, bUser, realCost);
-                }
-
-                RemoveMoneyFromUser(type, bUser, realCost);
-
-                await db.SaveChangesAsync();
-
-                _cacheManager.ExpireTag(new string[] { $"user-{bUser.Id}", "users" });
-
-                return $"{discordUser.Mention} zakupił: _{thisItem.Item.Name}{boosterPackTitleName}{count}_.".ToEmbedMessage(EMType.Success).Build();
+                return $"{discordUser.Mention} nie posiadasz wystarczającej liczby {GetShopCurrencyName(type)}!".ToEmbedMessage(EMType.Error).Build();
             }
+
+            if (thisItem.Item.Type.IsBoosterPack())
+            {
+                for (int i = 0; i < itemCount; i++)
+                {
+                    var booster = thisItem.Item.Type.ToBoosterPack();
+                    if (boosterPackTitleId != 0)
+                    {
+                        booster.Title = boosterPackTitleId;
+                        booster.Name += boosterPackTitleName;
+                    }
+                    if (booster != null)
+                    {
+                        booster.CardSourceFromPack = GetBoosterpackSource(type);
+                        bUser.GameDeck.BoosterPacks.Add(booster);
+                    }
+                }
+
+                bUser.Stats.WastedPuzzlesOnCards += realCost;
+            }
+            else if (thisItem.Item.Type.IsPreAssembledFigure())
+            {
+                if (bUser.GameDeck.Figures.Any(x => x.PAS == thisItem.Item.Type.ToPASType()))
+                {
+                    return $"{discordUser.Mention} masz już taką figurkę.".ToEmbedMessage(EMType.Error).Build();
+                }
+
+                var figure = thisItem.Item.Type.ToPAFigure();
+                if (figure != null) bUser.GameDeck.Figures.Add(figure);
+
+                IncreaseMoneySpentOnCards(type, bUser, realCost);
+            }
+            else
+            {
+                var inUserItem = bUser.GameDeck.Items
+                    .FirstOrDefault(x => x.Type == thisItem.Item.Type
+                        && x.Quality == thisItem.Item.Quality);
+
+                if (inUserItem == null)
+                {
+                    inUserItem = thisItem.Item.Type.ToItem(itemCount, thisItem.Item.Quality);
+                    bUser.GameDeck.Items.Add(inUserItem);
+                }
+                else inUserItem.Count += itemCount;
+
+                IncreaseMoneySpentOnCookies(type, bUser, realCost);
+            }
+
+            RemoveMoneyFromUser(type, bUser, realCost);
+
+            await db.SaveChangesAsync();
+
+            _cacheManager.ExpireTag(new string[] { $"user-{bUser.Id}", "users" });
+
+            return $"{discordUser.Mention} zakupił: _{thisItem.Item.Name}{boosterPackTitleName}{count}_.".ToEmbedMessage(EMType.Success).Build();
         }
 
         public double GetExpToUpgrade(Card toUp, Card toSac)
@@ -1224,9 +1245,9 @@ namespace Sanakan.Services.PocketWaifu
 
         public async Task<string> GenerateAndSaveCardAsync(Card card, CardImageType type = CardImageType.Normal)
         {
-            string imageLocation = $"{Dir.Cards}/{card.Id}.png";
-            string sImageLocation = $"{Dir.CardsMiniatures}/{card.Id}.png";
-            string pImageLocation = $"{Dir.CardsInProfiles}/{card.Id}.png";
+            var imageLocation = $"{Paths.Cards}/{card.Id}.png";
+            var sImageLocation = $"{Paths.CardsMiniatures}/{card.Id}.png";
+            var pImageLocation = $"{Paths.CardsInProfiles}/{card.Id}.png";
 
             using (var image = await _img.GetWaifuCardAsync(card))
             {
@@ -1234,10 +1255,8 @@ namespace Sanakan.Services.PocketWaifu
                 image.SaveToPath(sImageLocation, 133);
             }
 
-            using (var cardImage = await _img.GetWaifuInProfileCardAsync(card))
-            {
-                cardImage.SaveToPath(pImageLocation, 380);
-            }
+            using var cardImage = await _img.GetWaifuInProfileCardAsync(card);
+            cardImage.SaveToPath(pImageLocation, 380);
 
             switch (type)
             {
@@ -1255,31 +1274,31 @@ namespace Sanakan.Services.PocketWaifu
 
         public void DeleteCardImageIfExist(Card card)
         {
-            string imageLocation = $"{Dir.Cards}/{card.Id}.png";
-            string sImageLocation = $"{Dir.CardsMiniatures}/{card.Id}.png";
-            string pImageLocation = $"{Dir.CardsInProfiles}/{card.Id}.png";
+            var imageLocation = $"{Paths.Cards}/{card.Id}.png";
+            var sImageLocation = $"{Paths.CardsMiniatures}/{card.Id}.png";
+            var pImageLocation = $"{Paths.CardsInProfiles}/{card.Id}.png";
 
             try
             {
-                if (File.Exists(imageLocation))
-                    File.Delete(imageLocation);
+                if (_fileSystem.Exists(imageLocation))
+                    _fileSystem.Delete(imageLocation);
 
-                if (File.Exists(sImageLocation))
-                    File.Delete(sImageLocation);
+                if (_fileSystem.Exists(sImageLocation))
+                    _fileSystem.Delete(sImageLocation);
 
-                if (File.Exists(pImageLocation))
-                    File.Delete(pImageLocation);
+                if (_fileSystem.Exists(pImageLocation))
+                    _fileSystem.Delete(pImageLocation);
             }
             catch (Exception) {}
         }
 
         private async Task<string> GetCardUrlIfExistAsync(Card card, bool defaultStr = false, bool force = false)
         {
-            string imageUrl = null;
-            string imageLocation = $"{Dir.Cards}/{card.Id}.png";
-            string sImageLocation = $"{Dir.CardsMiniatures}/{card.Id}.png";
+            var imageUrl = null as string;
+            var imageLocation = $"{Paths.Cards}/{card.Id}.png";
+            var sImageLocation = $"{Paths.CardsMiniatures}/{card.Id}.png";
 
-            if (!File.Exists(imageLocation) || !File.Exists(sImageLocation) || force)
+            if (!_fileSystem.Exists(imageLocation) || !_fileSystem.Exists(sImageLocation) || force)
             {
                 if (card.Id != 0)
                     imageUrl = await GenerateAndSaveCardAsync(card);
@@ -1287,7 +1306,7 @@ namespace Sanakan.Services.PocketWaifu
             else
             {
                 imageUrl = imageLocation;
-                if ((DateTime.Now - File.GetCreationTime(imageLocation)).TotalHours > 4)
+                if ((_systemClock.UtcNow - _fileSystem.GetCreationTime(imageLocation)).TotalHours > 4)
                     imageUrl = await GenerateAndSaveCardAsync(card);
             }
 
@@ -1334,7 +1353,11 @@ namespace Sanakan.Services.PocketWaifu
             return msg.Attachments.First().Url;
         }
 
-        public async Task<Embed> BuildCardImageAsync(Card card, ITextChannel trashChannel, SocketUser owner, bool showStats)
+        public async Task<Embed> BuildCardImageAsync(
+            Card card,
+            ITextChannel trashChannel,
+            SocketUser owner,
+            bool showStats)
         {
             string imageUrl = null;
             if (showStats)
@@ -1471,15 +1494,13 @@ namespace Sanakan.Services.PocketWaifu
             return content;
         }
 
-        public async Task<IEnumerable<Card>> GetCardsFromWishlist(List<ulong> cardsId, List<ulong> charactersId, List<ulong> titlesId, Database.UserContext db, IEnumerable<Card> userCards)
+        public async Task<IEnumerable<Card>> GetCardsFromWishlist(
+            List<ulong> cardsId,
+            List<ulong> charactersId,
+            List<ulong> titlesId,
+            List<Card> cards,
+            IEnumerable<Card> userCards)
         {
-            var cards = new List<Card>();
-            if (cardsId != null)
-            {
-                var cds = await db.Cards.Include(x => x.TagList).Where(x => cardsId.Any(c => c == x.Id)).AsNoTracking().ToListAsync();
-                cards.AddRange(cds);
-            }
-
             var characters = new List<ulong>();
             if (charactersId != null)
                 characters.AddRange(charactersId);
@@ -1489,15 +1510,31 @@ namespace Sanakan.Services.PocketWaifu
                 foreach (var id in titlesId)
                 {
                     var response = await _shClient.Title.GetCharactersAsync(id);
-                    if (response.IsSuccessStatusCode())
-                        characters.AddRange(response.Body.Where(x => x.CharacterId.HasValue).Select(x => x.CharacterId.Value));
+
+                    if (!response.IsSuccessStatusCode())
+                    {
+                        continue;
+                    }
+
+                    var charactersBatch = response.Body.Where(x => x.CharacterId.HasValue)
+                        .Select(x => x.CharacterId.Value);
+
+                    characters.AddRange(charactersBatch);
                 }
             }
 
-            if (characters.Count > 0)
+            if (characters.Any())
             {
-                characters = characters.Distinct().Where(c => !userCards.Any(x => x.Character == c)).ToList();
-                var cads = await db.Cards.Include(x => x.TagList).Where(x => characters.Any(c => c == x.Character)).AsNoTracking().ToListAsync();
+                characters = characters.Distinct()
+                    .Where(c => !userCards.Any(x => x.Character == c))
+                    .ToList();
+
+                var cads = await db.Cards
+                    .Include(x => x.TagList)
+                    .Where(x => characters.Any(c => c == x.Character))
+                    .AsNoTracking()
+                    .ToListAsync();
+
                 cards.AddRange(cads);
             }
 

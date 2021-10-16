@@ -132,6 +132,15 @@ namespace DAL.Repositories
             return result;
         }
 
+        public Task<User?> GetByShindenIdAsync(ulong userShindenId)
+        {
+            return _dbContext.Users
+                .FirstOrDefaultAsync(x => x.Shinden == userShindenId);
+        }
 
+        public async Task SaveChangesAsync()
+        {
+            await _dbContext.SaveChangesAsync();
+        }
     }
 }

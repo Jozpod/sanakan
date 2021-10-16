@@ -1,5 +1,6 @@
 ﻿using DAL.Repositories.Abstractions;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Sanakan.Common;
@@ -19,40 +20,54 @@ namespace Sanakan.Web.HostedService
         private readonly SanakanConfiguration _options;
         private readonly IServiceProvider _serviceProvider;
         private readonly Process _process;
-        private Timer _timer;
+        private readonly IOperatingSystem _operatingSystem;
+        private readonly ITimer _timer;
         private const int MB = 1048576;
 
         public MemoryUsageHostedService(
             ILogger<MemoryUsageHostedService> logger,
             IOptions<SanakanConfiguration> options,
             ISystemClock systemClock,
-            IServiceProvider serviceProvider)
+            IServiceProvider serviceProvider,
+            IOperatingSystem operatingSystem,
+            ITimer timer)
         {
             _logger = logger;
             _systemClock = systemClock;
             _serviceProvider = serviceProvider;
             _options = options.Value;
-            _process = Process.GetCurrentProcess();
+            _operatingSystem = operatingSystem;
+            _timer = timer;
+            _process = _operatingSystem.GetCurrentProcess();
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            _timer = new Timer(
-            OnTimer,
-            null, 
-            _options.CaptureMemoryUsageDueTime,
-            _options.CaptureMemoryUsagePeriod);
+            try
+            {
+                stoppingToken.ThrowIfCancellationRequested();
+                _timer.Tick += OnTick;
+                _timer.Start(
+                    _options.CaptureMemoryUsageDueTime,
+                    _options.CaptureMemoryUsagePeriod);
+                
+                await Task.Delay(Timeout.Infinite, stoppingToken);
+            }
+            catch (OperationCanceledException)
+            {
+                _timer.Stop();
+            }
         }
 
-        private async void OnTimer(object? state)
+        private async void OnTick(object sender, TimerEventArgs e)
         {
             try
             {
-                _process.Refresh();
+                _operatingSystem.Refresh(_process);
                 var memoryUsage = _process.WorkingSet64 / MB;
 
-                _logger.LogInformation($"Memory Usage: {} MiB");
-                var repository = _serviceProvider.GetService<IRepository>();
+                _logger.LogInformation($"Memory Usage: {memoryUsage} MiB");
+                var repository = _serviceProvider.GetRequiredService<IRepository>();
 
                 var record = new SystemAnalytics
                 {
@@ -61,13 +76,11 @@ namespace Sanakan.Web.HostedService
                     Type = SystemAnalyticsEventType.Ram,
                 };
 
-                await repository.AddSystemAnalyticsAsync();
-
-                await dba.SaveChangesAsync();
+                await repository.AddSystemAnalyticsAsync(record);
             }
             catch (Exception ex)
             {
-                _logger.LogError($"in mem check: {ex}", ex);
+                _logger.LogError($"Could not get memory usage", ex);
             }
         }
     }

@@ -15,7 +15,7 @@ using DAL.Repositories.Abstractions;
 namespace Sanakan.Modules
 {
     [Name("Shinden"), RequireUserRole]
-    public class Shinden : SanakanModuleBase<SocketCommandContext>
+    public class Shinden : ModuleBase<SocketCommandContext>
     {
         private readonly IShindenClient _shclient;
         private readonly SessionManager _session;

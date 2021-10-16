@@ -854,7 +854,7 @@ namespace Sanakan.Extensions
             return list;
         }
 
-        public static List<Api.Models.CardFinalView> ToView(this IEnumerable<Card> clist)
+        public static List<CardFinalView> ToView(this IEnumerable<Card> clist)
         {
             var list = new List<Api.Models.CardFinalView>();
             foreach (var c in clist) list.Add(c.ToView());

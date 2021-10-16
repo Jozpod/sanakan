@@ -41,27 +41,24 @@ namespace Sanakan.Services.Session.Models
                 await msg.ModifyAsync(x => x.Embed = $"{DuelName}{deathLog.TrimToLength(1400)}{winString}".ToEmbedMessage(EMType.Error).Build());
             }
 
-            using (var db = new Database.UserContext(_config))
+            var user1 = await db.GetUserOrCreateAsync(P1.User.Id);
+            var user2 = await db.GetUserOrCreateAsync(P2.User.Id);
+
+            user1.GameDeck.PvPStats.Add(new CardPvPStats
             {
-                var user1 = await db.GetUserOrCreateAsync(P1.User.Id);
-                var user2 = await db.GetUserOrCreateAsync(P2.User.Id);
+                Type = FightType.Versus,
+                Result = isWinner ? (fight.Winner.User.Id == user1.Id ? FightResult.Win : FightResult.Lose) : FightResult.Draw
+            });
 
-                user1.GameDeck.PvPStats.Add(new CardPvPStats
-                {
-                    Type = FightType.Versus,
-                    Result = isWinner ? (fight.Winner.User.Id == user1.Id ? FightResult.Win : FightResult.Lose) : FightResult.Draw
-                });
+            user2.GameDeck.PvPStats.Add(new CardPvPStats
+            {
+                Type = FightType.Versus,
+                Result = isWinner ? (fight.Winner.User.Id == user2.Id ? FightResult.Win : FightResult.Lose) : FightResult.Draw
+            });
 
-                user2.GameDeck.PvPStats.Add(new CardPvPStats
-                {
-                    Type = FightType.Versus,
-                    Result = isWinner ? (fight.Winner.User.Id == user2.Id ? FightResult.Win : FightResult.Lose) : FightResult.Draw
-                });
+            await db.SaveChangesAsync();
 
-                await db.SaveChangesAsync();
-
-                _cacheManager.ExpireTag(new string[] { $"user-{user1.Id}", $"user-{user2.Id}","users" });
-            }
+            _cacheManager.ExpireTag(new string[] { $"user-{user1.Id}", $"user-{user2.Id}", "users" });
 
             Dispose();
             return true;

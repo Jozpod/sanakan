@@ -13,6 +13,7 @@ namespace Sanakan.Web.Controllers
 {
     [ApiController, Authorize(Policy = AuthorizePolicies.Site)]
     [Route("api/[controller]")]
+    [Produces("application/json")]
     public class RichMessageController : ControllerBase
     {
         private readonly IConfig _config;

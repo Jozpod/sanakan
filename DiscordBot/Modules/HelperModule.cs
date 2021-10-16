@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 namespace Sanakan.Modules
 {
     [Name("Ogólne")]
-    public class Helper : SanakanModuleBase<SocketCommandContext>
+    public class HelperModule : ModuleBase<SocketCommandContext>
     {
         private Services.Moderator _moderation;
         private SessionManager _session;
@@ -23,11 +23,11 @@ namespace Sanakan.Modules
         private ILogger _logger;
         private object _config;
 
-        public Helper(
+        public HelperModule(
             Services.Helper helper,
             Services.Moderator moderation,
             SessionManager session,
-            ILogger<Helper> logger,
+            ILogger<HelperModule> logger,
             IOptions<object> config)
         {
             _moderation = moderation;
@@ -62,16 +62,14 @@ namespace Sanakan.Modules
                 bool dev = false;
 
                 string prefix = _config.Get().Prefix;
+
                 if (Context.Guild != null)
                 {
-                    using (var db = new Database.GuildConfigContext(_config))
-                    {
-                        var gConfig = await db.GetCachedGuildFullConfigAsync(Context.Guild.Id);
-                        if (gConfig?.Prefix != null) prefix = gConfig.Prefix;
+                    var gConfig = await db.GetCachedGuildFullConfigAsync(Context.Guild.Id);
+                    if (gConfig?.Prefix != null) prefix = gConfig.Prefix;
 
-                        admin = (gUser.Roles.Any(x => x.Id == gConfig?.AdminRole) || gUser.GuildPermissions.Administrator);
-                        dev = _config.Get().Dev.Any(x => x == gUser.Id);
-                    }
+                    admin = (gUser.Roles.Any(x => x.Id == gConfig?.AdminRole) || gUser.GuildPermissions.Administrator);
+                    dev = _config.Get().Dev.Any(x => x == gUser.Id);
                 }
 
                 await ReplyAsync(_helper.GiveHelpAboutPublicCmd(command, prefix, admin, dev));

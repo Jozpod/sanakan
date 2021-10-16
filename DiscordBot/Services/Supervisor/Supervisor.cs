@@ -66,18 +66,34 @@ namespace Sanakan.Services.Supervisor
 
         private async Task HandleMessageAsync(SocketMessage message)
         {
-            if (!_config.Get().Supervision) return;
+            if (!_config.Get().Supervision)
+            {
+                return;
+            }
 
             var msg = message as SocketUserMessage;
-            if (msg == null) return;
+            
+            if (msg == null)
+            {
+                return;
+            }
 
-            if (msg.Author.IsBot || msg.Author.IsWebhook) return;
+            if (msg.Author.IsBot || msg.Author.IsWebhook)
+            {
+                return;
+            }
 
             var user = msg.Author as SocketGuildUser;
-            if (user == null) return;
+            
+            if (user == null)
+            {
+                return;
+            }
 
             if (_config.Get().BlacklistedGuilds.Any(x => x == user.Guild.Id))
+            {
                 return;
+            }
 
             _ = Task.Run(async () =>
             {
@@ -98,55 +114,56 @@ namespace Sanakan.Services.Supervisor
 
         private async Task Analize(SocketGuildUser user, SocketUserMessage message)
         {
-            using (var db = new Database.GuildConfigContext(_config))
+            var gConfig = await db.GetCachedGuildFullConfigAsync(user.Guild.Id);
+            
+            if (gConfig == null)
             {
-                var gConfig = await db.GetCachedGuildFullConfigAsync(user.Guild.Id);
-                if (gConfig == null) return;
-
-                if (!gConfig.Supervision) return;
-
-                if (!_guilds.Any(x => x.Key == user.Guild.Id))
-                {
-                    _guilds.Add(user.Guild.Id, new Dictionary<ulong, SupervisorEntity>());
-                    return;
-                }
-
-                var guild = _guilds[user.Guild.Id];
-                var messageContent = GetMessageContent(message);
-                if (!guild.Any(x => x.Key == user.Id))
-                {
-                    guild.Add(user.Id, new SupervisorEntity(messageContent));
-                    return;
-                }
-
-                var susspect = guild[user.Id];
-                if (!susspect.IsValid())
-                {
-                    susspect = new SupervisorEntity(messageContent);
-                    return;
-                }
-
-                var thisMessage = susspect.Get(messageContent);
-                if (!thisMessage.IsValid())
-                {
-                    thisMessage = new SupervisorMessage(messageContent);
-                }
-
-                if (gConfig.AdminRole != 0)
-                    if (user.Roles.Any(x => x.Id == gConfig.AdminRole))
-                        return;
-
-                if (gConfig.ChannelsWithoutSupervision.Any(x => x.Channel == message.Channel.Id))
-                    return;
-
-                var muteRole = user.Guild.GetRole(gConfig.MuteRole);
-                var userRole = user.Guild.GetRole(gConfig.UserRole);
-                var notifChannel = user.Guild.GetTextChannel(gConfig.NotificationChannel);
-
-                bool hasRole = user.Roles.Any(x => x.Id == gConfig.UserRole || x.Id == gConfig.MuteRole) || gConfig.UserRole == 0;
-                var action = MakeDecision(messageContent, susspect.Inc(), thisMessage.Inc(), hasRole);
-                await MakeActionAsync(action, user, message, userRole, muteRole, notifChannel);
+                return;
             }
+
+            if (!gConfig.Supervision) return;
+
+            if (!_guilds.Any(x => x.Key == user.Guild.Id))
+            {
+                _guilds.Add(user.Guild.Id, new Dictionary<ulong, SupervisorEntity>());
+                return;
+            }
+
+            var guild = _guilds[user.Guild.Id];
+            var messageContent = GetMessageContent(message);
+            if (!guild.Any(x => x.Key == user.Id))
+            {
+                guild.Add(user.Id, new SupervisorEntity(messageContent));
+                return;
+            }
+
+            var susspect = guild[user.Id];
+            if (!susspect.IsValid())
+            {
+                susspect = new SupervisorEntity(messageContent);
+                return;
+            }
+
+            var thisMessage = susspect.Get(messageContent);
+            if (!thisMessage.IsValid())
+            {
+                thisMessage = new SupervisorMessage(messageContent);
+            }
+
+            if (gConfig.AdminRole != 0)
+                if (user.Roles.Any(x => x.Id == gConfig.AdminRole))
+                    return;
+
+            if (gConfig.ChannelsWithoutSupervision.Any(x => x.Channel == message.Channel.Id))
+                return;
+
+            var muteRole = user.Guild.GetRole(gConfig.MuteRole);
+            var userRole = user.Guild.GetRole(gConfig.UserRole);
+            var notifChannel = user.Guild.GetTextChannel(gConfig.NotificationChannel);
+
+            bool hasRole = user.Roles.Any(x => x.Id == gConfig.UserRole || x.Id == gConfig.MuteRole) || gConfig.UserRole == 0;
+            var action = MakeDecision(messageContent, susspect.Inc(), thisMessage.Inc(), hasRole);
+            await MakeActionAsync(action, user, message, userRole, muteRole, notifChannel);
         }
 
         private async Task MakeActionAsync(Action action, SocketGuildUser user, SocketUserMessage message, SocketRole userRole, SocketRole muteRole, ITextChannel notifChannel)
@@ -164,11 +181,8 @@ namespace Sanakan.Services.Supervisor
                         if (user.Roles.Contains(muteRole))
                             return;
 
-                        using (var db = new Database.ManagmentContext(_config))
-                        {
-                            var info = await _moderator.MuteUserAysnc(user, muteRole, null, userRole, db, 24, "spam/flood");
-                            await _moderator.NotifyAboutPenaltyAsync(user, notifChannel, info);
-                        }
+                        var info = await _moderator.MuteUserAysnc(user, muteRole, null, userRole, db, 24, "spam/flood");
+                        await _moderator.NotifyAboutPenaltyAsync(user, notifChannel, info);
                     }
                     break;
 

@@ -3,6 +3,7 @@ using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using DiscordBot.Services.PocketWaifu;
+using DiscordBot.Services.PocketWaifu.Abstractions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -25,28 +26,30 @@ using Sden = Shinden;
 namespace Sanakan.Modules
 {
     [Name("PocketWaifu"), RequireUserRole]
-    public class PocketWaifu : SanakanModuleBase<SocketCommandContext>
+    public class PocketWaifuModule : ModuleBase<SocketCommandContext>
     {
         private readonly IShindenClient _shclient;
         private readonly SessionManager _session;
         private readonly IExecutor _executor;
         private readonly ILogger _logger;
         private readonly object _config;
-        private readonly Waifu _waifu;
+        private readonly IWaifuService _waifu;
         private readonly ICacheManager _cacheManager;
         private readonly IUserRepository _userRepository;
         private readonly IRepository _repository;
+        private readonly ISystemClock _systemClock;
 
-        public PocketWaifu(
-            Waifu waifu,
+        public PocketWaifuModule(
+            IWaifuService waifu,
             IShindenClient client,
-            ILogger<PocketWaifu> logger,
+            ILogger<PocketWaifuModule> logger,
             SessionManager session,
             IOptions<object> config,
             IExecutor executor,
             ICacheManager cacheManager,
             IUserRepository userRepository,
-            IRepository repository)
+            IRepository repository,
+            ISystemClock systemClock)
         {
             _waifu = waifu;
             _logger = logger;
@@ -57,6 +60,7 @@ namespace Sanakan.Modules
             _cacheManager = cacheManager;
             _userRepository = userRepository;
             _repository = repository;
+            _systemClock = systemClock;
         }
 
         [Command("harem", RunMode = RunMode.Async)]
@@ -181,20 +185,28 @@ namespace Sanakan.Modules
         [Remarks("685"), RequireAnyCommandChannelOrLevel(40)]
         public async Task ShowCardStringAsync([Summary("WID")]ulong wid)
         {
-            using (var db = new Database.UserContext(Config))
+            var card = db.Cards
+                .Include(x => x.GameDeck)
+                .Include(x => x.ArenaStats)
+                .Include(x => x.TagList)
+                .AsNoTracking()
+                .FirstOrDefault(x => x.Id == wid);
+            
+            if (card == null)
             {
-                var card = db.Cards.Include(x => x.GameDeck).Include(x => x.ArenaStats).Include(x => x.TagList).AsNoTracking().FirstOrDefault(x => x.Id == wid);
-                if (card == null)
-                {
-                    await ReplyAsync("", embed: $"{Context.User.Mention} taka karta nie istnieje.".ToEmbedMessage(EMType.Error).Build());
-                    return;
-                }
-
-                SocketUser user = Context.Guild.GetUser(card.GameDeck.UserId);
-                if (user == null) user = Context.Client.GetUser(card.GameDeck.UserId);
-
-                await ReplyAsync("", embed: card.GetDescSmall().TrimToLength(2000).ToEmbedMessage(EMType.Info).WithAuthor(new EmbedAuthorBuilder().WithUser(user)).Build());
+                var content = $"{Context.User.Mention} taka karta nie istnieje.".ToEmbedMessage(EMType.Error).Build();
+                await ReplyAsync("", embed: content);
+                return;
             }
+
+            SocketUser user = Context.Guild.GetUser(card.GameDeck.UserId);
+            
+            if (user == null)
+            {
+                user = Context.Client.GetUser(card.GameDeck.UserId);
+            }
+
+            await ReplyAsync("", embed: card.GetDescSmall().TrimToLength(2000).ToEmbedMessage(EMType.Info).WithAuthor(new EmbedAuthorBuilder().WithUser(user)).Build());
         }
 
         [Command("karta", RunMode = RunMode.Async)]
@@ -203,43 +215,54 @@ namespace Sanakan.Modules
         [Remarks("685"), RequireWaifuCommandChannel]
         public async Task ShowCardAsync([Summary("WID")]ulong wid)
         {
-            using (var db = new Database.UserContext(Config))
+            var card = db.Cards
+                .Include(x => x.GameDeck)
+                .Include(x => x.ArenaStats)
+                .Include(x => x.TagList)
+                .AsNoTracking()
+                .FirstOrDefault(x => x.Id == wid);
+
+            if (card == null)
             {
-                var card = db.Cards.Include(x => x.GameDeck).Include(x => x.ArenaStats).Include(x => x.TagList).AsNoTracking().FirstOrDefault(x => x.Id == wid);
-                if (card == null)
-                {
-                    await ReplyAsync("", embed: $"{Context.User.Mention} taka karta nie istnieje.".ToEmbedMessage(EMType.Error).Build());
-                    return;
-                }
-
-                SocketUser user = Context.Guild.GetUser(card.GameDeck.UserId);
-                if (user == null) user = Context.Client.GetUser(card.GameDeck.UserId);
-
-                using (var cdb = new Database.GuildConfigContext(Config))
-                {
-                    var gConfig = await cdb.GetCachedGuildFullConfigAsync(Context.Guild.Id);
-                    var trashChannel = Context.Guild.GetTextChannel(gConfig.WaifuConfig.TrashCommandsChannel);
-                    await ReplyAsync("", embed: await _waifu.BuildCardViewAsync(card, trashChannel, user));
-                }
+                var content = $"{Context.User.Mention} taka karta nie istnieje.".ToEmbedMessage(EMType.Error).Build();
+                await ReplyAsync("", embed: content);
+                return;
             }
+
+            SocketUser user = Context.Guild.GetUser(card.GameDeck.UserId);
+            
+            if (user == null)
+            {
+                user = Context.Client.GetUser(card.GameDeck.UserId);
+            }
+
+            var gConfig = await _repository.GetCachedGuildFullConfigAsync(Context.Guild.Id);
+            var trashChannel = Context.Guild.GetTextChannel(gConfig.WaifuConfig.TrashCommandsChannel);
+            await ReplyAsync("", embed: await _waifu.BuildCardViewAsync(card, trashChannel, user));
         }
 
         [Command("koszary")]
         [Alias("pvp shop")]
         [Summary("listowanie/zakup przedmiotu/wypisanie informacji")]
         [Remarks("1 info"), RequireWaifuCommandChannel]
-        public async Task BuyItemPvPAsync([Summary("nr przedmiotu")]int itemNumber = 0, [Summary("info/4 (liczba przedmiotów do zakupu/id tytułu)")]string info = "0")
+        public async Task BuyItemPvPAsync(
+            [Summary("nr przedmiotu")]int itemNumber = 0,
+            [Summary("info/4 (liczba przedmiotów do zakupu/id tytułu)")]string info = "0")
         {
-            await ReplyAsync("", embed: await  _waifu.ExecuteShopAsync(ShopType.Pvp, Config, Context.User, itemNumber, info));
+            var content = await _waifu.ExecuteShopAsync(ShopType.Pvp, Config, Context.User, itemNumber, info);
+            await ReplyAsync("", embed: content);
         }
 
         [Command("kiosk")]
         [Alias("ac shop")]
         [Summary("listowanie/zakup przedmiotu/wypisanie informacji")]
         [Remarks("1 info"), RequireWaifuCommandChannel]
-        public async Task BuyItemActivityAsync([Summary("nr przedmiotu")]int itemNumber = 0, [Summary("info/4 (liczba przedmiotów do zakupu/id tytułu)")]string info = "0")
+        public async Task BuyItemActivityAsync(
+            [Summary("nr przedmiotu")]int itemNumber = 0,
+            [Summary("info/4 (liczba przedmiotów do zakupu/id tytułu)")]string info = "0")
         {
-            await ReplyAsync("", embed: await  _waifu.ExecuteShopAsync(ShopType.Activity, Config, Context.User, itemNumber, info));
+            var content = await _waifu.ExecuteShopAsync(ShopType.Activity, Config, Context.User, itemNumber, info);
+            await ReplyAsync("", embed: content);
         }
 
         [Command("sklepik")]
@@ -3148,6 +3171,7 @@ namespace Sanakan.Modules
                 }
 
                 var allPvpPlayers = await db.GetCachedPlayersForPVP(duser.Id);
+
                 if (allPvpPlayers.Count < 10)
                 {
                     await ReplyAsync("", embed: $"{Context.User.Mention} zbyt mała liczba graczy ma utworzoną poprawną talię!".ToEmbedMessage(EMType.Error).Build());

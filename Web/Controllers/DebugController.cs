@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Discord.WebSocket;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -9,6 +10,7 @@ namespace Sanakan.Web.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Produces("application/json")]
     public class DebugController : ControllerBase
     {
         private readonly ILogger _logger;
@@ -26,6 +28,7 @@ namespace Sanakan.Web.Controllers
         /// Zabija bota
         /// </summary>
         [HttpPost("kill"), Authorize(Policy = AuthorizePolicies.Site)]
+        [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
         public async Task<IActionResult> RestartBotAsync()
         {
             await _client.LogoutAsync();
@@ -36,7 +39,8 @@ namespace Sanakan.Web.Controllers
         /// <summary>
         /// Aktualizuje bota
         /// </summary>
-        [HttpPost("update"), Authorize(Policy = "Site")]
+        [HttpPost("update"), Authorize(Policy = AuthorizePolicies.Site)]
+        [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
         public async Task<IActionResult> UpdateBotAsync()
         {
             await _client.LogoutAsync();

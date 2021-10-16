@@ -7,6 +7,8 @@ using Discord.Commands;
 using Discord.WebSocket;
 using DiscordBot.Services.Session;
 using Microsoft.Extensions.Options;
+using Sanakan.Common;
+using Sanakan.DAL.Models;
 using Sanakan.Extensions;
 using Sanakan.Services.PocketWaifu;
 
@@ -159,7 +161,7 @@ namespace Sanakan.Services.Session.Models
                     continue;
                 }
 
-                if (card.Expedition != Database.Models.CardExpedition.None)
+                if (card.Expedition != CardExpedition.None)
                 {
                     error = true;
                     continue;
@@ -171,19 +173,19 @@ namespace Sanakan.Services.Session.Models
                     continue;
                 }
 
-                if (card.Dere == Database.Models.Dere.Yato)
+                if (card.Dere == Dere.Yato)
                 {
                     error = true;
                     continue;
                 }
 
-                if (card.Dere == Database.Models.Dere.Yami && target.Dbuser.GameDeck.IsGood())
+                if (card.Dere == Dere.Yami && target.Dbuser.GameDeck.IsGood())
                 {
                     error = true;
                     continue;
                 }
 
-                if (card.Dere == Database.Models.Dere.Raito && target.Dbuser.GameDeck.IsEvil())
+                if (card.Dere == Dere.Raito && target.Dbuser.GameDeck.IsEvil())
                 {
                     error = true;
                     continue;
@@ -194,7 +196,7 @@ namespace Sanakan.Services.Session.Models
 
                 if (card.FromFigure)
                 {
-                    if (card.PAS != Database.Models.PreAssembledFigure.None)
+                    if (card.PAS != PreAssembledFigure.None)
                     {
                         error = true;
                         continue;
@@ -261,26 +263,32 @@ namespace Sanakan.Services.Session.Models
             if (context.Message.Id != Message.Id)
                 return false;
 
-            if (await Message.Channel.GetMessageAsync(Message.Id) is IUserMessage msg)
+            if (!(await Message.Channel.GetMessageAsync(Message.Id) is IUserMessage message))
             {
-                var reaction = context.ReactionAdded ?? context.ReactionRemoved;
-                if (reaction == null || msg == null) return false;
+                return end;
+            }
 
-                switch (State)
-                {
-                    case ExchangeStatus.AcceptP1:
-                        end = await HandleUserReactionInAccept(reaction, P1, msg);
-                        break;
+            var reaction = context.ReactionAdded ?? context.ReactionRemoved;
 
-                    case ExchangeStatus.AcceptP2:
-                        end = await HandleUserReactionInAccept(reaction, P2, msg);
-                        break;
+            if (reaction == null || message == null)
+            {
+                return false;
+            }
 
-                    default:
-                    case ExchangeStatus.Add:
-                        await HandleReactionInAdd(reaction, msg);
-                        break;
-                }
+            switch (State)
+            {
+                case ExchangeStatus.AcceptP1:
+                    end = await HandleUserReactionInAccept(reaction, P1, message);
+                    break;
+
+                case ExchangeStatus.AcceptP2:
+                    end = await HandleUserReactionInAccept(reaction, P2, message);
+                    break;
+
+                default:
+                case ExchangeStatus.Add:
+                    await HandleReactionInAdd(reaction, message);
+                    break;
             }
 
             return end;
@@ -333,107 +341,106 @@ namespace Sanakan.Services.Session.Models
                         end = true;
 
                         if (P1.Cards.Count == 0 && P2.Cards.Count == 0)
-                            return end;
-
-                        using (var db = new Database.UserContext(_config))
                         {
-                            var user1 = await db.GetUserOrCreateAsync(P1.User.Id);
-                            var user2 = await db.GetUserOrCreateAsync(P2.User.Id);
-
-                            double avgValueP1 = P1.Cards.Sum(x => x.MarketValue) / ((P1.Cards.Count == 0) ? 1 : P1.Cards.Count);
-                            double avgValueP2 = P2.Cards.Sum(x => x.MarketValue) / ((P2.Cards.Count == 0) ? 1 : P2.Cards.Count);
-
-                            double avgRarP1 = P1.Cards.Sum(x => (int) x.Rarity) / ((P1.Cards.Count == 0) ? 1 : P1.Cards.Count);
-                            double avgRarP2 = P2.Cards.Sum(x => (int) x.Rarity) / ((P2.Cards.Count == 0) ? 1 : P2.Cards.Count);
-                            var avgRarDif = avgRarP1 - avgRarP2;
-
-                            if (avgRarDif > 0)
-                            {
-                                avgValueP1 /= avgRarDif + 1;
-                            }
-                            else if (avgRarDif < 0)
-                            {
-                                avgRarDif = -avgRarDif;
-                                avgValueP2 /= avgRarDif + 1;
-                            }
-
-                            var divP1 = P1.Cards.Count / ((avgValueP1 <= 0) ? 1 : avgValueP1);
-                            var divP2 = P2.Cards.Count / ((avgValueP2 <= 0) ? 1 : avgValueP2);
-
-                            var exchangeRateP1 = divP2 / ((P1.Cards.Count == 0) ? (divP2 * 0.5) : divP1);
-                            var exchangeRateP2 = divP1 / ((P2.Cards.Count == 0) ? (divP1 * 0.5) : divP2);
-
-                            if (exchangeRateP1 > 1) exchangeRateP1 = 10;
-                            if (exchangeRateP1 < 0.0001) exchangeRateP1 = 0.001;
-
-                            if (exchangeRateP2 > 1) exchangeRateP2 = 10;
-                            if (exchangeRateP2 < 0.0001) exchangeRateP2 = 0.001;
-
-                            foreach (var c in P1.Cards)
-                            {
-                                var card = user1.GameDeck.Cards.FirstOrDefault(x => x.Id == c.Id);
-                                if (card != null)
-                                {
-                                    card.Active = false;
-                                    card.TagList.Clear();
-                                    card.Affection -= 1.5;
-
-                                    if (card.ExpCnt > 1)
-                                        card.ExpCnt *= 0.3;
-
-                                    var valueDiff = card.MarketValue - exchangeRateP1;
-                                    var changed = card.MarketValue + valueDiff * 0.8;
-                                    if (changed < 0.0001) changed = 0.0001;
-                                    if (changed > 1) changed = 1;
-                                    card.MarketValue = changed;
-
-                                    if (card.FirstIdOwner == 0)
-                                        card.FirstIdOwner = user1.Id;
-
-                                    user1.GameDeck.RemoveFromWaifu(card);
-
-                                    card.GameDeckId = user2.GameDeck.Id;
-
-                                    user2.GameDeck.RemoveCharacterFromWishList(card.Character);
-                                    user2.GameDeck.RemoveCardFromWishList(card.Id);
-                                }
-                            }
-
-                            foreach (var c in P2.Cards)
-                            {
-                                var card = user2.GameDeck.Cards.FirstOrDefault(x => x.Id == c.Id);
-                                if (card != null)
-                                {
-                                    card.Active = false;
-                                    card.TagList.Clear();
-                                    card.Affection -= 1.5;
-
-                                    if (card.ExpCnt > 1)
-                                        card.ExpCnt *= 0.3;
-
-                                    var valueDiff = card.MarketValue - exchangeRateP2;
-                                    var changed = card.MarketValue + valueDiff * 0.8;
-                                    if (changed < 0.0001) changed = 0.0001;
-                                    if (changed > 1) changed = 1;
-                                    card.MarketValue = changed;
-
-                                    if (card.FirstIdOwner == 0)
-                                        card.FirstIdOwner = user2.Id;
-
-                                    user2.GameDeck.RemoveFromWaifu(card);
-
-                                    card.GameDeckId = user1.GameDeck.Id;
-
-                                    user1.GameDeck.RemoveCharacterFromWishList(card.Character);
-                                    user1.GameDeck.RemoveCardFromWishList(card.Id);
-                                }
-                            }
-
-                            await db.SaveChangesAsync();
-
-                            State = ExchangeStatus.End;
-                            _cacheManager.ExpireTag(new string[] { $"user-{P1.User.Id}", $"user-{P2.User.Id}", "users" });
+                            return end;
                         }
+                            
+                        var user1 = await db.GetUserOrCreateAsync(P1.User.Id);
+                        var user2 = await db.GetUserOrCreateAsync(P2.User.Id);
+
+                        double avgValueP1 = P1.Cards.Sum(x => x.MarketValue) / ((P1.Cards.Count == 0) ? 1 : P1.Cards.Count);
+                        double avgValueP2 = P2.Cards.Sum(x => x.MarketValue) / ((P2.Cards.Count == 0) ? 1 : P2.Cards.Count);
+
+                        double avgRarP1 = P1.Cards.Sum(x => (int)x.Rarity) / ((P1.Cards.Count == 0) ? 1 : P1.Cards.Count);
+                        double avgRarP2 = P2.Cards.Sum(x => (int)x.Rarity) / ((P2.Cards.Count == 0) ? 1 : P2.Cards.Count);
+                        var avgRarDif = avgRarP1 - avgRarP2;
+
+                        if (avgRarDif > 0)
+                        {
+                            avgValueP1 /= avgRarDif + 1;
+                        }
+                        else if (avgRarDif < 0)
+                        {
+                            avgRarDif = -avgRarDif;
+                            avgValueP2 /= avgRarDif + 1;
+                        }
+
+                        var divP1 = P1.Cards.Count / ((avgValueP1 <= 0) ? 1 : avgValueP1);
+                        var divP2 = P2.Cards.Count / ((avgValueP2 <= 0) ? 1 : avgValueP2);
+
+                        var exchangeRateP1 = divP2 / ((P1.Cards.Count == 0) ? (divP2 * 0.5) : divP1);
+                        var exchangeRateP2 = divP1 / ((P2.Cards.Count == 0) ? (divP1 * 0.5) : divP2);
+
+                        if (exchangeRateP1 > 1) exchangeRateP1 = 10;
+                        if (exchangeRateP1 < 0.0001) exchangeRateP1 = 0.001;
+
+                        if (exchangeRateP2 > 1) exchangeRateP2 = 10;
+                        if (exchangeRateP2 < 0.0001) exchangeRateP2 = 0.001;
+
+                        foreach (var c in P1.Cards)
+                        {
+                            var card = user1.GameDeck.Cards.FirstOrDefault(x => x.Id == c.Id);
+                            if (card != null)
+                            {
+                                card.Active = false;
+                                card.TagList.Clear();
+                                card.Affection -= 1.5;
+
+                                if (card.ExpCnt > 1)
+                                    card.ExpCnt *= 0.3;
+
+                                var valueDiff = card.MarketValue - exchangeRateP1;
+                                var changed = card.MarketValue + valueDiff * 0.8;
+                                if (changed < 0.0001) changed = 0.0001;
+                                if (changed > 1) changed = 1;
+                                card.MarketValue = changed;
+
+                                if (card.FirstIdOwner == 0)
+                                    card.FirstIdOwner = user1.Id;
+
+                                user1.GameDeck.RemoveFromWaifu(card);
+
+                                card.GameDeckId = user2.GameDeck.Id;
+
+                                user2.GameDeck.RemoveCharacterFromWishList(card.Character);
+                                user2.GameDeck.RemoveCardFromWishList(card.Id);
+                            }
+                        }
+
+                        foreach (var c in P2.Cards)
+                        {
+                            var card = user2.GameDeck.Cards.FirstOrDefault(x => x.Id == c.Id);
+                            if (card != null)
+                            {
+                                card.Active = false;
+                                card.TagList.Clear();
+                                card.Affection -= 1.5;
+
+                                if (card.ExpCnt > 1)
+                                    card.ExpCnt *= 0.3;
+
+                                var valueDiff = card.MarketValue - exchangeRateP2;
+                                var changed = card.MarketValue + valueDiff * 0.8;
+                                if (changed < 0.0001) changed = 0.0001;
+                                if (changed > 1) changed = 1;
+                                card.MarketValue = changed;
+
+                                if (card.FirstIdOwner == 0)
+                                    card.FirstIdOwner = user2.Id;
+
+                                user2.GameDeck.RemoveFromWaifu(card);
+
+                                card.GameDeckId = user1.GameDeck.Id;
+
+                                user1.GameDeck.RemoveCharacterFromWishList(card.Character);
+                                user1.GameDeck.RemoveCardFromWishList(card.Id);
+                            }
+                        }
+
+                        await _repository.SaveChangesAsync();
+
+                        State = ExchangeStatus.End;
+                        _cacheManager.ExpireTag(new string[] { $"user-{P1.User.Id}", $"user-{P2.User.Id}", "users" });
                     }
                 }
                 else if (reaction.Emote.Equals(DeclineEmote) && State != ExchangeStatus.End)

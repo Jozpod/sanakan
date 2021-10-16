@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
+using DiscordBot.Services.Executor;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -42,24 +43,18 @@ namespace Sanakan.Services
 
         private async Task BotLeftGuildAsync(SocketGuild guild)
         {
-            using (var db = new Database.GuildConfigContext(_config))
-            {
-                var gConfig = await db.GetGuildConfigOrCreateAsync(guild.Id);
-                db.Guilds.Remove(gConfig);
+            var gConfig = await db.GetGuildConfigOrCreateAsync(guild.Id);
+            db.Guilds.Remove(gConfig);
 
-                var stats = db.TimeStatuses.AsQueryable().AsSplitQuery().Where(x => x.Guild == guild.Id).ToList();
-                db.TimeStatuses.RemoveRange(stats);
+            var stats = db.TimeStatuses.AsQueryable().AsSplitQuery().Where(x => x.Guild == guild.Id).ToList();
+            db.TimeStatuses.RemoveRange(stats);
 
-                await db.SaveChangesAsync();
-            }
+            await db.SaveChangesAsync();
 
-            using (var db = new Database.ManagmentContext(_config))
-            {
-                var mute = db.Penalties.AsQueryable().AsSplitQuery().Where(x => x.Guild == guild.Id).ToList();
-                db.Penalties.RemoveRange(mute);
+            var mute = db.Penalties.AsQueryable().AsSplitQuery().Where(x => x.Guild == guild.Id).ToList();
+            db.Penalties.RemoveRange(mute);
 
-                await db.SaveChangesAsync();
-            }
+            await db.SaveChangesAsync();
         }
 
         private async Task UserJoinedAsync(SocketGuildUser user)
@@ -72,13 +67,28 @@ namespace Sanakan.Services
             using (var db = new Database.GuildConfigContext(_config))
             {
                 var config = await db.GetCachedGuildFullConfigAsync(user.Guild.Id);
-                if (config?.WelcomeMessage == null) return;
-                if (config.WelcomeMessage == "off") return;
+                
+                if (config?.WelcomeMessage == null)
+                {
+                    return;
+                }
+
+                if (config.WelcomeMessage == "off")
+                {
+                    return;
+                }
 
                 await SendMessageAsync(ReplaceTags(user, config.WelcomeMessage), user.Guild.GetTextChannel(config.GreetingChannel));
 
-                if (config?.WelcomeMessagePW == null) return;
-                if (config.WelcomeMessagePW == "off") return;
+                if (config?.WelcomeMessagePW == null)
+                {
+                    return;
+                }
+
+                if (config.WelcomeMessagePW == "off")
+                {
+                    return;
+                }
 
                 try
                 {
@@ -99,14 +109,11 @@ namespace Sanakan.Services
 
             if (!_config.Get().BlacklistedGuilds.Any(x => x == user.Guild.Id))
             {
-                using (var db = new Database.GuildConfigContext(_config))
-                {
-                    var config = await db.GetCachedGuildFullConfigAsync(user.Guild.Id);
-                    if (config?.GoodbyeMessage == null) return;
-                    if (config.GoodbyeMessage == "off") return;
+                var config = await db.GetCachedGuildFullConfigAsync(user.Guild.Id);
+                if (config?.GoodbyeMessage == null) return;
+                if (config.GoodbyeMessage == "off") return;
 
-                    await SendMessageAsync(ReplaceTags(user, config.GoodbyeMessage), user.Guild.GetTextChannel(config.GreetingChannel));
-                }
+                await SendMessageAsync(ReplaceTags(user, config.GoodbyeMessage), user.Guild.GetTextChannel(config.GreetingChannel));
             }
 
             var thisUser = _client.Guilds.FirstOrDefault(x => x.Id == user.Id);
@@ -114,25 +121,22 @@ namespace Sanakan.Services
 
             var moveTask = new Task<Task>(async () =>
             {
-                using (var db = new Database.UserContext(_config))
+                var duser = await db.GetUserOrCreateAsync(user.Id);
+                var fakeu = await db.GetUserOrCreateAsync(1);
+
+                foreach (var card in duser.GameDeck.Cards)
                 {
-                    var duser = await db.GetUserOrCreateAsync(user.Id);
-                    var fakeu = await db.GetUserOrCreateAsync(1);
-
-                    foreach (var card in duser.GameDeck.Cards)
-                    {
-                        card.InCage = false;
-                        card.TagList.Clear();
-                        card.LastIdOwner = user.Id;
-                        card.GameDeckId = fakeu.GameDeck.Id;
-                    }
-
-                    db.Users.Remove(duser);
-
-                    await db.SaveChangesAsync();
-
-                    _cacheManager.ExpireTag(new string[] { "users" });
+                    card.InCage = false;
+                    card.TagList.Clear();
+                    card.LastIdOwner = user.Id;
+                    card.GameDeckId = fakeu.GameDeck.Id;
                 }
+
+                db.Users.Remove(duser);
+
+                await db.SaveChangesAsync();
+
+                _cacheManager.ExpireTag(new string[] { "users" });
             });
 
             await _executor.TryAdd(new Executable("delete user", moveTask, Priority.High), TimeSpan.FromSeconds(1));

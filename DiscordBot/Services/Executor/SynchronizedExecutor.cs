@@ -12,7 +12,7 @@ namespace Sanakan.Services.Executor
     {
         private const int QueueLength = 100;
 
-        private readonly IServiceProvider _provider;
+        private IServiceProvider _provider;
         private readonly ILogger _logger;
 
         private SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);

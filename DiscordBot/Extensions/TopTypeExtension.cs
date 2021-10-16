@@ -1,5 +1,4 @@
-﻿#pragma warning disable 1591
-
+﻿using DiscordBot.Services;
 using Sanakan.Services;
 
 namespace Sanakan.Extensions

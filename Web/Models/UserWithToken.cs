@@ -10,14 +10,16 @@ namespace Sanakan.Api.Models
         /// <summary>
         /// Token JWT
         /// </summary>
-        public string Token { get; set; }
+        public string? Token { get; set; }
+
         /// <summary>
         /// Data wygaśnięcia
         /// </summary>
         public DateTime? Expire { get; set; }
+
         /// <summary>
         /// Uzytkownik
         /// </summary>
-        public Database.Models.User User { get; set; }
+        public User User { get; set; }
     }
 }

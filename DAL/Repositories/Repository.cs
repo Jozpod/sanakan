@@ -4,6 +4,7 @@ using Sanakan.Common;
 using Sanakan.Common.Models;
 using Sanakan.DAL;
 using Sanakan.DAL.Models;
+using Sanakan.DAL.Models.Analytics;
 using Sanakan.DAL.Models.Configuration;
 using Sanakan.DAL.Models.Management;
 using System;
@@ -510,6 +511,93 @@ namespace DAL.Repositories
                .FirstOrDefaultAsync();
 
             return result;
+        }
+
+        public async Task AddSystemAnalyticsAsync(SystemAnalytics record)
+        {
+            _dbContext.SystemData.Add(record);
+            await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task<User> GetUsersCardsByShindenIdWithOffsetAndFilterAsync1(ulong id)
+        {
+            var result = await _dbContext.Users.AsQueryable()
+                .Where(x => x.Shinden == id)
+                .Include(x => x.GameDeck)
+                .AsNoTracking()
+                .AsSplitQuery()
+                .FirstOrDefaultAsync();
+
+            return result;
+        }
+
+        public async Task<IEnumerable<Card>> GetUsersCardsByShindenIdWithOffsetAndFilterAsync2(ulong id)
+        {
+            var result = await _dbContext.Cards
+               .AsQueryable()
+               .AsSplitQuery()
+               .Where(x => x.GameDeckId == id)
+               .Include(x => x.ArenaStats)
+               .Include(x => x.TagList)
+               .AsNoTracking()
+               .ToListAsync();
+
+            return result;
+        }
+
+        public async Task<List<Card>> GetCardsWithTagAsync(string tag)
+        {
+            var result = await _dbContext
+                .Cards
+               .Include(x => x.ArenaStats)
+               .Include(x => x.TagList)
+               .Where(x => x.TagList
+                   .Any(c => c.Name.Equals(tag, StringComparison.CurrentCultureIgnoreCase)))
+               .AsNoTracking()
+               .ToListAsync();
+
+            return result;
+        }
+
+        public async Task<List<Card>> GetCardsByCharacterIdAsync(ulong id)
+        {
+            var cards = await _dbContext
+                .Cards
+                .AsQueryable()
+                .AsSplitQuery()
+                .Where(x => x.Character == id)
+                .ToListAsync();
+
+            return cards;
+        }
+
+        public async Task SaveChangesAsync()
+        {
+            await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task<User?> GetUserWaifuProfileAsync(ulong id)
+        {
+            var result = await _dbContext.Users
+               .AsQueryable()
+               .AsSplitQuery()
+               .Where(x => x.Shinden == id)
+               .Include(x => x.GameDeck)
+                   .ThenInclude(x => x.Cards)
+                   .ThenInclude(x => x.ArenaStats)
+               .Include(x => x.GameDeck)
+                   .ThenInclude(x => x.Cards)
+                   .ThenInclude(x => x.TagList)
+               .AsNoTracking()
+               .FirstOrDefaultAsync();
+
+            return result;
+        }
+
+        public async Task AddTransferAnalyticsAsync(TransferAnalytics record)
+        {
+            _dbContext.TransferData.Add(record);
+            await dbc.SaveChangesAsync();
         }
     }
 }

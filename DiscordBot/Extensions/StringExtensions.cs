@@ -16,7 +16,10 @@ namespace Sanakan.Extensions
             "u", "color", "size"
         };
 
-        public static EmbedBuilder ToEmbedMessage(this string message, EMType type = EMType.Neutral, bool icon = false)
+        public static EmbedBuilder ToEmbedMessage(
+            this string message,
+            EMType type = EMType.Neutral,
+            bool icon = false)
         {
             return new EmbedBuilder().WithColor(type.Color()).WithDescription($"{type.Emoji(!icon)}{message}");
         }
