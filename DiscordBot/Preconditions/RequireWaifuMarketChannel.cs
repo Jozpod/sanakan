@@ -8,13 +8,6 @@ namespace Sanakan.Preconditions
 {
     public class RequireWaifuMarketChannel : PreconditionAttribute
     {
-        private readonly IRepository _repository;
-
-        public RequireWaifuMarketChannel(IRepository repository)
-        {
-            _repository = repository;
-        }
-
         public async override Task<PreconditionResult> CheckPermissionsAsync(
             ICommandContext context, CommandInfo command, IServiceProvider services)
         {
@@ -25,33 +18,26 @@ namespace Sanakan.Preconditions
                 return PreconditionResult.FromError($"To polecenie działa tylko z poziomu serwera.");
             }
 
-            await Task.CompletedTask;
+            var gConfig = await db.GetCachedGuildFullConfigAsync(context.Guild.Id);
 
-            var config = (IConfig)services.GetService(typeof(IConfig));
-
-            using (var db = new Database.GuildConfigContext(config))
+            if (gConfig == null)
             {
-                var gConfig = await db.GetCachedGuildFullConfigAsync(context.Guild.Id);
-                
-                if (gConfig == null)
-                {
-                    return PreconditionResult.FromSuccess();
-                }
-
-                if (gConfig?.WaifuConfig?.MarketChannel != null)
-                {
-                    if (gConfig.WaifuConfig.MarketChannel == context.Channel.Id)
-                        return PreconditionResult.FromSuccess();
-
-                    if (user.GuildPermissions.Administrator)
-                        return PreconditionResult.FromSuccess();
-
-                    var channel = await context.Guild.GetTextChannelAsync(gConfig.WaifuConfig.MarketChannel);
-                    return PreconditionResult.FromError($"To polecenie działa na kanale {channel?.Mention}");
-                }
-
                 return PreconditionResult.FromSuccess();
             }
+
+            if (gConfig?.WaifuConfig?.MarketChannel != null)
+            {
+                if (gConfig.WaifuConfig.MarketChannel == context.Channel.Id)
+                    return PreconditionResult.FromSuccess();
+
+                if (user.GuildPermissions.Administrator)
+                    return PreconditionResult.FromSuccess();
+
+                var channel = await context.Guild.GetTextChannelAsync(gConfig.WaifuConfig.MarketChannel);
+                return PreconditionResult.FromError($"To polecenie działa na kanale {channel?.Mention}");
+            }
+
+            return PreconditionResult.FromSuccess();
         }
     }
 }

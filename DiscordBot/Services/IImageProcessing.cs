@@ -40,6 +40,6 @@ namespace Sanakan.DiscordBot.Services
         Image<Rgba32> GetDuelCardImage(DuelInfo info, DuelImage image, Image<Rgba32> win, Image<Rgba32> los);
         Image<Rgba32> GetCatchThatWaifuImage(Image<Rgba32> card, string pokeImg, int xPos, int yPos);
         Task<Image<Rgba32>> GetWaifuCardAsync(string url, Card card);
-        Task<Image<Rgba32>> GetWaifuCardAsync(Card card)
+        Task<Image<Rgba32>> GetWaifuCardAsync(Card card);
     }
 }

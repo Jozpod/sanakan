@@ -1,5 +1,4 @@
 ﻿using Sanakan.DAL.Models;
-using Sanakan.Database.Models;
 
 namespace Sanakan.Extensions
 {

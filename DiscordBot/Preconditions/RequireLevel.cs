@@ -17,34 +17,33 @@ namespace Sanakan.Preconditions
         public async override Task<PreconditionResult> CheckPermissionsAsync(ICommandContext context, CommandInfo command, IServiceProvider services)
         {
             var user = context.User as SocketGuildUser;
-            if (user == null) return PreconditionResult.FromError($"To polecenie działa tylko z poziomu serwera.");
-
-            if (user.GuildPermissions.Administrator)
-                return PreconditionResult.FromSuccess();
-
-            var config = (IConfig)services.GetService(typeof(IConfig));
-            using (var db = new Database.GuildConfigContext(config))
+            
+            if (user == null)
             {
-                var gConfig = await db.GetCachedGuildFullConfigAsync(context.Guild.Id);
-                if (gConfig != null)
-                {
-                    var role = context.Guild.GetRole(gConfig.AdminRole);
-                    if (role != null)
-                    {
-                        if (user.Roles.Any(x => x.Id == role.Id))
-                            return PreconditionResult.FromSuccess();
-                    }
-                }
+                return PreconditionResult.FromError($"To polecenie działa tylko z poziomu serwera.");
             }
 
-            using (var db = new Database.UserContext(config))
+            if (user.GuildPermissions.Administrator)
             {
-                var botUser = await db.GetBaseUserAndDontTrackAsync(user.Id);
-                if (botUser != null)
+                return PreconditionResult.FromSuccess();
+            }
+
+            var config = (IConfig)services.GetService(typeof(IConfig));
+            var gConfig = await db.GetCachedGuildFullConfigAsync(context.Guild.Id);
+            if (gConfig != null)
+            {
+                var role = context.Guild.GetRole(gConfig.AdminRole);
+                if (role != null)
                 {
-                    if (botUser.Level >= _level)
+                    if (user.Roles.Any(x => x.Id == role.Id))
                         return PreconditionResult.FromSuccess();
                 }
+            }
+            var botUser = await db.GetBaseUserAndDontTrackAsync(user.Id);
+            if (botUser != null)
+            {
+                if (botUser.Level >= _level)
+                    return PreconditionResult.FromSuccess();
             }
 
             return PreconditionResult.FromError($"|IMAGE|https://i.imgur.com/YEuawi2.gif|Wymagany poziom do użycia polecenia: {_level}!");

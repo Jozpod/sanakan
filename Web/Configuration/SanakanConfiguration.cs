@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Sanakan.Config.Model;
+using System;
 using System.Collections.Generic;
 
 namespace Sanakan.Web.Configuration

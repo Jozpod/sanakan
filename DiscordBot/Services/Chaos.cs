@@ -74,13 +74,10 @@ namespace Sanakan.Services
                 return;
             }
 
-            using (var db = new Database.GuildConfigContext(_config))
-            {
-                var gConfig = await db.GetCachedGuildFullConfigAsync(user.Guild.Id);
-                if (gConfig == null) return;
+            var gConfig = await db.GetCachedGuildFullConfigAsync(user.Guild.Id);
+            if (gConfig == null) return;
 
-                if (!gConfig.ChaosMode) return;
-            }
+            if (!gConfig.ChaosMode) return;
 
             if (Fun.TakeATry(3))
             {

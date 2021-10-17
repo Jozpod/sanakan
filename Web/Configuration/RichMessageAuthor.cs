@@ -1,4 +1,4 @@
-﻿namespace Sanakan.Api.Models
+﻿namespace Sanakan.Configuration
 {
     /// <summary>
     /// Autor wiadomości - pierwsza linia

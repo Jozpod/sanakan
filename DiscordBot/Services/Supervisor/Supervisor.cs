@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using DAL.Repositories.Abstractions;
 using Discord;
 using Discord.WebSocket;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Sanakan.Extensions;
+using Sanakan.Web.Configuration;
 
 namespace Sanakan.Services.Supervisor
 {
@@ -27,19 +29,23 @@ namespace Sanakan.Services.Supervisor
         private readonly DiscordSocketClient _client;
         private readonly Moderator _moderator;
         private readonly ILogger _logger;
-        private readonly object _config;
+        private readonly SanakanConfiguration _config;
+        private readonly IRepository _repository;
+
         private Timer _timer;
 
         public Supervisor(
             DiscordSocketClient client,
-            IOptions<object> config,
+            IOptions<SanakanConfiguration> config,
             ILogger logger,
-            Moderator moderator)
+            Moderator moderator,
+            IRepository repository)
         {
             _moderator = moderator;
             _client = client;
             _config = config.Value;
             _logger = logger;
+            _repository = repository;
 
             _guilds = new Dictionary<ulong, Dictionary<ulong, SupervisorEntity>>();
 
@@ -66,7 +72,7 @@ namespace Sanakan.Services.Supervisor
 
         private async Task HandleMessageAsync(SocketMessage message)
         {
-            if (!_config.Get().Supervision)
+            if (!_config.Supervision)
             {
                 return;
             }
@@ -90,7 +96,7 @@ namespace Sanakan.Services.Supervisor
                 return;
             }
 
-            if (_config.Get().BlacklistedGuilds.Any(x => x == user.Guild.Id))
+            if (_config.BlacklistedGuilds.Any(x => x == user.Guild.Id))
             {
                 return;
             }
@@ -114,14 +120,17 @@ namespace Sanakan.Services.Supervisor
 
         private async Task Analize(SocketGuildUser user, SocketUserMessage message)
         {
-            var gConfig = await db.GetCachedGuildFullConfigAsync(user.Guild.Id);
+            var gConfig = await _repository.GetCachedGuildFullConfigAsync(user.Guild.Id);
             
             if (gConfig == null)
             {
                 return;
             }
 
-            if (!gConfig.Supervision) return;
+            if (!gConfig.Supervision)
+            {
+                return;
+            }
 
             if (!_guilds.Any(x => x.Key == user.Guild.Id))
             {
@@ -181,7 +190,13 @@ namespace Sanakan.Services.Supervisor
                         if (user.Roles.Contains(muteRole))
                             return;
 
-                        var info = await _moderator.MuteUserAysnc(user, muteRole, null, userRole, db, 24, "spam/flood");
+                        var info = await _moderator.MuteUserAysnc(
+                            user,
+                            muteRole,
+                            null,
+                            userRole,
+                            24,
+                            "spam/flood");
                         await _moderator.NotifyAboutPenaltyAsync(user, notifChannel, info);
                     }
                     break;
@@ -201,7 +216,7 @@ namespace Sanakan.Services.Supervisor
             int mSpecified = MAX_SPECIFIED;
             int mTotal = MAX_TOTAL;
 
-            if (content.IsCommand(_config.Get().Prefix))
+            if (content.IsCommand(_config.Prefix))
             {
                 mTotal += COMMAND_MOD;
                 mSpecified += COMMAND_MOD;

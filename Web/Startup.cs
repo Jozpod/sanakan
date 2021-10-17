@@ -1,4 +1,8 @@
-﻿using DAL.Repositories.Abstractions;
+﻿using DAL.Repositories;
+using DAL.Repositories.Abstractions;
+using Discord;
+using Discord.WebSocket;
+using DiscordBot.Services.PocketWaifu.Abstractions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -10,6 +14,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Serialization;
+using Sanakan.Common;
+using Sanakan.DiscordBot.Services;
+using Sanakan.Services.PocketWaifu;
+using Sanakan.ShindenApi;
+using Sanakan.Web.HostedService;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -30,8 +40,8 @@ namespace Sanakan
 
         public void ConfigureServices(IServiceCollection services)
         {
-            var tmpCnf = config.Get();
-            services.AddSingleton(config);
+            //var tmpCnf = config.Get();
+            //services.AddSingleton(config);
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(opt =>
@@ -42,9 +52,9 @@ namespace Sanakan
                     ValidateAudience = true,
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
-                    ValidIssuer = tmpCnf.Jwt.Issuer,
-                    ValidAudience = tmpCnf.Jwt.Issuer,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(tmpCnf.Jwt.Key))
+                    ValidIssuer = Configuration.GetSection("Jwt.Issuer").Value,
+                    ValidAudience = Configuration.GetSection("Jwt.Issuer").Value,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration.GetSection("Jwt.Key").Value))
                 };
             });
 
@@ -107,27 +117,45 @@ namespace Sanakan
                 c.CustomSchemaIds(x => x.FullName);
             });
 
-            services.AddSingleton<IExecutor>(_executor);
-            services.AddSingleton(_shindenClient);
-            services.AddSingleton(_sessions);
-            services.AddSingleton(_profile);
-            services.AddSingleton(_config);
-            services.AddSingleton(_client);
-            services.AddSingleton(_helper);
-            services.AddSingleton(_events);
-            services.AddSingleton(_chaos);
-            services.AddSingleton(_waifu);
-            services.AddSingleton(_spawn);
-            services.AddSingleton(_mod);
-            services.AddSingleton(_exp);
-            services.AddSingleton(_img);
+            //services.AddSingleton<IExecutor>(_executor);
+            //services.AddSingleton(_sessions);
+            //services.AddSingleton(_profile);
+            //services.AddSingleton(_config);
+            //services.AddSingleton(_client);
+            //services.AddSingleton(_helper);
+            //services.AddSingleton(_events);
+            //services.AddSingleton(_chaos);
+            //services.AddSingleton(_waifu);
+            //services.AddSingleton(_spawn);
+            //services.AddSingleton(_mod);
+            services.AddSingleton<IShindenClient, ShindenClient>();
+            //services.AddSingleton<IShindenClient, ShindenClient>(pr =>
+            //{
+            //    return new ShindenClient(
+            //        new Auth(tmpCnf.Shinden.Token,
+            //        tmpCnf.Shinden.UserAgent,
+            //        tmpCnf.Shinden.Marmolade),
+            //    _logger);
+            //});
+            services.AddSingleton<IImageProcessing, ImageProcessing>();
+            services.AddSingleton<IWaifuService, WaifuService>();
+            //_shindenClient =
+
+            services.AddSingleton(pr => {
+                return new DiscordSocketClient(new DiscordSocketConfig()
+                {
+                    AlwaysDownloadUsers = true,
+                    MessageCacheSize = 200,
+                });
+            });
             services.AddSingleton<Services.Fun>();
             services.AddSingleton<Services.Shinden>();
             services.AddSingleton<Services.LandManager>();
+            services.AddSingleton<IRandomNumberGenerator, RandomNumberGenerator>();
             services.AddScoped<IRepository, Repository>();
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddHostedService<DiscordBotHostedService>();
-            services.AddHostedService<DiscordBotHostedService>();
+            services.AddHostedService<MemoryUsageHostedService>();
             services.AddHostedService<DiscordBotHostedService>();
             services.AddHostedService<DiscordBotHostedService>();
         }

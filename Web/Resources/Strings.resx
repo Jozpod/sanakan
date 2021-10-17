@@ -120,4 +120,16 @@
   <data name="ApiKeyInvalid" xml:space="preserve">
     <value>API key is invalid</value>
   </data>
+  <data name="ApiKeyNotProvided" xml:space="preserve">
+    <value>API key is not provided</value>
+  </data>
+  <data name="CardNotFound" xml:space="preserve">
+    <value>Card not found</value>
+  </data>
+  <data name="ModelIsInvalid" xml:space="preserve">
+    <value>Model is Invalid</value>
+  </data>
+  <data name="UserNotFound" xml:space="preserve">
+    <value>User not found</value>
+  </data>
 </root>

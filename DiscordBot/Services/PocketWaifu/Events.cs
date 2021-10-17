@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using DiscordBot.Services.PocketWaifu;
+using Sanakan.Common;
 using Sanakan.DAL.Models;
 using Sanakan.Extensions;
 using Sanakan.ShindenApi;
@@ -11,10 +12,14 @@ namespace Sanakan.Services.PocketWaifu
     public class Events
     {
         private readonly IShindenClient _shindenClient;
+        private readonly IRandomNumberGenerator _randomNumberGenerator;
 
-        public Events(ShindenClient shindenClient)
+        public Events(
+            ShindenClient shindenClient,
+            IRandomNumberGenerator randomNumberGenerator)
         {
             _shindenClient = shindenClient;
+            _randomNumberGenerator = randomNumberGenerator
         }
 
         private static List<ulong> _titles = new List<ulong>

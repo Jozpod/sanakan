@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Sanakan.Api.Models;
 using Sanakan.Common;
@@ -23,6 +24,8 @@ using Sanakan.DAL.Models.Analytics;
 using Sanakan.Extensions;
 using Sanakan.Services.Executor;
 using Sanakan.ShindenApi;
+using Sanakan.Web.Configuration;
+using Sanakan.Web.Resources;
 using Shinden;
 using Shinden.Models;
 using static Sanakan.Web.ResponseExtensions;
@@ -35,6 +38,7 @@ namespace Sanakan.Web.Controllers
     public class UserController : ControllerBase
     {
         private readonly ILogger _logger;
+        private readonly SanakanConfiguration _config;
         private readonly IUserRepository _userRepository;
         private readonly IRepository _repository;
         private readonly IExecutor _executor;
@@ -47,6 +51,7 @@ namespace Sanakan.Web.Controllers
 
         public UserController(
             DiscordSocketClient client,
+            IOptions<SanakanConfiguration> options,
             IUserRepository userRepository,
             IRepository repository,
             IShindenClient shClient,
@@ -90,11 +95,11 @@ namespace Sanakan.Web.Controllers
         [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetUserIdByNameAsync([FromBody, Required]string name)
         {
-            var response = await _shClient.Search.UserAsync(name);
+            var response = await _shClient.UserAsync(name);
 
             if (!response.IsSuccessStatusCode())
             {
-                return ShindenNotFound("User not found!");
+                return ShindenNotFound(Strings.UserNotFound);
             }
 
             return Ok(response.Body);
@@ -109,11 +114,11 @@ namespace Sanakan.Web.Controllers
         [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetShindenUsernameByShindenId(ulong id)
         {
-            var response = await _shClient.User.GetAsync(id);
+            var response = await _shClient.GetAsync(id);
 
             if (!response.IsSuccessStatusCode())
             {
-                return ShindenNotFound("User not found!");
+                return ShindenNotFound(Strings.UserNotFound);
             }
 
             var username = response.Body.Name;
@@ -134,14 +139,14 @@ namespace Sanakan.Web.Controllers
 
             if (user == null)
             {
-                return ShindenNotFound("User not found!");
+                return ShindenNotFound(Strings.UserNotFound);
             }
 
             TokenData tokenData = null;
             
             if (_userContext.HasWebpageClaim())
             {
-                tokenData = _jwtBuilder.Build(_config, user);
+                tokenData = _jwtBuilder.Build();
             }
 
             var result = new UserWithToken()
@@ -174,7 +179,7 @@ namespace Sanakan.Web.Controllers
 
             if (user == null)
             {
-                return ShindenNotFound("User not found!");
+                return ShindenNotFound(Strings.UserNotFound);
             }
 
             TokenData tokenData = null;
@@ -214,10 +219,10 @@ namespace Sanakan.Web.Controllers
 
             if (user == null)
             {
-                return ShindenNotFound("User not found!");
+                return ShindenNotFound(Strings.UserNotFound);
             }
 
-            var guild = _client.GetGuild(245931283031523330);
+            var guild = _client.GetGuild(Constants.ShindenDiscordGuildId);
 
             if (guild == null)
             {
@@ -228,7 +233,7 @@ namespace Sanakan.Web.Controllers
 
             if (userOnGuild == null)
             {
-                return ShindenNotFound("User not found!");
+                return ShindenNotFound(Strings.UserNotFound);
             }
 
             await userOnGuild.ModifyAsync(x => x.Nickname = nickname);
@@ -263,7 +268,7 @@ namespace Sanakan.Web.Controllers
             
             if (user == null)
             {
-                return ShindenNotFound("User not found!");
+                return ShindenNotFound(Strings.UserNotFound);
             }
 
             var botUser = db.Users.FirstOrDefault(x => x.Id == id.DiscordUserId);
@@ -293,7 +298,7 @@ namespace Sanakan.Web.Controllers
 
                 if (oldUsers.Any())
                 {
-                    var rmcs = _config.Get().RMConfig
+                    var rmcs = _config.RMConfig
                         .Where(x => x.Type == RichMessageType.AdminNotify);
                     foreach (var rmc in rmcs)
                     {
@@ -310,7 +315,9 @@ namespace Sanakan.Web.Controllers
                         }
 
                         var content = ($"Potencjalne multikonto:\nDID: {id.DiscordUserId}\nSID: {sUser.Id}\n"
-                            + $"SN: {sUser.Name}\n\noDID: {string.Join(",", oldUsers.Select(x => x.Id))}").TrimToLength(2000).ToEmbedMessage(EMType.Error).Build()
+                            + $"SN: {sUser.Name}\n\noDID: {string.Join(",", oldUsers.Select(x => x.Id))}").TrimToLength(2000)
+                            .ToEmbedMessage(EMType.Error).Build();
+
                         await channel.SendMessageAsync("", embed: content);
                     }
                 }
@@ -319,15 +326,12 @@ namespace Sanakan.Web.Controllers
             }
             var exe = new Executable($"api-register u{id.DiscordUserId}", new Task<Task>(async () =>
             {
-                using (var dbs = new Database.UserContext(_config))
-                {
-                    botUser = await dbs.GetUserOrCreateAsync(id.DiscordUserId);
-                    botUser.Shinden = sUser.Id;
+                botUser = await dbs.GetUserOrCreateAsync(id.DiscordUserId);
+                botUser.Shinden = sUser.Id;
 
-                    await dbs.SaveChangesAsync();
+                await dbs.SaveChangesAsync();
 
-                    _cacheManager.ExpireTag(new string[] { $"user-{user.Id}", "users" });
-                }
+                _cacheManager.ExpireTag(new string[] { $"user-{user.Id}", "users" });
             }), Priority.High);
 
             await _executor.TryAdd(exe, TimeSpan.FromSeconds(1));
@@ -350,7 +354,7 @@ namespace Sanakan.Web.Controllers
 
             if (user == null)
             {
-                return ShindenNotFound("User not found!");
+                return ShindenNotFound(Strings.UserNotFound);
             }
 
             var exe = new Executable($"api-tc u{id} ({value})", new Task<Task>(async () =>
@@ -392,7 +396,7 @@ namespace Sanakan.Web.Controllers
 
             if (user == null)
             {
-                return ShindenNotFound("User not found!");
+                return ShindenNotFound(Strings.UserNotFound);
             }
 
             var exe = new Executable($"api-tc su{id} ({value})", new Task<Task>(async () =>

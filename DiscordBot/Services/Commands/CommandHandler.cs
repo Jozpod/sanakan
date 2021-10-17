@@ -1,4 +1,5 @@
-﻿using Discord;
+﻿using DAL.Repositories.Abstractions;
+using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.Extensions.Logging;
@@ -7,8 +8,7 @@ using Sanakan.DAL.Models.Analytics;
 using Sanakan.DiscordBot.Services;
 using Sanakan.Extensions;
 using Sanakan.Services.Executor;
-using Sanakan.Services.PocketWaifu;
-using Shinden.Logger;
+using Sanakan.Web.Configuration;
 using System;
 using System.Linq;
 using System.Reflection;
@@ -24,20 +24,23 @@ namespace Sanakan.Services.Commands
         private readonly CommandService _cmd;
         private readonly IExecutor _executor;
         private readonly ILogger _logger;
-        private object _config;
+        private readonly IRepository _repository;
+        private SanakanConfiguration _config;
         private Helper _helper;
         private Timer _timer;
 
         public CommandHandler(
             DiscordSocketClient client,
-            IOptions<object> config,
+            IOptions<SanakanConfiguration> config,
             ILogger<CommandHandler> logger,
-            IExecutor executor)
+            IExecutor executor,
+            IRepository repository)
         {
             _client = client;
             _config = config.Value;
             _logger = logger;
             _executor = executor;
+            _repository = repository;
             _cmd = new CommandService();
         }
 
@@ -46,20 +49,20 @@ namespace Sanakan.Services.Commands
             _helper = helper;
             _provider = provider;
 
-            _cmd.AddTypeReader<SlotMachineSetting>(new TypeReaders.SlotMachineSettingTypeReader());
-            _cmd.AddTypeReader<WishlistObjectType>(new TypeReaders.WishlistObjectTypeReader());
-            _cmd.AddTypeReader<CardExpedition>(new TypeReaders.ExpeditionTypeReader());
-            _cmd.AddTypeReader<ProfileType>(new TypeReaders.ProfileTypeReader());
-            _cmd.AddTypeReader<ConfigType>(new TypeReaders.ConfigTypeReader());
-            _cmd.AddTypeReader<CoinSide>(new TypeReaders.CoinSideTypeReader());
-            _cmd.AddTypeReader<HaremType>(new TypeReaders.HaremTypeReader());
-            _cmd.AddTypeReader<TopType>(new TypeReaders.TopTypeReader());
-            _cmd.AddTypeReader<bool>(new TypeReaders.BoolTypeReader());
+            //_cmd.AddTypeReader<SlotMachineSetting>(new TypeReaders.SlotMachineSettingTypeReader());
+            //_cmd.AddTypeReader<WishlistObjectType>(new TypeReaders.WishlistObjectTypeReader());
+            //_cmd.AddTypeReader<CardExpedition>(new TypeReaders.ExpeditionTypeReader());
+            //_cmd.AddTypeReader<ProfileType>(new TypeReaders.ProfileTypeReader());
+            //_cmd.AddTypeReader<ConfigType>(new TypeReaders.ConfigTypeReader());
+            //_cmd.AddTypeReader<CoinSide>(new TypeReaders.CoinSideTypeReader());
+            //_cmd.AddTypeReader<HaremType>(new TypeReaders.HaremTypeReader());
+            //_cmd.AddTypeReader<TopType>(new TypeReaders.TopTypeReader());
+            //_cmd.AddTypeReader<bool>(new TypeReaders.BoolTypeReader());
 
             _helper.PublicModulesInfo = await _cmd.AddModulesAsync(Assembly.GetEntryAssembly(), _provider);
 
-            _helper.PrivateModulesInfo.Add("Moderacja", await _cmd.AddModuleAsync<Modules.Moderation>(_provider));
-            _helper.PrivateModulesInfo.Add("Debug", await _cmd.AddModuleAsync<Modules.Debug>(_provider));
+            _helper.PrivateModulesInfo.Add("Moderacja", await _cmd.AddModuleAsync<Modules.ModerationModule>(_provider));
+            _helper.PrivateModulesInfo.Add("Debug", await _cmd.AddModuleAsync<Modules.DebugModule>(_provider));
 
             _client.MessageReceived += HandleCommandAsync;
         }
@@ -73,19 +76,17 @@ namespace Sanakan.Services.Commands
                 return;
             }
 
-
             if (userMessage.Author.IsBot || userMessage.Author.IsWebhook)
             {
                 return;
             }
 
-            var conf = _config.Get();
-            string prefix = conf.Prefix;
-            var context = new SocketCommandContext(_client, msg);
+            string prefix = _config.Prefix;
+            var context = new SocketCommandContext(_client, userMessage);
 
             if (context.Guild != null)
             {
-                var gConfig = await db.GetCachedGuildFullConfigAsync(context.Guild.Id);
+                var gConfig = await _repository.GetCachedGuildFullConfigAsync(context.Guild.Id);
                 if (gConfig?.Prefix != null) prefix = gConfig.Prefix;
             }
 
@@ -95,8 +96,8 @@ namespace Sanakan.Services.Commands
                 return;
             }
 
-            var isDev = conf.Dev.Any(x => x == context.User.Id);
-            var isOnBlacklist = conf.BlacklistedGuilds.Any(x => x == (context.Guild?.Id ?? 0));
+            var isDev = _config.Dev.Any(x => x == context.User.Id);
+            var isOnBlacklist = _config.BlacklistedGuilds.Any(x => x == (context.Guild?.Id ?? 0));
 
             if (isOnBlacklist && !isDev)
             {
@@ -107,11 +108,11 @@ namespace Sanakan.Services.Commands
 
             if (!res.IsSuccess())
             {
-                else await ProcessResultAsync(res.Result, context, argPos, prefix);
+                await ProcessResultAsync(res.Result, context, argPos, prefix);
                 return;
             }
      
-            _logger.LogInformation($"Run cmd: u{msg.Author.Id} {res.Command.Match.Command.Name}");
+            _logger.LogInformation($"Run cmd: u{userMessage.Author.Id} {res.Command.Match.Command.Name}");
 
             string param = null;
             try
@@ -122,16 +123,18 @@ namespace Sanakan.Services.Commands
             }
             catch (Exception) { }
 
-            dbc.CommandsData.Add(new CommandsAnalytics()
+            var record = new CommandsAnalytics()
             {
                 CmdName = res.Command.Match.Command.Name,
                 GuildId = context.Guild?.Id ?? 0,
                 UserId = context.User.Id,
-                Date = DateTime.Now,
+                Date = _systemClock.UtcNow,
                 CmdParams = param,
-            });
+            };
 
-            await dbc.SaveChangesAsync();
+            _repository.CommandsData.Add(record);
+
+            await _repository.SaveChangesAsync();
 
             switch (res.Command.Match.Command.RunMode)
             {
@@ -149,7 +152,10 @@ namespace Sanakan.Services.Commands
 
         private async Task ProcessResultAsync(IResult result, SocketCommandContext context, int argPos, string prefix)
         {
-            if (result == null) return;
+            if (result == null)
+            {
+                return;
+            }
 
             switch (result.Error)
             {
@@ -174,7 +180,11 @@ namespace Sanakan.Services.Commands
                     {
                         var emb = new EmbedBuilder().WithColor(EMType.Error.Color());
                         var splited = result.ErrorReason.Split("|");
-                        if (splited.Length > 3) emb.WithDescription(splited[3]).WithImageUrl(splited[2]);
+                        
+                        if (splited.Length > 3)
+                        {
+                            emb.WithDescription(splited[3]).WithImageUrl(splited[2]);
+                        }
                         else emb.WithImageUrl(result.ErrorReason.Remove(0, 7));
 
                         await context.Channel.SendMessageAsync("", embed: emb.Build());

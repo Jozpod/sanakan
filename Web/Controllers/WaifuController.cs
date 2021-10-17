@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -19,6 +20,7 @@ using Sanakan.Services.Executor;
 using Sanakan.Services.PocketWaifu;
 using Sanakan.ShindenApi;
 using Sanakan.Web.Models;
+using Sanakan.Web.Resources;
 using Shinden;
 using static Sanakan.Web.ResponseExtensions;
 
@@ -121,7 +123,7 @@ namespace Sanakan.Web.Controllers
 
             if (user == null)
             {
-                return ShindenNotFound("User not found");
+                return ShindenNotFound(Strings.UserNotFound);
             }
 
             var query = await _repository.GetUsersCardsByShindenIdWithOffsetAndFilterAsync2(user.GameDeck.Id);
@@ -172,28 +174,28 @@ namespace Sanakan.Web.Controllers
         /// <param name="id">id użytkownika shindena</param>
         /// <param name="offset">przesunięcie</param>
         /// <param name="count">liczba kart</param>
-        /// <returns>lista kart</returns>
-        /// <response code="404">User not found</response>
         [HttpGet("user/{id}/cards/{offset}/{count}")]
+        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(IEnumerable<CardFinalView>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(IEnumerable<ulong>), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetUsersCardsByShindenIdWithOffsetAsync(
             ulong id, uint offset, uint count)
         {
             var user = await db.Users
-                    .AsQueryable()
-                    .AsSplitQuery()
-                    .Where(x => x.Shinden == id)
-                    .Include(x => x.GameDeck)
-                    .AsNoTracking()
-                    .FirstOrDefaultAsync();
+                .AsQueryable()
+                .AsSplitQuery()
+                .Where(x => x.Shinden == id)
+                .Include(x => x.GameDeck)
+                .AsNoTracking()
+                .FirstOrDefaultAsync();
 
             if (user == null)
             {
                 return ShindenNotFound("User not found");
             }
 
-            var cards = await db.Cards.AsQueryable().AsSplitQuery()
+            var cards = await db.Cards
+                .AsQueryable()
+                .AsSplitQuery()
                 .Where(x => x.GameDeckId == user.GameDeck.Id)
                 .Include(x => x.ArenaStats)
                 .Include(x => x.TagList)
@@ -363,7 +365,7 @@ namespace Sanakan.Web.Controllers
         [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status200OK)]
         public async Task<IActionResult> UpdateCardInfoAsync(
             ulong id,
-            [FromBody]Models.CharacterCardInfoUpdate newData)
+            [FromBody]CharacterCardInfoUpdate newData)
         {
             var exe = new Executable($"update cards-{id} img", new Task<Task>(async () =>
             {
@@ -426,7 +428,8 @@ namespace Sanakan.Web.Controllers
             var exe = new Executable($"update cards-{id}", new Task<Task>(async () =>
                 {
                     var userRelease = new List<string>() { "users" };
-                    var cards = db.Cards.AsQueryable()
+                    var cards = db.Cards
+                        .AsQueryable()
                         .AsSplitQuery()
                         .Where(x => x.Character == id);
 
@@ -458,7 +461,6 @@ namespace Sanakan.Web.Controllers
         /// Pobiera listę życzeń użytkownika
         /// </summary>
         /// <param name="id">id użytkownika discorda</param>
-        /// <response code="404">User not found</response>
         [HttpGet("user/discord/{id}/wishlist"), Authorize(Policy = AuthorizePolicies.Site)]
         [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status200OK)]
@@ -468,7 +470,7 @@ namespace Sanakan.Web.Controllers
 
             if (user == null)
             {
-                return NotFound("User not found!");
+                return ShindenNotFound(Strings.UserNotFound);
             }
 
             if (user.GameDeck.Wishes.Count < 1)
@@ -478,9 +480,10 @@ namespace Sanakan.Web.Controllers
 
             var p = user.GameDeck.GetCharactersWishList();
             var t = user.GameDeck.GetTitlesWishList();
-            var c = user.GameDeck.GetCardsWishList();
+            var cardsId = user.GameDeck.GetCardsWishList();
 
             var cards = new List<Card>();
+
             if (cardsId != null)
             {
                 var cds = await db.Cards
@@ -491,7 +494,7 @@ namespace Sanakan.Web.Controllers
                 cards.AddRange(cds);
             }
 
-            var result = await _waifu.GetCardsFromWishlist(c, p, t, db, user.GameDeck.Cards);
+            var result = await _waifu.GetCardsFromWishlist(cardsId, p, t, cards, user.GameDeck.Cards);
 
             return Ok(result);
         }
@@ -500,17 +503,16 @@ namespace Sanakan.Web.Controllers
         /// Pobiera listę życzeń użytkownika
         /// </summary>
         /// <param name="id">id użytkownika shindena</param>
-        /// <response code="404">User not found</response>
         [HttpGet("user/shinden/{id}/wishlist"), Authorize(Policy = AuthorizePolicies.Site)]
-        [ProducesResponseType(typeof(IEnumerable<Card>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(IEnumerable<Card>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetShindenUserWishlistAsync(ulong id)
         {
             var user = await _userRepository.GetCachedFullUserByShindenIdAsync(id);
 
             if (user == null)
             {
-                return ShindenNotFound("User not found!");
+                return ShindenNotFound(Strings.UserNotFound);
             }
 
             if (user.GameDeck.Wishes.Count < 1)
@@ -533,7 +535,8 @@ namespace Sanakan.Web.Controllers
                 cards.AddRange(cds);
             }
 
-            return await _waifu.GetCardsFromWishlist(c, p, t, cards, user.GameDeck.Cards);
+            var result = await _waifu.GetCardsFromWishlist(c, p, t, cards, user.GameDeck.Cards);
+            return Ok(result);
         }
 
         /// <summary>
@@ -554,22 +557,23 @@ namespace Sanakan.Web.Controllers
         /// Wymusza na bocie wygenerowanie obrazka jeśli nie istnieje
         /// </summary>
         /// <param name="id">id karty (wid)</param>
-        /// <response code="403">Card already exist</response>
-        /// <response code="404">Card not found</response>
         [HttpGet("card/{id}")]
-        [ProducesResponseType(typeof(BodyPayload), 404)]
-        [ProducesResponseType(typeof(BodyPayload), 404)]
+        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(Stream), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetCardAsync(ulong id)
         {
             if (!_fileSystem.Exists($"{Paths.CardsMiniatures}/{id}.png") 
                 || !_fileSystem.Exists($"{Paths.Cards}/{id}.png") 
                 || !_fileSystem.Exists($"{Paths.CardsInProfiles}/{id}.png"))
             {
-                var card = await db.Cards.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
+                var card = await db.Cards
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(x => x.Id == id);
 
                 if (card == null)
                 {
-                    return ShindenNotFound("Card not found!");
+                    return ShindenNotFound(Strings.CardNotFound);
                 }
 
                 _waifu.DeleteCardImageIfExist(card);
@@ -589,13 +593,15 @@ namespace Sanakan.Web.Controllers
         /// <returns>użytkownik bota</returns>
         [HttpPost("discord/{id}/boosterpack"), Authorize(Policy = AuthorizePolicies.Site)]
         [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status500InternalServerError)]
-        [ProducesResponseType(typeof(BodyPayload), 404)]
-        [ProducesResponseType(typeof(BodyPayload), 404)]
-        public async Task<IActionResult> GiveUserAPacksAsync(ulong id, [FromBody]List<CardBoosterPack> boosterPacks)
+        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GiveUserAPacksAsync(
+            ulong id,
+            [FromBody]List<CardBoosterPack> boosterPacks)
         {
             if (boosterPacks?.Count < 1)
             {
-                return ShindenInternalServerError("Model is Invalid");
+                return ShindenInternalServerError(Strings.ModelIsInvalid);
             }
 
             var packs = new List<BoosterPack>();
@@ -611,11 +617,11 @@ namespace Sanakan.Web.Controllers
                 return ShindenInternalServerError("Data is Invalid");
             }
 
-            var user = await db.GetCachedFullUserAsync(id);
+            var user = await _userRepository.GetCachedFullUserAsync(id);
 
             if (user == null)
             {
-                return ShindenNotFound("User not found!");
+                return ShindenNotFound(Strings.UserNotFound);
             }
 
             var exe = new Executable($"api-packet u{id}", new Task<Task>(async () =>
@@ -653,7 +659,7 @@ namespace Sanakan.Web.Controllers
         {
             if (boosterPacks?.Count < 1)
             {
-                return ShindenInternalServerError("Model is Invalid");
+                return ShindenInternalServerError(Strings.ModelIsInvalid);
             }
 
             var packs = new List<BoosterPack>();
@@ -676,7 +682,7 @@ namespace Sanakan.Web.Controllers
             
             if (user == null)
             {
-                return ShindenNotFound("User not found!");
+                return ShindenNotFound(Strings.UserNotFound);
             }
 
             var discordId = user.Id;
@@ -700,7 +706,7 @@ namespace Sanakan.Web.Controllers
             
             if (_userContext.HasWebpageClaim())
             {
-                tokenData = _jwtBuilder.Build(_config, user);
+                tokenData = _jwtBuilder.Build();
             }
 
             var result = new UserWithToken()
@@ -730,7 +736,7 @@ namespace Sanakan.Web.Controllers
         {
             if (boosterPacks?.Count < 1)
             {
-                return ShindenInternalServerError("Model is Invalid");
+                return ShindenInternalServerError(Strings.ModelIsInvalid);
             }
 
             var packs = new List<BoosterPack>();
@@ -803,15 +809,13 @@ namespace Sanakan.Web.Controllers
         }
 
         /// <summary>
-        /// Otwiera pakiet użytkownika (wymagany Bearer od użytkownika)
+        /// Opens user packet (requires authorization)
         /// </summary>
         /// <param name="packNumber">numer pakietu</param>
-        /// <response code="403">The appropriate claim was not found</response>
-        /// <response code="404">User not found</response>
-        /// <response code="406">User has no space</response>
         [HttpPost("boosterpack/open/{packNumber}"), Authorize(Policy = AuthorizePolicies.Player)]
-        [ProducesResponseType(typeof(ObjectResult), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status406NotAcceptable)]
         [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ObjectResult), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status200OK)]
         public async Task<IActionResult> OpenAPackAsync(int packNumber)
         {
@@ -825,13 +829,13 @@ namespace Sanakan.Web.Controllers
                 };
             }
 
-            string bPackName = "";
+            var bPackName = "";
             var cards = new List<Card>();
             var botUserCh = await _userRepository.GetCachedFullUserAsync(discordId.Value);
 
             if (botUserCh == null)
             {
-                return ShindenNotFound("User not found!");
+                return ShindenNotFound(Strings.UserNotFound);
             }
 
             if (botUserCh.GameDeck.BoosterPacks.Count < packNumber || packNumber <= 0)
@@ -849,54 +853,52 @@ namespace Sanakan.Web.Controllers
             cards = await _waifu.OpenBoosterPackAsync(null, pack);
             bPackName = pack.Name;
 
-            var exe = new Executable($"api-packet-open u{discordId}", new Task<Task>(async () =>
-            {
-                var botUser = await _userRepository.GetUserOrCreateAsync(discordId.Value);
+            //var exe = new Executable($"api-packet-open u{discordId}", new Task<Task>(async () =>
+            //{
+            //    var botUser = await _userRepository.GetUserOrCreateAsync(discordId.Value);
 
-                var bPack = botUser.GameDeck.BoosterPacks.ToArray()[packNumber - 1];
-                if (bPack?.Name != bPackName)
-                {
-                    return ShindenInternalServerError("Boosterpack already opened!");
-                }
+            //    var bPack = botUser.GameDeck.BoosterPacks.ToArray()[packNumber - 1];
+            //    if (bPack?.Name != bPackName)
+            //    {
+            //        return ShindenInternalServerError("Boosterpack already opened!");
+            //    }
 
-                botUser.GameDeck.BoosterPacks.Remove(bPack);
+            //    botUser.GameDeck.BoosterPacks.Remove(bPack);
 
-                if (bPack.CardSourceFromPack == CardSource.Activity || bPack.CardSourceFromPack == CardSource.Migration)
-                {
-                    botUser.Stats.OpenedBoosterPacksActivity += 1;
-                }
-                else
-                {
-                    botUser.Stats.OpenedBoosterPacks += 1;
-                }
+            //    if (bPack.CardSourceFromPack == CardSource.Activity || bPack.CardSourceFromPack == CardSource.Migration)
+            //    {
+            //        botUser.Stats.OpenedBoosterPacksActivity += 1;
+            //    }
+            //    else
+            //    {
+            //        botUser.Stats.OpenedBoosterPacks += 1;
+            //    }
 
-                foreach (var card in cards)
-                {
-                    card.Affection += botUser.GameDeck.AffectionFromKarma();
-                    card.FirstIdOwner = botUser.Id;
+            //    foreach (var card in cards)
+            //    {
+            //        card.Affection += botUser.GameDeck.AffectionFromKarma();
+            //        card.FirstIdOwner = botUser.Id;
 
-                    botUser.GameDeck.Cards.Add(card);
-                    botUser.GameDeck.RemoveCharacterFromWishList(card.Character);
-                }
+            //        botUser.GameDeck.Cards.Add(card);
+            //        botUser.GameDeck.RemoveCharacterFromWishList(card.Character);
+            //    }
 
-                await db.SaveChangesAsync();
+            //    await _repository.SaveChangesAsync();
 
-                _cacheManager.ExpireTag(new string[] { $"user-{botUser.Id}", "users" });
-            }));
+            //    _cacheManager.ExpireTag(new string[] { $"user-{botUser.Id}", "users" });
+            //}));
 
-            await _executor.TryAdd(exe, TimeSpan.FromSeconds(1));
+            //await _executor.TryAdd(exe, TimeSpan.FromSeconds(1));
 
-            exe.Wait();
+            //exe.Wait();
 
             return Ok(cards);
         }
 
         /// <summary>
-        /// Aktywuje lub dezaktywuje kartę (wymagany Bearer od użytkownika)
+        /// Activates or deactivates card ( authorization required )
         /// </summary>
         /// <param name="wid">id karty</param>
-        /// <response code="403">The appropriate claim was not found</response>
-        /// <response code="404">Card not found</response>
         [HttpPut("deck/toggle/card/{wid}"), Authorize(Policy = AuthorizePolicies.Player)]
         [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status404NotFound)]
@@ -914,14 +916,14 @@ namespace Sanakan.Web.Controllers
 
             if (botUserCh == null)
             {
-                return ShindenNotFound("User not found!");
+                return ShindenNotFound(Strings.UserNotFound);
             }
 
             var thisCardCh = botUserCh.GameDeck.Cards.FirstOrDefault(x => x.Id == wid);
 
             if (thisCardCh == null)
             {
-                return ShindenNotFound("Card not found!");
+                return ShindenNotFound(Strings.CardNotFound);
             }
 
             if (thisCardCh.InCage)

@@ -178,24 +178,44 @@ namespace Sanakan.Services.Session
 
         private async Task HandleReactionRemovedAsync(Cacheable<IUserMessage, ulong> message, ISocketMessageChannel channel, SocketReaction reaction)
         {
-            if (!reaction.User.IsSpecified) return;
+            if (!reaction.User.IsSpecified)
+            {
+                return;
+            }
+
             var user = reaction.User.Value;
 
-            if ((user.IsBot || user.IsWebhook)) return;
+            if ((user.IsBot || user.IsWebhook))
+            {
+                return;
+            }
 
             var userSessions = _sessions.FindAll(x => x.IsOwner(user)
                 && x.GetEventType().HasFlag(ExecuteOn.ReactionRemoved));
 
-            if (userSessions.Count == 0) return;
+            if (userSessions.Count == 0)
+            {
+                return;
+            }
 
             var thisUser = _client.GetUser(user.Id);
-            if (thisUser == null) return;
+            if (thisUser == null)
+            {
+                return;
+            }
 
             var msg = await channel.GetMessageAsync(message.Id);
-            if (msg == null) return;
+
+            if (msg == null)
+            {
+                return;
+            }
 
             var thisMessage = msg as SocketUserMessage;
-            if (thisMessage == null) return;
+            if (thisMessage == null)
+            {
+                return;
+            }
 
             await RunSessions(userSessions, new SessionContext(channel, thisUser, thisMessage, _client, reaction, false)).ConfigureAwait(false);
         }

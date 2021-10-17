@@ -3,9 +3,11 @@ using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using DiscordBot.Services;
+using DiscordBot.Services.Session;
 using Microsoft.EntityFrameworkCore;
 using Sanakan.Common;
 using Sanakan.Common.Models;
+using Sanakan.DAL.Models;
 using Sanakan.Extensions;
 using Sanakan.Preconditions;
 using Sanakan.Services;
@@ -216,7 +218,8 @@ namespace Sanakan.Modules
                 return;
             }
 
-            var botuser = await db.Users.AsQueryable()
+            var botuser = await db.Users
+                .AsQueryable()
                 .AsSplitQuery()
                 .Where(x => x.Id == user.Id)
                 .AsNoTracking()
@@ -243,11 +246,8 @@ namespace Sanakan.Modules
             await _session.KillSessionIfExistAsync(session);
 
             var building = await ReplyAsync("", embed: $"🔨 Trwa budowanie topki...".ToEmbedMessage(EMType.Bot).Build());
-            using (var db = new Database.UserContext(Config))
-            {
-                var users = await db.GetCachedAllUsersAsync();
-                session.ListItems = _profile.BuildListView(_profile.GetTopUsers(users, type), type, Context.Guild);
-            }
+            var users = await _userRepository.GetCachedAllUsersAsync();
+            session.ListItems = _profile.BuildListView(_profile.GetTopUsers(users, type), type, Context.Guild);
 
             session.Event = ExecuteOn.ReactionAdded;
             session.Embed = new EmbedBuilder
@@ -289,7 +289,8 @@ namespace Sanakan.Modules
         [Alias("profile")]
         [Summary("wyświetla profil użytkownika")]
         [Remarks("karna")]
-        public async Task ShowUserProfileAsync([Summary("użytkownik (opcjonalne)")]SocketGuildUser socketGuildUser = null)
+        public async Task ShowUserProfileAsync(
+            [Summary("użytkownik (opcjonalne)")]SocketGuildUser? socketGuildUser = null)
         {
             var user = socketGuildUser ?? Context.User as SocketGuildUser;
             
@@ -310,7 +311,7 @@ namespace Sanakan.Modules
             botUser.GameDeck = await _repository.GetCachedUserGameDeckAsync(user.Id);
             using var stream = await _profile
                 .GetProfileImageAsync(user, botUser, allUsers
-                .OrderByDescending(x => x.ExpCnt).ToList().IndexOf(botUser) + 1));
+                .OrderByDescending(x => x.ExpCnt).ToList().IndexOf(botUser) + 1);
             await Context.Channel.SendFileAsync(stream, $"{usr.Id}.png");
         }
 
@@ -318,62 +319,60 @@ namespace Sanakan.Modules
         [Alias("quest")]
         [Summary("wyświetla postęp misji użytkownika")]
         [Remarks("tak"), RequireAnyCommandChannel]
-        public async Task ShowUserQuestsProgressAsync([Summary("czy odebrać nagrody?")]bool claim = false)
+        public async Task ShowUserQuestsProgressAsync(
+            [Summary("czy odebrać nagrody?")]bool claim = false)
         {
-            using (var db = new Database.UserContext(Config))
+            var botuser = await _repository.GetUserOrCreateAsync(Context.User.Id);
+            var weeklyQuests = botuser.CreateOrGetAllWeeklyQuests();
+            var dailyQuests = botuser.CreateOrGetAllDailyQuests();
+
+            if (claim)
             {
-                var botuser = await db.GetUserOrCreateAsync(Context.User.Id);
-                var weeklyQuests = botuser.CreateOrGetAllWeeklyQuests();
-                var dailyQuests = botuser.CreateOrGetAllDailyQuests();
-
-                if (claim)
+                var rewards = new List<string>();
+                var allClaimedBefore = dailyQuests.Count(x => x.IsClaimed()) == dailyQuests.Count;
+                foreach (var d in dailyQuests)
                 {
-                    var rewards = new List<string>();
-                    var allClaimedBefore = dailyQuests.Count(x => x.IsClaimed()) == dailyQuests.Count;
-                    foreach(var d in dailyQuests)
+                    if (d.CanClaim())
                     {
-                        if (d.CanClaim())
-                        {
-                            d.Claim(botuser);
-                            rewards.Add(d.Type.GetRewardString());
-                        }
+                        d.Claim(botuser);
+                        rewards.Add(d.Type.GetRewardString());
                     }
+                }
 
-                    if (!allClaimedBefore && dailyQuests.Count(x => x.IsClaimed()) == dailyQuests.Count)
+                if (!allClaimedBefore && dailyQuests.Count(x => x.IsClaimed()) == dailyQuests.Count)
+                {
+                    botuser.AcCnt += 10;
+                    rewards.Add("10 AC");
+                }
+
+                foreach (var w in weeklyQuests)
+                {
+                    if (w.CanClaim())
                     {
-                        botuser.AcCnt += 10;
-                        rewards.Add("10 AC");
+                        w.Claim(botuser);
+                        rewards.Add(w.Type.GetRewardString());
                     }
+                }
 
-                    foreach(var w in weeklyQuests)
-                    {
-                        if (w.CanClaim())
-                        {
-                            w.Claim(botuser);
-                            rewards.Add(w.Type.GetRewardString());
-                        }
-                    }
+                if (rewards.Count > 0)
+                {
+                    _cacheManager.ExpireTag(new string[] { $"user-{botuser.Id}", "users" });
 
-                    if (rewards.Count > 0)
-                    {
-                        _cacheManager.ExpireTag(new string[] { $"user-{botuser.Id}", "users" });
-
-                        await ReplyAsync("", embed: $"**Odebrane nagrody:**\n\n{string.Join("\n", rewards)}".ToEmbedMessage(EMType.Success).WithUser(Context.User).Build());
-                        await db.SaveChangesAsync();
-                        return;
-                    }
-
-                    await ReplyAsync("", embed: "Nie masz nic do odebrania.".ToEmbedMessage(EMType.Error).WithUser(Context.User).Build());
+                    await ReplyAsync("", embed: $"**Odebrane nagrody:**\n\n{string.Join("\n", rewards)}".ToEmbedMessage(EMType.Success).WithUser(Context.User).Build());
+                    await _repository.SaveChangesAsync();
                     return;
                 }
 
-                string dailyTip = "Za wykonanie wszystkich dziennych misji można otrzymać 10 AC.";
-                string totalTip = "Dzienne misje odświeżają się o północy, a tygodniowe co niedzielę.";
-                string daily = $"**Dzienne misje:**\n\n{string.Join("\n", dailyQuests.Select(x => x.ToView()))}";
-                string weekly = $"**Tygodniowe misje:**\n\n{string.Join("\n", weeklyQuests.Select(x => x.ToView()))}";
-
-                await ReplyAsync("", embed: $"{daily}\n\n{dailyTip}\n\n\n{weekly}\n\n{totalTip}".ToEmbedMessage(EMType.Bot).WithUser(Context.User).Build());
+                await ReplyAsync("", embed: "Nie masz nic do odebrania.".ToEmbedMessage(EMType.Error).WithUser(Context.User).Build());
+                return;
             }
+
+            string dailyTip = "Za wykonanie wszystkich dziennych misji można otrzymać 10 AC.";
+            string totalTip = "Dzienne misje odświeżają się o północy, a tygodniowe co niedzielę.";
+            string daily = $"**Dzienne misje:**\n\n{string.Join("\n", dailyQuests.Select(x => x.ToView()))}";
+            string weekly = $"**Tygodniowe misje:**\n\n{string.Join("\n", weeklyQuests.Select(x => x.ToView()))}";
+
+            await ReplyAsync("", embed: $"{daily}\n\n{dailyTip}\n\n\n{weekly}\n\n{totalTip}".ToEmbedMessage(EMType.Bot).WithUser(Context.User).Build());
         }
 
         [Command("styl")]
@@ -385,58 +384,56 @@ namespace Sanakan.Modules
             var scCost = 3000;
             var tcCost = 1000;
 
-            using (var db = new Database.UserContext(Config))
+            var botuser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
+            if (botuser.ScCnt < scCost && currency == SCurrency.Sc)
             {
-                var botuser = await db.GetUserOrCreateAsync(Context.User.Id);
-                if (botuser.ScCnt < scCost && currency == SCurrency.Sc)
-                {
-                    await ReplyAsync("", embed: $"{Context.User.Mention} nie posiadasz wystarczającej liczby SC!".ToEmbedMessage(EMType.Error).Build());
-                    return;
-                }
-                if (botuser.TcCnt < tcCost && currency == SCurrency.Tc)
-                {
-                    await ReplyAsync("", embed: $"{Context.User.Mention} nie posiadasz wystarczającej liczby TC!".ToEmbedMessage(EMType.Error).Build());
-                    return;
-                }
-
-                switch (type)
-                {
-                    case ProfileType.Img:
-                    case ProfileType.StatsWithImg:
-                        var res = await _profile.SaveProfileImageAsync(imgUrl, $"{Paths.SavedData}/SR{botuser.Id}.png", 325, 272);
-                        if (res == SaveResult.Success)
-                        {
-                            botuser.StatsReplacementProfileUri = $"{Paths.SavedData}/SR{botuser.Id}.png";
-                            break;
-                        }
-                        else if (res == SaveResult.BadUrl)
-                        {
-                            await ReplyAsync("", embed: "Nie wykryto obrazka! Upewnij się, że podałeś poprawny adres!".ToEmbedMessage(EMType.Error).Build());
-                            return;
-                        }
-                        await ReplyAsync("", embed: "Coś poszło nie tak, prawdopodobnie nie mam uprawnień do zapisu!".ToEmbedMessage(EMType.Error).Build());
-                        return;
-
-                    default:
-                        break;
-                }
-
-                if (currency == SCurrency.Sc)
-                {
-                    botuser.ScCnt -= scCost;
-                }
-                else
-                {
-                    botuser.TcCnt -= tcCost;
-                }
-                botuser.ProfileType = type;
-
-                await db.SaveChangesAsync();
-
-                _cacheManager.ExpireTag(new string[] { $"user-{botuser.Id}", "users" });
-
-                await ReplyAsync("", embed: $"Zmieniono styl profilu użytkownika: {Context.User.Mention}!".ToEmbedMessage(EMType.Success).Build());
+                await ReplyAsync("", embed: $"{Context.User.Mention} nie posiadasz wystarczającej liczby SC!".ToEmbedMessage(EMType.Error).Build());
+                return;
             }
+            if (botuser.TcCnt < tcCost && currency == SCurrency.Tc)
+            {
+                await ReplyAsync("", embed: $"{Context.User.Mention} nie posiadasz wystarczającej liczby TC!".ToEmbedMessage(EMType.Error).Build());
+                return;
+            }
+
+            switch (type)
+            {
+                case ProfileType.Img:
+                case ProfileType.StatsWithImg:
+                    var res = await _profile.SaveProfileImageAsync(imgUrl, $"{Paths.SavedData}/SR{botuser.Id}.png", 325, 272);
+                    if (res == SaveResult.Success)
+                    {
+                        botuser.StatsReplacementProfileUri = $"{Paths.SavedData}/SR{botuser.Id}.png";
+                        break;
+                    }
+                    else if (res == SaveResult.BadUrl)
+                    {
+                        await ReplyAsync("", embed: "Nie wykryto obrazka! Upewnij się, że podałeś poprawny adres!".ToEmbedMessage(EMType.Error).Build());
+                        return;
+                    }
+                    await ReplyAsync("", embed: "Coś poszło nie tak, prawdopodobnie nie mam uprawnień do zapisu!".ToEmbedMessage(EMType.Error).Build());
+                    return;
+
+                default:
+                    break;
+            }
+
+            if (currency == SCurrency.Sc)
+            {
+                botuser.ScCnt -= scCost;
+            }
+            else
+            {
+                botuser.TcCnt -= tcCost;
+            }
+            botuser.ProfileType = type;
+
+            await _repository.SaveChangesAsync();
+
+            _cacheManager.ExpireTag(new string[] { $"user-{botuser.Id}", "users" });
+
+            var content = $"Zmieniono styl profilu użytkownika: {Context.User.Mention}!".ToEmbedMessage(EMType.Success).Build();
+            await ReplyAsync("", embed: content);
         }
 
         [Command("tło")]
@@ -502,47 +499,49 @@ namespace Sanakan.Modules
         {
             var cost = 1000;
             var user = Context.User as SocketGuildUser;
-            if (user == null) return;
-
-            using (var db = new Database.UserContext(Config))
+            if (user == null)
             {
-                var botuser = await db.GetUserOrCreateAsync(user.Id);
-                if (botuser.TcCnt < cost)
-                {
-                    await ReplyAsync("", embed: $"{user.Mention} nie posiadasz wystarczającej liczby TC!".ToEmbedMessage(EMType.Error).Build());
-                    return;
-                }
-
-                using (var cdb = new Database.GuildConfigContext(Config))
-                {
-                    var gConfig = await cdb.GetCachedGuildFullConfigAsync(Context.Guild.Id);
-                    var gRole = Context.Guild.GetRole(gConfig.GlobalEmotesRole);
-                    if (gRole == null)
-                    {
-                        await ReplyAsync("", embed: "Serwer nie ma ustawionej roli globalnych emotek.".ToEmbedMessage(EMType.Bot).Build());
-                        return;
-                    }
-
-                    var global = botuser.TimeStatuses.FirstOrDefault(x => x.Type == Database.Models.StatusType.Globals && x.Guild == Context.Guild.Id);
-                    if (global == null)
-                    {
-                        global = StatusType.Globals.NewTimeStatus(Context.Guild.Id);
-                        botuser.TimeStatuses.Add(global);
-                    }
-
-                    if (!user.Roles.Contains(gRole))
-                        await user.AddRoleAsync(gRole);
-
-                    global.EndsAt = global.EndsAt.AddMonths(1);
-                    botuser.TcCnt -= cost;
-                }
-
-                await db.SaveChangesAsync();
-
-                _cacheManager.ExpireTag(new string[] { $"user-{botuser.Id}", "users" });
-
-                await ReplyAsync("", embed: $"{user.Mention} wykupił miesiąc globalnych emotek!".ToEmbedMessage(EMType.Success).Build());
+                return;
             }
+
+            var botuser = await _userRepository.GetUserOrCreateAsync(user.Id);
+            if (botuser.TcCnt < cost)
+            {
+                await ReplyAsync("", embed: $"{user.Mention} nie posiadasz wystarczającej liczby TC!".ToEmbedMessage(EMType.Error).Build());
+                return;
+            }
+
+            var gConfig = await _repository.GetCachedGuildFullConfigAsync(Context.Guild.Id);
+            var gRole = Context.Guild.GetRole(gConfig.GlobalEmotesRole);
+            if (gRole == null)
+            {
+                await ReplyAsync("", embed: "Serwer nie ma ustawionej roli globalnych emotek.".ToEmbedMessage(EMType.Bot).Build());
+                return;
+            }
+
+            var global = botuser.TimeStatuses
+                .FirstOrDefault(x => x.Type == StatusType.Globals 
+                    && x.Guild == Context.Guild.Id);
+
+            if (global == null)
+            {
+                global = StatusType.Globals.NewTimeStatus(Context.Guild.Id);
+                botuser.TimeStatuses.Add(global);
+            }
+
+            if (!user.Roles.Contains(gRole))
+            {
+                await user.AddRoleAsync(gRole);
+            }
+
+            global.EndsAt = global.EndsAt.AddMonths(1);
+            botuser.TcCnt -= cost;
+
+            await _repository.SaveChangesAsync();
+
+            _cacheManager.ExpireTag(new string[] { $"user-{botuser.Id}", "users" });
+
+            await ReplyAsync("", embed: $"{user.Mention} wykupił miesiąc globalnych emotek!".ToEmbedMessage(EMType.Success).Build());
         }
 
         [Command("kolor")]
@@ -566,7 +565,7 @@ namespace Sanakan.Modules
                 return;
             }
 
-            var botuser = await _userRepository.GetUserOrCreateAsync(user.Id);
+            var botuser = await _repository.GetUserOrCreateAsync(user.Id);
             var points = currency == SCurrency.Tc ? botuser.TcCnt : botuser.ScCnt;
 
             if (points < color.Price(currency))
@@ -575,7 +574,10 @@ namespace Sanakan.Modules
                 return;
             }
 
-            var colort = botuser.TimeStatuses.FirstOrDefault(x => x.Type == Database.Models.StatusType.Color && x.Guild == Context.Guild.Id);
+            var colort = botuser.TimeStatuses
+                .FirstOrDefault(x => x.Type == StatusType.Color
+                    && x.Guild == Context.Guild.Id);
+
             if (colort == null)
             {
                 colort = StatusType.Color.NewTimeStatus(Context.Guild.Id);
@@ -599,7 +601,7 @@ namespace Sanakan.Modules
                     colort.EndsAt = DateTime.Now.AddMonths(1);
                 }
 
-                var gConfig = await cdb.GetCachedGuildFullConfigAsync(Context.Guild.Id);
+                var gConfig = await _repository.GetCachedGuildFullConfigAsync(Context.Guild.Id);
                 if (!await _profile.SetUserColorAsync(user, gConfig.AdminRole, color))
                 {
                     await ReplyAsync("", embed: $"Coś poszło nie tak!".ToEmbedMessage(EMType.Error).Build());
@@ -616,7 +618,7 @@ namespace Sanakan.Modules
                 }
             }
 
-            await db.SaveChangesAsync();
+            await _repository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(new string[] { $"user-{botuser.Id}", "users" });
 

@@ -15,7 +15,7 @@ using DAL.Repositories.Abstractions;
 namespace Sanakan.Modules
 {
     [Name("Shinden"), RequireUserRole]
-    public class Shinden : ModuleBase<SocketCommandContext>
+    public class ShindenModule : ModuleBase<SocketCommandContext>
     {
         private readonly IShindenClient _shclient;
         private readonly SessionManager _session;
@@ -23,7 +23,7 @@ namespace Sanakan.Modules
         private readonly ICacheManager _cacheManager;
         private readonly IRepository _repository;
 
-        public Shinden(
+        public ShindenModule(
             IShindenClient client,
             SessionManager session,
             Services.Shinden shinden,
@@ -208,7 +208,7 @@ namespace Sanakan.Modules
                 return;
             }
 
-            var botuser = await db.GetUserOrCreateAsync(Context.User.Id);
+            var botuser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
             botuser.Shinden = shindenId;
 
             await db.SaveChangesAsync();

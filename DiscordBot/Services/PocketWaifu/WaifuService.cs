@@ -234,7 +234,7 @@ namespace Sanakan.Services.PocketWaifu
 
         static public Rarity RandomizeRarity()
         {
-            var num = Fun.GetRandomValue(1000);
+            var num = _randomNumberGenerator.GetRandomValue(1000);
             if (num < 5)   return Rarity.SS;
             if (num < 25)  return Rarity.S;
             if (num < 75)  return Rarity.A;
@@ -246,8 +246,15 @@ namespace Sanakan.Services.PocketWaifu
 
         public Rarity RandomizeRarity(List<Rarity> rarityExcluded)
         {
-            if (rarityExcluded == null) return RandomizeRarity();
-            if (rarityExcluded.Count < 1) return RandomizeRarity();
+            if (rarityExcluded == null)
+            {
+                return RandomizeRarity();
+            }
+            
+            if (rarityExcluded.Count < 1)
+            {
+                return RandomizeRarity();
+            }
 
             var list = new List<RarityChance>()
             {
@@ -261,9 +268,13 @@ namespace Sanakan.Services.PocketWaifu
             };
 
             var ex = list.Where(x => rarityExcluded.Any(c => c == x.Rarity)).ToList();
-            foreach(var e in ex) list.Remove(e);
+            
+            foreach (var e in ex)
+            {
+                list.Remove(e);
+            }
 
-            var num = Fun.GetRandomValue(1000);
+            var num = _randomNumberGenerator.GetRandomValue(1000);
             foreach(var rar in list)
             {
                 if (num < rar.Chance)
@@ -274,7 +285,7 @@ namespace Sanakan.Services.PocketWaifu
 
         public ItemType RandomizeItemFromBlackMarket()
         {
-            var num = Fun.GetRandomValue(1000);
+            var num = _randomNumberGenerator.GetRandomValue(1000);
             if (num < 2) return ItemType.IncreaseExpSmall;
             if (num < 12) return ItemType.BetterIncreaseUpgradeCnt;
             if (num < 25) return ItemType.IncreaseUpgradeCnt;
@@ -288,7 +299,7 @@ namespace Sanakan.Services.PocketWaifu
 
         public ItemType RandomizeItemFromMarket()
         {
-            var num = Fun.GetRandomValue(1000);
+            var num = _randomNumberGenerator.GetRandomValue(1000);
             if (num < 2) return ItemType.IncreaseExpSmall;
             if (num < 15) return ItemType.IncreaseUpgradeCnt;
             if (num < 80) return ItemType.AffectionRecoveryBig;
@@ -300,7 +311,7 @@ namespace Sanakan.Services.PocketWaifu
 
         public Quality RandomizeItemQualityFromMarket()
         {
-            var num = Fun.GetRandomValue(10000);
+            var num = _randomNumberGenerator.GetRandomValue(10000);
             if (num < 5) return Quality.Sigma;
             if (num < 20) return Quality.Lambda;
             if (num < 60) return Quality.Zeta;
@@ -313,7 +324,7 @@ namespace Sanakan.Services.PocketWaifu
 
         public Quality RandomizeItemQualityFromExpedition()
         {
-            var num = Fun.GetRandomValue(100000);
+            var num = _randomNumberGenerator.GetRandomValue(100000);
             if (num < 5) return Quality.Omega;
             if (num < 50) return Quality.Sigma;
             if (num < 200) return Quality.Lambda;
@@ -554,14 +565,14 @@ namespace Sanakan.Services.PocketWaifu
                         itemCount = 0;
                     }
                     
-                    var response = await _shClient.Title.GetInfoAsync((ulong)itemCount);
+                    var response = await _shClient.GetInfoAsync((ulong)itemCount);
 
                     if (!response.IsSuccessStatusCode())
                     {
                         return $"{discordUser.Mention} nie odnaleziono tytułu o podanym id.".ToEmbedMessage(EMType.Error).Build();
                     }
 
-                    var response2 = await _shClient.Title.GetCharactersAsync(response.Body);
+                    var response2 = await _shClient.GetCharactersAsync(response.Body);
                     
                     if (!response2.IsSuccessStatusCode())
                     {
@@ -592,10 +603,10 @@ namespace Sanakan.Services.PocketWaifu
             }
 
             var realCost = itemCount * thisItem.Cost;
-            string count = (itemCount > 1) ? $" x{itemCount}" : "";
+            var count = (itemCount > 1) ? $" x{itemCount}" : "";
 
 
-            var bUser = await db.GetUserOrCreateAsync(discordUser.Id);
+            var bUser = await _userRepository.GetUserOrCreateAsync(discordUser.Id);
             if (!CheckIfUserCanBuy(type, bUser, realCost))
             {
                 return $"{discordUser.Mention} nie posiadasz wystarczającej liczby {GetShopCurrencyName(type)}!".ToEmbedMessage(EMType.Error).Build();
@@ -754,10 +765,10 @@ namespace Sanakan.Services.PocketWaifu
                 Attack = RandomizeAttack(rarity),
                 Expedition = CardExpedition.None,
                 QualityOnStart = Quality.Broken,
-                ExpeditionDate = DateTime.Now,
+                ExpeditionDate = _systemClock.UtcNow,
                 PAS = PreAssembledFigure.None,
                 TagList = new List<CardTag>(),
-                CreationDate = DateTime.Now,
+                CreationDate = _systemClock.UtcNow,
                 StarStyle = StarStyle.Full,
                 Source = CardSource.Other,
                 Quality = Quality.Broken,
@@ -810,10 +821,10 @@ namespace Sanakan.Services.PocketWaifu
                 Attack = RandomizeAttack(rarity),
                 Expedition = CardExpedition.None,
                 QualityOnStart = Quality.Broken,
-                ExpeditionDate = DateTime.Now,
+                ExpeditionDate = _systemClock.UtcNow,
                 PAS = PreAssembledFigure.None,
                 TagList = new List<CardTag>(),
-                CreationDate = DateTime.Now,
+                CreationDate = _systemClock.UtcNow,
                 Name = character.ToString(),
                 StarStyle = StarStyle.Full,
                 Source = CardSource.Other,
@@ -1038,7 +1049,11 @@ namespace Sanakan.Services.PocketWaifu
             if (CharId.IsNeedForUpdate())
             {
                 var characters = await _shClient.Ex.GetAllCharactersFromAnimeAsync();
-                if (!characters.IsSuccessStatusCode()) return null;
+                
+                if (!characters.IsSuccessStatusCode())
+                {
+                    return null;
+                }
 
                 CharId.Update(characters.Body);
             }
@@ -1544,7 +1559,7 @@ namespace Sanakan.Services.PocketWaifu
         public Tuple<double, double> GetRealTimeOnExpeditionInMinutes(Card card, double karma)
         {
             var maxMinutes = card.CalculateMaxTimeOnExpeditionInMinutes(karma);
-            var realMin = (DateTime.Now - card.ExpeditionDate).TotalMinutes;
+            var realMin = (_systemClock - card.ExpeditionDate).TotalMinutes;
             var durationMin = realMin;
 
             if (maxMinutes < durationMin)

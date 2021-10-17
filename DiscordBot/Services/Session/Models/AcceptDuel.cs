@@ -1,12 +1,14 @@
-﻿using Discord;
+﻿using DAL.Repositories.Abstractions;
+using Discord;
+using DiscordBot.Services.PocketWaifu.Abstractions;
 using Microsoft.Extensions.Options;
+using Sanakan.Common;
 using Sanakan.Config;
 using Sanakan.DAL.Models;
 using Sanakan.Extensions;
 using Sanakan.Services.PocketWaifu;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Z.EntityFramework.Plus;
 
 namespace Sanakan.Services.Session.Models
 {
@@ -17,13 +19,18 @@ namespace Sanakan.Services.Session.Models
         public PlayerInfo P1 { get; set; }
         public PlayerInfo P2 { get; set; }
 
-        private Waifu _waifu;
-        private readonly IOptions<object> _config;
+        private IWaifuService _waifu;
+        private readonly IRepository _repository;
+        private readonly ICacheManager _cacheManager;
 
-        public AcceptDuel(Waifu waifu, IOptions<object> config)
+        public AcceptDuel(
+            IWaifuService waifu,
+            IRepository repository,
+            ICacheManager cacheManager)
         {
             _waifu = waifu;
-            _config = config;
+            _repository = repository;
+            _cacheManager = cacheManager;
         }
 
         public async Task<bool> OnAccept(SessionContext context)
@@ -41,8 +48,8 @@ namespace Sanakan.Services.Session.Models
                 await msg.ModifyAsync(x => x.Embed = $"{DuelName}{deathLog.TrimToLength(1400)}{winString}".ToEmbedMessage(EMType.Error).Build());
             }
 
-            var user1 = await db.GetUserOrCreateAsync(P1.User.Id);
-            var user2 = await db.GetUserOrCreateAsync(P2.User.Id);
+            var user1 = await _repository.GetUserOrCreateAsync(P1.User.Id);
+            var user2 = await _repository.GetUserOrCreateAsync(P2.User.Id);
 
             user1.GameDeck.PvPStats.Add(new CardPvPStats
             {
@@ -56,7 +63,7 @@ namespace Sanakan.Services.Session.Models
                 Result = isWinner ? (fight.Winner.User.Id == user2.Id ? FightResult.Win : FightResult.Lose) : FightResult.Draw
             });
 
-            await db.SaveChangesAsync();
+            await _repository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(new string[] { $"user-{user1.Id}", $"user-{user2.Id}", "users" });
 

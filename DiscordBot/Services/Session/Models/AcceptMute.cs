@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.WebSocket;
 using Microsoft.Extensions.Options;
+using Sanakan.Common;
 using Sanakan.Extensions;
 using System.Threading.Tasks;
 
@@ -16,8 +17,11 @@ namespace Sanakan.Services.Session.Models
         public SocketTextChannel NotifChannel { get; set; }
 
         private readonly object _config;
+        private readonly IRandomNumberGenerator _randomNumberGenerator;
 
-        public AcceptMute(IOptions<object> config)
+        public AcceptMute(
+            IOptions<object> config,
+            IRandomNumberGenerator _randomNumberGenerator)
         {
             _config = config;
         }
@@ -29,11 +33,21 @@ namespace Sanakan.Services.Session.Models
                 await msg.DeleteAsync();
             }
 
+            const int daysInYear = 365;
+            const int hoursInDay = 24;
+            var duration = (_randomNumberGenerator.GetRandomValue(daysInYear) * hoursInDay) + hoursInDay;
+
             var info = await Moderation.MuteUserAysnc(
-                User, MuteRole, null, UserRole, mdb, (Fun.GetRandomValue(365) * 24) + 24, "Chciał to dostał :)");
+                User,
+                MuteRole,
+                null,
+                UserRole,
+                duration,
+                "Chciał to dostał :)");
             await Moderation.NotifyAboutPenaltyAsync(User, NotifChannel, info, "Sanakan");
 
-            await Message.Channel.SendMessageAsync("", embed: $"{User.Mention} został wyciszony.".ToEmbedMessage(EMType.Success).Build());
+            var content = $"{User.Mention} został wyciszony.".ToEmbedMessage(EMType.Success).Build();
+            await Message.Channel.SendMessageAsync("", embed: content);
             return true;
         }
 

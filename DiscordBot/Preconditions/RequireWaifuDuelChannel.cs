@@ -8,11 +8,6 @@ namespace Sanakan.Preconditions
 {
     public class RequireWaifuDuelChannel : PreconditionAttribute
     {
-        public RequireWaifuDuelChannel()
-        {
-
-        }
-
         public async override Task<PreconditionResult> CheckPermissionsAsync(ICommandContext context, CommandInfo command, IServiceProvider services)
         {
             var user = context.User as SocketGuildUser;
@@ -26,24 +21,21 @@ namespace Sanakan.Preconditions
             await Task.CompletedTask;
 
             var config = (IConfig)services.GetService(typeof(IConfig));
-            using (var db = new Database.GuildConfigContext(config))
+            var gConfig = await db.GetCachedGuildFullConfigAsync(context.Guild.Id);
+            if (gConfig == null) return PreconditionResult.FromSuccess();
+
+            if (gConfig?.WaifuConfig?.DuelChannel != null)
             {
-                var gConfig = await db.GetCachedGuildFullConfigAsync(context.Guild.Id);
-                if (gConfig == null) return PreconditionResult.FromSuccess();
+                if (gConfig.WaifuConfig.DuelChannel == context.Channel.Id)
+                    return PreconditionResult.FromSuccess();
 
-                if (gConfig?.WaifuConfig?.DuelChannel != null)
-                {
-                    if (gConfig.WaifuConfig.DuelChannel == context.Channel.Id)
-                        return PreconditionResult.FromSuccess();
+                if (user.GuildPermissions.Administrator)
+                    return PreconditionResult.FromSuccess();
 
-                    if (user.GuildPermissions.Administrator)
-                        return PreconditionResult.FromSuccess();
-
-                    var channel = await context.Guild.GetTextChannelAsync(gConfig.WaifuConfig.DuelChannel);
-                    return PreconditionResult.FromError($"To polecenie działa na kanale {channel?.Mention}");
-                }
-                return PreconditionResult.FromSuccess();
+                var channel = await context.Guild.GetTextChannelAsync(gConfig.WaifuConfig.DuelChannel);
+                return PreconditionResult.FromError($"To polecenie działa na kanale {channel?.Mention}");
             }
+            return PreconditionResult.FromSuccess();
         }
     }
 }

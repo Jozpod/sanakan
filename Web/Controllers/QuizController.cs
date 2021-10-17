@@ -2,12 +2,11 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using Sanakan.Extensions;
-using Microsoft.EntityFrameworkCore;
-using Sanakan.Config;
+using static Sanakan.Web.ResponseExtensions;
 using Sanakan.Common;
 using DAL.Repositories.Abstractions;
 using Sanakan.DAL.Models;
+using Microsoft.AspNetCore.Http;
 
 namespace Sanakan.Web.Controllers
 {
@@ -31,6 +30,7 @@ namespace Sanakan.Web.Controllers
         /// Gets the collection of questions.
         /// </summary>
         [HttpGet("questions")]
+        [ProducesResponseType(typeof(List<Question>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetQuestionsAsync()
         {
             var result = await _repository.GetCachedAllQuestionsAsync();
@@ -44,6 +44,7 @@ namespace Sanakan.Web.Controllers
         /// <param name="id">id pytania</param>
         /// <response code="500">Internal Server Error</response>
         [HttpGet("question/{id}")]
+        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetQuestionAsync(ulong id)
         {
             var result = await _repository.GetCachedQuestionAsync(id);
@@ -55,22 +56,23 @@ namespace Sanakan.Web.Controllers
         /// </summary>
         /// <param name="question">The question</param>
         [HttpPost("question")]
+        [ProducesResponseType(typeof(Question), StatusCodes.Status200OK)]
         public async Task<IActionResult> AddQuestionAsync([FromBody]Question question)
         {
             await _repository.AddQuestionAsync(question);
 
             _cacheManager.ExpireTag(new string[] { $"quiz" });
 
-            return Ok("Question added!");
+            return ShindenOk("Question added!");
         }
 
         /// <summary>
         /// Deletes the question.
         /// </summary>
         /// <param name="id">The question identifier</param>
-        /// <response code="404">Question not found</response>
-        /// <response code="500">Internal Server Error</response>
         [HttpDelete("question/{id}")]
+        [ProducesResponseType(typeof(Question), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(Question), StatusCodes.Status200OK)]
         public async Task<IActionResult> RemoveQuestionAsync(ulong id)
         {
             var question = await _repository.GetQuestionAsync(id);
@@ -81,10 +83,10 @@ namespace Sanakan.Web.Controllers
 
                 _cacheManager.ExpireTag(new string[] { $"quiz" });
 
-                return Ok("Question removed!");
+                return ShindenOk("Question removed!");
             }
 
-            return NotFound("Question not found!");
+            return ShindenNotFound("Question not found!");
         }
     }
 }

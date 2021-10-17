@@ -4,6 +4,7 @@ using Discord.WebSocket;
 using Microsoft.Extensions.Options;
 using Sanakan.Config;
 using Sanakan.Extensions;
+using Sanakan.Web.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,12 +14,12 @@ namespace Sanakan.Services
 {
     public class Helper
     {
-        private object _config;
+        private SanakanConfiguration _config;
 
         public IEnumerable<ModuleInfo> PublicModulesInfo { get; set; }
         public Dictionary<string, ModuleInfo> PrivateModulesInfo { get; set; }
 
-        public Helper(IOptions<object> config)
+        public Helper(IOptions<SanakanConfiguration> config)
         {
             _config = config.Value;
 
@@ -43,7 +44,7 @@ namespace Sanakan.Services
 
                 commands += $"\r\n**{item.Name}:**" + string.Join("\n", sSubInfo);
             }
-            commands += $"\r\n\r\nUżyj `{_config.Get().Prefix}pomoc [polecenie]`, aby uzyskać informacje dotyczące danego polecenia.";
+            commands += $"\r\n\r\nUżyj `{_config.Prefix}pomoc [polecenie]`, aby uzyskać informacje dotyczące danego polecenia.";
             return commands;
         }
 
@@ -73,18 +74,30 @@ namespace Sanakan.Services
 
         public string GetCommandInfo(CommandInfo cmd, string prefix = null)
         {
-            string modulePrefix = GetModGroupPrefix(cmd.Module);
-            string botPrefix = prefix ?? _config.Get().Prefix;
+            var modulePrefix = GetModGroupPrefix(cmd.Module);
+            var botPrefix = prefix ?? _config.Prefix;
 
             string command = $"**{botPrefix}{modulePrefix}{cmd.Name}**";
 
             if (cmd.Parameters.Count > 0)
-                foreach (var param in cmd.Parameters) command += $" `{param.Name}` ";
+            {
+                foreach (var param in cmd.Parameters)
+                {
+                    command += $" `{param.Name}` ";
+                }
+            }
+                
 
             command += $" - {cmd.Summary}\n";
 
             if (cmd.Parameters.Count > 0)
-                foreach (var param in cmd.Parameters) command += $"*{param.Name}* - *{param.Summary}*\n";
+            {
+                foreach (var param in cmd.Parameters)
+                {
+                    command += $"*{param.Name}* - *{param.Summary}*\n";
+                }
+            }
+                
 
             if (cmd.Aliases.Count > 1)
             {

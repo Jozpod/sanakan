@@ -9,7 +9,7 @@ namespace Sanakan.Services
 {
     public class LandManager
     {
-        public MyLand DetermineLand(IEnumerable<MyLand> lands, SocketGuildUser user, string name)
+        public MyLand? DetermineLand(IEnumerable<MyLand> lands, SocketGuildUser user, string name)
         {
             if (user == null)
             {
@@ -19,9 +19,18 @@ namespace Sanakan.Services
             if (name != null)
             {
                 var land = lands.FirstOrDefault(x => x.Name == name);
-                if (land == null) return null;
 
-                return user.Roles.Any(x => x.Id == land.Manager) ? land : null;
+                if (land == null)
+                {
+                    return null;
+                }
+
+                if(user.Roles.Any(x => x.Id == land.Manager))
+                {
+                    return land;
+                }
+
+                return null;
             }
 
             var all = lands.Where(x => user.Roles.Any(c => c.Id == x.Manager));
@@ -39,8 +48,9 @@ namespace Sanakan.Services
         {
             var embs = new List<Embed>();
             string temp = $"**Członkowie**: *{land.Name}*\n\n";
+            var underlings = guild.Users.Where(x => x.Roles.Any(r => r.Id == land.Underling));
 
-            foreach (var user in guild.Users.Where(x => x.Roles.Any(r => r.Id == land.Underling)))
+            foreach (var user in underlings)
             {
                 if (temp.Length + user.Mention.Length > 2000)
                 {

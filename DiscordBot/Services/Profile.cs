@@ -231,7 +231,7 @@ namespace Sanakan.Services
             }
         }
 
-        public async Task<Stream> GetProfileImageAsync(SocketGuildUser user, Database.Models.User botUser, long topPosition)
+        public async Task<Stream> GetProfileImageAsync(SocketGuildUser user, User botUser, long topPosition)
         {
             bool isConnected = botUser.Shinden != 0;
             var response = _shClient.User.GetAsync(botUser.Shinden);

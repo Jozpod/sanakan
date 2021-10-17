@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace DAL.Repositories
 {
-    internal class Repository : IRepository
+    public class Repository : IRepository
     {
         private readonly BuildDatabaseContext _dbContext;
         private readonly ICacheManager _cacheManager;

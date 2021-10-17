@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using DAL.Repositories.Abstractions;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using DiscordBot.Services.PocketWaifu.Abstractions;
 using Microsoft.Extensions.Options;
 using Sanakan.Common;
 using Sanakan.DAL.Models;
@@ -22,8 +24,9 @@ namespace Sanakan.Services.Session.Models
         public string Tips { get; set; }
 
         private readonly object _config;
-        private readonly Waifu _waifu;
+        private readonly IWaifuService _waifu;
         private readonly ICacheManager _cacheManager;
+        private readonly IRepository _repository;
 
         private readonly Emoji AcceptEmote = new Emoji("✅");
         private readonly Emote DeclineEmote = Emote.Parse("<:redcross:581152766655856660>");
@@ -36,9 +39,10 @@ namespace Sanakan.Services.Session.Models
 
         public CraftingSession(
             IUser owner,
-            Waifu waifu,
+            IWaifuService waifu,
             IOptions<object> config,
-            ICacheManager cacheManager) : base(owner)
+            ICacheManager cacheManager,
+            IRepository repository) : base(owner)
         {
             Event = ExecuteOn.AllEvents;
             RunMode = RunMode.Sync;
@@ -46,6 +50,7 @@ namespace Sanakan.Services.Session.Models
             _config = config;
             _waifu = waifu;
             _cacheManager = cacheManager;
+            _repository = repository;
 
             Message = null;
 
@@ -211,7 +216,9 @@ namespace Sanakan.Services.Session.Models
             }
             else thisItem.Count -= count;
 
-            var thisItem2 = Items.FirstOrDefault(x => x.Type == thisItem.Type && x.Quality == thisItem.Quality);
+            var thisItem2 = Items.FirstOrDefault(x => x.Type == thisItem.Type
+                && x.Quality == thisItem.Quality);
+
             if (thisItem2 == null)
             {
                 thisItem2 = thisItem.Type.ToItem(count, thisItem.Quality);
@@ -236,7 +243,10 @@ namespace Sanakan.Services.Session.Models
             if (await Message.Channel.GetMessageAsync(Message.Id) is IUserMessage msg)
             {
                 var reaction = context.ReactionAdded ?? context.ReactionRemoved;
-                if (reaction == null) return false;
+                if (reaction == null)
+                {
+                    return false;
+                }
 
                 if (reaction.Emote.Equals(DeclineEmote))
                 {
@@ -254,40 +264,44 @@ namespace Sanakan.Services.Session.Models
                     if (P1.Accepted)
                     {
                         error = false;
-                        using (var db = new Database.UserContext(_config))
+
+                        var user = await _repository.GetUserOrCreateAsync(P1.User.Id);
+                        var newCard = _waifu.GenerateNewCard(
+                            P1.User,
+                            await _waifu.GetRandomCharacterAsync(),
+                            GetRarityFromValue(GetValue()));
+
+                        newCard.Source = CardSource.Crafting;
+                        newCard.Affection = user.GameDeck.AffectionFromKarma();
+
+                        foreach (var item in P1.Items)
                         {
-                            var user = await db.GetUserOrCreateAsync(P1.User.Id);
-                            var newCard = _waifu.GenerateNewCard(P1.User, await _waifu.GetRandomCharacterAsync(), GetRarityFromValue(GetValue()));
+                            var thisItem = user.GameDeck.Items
+                                .FirstOrDefault(x => x.Type == item.Type
+                                    && x.Quality == item.Quality);
 
-                            newCard.Source = CardSource.Crafting;
-                            newCard.Affection = user.GameDeck.AffectionFromKarma();
-
-                            foreach (var item in P1.Items)
+                            if (thisItem == null)
                             {
-                                var thisItem = user.GameDeck.Items.FirstOrDefault(x => x.Type == item.Type && x.Quality == item.Quality);
-                                if (thisItem == null)
-                                {
-                                    error = true;
-                                    break;
-                                }
-
-                                if (thisItem.Count < item.Count)
-                                {
-                                    error = true;
-                                    break;
-                                }
-                                thisItem.Count -= item.Count;
-                                if (thisItem.Count < 1) user.GameDeck.Items.Remove(thisItem);
+                                error = true;
+                                break;
                             }
 
-                            if (!error)
+                            if (thisItem.Count < item.Count)
                             {
-                                user.GameDeck.Cards.Add(newCard);
-
-                                await db.SaveChangesAsync();
-
-                                await msg.ModifyAsync(x => x.Embed = $"{Name}\n\n**Utworzono:** {newCard.GetString(false, false, true)}".ToEmbedMessage(EMType.Success).Build());
+                                error = true;
+                                break;
                             }
+                            thisItem.Count -= item.Count;
+                            if (thisItem.Count < 1) user.GameDeck.Items.Remove(thisItem);
+                        }
+
+                        if (!error)
+                        {
+                            user.GameDeck.Cards.Add(newCard);
+
+                            await _repository.SaveChangesAsync();
+
+                            await msg.ModifyAsync(x => x.Embed = $"{Name}\n\n**Utworzono:** {newCard.GetString(false, false, true)}".ToEmbedMessage(EMType.Success).Build());
                         }
                     }
 

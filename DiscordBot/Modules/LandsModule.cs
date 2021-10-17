@@ -7,6 +7,7 @@ using Sanakan.Preconditions;
 using Discord.WebSocket;
 using System.Linq;
 using System;
+using DAL.Repositories.Abstractions;
 
 namespace Sanakan.Modules
 {
@@ -14,10 +15,15 @@ namespace Sanakan.Modules
     public class LandsModule : ModuleBase<SocketCommandContext>
     {
         private readonly LandManager _manager;
+        private readonly IUserRepository _userRepository;
+        private readonly IRepository _repository;
 
-        public LandsModule(LandManager manager)
+        public LandsModule(
+            LandManager manager,
+            IRepository repository)
         {
             _manager = manager;
+            _repository = repository;
         }
 
         [Command("ludność", RunMode = RunMode.Async)]
@@ -26,8 +32,9 @@ namespace Sanakan.Modules
         [Remarks("Kotleciki")]
         public async Task ShowPeopleAsync([Summary("nazwa krainy (opcjonalne)")][Remainder]string name = null)
         {
-            var config = await db.GetCachedGuildFullConfigAsync(Context.Guild.Id);
+            var config = await _repository.GetCachedGuildFullConfigAsync(Context.Guild.Id);
             var land = _manager.DetermineLand(config.Lands, Context.User as SocketGuildUser, name);
+
             if (land == null)
             {
                 await ReplyAsync("", embed: "Nie zarządzasz żadną krainą.".ToEmbedMessage(EMType.Error).Build());
@@ -49,7 +56,7 @@ namespace Sanakan.Modules
             [Summary("użytkownik")]SocketGuildUser user,
             [Summary("nazwa krainy (opcjonalne)")][Remainder]string name = null)
         {
-            var config = await db.GetCachedGuildFullConfigAsync(Context.Guild.Id);
+            var config = await _repository.GetCachedGuildFullConfigAsync(Context.Guild.Id);
             var land = _manager.DetermineLand(config.Lands, Context.User as SocketGuildUser, name);
 
             if (land == null)
@@ -71,7 +78,7 @@ namespace Sanakan.Modules
             }
 
             var content = $"{user.Mention} dołącza do `{land.Name}`.".ToEmbedMessage(EMType.Success).Build();
-            await ReplyAsync("", embed: );
+            await ReplyAsync("", embed: content);
         }
 
         [Command("kraina usuń", RunMode = RunMode.Async)]
@@ -80,7 +87,8 @@ namespace Sanakan.Modules
         [Remarks("Karna")]
         public async Task RemovePersonAsync([Summary("użytkownik")]SocketGuildUser user, [Summary("nazwa krainy (opcjonalne)")][Remainder]string name = null)
         {
-            var config = await db.GetCachedGuildFullConfigAsync(Context.Guild.Id);
+            var guild = Context.Guild;
+            var config = await _repository.GetCachedGuildFullConfigAsync(guild.Id);
             var land = _manager.DetermineLand(config.Lands, Context.User as SocketGuildUser, name);
 
             if (land == null)
@@ -89,7 +97,7 @@ namespace Sanakan.Modules
                 return;
             }
 
-            var role = Context.Guild.GetRole(land.Underling);
+            var role = guild.GetRole(land.Underling);
             if (role == null)
             {
                 await ReplyAsync("", embed: "Nie odnaleziono roli członka!".ToEmbedMessage(EMType.Error).Build());
@@ -101,7 +109,8 @@ namespace Sanakan.Modules
                 await user.RemoveRoleAsync(role);
             }
 
-            await ReplyAsync("", embed: $"{user.Mention} odchodzi z `{land.Name}`.".ToEmbedMessage(EMType.Success).Build());
+            var content = $"{user.Mention} odchodzi z `{land.Name}`.".ToEmbedMessage(EMType.Success).Build();
+            await ReplyAsync("", embed: content);
         }
     }
 }

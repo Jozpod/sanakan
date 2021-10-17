@@ -10,10 +10,9 @@ namespace Sanakan.ShindenApi
 {
     public interface IShindenClient
     {
-        TitleModule Title { get; }
-        SearchModule Search { get; }
-        ExperimentalModule Ex { get; }
-        LoggedInUserModule.UserModule User { get; }
+        Task<Response<List<IRelation>>> GetCharactersAsync(ulong id);
+        Task<Response<IUserInfo>> GetAsync(ulong id);
+        Task<Response<List<IUserSearch>>> UserAsync(string nick);
         Task<Response<List<INewEpisode>>> GetNewEpisodesAsync();
         Task<Response<IStaffInfo>> GetStaffInfoAsync(ulong id);
         Task<Response<IStaffInfo>> GetStaffInfoAsync(IIndexable id);

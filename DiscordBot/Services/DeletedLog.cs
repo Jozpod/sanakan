@@ -79,17 +79,14 @@ namespace Sanakan.Services
                 return;
             }
 
-            using (var db = new Database.GuildConfigContext(_config))
-            {
-                var config = await db.GetCachedGuildFullConfigAsync(channel.Guild.Id);
-                if (config == null) return;
+            var config = await db.GetCachedGuildFullConfigAsync(channel.Guild.Id);
+            if (config == null) return;
 
-                var ch = channel.Guild.GetTextChannel(config.LogChannel);
-                if (ch == null) return;
+            var ch = channel.Guild.GetTextChannel(config.LogChannel);
+            if (ch == null) return;
 
-                var jump = (newMessage == null) ? "" : $"{newMessage.GetJumpUrl()}";
-                await ch.SendMessageAsync(jump, embed: BuildMessage(oldMessage, newMessage));
-            }
+            var jump = (newMessage == null) ? "" : $"{newMessage.GetJumpUrl()}";
+            await ch.SendMessageAsync(jump, embed: BuildMessage(oldMessage, newMessage));
         }
 
         private Embed BuildMessage(IMessage oldMessage, IMessage newMessage)

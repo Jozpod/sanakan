@@ -10,6 +10,7 @@ using Microsoft.Extensions.Options;
 using Sanakan.Common;
 using Sanakan.Extensions;
 using Sanakan.Services.Executor;
+using Sanakan.Web.Configuration;
 
 namespace Sanakan.Services
 {
@@ -18,13 +19,13 @@ namespace Sanakan.Services
         private readonly DiscordSocketClient _client;
         private readonly IExecutor _executor;
         private readonly ILogger _logger;
-        private readonly object _config;
+        private readonly IOptionsMonitor<SanakanConfiguration> _config;
         private readonly ICacheManager _cacheManager;
 
         public Greeting(
             DiscordSocketClient client,
             ILogger<Greeting> logger,
-            IOptions<object> config,
+            IOptionsMonitor<SanakanConfiguration> config,
             IExecutor exe,
             ICacheManager _cacheManager)
         {
@@ -59,55 +60,58 @@ namespace Sanakan.Services
 
         private async Task UserJoinedAsync(SocketGuildUser user)
         {
-            if (user.IsBot || user.IsWebhook) return;
+            if (user.IsBot || user.IsWebhook)
+            {
+                return;
+            }
 
-            if (_config.Get().BlacklistedGuilds.Any(x => x == user.Guild.Id))
+            if (_config.BlacklistedGuilds.Any(x => x == user.Guild.Id))
                 return;
 
-            using (var db = new Database.GuildConfigContext(_config))
+            var config = await db.GetCachedGuildFullConfigAsync(user.Guild.Id);
+
+            if (config?.WelcomeMessage == null)
             {
-                var config = await db.GetCachedGuildFullConfigAsync(user.Guild.Id);
-                
-                if (config?.WelcomeMessage == null)
-                {
-                    return;
-                }
+                return;
+            }
 
-                if (config.WelcomeMessage == "off")
-                {
-                    return;
-                }
+            if (config.WelcomeMessage == "off")
+            {
+                return;
+            }
 
-                await SendMessageAsync(ReplaceTags(user, config.WelcomeMessage), user.Guild.GetTextChannel(config.GreetingChannel));
+            await SendMessageAsync(ReplaceTags(user, config.WelcomeMessage), user.Guild.GetTextChannel(config.GreetingChannel));
 
-                if (config?.WelcomeMessagePW == null)
-                {
-                    return;
-                }
+            if (config?.WelcomeMessagePW == null)
+            {
+                return;
+            }
 
-                if (config.WelcomeMessagePW == "off")
-                {
-                    return;
-                }
+            if (config.WelcomeMessagePW == "off")
+            {
+                return;
+            }
 
-                try
-                {
-                    var pw = await user.GetOrCreateDMChannelAsync();
-                    await pw.SendMessageAsync(ReplaceTags(user, config.WelcomeMessagePW));
-                    await pw.CloseAsync();
-                }
-                catch (Exception ex)
-                {
-                    _logger.Log($"Greeting: {ex}");
-                }
+            try
+            {
+                var pw = await user.GetOrCreateDMChannelAsync();
+                await pw.SendMessageAsync(ReplaceTags(user, config.WelcomeMessagePW));
+                await pw.CloseAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.Log($"Greeting: {ex}");
             }
         }
 
         private async Task UserLeftAsync(SocketGuildUser user)
         {
-            if (user.IsBot || user.IsWebhook) return;
+            if (user.IsBot || user.IsWebhook)
+            {
+                return;
+            }
 
-            if (!_config.Get().BlacklistedGuilds.Any(x => x == user.Guild.Id))
+            if (!_config..BlacklistedGuilds.Any(x => x == user.Guild.Id))
             {
                 var config = await db.GetCachedGuildFullConfigAsync(user.Guild.Id);
                 if (config?.GoodbyeMessage == null) return;

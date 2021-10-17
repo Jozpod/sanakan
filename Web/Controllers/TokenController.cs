@@ -1,18 +1,14 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Linq;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
-using System;
-using System.Text;
 using System.Security.Claims;
-using Sanakan.Config;
-using Sanakan.Extensions;
 using Sanakan.Api.Models;
 using Microsoft.AspNetCore.Http;
 using static Sanakan.Web.ResponseExtensions;
 using Microsoft.Extensions.Options;
 using Sanakan.Web.Configuration;
+using Sanakan.Web.Resources;
 
 namespace Sanakan.Web.Controllers
 {
@@ -35,7 +31,7 @@ namespace Sanakan.Web.Controllers
         /// <summary>
         /// Returns json web token.
         /// </summary>
-        /// <param name="apikey">API keyi</param>
+        /// <param name="apikey">API key</param>
         [HttpPost, AllowAnonymous]
         [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status403Forbidden)]
@@ -44,7 +40,7 @@ namespace Sanakan.Web.Controllers
         {
             if (apikey == null)
             {
-                return ShindenUnauthorized("API Key Not Provided");
+                return ShindenUnauthorized(Strings.ApiKeyNotProvided);
             }
 
             var user = _config.ApiKeys

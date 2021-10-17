@@ -5,9 +5,16 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Sanakan.Api.Models;
+using Sanakan.Configuration;
+using Sanakan.DiscordBot.Models;
 using Sanakan.Extensions;
+using Sanakan.Web.Configuration;
+using Sanakan.Web.Models;
+using static Sanakan.Web.ResponseExtensions;
 
 namespace Sanakan.Web.Controllers
 {
@@ -16,43 +23,54 @@ namespace Sanakan.Web.Controllers
     [Produces("application/json")]
     public class RichMessageController : ControllerBase
     {
-        private readonly IConfig _config;
+        private readonly IOptionsMonitor<SanakanConfiguration> _config;
         private readonly DiscordSocketClient _client;
 
         public RichMessageController(
             DiscordSocketClient client,
-            IConfig config)
+            IOptionsMonitor<SanakanConfiguration> config)
         {
             _client = client;
             _config = config;
         }
 
         /// <summary>
-        /// Kasuje wiadomość typu RichMessage
+        /// Deletes rich message
         /// </summary>
         /// <remarks>
         /// Do usunięcia wystarczy podać id poprzednio wysłanej wiadomości.
         /// </remarks>
         /// <param name="id">id wiadomości</param>
-        /// <response code="404">Message not found</response>
-        /// <response code="500">Internal Server Error</response>
         [HttpDelete("{id}")]
-        public async Task DeleteRichMessageAsync(ulong id)
+        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status200OK)]
+        public async Task<IActionResult> DeleteRichMessageAsync(ulong id)
         {
-            var config = _config.Get();
+            var config = _config.CurrentValue;
 
             _ = Task.Run(async () =>
             {
                 foreach (var rmc in config.RMConfig)
                 {
                     var guild = _client.GetGuild(rmc.GuildId);
-                    if (guild == null) continue;
+                    
+                    if (guild == null)
+                    {
+                        continue;
+                    }
 
                     var channel = guild.GetTextChannel(rmc.ChannelId);
-                    if (channel == null) continue;
+                    
+                    if (channel == null)
+                    {
+                        continue;
+                    }
 
                     var msg = await channel.GetMessageAsync(id);
-                    if (msg == null) continue;
+
+                    if (msg == null)
+                    {
+                        continue;
+                    }
 
                     await msg.DeleteAsync();
                     break;
@@ -71,12 +89,12 @@ namespace Sanakan.Web.Controllers
         /// </remarks>
         /// <param name="id">id wiadomości</param>
         /// <param name="message">wiadomość</param>
-        /// <response code="404">Message not found</response>
-        /// <response code="500">Internal Server Error</response>
         [HttpPut("{id}")]
-        public async Task ModifyeRichMessageAsync(ulong id, [FromBody, Required]RichMessage message)
+        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status200OK)]
+        public async Task<IActionResult> ModifyeRichMessageAsync(
+            ulong id, [FromBody, Required]RichMessage message)
         {
-            var config = _config.Get();
+            var config = _config.CurrentValue;
 
             _ = Task.Run(async () =>
             {
@@ -112,7 +130,7 @@ namespace Sanakan.Web.Controllers
         }
 
         /// <summary>
-        /// Wysyła wiadomość typu RichMessage
+        /// Sends rich message.
         /// </summary>
         /// <remarks>
         /// Do utworzenia wiadomości wystarczy ustawić jej typ oraz, podać opis.
@@ -122,11 +140,18 @@ namespace Sanakan.Web.Controllers
         /// <param name="mention">czy oznanczyć zainteresowanych</param>
         /// <response code="500">Internal Server Error</response>
         [HttpPost]
-        public async Task PostRichMessageAsync(
-            [FromBody, Required]Models.RichMessage message, [FromQuery]bool? mention)
+        [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
+        public async Task<IActionResult> PostRichMessageAsync(
+            [FromBody, Required]RichMessage message, [FromQuery]bool? mention)
         {
-            var config = _config.Get();
-            if (!mention.HasValue) mention = false;
+            var config = _config.CurrentValue;
+
+            if (!mention.HasValue)
+            {
+                mention = false;
+            }
 
             var msgList = new List<ulong>();
             var rmcs = config.RMConfig.Where(x => x.Type == message.MessageType);
@@ -136,7 +161,10 @@ namespace Sanakan.Web.Controllers
                 if (rmc.Type == RichMessageType.UserNotify)
                 {
                     var user = _client.GetUser(rmc.ChannelId);
-                    if (user == null) continue;
+                    if (user == null)
+                    {
+                        continue;
+                    }
 
                     var pwCh = await user.GetOrCreateDMChannelAsync();
                     var pwm = await pwCh.SendMessageAsync("", embed: message.ToEmbed());
@@ -146,16 +174,27 @@ namespace Sanakan.Web.Controllers
                 }
 
                 var guild = _client.GetGuild(rmc.GuildId);
-                if (guild == null) continue;
+                
+                if (guild == null)
+                {
+                    continue;
+                }
 
                 var channel = guild.GetTextChannel(rmc.ChannelId);
-                if (channel == null) continue;
+
+                if (channel == null)
+                {
+                    continue;
+                }
 
                 string mentionContent = "";
                 if (mention.Value)
                 {
                     var role = guild.GetRole(rmc.RoleId);
-                    if (role != null) mentionContent = role.Mention;
+                    if (role != null)
+                    {
+                        mentionContent = role.Mention;
+                    }
                 }
 
                 var msg = await channel.SendMessageAsync(mentionContent, embed: message.ToEmbed());
@@ -169,7 +208,7 @@ namespace Sanakan.Web.Controllers
 
             if (msgList.Count > 1)
             {
-                return ShindenRichOk("Message sended!", msgList);
+                return ShindenRichOk("Message sended!", msgList.ToArray());
             }
 
             return ShindenRichOk("Message sended!", msgList.First());
@@ -180,9 +219,10 @@ namespace Sanakan.Web.Controllers
         /// </summary>
         /// <returns>wiadomość typu RichMessage</returns>
         [HttpGet]
+        [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
         public IActionResult GetExampleMsg()
         {
-            var result = new Models.RichMessage().Example();
+            var result = new RichMessage().Example();
 
             return Ok(result);
         }
