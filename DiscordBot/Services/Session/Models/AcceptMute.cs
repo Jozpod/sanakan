@@ -16,14 +16,11 @@ namespace Sanakan.Services.Session.Models
         public Moderator Moderation { get; set; }
         public SocketTextChannel NotifChannel { get; set; }
 
-        private readonly object _config;
         private readonly IRandomNumberGenerator _randomNumberGenerator;
 
-        public AcceptMute(
-            IOptions<object> config,
-            IRandomNumberGenerator _randomNumberGenerator)
+        public AcceptMute(IRandomNumberGenerator randomNumberGenerator)
         {
-            _config = config;
+            _randomNumberGenerator = randomNumberGenerator;
         }
 
         public async Task<bool> OnAccept(SessionContext context)

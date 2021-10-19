@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Sanakan.Common;
 using Sanakan.DAL.Models;
+using Sanakan.DiscordBot;
 
 namespace Sanakan.Extensions
 {
@@ -14,26 +16,39 @@ namespace Sanakan.Extensions
 
         private static Discord.IEmote GetEmote(int i)
         {
-            if (i == 0) return new Discord.Emoji("\u0030\u20E3");
-            if (i == 1) return new Discord.Emoji("\u0031\u20E3");
-            if (i == 2) return new Discord.Emoji("\u0032\u20E3");
-            if (i == 3) return new Discord.Emoji("\u0033\u20E3");
-            if (i == 4) return new Discord.Emoji("\u0034\u20E3");
-            if (i == 5) return new Discord.Emoji("\u0035\u20E3");
-            if (i == 6) return new Discord.Emoji("\u0036\u20E3");
-            if (i == 7) return new Discord.Emoji("\u0037\u20E3");
-            if (i == 8) return new Discord.Emoji("\u0038\u20E3");
-            return new Discord.Emoji("\u0039\u20E3");
+            switch (i)
+            {
+                case 0:
+                    return Emojis.Zero;
+                case 1:
+                    return Emojis.Zero;
+                case 2:
+                    return Emojis.Two;
+                case 3:
+                    return Emojis.Three;
+                case 4:
+                    return Emojis.Four;
+                case 5:
+                    return Emojis.Five;
+                case 6:
+                    return Emojis.Six;
+                case 7:
+                    return Emojis.Seven;
+                case 8:
+                    return Emojis.Eight;
+                default:
+                    return Emojis.Nine;
+            };
         }
 
-        public static void RandomizeAnswers(this Question q)
+        public static void RandomizeAnswers(this Question q, IRandomNumberGenerator randomNumberGenerator)
         {
             var numbersColeration = new List<Tuple<int, int>>();
             var possibleAnswers = q.Answers.Select(x => x.Number).ToList();
 
             foreach (var answer in q.Answers)
             {
-                var num = Services.Fun.GetOneRandomFrom(possibleAnswers);
+                var num = randomNumberGenerator.GetOneRandomFrom(possibleAnswers);
                 possibleAnswers.Remove(num);
 
                 numbersColeration.Add(new Tuple<int, int>(num, answer.Number));
@@ -57,7 +72,12 @@ namespace Sanakan.Extensions
         public static Discord.IEmote[] GetEmotes(this Question q)
         {
             List<Discord.IEmote> emo = new List<Discord.IEmote>();
-            foreach (var qu in q.Answers) emo.Add(GetEmote(qu.Number));
+
+            foreach (var qu in q.Answers)
+            {
+                emo.Add(GetEmote(qu.Number));
+            }
+
             return emo.ToArray();
         }
 

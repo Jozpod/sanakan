@@ -10,9 +10,9 @@ namespace Sanakan.Preconditions
 {
     public class RequireAdminRoleOrChannelPermission : PreconditionAttribute
     {
-        private readonly IRepository _repository;
+        private readonly IAllRepository _repository;
 
-        public RequireAdminRoleOrChannelPermission(IRepository repository)
+        public RequireAdminRoleOrChannelPermission(IAllRepository repository)
         {
             _repository = repository;
         }

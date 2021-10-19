@@ -1,5 +1,4 @@
-﻿using DAL.Repositories.Abstractions;
-using Discord;
+﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using DiscordBot.Services.PocketWaifu.Abstractions;
@@ -8,7 +7,9 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Sanakan.Common;
 using Sanakan.DAL.Models;
-using Sanakan.DiscordBot.Models;
+using Sanakan.DAL.Repositories;
+using Sanakan.DAL.Repositories.Abstractions;
+using Sanakan.DiscordBot;
 using Sanakan.DiscordBot.Services;
 using Sanakan.Extensions;
 using Sanakan.Preconditions;
@@ -17,7 +18,6 @@ using Sanakan.Services.Commands;
 using Sanakan.Services.Executor;
 using Sanakan.Services.PocketWaifu;
 using Sanakan.ShindenApi;
-using Sanakan.Web.Configuration;
 using Shinden;
 using System;
 using System.Collections.Generic;
@@ -35,23 +35,29 @@ namespace Sanakan.Modules
         private readonly IWaifuService _waifuService;
         private readonly WritableOptions<SanakanConfiguration> _config;
         private readonly IExecutor _executor;
-        private readonly Services.Helper _helper;
+        private readonly HelperService _helper;
         private readonly IShindenClient _shClient;
         private readonly IImageProcessing _img;
-        private readonly IRepository _repository;
+        private readonly IAllRepository _repository;
         private readonly IUserRepository _userRepository;
+        private readonly ICardRepository _cardRepository;
         private readonly ISystemClock _systemClock;
         private readonly ICacheManager _cacheManager;
+        private readonly IResourceManager _resourceManager;
+        private readonly IRandomNumberGenerator _randomNumberGenerator;
 
         public DebugModule(
             IWaifuService waifuService,
             IShindenClient shClient,
-            Services.Helper helper,
+            HelperService helper,
             IImageProcessing img,
             WritableOptions<SanakanConfiguration> config,
-            IRepository repository,
+            IAllRepository repository,
             IUserRepository userRepository,
+            ICardRepository cardRepository,
             ISystemClock systemClock,
+            IResourceManager resourceManager,
+            IRandomNumberGenerator randomNumberGenerator,
             IExecutor executor)
         {
             _shClient = shClient;
@@ -61,7 +67,10 @@ namespace Sanakan.Modules
             _waifuService = waifuService;
             _repository = repository;
             _userRepository = userRepository;
+            _cardRepository = cardRepository;
             _systemClock = systemClock;
+            _resourceManager = resourceManager;
+            _randomNumberGenerator = randomNumberGenerator;
             _img = img;
         }
 
@@ -72,8 +81,7 @@ namespace Sanakan.Modules
         {
             try
             {
-                var reader = new JsonFileReader($"./Pictures/Poke/List.json");
-                var images = reader.Load<List<SafariImage>>();
+                var images = await _resourceManager.ReadFromJsonAsync<List<SafariImage>>(Paths.PokeList);
 
                 var character = (await _shClient.GetCharacterInfoAsync(2)).Body;
                 var channel = Context.Channel as ITextChannel;
@@ -93,7 +101,9 @@ namespace Sanakan.Modules
         [Remarks("")]
         public async Task GenerateMissingUsersListAsync()
         {
-            var allUsers = Context.Client.Guilds.SelectMany(x => x.Users).Distinct();
+            var allUsers = Context.Client.Guilds
+                .SelectMany(x => x.Users)
+                .Distinct();
 
             var nonExistingIds = db.Users
                 .AsQueryable()
@@ -111,10 +121,10 @@ namespace Sanakan.Modules
         [Remarks("Karna")]
         public async Task TransferCardAsync([Summary("użytkownik")]SocketGuildUser user)
         {
-            var targetUser = await _re.GetUserOrCreateAsync(user.Id);
+            var targetUser = await _userRepository.GetUserOrCreateAsync(user.Id);
 
             targetUser.IsBlacklisted = !targetUser.IsBlacklisted;
-            await db.SaveChangesAsync();
+            await _userRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(new string[] { $"user-{Context.User.Id}", "users" });
 
@@ -128,8 +138,14 @@ namespace Sanakan.Modules
         {
             try
             {
-                var msg2r = await Context.Client.GetGuild(gId).GetTextChannel(chId).GetMessageAsync(msgId);
-                if (msg2r is IUserMessage umsg) await umsg.ReplyAsync(msg);
+                var msg2r = await Context.Client.GetGuild(gId)
+                    .GetTextChannel(chId)
+                    .GetMessageAsync(msgId);
+
+                if (msg2r is IUserMessage umsg)
+                {
+                    await umsg.ReplyAsync(msg);
+                }
             }
             catch (Exception ex)
             {
@@ -161,7 +177,9 @@ namespace Sanakan.Modules
         {
             try
             {
-                await Context.Client.GetGuild(gId).GetTextChannel(chId).SendMessageAsync("", embed: msg.ToEmbedMessage(type).Build());
+                await Context.Client.GetGuild(gId)
+                    .GetTextChannel(chId)
+                    .SendMessageAsync("", embed: msg.ToEmbedMessage(type).Build());
             }
             catch (Exception ex)
             {
@@ -173,11 +191,17 @@ namespace Sanakan.Modules
         [Summary("dodaje reakcje do wiadomości")]
         [Remarks("15188451644 101155483 825724399512453140 <:Redpill:455880209711759400>")]
         public async Task AddReactionToMsgOnChannelInGuildAsync(
-            [Summary("id serwera")]ulong gId, [Summary("id kanału")]ulong chId, [Summary("id wiadomości")]ulong msgId, [Summary("reakcja")]string reaction)
+            [Summary("id serwera")]ulong gId,
+            [Summary("id kanału")]ulong chId,
+            [Summary("id wiadomości")]ulong msgId,
+            [Summary("reakcja")]string reaction)
         {
             try
             {
-                var msg = await Context.Client.GetGuild(gId).GetTextChannel(chId).GetMessageAsync(msgId);
+                var msg = await Context.Client.GetGuild(gId)
+                    .GetTextChannel(chId)
+                    .GetMessageAsync(msgId);
+
                 if (Emote.TryParse(reaction, out var emote))
                 {
                     await msg.AddReactionAsync(emote);
@@ -199,12 +223,9 @@ namespace Sanakan.Modules
         public async Task ForceUpdateCardsAsync(
             [Summary("WID kart")]params ulong[] ids)
         {
-            var cards = db.Cards.AsQueryable()
-                .AsSplitQuery()
-                .Where(x => ids.Any(c => c == x.Id))
-                .ToList();
+            var cards = await _cardRepository.GetByIdsAsync(ids);
 
-            if (cards.Count < 1)
+            if (!cards.Any())
             {
                 await ReplyAsync("", embed: $"{Context.User.Mention} nie odnaleziono kart.".ToEmbedMessage(EMType.Error).Build());
                 return;
@@ -251,11 +272,11 @@ namespace Sanakan.Modules
             [Summary("liczba kart")]uint count,
             [Summary("czas w minutach")]uint duration = 5)
         {
-            var emote = Emote.Parse("<a:success:467493778752798730>");
-            var time = _systemClock.AddMinutes(duration);
+            var emote = Emotes.GreenChecked;
+            var time = _systemClock.UtcNow.AddMinutes(duration);
 
             var mention = "";
-            SocketRole mutedRole = null;
+            SocketRole? mutedRole = null;
             var config = await _repository.GetCachedGuildFullConfigAsync(Context.Guild.Id);
 
             if (config != null)
@@ -275,7 +296,7 @@ namespace Sanakan.Modules
             var reactions = await msg.GetReactionUsersAsync(emote, 300).FlattenAsync();
             var users = reactions.Shuffle().ToList();
 
-            IUser winner = null;
+            IUser? winner = null;
             var watch = Stopwatch.StartNew();
             while (winner == null)
             {
@@ -289,14 +310,14 @@ namespace Sanakan.Modules
                 }
 
                 bool muted = false;
-                var selected = Services.Fun.GetOneRandomFrom(users);
+                var selected = _randomNumberGenerator.GetOneRandomFrom(users);
                 if (mutedRole != null && selected is SocketGuildUser su)
                 {
                     if (su.Roles.Any(x => x.Id == mutedRole.Id))
                         muted = true;
                 }
 
-                var dUser = await db.GetCachedFullUserAsync(selected.Id);
+                var dUser = await _userRepository.GetCachedFullUserAsync(selected.Id);
                 if (dUser != null && !muted)
                 {
                     if (!dUser.IsBlacklisted)
@@ -336,7 +357,7 @@ namespace Sanakan.Modules
                     if (idsToSelect.Count < 1)
                         break;
 
-                    var wid = Services.Fun.GetOneRandomFrom(idsToSelect);
+                    var wid = _randomNumberGenerator.GetOneRandomFrom(idsToSelect);
                     var thisCard = loteryCards.FirstOrDefault(x => x.Id == wid);
 
                     cardsIds.Add(thisCard.GetString(false, false, true));
@@ -387,23 +408,32 @@ namespace Sanakan.Modules
         [Command("tranc"), Priority(1)]
         [Summary("przenosi kartę między użytkownikami")]
         [Remarks("User 41231 41232")]
-        public async Task TransferCardAsync([Summary("id użytkownika")]ulong userId, [Summary("WIDs")]params ulong[] wids)
+        public async Task TransferCardAsync(
+            [Summary("id użytkownika")]ulong userId,
+            [Summary("WIDs")]params ulong[] wids)
         {
-            if (!db.Users.Any(x => x.Id == userId))
+            if (!_userRepository.ExistsByDiscordIdAsync(userId))
             {
                 await ReplyAsync("", embed: "W bazie nie ma użytkownika o podanym id!".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
-            var thisCards = db.Cards.AsQueryable().Include(x => x.TagList).AsSingleQuery().Where(x => wids.Contains(x.Id)).ToList();
+            var thisCards = await _cardRepository.GetByIdsAsync(wids, new CardQueryOptions {
+                IncludeTagList = true,
+            });
+
             if (thisCards.Count < 1)
             {
                 await ReplyAsync("", embed: "Nie odnaleziono kart!".ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
 
-            string reply = $"Karta {thisCards.First().GetString(false, false, true)} została przeniesiona.";
-            if (thisCards.Count > 1) reply = $"Przeniesiono {thisCards.Count} kart.";
+            var reply = $"Karta {thisCards.First().GetString(false, false, true)} została przeniesiona.";
+            
+            if (thisCards.Count > 1)
+            {
+                reply = $"Przeniesiono {thisCards.Count} kart.";
+            }
 
             foreach (var thisCard in thisCards)
             {
@@ -414,7 +444,7 @@ namespace Sanakan.Modules
                 thisCard.Expedition = CardExpedition.None;
             }
 
-            await db.SaveChangesAsync();
+            await _cardRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(new string[] { $"user-{userId}", "users" });
 
@@ -600,10 +630,10 @@ namespace Sanakan.Modules
         [Remarks("845155646123")]
         public async Task RemoveCardsUserAsync([Summary("id użytkownika")]ulong id)
         {
-            var user = await db.GetUserOrCreateAsync(id);
+            var user = await _userRepository.GetUserOrCreateAsync(id);
             user.GameDeck.Cards.Clear();
 
-            await db.SaveChangesAsync();
+            await _userRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(new string[] { "users", $"user-{id}" });
             var content = $"Karty użytkownika o id: `{id}` zostały skasowane.".ToEmbedMessage(EMType.Success).Build();
@@ -696,9 +726,12 @@ namespace Sanakan.Modules
         [Command("utitle"), Priority(1)]
         [Summary("aktualizuje tytuł karty")]
         [Remarks("ssało")]
-        public async Task ChangeTitleCardAsync([Summary("WID")]ulong wid, [Summary("tytuł")][Remainder]string title = null)
+        public async Task ChangeTitleCardAsync(
+            [Summary("WID")]ulong wid,
+            [Summary("tytuł")][Remainder]string? title = null)
         {
             var thisCard = db.Cards.FirstOrDefault(x => x.Id == wid);
+
             if (thisCard == null)
             {
                 await ReplyAsync("", embed: $"Taka karta nie istnieje.".ToEmbedMessage(EMType.Error).Build());
@@ -770,21 +803,31 @@ namespace Sanakan.Modules
         [Remarks("true")]
         public async Task SetCharCntPerPacketAsync([Summary("liczba znaków")]long count, [Summary("true/false - czy zapisać")]bool save = false)
         {
-            var config = Config.Get();
-            config.CharPerPacket = count;
-            if (save) Config.Save();
+            if (save) {
+                _config.Update(opt =>
+                {
+                    opt.CharPerPacket = count;
+                });
+            }
 
-            await ReplyAsync("", embed: $"Ustawiono próg `{count}` znaków na pakiet. `Zapisano: {save.GetYesNo()}`".ToEmbedMessage(EMType.Success).Build());
+            var content = $"Ustawiono próg `{count}` znaków na pakiet. `Zapisano: {save.GetYesNo()}`".ToEmbedMessage(EMType.Success).Build();
+            await ReplyAsync("", embed: content);
         }
 
         [Command("chpe"), Priority(1)]
         [Summary("ustawia liczbę znaków na punkt doświadczenia")]
         [Remarks("true")]
-        public async Task SetCharCntPerExpAsync([Summary("liczba znaków")]long count, [Summary("true/false - czy zapisać")]bool save = false)
+        public async Task SetCharCntPerExpAsync(
+            [Summary("liczba znaków")]long count,
+            [Summary("true/false - czy zapisać")]bool save = false)
         {
-            var config = Config.Get();
-            config.Exp.CharPerPoint = count;
-            if (save) Config.Save();
+            if (save)
+            {
+                _config.Update(opt =>
+                {
+                    opt.Exp.CharPerPoint = count;
+                });
+            }
 
             await ReplyAsync("", embed: $"Ustawiono próg `{count}` znaków na punkt doświadczenia. `Zapisano: {save.GetYesNo()}`".ToEmbedMessage(EMType.Success).Build());
         }
@@ -792,14 +835,15 @@ namespace Sanakan.Modules
         [Command("tsafari"), Priority(1)]
         [Summary("wyłącza/załącza safari")]
         [Remarks("true")]
-        public async Task ToggleSafariAsync([Summary("true/false - czy zapisać")]bool save = false)
+        public async Task ToggleSafariAsync(
+            [Summary("true/false - czy zapisać")]bool save = false)
         {
-            var config = _config.CurrentValue;
-            config.SafariEnabled = !config.SafariEnabled;
-            
             if (save)
             {
-                Config.Save();
+                _config.Update(opt =>
+                {
+                    opt.SafariEnabled = !opt.SafariEnabled;
+                });
             }
 
             await ReplyAsync("", embed: $"Safari: `{config.SafariEnabled.GetYesNo()}` `Zapisano: {save.GetYesNo()}`".ToEmbedMessage(EMType.Success).Build());
@@ -819,60 +863,61 @@ namespace Sanakan.Modules
         [Command("wevent"), Priority(1)]
         [Summary("ustawia id eventu (kasowane są po restarcie)")]
         [Remarks("https://pastebin.com/raw/Y6a8gH5P")]
-        public async Task SetWaifuEventIdsAsync([Summary("link do pliku z id postaci oddzielnymi średnikami")]string url)
+        public async Task SetWaifuEventIdsAsync(
+            [Summary("link do pliku z id postaci oddzielnymi średnikami")]string url)
         {
-            using (var client = new HttpClient())
+            using var client = new HttpClient();
+
+            var ids = new List<ulong>();
+            var res = await client.GetAsync(url);
+            if (!res.IsSuccessStatusCode)
             {
-                var ids = new List<ulong>();
-                var res = await client.GetAsync(url);
-                if (res.IsSuccessStatusCode)
-                {
-                    using (var body = await res.Content.ReadAsStreamAsync())
-                    {
-                        using (var sr = new StreamReader(body))
-                        {
-                            var content = await sr.ReadToEndAsync();
-
-                            try
-                            {
-                                ids = content.Split(";").Select(x => ulong.Parse(x)).ToList();
-                            }
-                            catch (Exception ex)
-                            {
-                                await ReplyAsync("", embed: $"Format pliku jest niepoprawny! ({ex.Message})".ToEmbedMessage(EMType.Error).Build());
-                                return;
-                            }
-                        }
-                    }
-
-                    if (ids.Any())
-                    {
-                        _waifuService.SetEventIds(ids);
-                        await ReplyAsync("", embed: $"Ustawiono `{ids.Count}` id.".ToEmbedMessage(EMType.Success).Build());
-                        return;
-                    }
-                }
+                await ReplyAsync("", embed: $"Nie udało się odczytać pliku.".ToEmbedMessage(EMType.Error).Build());
+                return;
             }
 
-            await ReplyAsync("", embed: $"Nie udało się odczytać pliku.".ToEmbedMessage(EMType.Error).Build());
+            using var body = await res.Content.ReadAsStreamAsync();
+            using var sr = new StreamReader(body);
+            var content = await sr.ReadToEndAsync();
+
+            try
+            {
+                ids = content.Split(";").Select(x => ulong.Parse(x)).ToList();
+            }
+            catch (Exception ex)
+            {
+                await ReplyAsync("", embed: $"Format pliku jest niepoprawny! ({ex.Message})".ToEmbedMessage(EMType.Error).Build());
+                return;
+            }
+
+            if (ids.Any())
+            {
+                _waifuService.SetEventIds(ids);
+                await ReplyAsync("", embed: $"Ustawiono `{ids.Count}` id.".ToEmbedMessage(EMType.Success).Build());
+                return;
+            }
         }
 
         [Command("lvlbadge", RunMode = RunMode.Async)]
         [Summary("generuje przykładowy obrazek otrzymania poziomu")]
         [Remarks("")]
-        public async Task GenerateLevelUpBadgeAsync([Summary("użytkownik(opcjonalne)")]SocketGuildUser user = null)
+        public async Task GenerateLevelUpBadgeAsync(
+            [Summary("użytkownik(opcjonalne)")]SocketGuildUser? socketGuildUser = null)
         {
-            var usr = user ?? Context.User as SocketGuildUser;
-            if (usr == null) return;
+            var user = socketGuildUser ?? Context.User as SocketGuildUser;
 
-            using (var badge = await _img.GetLevelUpBadgeAsync("Very very long nickname of trolly user",
-                2154, usr.GetUserOrDefaultAvatarUrl(), usr.Roles.OrderByDescending(x => x.Position).First().Color))
+            if (user == null)
             {
-                using (var badgeStream = badge.ToPngStream())
-                {
-                    await Context.Channel.SendFileAsync(badgeStream, $"{usr.Id}.png");
-                }
+                return;
             }
+
+            using var badge = await _img.GetLevelUpBadgeAsync(
+                "Very very long nickname of trolly user",
+                2154,
+                user.GetUserOrDefaultAvatarUrl(),
+                user.Roles.OrderByDescending(x => x.Position).First().Color);
+            using var badgeStream = badge.ToPngStream();
+            await Context.Channel.SendFileAsync(badgeStream, $"{user.Id}.png");
         }
 
         [Command("devr", RunMode = RunMode.Async)]
@@ -881,10 +926,17 @@ namespace Sanakan.Modules
         public async Task ToggleDeveloperRoleAsync()
         {
             var user = Context.User as SocketGuildUser;
-            if (user == null) return;
+            if (user == null)
+            {
+                return;
+            }
 
             var devr = Context.Guild.Roles.FirstOrDefault(x => x.Name == "Developer");
-            if (devr == null) return;
+            
+            if (devr == null)
+            {
+                return;
+            }
 
             if (user.Roles.Contains(devr))
             {
@@ -934,7 +986,9 @@ namespace Sanakan.Modules
         [Command("gcard"), Priority(1)]
         [Summary("generuje kartę i daje ją użytkownikowi")]
         [Remarks("User 54861")]
-        public async Task GenerateCardAsync([Summary("użytkownik")]SocketGuildUser user, [Summary("id postaci na shinden (nie podanie - losowo)")]ulong id = 0,
+        public async Task GenerateCardAsync(
+            [Summary("użytkownik")]SocketGuildUser user,
+            [Summary("id postaci na shinden (nie podanie - losowo)")]ulong id = 0,
             [Summary("jakość karty (nie podanie - losowo)")]Rarity rarity = Rarity.E)
         {
             var character = (id == 0) ? await _waifuService.GetRandomCharacterAsync() : (await _shClient.GetCharacterInfoAsync(id)).Body;
@@ -1068,10 +1122,10 @@ namespace Sanakan.Modules
             [Summary("użytkownik")]SocketGuildUser user,
             [Summary("liczba CT")]long amount)
         {
-            var botuser = await db.GetUserOrCreateAsync(user.Id);
+            var botuser = await _userRepository.GetUserOrCreateAsync(user.Id);
             botuser.GameDeck.CTCnt += amount;
 
-            await db.SaveChangesAsync();
+            await _userRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(new string[] { $"user-{botuser.Id}", "users" });
 
@@ -1102,10 +1156,10 @@ namespace Sanakan.Modules
             [Summary("użytkownik")]SocketGuildUser user,
             [Summary("liczba ostrzeżeń")]long amount)
         {
-            var botuser = await db.GetUserOrCreateAsync(user.Id);
+            var botuser = await _userRepository.GetUserOrCreateAsync(user.Id);
             botuser.Warnings += amount;
 
-            await db.SaveChangesAsync();
+            await _userRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(new string[] { $"user-{botuser.Id}", "users" });
 

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -24,14 +25,14 @@ namespace Sanakan.DAL.Models
         public ulong Character { get; set; }
         public DateTime CreationDate { get; set; }
         public CardSource Source { get; set; }
-        public string Title { get; set; }
-        public string Image { get; set; }
-        public string CustomImage { get; set; }
+        public string? Title { get; set; }
+        public string? Image { get; set; }
+        public string? CustomImage { get; set; }
         public ulong FirstIdOwner { get; set; }
         public ulong LastIdOwner { get; set; }
         public bool Unique { get; set; }
         public StarStyle StarStyle { get; set; }
-        public string CustomBorder { get; set; }
+        public string? CustomBorder { get; set; }
         public double MarketValue { get; set; }
         public CardCurse Curse { get; set; }
         public double CardPower { get; set; }
@@ -53,8 +54,13 @@ namespace Sanakan.DAL.Models
         public virtual CardArenaStats ArenaStats { get; set; }
 
         public ulong GameDeckId { get; set; }
+
         [JsonIgnore]
         public virtual GameDeck GameDeck { get; set; }
+
+        public bool IsBroken => Affection <= -50;
+
+        public bool IsUnusable => Affection <= -5;
 
         public override string ToString()
         {
@@ -64,7 +70,7 @@ namespace Sanakan.DAL.Models
                 Active ? "[A]" : "",
                 Unique ? (FromFigure ? "[F]" : "[U]") : "",
                 Expedition != CardExpedition.None ? "[W]" : "",
-                this.IsBroken() ? "[B]" : (this.IsUnusable() ? "[N]" : ""),
+                IsBroken ? "[B]" : (IsUnusable ? "[N]" : ""),
             };
 
             string mark = marks.Any(x => x != "") ? $"**{string.Join("", marks)}** " : "";

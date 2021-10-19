@@ -19,28 +19,26 @@ namespace Sanakan.Preconditions
                 return PreconditionResult.FromSuccess();
             }
             
-
-            await Task.CompletedTask;
-
             var config = (IConfig)services.GetService(typeof(IConfig));
-            using (var db = new Database.GuildConfigContext(config))
+            var gConfig = await db.GetCachedGuildFullConfigAsync(context.Guild.Id);
+
+            if (gConfig == null)
             {
-                var gConfig = await db.GetCachedGuildFullConfigAsync(context.Guild.Id);
-                if (gConfig == null) return PreconditionResult.FromSuccess();
-
-                if (gConfig.CommandChannels != null)
-                {
-                    if (gConfig.CommandChannels.Any(x => x.Channel == context.Channel.Id))
-                        return PreconditionResult.FromSuccess();
-
-                    if (user.GuildPermissions.Administrator)
-                        return PreconditionResult.FromSuccess();
-
-                    var channel = await context.Guild.GetTextChannelAsync(gConfig.CommandChannels.First().Channel);
-                    return PreconditionResult.FromError($"To polecenie działa na kanale {channel?.Mention}");
-                }
                 return PreconditionResult.FromSuccess();
             }
+
+            if (gConfig.CommandChannels != null)
+            {
+                if (gConfig.CommandChannels.Any(x => x.Channel == context.Channel.Id))
+                    return PreconditionResult.FromSuccess();
+
+                if (user.GuildPermissions.Administrator)
+                    return PreconditionResult.FromSuccess();
+
+                var channel = await context.Guild.GetTextChannelAsync(gConfig.CommandChannels.First().Channel);
+                return PreconditionResult.FromError($"To polecenie działa na kanale {channel?.Mention}");
+            }
+            return PreconditionResult.FromSuccess();
         }
     }
 }

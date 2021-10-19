@@ -12,9 +12,10 @@ namespace DiscordBot.Services.PocketWaifu.Abstractions
 {
     public interface IWaifuService
     {
+        string EndExpedition(User user, Card card, bool showStats = false);
         bool GetEventSate();
         int GetDefenceAfterLevelUp(Rarity oldRarity, int oldDef);
-        int GetAttactAfterLevelUp(Rarity oldRarity, int oldAtk)
+        int GetAttactAfterLevelUp(Rarity oldRarity, int oldAtk);
         void SetEventState(bool state);
         void SetEventIds(List<ulong> ids);
         Task<ICharacterInfo> GetRandomCharacterAsync();
@@ -29,7 +30,7 @@ namespace DiscordBot.Services.PocketWaifu.Abstractions
         FightHistory MakeFightAsync(List<PlayerInfo> players, bool oneCard = false);
         string GetDeathLog(FightHistory fight, List<PlayerInfo> players);
         Card GenerateNewCard(IUser user, ICharacterInfo character);
-        Card GenerateNewCard(IUser user, ICharacterInfo character, List<Rarity> rarityExcluded)
+        Card GenerateNewCard(IUser user, ICharacterInfo character, List<Rarity> rarityExcluded);
         Embed GetShopView(ItemWithCost[] items, string name = "Sklepik", string currency = "TC");
         Embed GetItemShopInfo(ItemWithCost item);
         List<Embed> GetWaifuFromCharacterTitleSearchResult(
@@ -41,7 +42,7 @@ namespace DiscordBot.Services.PocketWaifu.Abstractions
             IUser discordUser,
             int selectedItem,
             string specialCmd);
-        SafariImage GetRandomSarafiImage();
+        Task<SafariImage?> GetRandomSarafiImage();
         void DeleteCardImageIfExist(Card card);
         Task<string> GenerateAndSaveCardAsync(Card card, CardImageType type = CardImageType.Normal);
         Task<IEnumerable<Embed>> GetContentOfWishlist(List<ulong> cardsId, List<ulong> charactersId, List<ulong> titlesId);

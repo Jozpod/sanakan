@@ -12,6 +12,7 @@ using Microsoft.Extensions.Options;
 using Sanakan.Common;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Models.Analytics;
+using Sanakan.DiscordBot.Configuration;
 using Sanakan.Extensions;
 using Sanakan.Services.Executor;
 using Shinden.Models;
@@ -23,12 +24,14 @@ namespace Sanakan.Services.PocketWaifu
         private readonly DiscordSocketClient _client;
         private readonly IExecutor _executor;
         private readonly ILogger _logger;
-        private readonly IOptionsMonitor<SanakanConfiguration> _config;
+        private readonly IOptionsMonitor<BotConfiguration> _config;
         private readonly IWaifuService _waifu;
         private readonly ICacheManager _cacheManager;
         private readonly IUserRepository _userRepository;
-        private readonly IRepository _repository;
+        private readonly IAllRepository _repository;
         private readonly ISystemClock _systemClock;
+        private readonly IGuildConfigRepository _guildConfigRepository;
+        private readonly IRandomNumberGenerator _randomNumberGenerator;
 
         private Dictionary<ulong, long> ServerCounter;
         private Dictionary<ulong, long> UserCounter;
@@ -39,10 +42,11 @@ namespace Sanakan.Services.PocketWaifu
             DiscordSocketClient client,
             IExecutor executor,
             IWaifuService waifu,
-            IOptionsMonitor<object> config,
+            IOptionsMonitor<BotConfiguration> config,
             ILogger<SpawnService> logger,
             ICacheManager cacheManager,
-            ISystemClock systemClock)
+            ISystemClock systemClock,
+            IRandomNumberGenerator randomNumberGenerator)
         {
             _executor = executor;
             _client = client;
@@ -51,6 +55,8 @@ namespace Sanakan.Services.PocketWaifu
             _waifu = waifu;
             _cacheManager = cacheManager;
             _systemClock = systemClock;
+            _randomNumberGenerator = randomNumberGenerator;
+
             ServerCounter = new Dictionary<ulong, long>();
             UserCounter = new Dictionary<ulong, long>();
 #if !DEBUG
@@ -88,7 +94,7 @@ namespace Sanakan.Services.PocketWaifu
                 return;
             }
 
-            if (!_config.SafariEnabled)
+            if (!_config.CurrentValue.SafariEnabled)
             {
                 return;
             }
@@ -134,7 +140,7 @@ namespace Sanakan.Services.PocketWaifu
                         }
 
                         bool muted = false;
-                        var selected = Fun.GetOneRandomFrom(users);
+                        var selected = _randomNumberGenerator.GetOneRandomFrom(users);
                         if (mutedRole != null && selected is SocketGuildUser su)
                         {
                             if (su.Roles.Any(x => x.Id == mutedRole.Id))
@@ -235,8 +241,8 @@ namespace Sanakan.Services.PocketWaifu
             newCard.Affection -= 1.8;
             newCard.InCage = true;
 
-            var pokeImage = _waifu.GetRandomSarafiImage();
-            var time = DateTime.Now.AddMinutes(5);
+            var pokeImage = await _waifu.GetRandomSarafiImage();
+            var time = _systemClock.UtcNow.AddMinutes(5);
             var embed = new EmbedBuilder
             {
                 Color = EMType.Bot.Color(),
@@ -298,14 +304,16 @@ namespace Sanakan.Services.PocketWaifu
                     return;
                 }
 
-                botUser.GameDeck.BoosterPacks.Add(new BoosterPack
+                var record = new BoosterPack
                 {
                     CardCnt = 2,
                     MinRarity = Rarity.E,
                     IsCardFromPackTradable = true,
                     Name = "Pakiet kart za aktywność",
                     CardSourceFromPack = CardSource.Activity
-                });
+                };
+
+                botUser.GameDeck.BoosterPacks.Add(record);
                 await db.SaveChangesAsync();
 
                 _ = Task.Run(async () =>
@@ -318,9 +326,9 @@ namespace Sanakan.Services.PocketWaifu
                     {
                         Value = 1,
                         UserId = user.Id,
-                        MeasureDate = DateTime.Now,
+                        MeasureDate = _systemClock.UtcNow,
                         GuildId = gUser?.Guild?.Id ?? 0,
-                        Type = DAL.Models.Analytics.UserAnalyticsEventType.Pack
+                        Type = UserAnalyticsEventType.Pack
                     };
 
                     dba.UsersData.Add(record);
@@ -366,7 +374,7 @@ namespace Sanakan.Services.PocketWaifu
                 return;
             };
 
-            if (_config.BlacklistedGuilds.Any(x => x == user.Guild.Id))
+            if (_config.CurrentValue.BlacklistedGuilds.Any(x => x == user.Guild.Id))
             {
                 return;
             }

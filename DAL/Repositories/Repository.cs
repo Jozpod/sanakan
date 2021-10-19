@@ -7,20 +7,21 @@ using Sanakan.DAL.Models;
 using Sanakan.DAL.Models.Analytics;
 using Sanakan.DAL.Models.Configuration;
 using Sanakan.DAL.Models.Management;
+using Sanakan.DAL.Repositories.Abstractions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DAL.Repositories
+namespace Sanakan.DAL.Repositories
 {
-    public class Repository : IRepository
+    public class AllRepository : IAllRepository
     {
         private readonly BuildDatabaseContext _dbContext;
         private readonly ICacheManager _cacheManager;
 
-        public Repository(
+        public AllRepository(
             BuildDatabaseContext dbContext,
             ICacheManager cacheManager)
         {

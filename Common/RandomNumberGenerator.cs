@@ -37,5 +37,7 @@ namespace Sanakan.Common
 
             return enumerable.ElementAt(randomIndex);
         }
+
+        public bool TakeATry(int chance) => (GetRandomValue(chance * 100) % chance) == 1;
     }
 }

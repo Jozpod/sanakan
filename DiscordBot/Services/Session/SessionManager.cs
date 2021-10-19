@@ -15,10 +15,10 @@ namespace Sanakan.Services.Session
     public class SessionManager
     {
         private readonly DiscordSocketClient _client;
-        private readonly IServiceProvider _provider;
+        private IServiceProvider _provider;
         private readonly IExecutor _executor;
         private readonly ILogger _logger;
-        private readonly Timer _timer;
+        private Timer _timer;
 
         private SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
         private List<ISession> _sessions = new List<ISession>();
@@ -140,38 +140,66 @@ namespace Sanakan.Services.Session
         private async Task HandleMessageAsync(SocketMessage message)
         {
             var msg = message as SocketUserMessage;
-            if (msg == null) return;
+            if (msg == null)
+            {
+                return;
+            }
 
-            if (msg.Author.IsBot || msg.Author.IsWebhook) return;
+            if (msg.Author.IsBot || msg.Author.IsWebhook)
+            {
+                return;
+            }
 
             var userSessions = _sessions.FindAll(x => x.IsOwner(message.Author)
                 && x.GetEventType().HasFlag(ExecuteOn.Message));
 
-            if (userSessions.Count == 0) return;
+            if (userSessions.Count == 0)
+            {
+                return;
+            }
 
             await RunSessions(userSessions, new SessionContext(new SocketCommandContext(_client, msg))).ConfigureAwait(false);
         }
 
         private async Task HandleReactionAddedAsync(Cacheable<IUserMessage, ulong> message, ISocketMessageChannel channel, SocketReaction reaction)
         {
-            if (!reaction.User.IsSpecified) return;
+            if (!reaction.User.IsSpecified)
+            {
+                return;
+            }
+
             var user = reaction.User.Value;
 
-            if ((user.IsBot || user.IsWebhook)) return;
+            if ((user.IsBot || user.IsWebhook))
+            {
+                return;
+            }
 
             var userSessions = _sessions.FindAll(x => x.IsOwner(user)
                 && x.GetEventType().HasFlag(ExecuteOn.ReactionAdded));
 
-            if (userSessions.Count == 0) return;
+            if (userSessions.Count == 0)
+            {
+                return;
+            }
 
             var thisUser = _client.GetUser(user.Id);
-            if (thisUser == null) return;
+            if (thisUser == null)
+            {
+                return;
+            }
 
             var msg = await channel.GetMessageAsync(message.Id);
-            if (msg == null) return;
+            if (msg == null)
+            {
+                return;
+            }
 
             var thisMessage = msg as SocketUserMessage;
-            if (thisMessage == null) return;
+            if (thisMessage == null)
+            {
+                return;
+            }
 
             await RunSessions(userSessions, new SessionContext(channel, thisUser, thisMessage, _client, reaction, true)).ConfigureAwait(false);
         }
@@ -190,8 +218,10 @@ namespace Sanakan.Services.Session
                 return;
             }
 
-            var userSessions = _sessions.FindAll(x => x.IsOwner(user)
-                && x.GetEventType().HasFlag(ExecuteOn.ReactionRemoved));
+            var userSessions = _sessions
+                .FindAll(x => x.IsOwner(user)
+                && x.GetEventType()
+                .HasFlag(ExecuteOn.ReactionRemoved));
 
             if (userSessions.Count == 0)
             {

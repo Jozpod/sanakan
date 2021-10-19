@@ -2,12 +2,13 @@
 using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Sanakan.Common;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Models.Analytics;
+using Sanakan.DiscordBot.Configuration;
 using Sanakan.DiscordBot.Services;
 using Sanakan.Extensions;
 using Sanakan.Services.Executor;
-using Sanakan.Web.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,6 +18,7 @@ namespace Sanakan.Services
 {
     public class ExperienceManager
     {
+
         private const double SAVE_AT = 5;
         private const double LM = 0.35;
 
@@ -29,21 +31,25 @@ namespace Sanakan.Services
         private DiscordSocketClient _client;
         private readonly IImageProcessing _img;
         private IExecutor _executor;
-        private readonly IOptionsMonitor<SanakanConfiguration> _config;
-        private readonly IRepository _repository;
+        private readonly IOptionsMonitor<BotConfiguration> _config;
+        private readonly IAllRepository _repository;
+        private readonly IUserAnalyticsRepository _userAnalyticsRepository;
+        private readonly ISystemClock _systemClock;
 
         public ExperienceManager(
             DiscordSocketClient client,
             IExecutor executor,
-            IOptionsMonitor<SanakanConfiguration> config,
+            IOptionsMonitor<Test> config,
             IImageProcessing img,
-            IRepository repository)
+            IAllRepository repository,
+            ISystemClock systemClock)
         {
             _executor = executor;
             _client = client;
             _config = config;
             _img = img;
             _repository = repository;
+            _systemClock = systemClock;
 
             _exp = new Dictionary<ulong, double>();
             _saved = new Dictionary<ulong, DateTime>();
@@ -78,8 +84,8 @@ namespace Sanakan.Services
                 Type = UserAnalyticsEventType.Level
             };
 
-            dba.UsersData.Add(record);
-            _repository.SaveChanges();
+            _userAnalyticsRepository.Add(record);
+            _userAnalyticsRepository.SaveChanges();
         }
 
         private async Task HandleMessageAsync(SocketMessage message)
@@ -132,7 +138,8 @@ namespace Sanakan.Services
 
             if (!_messages.Any(x => x.Key == user.Id))
             {
-                if (!db.Users.AsNoTracking().Any(x => x.Id == user.Id))
+                if (!db.Users.AsNoTracking()
+                    .Any(x => x.Id == user.Id))
                 {
                     var task = CreateUserTask(user);
                     await _executor.TryAdd(new Executable("add user", task), TimeSpan.FromSeconds(1));
@@ -223,10 +230,10 @@ namespace Sanakan.Services
 
         private double GetExpPointBasedOnCharCount(double charCount)
         {
-            var tmpCnf = _config.Get();
-            double cpp = tmpCnf.Exp.CharPerPoint;
-            double min = tmpCnf.Exp.MinPerMessage;
-            double max = tmpCnf.Exp.MaxPerMessage;
+            var config = _config.CurrentValue;
+            var cpp = config.Exp.CharPerPoint;
+            var min = config.Exp.MinPerMessage;
+            var max = config.Exp.MaxPerMessage;
 
             double experience = charCount / cpp;
             if (experience < min)
@@ -287,9 +294,11 @@ namespace Sanakan.Services
                     return;
                 }
 
-                if ((DateTime.Now - usr.MeasureDate.AddMonths(1)).TotalSeconds > 1)
+                var totalSeconds = (_systemClock.UtcNow - usr.MeasureDate.AddMonths(1)).TotalSeconds;
+
+                if (totalSeconds > 1)
                 {
-                    usr.MeasureDate = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+                    usr.MeasureDate = _systemClock.StartOfMonth;
                     usr.MessagesCntAtDate = usr.MessagesCnt;
                     usr.CharacterCntFromDate = characters;
                 }

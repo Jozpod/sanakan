@@ -20,12 +20,12 @@ namespace Sanakan.Services.Session.Models
         public PlayerInfo P2 { get; set; }
 
         private IWaifuService _waifu;
-        private readonly IRepository _repository;
+        private readonly IAllRepository _repository;
         private readonly ICacheManager _cacheManager;
 
         public AcceptDuel(
             IWaifuService waifu,
-            IRepository repository,
+            IAllRepository repository,
             ICacheManager cacheManager)
         {
             _waifu = waifu;

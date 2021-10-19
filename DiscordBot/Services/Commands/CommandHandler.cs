@@ -2,13 +2,20 @@
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using DiscordBot.Services;
+using DiscordBot.Services.PocketWaifu;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Sanakan.Common;
+using Sanakan.Common.Models;
+using Sanakan.DAL.Models;
 using Sanakan.DAL.Models.Analytics;
+using Sanakan.DAL.Repositories.Abstractions;
+using Sanakan.DiscordBot;
+using Sanakan.DiscordBot.Configuration;
 using Sanakan.DiscordBot.Services;
 using Sanakan.Extensions;
 using Sanakan.Services.Executor;
-using Sanakan.Web.Configuration;
 using System;
 using System.Linq;
 using System.Reflection;
@@ -19,56 +26,74 @@ namespace Sanakan.Services.Commands
 {
     public class CommandHandler
     {
-        private readonly DiscordSocketClient _client;
-        private readonly IServiceProvider _provider;
-        private readonly CommandService _cmd;
+        private readonly IDiscordSocketClientAccessor _discordSocketClientAccessor;
+        private readonly CommandService _commandService;
         private readonly IExecutor _executor;
         private readonly ILogger _logger;
-        private readonly IRepository _repository;
-        private SanakanConfiguration _config;
-        private Helper _helper;
+        private readonly IAllRepository _repository;
+        private readonly ICommandsAnalyticsRepository _commandsAnalyticsRepository;
+        
+        private readonly ISystemClock _systemClock;
+        private readonly IOptionsMonitor<BotConfiguration> _config;
+        private readonly HelperService _helper;
+        private readonly IServiceProvider _serviceProvider;
         private Timer _timer;
 
         public CommandHandler(
-            DiscordSocketClient client,
-            IOptions<SanakanConfiguration> config,
+            IDiscordSocketClientAccessor discordSocketClientAccessor,
+            IOptionsMonitor<BotConfiguration> config,
             ILogger<CommandHandler> logger,
             IExecutor executor,
-            IRepository repository)
+            IAllRepository repository,
+            CommandService commandService,
+            ISystemClock systemClock,
+            IServiceProvider serviceProvider)
         {
-            _client = client;
-            _config = config.Value;
+            _discordSocketClientAccessor = discordSocketClientAccessor;
+            _config = config;
             _logger = logger;
             _executor = executor;
             _repository = repository;
-            _cmd = new CommandService();
+            _commandService = commandService;
+            _systemClock = systemClock;
+            _serviceProvider = serviceProvider;
         }
 
-        public async Task InitializeAsync(IServiceProvider provider, Helper helper)
+        public async Task InitializeAsync()
         {
-            _helper = helper;
-            _provider = provider;
+            if(_discordSocketClientAccessor.Client == null)
+            {
+                throw new Exception("Client not connected");
+            }
+            var client = _discordSocketClientAccessor.Client;
 
-            //_cmd.AddTypeReader<SlotMachineSetting>(new TypeReaders.SlotMachineSettingTypeReader());
-            //_cmd.AddTypeReader<WishlistObjectType>(new TypeReaders.WishlistObjectTypeReader());
-            //_cmd.AddTypeReader<CardExpedition>(new TypeReaders.ExpeditionTypeReader());
-            //_cmd.AddTypeReader<ProfileType>(new TypeReaders.ProfileTypeReader());
-            //_cmd.AddTypeReader<ConfigType>(new TypeReaders.ConfigTypeReader());
-            //_cmd.AddTypeReader<CoinSide>(new TypeReaders.CoinSideTypeReader());
-            //_cmd.AddTypeReader<HaremType>(new TypeReaders.HaremTypeReader());
-            //_cmd.AddTypeReader<TopType>(new TypeReaders.TopTypeReader());
-            //_cmd.AddTypeReader<bool>(new TypeReaders.BoolTypeReader());
+            _commandService.AddTypeReader<SlotMachineSetting>(new TypeReaders.SlotMachineSettingTypeReader());
+            _commandService.AddTypeReader<WishlistObjectType>(new TypeReaders.WishlistObjectTypeReader());
+            _commandService.AddTypeReader<CardExpedition>(new TypeReaders.ExpeditionTypeReader());
+            _commandService.AddTypeReader<ProfileType>(new TypeReaders.ProfileTypeReader());
+            _commandService.AddTypeReader<ConfigType>(new TypeReaders.ConfigTypeReader());
+            _commandService.AddTypeReader<CoinSide>(new TypeReaders.CoinSideTypeReader());
+            _commandService.AddTypeReader<HaremType>(new TypeReaders.HaremTypeReader());
+            _commandService.AddTypeReader<TopType>(new TypeReaders.TopTypeReader());
+            _commandService.AddTypeReader<bool>(new TypeReaders.BoolTypeReader());
 
-            _helper.PublicModulesInfo = await _cmd.AddModulesAsync(Assembly.GetEntryAssembly(), _provider);
+            _helper.PublicModulesInfo = await _commandService
+                .AddModulesAsync(Assembly.GetEntryAssembly(), _serviceProvider);
 
-            _helper.PrivateModulesInfo.Add("Moderacja", await _cmd.AddModuleAsync<Modules.ModerationModule>(_provider));
-            _helper.PrivateModulesInfo.Add("Debug", await _cmd.AddModuleAsync<Modules.DebugModule>(_provider));
+            _helper.PrivateModulesInfo.Add("Moderacja", await _commandService.AddModuleAsync<Modules.ModerationModule>(_serviceProvider));
+            _helper.PrivateModulesInfo.Add("Debug", await _commandService.AddModuleAsync<Modules.DebugModule>(_serviceProvider));
 
-            _client.MessageReceived += HandleCommandAsync;
+            client.MessageReceived += HandleCommandAsync;
         }
 
         private async Task HandleCommandAsync(SocketMessage message)
         {
+            if (_discordSocketClientAccessor.Client == null)
+            {
+                throw new Exception("Client not connected");
+            }
+            var client = _discordSocketClientAccessor.Client;
+
             var userMessage = message as SocketUserMessage;
             
             if (userMessage == null)
@@ -81,8 +106,9 @@ namespace Sanakan.Services.Commands
                 return;
             }
 
-            string prefix = _config.Prefix;
-            var context = new SocketCommandContext(_client, userMessage);
+            var config = _config.CurrentValue;
+            var prefix = config.Prefix;
+            var context = new SocketCommandContext(client, userMessage);
 
             if (context.Guild != null)
             {
@@ -90,67 +116,77 @@ namespace Sanakan.Services.Commands
                 if (gConfig?.Prefix != null) prefix = gConfig.Prefix;
             }
 
-            int argPos = 0;
+            var argPos = 0;
             if (!userMessage.HasStringPrefix(prefix, ref argPos, StringComparison.OrdinalIgnoreCase))
             {
                 return;
             }
 
-            var isDev = _config.Dev.Any(x => x == context.User.Id);
-            var isOnBlacklist = _config.BlacklistedGuilds.Any(x => x == (context.Guild?.Id ?? 0));
+            var isDev = config.Dev.Any(x => x == context.User.Id);
+            var isOnBlacklist = config.BlacklistedGuilds.Any(x => x == (context.Guild?.Id ?? 0));
 
             if (isOnBlacklist && !isDev)
             {
                 return;
             }
 
-            var res = await _cmd.GetExecutableCommandAsync(context, argPos, _provider);
+            var searchResult = await _commandService
+                .GetExecutableCommandAsync(context, argPos, _serviceProvider);
 
-            if (!res.IsSuccess())
+            if (!searchResult.IsSuccess())
             {
-                await ProcessResultAsync(res.Result, context, argPos, prefix);
+                await ProcessResultAsync(searchResult.Result, context, argPos, prefix);
                 return;
             }
-     
-            _logger.LogInformation($"Run cmd: u{userMessage.Author.Id} {res.Command.Match.Command.Name}");
 
-            string param = null;
+            var command = searchResult.Command;
+
+
+            _logger.LogInformation($"Running command: u{userMessage.Author.Id} {command.Match.Command.Name}");
+
+            string? param = null;
+
             try
             {
-                var paramStart = argPos + res.Command.Match.Command.Name.Length;
+                var paramStart = argPos + searchResult.Command.Match.Command.Name.Length;
                 var textBigger = context.Message.Content.Length > paramStart;
                 param = textBigger ? context.Message.Content.Substring(paramStart) : null;
             }
             catch (Exception) { }
 
-            var record = new CommandsAnalytics()
+            var record = new CommandsAnalytics
             {
-                CmdName = res.Command.Match.Command.Name,
+                CmdName = command.Match.Command.Name,
                 GuildId = context.Guild?.Id ?? 0,
                 UserId = context.User.Id,
                 Date = _systemClock.UtcNow,
                 CmdParams = param,
             };
 
-            _repository.CommandsData.Add(record);
+            _commandsAnalyticsRepository.Add(record);
+            await _commandsAnalyticsRepository.SaveChangesAsync();
 
-            await _repository.SaveChangesAsync();
-
-            switch (res.Command.Match.Command.RunMode)
+            switch (command.Match.Command.RunMode)
             {
                 case RunMode.Async:
-                    await res.Command.ExecuteAsync(_provider);
+                    await command.ExecuteAsync(_serviceProvider);
                     break;
 
                 default:
                 case RunMode.Sync:
-                    if (!await _executor.TryAdd(res.Command, TimeSpan.FromSeconds(1)))
-                            await context.Channel.SendMessageAsync("", embed: "Odrzucono polecenie!".ToEmbedMessage(EMType.Error).Build());
+                    if (!await _executor.TryAdd(command, TimeSpan.FromSeconds(1)))
+                    {
+                        await context.Channel.SendMessageAsync("", embed: "Odrzucono polecenie!".ToEmbedMessage(EMType.Error).Build());
+                    }
                     break;
             }
         }
 
-        private async Task ProcessResultAsync(IResult result, SocketCommandContext context, int argPos, string prefix)
+        private async Task ProcessResultAsync(
+            IResult result,
+            SocketCommandContext context,
+            int argPos,
+            string prefix)
         {
             if (result == null)
             {
@@ -168,7 +204,7 @@ namespace Sanakan.Services.Commands
 
                 case CommandError.ParseFailed:
                 case CommandError.BadArgCount:
-                    var cmd = _cmd.Search(context, argPos);
+                    var cmd = _commandService.Search(context, argPos);
                     if (cmd.Commands.Count > 0)
                     {
                         await context.Channel.SendMessageAsync(_helper.GetCommandInfo(cmd.Commands.First().Command, prefix));

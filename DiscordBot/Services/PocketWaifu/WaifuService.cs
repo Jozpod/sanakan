@@ -10,7 +10,9 @@ using DiscordBot.Services.PocketWaifu;
 using DiscordBot.Services.PocketWaifu.Abstractions;
 using Sanakan.Common;
 using Sanakan.DAL.Models;
+using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot.Services;
+using Sanakan.DiscordBot.Services.PocketWaifu;
 using Sanakan.Extensions;
 using Sanakan.Services.PocketWaifu.Fight;
 using Sanakan.ShindenApi;
@@ -27,6 +29,8 @@ namespace Sanakan.Services.PocketWaifu
         private readonly IShindenClient _shClient;
         private readonly ICacheManager _cacheManager;
         private readonly IRandomNumberGenerator _randomNumberGenerator;
+        private readonly IResourceManager _resourceManager;
+        private readonly IUserRepository _userRepository;
 
         public WaifuService(
             IImageProcessing img,
@@ -35,7 +39,9 @@ namespace Sanakan.Services.PocketWaifu
             IShindenClient client,
             Events events,
             ICacheManager cacheManager,
-            IRandomNumberGenerator randomNumberGenerator)
+            IRandomNumberGenerator randomNumberGenerator,
+            IResourceManager resourceManager,
+            IUserRepository userRepository)
         {
             _img = img;
             _fileSystem = fileSystem;
@@ -44,6 +50,8 @@ namespace Sanakan.Services.PocketWaifu
             _shClient = client;
             _cacheManager = cacheManager;
             _randomNumberGenerator = randomNumberGenerator;
+            _resourceManager = resourceManager;
+            _userRepository = userRepository;
         }
 
         private const int DERE_TAB_SIZE = ((int) Dere.Yato) + 1;
@@ -187,7 +195,7 @@ namespace Sanakan.Services.PocketWaifu
                     return list.Where(x => !x.IsTradable).ToList();
 
                 case HaremType.Broken:
-                    return list.Where(x => x.IsBroken()).ToList();
+                    return list.Where(x => x.IsBroken).ToList();
 
                 case HaremType.Tag:
                 {
@@ -232,9 +240,9 @@ namespace Sanakan.Services.PocketWaifu
             }
         }
 
-        static public Rarity RandomizeRarity()
+        static public Rarity RandomizeRarity(IRandomNumberGenerator randomNumberGenerator)
         {
-            var num = _randomNumberGenerator.GetRandomValue(1000);
+            var num = randomNumberGenerator.GetRandomValue(1000);
             if (num < 5)   return Rarity.SS;
             if (num < 25)  return Rarity.S;
             if (num < 75)  return Rarity.A;
@@ -244,16 +252,18 @@ namespace Sanakan.Services.PocketWaifu
             return Rarity.E;
         }
 
-        public Rarity RandomizeRarity(List<Rarity> rarityExcluded)
+        public Rarity RandomizeRarity(
+            IRandomNumberGenerator randomNumberGenerator,
+            List<Rarity> rarityExcluded)
         {
             if (rarityExcluded == null)
             {
-                return RandomizeRarity();
+                return RandomizeRarity(randomNumberGenerator);
             }
             
             if (rarityExcluded.Count < 1)
             {
-                return RandomizeRarity();
+                return RandomizeRarity(randomNumberGenerator);
             }
 
             var list = new List<RarityChance>()
@@ -556,7 +566,7 @@ namespace Sanakan.Services.PocketWaifu
             }
 
             ulong boosterPackTitleId = 0;
-            string boosterPackTitleName = "";
+            var boosterPackTitleName = "";
             switch (thisItem.Item.Type)
             {
                 case ItemType.RandomTitleBoosterPackSingleE:
@@ -572,7 +582,7 @@ namespace Sanakan.Services.PocketWaifu
                         return $"{discordUser.Mention} nie odnaleziono tytułu o podanym id.".ToEmbedMessage(EMType.Error).Build();
                     }
 
-                    var response2 = await _shClient.GetCharactersAsync(response.Body);
+                    var response2 = await _shClient.GetCharactersAsync(response.Body.Id);
                     
                     if (!response2.IsSuccessStatusCode())
                     {
@@ -661,7 +671,7 @@ namespace Sanakan.Services.PocketWaifu
 
             RemoveMoneyFromUser(type, bUser, realCost);
 
-            await db.SaveChangesAsync();
+            await _userRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(new string[] { $"user-{bUser.Id}", "users" });
 
@@ -732,18 +742,18 @@ namespace Sanakan.Services.PocketWaifu
             return realAtk1;
         }
 
-        static public int RandomizeAttack(Rarity rarity)
-            => Fun.GetRandomValue(rarity.GetAttackMin(), rarity.GetAttackMax() + 1);
+        public int RandomizeAttack(Rarity rarity)
+            => _randomNumberGenerator.GetRandomValue(rarity.GetAttackMin(), rarity.GetAttackMax() + 1);
 
-        static public int RandomizeDefence(Rarity rarity)
-            => Fun.GetRandomValue(rarity.GetDefenceMin(), rarity.GetDefenceMax() + 1);
+        public int RandomizeDefence(Rarity rarity)
+            => _randomNumberGenerator.GetRandomValue(rarity.GetDefenceMin(), rarity.GetDefenceMax() + 1);
 
-        static public int RandomizeHealth(Card card)
-            => Fun.GetRandomValue(card.Rarity.GetHealthMin(), card.GetHealthMax() + 1);
+        public int RandomizeHealth(Card card)
+            => _randomNumberGenerator.GetRandomValue(card.Rarity.GetHealthMin(), card.GetHealthMax() + 1);
 
-        static public Dere RandomizeDere()
+        static public Dere RandomizeDere(IRandomNumberGenerator randomNumberGenerator)
         {
-            return Fun.GetOneRandomFrom(new List<Dere>()
+            return randomNumberGenerator.GetOneRandomFrom(new List<Dere>()
             {
                 Dere.Tsundere,
                 Dere.Kamidere,
@@ -773,7 +783,7 @@ namespace Sanakan.Services.PocketWaifu
                 Source = CardSource.Other,
                 Quality = Quality.Broken,
                 Title = title ?? "????",
-                Dere = RandomizeDere(),
+                Dere = RandomizeDere(randomNumberGenerator),
                 Curse = CardCurse.None,
                 RarityOnStart = rarity,
                 CustomBorder = null,
@@ -870,10 +880,10 @@ namespace Sanakan.Services.PocketWaifu
         }
 
         public Card GenerateNewCard(IUser user, ICharacterInfo character)
-            => GenerateNewCard(user, character, RandomizeRarity());
+            => GenerateNewCard(user, character, RandomizeRarity(_randomNumberGenerator));
 
         public Card GenerateNewCard(IUser user, ICharacterInfo character, List<Rarity> rarityExcluded)
-            => GenerateNewCard(user, character, RandomizeRarity(rarityExcluded));
+            => GenerateNewCard(user, character, RandomizeRarity(randomNumberGenerator, rarityExcluded));
 
         private int ScaleNumber(int oMin, int oMax, int nMin, int nMax, int value)
         {
@@ -897,7 +907,7 @@ namespace Sanakan.Services.PocketWaifu
             var relMin = relNew - (range * 6 / 100);
             var relMax = relNew + (range * 8 / 100);
 
-            var nAtk = Fun.GetRandomValue(relMin, relMax + 1);
+            var nAtk = _randomNumberGenerator.GetRandomValue(relMin, relMax + 1);
             if (nAtk > newMax) nAtk = newMax;
             if (nAtk < newMin) nAtk = newMin;
 
@@ -1043,12 +1053,12 @@ namespace Sanakan.Services.PocketWaifu
             return embed.Build();
         }
 
-        public async Task<ICharacterInfo> GetRandomCharacterAsync()
+        public async Task<ICharacterInfo?> GetRandomCharacterAsync()
         {
             int check = 2;
             if (CharId.IsNeedForUpdate())
             {
-                var characters = await _shClient.Ex.GetAllCharactersFromAnimeAsync();
+                var characters = await _shClient.GetAllCharactersFromAnimeAsync();
                 
                 if (!characters.IsSuccessStatusCode())
                 {
@@ -1058,12 +1068,12 @@ namespace Sanakan.Services.PocketWaifu
                 CharId.Update(characters.Body);
             }
 
-            ulong id = Fun.GetOneRandomFrom(CharId.GetIds());
+            ulong id = _randomNumberGenerator.GetOneRandomFrom(CharId.GetIds());
             var response = await _shClient.GetCharacterInfoAsync(id);
 
             while (!response.IsSuccessStatusCode())
             {
-                id = Fun.GetOneRandomFrom(CharId.GetIds());
+                id = _randomNumberGenerator.GetOneRandomFrom(CharId.GetIds());
                 response = await _shClient.GetCharacterInfoAsync(id);
 
                 await Task.Delay(TimeSpan.FromSeconds(2));
@@ -1085,11 +1095,11 @@ namespace Sanakan.Services.PocketWaifu
         public List<Embed> GetWaifuFromCharacterSearchResult(string title, IEnumerable<Card> cards, DiscordSocketClient client, bool mention)
         {
             var list = new List<Embed>();
-            string contentString = $"{title}\n\n";
+            var contentString = $"{title}\n\n";
 
             foreach (var card in cards)
             {
-                string tempContentString = $"";
+                var tempContentString = $"";
                 var thU = client.GetUser(card.GameDeck.UserId);
 
                 var usrName = (mention ? (thU?.Mention) : (thU?.Username)) ?? "????";
@@ -1211,24 +1221,30 @@ namespace Sanakan.Services.PocketWaifu
 
             for (int i = 0; i < pack.CardCnt; i++)
             {
-                ICharacterInfo chara = null;
+                ICharacterInfo? chara = null;
                 if (pack.Characters.Count > 0)
                 {
                     var id = pack.Characters.First();
                     if (pack.Characters.Count > 1)
-                        id = Fun.GetOneRandomFrom(pack.Characters);
+                    {
+                        id = _randomNumberGenerator.GetOneRandomFrom(pack.Characters);
+                    }
 
                     var res = await _shClient.GetCharacterInfoAsync(id.Character);
-                    if (res.IsSuccessStatusCode()) chara = res.Body;
+                    
+                    if (res.IsSuccessStatusCode())
+                    {
+                        chara = res.Body;
+                    }
                 }
                 else if (pack.Title != 0)
                 {
-                    var res = await _shClient.Title.GetCharactersAsync(pack.Title);
+                    var res = await _shClient.GetCharactersAsync(pack.Title);
                     if (res.IsSuccessStatusCode())
                     {
                         if (res.Body.Count > 0)
                         {
-                            var id = Fun.GetOneRandomFrom(res.Body).CharacterId;
+                            var id = _randomNumberGenerator.GetOneRandomFrom(res.Body).CharacterId;
                             if (id.HasValue)
                             {
                                 var response = await _shClient.GetCharacterInfoAsync(id.Value);
@@ -1321,49 +1337,60 @@ namespace Sanakan.Services.PocketWaifu
             else
             {
                 imageUrl = imageLocation;
-                if ((_systemClock.UtcNow - _fileSystem.GetCreationTime(imageLocation)).TotalHours > 4)
+                var hours = (_systemClock.UtcNow - _fileSystem.GetCreationTime(imageLocation)).TotalHours;
+                if (hours > 4)
+                {
                     imageUrl = await GenerateAndSaveCardAsync(card);
+                }
             }
 
             return defaultStr ? (imageUrl ?? imageLocation) : imageUrl;
         }
 
-        public SafariImage GetRandomSarafiImage()
+        public async Task<SafariImage?> GetRandomSarafiImage()
         {
-            SafariImage dImg = null;
-            var reader = new Config.JsonFileReader($"./Pictures/Poke/List.json");
             try
             {
-                var images = reader.Load<List<SafariImage>>();
-                dImg = Fun.GetOneRandomFrom(images);
+                var images = await _resourceManager
+                    .ReadFromJsonAsync<List<SafariImage>>(Paths.PokeList);
+
+                if(images == null)
+                {
+                    return null;
+                }
+
+                var randomImage = _randomNumberGenerator.GetOneRandomFrom(images);
+                return randomImage;
             }
             catch (Exception) { }
 
-            return dImg;
+            return null;
         }
 
         public async Task<string> GetSafariViewAsync(SafariImage info, Card card, ITextChannel trashChannel)
         {
-            string uri = info != null ? info.Uri(SafariImage.Type.Truth) : SafariImage.DefaultUri(SafariImage.Type.Truth);
+            var uri = info != null ? info.Uri(SafariImage.Type.Truth) 
+                : SafariImage.DefaultUri(SafariImage.Type.Truth);
 
-            using (var cardImage = await _img.GetWaifuCardAsync(card))
-            {
-                int posX = info != null ? info.GetX() : SafariImage.DefaultX();
-                int posY = info != null ? info.GetY() : SafariImage.DefaultY();
-                using (var pokeImage = _img.GetCatchThatWaifuImage(cardImage, uri, posX, posY))
-                {
-                    using (var stream = pokeImage.ToJpgStream())
-                    {
-                        var msg = await trashChannel.SendFileAsync(stream, $"poke.jpg");
-                        return msg.Attachments.First().Url;
-                    }
-                }
-            }
+
+            var GetX = _fileSystem.Exists(ThisUri(Type.Truth)) ? X : DefaultX();
+            var GetY = _fileSystem.Exists(ThisUri(Type.Truth)) ? Y : DefaultY();
+
+            using var cardImage = await _img.GetWaifuCardAsync(card);
+            var posX = info != null ? info.GetX() : SafariImage.DefaultX();
+            int posY = info != null ? info.GetY() : SafariImage.DefaultY();
+            using var pokeImage = _img.GetCatchThatWaifuImage(cardImage, uri, posX, posY);
+            using var stream = pokeImage.ToJpgStream();
+
+            var msg = await trashChannel.SendFileAsync(stream, $"poke.jpg");
+            return msg.Attachments.First().Url;
         }
 
         public async Task<string> GetSafariViewAsync(SafariImage info, ITextChannel trashChannel)
         {
-            string uri = info != null ? info.Uri(SafariImage.Type.Mystery) : SafariImage.DefaultUri(SafariImage.Type.Mystery);
+            string uri = info != null ? info.Uri(SafariImageType.Mystery) 
+                : SafariImage.DefaultUri(SafariImageType.Mystery);
+
             var msg = await trashChannel.SendFileAsync(uri);
             return msg.Attachments.First().Url;
         }
@@ -1374,7 +1401,8 @@ namespace Sanakan.Services.PocketWaifu
             SocketUser owner,
             bool showStats)
         {
-            string imageUrl = null;
+            string? imageUrl = null;
+
             if (showStats)
             {
                 imageUrl = await GetCardUrlIfExistAsync(card, true);
@@ -1469,7 +1497,7 @@ namespace Sanakan.Services.PocketWaifu
 
             foreach (var title in titlesId)
             {
-                var res = await _shClient.Title.GetInfoAsync(title);
+                var res = await _shClient.GetInfoAsync(title);
                 if (res.IsSuccessStatusCode())
                 {
                     var url = "https://shinden.pl/";
@@ -1652,7 +1680,7 @@ namespace Sanakan.Services.PocketWaifu
 
         public string EndExpedition(User user, Card card, bool showStats = false)
         {
-            Dictionary<string, int> items = new Dictionary<string, int>();
+            var items = new Dictionary<string, int>();
 
             var duration = GetRealTimeOnExpeditionInMinutes(card, user.GameDeck.Karma);
             var baseExp = GetBaseExpPerMinuteFromExpedition(card.Expedition, card.Rarity);
@@ -1671,7 +1699,7 @@ namespace Sanakan.Services.PocketWaifu
             }
 
             var reward = "";
-            bool allowItems = true;
+            var allowItems = true;
             if (duration.Item2 < 30)
             {
                 reward = $"Wyprawa? Chyba po bułki do sklepu.\n\n";
@@ -1686,7 +1714,7 @@ namespace Sanakan.Services.PocketWaifu
                 totalItemsCnt += _events.GetMoreItems(e);
                 if (e == EventType.ChangeDere)
                 {
-                    card.Dere = RandomizeDere();
+                    card.Dere = RandomizeDere(_randomNumberGenerator);
                     reward += $"{card.Dere}\n";
                 }
                 if (e == EventType.LoseCard)
@@ -1762,22 +1790,22 @@ namespace Sanakan.Services.PocketWaifu
             switch (expedition)
             {
                 case CardExpedition.NormalItemWithExp:
-                    return Services.Fun.TakeATry(10);
+                    return _randomNumberGenerator.TakeATry(10);
 
                 case CardExpedition.ExtremeItemWithExp:
                     if (duration.Item1 > 60 || duration.Item2 > 600)
                         return true;
-                    return !Services.Fun.TakeATry(5);
+                    return !_randomNumberGenerator.TakeATry(5);
 
                 case CardExpedition.LightItemWithExp:
                 case CardExpedition.DarkItemWithExp:
-                    return Services.Fun.TakeATry(10);
+                    return _randomNumberGenerator.TakeATry(10);
 
                 case CardExpedition.DarkItems:
                 case CardExpedition.LightItems:
                 case CardExpedition.LightExp:
                 case CardExpedition.DarkExp:
-                    return Services.Fun.TakeATry(5);
+                    return _randomNumberGenerator.TakeATry(5);
 
                 default:
                 case CardExpedition.UltimateEasy:
@@ -1821,7 +1849,7 @@ namespace Sanakan.Services.PocketWaifu
                 quality = RandomizeItemQualityFromExpedition();
             }
 
-            switch (Fun.GetRandomValue(10000))
+            switch (_randomNumberGenerator.GetRandomValue(10000))
             {
                 case int n when (n < c[ItemType.AffectionRecoverySmall].Item2
                                 && n >= c[ItemType.AffectionRecoverySmall].Item1):
@@ -1872,11 +1900,11 @@ namespace Sanakan.Services.PocketWaifu
             switch (expedition)
             {
                 case CardExpedition.NormalItemWithExp:
-                    return !Services.Fun.TakeATry(10);
+                    return !_randomNumberGenerator.TakeATry(10);
 
                 case CardExpedition.LightItemWithExp:
                 case CardExpedition.DarkItemWithExp:
-                    return !Services.Fun.TakeATry(15);
+                    return !_randomNumberGenerator.TakeATry(15);
 
                 case CardExpedition.DarkItems:
                 case CardExpedition.LightItems:

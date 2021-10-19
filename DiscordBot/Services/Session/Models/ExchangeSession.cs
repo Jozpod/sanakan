@@ -202,7 +202,8 @@ namespace Sanakan.Services.Session.Models
                         continue;
                     }
 
-                    if (target.Dbuser.GameDeck.Cards.Any(x => x.FromFigure && x.Character == card.Character))
+                    if (target.Dbuser.GameDeck.Cards
+                        .Any(x => x.FromFigure && x.Character == card.Character))
                     {
                         error = true;
                         continue;
@@ -314,7 +315,10 @@ namespace Sanakan.Services.Session.Models
 
                 await msg.RemoveAllReactionsAsync();
                 await msg.ModifyAsync(x => x.Embed = BuildEmbed());
-                await msg.AddReactionsAsync(new IEmote[] { AcceptEmote, DeclineEmote });
+                await msg.AddReactionsAsync(new IEmote[] {
+                    AcceptEmote,
+                    DeclineEmote
+                });
             }
         }
 

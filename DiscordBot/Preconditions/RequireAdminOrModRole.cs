@@ -17,7 +17,7 @@ namespace Sanakan.Preconditions
         public async override Task<PreconditionResult> CheckPermissionsAsync(
             ICommandContext context, CommandInfo command, IServiceProvider services)
         {
-            var repository = services.GetRequiredService<IRepository>();
+            var repository = services.GetRequiredService<IAllRepository>();
 
             var user = context.User as SocketGuildUser;
 

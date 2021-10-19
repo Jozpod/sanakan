@@ -4,6 +4,8 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <LangVersion>9.0</LangVersion>
     <Nullable>enable</Nullable>
+    <AssemblyName>Sanakan.DAL</AssemblyName>
+    <RootNamespace>Sanakan.DAL</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

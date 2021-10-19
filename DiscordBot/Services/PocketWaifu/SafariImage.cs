@@ -1,37 +1,34 @@
 using System.IO;
 using Newtonsoft.Json;
+using Sanakan.Common;
+using Sanakan.DiscordBot.Services.PocketWaifu;
 
 namespace Sanakan.Services.PocketWaifu
 {
     public class SafariImage
     {
-        public enum Type
-        {
-            Mystery, Truth
-        }
-
-        private string ThisUri(Type type)
+        private string ThisUri(SafariImageType type)
         {
             switch (type)
             {
-                case Type.Mystery:
+                case SafariImageType.Mystery:
                     return $"./Pictures/Poke/{Index}.jpg";
 
                 default:
-                case Type.Truth:
+                case SafariImageType.Truth:
                     return $"./Pictures/Poke/{Index}a.jpg";
             }
         }
 
-        public static string DefaultUri(Type type)
+        public static string DefaultUri(SafariImageType type)
         {
             switch (type)
             {
-                case Type.Mystery:
+                case SafariImageType.Mystery:
                     return $"./Pictures/PW/poke.jpg";
 
                 default:
-                case Type.Truth:
+                case SafariImageType.Truth:
                     return $"./Pictures/PW/pokea.jpg";
             }
         }
@@ -39,10 +36,7 @@ namespace Sanakan.Services.PocketWaifu
         public static int DefaultX() => 884;
         public static int DefaultY() => 198;
 
-        public int GetX() => File.Exists(ThisUri(Type.Truth)) ? X : DefaultX();
-        public int GetY() => File.Exists(ThisUri(Type.Truth)) ? Y : DefaultY();
-
-        public string Uri(Type type) => File.Exists(ThisUri(type)) ? ThisUri(type) : DefaultUri(type);
+        public string Uri(FileSystem fileSystem, SafariImageType type) => fileSystem.Exists(ThisUri(type)) ? ThisUri(type) : DefaultUri(type);
 
         [JsonProperty("index")]
         public int Index { get; set; }

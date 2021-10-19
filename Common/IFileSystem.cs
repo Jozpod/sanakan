@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace Sanakan.Common
 {
@@ -14,6 +16,10 @@ namespace Sanakan.Common
         DirectoryInfo CreateDirectory(string path);
         
         /// <inheritdoc cref="File.Delete(string)"/>
-        void Delete(string imageLocation);
+        void Delete(string path);
+
+        /// <inheritdoc cref="File.GetCreationTime(string)"/>
+        DateTime GetCreationTime(string path);
+        Task<string> ReadAllTextAsync(string path);
     }
 }

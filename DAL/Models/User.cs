@@ -1,14 +1,18 @@
-﻿using System;
+﻿using Sanakan.Common.Models;
+using System;
 using System.Collections.Generic;
 
 namespace Sanakan.DAL.Models
 {
     public class User
     {
+        /// <summary>
+        /// The user identifer in Discord.
+        /// </summary>
         public ulong Id { get; set; }
 
         /// <summary>
-        /// The user identifer in Shinden system.
+        /// The user identifer in Shinden.
         /// </summary>
         public ulong Shinden { get; set; }
         public bool IsBlacklisted { get; set; }

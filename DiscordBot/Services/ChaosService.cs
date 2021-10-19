@@ -6,24 +6,33 @@ using System.Threading.Tasks;
 using Discord.WebSocket;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Sanakan.Common;
+using Sanakan.DAL.Repositories.Abstractions;
+using Sanakan.DiscordBot.Configuration;
 using Sanakan.Extensions;
 
 namespace Sanakan.Services
 {
-    public class Chaos
+    public class ChaosService
     {
-        private DiscordSocketClient _client;
+        private readonly DiscordSocketClient _client;
         private List<ulong> _changed;
-        private object _config;
-        private ILogger _logger;
-        private Timer _timer;
+        private readonly IOptionsMonitor<BotConfiguration> _config;
+        private readonly IRandomNumberGenerator _randomNumberGenerator;
+        private readonly IGuildConfigRepository _guildConfigRepository;
+        private readonly ILogger _logger;
+        private readonly Timer _timer;
 
-        public Chaos(
+        public ChaosService(
             DiscordSocketClient client,
-            IOptions<object> config,
-            ILogger<Chaos> logger)
+            IRandomNumberGenerator randomNumberGenerator,
+            IGuildConfigRepository guildConfigRepository,
+            IOptionsMonitor<BotConfiguration> config,
+            ILogger<ChaosService> logger)
         {
             _client = client;
+            _randomNumberGenerator = randomNumberGenerator;
+            _guildConfigRepository = guildConfigRepository;
             _config = config;
             _logger = logger;
             _changed = new List<ulong>();
@@ -69,28 +78,44 @@ namespace Sanakan.Services
                 return;
             }
 
-            if (_config.Get().BlacklistedGuilds.Any(x => x == user.Guild.Id))
+            if (_config.CurrentValue.BlacklistedGuilds.Any(x => x == user.Guild.Id))
             {
                 return;
             }
 
-            var gConfig = await db.GetCachedGuildFullConfigAsync(user.Guild.Id);
-            if (gConfig == null) return;
+            var gConfig = await _guildConfigRepository.GetCachedGuildFullConfigAsync(user.Guild.Id);
 
-            if (!gConfig.ChaosMode) return;
-
-            if (Fun.TakeATry(3))
+            if (gConfig == null)
             {
-                var notChangedUsers = user.Guild.Users.Where(x => !x.IsBot && x.Id != user.Id && !_changed.Any(c => c == x.Id)).ToList();
-                if (notChangedUsers.Count < 2) return;
+                return;
+            }
+
+            if (!gConfig.ChaosMode)
+            {
+                return;
+            }
+
+            if (_randomNumberGenerator.TakeATry(3))
+            {
+                var notChangedUsers = user.Guild
+                    .Users
+                    .Where(x => !x.IsBot
+                        && x.Id != user.Id
+                        && !_changed.Any(c => c == x.Id))
+                    .ToList();
+
+                if (notChangedUsers.Count < 2)
+                {
+                    return;
+                }
 
                 if (_changed.Any(x => x == user.Id))
                 {
-                    user = Fun.GetOneRandomFrom(notChangedUsers);
+                    user = _randomNumberGenerator.GetOneRandomFrom(notChangedUsers);
                     notChangedUsers.Remove(user);
                 }
 
-                var user2 = Fun.GetOneRandomFrom(notChangedUsers);
+                var user2 = _randomNumberGenerator.GetOneRandomFrom(notChangedUsers);
 
                 var user1Nickname = user.Nickname ?? user.Username;
                 var user2Nickname = user2.Nickname ?? user2.Username;

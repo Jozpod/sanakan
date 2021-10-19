@@ -13,24 +13,38 @@ namespace Sanakan.Preconditions
         public async override Task<PreconditionResult> CheckPermissionsAsync(ICommandContext context, CommandInfo command, IServiceProvider services)
         {
             var user = context.User as SocketGuildUser;
-            if (user == null) return PreconditionResult.FromError($"To polecenie działa tylko z poziomu serwera.");
-
-            await Task.CompletedTask;
+            
+            if (user == null)
+            {
+                return PreconditionResult.FromError($"To polecenie działa tylko z poziomu serwera.");
+            }
 
             var config = (IConfig)services.GetService(typeof(IConfig));
-            using (var db = new Database.GuildConfigContext(config))
+            var gConfig = await db.GetCachedGuildFullConfigAsync(context.Guild.Id);
+            
+            if (gConfig == null)
             {
-                var gConfig = await db.GetCachedGuildFullConfigAsync(context.Guild.Id);
-                if (gConfig == null) return PreconditionResult.FromSuccess();
-
-                var role = context.Guild.GetRole(gConfig.UserRole);
-                if (role == null) return PreconditionResult.FromSuccess();
-
-                if (user.Roles.Any(x => x.Id == role.Id)) return PreconditionResult.FromSuccess();
-                if (user.GuildPermissions.Administrator) return PreconditionResult.FromSuccess();
-                
-                return PreconditionResult.FromError($"Do użycia tego polecenia wymagana jest rola {role.Mention}");
+                return PreconditionResult.FromSuccess();
             }
+
+            var role = context.Guild.GetRole(gConfig.UserRole);
+            
+            if (role == null)
+            {
+                return PreconditionResult.FromSuccess();
+            }
+
+            if (user.Roles.Any(x => x.Id == role.Id))
+            {
+                return PreconditionResult.FromSuccess();
+            }
+
+            if (user.GuildPermissions.Administrator)
+            {
+                return PreconditionResult.FromSuccess();
+            }
+
+            return PreconditionResult.FromError($"Do użycia tego polecenia wymagana jest rola {role.Mention}");
         }
     }
 }

@@ -15,16 +15,35 @@ namespace Sanakan.Services.PocketWaifu
         private readonly IRandomNumberGenerator _randomNumberGenerator;
 
         public Events(
-            ShindenClient shindenClient,
+            IShindenClient shindenClient,
             IRandomNumberGenerator randomNumberGenerator)
         {
             _shindenClient = shindenClient;
-            _randomNumberGenerator = randomNumberGenerator
+            _randomNumberGenerator = randomNumberGenerator;
         }
 
-        private static List<ulong> _titles = new List<ulong>
+        private static List<ulong> _titles = new ()
         {
-            7431, 50646, 10831, 54081, 53776, 12434, 44867, 51100, 4961, 55260, 53382, 53685, 35405, 54195, 2763, 43864, 52427, 52111, 53257, 45085
+            7431,
+            50646,
+            10831,
+            54081,
+            53776,
+            12434,
+            44867,
+            51100,
+            4961,
+            55260,
+            53382,
+            53685,
+            35405,
+            54195,
+            2763,
+            43864,
+            52427,
+            52111,
+            53257,
+            45085
         };
 
         private static Dictionary<CardExpedition, Dictionary<EventType, Tuple<int, int>>> _chanceOfEvent = new Dictionary<CardExpedition, Dictionary<EventType, Tuple<int, int>>>
@@ -166,8 +185,10 @@ namespace Sanakan.Services.PocketWaifu
                 case CardExpedition.ExtremeItemWithExp:
                     if (duration.Item1 > 45 || duration.Item2 > 240)
                     {
-                        if (Services.Fun.TakeATry(2))
+                        if (_randomNumberGenerator.TakeATry(2))
+                        {
                             return EventType.LoseCard;
+                        }
                     }
                     return EventType.None;
 
@@ -179,11 +200,14 @@ namespace Sanakan.Services.PocketWaifu
         public EventType RandomizeEvent(CardExpedition expedition, Tuple<double, double> duration)
         {
             var timeBased = CheckChanceBasedOnTime(expedition, duration);
-            if (timeBased != EventType.None) return timeBased;
+            if (timeBased != EventType.None)
+            {
+                return timeBased;
+            }
 
             var c = _chanceOfEvent[expedition];
 
-            switch (Fun.GetRandomValue(10000))
+            switch (_randomNumberGenerator.GetRandomValue(10000))
             {
                 case int n when (n < c[EventType.MoreItems].Item2
                                 && n >= c[EventType.MoreItems].Item1):
@@ -239,7 +263,7 @@ namespace Sanakan.Services.PocketWaifu
 
         public bool ExecuteEvent(EventType e, User user, Card card, ref string msg)
         {
-            var aVal = Services.Fun.GetRandomValue(1, 4);
+            var aVal = _randomNumberGenerator.GetRandomValue(1, 4);
 
             switch (e)
             {
@@ -248,7 +272,7 @@ namespace Sanakan.Services.PocketWaifu
                     var boosterPack = new BoosterPack
                     {
                         RarityExcludedFromPack = new List<RarityExcluded>(),
-                        Title = Services.Fun.GetOneRandomFrom(_titles),
+                        Title = _randomNumberGenerator.GetOneRandomFrom(_titles),
                         Characters = new List<BoosterPackCharacter>(),
                         CardSourceFromPack = CardSource.Expedition,
                         Name = "Losowa karta z wyprawy",
@@ -288,7 +312,7 @@ namespace Sanakan.Services.PocketWaifu
 
                 case EventType.MoreExp:
                 {
-                    var addExp = Services.Fun.GetRandomValue(1, 5);
+                    var addExp = _randomNumberGenerator.GetRandomValue(1, 5);
                     card.ExpCnt += addExp;
 
                     msg += $"Wydarzenie: Dodatkowe punkty doświadczenia. (+{addExp} exp)\n";
@@ -347,10 +371,14 @@ namespace Sanakan.Services.PocketWaifu
 
                 case EventType.Fight:
                 {
-                    var enemyCard = Waifu.GenerateFakeNewCard("Miecu", "Bajeczka", null, Waifu.RandomizeRarity());
+                    var enemyCard = Waifu.GenerateFakeNewCard(
+                        "Miecu",
+                        "Bajeczka",
+                        null,
+                        Waifu.RandomizeRarity());
                     var result = Waifu.GetFightWinner(card, enemyCard);
 
-                    string resStr = result == FightWinner.Card1 ? "zwycięstwo!" : "przegrana!";
+                    var resStr = result == FightWinner.Card1 ? "zwycięstwo!" : "przegrana!";
                     msg += $"Wydarzenie: Walka, wynik: {resStr}\n";
 
                     return result == FightWinner.Card1;
@@ -375,7 +403,7 @@ namespace Sanakan.Services.PocketWaifu
             switch (e)
             {
                 case EventType.MoreItems:
-                    return Services.Fun.GetRandomValue(2, 8);
+                    return _randomNumberGenerator.GetRandomValue(2, 8);
 
                 default:
                     return 0;

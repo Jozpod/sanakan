@@ -4,13 +4,14 @@ using Sanakan.Common;
 using Sanakan.Common.Models;
 using Sanakan.DAL;
 using Sanakan.DAL.Models;
+using Sanakan.DAL.Repositories.Abstractions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DAL.Repositories
+namespace Sanakan.DAL.Repositories
 {
     public class UserRepository : IUserRepository
     {
@@ -298,5 +299,75 @@ namespace DAL.Repositories
 
             return user;
         }
+
+        public Task<List<User>> GetCachedAllUsersAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> ExistsByDiscordIdAsync(ulong discordUserId)
+            => _dbContext.Users.AnyAsync(x => x.Id == discordUserId);
+
+        public Task<User?> GetByDiscordIdAsync(ulong discordUserId)
+            => _dbContext.Users.FirstOrDefaultAsync(x => x.Id == discordUserId);
+
+        public Task<User?> GetByShindenIdAsync(ulong userShindenId, UserQueryOptions userQueryOptions)
+        {
+            //_dbContext.Users.FirstOrDefaultAsync(x => x.Id == discordUserId);
+            var query = _dbContext
+                .Users
+               .AsQueryable()
+               .AsSplitQuery()
+               .Where(x => x.Shinden == userShindenId);
+
+            //await db.Users
+            //   .AsQueryable()
+            //   .AsSplitQuery()
+            //   .Where(x => x.Shinden == id)
+            //   .Include(x => x.GameDeck)
+            //       .ThenInclude(x => x.Wishes)
+            //   .AsNoTracking()
+            //   .FirstOrDefaultAsync();
+
+            //var bUser = await db.Users.AsQueryable()
+            //.Where(x => x.Shinden == id)
+            //.Include(x => x.GameDeck)
+            //.ThenInclude(x => x.Cards)
+            //.AsNoTracking()
+            //.AsSplitQuery()
+            //.FirstOrDefaultAsync();
+
+            if (userQueryOptions.IncludeGameDeck)
+            {
+                var includeQuery = query.Include(x => x.GameDeck);
+
+                if (userQueryOptions.IncludeCards)
+                {
+                    var thenIncludeQuery = includeQuery.ThenInclude(x => x.Cards);
+                    query = thenIncludeQuery;
+                }
+                else
+                {
+                    query = includeQuery;
+                }
+
+                if (userQueryOptions.IncludeWishes)
+                {
+                    var thenIncludeQuery = includeQuery.ThenInclude(x => x.Wishes);
+                    query = thenIncludeQuery;
+                }
+                else
+                {
+                    query = includeQuery;
+                }
+            }
+
+            return query
+                .AsNoTracking()
+                .FirstOrDefaultAsync();
+        }
+
+        public Task<bool> ExistsByShindenIdAsync(ulong userShindenId)
+            => _dbContext.Users.AnyAsync(x => x.Shinden == userShindenId);
     }
 }

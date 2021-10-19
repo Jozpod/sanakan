@@ -11,29 +11,40 @@ namespace Sanakan.Preconditions
         public async override Task<PreconditionResult> CheckPermissionsAsync(ICommandContext context, CommandInfo command, IServiceProvider services)
         {
             var user = context.User as SocketGuildUser;
-            if (user == null) return PreconditionResult.FromSuccess();
-
-            await Task.CompletedTask;
-
-            var config = (IConfig)services.GetService(typeof(IConfig));
-            using (var db = new Database.GuildConfigContext(config))
+            
+            if (user == null)
             {
-                var gConfig = await db.GetCachedGuildFullConfigAsync(context.Guild.Id);
-                if (gConfig == null) return PreconditionResult.FromSuccess();
-
-                if (gConfig?.WaifuConfig?.CommandChannels != null)
-                {
-                    if (gConfig.WaifuConfig.CommandChannels.Any(x => x.Channel == context.Channel.Id))
-                        return PreconditionResult.FromSuccess();
-
-                    if (user.GuildPermissions.Administrator)
-                        return PreconditionResult.FromSuccess();
-
-                    var channel = await context.Guild.GetTextChannelAsync(gConfig.WaifuConfig.CommandChannels.First().Channel);
-                    return PreconditionResult.FromError($"To polecenie działa na kanale {channel?.Mention}");
-                }
                 return PreconditionResult.FromSuccess();
             }
+
+
+            var config = (IConfig)services.GetService(typeof(IConfig));
+
+            var gConfig = await db.GetCachedGuildFullConfigAsync(context.Guild.Id);
+            if (gConfig == null)
+            {
+                return PreconditionResult.FromSuccess();
+            }
+
+            if (gConfig?.WaifuConfig?.CommandChannels == null)
+            {
+                return PreconditionResult.FromSuccess();
+            }
+            
+            if (gConfig.WaifuConfig.CommandChannels
+                .Any(x => x.Channel == context.Channel.Id))
+            {
+                return PreconditionResult.FromSuccess();
+            }
+
+
+            if (user.GuildPermissions.Administrator)
+            {
+                return PreconditionResult.FromSuccess();
+            }
+
+            var channel = await context.Guild.GetTextChannelAsync(gConfig.WaifuConfig.CommandChannels.First().Channel);
+            return PreconditionResult.FromError($"To polecenie działa na kanale {channel?.Mention}");
         }
     }
 }

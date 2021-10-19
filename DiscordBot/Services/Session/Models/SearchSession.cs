@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
@@ -35,10 +36,15 @@ namespace Sanakan.Services.Session.Models
         private async Task<bool> ExecuteAction(SessionContext context, Session session)
         {
             var content = context.Message?.Content;
-            if (content == null) return false;
+
+            if (content == null) {
+                return false;
+            }
 
             if (content.ToLower() == "koniec")
+            {
                 return true;
+            }
 
             if (int.TryParse(content, out int number))
             {
@@ -46,7 +52,8 @@ namespace Sanakan.Services.Session.Models
                 {
                     if (number > 0 && SList.Count >= number)
                     {
-                        var info = (await _shindenClient.Title.GetInfoAsync(SList.ToArray()[number - 1])).Body;
+                        var parameter = SList[number - 1];
+                        var info = (await _shindenClient.GetInfoAsync(parameter.Id)).Body;
                         await context.Channel.SendMessageAsync("", false, info.ToEmbed());
                         await context.Message.DeleteAsync();
                         return true;

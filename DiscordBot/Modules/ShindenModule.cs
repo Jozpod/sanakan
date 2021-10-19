@@ -21,20 +21,23 @@ namespace Sanakan.Modules
         private readonly SessionManager _session;
         private readonly Services.Shinden _shinden;
         private readonly ICacheManager _cacheManager;
-        private readonly IRepository _repository;
+        private readonly IAllRepository _repository;
+        private readonly IUserRepository _userRepository;
 
         public ShindenModule(
             IShindenClient client,
             SessionManager session,
             Services.Shinden shinden,
             ICacheManager cacheManager,
-            IRepository repository)
+            IAllRepository repository,
+            IUserRepository userRepository)
         {
             _shclient = client;
             _session = session;
             _shinden = shinden;
             _cacheManager = cacheManager;
             _repository = repository;
+            _userRepository = userRepository;
         }
 
         [Command("odcinki", RunMode = RunMode.Async)]
@@ -101,9 +104,13 @@ namespace Sanakan.Modules
         public async Task SearchCharacterAsync([Summary("imie")][Remainder]string name)
         {
             var session = new SearchSession(Context.User, _shclient);
-            if (_session.SessionExist(session)) return;
+            
+            if (_session.SessionExist(session))
+            {
+                return;
+            }
 
-            var response = await _shclient.Search.CharacterAsync(name);
+            var response = await _shclient.CharacterAsync(name);
             if (!response.IsSuccessStatusCode())
             {
                 await ReplyAsync("", embed: _shinden.GetResponseFromSearchCode(response).ToEmbedMessage(EMType.Error).Build());
@@ -185,7 +192,7 @@ namespace Sanakan.Modules
                     break;
             }
 
-            var response = await _shclient.User.GetAsync(shindenId);
+            var response = await _shclient.GetAsync(shindenId);
 
             if (response.IsSuccessStatusCode())
             {
@@ -211,7 +218,7 @@ namespace Sanakan.Modules
             var botuser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
             botuser.Shinden = shindenId;
 
-            await db.SaveChangesAsync();
+            await _userRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(new string[] { $"user-{botuser.Id}" });
 

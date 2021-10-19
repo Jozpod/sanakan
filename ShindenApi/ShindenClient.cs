@@ -7,6 +7,7 @@ using Shinden.Models;
 using Shinden.Modules;
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -14,6 +15,8 @@ namespace Sanakan.ShindenApi
 {
     public class ShindenClient : IShindenClient
     {
+        private readonly Uri _baseUri;
+        private readonly IOptionsMonitor<ShindenClientOptions> _options;
         private readonly ILogger<ShindenClient> _logger;
 
         //public TitleModule Title { get; }
@@ -22,7 +25,7 @@ namespace Sanakan.ShindenApi
         //public LoggedInUserModule.UserModule User { get; }
 
         public ShindenClient(
-            IOptions<ShindenClientOptions> options,
+            IOptionsMonitor<ShindenClientOptions> options,
             ILogger<ShindenClient> logger)
         {
             //Auth authenticator,
@@ -55,7 +58,8 @@ namespace Sanakan.ShindenApi
         public async Task<Response<ICharacterInfo>> GetCharacterInfoAsync(ulong id)
         {
             var raw = await QueryAsync(new GetCharacterfInfoQuery(id)).ConfigureAwait(false);
-            return new ResponseFinal<ICharacterInfo>(raw.Code, raw.Body?.ToModel());
+            var content = raw.Body?.ToModel();
+            return new ResponseFinal<ICharacterInfo>(raw.Code, content);
         }
 
         public async Task<Response<ICharacterInfo>> GetCharacterInfoAsync(IIndexable id)
@@ -72,19 +76,20 @@ namespace Sanakan.ShindenApi
 
         public async Task<IResponse<T>> QueryAsync<T>(IQuery<T> query) where T : class
         {
+            var options = _options.CurrentValue;
             await CheckQuery(query);
 
             using var handler = new HttpClientHandler() { CookieContainer = _cookies };
             using var client = new HttpClient(handler);
-            query.WithToken(_auth.Token);
+            query.WithToken(options.Token);
 
             client.DefaultRequestHeaders.Add("Accept-Language", "pl");
             client.DefaultRequestHeaders.Add("Accept", "application/json");
             client.DefaultRequestHeaders.Add("User-Agent", $"{_auth.GetUserAgent()}");
 
-            if (_auth.Marmolade != null)
+            if (options.Marmolade != null)
             {
-                client.DefaultRequestHeaders.Add(_auth.Marmolade, "marmolada");
+                client.DefaultRequestHeaders.Add(options.Marmolade, "marmolada");
             }
 
             _logger.Log(LogLevel.Information, $"Processing request: [{query.Message.Method}] {query.Uri}");
@@ -129,7 +134,9 @@ namespace Sanakan.ShindenApi
             if (query is LoginUserQuery)
             {
                 if (_baseUri == null)
+                {
                     _baseUri = new Uri(query.BaseUri);
+                }
             }
             else
                 await CheckSession();
@@ -137,19 +144,22 @@ namespace Sanakan.ShindenApi
 
         private async Task CheckSession()
         {
-            if (_session != null)
+            if (_session == null)
             {
-                if (!_session.IsValid())
+                return;
+            }
+
+            if (!_session.IsValid())
+            {
+                var nS = await QueryAsync(new LoginUserQuery(_session.GetAuth())).ConfigureAwait(false);
+                if (nS.IsSuccessStatusCode())
                 {
-                    var nS = await QueryAsync(new LoginUserQuery(_session.GetAuth())).ConfigureAwait(false);
-                    if (nS.IsSuccessStatusCode())
-                    {
-                        _logger.Log(LogLevel.Information, "User session has been renewed.");
-                        _session.Renew(nS.Body.ToModel(_session.GetAuth()).Session);
-                        AddSessionCookies();
-                    }
+                    _logger.Log(LogLevel.Information, "User session has been renewed.");
+                    _session.Renew(nS.Body.ToModel(_session.GetAuth()).Session);
+                    AddSessionCookies();
                 }
             }
+
         }
 
         private void AddSessionCookies()
@@ -192,10 +202,10 @@ namespace Sanakan.ShindenApi
             return new ResponseFinal<ITitleInfo>(raw.Code, raw.Body?.ToModel());
         }
 
-        public async Task<Response<ITitleInfo>> GetInfoAsync(IIndexable index)
-        {
-            return await GetInfoAsync(index.Id).ConfigureAwait(false);
-        }
+        //public async Task<Response<ITitleInfo>> GetInfoAsync(IIndexable index)
+        //{
+        //    return await GetInfoAsync(index.Id).ConfigureAwait(false);
+        //}
 
         public async Task<Response<List<IRecommendation>>> GetRecommendationsAsync(ulong id)
         {
@@ -242,7 +252,7 @@ namespace Sanakan.ShindenApi
         }
         #endregion
         #region Search
-        public async Task<Response<List<IUserSearch>>> UserAsync(string nick)
+        public async Task<Response<List<IUserSearch>>> SearchUserAsync(string nick)
         {
             var raw = await QueryAsync(new SearchUserQuery(nick)).ConfigureAwait(false);
             return new ResponseFinal<List<IUserSearch>>(raw.Code, raw.Body?.ToModel());

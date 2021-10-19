@@ -502,22 +502,6 @@
           "lib/netstandard2.0/System.Text.Encodings.Web.dll": {}
         }
       },
-      "DAL/1.0.0": {
-        "type": "project",
-        "framework": ".NETCoreApp,Version=v3.1",
-        "dependencies": {
-          "Microsoft.EntityFrameworkCore": "5.0.10",
-          "Newtonsoft.Json": "13.0.1",
-          "Pomelo.EntityFrameworkCore.MySql": "5.0.2",
-          "Sanakan.Common": "1.0.0"
-        },
-        "compile": {
-          "bin/placeholder/DAL.dll": {}
-        },
-        "runtime": {
-          "bin/placeholder/DAL.dll": {}
-        }
-      },
       "Sanakan.Common/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v3.1",
@@ -533,6 +517,22 @@
         },
         "runtime": {
           "bin/placeholder/Sanakan.Common.dll": {}
+        }
+      },
+      "Sanakan.DAL/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v3.1",
+        "dependencies": {
+          "Microsoft.EntityFrameworkCore": "5.0.10",
+          "Newtonsoft.Json": "13.0.1",
+          "Pomelo.EntityFrameworkCore.MySql": "5.0.2",
+          "Sanakan.Common": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/Sanakan.DAL.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Sanakan.DAL.dll": {}
         }
       },
       "Shinden.NET/0.3.8-beta": {
@@ -1400,15 +1400,15 @@
         "version.txt"
       ]
     },
-    "DAL/1.0.0": {
-      "type": "project",
-      "path": "../DAL/DAL.csproj",
-      "msbuildProject": "../DAL/DAL.csproj"
-    },
     "Sanakan.Common/1.0.0": {
       "type": "project",
       "path": "../Common/Common.csproj",
       "msbuildProject": "../Common/Common.csproj"
+    },
+    "Sanakan.DAL/1.0.0": {
+      "type": "project",
+      "path": "../DAL/DAL.csproj",
+      "msbuildProject": "../DAL/DAL.csproj"
     },
     "Shinden.NET/0.3.8-beta": {
       "type": "project",
@@ -1418,11 +1418,11 @@
   },
   "projectFileDependencyGroups": {
     ".NETCoreApp,Version=v3.1": [
-      "DAL >= 1.0.0",
       "Discord.Net >= 2.4.0",
       "Microsoft.Extensions.DependencyInjection >= 5.0.2",
       "Microsoft.Extensions.Options >= 5.0.0",
       "Sanakan.Common >= 1.0.0",
+      "Sanakan.DAL >= 1.0.0",
       "Shinden.NET >= 0.3.8-beta",
       "SixLabors.ImageSharp.Drawing >= 1.0.0-beta0006"
     ]

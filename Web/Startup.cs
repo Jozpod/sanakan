@@ -16,7 +16,12 @@ using Microsoft.OpenApi.Models;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
 using Sanakan.Common;
+using Sanakan.DAL.Repositories;
+using Sanakan.DAL.Repositories.Abstractions;
+using Sanakan.DiscordBot;
 using Sanakan.DiscordBot.Services;
+using Sanakan.Services;
+using Sanakan.Services.Commands;
 using Sanakan.Services.PocketWaifu;
 using Sanakan.ShindenApi;
 using Sanakan.Web.HostedService;
@@ -137,6 +142,9 @@ namespace Sanakan
             //        tmpCnf.Shinden.Marmolade),
             //    _logger);
             //});
+            
+            services.AddSingleton<HelperService>();
+            services.AddSingleton<CommandHandler>();
             services.AddSingleton<IImageProcessing, ImageProcessing>();
             services.AddSingleton<IWaifuService, WaifuService>();
             //_shindenClient =
@@ -148,11 +156,12 @@ namespace Sanakan
                     MessageCacheSize = 200,
                 });
             });
-            services.AddSingleton<Services.Fun>();
+            services.AddSingleton(Encoding.UTF8);
             services.AddSingleton<Services.Shinden>();
             services.AddSingleton<Services.LandManager>();
             services.AddSingleton<IRandomNumberGenerator, RandomNumberGenerator>();
-            services.AddScoped<IRepository, Repository>();
+            services.AddSingleton<IDiscordSocketClientAccessor, DiscordSocketClientAccessor>();
+            services.AddScoped<IAllRepository, AllRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddHostedService<DiscordBotHostedService>();
             services.AddHostedService<MemoryUsageHostedService>();

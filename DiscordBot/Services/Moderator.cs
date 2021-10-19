@@ -12,37 +12,42 @@ using Microsoft.Extensions.Options;
 using Sanakan.Common;
 using Sanakan.DAL.Models.Configuration;
 using Sanakan.DAL.Models.Management;
+using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.Extensions;
 
 namespace Sanakan.Services
 {
-    public class Moderator
+    public class ModeratorService
     {
         private readonly DiscordSocketClient _client;
         private readonly ILogger _logger;
         private readonly object _config;
         private readonly Timer _timer;
         private readonly ICacheManager _cacheManager;
+        private readonly IModerationRepository _moderationRepository;
+        private readonly IGuildConfigRepository _guildConfigRepository;
         private readonly ISystemClock _systemClock;
 
-        public Moderator(
-            ILogger<Moderator> logger,
+        public ModeratorService(
+            ILogger<ModeratorService> logger,
             IOptions<object> config,
             DiscordSocketClient client,
             ICacheManager cacheManager,
+            IModerationRepository moderationRepository,
             ISystemClock systemClock)
         {
             _logger = logger;
             _config = config.Value;
             _client = client;
             _cacheManager = cacheManager;
+            _moderationRepository = moderationRepository;
             _systemClock = systemClock;
 
             _timer = new Timer(async _ =>
             {
                 try
                 {
-                    await CyclicCheckPenalties(db);
+                    await CyclicCheckPenalties();
                 }
                 catch (Exception ex)
                 {
@@ -56,7 +61,7 @@ namespace Sanakan.Services
 
         private async Task CyclicCheckPenalties()
         {
-            foreach (var penalty in await db.GetCachedFullPenalties())
+            foreach (var penalty in await _moderationRepository.GetCachedFullPenalties())
             {
                 var guild = _client.GetGuild(penalty.Guild);
 
@@ -69,7 +74,7 @@ namespace Sanakan.Services
 
                 if (user != null)
                 {
-                    var gconfig = await conf.GetCachedGuildFullConfigAsync(guild.Id);
+                    var gconfig = await _guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
                     var muteModRole = guild.GetRole(gconfig.ModMuteRole);
                     var muteRole = guild.GetRole(gconfig.MuteRole);
 
@@ -83,7 +88,7 @@ namespace Sanakan.Services
                     if (penalty.Type == PenaltyType.Mute)
                     {
                         await UnmuteUserGuildAsync(user, muteRole, muteModRole, penalty.Roles);
-                        await RemovePenaltyFromDb(db, penalty);
+                        await RemovePenaltyFromDb(penalty);
                     }
                 }
                 else
@@ -95,7 +100,7 @@ namespace Sanakan.Services
                             var ban = await guild.GetBanAsync(penalty.User);
                             if (ban != null) await guild.RemoveBanAsync(penalty.User);
                         }
-                        await RemovePenaltyFromDb(db, penalty);
+                        await RemovePenaltyFromDb(penalty);
                     }
                 }
             }
@@ -421,11 +426,8 @@ namespace Sanakan.Services
 
         public async Task<Embed> GetMutedListAsync(SocketCommandContext context)
         {
-            string mutedList = "Brak";
-
-            var list = (await _repository.Penalties.Include(x => x.Roles)
-                .FromCacheAsync(new string[] { $"mute" }))
-                .Where(x => x.Guild == context.Guild.Id && x.Type == PenaltyType.Mute);
+            var mutedList = "Brak";
+            var list = await _moderationRepository.GetMutedPenaltiesAsync(context.Guild.Id);
 
             if (list.Any())
             {
@@ -481,14 +483,13 @@ namespace Sanakan.Services
             SocketRole muteRole,
             SocketRole muteModRole)
         {
-            var penalty = await db.Penalties
-                .Include(x => x.Roles)
-                .FirstOrDefaultAsync(x => x.User == user.Id
-                    && x.Type == PenaltyType.Mute
-                    && x.Guild == user.Guild.Id);
+            var penalty = await _moderationRepository.GetPenaltyAsync(
+                user.Id,
+                user.Guild.Id,
+                PenaltyType.Mute);
 
             await UnmuteUserGuildAsync(user, muteRole, muteModRole, penalty?.Roles);
-            await RemovePenaltyFromDb(db, penalty);
+            await RemovePenaltyFromDb(penalty);
         }
 
         private async Task RemovePenaltyFromDb(PenaltyInfo penalty)
@@ -498,15 +499,15 @@ namespace Sanakan.Services
                 return;
             }
 
-            db.OwnedRoles.RemoveRange(penalty.Roles);
-            db.Penalties.Remove(penalty);
-
-            await db.SaveChangesAsync();
-
+            await _moderationRepository.RemovePenaltyAsync(penalty);
+         
             _cacheManager.ExpireTag(new string[] { $"mute" });
         }
 
-        private async Task MuteUserGuildAsync(SocketGuildUser user, SocketRole muteRole, IEnumerable<OwnedRole> roles, SocketRole modMuteRole = null)
+        private async Task MuteUserGuildAsync(
+            SocketGuildUser user,
+            SocketRole muteRole,
+            IEnumerable<OwnedRole> roles, SocketRole modMuteRole = null)
         {
             if (muteRole != null)
             {
@@ -576,9 +577,7 @@ namespace Sanakan.Services
                 Roles = new List<OwnedRole>(),
             };
 
-            await _repository.Penalties.AddAsync(info);
-
-            await _repository.SaveChangesAsync();
+            await _moderationRepository.AddPenaltyAsync(info);
 
             _cacheManager.ExpireTag(new string[] { $"mute" });
 
@@ -606,8 +605,6 @@ namespace Sanakan.Services
                 DurationInHours = duration,
                 Roles = new List<OwnedRole>(),
             };
-
-            await _repository.Penalties.AddAsync(info);
 
             if (userRole != null)
             {
@@ -650,7 +647,7 @@ namespace Sanakan.Services
                 }   
             }
 
-            await _repository.SaveChangesAsync();
+            await _moderationRepository.AddPenaltyAsync(info);
 
             _cacheManager.ExpireTag(new string[] { $"mute" });
 

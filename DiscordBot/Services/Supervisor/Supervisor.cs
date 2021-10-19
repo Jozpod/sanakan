@@ -30,7 +30,7 @@ namespace Sanakan.Services.Supervisor
         private readonly Moderator _moderator;
         private readonly ILogger _logger;
         private readonly SanakanConfiguration _config;
-        private readonly IRepository _repository;
+        private readonly IAllRepository _repository;
 
         private Timer _timer;
 
@@ -39,7 +39,7 @@ namespace Sanakan.Services.Supervisor
             IOptions<SanakanConfiguration> config,
             ILogger logger,
             Moderator moderator,
-            IRepository repository)
+            IAllRepository repository)
         {
             _moderator = moderator;
             _client = client;

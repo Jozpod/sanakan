@@ -26,7 +26,7 @@ namespace Sanakan.Services.Session.Models
         private readonly object _config;
         private readonly IWaifuService _waifu;
         private readonly ICacheManager _cacheManager;
-        private readonly IRepository _repository;
+        private readonly IAllRepository _repository;
 
         private readonly Emoji AcceptEmote = new Emoji("✅");
         private readonly Emote DeclineEmote = Emote.Parse("<:redcross:581152766655856660>");
@@ -42,7 +42,7 @@ namespace Sanakan.Services.Session.Models
             IWaifuService waifu,
             IOptions<object> config,
             ICacheManager cacheManager,
-            IRepository repository) : base(owner)
+            IAllRepository repository) : base(owner)
         {
             Event = ExecuteOn.AllEvents;
             RunMode = RunMode.Sync;

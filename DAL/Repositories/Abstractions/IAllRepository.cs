@@ -6,9 +6,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace DAL.Repositories.Abstractions
+namespace Sanakan.DAL.Repositories.Abstractions
 {
-    public interface IRepository
+    public interface IAllRepository
     {
 
         Task<GuildOptions> GetGuildConfigOrCreateAsync(ulong guildId);

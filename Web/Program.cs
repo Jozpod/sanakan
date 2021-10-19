@@ -21,8 +21,8 @@ namespace Sanakan.Web
                 .ConfigureLogging(logging =>
                 {
                     logging.ClearProviders();
-                    logging.AddConsole(x => x.DisableColors = true);
-                    logging.SetMinimumLevel(LogLevel.Information);
+                    //logging.AddConsole(x => x.DisableColors = true);
+                    //logging.SetMinimumLevel(LogLevel.Information);
                 });
     }
 }

@@ -15,7 +15,7 @@ namespace DiscordBot.Test
     {
         private readonly LandsModule _module;
         private readonly Mock<LandManager> _landManagerMock;
-        private readonly Mock<IRepository> _repositoryMock;
+        private readonly Mock<IAllRepository> _repositoryMock;
 
         public LandsModuleTests()
         {

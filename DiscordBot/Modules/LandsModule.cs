@@ -16,11 +16,11 @@ namespace Sanakan.Modules
     {
         private readonly LandManager _manager;
         private readonly IUserRepository _userRepository;
-        private readonly IRepository _repository;
+        private readonly IAllRepository _repository;
 
         public LandsModule(
             LandManager manager,
-            IRepository repository)
+            IAllRepository repository)
         {
             _manager = manager;
             _repository = repository;

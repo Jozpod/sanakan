@@ -2,9 +2,8 @@
 using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.Extensions.Options;
-using Sanakan.Config;
+using Sanakan.DiscordBot.Configuration;
 using Sanakan.Extensions;
-using Sanakan.Web.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,17 +11,16 @@ using System.Threading.Tasks;
 
 namespace Sanakan.Services
 {
-    public class Helper
+    public class HelperService
     {
-        private SanakanConfiguration _config;
+        private readonly IOptionsMonitor<BotConfiguration> _config;
 
         public IEnumerable<ModuleInfo> PublicModulesInfo { get; set; }
         public Dictionary<string, ModuleInfo> PrivateModulesInfo { get; set; }
 
-        public Helper(IOptions<SanakanConfiguration> config)
+        public HelperService(IOptionsMonitor<BotConfiguration> config)
         {
-            _config = config.Value;
-
+            _config = config;
             PublicModulesInfo = new List<ModuleInfo>();
             PrivateModulesInfo = new Dictionary<string, ModuleInfo>();
         }
@@ -32,19 +30,19 @@ namespace Sanakan.Services
             string commands = "**Lista poleceń:**\n";
             foreach (var item in GetInfoAboutModules(PublicModulesInfo))
             {
-                List<string> sSubInfo = new List<string>();
-                foreach (var mod in item.Modules)
+                var sSubInfo = new List<string>();
+                foreach (var module in item.Modules)
                 {
-                    string info = "";
-                    if (!string.IsNullOrWhiteSpace(mod.Prefix))
-                        info += $"      ***{mod.Prefix}***";
+                    var info = "";
+                    if (!string.IsNullOrWhiteSpace(module.Prefix))
+                        info += $"      ***{module.Prefix}***";
 
-                    sSubInfo.Add(info + " " + string.Join("  ", mod.Commands));
+                    sSubInfo.Add(info + " " + string.Join("  ", module.Commands));
                 }
 
                 commands += $"\r\n**{item.Name}:**" + string.Join("\n", sSubInfo);
             }
-            commands += $"\r\n\r\nUżyj `{_config.Prefix}pomoc [polecenie]`, aby uzyskać informacje dotyczące danego polecenia.";
+            commands += $"\r\n\r\nUżyj `{_config.CurrentValue.Prefix}pomoc [polecenie]`, aby uzyskać informacje dotyczące danego polecenia.";
             return commands;
         }
 
@@ -75,9 +73,9 @@ namespace Sanakan.Services
         public string GetCommandInfo(CommandInfo cmd, string prefix = null)
         {
             var modulePrefix = GetModGroupPrefix(cmd.Module);
-            var botPrefix = prefix ?? _config.Prefix;
+            var botPrefix = prefix ?? _config.CurrentValue.Prefix;
 
-            string command = $"**{botPrefix}{modulePrefix}{cmd.Name}**";
+            var command = $"**{botPrefix}{modulePrefix}{cmd.Name}**";
 
             if (cmd.Parameters.Count > 0)
             {
@@ -141,7 +139,7 @@ namespace Sanakan.Services
 
         private List<SanakanModuleInfo> GetInfoAboutModules(IEnumerable<ModuleInfo> modules)
         {
-            List<SanakanModuleInfo> mod = new List<SanakanModuleInfo>();
+            var moduleInfos = new List<SanakanModuleInfo>();
             foreach (var item in modules)
             {
                 var mInfo = new SanakanModuleInfo()
@@ -150,9 +148,11 @@ namespace Sanakan.Services
                     Modules = new List<SanakanSubModuleInfo>()
                 };
 
-                if (mod.Any(x => x.Name.Equals(item.Name)))
-                    mInfo = mod.First(x => x.Name.Equals(item.Name));
-                else mod.Add(mInfo);
+                if (moduleInfos.Any(x => x.Name.Equals(item.Name)))
+                {
+                    mInfo = moduleInfos.First(x => x.Name.Equals(item.Name));
+                }
+                else moduleInfos.Add(mInfo);
 
                 var subMInfo = new SanakanSubModuleInfo()
                 {
@@ -166,7 +166,7 @@ namespace Sanakan.Services
 
                 mInfo.Modules.Add(subMInfo);
             }
-            return mod;
+            return moduleInfos;
         }
 
         private SanakanSubModuleInfo GetInfoAboutModule(ModuleInfo module)

@@ -67,7 +67,7 @@ namespace Sanakan.Web.HostedService
                 var memoryUsage = _process.WorkingSet64 / MB;
 
                 _logger.LogInformation($"Memory Usage: {memoryUsage} MiB");
-                var repository = _serviceProvider.GetRequiredService<IRepository>();
+                var repository = _serviceProvider.GetRequiredService<IAllRepository>();
 
                 var record = new SystemAnalytics
                 {

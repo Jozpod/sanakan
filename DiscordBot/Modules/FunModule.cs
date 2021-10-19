@@ -22,27 +22,28 @@ namespace Sanakan.Modules
     [Name("Zabawy"), RequireUserRole]
     public class FunModule : ModuleBase<SocketCommandContext>
     {
-        private readonly Services.Fun _fun;
         private readonly Moderator _moderation;
         private readonly SessionManager _session;
         private readonly ICacheManager _cacheManager;
-        private readonly IRepository _repository;
+        private readonly IAllRepository _repository;
         private readonly ISystemClock _systemClock;
+        private readonly IRandomNumberGenerator _randomNumberGenerator;
+        private readonly IServiceProvider _serviceProvider;
 
         public FunModule(
-            Services.Fun fun,
             Moderator moderation,
             SessionManager session,
             ICacheManager cacheManager,
-            IRepository repository,
-            ISystemClock systemClock)
+            IAllRepository repository,
+            ISystemClock systemClock,
+            IServiceProvider serviceProvider)
         {
-            _fun = fun;
             _session = session;
             _moderation = moderation;
             _cacheManager = cacheManager;
             _repository = repository;
             _systemClock = systemClock;
+            _serviceProvider = serviceProvider;
         }
 
         [Command("drobne")]
@@ -134,6 +135,7 @@ namespace Sanakan.Modules
             var msg = await ReplyAsync("", embed: content);
             await msg.AddReactionsAsync(session.StartReactions);
 
+            // _serviceProvider.GetService();
             session.Actions = new AcceptMute(Config)
             {
                 NotifChannel = notifChannel,
@@ -191,8 +193,9 @@ namespace Sanakan.Modules
         [Command("wylosuj", RunMode = RunMode.Async)]
         [Alias("ofm", "one from many")]
         [Summary("bot losuje jedną rzecz z podanych opcji")]
-        [Remarks("kokosek dzida wojtek"), RequireCommandChannel]
-        public async Task GetOneFromManyAsync([Summary("opcje z których bot losuje")]params string[] options)
+        [Remarks("user1 user2 user3"), RequireCommandChannel]
+        public async Task GetOneFromManyAsync(
+            [Summary("opcje z których bot losuje")]params string[] options)
         {
             if (options.Count() < 2)
             {
@@ -203,9 +206,11 @@ namespace Sanakan.Modules
             var emote = Emote.Parse("<a:pinkarrow:826132578016559144>");
             var allOptions = options.Shuffle().ToList();
 
-            await Task.Delay(Services.Fun.GetRandomValue(100, 500));
+            var delay = _randomNumberGenerator.GetRandomValue(100, 500);
+            await Task.Delay(delay);
 
-            await ReplyAsync("", embed: $"{emote} {Services.Fun.GetOneRandomFrom(allOptions)}".ToEmbedMessage(EMType.Success).WithAuthor(new EmbedAuthorBuilder().WithUser(Context.User)).Build());
+            var content = $"{emote} {_randomNumberGenerator.GetOneRandomFrom(allOptions)}".ToEmbedMessage(EMType.Success).WithAuthor(new EmbedAuthorBuilder().WithUser(Context.User)).Build();
+            await ReplyAsync("", embed: content);
         }
 
         [Command("rzut")]
@@ -230,7 +235,7 @@ namespace Sanakan.Modules
             }
 
             botuser.ScCnt -= amount;
-            var thrown = _fun.RandomizeSide();
+            var thrown = (CoinSide)_randomNumberGenerator.GetRandomValue(2);
             var embed = $"{Context.User.Mention} pudło! Obecnie posiadasz {botuser.ScCnt} SC.".ToEmbedMessage(EMType.Error);
 
             botuser.Stats.Tail += (thrown == CoinSide.Tail) ? 1 : 0;
@@ -266,7 +271,8 @@ namespace Sanakan.Modules
         {
             if (setting == SlotMachineSetting.Info)
             {
-                await ReplyAsync("", false, $"{_fun.GetSlotMachineInfo()}".ToEmbedMessage(EMType.Info).Build());
+                var content = $"{Strings.SlotMachineInfo}".ToEmbedMessage(EMType.Info).Build();
+                await ReplyAsync("", false, content);
                 return;
             }
 
@@ -288,8 +294,28 @@ namespace Sanakan.Modules
         [Alias("slot", "slot machine")]
         [Summary("grasz na jednorękim bandycie")]
         [Remarks("info"), RequireCommandChannel]
-        public async Task PlayOnSlotMachineAsync([Summary("typ (info - wyświetla informacje)")]string type = "game")
+        public async Task PlayOnSlotMachineAsync(
+            [Summary("typ (info - wyświetla informacje)")]string type = "game")
         {
+            string info = $"**Info:**\n\n✖ - nieaktywny rząd\n✔ - aktywny rząd\n\n**Wygrane:**\n\n"
+              + $"3-5x<:klasycznypsaj:482136878120828938> - tryb psaja (podwójne wygrane)\n\n";
+
+            foreach (var slotMachineSlot in Enum.GetValues(typeof(SlotMachineSlots)))
+            {
+                if (slotMachineSlot != SlotMachineSlots.max
+                        && slotMachineSlot != SlotMachineSlots.q)
+                {
+                    for (int i = 3; i < 6; i++)
+                    {
+                        string val = $"x{slotMachineSlot.WinValue(i)}";
+                        info += $"{i}x{slotMachineSlot.Icon()} - {val.PadRight(5, ' ')} ";
+                    }
+                    info += "\n";
+                }
+            }
+
+            info;
+
             if (type != "game")
             {
                 await ReplyAsync("", false, $"{_fun.GetSlotMachineGameInfo()}".ToEmbedMessage(EMType.Info).Build());
@@ -313,7 +339,14 @@ namespace Sanakan.Modules
 
             _cacheManager.ExpireTag(new string[] { $"user-{botuser.Id}", "users" });
 
-            await ReplyAsync("", embed: $"{_fun.GetSlotMachineResult(machine.Draw(), Context.User, botuser, win)}".ToEmbedMessage(EMType.Bot).Build());
+            string psay = (botUser.SMConfig.PsayMode > 0) ? "<:klasycznypsaj:482136878120828938> " : " ";
+
+            var test $"{psay}**Gra:** {user.Mention}\n\n ➖➖➖➖➖➖ \n{slots}\n ➖➖➖➖➖➖ \n"
+                + $"**Stawka:** `{botUser.SMConfig.Beat.Value()} SC`\n"
+                + $"**Mnożnik:** `x{botUser.SMConfig.Multiplier.Value()}`\n\n**Wygrana:** `{win} SC`";
+
+            var content = $"{_fun.GetSlotMachineResult(machine.Draw(), Context.User, botuser, win)}".ToEmbedMessage(EMType.Bot).Build()
+            await ReplyAsync("", embed: content);
         }
 
         [Command("podarujsc")]

@@ -13,6 +13,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Sanakan.DiscordBot;
 
 namespace Sanakan.Web.HostedService
 {
@@ -21,8 +22,9 @@ namespace Sanakan.Web.HostedService
         //private readonly SynchronizedExecutor _executor;
         //private readonly ShindenClient _shindenClient;
         private DiscordSocketClient _client;
+        private readonly IDiscordSocketClientAccessor _discordSocketClientAccessor;
         //private readonly SessionManager _sessions;
-        private readonly CommandHandler _handler;
+        private readonly CommandHandler _commandHandler;
         //private readonly ExperienceManager _exp;
         //private readonly Supervisor _supervisor;
         //private readonly ImageProcessing _img;
@@ -45,10 +47,14 @@ namespace Sanakan.Web.HostedService
         public DiscordBotHostedService(
             IFileSystem fileSystem,
             ILogger<DiscordBotHostedService> logger,
-            IServiceProvider serviceProvider)
+            IServiceProvider serviceProvider,
+            IDiscordSocketClientAccessor discordSocketClientAccessor,
+            CommandHandler commandHandler)
         {
             _logger = logger;
             _fileSystem = fileSystem;
+            _discordSocketClientAccessor = discordSocketClientAccessor;
+            _commandHandler = commandHandler;
         }
 
         private void CreateModules()
@@ -73,27 +79,46 @@ namespace Sanakan.Web.HostedService
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            var database = _serviceProvider.GetRequiredService<DatabaseFacade>();
-            var configuration = _serviceProvider.GetRequiredService<IOptions<SanakanConfiguration>>().Value;
-            await database.EnsureCreatedAsync();
+            try
+            {
+                stoppingToken.ThrowIfCancellationRequested();
+                var database = _serviceProvider.GetRequiredService<DatabaseFacade>();
+                var configuration = _serviceProvider.GetRequiredService<IOptions<SanakanConfiguration>>().Value;
+                await database.EnsureCreatedAsync();
+                stoppingToken.ThrowIfCancellationRequested();
 
-            _fileSystem.CreateDirectory(Paths.CardsMiniatures);
-            _fileSystem.CreateDirectory(Paths.CardsInProfiles);
-            _fileSystem.CreateDirectory(Paths.SavedData);
-            _fileSystem.CreateDirectory(Paths.Profiles);
+                _fileSystem.CreateDirectory(Paths.CardsMiniatures);
+                _fileSystem.CreateDirectory(Paths.CardsInProfiles);
+                _fileSystem.CreateDirectory(Paths.SavedData);
+                _fileSystem.CreateDirectory(Paths.Profiles);
+                stoppingToken.ThrowIfCancellationRequested();
 
-            _client = _serviceProvider.GetRequiredService<DiscordSocketClient>(); 
-            _client.Log += onLog;
+                _client = _serviceProvider.GetRequiredService<DiscordSocketClient>();
+                _client.Log += onLog;
+                stoppingToken.ThrowIfCancellationRequested();
 
-            await _client.LoginAsync(TokenType.Bot, configuration.BotToken);
-            await _client.SetGameAsync(configuration.Prefix + "pomoc");
-            await _client.StartAsync();
+                await _client.LoginAsync(TokenType.Bot, configuration.BotToken);
+                await _client.SetGameAsync(configuration.Prefix + "pomoc");
+                await _client.StartAsync();
+                _discordSocketClientAccessor.Client = _client;
+                stoppingToken.ThrowIfCancellationRequested();
 
-            //_executor.Initialize(services);
-            //_sessions.Initialize(services);
-            await _handler.InitializeAsync(services, _helper);
+                //_executor.Initialize(services);
+                //_sessions.Initialize(services);
+                
+                await _commandHandler.InitializeAsync();
+                
+                stoppingToken.ThrowIfCancellationRequested();
+                await Task.Delay(Timeout.Infinite, stoppingToken);
+            }
+            catch (InvalidOperationException)
+            {
+                _discordSocketClientAccessor.Client?.Dispose();
+                _discordSocketClientAccessor.Client = null;
+                _logger.LogInformation("The discord client stopped");
+            }
 
-            await Task.Delay(Timeout.Infinite);
+           
         }
 
         private Task onLog(LogMessage log)

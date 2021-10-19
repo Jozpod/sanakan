@@ -21,7 +21,8 @@ namespace Sanakan.Extensions
             EMType type = EMType.Neutral,
             bool icon = false)
         {
-            return new EmbedBuilder().WithColor(type.Color()).WithDescription($"{type.Emoji(!icon)}{message}");
+            return new EmbedBuilder().WithColor(type.Color()).
+                WithDescription($"{type.Emoji(!icon)}{message}");
         }
 
         public static string TrimToLength(this string s, int length)

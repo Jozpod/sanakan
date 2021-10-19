@@ -8,16 +8,12 @@ namespace Sanakan.Preconditions
 {
     public class RequireAnyCommandChannelOrLevel : PreconditionAttribute
     {
-        public RequireAnyCommandChannelOrLevel()
-        {
-
-        }
-
         private readonly long _level;
 
-        public RequireAnyCommandChannelOrLevel(long level) => _level = level;
+        public RequireAnyCommandChannelOrLevel(long level = 40) => _level = level;
 
-        public async override Task<PreconditionResult> CheckPermissionsAsync(ICommandContext context, CommandInfo command, IServiceProvider services)
+        public async override Task<PreconditionResult> CheckPermissionsAsync(
+            ICommandContext context, CommandInfo command, IServiceProvider services)
         {
             var user = context.User as SocketGuildUser;
             
@@ -25,8 +21,6 @@ namespace Sanakan.Preconditions
             {
                 return PreconditionResult.FromSuccess();
             }
-            
-            await Task.CompletedTask;
 
             var config = (IConfig)services.GetService(typeof(IConfig));
 
@@ -35,7 +29,6 @@ namespace Sanakan.Preconditions
             {
                 return PreconditionResult.FromSuccess();
             }
-
 
             if (gConfig.CommandChannels == null)
             {

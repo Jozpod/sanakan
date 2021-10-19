@@ -15,11 +15,11 @@ namespace Sanakan.Web.Controllers
     [Produces("application/json")]
     public class QuizController : ControllerBase
     {
-        private readonly IRepository _repository;
+        private readonly IAllRepository _repository;
         private readonly ICacheManager _cacheManager;
 
         public QuizController(
-            IRepository repository,
+            IAllRepository repository,
             ICacheManager cacheManager)
         {
             _repository = repository;

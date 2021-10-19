@@ -7,6 +7,7 @@ using Microsoft.Extensions.Options;
 using Sanakan.Common;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Models.Configuration;
+using Sanakan.DiscordBot;
 using Sanakan.Extensions;
 using Sanakan.Preconditions;
 using Sanakan.Services;
@@ -23,28 +24,33 @@ namespace Sanakan.Modules
     [Name("Moderacja"), Group("mod"), DontAutoLoad]
     public class ModerationModule : ModuleBase<SocketCommandContext>
     {
-        private readonly object _config;
+        private readonly IOptionsMonitor<> _config;
         private readonly Services.Helper _helper;
         private readonly IShindenClient _shClient;
         private readonly Services.Profile _profile;
         private readonly Services.Moderator _moderation;
         private readonly ICacheManager _cacheManager;
         private readonly IUserRepository _userRepository;
-        private readonly IRepository _repository;
-
+        private readonly IAllRepository _repository;
+        private readonly ISystemClock _systemClock;
+        private readonly IRandomNumberGenerator _randomNumberGenerator;
         public ModerationModule(
             Services.Helper helper,
             Services.Moderator moderation,
             Services.Profile prof,
             IShindenClient sh,
-            IOptions<object> config,
-            ICacheManager _cacheManager)
+            IOptionsMonitor<object> config,
+            ICacheManager _cacheManager,
+            ISystemClock systemClock,
+            IRandomNumberGenerator randomNumberGenerator)
         {
             _shClient = sh;
             _profile = prof;
             _config = config.Value;
             _helper = helper;
             _moderation = moderation;
+            _systemClock = systemClock;
+            _randomNumberGenerator = randomNumberGenerator;
         }
 
         [Command("kasuj", RunMode = RunMode.Async)]
@@ -136,7 +142,7 @@ namespace Sanakan.Modules
             var notifChannel = Context.Guild.GetTextChannel(config.NotificationChannel);
 
             var usr = Context.User as SocketGuildUser;
-            var info = await _moderation.BanUserAysnc(user, mdb, duration, reason);
+            var info = await _moderation.BanUserAysnc(user, duration, reason);
             await _moderation.NotifyAboutPenaltyAsync(user, notifChannel, info, $"{usr.Nickname ?? usr.Username}");
 
             await ReplyAsync("", embed: $"{user.Mention} został zbanowany.".ToEmbedMessage(EMType.Success).Build());
@@ -1308,8 +1314,9 @@ namespace Sanakan.Modules
                 return;
             }
 
-            await Context.Message.AddReactionAsync(new Emoji("👌"));
-            await todoChannel.SendMessageAsync(message.GetJumpUrl(), embed: _moderation.BuildTodo(message, Context.User as SocketGuildUser));
+            await Context.Message.AddReactionAsync(Emojis.HandSign);
+            var content = _moderation.BuildTodo(message, Context.User as SocketGuildUser);
+            await todoChannel.SendMessageAsync(message.GetJumpUrl(), embed: content);
         }
 
         [Command("quote", RunMode = RunMode.Async)]
@@ -1333,7 +1340,7 @@ namespace Sanakan.Modules
                 return;
             }
 
-            await Context.Message.AddReactionAsync(new Emoji("👌"));
+            await Context.Message.AddReactionAsync(Emojis.HandSign);
             await channel2Send.SendMessageAsync(message.GetJumpUrl(), embed: _moderation.BuildTodo(message, Context.User as SocketGuildUser));
         }
 
@@ -1372,10 +1379,11 @@ namespace Sanakan.Modules
         [Remarks("Karna"), RequireAdminRole]
         public async Task CheckUserAsync([Summary("użytkownik")]SocketGuildUser user)
         {
-            string report = "**Globalki:** ✅\n\n";
-            var guildConfig = await dbg.GetCachedGuildFullConfigAsync(user.Guild.Id);
-            var duser = await db.GetUserOrCreateAsync(user.Id);
+            var report = "**Globalki:** ✅\n\n";
+            var guildConfig = await _repository.GetCachedGuildFullConfigAsync(user.Guild.Id);
+            var duser = await _repository.GetUserOrCreateAsync(user.Id);
             var globalRole = user.Guild.GetRole(guildConfig.GlobalEmotesRole);
+
             if (globalRole != null)
             {
                 if (user.Roles.Contains(globalRole))
@@ -1394,11 +1402,14 @@ namespace Sanakan.Modules
                 }
             }
 
-            string kolorRep = $"**Kolor:** ✅\n\n";
+            var kolorRep = $"**Kolor:** ✅\n\n";
             var colorRoles = (IEnumerable<uint>)Enum.GetValues(typeof(FColor));
             if (user.Roles.Any(x => colorRoles.Any(c => c.ToString() == x.Name)))
             {
-                var sub = duser.TimeStatuses.FirstOrDefault(x => x.Type == StatusType.Color && x.Guild == user.Guild.Id);
+                var sub = duser.TimeStatuses
+                    .FirstOrDefault(x => x.Type == StatusType.Color
+                        && x.Guild == user.Guild.Id);
+
                 if (sub == null)
                 {
                     kolorRep = $"**Kolor:** ❗\n\n";
@@ -1412,35 +1423,32 @@ namespace Sanakan.Modules
             }
             report += kolorRep;
 
-            string nickRep = $"**Nick:** ✅";
+            var nickRep = $"**Nick:** ✅";
             if (guildConfig.UserRole != 0)
             {
                 var userRole = user.Guild.GetRole(guildConfig.UserRole);
-                if (userRole != null)
+                if (userRole != null && user.Roles.Contains(userRole))
                 {
-                    if (user.Roles.Contains(userRole))
+                    var realNick = user.Nickname ?? user.Username;
+                    if (duser.Shinden != 0)
                     {
-                        var realNick = user.Nickname ?? user.Username;
-                        if (duser.Shinden != 0)
+                        var res = await _shClient.GetAsync(duser.Shinden);
+                        if (res.IsSuccessStatusCode())
                         {
-                            var res = await _shClient.User.GetAsync(duser.Shinden);
-                            if (res.IsSuccessStatusCode())
-                            {
-                                if (res.Body.Name != realNick)
-                                    nickRep = $"**Nick:** ❗ {res.Body.Name}";
-                            }
-                            else nickRep = $"**Nick:** ❗ D: {duser.Shinden}";
+                            if (res.Body.Name != realNick)
+                                nickRep = $"**Nick:** ❗ {res.Body.Name}";
                         }
-                        else
+                        else nickRep = $"**Nick:** ❗ D: {duser.Shinden}";
+                    }
+                    else
+                    {
+                        var res = await _shClient.SearchUserAsync(realNick);
+                        if (res.IsSuccessStatusCode())
                         {
-                            var res = await _shClient.Search.UserAsync(realNick);
-                            if (res.IsSuccessStatusCode())
-                            {
-                                if (!res.Body.Any(x => x.Name.Equals(realNick, StringComparison.Ordinal)))
-                                    nickRep = $"**Nick:** ⚠";
-                            }
-                            else nickRep = $"**Nick:** ⚠";
+                            if (!res.Body.Any(x => x.Name.Equals(realNick, StringComparison.Ordinal)))
+                                nickRep = $"**Nick:** ⚠";
                         }
+                        else nickRep = $"**Nick:** ⚠";
                     }
                 }
             }
@@ -1456,15 +1464,16 @@ namespace Sanakan.Modules
         public async Task GetRandomUserAsync([Summary("długość w minutach")]uint duration)
         {
             var emote = new Emoji("🎰");
-            var time = DateTime.Now.AddMinutes(duration);
+            var time = _systemClock.AddMinutes(duration);
             var msg = await ReplyAsync("", embed: $"Loteria! zareaguj {emote}, aby wziąć udział.\n\n Koniec `{time.ToShortTimeString()}:{time.Second.ToString("00")}`".ToEmbedMessage(EMType.Bot).Build());
 
             await msg.AddReactionAsync(emote);
-            await Task.Delay(TimeSpan.FromMinutes(duration));
+            var delay = TimeSpan.FromMinutes(duration);
+            await Task.Delay(delay);
             await msg.RemoveReactionAsync(emote, Context.Client.CurrentUser);
 
             var reactions = await msg.GetReactionUsersAsync(emote, 300).FlattenAsync();
-            var winner = Services.Fun.GetOneRandomFrom(reactions);
+            var winner = _randomNumberGenerator.GetOneRandomFrom(reactions);
             await msg.DeleteAsync();
 
             await ReplyAsync("", embed: $"Zwycięzca loterii: {winner.Mention}".ToEmbedMessage(EMType.Success).Build());
@@ -1480,10 +1489,10 @@ namespace Sanakan.Modules
 
             while (total.Count > 0)
             {
-                var first = Services.Fun.GetOneRandomFrom(total);
+                var first = _randomNumberGenerator.GetOneRandomFrom(total);
                 total.Remove(first);
 
-                var second = Services.Fun.GetOneRandomFrom(total);
+                var second = _randomNumberGenerator.GetOneRandomFrom(total);
                 total.Remove(second);
 
                 pairs.Add(new Tuple<int, int>(first, second));
@@ -1495,7 +1504,8 @@ namespace Sanakan.Modules
         [Command("pozycja gracza", RunMode = RunMode.Async)]
         [Summary("bot losuje liczbę dla gracza")]
         [Remarks("kokosek dzida"), RequireAdminOrModRole]
-        public async Task AssingNumberToUsersAsync([Summary("nazwy graczy")]params string[] players)
+        public async Task AssingNumberToUsersAsync(
+            [Summary("nazwy graczy")]params string[] players)
         {
             var numbers = Enumerable.Range(1, players.Count()).ToList();
             var pairs = new List<Tuple<string, int>>();
@@ -1503,10 +1513,10 @@ namespace Sanakan.Modules
 
             while (playerList.Count > 0)
             {
-                var player = Services.Fun.GetOneRandomFrom(playerList);
+                var player = _randomNumberGenerator.GetOneRandomFrom(playerList);
                 playerList.Remove(player);
 
-                var number = Services.Fun.GetOneRandomFrom(numbers);
+                var number = _randomNumberGenerator.GetOneRandomFrom(numbers);
                 numbers.Remove(number);
 
                 pairs.Add(new Tuple<string, int>(player, number));
@@ -1664,13 +1674,14 @@ namespace Sanakan.Modules
         [Alias("help", "h")]
         [Summary("wypisuje polecenia")]
         [Remarks("kasuj"), RequireAdminOrModRole]
-        public async Task SendHelpAsync([Summary("nazwa polecenia (opcjonalne)")][Remainder]string command = null)
+        public async Task SendHelpAsync(
+            [Summary("nazwa polecenia (opcjonalne)")][Remainder]string command = null)
         {
             if (command != null)
             {
                 try
                 {
-                    string prefix = _config.Get().Prefix;
+                    string prefix = _config.CurrentValue.Prefix;
                     if (Context.Guild != null)
                     {
                         var gConfig = await _repository.GetCachedGuildFullConfigAsync(Context.Guild.Id);

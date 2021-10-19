@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using DAL.Repositories.Abstractions;
 using DiscordBot.Services.Executor;
 using DiscordBot.Services.PocketWaifu.Abstractions;
 using Microsoft.AspNetCore.Authorization;
@@ -15,6 +14,8 @@ using Sanakan.Api.Models;
 using Sanakan.Common;
 using Sanakan.Config;
 using Sanakan.DAL.Models;
+using Sanakan.DAL.Repositories;
+using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.Extensions;
 using Sanakan.Services.Executor;
 using Sanakan.Services.PocketWaifu;
@@ -35,8 +36,9 @@ namespace Sanakan.Web.Controllers
         private readonly IWaifuService _waifu;
         private readonly IExecutor _executor;
         private readonly IFileSystem _fileSystem;
-        private readonly IRepository _repository;
+        private readonly IAllRepository _repository;
         private readonly IUserRepository _userRepository;
+        private readonly ICardRepository _cardRepository;
         private readonly IUserContext _userContext;
         private readonly ICacheManager _cacheManager;
         private readonly IJwtBuilder _jwtBuilder;
@@ -46,7 +48,7 @@ namespace Sanakan.Web.Controllers
             IWaifuService waifu,
             IExecutor executor,
             IFileSystem fileSystem,
-            IRepository repository,
+            IAllRepository repository,
             IUserRepository userRepository,
             IUserContext userContext,
             ICacheManager cacheManager)
@@ -81,9 +83,9 @@ namespace Sanakan.Web.Controllers
         }
 
         /// <summary>
-        /// Pobiera liste kart użytkownika
+        /// Gets the list of cards which user has.
         /// </summary>
-        /// <param name="id">id użytkownika shindena</param>
+        /// <param name="id">The Shinden user identifier</param>
         [HttpGet("user/{id}/cards"), Authorize(Policy = AuthorizePolicies.Site)]
         [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(IEnumerable<Card>), StatusCodes.Status200OK)]
@@ -180,20 +182,18 @@ namespace Sanakan.Web.Controllers
         public async Task<IActionResult> GetUsersCardsByShindenIdWithOffsetAsync(
             ulong id, uint offset, uint count)
         {
-            var user = await db.Users
-                .AsQueryable()
-                .AsSplitQuery()
-                .Where(x => x.Shinden == id)
-                .Include(x => x.GameDeck)
-                .AsNoTracking()
-                .FirstOrDefaultAsync();
+            var user = await _userRepository.GetByShindenIdAsync(id, new UserQueryOptions
+            {
+                IncludeGameDeck = true,
+            });
 
             if (user == null)
             {
                 return ShindenNotFound("User not found");
             }
 
-            var cards = await db.Cards
+            var cards = _card
+                await db.Cards
                 .AsQueryable()
                 .AsSplitQuery()
                 .Where(x => x.GameDeckId == user.GameDeck.Id)
@@ -215,17 +215,16 @@ namespace Sanakan.Web.Controllers
         /// <param name="id">id użytkownika shindena</param>
         /// <returns>lista życzeń</returns>
         [HttpGet("user/shinden/{id}/wishlist/raw")]
-        [ProducesResponseType(typeof(IEnumerable<WishlistObject>), 200)]
-        [ProducesResponseType(typeof(BodyPayload), 404)]
+        [ProducesResponseType(typeof(IEnumerable<WishlistObject>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> GetUsersRawWishlistByShindenIdAsync(ulong id)
         {
-            var user = await db.Users.AsQueryable()
-                .AsSplitQuery()
-                .Where(x => x.Shinden == id)
-                .Include(x => x.GameDeck)
-                .ThenInclude(x => x.Wishes)
-                .AsNoTracking()
-                .FirstOrDefaultAsync();
+            var user = await _userRepository.GetByShindenIdAsync(id, new UserQueryOptions
+            {
+                IncludeGameDeck = true,
+                IncludeWishes = true,
+            });
 
             if (user == null)
             {
@@ -317,7 +316,6 @@ namespace Sanakan.Web.Controllers
         /// </summary>
         /// <param name="oldId">id postaci z bazy shindena, która została usunięta</param>
         /// <param name="newId">id nowej postaci z bazy shindena</param>
-        /// <response code="500">New character ID is invalid!</response>
         [HttpPost("character/repair/{oldId}/{newId}"), Authorize(Policy = AuthorizePolicies.Site)]
         [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status500InternalServerError)]
@@ -336,9 +334,7 @@ namespace Sanakan.Web.Controllers
             var exe = new Executable($"api-repair oc{oldId} c{newId}", new Task<Task>(async () =>
             {
                 var userRelease = new List<string>() { "users" };
-                var cards = db.Cards.AsQueryable()
-                    .AsSplitQuery()
-                    .Where(x => x.Character == oldId);
+                var cards = await _cardRepository.GetByCharacterIdAsync(oldId);
 
                 foreach (var card in cards)
                 {
@@ -346,7 +342,7 @@ namespace Sanakan.Web.Controllers
                     userRelease.Add($"user-{card.GameDeckId}");
                 }
 
-                await db.SaveChangesAsync();
+                await _cardRepository.SaveChangesAsync();
 
                 _cacheManager.ExpireTag(userRelease.ToArray());
             }), Priority.High);
@@ -428,10 +424,7 @@ namespace Sanakan.Web.Controllers
             var exe = new Executable($"update cards-{id}", new Task<Task>(async () =>
                 {
                     var userRelease = new List<string>() { "users" };
-                    var cards = db.Cards
-                        .AsQueryable()
-                        .AsSplitQuery()
-                        .Where(x => x.Character == id);
+                    var cards = await _cardRepository.GetByCharacterIdAsync(id);
 
                     foreach (var card in cards)
                     {
@@ -522,7 +515,7 @@ namespace Sanakan.Web.Controllers
 
             var p = user.GameDeck.GetCharactersWishList();
             var t = user.GameDeck.GetTitlesWishList();
-            var c = user.GameDeck.GetCardsWishList();
+            var cardsId = user.GameDeck.GetCardsWishList();
 
             var cards = new List<Card>();
             if (cardsId != null)
@@ -535,7 +528,7 @@ namespace Sanakan.Web.Controllers
                 cards.AddRange(cds);
             }
 
-            var result = await _waifu.GetCardsFromWishlist(c, p, t, cards, user.GameDeck.Cards);
+            var result = await _waifu.GetCardsFromWishlist(cardsId, p, t, cards, user.GameDeck.Cards);
             return Ok(result);
         }
 
@@ -567,9 +560,7 @@ namespace Sanakan.Web.Controllers
                 || !_fileSystem.Exists($"{Paths.Cards}/{id}.png") 
                 || !_fileSystem.Exists($"{Paths.CardsInProfiles}/{id}.png"))
             {
-                var card = await db.Cards
-                    .AsNoTracking()
-                    .FirstOrDefaultAsync(x => x.Id == id);
+                var card = await _cardRepository.GetByIdAsync(id);
 
                 if (card == null)
                 {
@@ -754,23 +745,23 @@ namespace Sanakan.Web.Controllers
 
             ulong discordId = 0;
 
-            var bUser = await db.Users.AsQueryable()
-                .Where(x => x.Shinden == id)
-                .Include(x => x.GameDeck)
-                .ThenInclude(x => x.Cards)
-                .AsNoTracking()
-                .AsSplitQuery()
-                .FirstOrDefaultAsync();
-            
-            if (bUser == null)
+            var user = await _userRepository.GetByShindenIdAsync(id, new UserQueryOptions
+            {
+                IncludeGameDeck = true,
+                IncludeCards = true,
+            });
+
+            var gameDeck = user.GameDeck;
+
+            if (user == null)
             {
                 return ShindenNotFound("User not found");
             }
-            if (bUser.GameDeck.Cards.Count + packs.Sum(x => x.CardCnt) > bUser.GameDeck.MaxNumberOfCards)
+            if (gameDeck.Cards.Count + packs.Sum(x => x.CardCnt) > gameDeck.MaxNumberOfCards)
             {
                 return ShindenNotAcceptable("User has no space left in deck");
             }
-            discordId = bUser.Id;
+            discordId = user.Id;
 
             var cards = new List<Card>();
             foreach (var pack in packs)

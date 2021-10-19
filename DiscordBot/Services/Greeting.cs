@@ -47,12 +47,21 @@ namespace Sanakan.Services
             var gConfig = await db.GetGuildConfigOrCreateAsync(guild.Id);
             db.Guilds.Remove(gConfig);
 
-            var stats = db.TimeStatuses.AsQueryable().AsSplitQuery().Where(x => x.Guild == guild.Id).ToList();
+            var stats = db.TimeStatuses
+                .AsQueryable()
+                .AsSplitQuery()
+                .Where(x => x.Guild == guild.Id)
+                .ToList();
             db.TimeStatuses.RemoveRange(stats);
 
             await db.SaveChangesAsync();
 
-            var mute = db.Penalties.AsQueryable().AsSplitQuery().Where(x => x.Guild == guild.Id).ToList();
+            var mute = db.Penalties
+                .AsQueryable()
+                .AsSplitQuery()
+                .Where(x => x.Guild == guild.Id)
+                .ToList();
+
             db.Penalties.RemoveRange(mute);
 
             await db.SaveChangesAsync();
@@ -66,28 +75,30 @@ namespace Sanakan.Services
             }
 
             if (_config.BlacklistedGuilds.Any(x => x == user.Guild.Id))
-                return;
-
-            var config = await db.GetCachedGuildFullConfigAsync(user.Guild.Id);
-
-            if (config?.WelcomeMessage == null)
             {
                 return;
             }
 
-            if (config.WelcomeMessage == "off")
+            var guildConfig = await db.GetCachedGuildFullConfigAsync(user.Guild.Id);
+
+            if (guildConfig?.WelcomeMessage == null)
+            {
+                return;
+            }
+
+            if (guildConfig.WelcomeMessage == "off")
             {
                 return;
             }
 
             await SendMessageAsync(ReplaceTags(user, config.WelcomeMessage), user.Guild.GetTextChannel(config.GreetingChannel));
 
-            if (config?.WelcomeMessagePW == null)
+            if (guildConfig?.WelcomeMessagePW == null)
             {
                 return;
             }
 
-            if (config.WelcomeMessagePW == "off")
+            if (guildConfig.WelcomeMessagePW == "off")
             {
                 return;
             }
@@ -95,12 +106,12 @@ namespace Sanakan.Services
             try
             {
                 var pw = await user.GetOrCreateDMChannelAsync();
-                await pw.SendMessageAsync(ReplaceTags(user, config.WelcomeMessagePW));
+                await pw.SendMessageAsync(ReplaceTags(user, guildConfig.WelcomeMessagePW));
                 await pw.CloseAsync();
             }
             catch (Exception ex)
             {
-                _logger.Log($"Greeting: {ex}");
+                _logger.LogError($"Greeting: {ex}", ex);
             }
         }
 
@@ -111,17 +122,29 @@ namespace Sanakan.Services
                 return;
             }
 
-            if (!_config..BlacklistedGuilds.Any(x => x == user.Guild.Id))
+            var config = _config.CurrentValue;
+
+            if (!config.BlacklistedGuilds.Any(x => x == user.Guild.Id))
             {
-                var config = await db.GetCachedGuildFullConfigAsync(user.Guild.Id);
-                if (config?.GoodbyeMessage == null) return;
-                if (config.GoodbyeMessage == "off") return;
+                var guildConfig = await db.GetCachedGuildFullConfigAsync(user.Guild.Id);
+                if (guildConfig?.GoodbyeMessage == null)
+                {
+                    return;
+                }
+
+                if (guildConfig.GoodbyeMessage == "off")
+                {
+                    return;
+                }
 
                 await SendMessageAsync(ReplaceTags(user, config.GoodbyeMessage), user.Guild.GetTextChannel(config.GreetingChannel));
             }
 
             var thisUser = _client.Guilds.FirstOrDefault(x => x.Id == user.Id);
-            if (thisUser != null) return;
+            if (thisUser != null)
+            {
+                return;
+            }
 
             var moveTask = new Task<Task>(async () =>
             {

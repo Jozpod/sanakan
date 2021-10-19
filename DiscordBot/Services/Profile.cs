@@ -23,27 +23,24 @@ namespace Sanakan.Services
         private readonly IShindenClient _shClient;
         private readonly IImageProcessing _img;
         private ILogger _logger;
-        private object _config;
         private Timer _timer;
 
         public Profile(
             DiscordSocketClient client,
             IShindenClient shClient,
             IImageProcessing img,
-            ILogger<Profile> logger,
-            IConfig config)
+            ILogger<Profile> logger)
         {
             _shClient = shClient;
             _client = client;
             _logger = logger;
-            _config = config;
             _img = img;
 
             _timer = new Timer(async _ =>
             {
                 try
                 {
-                    await CyclicCheckAsync(db, dbg);
+                    await CyclicCheckAsync();
                 }
                 catch (Exception ex)
                 {
@@ -55,7 +52,7 @@ namespace Sanakan.Services
             TimeSpan.FromMinutes(1));
         }
 
-        private async Task CyclicCheckAsync(Database.UserContext context, Database.GuildConfigContext guildContext)
+        private async Task CyclicCheckAsync()
         {
             var subs = context.TimeStatuses
                 .AsNoTracking()
@@ -258,7 +255,11 @@ namespace Sanakan.Services
 
             try
             {
-                if (File.Exists(path)) File.Delete(path);
+                if (_fileSystem.Exists(path))
+                {
+                    _fileSystem.Delete(path);
+                }
+
                 await _img.SaveImageFromUrlAsync(imgUrl, path, new Size(width, height), streach);
             }
             catch (Exception)

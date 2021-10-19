@@ -87,7 +87,7 @@
       "version": "1.0.0",
       "restore": {
         "projectUniqueName": "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\DAL\\DAL.csproj",
-        "projectName": "DAL",
+        "projectName": "Sanakan.DAL",
         "projectPath": "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\DAL\\DAL.csproj",
         "packagesPath": "C:\\Users\\jozefpodlecki\\.nuget\\packages\\",
         "outputPath": "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\DAL\\obj\\",

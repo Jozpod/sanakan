@@ -27,7 +27,7 @@ namespace Sanakan.Modules
         private Services.Helper _helper;
         private ILogger _logger;
         private SanakanConfiguration _config;
-        private readonly IRepository _repository;
+        private readonly IAllRepository _repository;
         private readonly IOperatingSystem _operatingSystem;
 
         public HelperModule(
@@ -36,7 +36,7 @@ namespace Sanakan.Modules
             SessionManager session,
             ILogger<HelperModule> logger,
             IOptions<SanakanConfiguration> config,
-            IRepository repository,
+            IAllRepository repository,
             IOperatingSystem operatingSystem)
         {
             _moderation = moderation;
@@ -95,7 +95,7 @@ namespace Sanakan.Modules
         [Command("ktoto", RunMode = RunMode.Async)]
         [Alias("whois")]
         [Summary("wyświetla informacje o użytkowniku")]
-        [Remarks("Dzida"), RequireCommandChannel]
+        [Remarks("User"), RequireCommandChannel]
         public async Task GiveUserInfoAsync([Summary("nazwa użytkownika (opcjonalne)")]SocketUser user = null)
         {
             var usr = (user ?? Context.User) as SocketGuildUser;
@@ -140,8 +140,9 @@ namespace Sanakan.Modules
         [Command("awatar", RunMode = RunMode.Async)]
         [Alias("avatar", "pfp")]
         [Summary("wyświetla awatar użytkownika")]
-        [Remarks("Dzida"), RequireCommandChannel]
-        public async Task ShowUserAvatarAsync([Summary("nazwa użytkownika (opcjonalne)")]SocketUser user = null)
+        [Remarks("User"), RequireCommandChannel]
+        public async Task ShowUserAvatarAsync(
+            [Summary("nazwa użytkownika (opcjonalne)")]SocketUser user = null)
         {
             var usr = (user ?? Context.User);
             var embed = new EmbedBuilder
@@ -250,7 +251,7 @@ namespace Sanakan.Modules
 
             await ReplyAsync("", embed: "Wysłano zgłoszenie.".ToEmbedMessage(EMType.Success).Build());
 
-            string userName = $"{Context.User.Username}({Context.User.Id})";
+            var userName = $"{Context.User.Username}({Context.User.Id})";
             var sendMsg = await raportCh.SendMessageAsync($"{repMsg.GetJumpUrl()}", embed: "prep".ToEmbedMessage().Build());
 
             try
@@ -265,7 +266,7 @@ namespace Sanakan.Modules
                     Message = sendMsg.Id
                 };
 
-                rConfig.Raports.Add();
+                rConfig.Raports.Add(record);
                 await _repository.SaveChangesAsync();
             }
             catch (Exception ex)

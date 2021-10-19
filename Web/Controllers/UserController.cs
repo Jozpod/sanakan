@@ -6,7 +6,6 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
-using DAL.Repositories.Abstractions;
 using Discord.WebSocket;
 using DiscordBot.Services.Executor;
 using Microsoft.AspNetCore.Authorization;
@@ -19,8 +18,12 @@ using Microsoft.IdentityModel.Tokens;
 using Sanakan.Api.Models;
 using Sanakan.Common;
 using Sanakan.Config;
+using Sanakan.Configuration;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Models.Analytics;
+using Sanakan.DAL.Repositories;
+using Sanakan.DAL.Repositories.Abstractions;
+using Sanakan.DiscordBot;
 using Sanakan.Extensions;
 using Sanakan.Services.Executor;
 using Sanakan.ShindenApi;
@@ -40,20 +43,20 @@ namespace Sanakan.Web.Controllers
         private readonly ILogger _logger;
         private readonly SanakanConfiguration _config;
         private readonly IUserRepository _userRepository;
-        private readonly IRepository _repository;
+        private readonly IAllRepository _repository;
         private readonly IExecutor _executor;
         private readonly IShindenClient _shClient;
-        private readonly DiscordSocketClient _client;
+        private readonly IDiscordSocketClientAccessor _discordSocketClientAccessor;
         private readonly ISystemClock _systemClock;
         private readonly ICacheManager _cacheManager;
         private readonly IUserContext _userContext;
         private readonly IJwtBuilder _jwtBuilder;
 
         public UserController(
-            DiscordSocketClient client,
+            IDiscordSocketClientAccessor discordSocketClientAccessor,
             IOptions<SanakanConfiguration> options,
             IUserRepository userRepository,
-            IRepository repository,
+            IAllRepository repository,
             IShindenClient shClient,
             ILogger<UserController> logger,
             IExecutor executor,
@@ -62,7 +65,7 @@ namespace Sanakan.Web.Controllers
             IUserContext userContext,
             IJwtBuilder jwtBuilder)
         {
-            _client = client;
+            _discordSocketClientAccessor = discordSocketClientAccessor;
             _userRepository = userRepository;
             _repository = repository;
             _logger = logger;
@@ -79,7 +82,7 @@ namespace Sanakan.Web.Controllers
         /// </summary>
         /// <param name="id">The user identifier in Discord.</param>
         [HttpGet("discord/{id}"), Authorize(Policy = AuthorizePolicies.Site)]
-        [ProducesResponseType(typeof(User), 200)]
+        [ProducesResponseType(typeof(User), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetUserByDiscordIdAsync(ulong id)
         {
             var result = await _userRepository.GetCachedFullUserAsync(id);
@@ -95,7 +98,7 @@ namespace Sanakan.Web.Controllers
         [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetUserIdByNameAsync([FromBody, Required]string name)
         {
-            var response = await _shClient.UserAsync(name);
+            var response = await _shClient.SearchUserAsync(name);
 
             if (!response.IsSuccessStatusCode())
             {
@@ -163,19 +166,15 @@ namespace Sanakan.Web.Controllers
         /// Pobieranie użytkownika bota z zmniejszoną ilością danych
         /// </summary>
         /// <param name="id">id użytkownika shindena</param>
-        /// <returns>użytkownik bota</returns>
         [HttpGet("shinden/simple/{id}"), Authorize(Policy = AuthorizePolicies.Site)]
         [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(UserWithToken), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetUserByShindenIdSimpleAsync(ulong id)
         {
-            var user = db.Users
-                .AsQueryable()
-                .AsSplitQuery()
-                .Where(x => x.Shinden == id)
-                .Include(x => x.GameDeck)
-                .AsNoTracking()
-                .FirstOrDefault();
+            var user = await _userRepository.GetByShindenIdAsync(id, new UserQueryOptions
+            {
+                IncludeGameDeck = true
+            });
 
             if (user == null)
             {
@@ -186,7 +185,7 @@ namespace Sanakan.Web.Controllers
             
             if (_userContext.HasWebpageClaim())
             {
-                tokenData = _jwtBuilder.Build(_config, user);
+                tokenData = _jwtBuilder.Build();
             }
 
             var result = new UserWithToken()
@@ -208,21 +207,25 @@ namespace Sanakan.Web.Controllers
         [HttpPost("shinden/{id}/nickname"), Authorize(Policy = AuthorizePolicies.Site)]
         [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(UserWithToken), StatusCodes.Status200OK)]
-        public async Task<IActionResult> ChangeNicknameShindenUserAsync(ulong id, [FromBody, Required]string nickname)
+        public async Task<IActionResult> ChangeNicknameShindenUserAsync(
+            ulong id,
+            [FromBody, Required]string nickname)
         {
-            var user = await db.Users
-                     .AsQueryable()
-                     .AsSplitQuery()
-                     .Where(x => x.Shinden == id)
-                     .AsNoTracking()
-                     .FirstOrDefaultAsync();
+            var user = await _userRepository.GetByShindenIdAsync(id);
 
             if (user == null)
             {
                 return ShindenNotFound(Strings.UserNotFound);
             }
 
-            var guild = _client.GetGuild(Constants.ShindenDiscordGuildId);
+            var client = _discordSocketClientAccessor.Client;
+
+            if(client == null)
+            {
+                return ShindenForbidden("Could not access discord client");
+            }
+
+            var guild = client.GetGuild(Constants.ShindenDiscordGuildId);
 
             if (guild == null)
             {
@@ -264,37 +267,47 @@ namespace Sanakan.Web.Controllers
                 return ShindenInternalServerError("Model is Invalid!");
             }
 
-            var user = _client.GetUser(id.DiscordUserId);
+            var client = _discordSocketClientAccessor.Client;
+
+            if (client == null)
+            {
+                return ShindenForbidden("Could not access discord client");
+            }
+
+            var discordUser = client.GetUser(id.DiscordUserId);
             
-            if (user == null)
+            if (discordUser == null)
             {
                 return ShindenNotFound(Strings.UserNotFound);
             }
 
-            var botUser = db.Users.FirstOrDefault(x => x.Id == id.DiscordUserId);
+            var botUser = await _userRepository.GetByDiscordIdAsync(id.DiscordUserId);
+
             if (botUser != null || botUser.Shinden != 0)
             {
                 return ShindenNotFound("User already connected!");
             }
 
-            var response = await _shClient.Search.UserAsync(id.Username);
+            var response = await _shClient.SearchUserAsync(id.Username);
             if (!response.IsSuccessStatusCode())
             {
                 return ShindenForbidden("Can't connect to shinden!");
             }
 
-            var sUser = (await _shClient.User.GetAsync(response.Body.First())).Body;
+            var sUser = (await _shClient.GetAsync(response.Body.First().Id)).Body;
             if (sUser.ForumId.Value != id.ForumUserId)
             {
                 return ShindenInternalServerError("Something went wrong!");
             }
 
-            if (db.Users.Any(x => x.Shinden == sUser.Id))
+            if (await _userRepository.ExistsByShindenIdAsync(sUser.Id))
             {
-                var oldUsers = await db.Users.AsQueryable()
-                    .Where(x => x.Shinden == sUser.Id
-                        && x.Id != id.DiscordUserId)
-                    .ToListAsync();
+                var oldUsers = _userRepository.GetByShindenIdAsync();
+                    //await db.Users
+                    //.AsQueryable()
+                    //.Where(x => x.Shinden == sUser.Id
+                    //    && x.Id != id.DiscordUserId)
+                    //.ToListAsync();
 
                 if (oldUsers.Any())
                 {
@@ -302,7 +315,7 @@ namespace Sanakan.Web.Controllers
                         .Where(x => x.Type == RichMessageType.AdminNotify);
                     foreach (var rmc in rmcs)
                     {
-                        var guild = _client.GetGuild(rmc.GuildId);
+                        var guild = client.GetGuild(rmc.GuildId);
                         if (guild == null)
                         {
                             continue;
@@ -326,10 +339,10 @@ namespace Sanakan.Web.Controllers
             }
             var exe = new Executable($"api-register u{id.DiscordUserId}", new Task<Task>(async () =>
             {
-                botUser = await dbs.GetUserOrCreateAsync(id.DiscordUserId);
+                botUser = await _userRepository.GetUserOrCreateAsync(id.DiscordUserId);
                 botUser.Shinden = sUser.Id;
 
-                await dbs.SaveChangesAsync();
+                await _userRepository.SaveChangesAsync();
 
                 _cacheManager.ExpireTag(new string[] { $"user-{user.Id}", "users" });
             }), Priority.High);
@@ -339,17 +352,16 @@ namespace Sanakan.Web.Controllers
         }
 
         /// <summary>
-        /// Zmiana ilości punktów TC użytkownika
+        /// Changes the amount of TC points for given user.
         /// </summary>
-        /// <param name="id">id użytkownika discorda</param>
-        /// <param name="value">liczba TC</param>
-        /// <response code="404">User not found</response>
+        /// <param name="id">The user identifier in Discord.</param>
+        /// <param name="value">The number of TC</param>
         [HttpPut("discord/{id}/tc"), Authorize(Policy = AuthorizePolicies.Site)]
         [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> ModifyPointsTCDiscordAsync(ulong id, [FromBody, Required]long value)
         {
-            var user = await _userRepository.GetByIdAsync();
+            var user = await _userRepository.GetByDiscordIdAsync(id);
             //db.Users.FirstOrDefault(x => x.Id == id);
 
             if (user == null)

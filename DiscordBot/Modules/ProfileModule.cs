@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Sanakan.Common;
 using Sanakan.Common.Models;
 using Sanakan.DAL.Models;
+using Sanakan.DiscordBot;
 using Sanakan.Extensions;
 using Sanakan.Preconditions;
 using Sanakan.Services;
@@ -27,14 +28,14 @@ namespace Sanakan.Modules
         private readonly Services.Profile _profile;
         private readonly SessionManager _session;
         private readonly ICacheManager _cacheManager;
-        private readonly IRepository _repository;
+        private readonly IAllRepository _repository;
         private readonly IUserRepository _userRepository;
 
         public ProfileModule(
             Services.Profile prof,
             SessionManager session,
             ICacheManager cacheManager,
-            IRepository repository,
+            IAllRepository repository,
             IUserRepository userRepository)
         {
             _profile = prof;
@@ -258,7 +259,10 @@ namespace Sanakan.Modules
 
             await building.DeleteAsync();
             var msg = await ReplyAsync("", embed: session.BuildPage(0));
-            await msg.AddReactionsAsync(new[] { new Emoji("⬅"), new Emoji("➡") });
+            await msg.AddReactionsAsync(new[] {
+                Emojis.LeftwardsArrow,
+                Emojis.RightwardsArrow,
+            });
 
             session.Message = msg;
             await _session.TryAddSession(session);

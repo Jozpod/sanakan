@@ -4,6 +4,9 @@ namespace Sanakan.DAL.Models.Configuration
 {
     public class GuildOptions
     {
+        /// <summary>
+        /// The Discord guild identifier.
+        /// </summary>
         public ulong Id { get; set; }
         public ulong MuteRole { get; set; }
         public ulong ModMuteRole { get; set; }
