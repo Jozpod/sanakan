@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Sanakan.DAL.Repositories.Abstractions
 {
-    public interface IGuildConfigRepository
+    public interface IGuildConfigRepository : ICreateRepository<GuildOptions>, ISaveRepository
     {
         Task<GuildOptions> GetGuildConfigOrCreateAsync(ulong guildId);
         Task<GuildOptions> GetCachedGuildFullConfigAsync(ulong guildId);

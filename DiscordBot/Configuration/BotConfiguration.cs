@@ -7,7 +7,7 @@ namespace Sanakan.DiscordBot.Configuration
     public class BotConfiguration
     {
         /// <summary>
-        /// The list of discord guild identifiers to blacklist
+        /// The list of discord guild ( servers ) identifiers to blacklist
         /// </summary>
         public List<ulong> BlacklistedGuilds { get; set; }
 
@@ -17,7 +17,14 @@ namespace Sanakan.DiscordBot.Configuration
         public string Prefix { get; set; }
 
         public ExperienceConfiguration Exp { get; set; }
+        
         public bool SafariEnabled { get; set; }
+        
         public List<ulong> Dev { get; set; }
+
+        /// <summary>
+        /// The amount of characters needed for one card packet.
+        /// </summary>
+        public long CharPerPacket { get; set; }
     }
 }

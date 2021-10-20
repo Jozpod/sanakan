@@ -9,6 +9,300 @@ namespace Sanakan.Extensions
 {
     public static class CardExtension
     {
+        public static double ExpToUpgrade(this Card card)
+        {
+            switch (card.Rarity)
+            {
+                case Rarity.SSS:
+                    if (card.FromFigure)
+                    {
+                        return 120 * (int)card.Quality;
+                    }
+                    return 1000;
+                case Rarity.SS:
+                    return 100;
+
+                default:
+                    return 30 + (4 * (7 - (int)card.Rarity));
+            }
+        }
+        public static string GetAffectionString(this Card card)
+        {
+            if (card.Affection <= -400) return "Pogarda (γ)";
+            if (card.Affection <= -200) return "Pogarda (β)";
+            if (card.Affection <= -100) return "Pogarda (α)";
+            if (card.Affection <= -50) return "Pogarda";
+            if (card.Affection <= -5) return "Nienawiść";
+            if (card.Affection <= -4) return "Zawiść";
+            if (card.Affection <= -3) return "Wrogość";
+            if (card.Affection <= -2) return "Złośliwość";
+            if (card.Affection <= -1) return "Chłodność";
+            if (card.Affection >= 400) return "Obsesyjna miłość (γ)";
+            if (card.Affection >= 200) return "Obsesyjna miłość (β)";
+            if (card.Affection >= 100) return "Obsesyjna miłość (α)";
+            if (card.Affection >= 50) return "Obsesyjna miłość";
+            if (card.Affection >= 5) return "Miłość";
+            if (card.Affection >= 4) return "Zauroczenie";
+            if (card.Affection >= 3) return "Przyjaźń";
+            if (card.Affection >= 2) return "Fascynacja";
+            if (card.Affection >= 1) return "Zaciekawienie";
+            return "Obojętność";
+        }
+
+        public static bool HasNoNegativeEffectAfterBloodUsage(this Card card) => card.Affection >= 4;
+        public static double GetMaxExpToChest(this Card card, ExpContainerLevel lvl)
+        {
+            double exp = 0;
+
+            switch (card.Rarity)
+            {
+                case Rarity.SSS:
+                    exp = 16d;
+                    break;
+
+                case Rarity.SS:
+                    exp = 8d;
+                    break;
+
+                case Rarity.S:
+                    exp = 4.8;
+                    break;
+
+                case Rarity.A:
+                case Rarity.B:
+                    exp = 3.5;
+                    break;
+
+                case Rarity.C:
+                    exp = 2.5;
+                    break;
+
+                default:
+                case Rarity.D:
+                case Rarity.E:
+                    exp = 1.5;
+                    break;
+            }
+
+            switch (lvl)
+            {
+                case ExpContainerLevel.Level4:
+                    exp *= 5d;
+                    break;
+                case ExpContainerLevel.Level3:
+                    exp *= 2d;
+                    break;
+                case ExpContainerLevel.Level2:
+                    exp *= 1.5;
+                    break;
+
+                default:
+                case ExpContainerLevel.Level1:
+                case ExpContainerLevel.Disabled:
+                    break;
+            }
+
+            return exp;
+        }
+
+        public static string GetShortString(this Card card, bool nameAsUrl = false)
+        {
+            string name = nameAsUrl ? card.GetNameWithUrl() : card.Name;
+            return $"**[{card.Id}]** {name} **{card.GetCardRealRarity()}**";
+        }
+
+        public static string GetName(this CardExpedition expedition, string end = "a")
+        {
+            switch (expedition)
+            {
+                case CardExpedition.NormalItemWithExp:
+                    return $"normaln{end}";
+
+                case CardExpedition.ExtremeItemWithExp:
+                    return $"niemożliw{end}";
+
+                case CardExpedition.DarkExp:
+                case CardExpedition.DarkItems:
+                case CardExpedition.DarkItemWithExp:
+                    return $"nikczemn{end}";
+
+                case CardExpedition.LightExp:
+                case CardExpedition.LightItems:
+                case CardExpedition.LightItemWithExp:
+                    return $"heroiczn{end}";
+
+                case CardExpedition.UltimateEasy:
+                case CardExpedition.UltimateMedium:
+                case CardExpedition.UltimateHard:
+                case CardExpedition.UltimateHardcore:
+                    return $"niezwykł{end}";
+
+                default:
+                case CardExpedition.None:
+                    return "-";
+            }
+        }
+        public static bool CanFightOnPvEGMwK(this Card card) => card.Affection > -80;
+        public static string GetStatusIcons(this Card card)
+        {
+            var icons = new List<string>();
+            if (card.Active) icons.Add("☑️");
+            if (card.Unique) icons.Add("💠");
+            if (card.FromFigure) icons.Add("🎖️");
+            if (!card.IsTradable) icons.Add("⛔");
+            if (card.IsBroken) icons.Add("💔");
+            if (card.InCage) icons.Add("🔒");
+            if (card.Expedition != CardExpedition.None) icons.Add("✈️");
+            if (!string.IsNullOrEmpty(card.CustomImage)) icons.Add("🖼️");
+            if (!string.IsNullOrEmpty(card.CustomBorder)) icons.Add("✂️");
+
+            var value = card.GetThreeStateMarketValue();
+            if (value == MarketValue.Low) icons.Add("♻️");
+            if (value == MarketValue.High) icons.Add("💰");
+
+            if (card.TagList.Count > 0)
+            {
+                if (card.TagList.Any(x => x.Name.Equals("ulubione", StringComparison.CurrentCultureIgnoreCase)))
+                    icons.Add("💗");
+
+                if (card.TagList.Any(x => x.Name.Equals("galeria", StringComparison.CurrentCultureIgnoreCase)))
+                    icons.Add("📌");
+
+                if (card.TagList.Any(x => x.Name.Equals("rezerwacja", StringComparison.CurrentCultureIgnoreCase)))
+                    icons.Add("📝");
+
+                if (card.TagList.Any(x => x.Name.Equals("wymiana", StringComparison.CurrentCultureIgnoreCase)))
+                    icons.Add("🔄");
+            }
+            return string.Join(" ", icons);
+        }
+        public static string GetDesc(this Card card)
+        {
+            var tags = string.Join(" ", card.TagList.Select(x => x.Name));
+            if (card.TagList.Count < 1) tags = "---";
+
+            return $"{card.GetNameWithUrl()} **{card.GetCardRealRarity()}**\n"
+                + $"*{card.Title ?? "????"}*\n\n"
+                + $"*{card.GetCardParams(true, false, true)}*\n\n"
+                + $"**Relacja:** {card.GetAffectionString()}\n"
+                + $"**Doświadczenie:** {card.ExpCnt.ToString("F")}/{card.ExpToUpgrade().ToString("F")}\n"
+                + $"**Dostępne ulepszenia:** {card.UpgradesCnt}\n\n"
+                + $"**W klatce:** {card.InCage.GetYesNo()}\n"
+                + $"**Aktywna:** {card.Active.GetYesNo()}\n"
+                + $"**Możliwość wymiany:** {card.IsTradable.GetYesNo()}\n\n"
+                + $"**WID:** {card.Id} *({card.Character})*\n"
+                + $"**Restarty:** {card.RestartCnt}\n"
+                + $"**Pochodzenie:** {card.Source.GetString()}\n"
+                + $"**Tagi:** {tags}\n"
+                + $"{card.GetStatusIcons()}\n\n";
+        }
+        public static string GetDescSmall(this Card card)
+        {
+            var tags = string.Join(" ", card.TagList.Select(x => x.Name));
+            if (card.TagList.Count < 1) tags = "---";
+
+            return $"**[{card.Id}]** *({card.Character})*\n"
+                + $"{card.GetString(true, true, true, false, true)}\n"
+                + $"_{card.Title}_\n\n"
+                + $"{card.Dere}\n"
+                + $"{card.GetAffectionString()}\n"
+                + $"{card.ExpCnt.ToString("F")}/{card.ExpToUpgrade().ToString("F")} exp\n\n"
+                + $"{tags}\n"
+                + $"{card.GetStatusIcons()}";
+        }
+        public static MarketValue GetThreeStateMarketValue(this Card card)
+        {
+            if (card.MarketValue < 0.3) return MarketValue.Low;
+            if (card.MarketValue > 2.8) return MarketValue.High;
+            return MarketValue.Normal;
+        }
+        public static bool ValidExpedition(this Card card, CardExpedition expedition, double karma)
+        {
+            if (card.Expedition != CardExpedition.None)
+                return false;
+
+            if (card.Curse == CardCurse.ExpeditionBlockade)
+                return false;
+
+            if (card.InCage || !card.CanFightOnPvEGMwK())
+                return false;
+
+            if (card.CalculateMaxTimeOnExpeditionInMinutes(karma, expedition) < 1)
+                return false;
+
+            switch (expedition)
+            {
+                case CardExpedition.ExtremeItemWithExp:
+                    return !card.FromFigure && !card.HasTag("ulubione");
+
+                case CardExpedition.NormalItemWithExp:
+                    return !card.FromFigure;
+
+                case CardExpedition.UltimateEasy:
+                case CardExpedition.UltimateHard:
+                case CardExpedition.UltimateMedium:
+                case CardExpedition.UltimateHardcore:
+                    return card.FromFigure;
+
+                case CardExpedition.LightExp:
+                case CardExpedition.LightItems:
+                    return (karma > 1000) && !card.FromFigure;
+                case CardExpedition.LightItemWithExp:
+                    return (karma > 400) && !card.FromFigure;
+
+                case CardExpedition.DarkExp:
+                case CardExpedition.DarkItems:
+                    return (karma < -1000) && !card.FromFigure;
+                case CardExpedition.DarkItemWithExp:
+                    return (karma < -400) && !card.FromFigure;
+
+                default:
+                case CardExpedition.None:
+                    return false;
+            }
+        }
+
+        public static StarStyle Parse(this StarStyle star, string s)
+        {
+            switch (s.ToLower())
+            {
+                case "waz":
+                case "waż":
+                case "wąz":
+                case "wąż":
+                case "snek":
+                case "snake":
+                    return StarStyle.Snek;
+
+                case "pig":
+                case "świnia":
+                case "swinia":
+                case "świnka":
+                case "swinka":
+                    return StarStyle.Pig;
+
+                case "biała":
+                case "biala":
+                case "white":
+                    return StarStyle.White;
+
+                case "full":
+                case "pełna":
+                case "pelna":
+                    return StarStyle.Full;
+
+                case "empty":
+                case "pusta":
+                    return StarStyle.Empty;
+
+                case "black":
+                case "czarna":
+                    return StarStyle.Black;
+
+                default:
+                    throw new Exception("Could't parse input!");
+            }
+        }
         public static string GetCardParams(
           this Card card,
           bool showBaseHp = false,

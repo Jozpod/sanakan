@@ -30,6 +30,7 @@ namespace Sanakan.Services.PocketWaifu
         private readonly ICacheManager _cacheManager;
         private readonly IRandomNumberGenerator _randomNumberGenerator;
         private readonly IResourceManager _resourceManager;
+        private readonly ICardRepository _cardRepository;
         private readonly IUserRepository _userRepository;
 
         public WaifuService(
@@ -55,7 +56,6 @@ namespace Sanakan.Services.PocketWaifu
         }
 
         private const int DERE_TAB_SIZE = ((int) Dere.Yato) + 1;
-        private static CharacterIdUpdate CharId = new CharacterIdUpdate();
 
         private static double[,] _dereDmgRelation = new double[DERE_TAB_SIZE, DERE_TAB_SIZE]
         {
@@ -163,11 +163,11 @@ namespace Sanakan.Services.PocketWaifu
 
         static public double GetDereDmgMultiplier(Card atk, Card def) => _dereDmgRelation[(int)def.Dere, (int)atk.Dere];
 
-        public bool GetEventSate() => CharId.EventEnabled;
+        public bool GetEventState { get; set; } = false;
 
-        public void SetEventState(bool state) => CharId.EventEnabled = state;
+        public DateTime LastUpdate { get; set; } = DateTime.MinValue;
 
-        public void SetEventIds(List<ulong> ids) => CharId.SetEventIds(ids);
+        public List<ulong> EventIds { get; set; } = new ();
 
         public List<Card> GetListInRightOrder(IEnumerable<Card> list, HaremType type, string tag)
         {
@@ -766,61 +766,6 @@ namespace Sanakan.Services.PocketWaifu
             });
         }
 
-        static public Card GenerateFakeNewCard(string name, string title, string image, Rarity rarity)
-        {
-            var card = new Card
-            {
-                Defence = RandomizeDefence(rarity),
-                ArenaStats = new CardArenaStats(),
-                Attack = RandomizeAttack(rarity),
-                Expedition = CardExpedition.None,
-                QualityOnStart = Quality.Broken,
-                ExpeditionDate = _systemClock.UtcNow,
-                PAS = PreAssembledFigure.None,
-                TagList = new List<CardTag>(),
-                CreationDate = _systemClock.UtcNow,
-                StarStyle = StarStyle.Full,
-                Source = CardSource.Other,
-                Quality = Quality.Broken,
-                Title = title ?? "????",
-                Dere = RandomizeDere(randomNumberGenerator),
-                Curse = CardCurse.None,
-                RarityOnStart = rarity,
-                CustomBorder = null,
-                FromFigure = false,
-                CustomImage = null,
-                IsTradable = true,
-                FirstIdOwner = 1,
-                DefenceBonus = 0,
-                HealthBonus = 0,
-                AttackBonus = 0,
-                UpgradesCnt = 2,
-                LastIdOwner = 0,
-                MarketValue = 1,
-                Rarity = rarity,
-                EnhanceCnt = 0,
-                Unique = false,
-                InCage = false,
-                RestartCnt = 0,
-                Active = false,
-                Character = 1,
-                Affection = 0,
-                Image = null,
-                Name = name,
-                Health = 0,
-                ExpCnt = 0,
-            };
-
-            if (!string.IsNullOrEmpty(image))
-                card.Image = image;
-
-            card.Health = RandomizeHealth(card);
-
-            _ = card.CalculateCardPower();
-
-            return card;
-        }
-
         public Card GenerateNewCard(IUser user, ICharacterInfo character, Rarity rarity)
         {
             var card = new Card
@@ -840,7 +785,7 @@ namespace Sanakan.Services.PocketWaifu
                 Source = CardSource.Other,
                 Character = character.Id,
                 Quality = Quality.Broken,
-                Dere = RandomizeDere(),
+                Dere = RandomizeDere(_randomNumberGenerator),
                 Curse = CardCurse.None,
                 RarityOnStart = rarity,
                 CustomBorder = null,
@@ -883,7 +828,7 @@ namespace Sanakan.Services.PocketWaifu
             => GenerateNewCard(user, character, RandomizeRarity(_randomNumberGenerator));
 
         public Card GenerateNewCard(IUser user, ICharacterInfo character, List<Rarity> rarityExcluded)
-            => GenerateNewCard(user, character, RandomizeRarity(randomNumberGenerator, rarityExcluded));
+            => GenerateNewCard(user, character, RandomizeRarity(_randomNumberGenerator, rarityExcluded));
 
         private int ScaleNumber(int oMin, int oMax, int nMin, int nMax, int value)
         {
@@ -928,7 +873,7 @@ namespace Sanakan.Services.PocketWaifu
             var relMin = relNew - (range * 6 / 100);
             var relMax = relNew + (range * 8 / 100);
 
-            var nDef = Fun.GetRandomValue(relMin, relMax + 1);
+            var nDef = _randomNumberGenerator.GetRandomValue(relMin, relMax + 1);
             if (nDef > newMax) nDef = newMax;
             if (nDef < newMin) nDef = newMin;
 
@@ -986,7 +931,7 @@ namespace Sanakan.Services.PocketWaifu
                     var enemies = totalCards.Where(x => x.Health > 0 && x.Card.GameDeckId != card.Card.GameDeckId).ToList();
                     if (enemies.Count() > 0)
                     {
-                        var target = Fun.GetOneRandomFrom(enemies);
+                        var target = _randomNumberGenerator.GetOneRandomFrom(enemies);
                         var dmg = GetDmgDeal(card.Card, target.Card);
                         target.Health -= dmg;
 
@@ -1053,10 +998,28 @@ namespace Sanakan.Services.PocketWaifu
             return embed.Build();
         }
 
+        private List<ulong> _ids = new ();
+        public bool EventEnabled { get; set; }
+        public List<ulong> Ids {
+            get
+            {
+                if (EventEnabled && EventIds.Count > 0)
+                    return EventIds;
+
+                return _ids;
+            }
+            set
+            {
+                _ids = value;
+            }
+        }
+
         public async Task<ICharacterInfo?> GetRandomCharacterAsync()
         {
             int check = 2;
-            if (CharId.IsNeedForUpdate())
+            var isNeedForUpdate = (_systemClock.UtcNow - LastUpdate).TotalDays >= 1;
+
+            if (isNeedForUpdate)
             {
                 var characters = await _shClient.GetAllCharactersFromAnimeAsync();
                 
@@ -1065,15 +1028,16 @@ namespace Sanakan.Services.PocketWaifu
                     return null;
                 }
 
-                CharId.Update(characters.Body);
+                LastUpdate = _systemClock.UtcNow;
+                Ids = characters;
             }
 
-            ulong id = _randomNumberGenerator.GetOneRandomFrom(CharId.GetIds());
+            var id = _randomNumberGenerator.GetOneRandomFrom(Ids);
             var response = await _shClient.GetCharacterInfoAsync(id);
 
             while (!response.IsSuccessStatusCode())
             {
-                id = _randomNumberGenerator.GetOneRandomFrom(CharId.GetIds());
+                id = _randomNumberGenerator.GetOneRandomFrom(Ids);
                 response = await _shClient.GetCharacterInfoAsync(id);
 
                 await Task.Delay(TimeSpan.FromSeconds(2));
@@ -1092,7 +1056,11 @@ namespace Sanakan.Services.PocketWaifu
             return im.Url;
         }
 
-        public List<Embed> GetWaifuFromCharacterSearchResult(string title, IEnumerable<Card> cards, DiscordSocketClient client, bool mention)
+        public List<Embed> GetWaifuFromCharacterSearchResult(
+            string title,
+            IEnumerable<Card> cards,
+            DiscordSocketClient client,
+            bool mention)
         {
             var list = new List<Embed>();
             var contentString = $"{title}\n\n";
@@ -1280,11 +1248,9 @@ namespace Sanakan.Services.PocketWaifu
             var sImageLocation = $"{Paths.CardsMiniatures}/{card.Id}.png";
             var pImageLocation = $"{Paths.CardsInProfiles}/{card.Id}.png";
 
-            using (var image = await _img.GetWaifuCardAsync(card))
-            {
-                image.SaveToPath(imageLocation, 300);
-                image.SaveToPath(sImageLocation, 133);
-            }
+            using var image = await _img.GetWaifuCardAsync(card);
+            image.SaveToPath(imageLocation, 300);
+            image.SaveToPath(sImageLocation, 133);
 
             using var cardImage = await _img.GetWaifuInProfileCardAsync(card);
             cardImage.SaveToPath(pImageLocation, 380);
@@ -1367,18 +1333,33 @@ namespace Sanakan.Services.PocketWaifu
             return null;
         }
 
+        private string ThisUri(SafariImage safariImage, SafariImageType type)
+        {
+            switch (type)
+            {
+                case SafariImageType.Mystery:
+                    return $"./Pictures/Poke/{safariImage.Index}.jpg";
+
+                default:
+                case SafariImageType.Truth:
+                    return $"./Pictures/Poke/{safariImage.Index}a.jpg";
+            }
+        }
+
         public async Task<string> GetSafariViewAsync(SafariImage info, Card card, ITextChannel trashChannel)
         {
-            var uri = info != null ? info.Uri(SafariImage.Type.Truth) 
-                : SafariImage.DefaultUri(SafariImage.Type.Truth);
+            var uri = info != null ? info.Uri(_fileSystem, SafariImageType.Truth) 
+                : SafariImage.DefaultUri(SafariImageType.Truth);
 
+            var DefaultX = 884;
+            var DefaultY = 198;
 
-            var GetX = _fileSystem.Exists(ThisUri(Type.Truth)) ? X : DefaultX();
-            var GetY = _fileSystem.Exists(ThisUri(Type.Truth)) ? Y : DefaultY();
+            var GetX = _fileSystem.Exists(ThisUri(info, SafariImageType.Truth)) ? info.X : DefaultX;
+            var GetY = _fileSystem.Exists(ThisUri(info, SafariImageType.Truth)) ? info.Y : DefaultY;
 
             using var cardImage = await _img.GetWaifuCardAsync(card);
-            var posX = info != null ? info.GetX() : SafariImage.DefaultX();
-            int posY = info != null ? info.GetY() : SafariImage.DefaultY();
+            var posX = info != null ? GetX : SafariImage.DefaultX();
+            int posY = info != null ? GetY : SafariImage.DefaultY();
             using var pokeImage = _img.GetCatchThatWaifuImage(cardImage, uri, posX, posY);
             using var stream = pokeImage.ToJpgStream();
 
@@ -1388,7 +1369,7 @@ namespace Sanakan.Services.PocketWaifu
 
         public async Task<string> GetSafariViewAsync(SafariImage info, ITextChannel trashChannel)
         {
-            string uri = info != null ? info.Uri(SafariImageType.Mystery) 
+            string uri = info != null ? info.Uri(_fileSystem, SafariImageType.Mystery) 
                 : SafariImage.DefaultUri(SafariImageType.Mystery);
 
             var msg = await trashChannel.SendFileAsync(uri);
@@ -1440,8 +1421,8 @@ namespace Sanakan.Services.PocketWaifu
                 imageUrl = msg.Attachments.First().Url;
             }
 
-            string imgUrls = $"[_obrazek_]({imageUrl})\n[_możesz zmienić obrazek tutaj_]({card.GetCharacterUrl()}/edit_crossroad)";
-            string ownerString = ((owner as SocketGuildUser)?.Nickname ?? owner?.Username) ?? "????";
+            var imgUrls = $"[_obrazek_]({imageUrl})\n[_możesz zmienić obrazek tutaj_]({card.GetCharacterUrl()}/edit_crossroad)";
+            var ownerString = ((owner as SocketGuildUser)?.Nickname ?? owner?.Username) ?? "????";
 
             return new EmbedBuilder
             {
@@ -1541,7 +1522,7 @@ namespace Sanakan.Services.PocketWaifu
             List<ulong> cardsId,
             List<ulong> charactersId,
             List<ulong> titlesId,
-            List<Card> cards,
+            List<Card> allCards,
             IEnumerable<Card> userCards)
         {
             var characters = new List<ulong>();
@@ -1552,7 +1533,7 @@ namespace Sanakan.Services.PocketWaifu
             {
                 foreach (var id in titlesId)
                 {
-                    var response = await _shClient.Title.GetCharactersAsync(id);
+                    var response = await _shClient.GetCharactersAsync(id);
 
                     if (!response.IsSuccessStatusCode())
                     {
@@ -1572,22 +1553,24 @@ namespace Sanakan.Services.PocketWaifu
                     .Where(c => !userCards.Any(x => x.Character == c))
                     .ToList();
 
-                var cads = await db.Cards
-                    .Include(x => x.TagList)
-                    .Where(x => characters.Any(c => c == x.Character))
-                    .AsNoTracking()
-                    .ToListAsync();
+                var cards = await _cardRepository
+                    .GetByCharacterIdsAsync(characters);
+                    //await db.Cards
+                    //.Include(x => x.TagList)
+                    //.Where(x => characters.Any(c => c == x.Character))
+                    //.AsNoTracking()
+                    //.ToListAsync();
 
-                cards.AddRange(cads);
+                allCards.AddRange(cards);
             }
 
-            return cards.Distinct().ToList();
+            return allCards.Distinct().ToList();
         }
 
         public Tuple<double, double> GetRealTimeOnExpeditionInMinutes(Card card, double karma)
         {
             var maxMinutes = card.CalculateMaxTimeOnExpeditionInMinutes(karma);
-            var realMin = (_systemClock - card.ExpeditionDate).TotalMinutes;
+            var realMin = (_systemClock.UtcNow - card.ExpeditionDate).TotalMinutes;
             var durationMin = realMin;
 
             if (maxMinutes < durationMin)

@@ -1,17 +1,18 @@
-﻿using DAL.Repositories.Abstractions;
-using Discord;
+﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Sanakan.Common;
 using Sanakan.DAL.Models.Configuration;
+using Sanakan.DAL.Repositories.Abstractions;
+using Sanakan.DiscordBot.Configuration;
 using Sanakan.Extensions;
 using Sanakan.Preconditions;
+using Sanakan.Services;
 using Sanakan.Services.Commands;
 using Sanakan.Services.Session;
 using Sanakan.Services.Session.Models;
-using Sanakan.Web.Configuration;
 using System;
 using System.Diagnostics;
 using System.Linq;
@@ -22,30 +23,34 @@ namespace Sanakan.Modules
     [Name("Ogólne")]
     public class HelperModule : ModuleBase<SocketCommandContext>
     {
-        private Services.Moderator _moderation;
+        private ModeratorService _moderation;
         private SessionManager _session;
-        private Services.Helper _helper;
+        private HelperService _helper;
         private ILogger _logger;
-        private SanakanConfiguration _config;
-        private readonly IAllRepository _repository;
+        private IOptionsMonitor<BotConfiguration> _config;
+        private readonly IGuildConfigRepository _guildConfigRepository;
+        private readonly ISystemClock _systemClock;
         private readonly IOperatingSystem _operatingSystem;
+        private readonly IServiceProvider _serviceProvider;
 
         public HelperModule(
-            Services.Helper helper,
-            Services.Moderator moderation,
+            HelperService helper,
+            ModeratorService moderation,
             SessionManager session,
             ILogger<HelperModule> logger,
-            IOptions<SanakanConfiguration> config,
-            IAllRepository repository,
-            IOperatingSystem operatingSystem)
+            IOptionsMonitor<BotConfiguration> config,
+            IGuildConfigRepository guildConfigRepository,
+            IOperatingSystem operatingSystem,
+            IServiceProvider serviceProvider)
         {
             _moderation = moderation;
             _session = session;
             _helper = helper;
             _logger = logger;
-            _config = config.Value;
-            _repository = repository;
+            _config = config;
+            _guildConfigRepository = guildConfigRepository;
             _operatingSystem = operatingSystem;
+            _serviceProvider = serviceProvider;
         }
 
         [Command("pomoc", RunMode = RunMode.Async)]
@@ -72,15 +77,18 @@ namespace Sanakan.Modules
                 bool admin = false;
                 bool dev = false;
 
-                var prefix = _config.Prefix;
+                var prefix = _config.CurrentValue.Prefix;
 
                 if (Context.Guild != null)
                 {
-                    var gConfig = await _repository.GetCachedGuildFullConfigAsync(Context.Guild.Id);
-                    if (gConfig?.Prefix != null) prefix = gConfig.Prefix;
+                    var gConfig = await _guildConfigRepository.GetCachedGuildFullConfigAsync(Context.Guild.Id);
+                    if (gConfig?.Prefix != null)
+                    {
+                        prefix = gConfig.Prefix;
+                    }
 
                     admin = (gUser.Roles.Any(x => x.Id == gConfig?.AdminRole) || gUser.GuildPermissions.Administrator);
-                    dev = _config.Dev.Any(x => x == gUser.Id);
+                    dev = _config.CurrentValue.Dev.Any(x => x == gUser.Id);
                 }
 
                 await ReplyAsync(_helper.GiveHelpAboutPublicCmd(command, prefix, admin, dev));
@@ -161,8 +169,9 @@ namespace Sanakan.Modules
         public async Task GiveBotInfoAsync()
         {
             using var proc = _operatingSystem.GetCurrentProcess();
+            var time = _systemClock.UtcNow - proc.StartTime;
             var info = $"**Sanakan ({typeof(HelperModule).Assembly.GetName().Version})**:\n"
-                + $"**Czas działania**: `{(DateTime.Now - proc.StartTime).ToString(@"d'd 'hh\:mm\:ss")}`";
+                + $"**Czas działania**: `{time.ToString(@"d'd 'hh\:mm\:ss")}`";
 
             await ReplyAsync(info);
         }
@@ -173,7 +182,7 @@ namespace Sanakan.Modules
         [Remarks("63312335634561 Tak nie wolno!"), RequireUserRole]
         public async Task ReportUserAsync([Summary("id wiadomości")]ulong messageId, [Summary("powód")][Remainder]string reason)
         {
-            var config = await _repository.GetCachedGuildFullConfigAsync(Context.Guild.Id);
+            var config = await _guildConfigRepository.GetCachedGuildFullConfigAsync(Context.Guild.Id);
             if (config == null)
             {
                 await ReplyAsync("", embed: "Serwer nie jest jeszcze skonfigurowany.".ToEmbedMessage(EMType.Bot).Build());
@@ -202,7 +211,7 @@ namespace Sanakan.Modules
                 return;
             }
 
-            if ((DateTime.Now - repMsg.CreatedAt.DateTime.ToLocalTime()).TotalHours > 3)
+            if ((_systemClock.UtcNow - repMsg.CreatedAt.DateTime.ToLocalTime()).TotalHours > 3)
             {
                 await ReplyAsync("", embed: "Można raportować tylko wiadomości, które nie są starsze od 3h.".ToEmbedMessage(EMType.Bot).Build());
                 return;
@@ -232,9 +241,12 @@ namespace Sanakan.Modules
                 var session = new AcceptSession(user, null, Context.Client.CurrentUser);
                 await _session.KillSessionIfExistAsync(session);
 
-                var msg = await ReplyAsync("", embed: $"{user.Mention} raportujesz samego siebie? Może pomogę! Na pewno chcesz muta?".ToEmbedMessage(EMType.Error).Build());
+                var msg = await ReplyAsync("", embed: $"{user.Mention} raportujesz samego siebie? Może pomogę! Na pewno chcesz muta?"
+                    .ToEmbedMessage(EMType.Error).Build());
+
                 await msg.AddReactionsAsync(session.StartReactions);
-                session.Actions = new AcceptMute(Config)
+
+                session.Actions = new AcceptMute()
                 {
                     NotifChannel = notifChannel,
                     Moderation = _moderation,
@@ -258,7 +270,7 @@ namespace Sanakan.Modules
             {
                 await sendMsg.ModifyAsync(x => x.Embed = _helper.BuildRaportInfo(repMsg, userName, reason, sendMsg.Id));
 
-                var rConfig = await _repository.GetGuildConfigOrCreateAsync(Context.Guild.Id);
+                var rConfig = await _guildConfigRepository.GetGuildConfigOrCreateAsync(Context.Guild.Id);
 
                 var record = new Raport
                 {
@@ -267,7 +279,7 @@ namespace Sanakan.Modules
                 };
 
                 rConfig.Raports.Add(record);
-                await _repository.SaveChangesAsync();
+                await _guildConfigRepository.SaveChangesAsync();
             }
             catch (Exception ex)
             {

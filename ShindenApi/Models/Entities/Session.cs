@@ -22,7 +22,7 @@ namespace Shinden.Models.Entities
         public string Hash { get; private set; }
         public DateTime Expires => Created.AddMinutes(90);
 
-        public bool IsValid() => (DateTime.Now - Created).Minutes < 90;
+        public bool IsValid() => (_systemClock.UtcNow - Created).Minutes < 90;
         public UserAuth GetAuth() => Auth;
 
         public void Renew(ISession session)

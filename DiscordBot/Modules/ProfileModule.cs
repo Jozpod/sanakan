@@ -1,5 +1,4 @@
-﻿using DAL.Repositories.Abstractions;
-using Discord;
+﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using DiscordBot.Services;
@@ -8,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Sanakan.Common;
 using Sanakan.Common.Models;
 using Sanakan.DAL.Models;
+using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot;
 using Sanakan.Extensions;
 using Sanakan.Preconditions;
@@ -30,19 +30,22 @@ namespace Sanakan.Modules
         private readonly ICacheManager _cacheManager;
         private readonly IAllRepository _repository;
         private readonly IUserRepository _userRepository;
+        private readonly ISystemClock _systemClock;
 
         public ProfileModule(
             Services.Profile prof,
             SessionManager session,
             ICacheManager cacheManager,
             IAllRepository repository,
-            IUserRepository userRepository)
+            IUserRepository userRepository,
+            ISystemClock systemClock)
         {
             _profile = prof;
             _session = session;
             _cacheManager = cacheManager;
             _repository = repository;
             _userRepository = userRepository;
+            _systemClock = systemClock;
         }
 
         [Command("portfel", RunMode = RunMode.Async)]
@@ -210,7 +213,8 @@ namespace Sanakan.Modules
         [Alias("iledopoziomu", "howmuchtolevelup", "hmtlup")]
         [Summary("wyświetla ile pozostało punktów doświadczenia do następnego poziomu")]
         [Remarks("karna")]
-        public async Task ShowHowMuchToLevelUpAsync([Summary("użytkownik(opcjonalne)")]SocketUser? socketUser = null)
+        public async Task ShowHowMuchToLevelUpAsync(
+            [Summary("użytkownik(opcjonalne)")]SocketUser? socketUser = null)
         {
             var user = socketUser ?? Context.User;
             
@@ -219,12 +223,7 @@ namespace Sanakan.Modules
                 return;
             }
 
-            var botuser = await db.Users
-                .AsQueryable()
-                .AsSplitQuery()
-                .Where(x => x.Id == user.Id)
-                .AsNoTracking()
-                .FirstOrDefaultAsync();
+            var botuser = await _userRepository.GetByDiscordIdAsync(user.Id);
 
             if (botuser == null)
             {
@@ -274,12 +273,12 @@ namespace Sanakan.Modules
         [Remarks(""), RequireAnyCommandChannel]
         public async Task ToggleWaifuViewInProfileAsync()
         {
-            var botuser = await _repository.GetUserOrCreateAsync(Context.User.Id);
+            var botuser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
             botuser.ShowWaifuInProfile = !botuser.ShowWaifuInProfile;
 
-            string result = botuser.ShowWaifuInProfile ? "załączony" : "wyłączony";
+            var result = botuser.ShowWaifuInProfile ? "załączony" : "wyłączony";
 
-            await _repository.SaveChangesAsync();
+            await _userRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(new string[] { $"user-{botuser.Id}", "users" });
             
@@ -313,10 +312,14 @@ namespace Sanakan.Modules
             }
 
             botUser.GameDeck = await _repository.GetCachedUserGameDeckAsync(user.Id);
+            var topPosition = allUsers
+                .OrderByDescending(x => x.ExpCnt)
+                .ToList()
+                .IndexOf(botUser) + 1;
             using var stream = await _profile
-                .GetProfileImageAsync(user, botUser, allUsers
-                .OrderByDescending(x => x.ExpCnt).ToList().IndexOf(botUser) + 1);
-            await Context.Channel.SendFileAsync(stream, $"{usr.Id}.png");
+                .GetProfileImageAsync(user, botUser, topPosition);
+
+            await Context.Channel.SendFileAsync(stream, $"{user.Id}.png");
         }
 
         [Command("misje")]
@@ -326,7 +329,7 @@ namespace Sanakan.Modules
         public async Task ShowUserQuestsProgressAsync(
             [Summary("czy odebrać nagrody?")]bool claim = false)
         {
-            var botuser = await _repository.GetUserOrCreateAsync(Context.User.Id);
+            var botuser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
             var weeklyQuests = botuser.CreateOrGetAllWeeklyQuests();
             var dailyQuests = botuser.CreateOrGetAllDailyQuests();
 
@@ -363,7 +366,7 @@ namespace Sanakan.Modules
                     _cacheManager.ExpireTag(new string[] { $"user-{botuser.Id}", "users" });
 
                     await ReplyAsync("", embed: $"**Odebrane nagrody:**\n\n{string.Join("\n", rewards)}".ToEmbedMessage(EMType.Success).WithUser(Context.User).Build());
-                    await _repository.SaveChangesAsync();
+                    await _userRepository.SaveChangesAsync();
                     return;
                 }
 
@@ -371,10 +374,10 @@ namespace Sanakan.Modules
                 return;
             }
 
-            string dailyTip = "Za wykonanie wszystkich dziennych misji można otrzymać 10 AC.";
-            string totalTip = "Dzienne misje odświeżają się o północy, a tygodniowe co niedzielę.";
-            string daily = $"**Dzienne misje:**\n\n{string.Join("\n", dailyQuests.Select(x => x.ToView()))}";
-            string weekly = $"**Tygodniowe misje:**\n\n{string.Join("\n", weeklyQuests.Select(x => x.ToView()))}";
+            var dailyTip = "Za wykonanie wszystkich dziennych misji można otrzymać 10 AC.";
+            var totalTip = "Dzienne misje odświeżają się o północy, a tygodniowe co niedzielę.";
+            var daily = $"**Dzienne misje:**\n\n{string.Join("\n", dailyQuests.Select(x => x.ToView()))}";
+            var weekly = $"**Tygodniowe misje:**\n\n{string.Join("\n", weeklyQuests.Select(x => x.ToView()))}";
 
             await ReplyAsync("", embed: $"{daily}\n\n{dailyTip}\n\n\n{weekly}\n\n{totalTip}".ToEmbedMessage(EMType.Bot).WithUser(Context.User).Build());
         }
@@ -432,7 +435,7 @@ namespace Sanakan.Modules
             }
             botuser.ProfileType = type;
 
-            await _repository.SaveChangesAsync();
+            await _userRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(new string[] { $"user-{botuser.Id}", "users" });
 
@@ -449,7 +452,7 @@ namespace Sanakan.Modules
             var tcCost = 2500;
             var scCost = 5000;
 
-            var botuser = await _repository.GetUserOrCreateAsync(Context.User.Id);
+            var botuser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
             if (botuser.ScCnt < scCost && currency == SCurrency.Sc)
             {
                 await ReplyAsync("", embed: $"{Context.User.Mention} nie posiadasz wystarczającej liczby SC!".ToEmbedMessage(EMType.Error).Build());
@@ -487,7 +490,7 @@ namespace Sanakan.Modules
                 botuser.TcCnt -= tcCost;
             }
 
-            await _repository.SaveChangesAsync();
+            await _userRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(new string[] { $"user-{botuser.Id}", "users" });
 
@@ -541,7 +544,7 @@ namespace Sanakan.Modules
             global.EndsAt = global.EndsAt.AddMonths(1);
             botuser.TcCnt -= cost;
 
-            await _repository.SaveChangesAsync();
+            await _userRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(new string[] { $"user-{botuser.Id}", "users" });
 
@@ -569,7 +572,7 @@ namespace Sanakan.Modules
                 return;
             }
 
-            var botuser = await _repository.GetUserOrCreateAsync(user.Id);
+            var botuser = await _userRepository.GetUserOrCreateAsync(user.Id);
             var points = currency == SCurrency.Tc ? botuser.TcCnt : botuser.ScCnt;
 
             if (points < color.Price(currency))
@@ -590,7 +593,7 @@ namespace Sanakan.Modules
 
             if (color == FColor.CleanColor)
             {
-                colort.EndsAt = DateTime.Now;
+                colort.EndsAt = _systemClock.UtcNow;
                 await _profile.RomoveUserColorAsync(user);
             }
             else
@@ -602,7 +605,7 @@ namespace Sanakan.Modules
                 else
                 {
                     await _profile.RomoveUserColorAsync(user);
-                    colort.EndsAt = DateTime.Now.AddMonths(1);
+                    colort.EndsAt = _systemClock.UtcNow.AddMonths(1);
                 }
 
                 var gConfig = await _repository.GetCachedGuildFullConfigAsync(Context.Guild.Id);
@@ -622,7 +625,7 @@ namespace Sanakan.Modules
                 }
             }
 
-            await _repository.SaveChangesAsync();
+            await _userRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(new string[] { $"user-{botuser.Id}", "users" });
 

@@ -53,6 +53,9 @@ namespace Sanakan.DAL.Models
 
         public virtual CardArenaStats ArenaStats { get; set; }
 
+        /// <summary>
+        /// Gets the discord user identifier.
+        /// </summary>
         public ulong GameDeckId { get; set; }
 
         [JsonIgnore]
@@ -61,6 +64,18 @@ namespace Sanakan.DAL.Models
         public bool IsBroken => Affection <= -50;
 
         public bool IsUnusable => Affection <= -5;
+
+        public bool HasTag(string tag)
+        {
+            return TagList
+                .Any(x => x.Name.Equals(tag, StringComparison.CurrentCultureIgnoreCase));
+        }
+
+        public bool HasAnyTag(IEnumerable<string> tags)
+        {
+            return TagList
+                .Any(x => tags.Any(t => t.Equals(x.Name, StringComparison.CurrentCultureIgnoreCase)));
+        }
 
         public override string ToString()
         {
@@ -74,7 +89,14 @@ namespace Sanakan.DAL.Models
             };
 
             string mark = marks.Any(x => x != "") ? $"**{string.Join("", marks)}** " : "";
-            return $"{mark}{this.GetString(false, false, true)}";
+
+            string idStr = false ? "" : $"**[{Id}]** ";
+            string name = true ? GetNameWithUrl() : Name;
+            string upgCnt = (false && !FromFigure) ? $"_(U:{UpgradesCnt})_" : "";
+
+            return $"{idStr} {name} **{card.GetCardRealRarity()}** {card.GetCardParams(showBaseHp, allowZero)}
+
+            //return $"{mark}{this.GetString(false, false, true)}";
         }
     }
 }

@@ -117,11 +117,33 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="GameInfo" xml:space="preserve">
+    <value>**Info:**
+
+✖ - nieaktywny rząd
+✔ - aktywny rząd
+
+**Wygrane:**
+
+
+3-5x{0} - tryb psaja (podwójne wygrane)</value>
+  </data>
   <data name="SlotMachineInfo" xml:space="preserve">
     <value>**Nastawa** / **Wartośći** 
 Info `(wypisywanie informacji)`
 Mnożnik / `1`, `2`, `3`
 Stawka / `1`, `10`, `100`
 Rzędy / `1`, `2`, `3`</value>
+  </data>
+  <data name="SlotMachineResult" xml:space="preserve">
+    <value>{0}**Gra:** {1}
+
+ ➖➖➖➖➖➖ 
+ {2}
+  ➖➖➖➖➖➖ 
+**Stawka:** `{3} SC`
+**Mnożnik:** `x{4}`
+
+**Wygrana:** `{5} SC`</value>
   </data>
 </root>

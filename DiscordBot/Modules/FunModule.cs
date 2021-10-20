@@ -15,23 +15,27 @@ using System.Linq;
 using System.Threading.Tasks;
 using Sanakan.DiscordBot.Services;
 using Sanakan.Common;
-using DAL.Repositories.Abstractions;
+using Sanakan.DAL.Repositories.Abstractions;
+using Sanakan.DiscordBot.Resources;
 
 namespace Sanakan.Modules
 {
     [Name("Zabawy"), RequireUserRole]
     public class FunModule : ModuleBase<SocketCommandContext>
     {
-        private readonly Moderator _moderation;
+        public const string PsyduckEmoji = "<:klasycznypsaj:482136878120828938>";
+        private readonly ModeratorService _moderation;
         private readonly SessionManager _session;
         private readonly ICacheManager _cacheManager;
         private readonly IAllRepository _repository;
+        private readonly IUserRepository _userRepository;
+        private readonly IQuestionRepository _questionRepository;
         private readonly ISystemClock _systemClock;
         private readonly IRandomNumberGenerator _randomNumberGenerator;
         private readonly IServiceProvider _serviceProvider;
 
         public FunModule(
-            Moderator moderation,
+            ModeratorService moderation,
             SessionManager session,
             ICacheManager cacheManager,
             IAllRepository repository,
@@ -136,7 +140,7 @@ namespace Sanakan.Modules
             await msg.AddReactionsAsync(session.StartReactions);
 
             // _serviceProvider.GetService();
-            session.Actions = new AcceptMute(Config)
+            session.Actions = new AcceptMute(_randomNumberGenerator)
             {
                 NotifChannel = notifChannel,
                 Moderation = _moderation,
@@ -172,7 +176,7 @@ namespace Sanakan.Modules
                 return;
             }
 
-            hourly.EndsAt = DateTime.Now.AddHours(1);
+            hourly.EndsAt = _systemClock.UtcNow.AddHours(1);
             botuser.ScCnt += 5;
 
             var mission = botuser.TimeStatuses.FirstOrDefault(x => x.Type == StatusType.DHourly);
@@ -297,10 +301,9 @@ namespace Sanakan.Modules
         public async Task PlayOnSlotMachineAsync(
             [Summary("typ (info - wyświetla informacje)")]string type = "game")
         {
-            string info = $"**Info:**\n\n✖ - nieaktywny rząd\n✔ - aktywny rząd\n\n**Wygrane:**\n\n"
-              + $"3-5x<:klasycznypsaj:482136878120828938> - tryb psaja (podwójne wygrane)\n\n";
+            var info = string.Format(Strings.GameInfo, PsyduckEmoji);
 
-            foreach (var slotMachineSlot in Enum.GetValues(typeof(SlotMachineSlots)))
+            foreach (SlotMachineSlots slotMachineSlot in Enum.GetValues(typeof(SlotMachineSlots)))
             {
                 if (slotMachineSlot != SlotMachineSlots.max
                         && slotMachineSlot != SlotMachineSlots.q)
@@ -314,38 +317,48 @@ namespace Sanakan.Modules
                 }
             }
 
-            info;
-
             if (type != "game")
             {
-                await ReplyAsync("", false, $"{_fun.GetSlotMachineGameInfo()}".ToEmbedMessage(EMType.Info).Build());
+                await ReplyAsync("", false, $"{Strings.SlotMachineInfo}"
+                    .ToEmbedMessage(EMType.Info).Build());
                 return;
             }
 
-            var botuser = await _repository.GetUserOrCreateAsync(Context.User.Id);
-            var machine = new SlotMachine(botuser);
+            var discordUser = Context.User;
+            var botUser = await _userRepository.GetUserOrCreateAsync(discordUser.Id);
+            var machine = new SlotMachine(botUser);
 
             var toPay = machine.ToPay();
-            if (botuser.ScCnt < toPay)
+            if (botUser.ScCnt < toPay)
             {
                 await ReplyAsync("", embed: $"{Context.User.Mention} brakuje Ci SC, aby za tyle zagrać.".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
+
             var win = machine.Play(new SlotWickedRandom());
             // var win = machine.Play(new SlotEqualRandom());
-            botuser.ScCnt += win - toPay;
+            botUser.ScCnt += win - toPay;
 
-            await _repository.SaveChangesAsync();
+            await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"user-{botuser.Id}", "users" });
+            var smConfig = botUser.SMConfig;
 
-            string psay = (botUser.SMConfig.PsayMode > 0) ? "<:klasycznypsaj:482136878120828938> " : " ";
+            _cacheManager.ExpireTag(new string[] { $"user-{botUser.Id}", "users" });
 
-            var test $"{psay}**Gra:** {user.Mention}\n\n ➖➖➖➖➖➖ \n{slots}\n ➖➖➖➖➖➖ \n"
-                + $"**Stawka:** `{botUser.SMConfig.Beat.Value()} SC`\n"
-                + $"**Mnożnik:** `x{botUser.SMConfig.Multiplier.Value()}`\n\n**Wygrana:** `{win} SC`";
+            var psay = smConfig.PsayMode > 0 ? $"{PsyduckEmoji} " : " ";
+            var beatValue = smConfig.Beat.Value();
+            var multiplierValue = smConfig.Multiplier.Value();
 
-            var content = $"{_fun.GetSlotMachineResult(machine.Draw(), Context.User, botuser, win)}".ToEmbedMessage(EMType.Bot).Build()
+            var slotMachineResult = string.Format(
+                Strings.SlotMachineResult,
+                psay,
+                discordUser.Mention,
+                machine.Draw(),
+                beatValue,
+                multiplierValue,
+                win);
+
+            var content = slotMachineResult.ToEmbedMessage(EMType.Bot).Build();
             await ReplyAsync("", embed: content);
         }
 
@@ -367,14 +380,14 @@ namespace Sanakan.Modules
                 return;
             }
 
-            if (!_repository.Users.Any(x => x.Id == user.Id))
+            if (await _userRepository.ExistsByDiscordIdAsync(user.Id))
             {
                 await ReplyAsync("", embed: "Ta osoba nie ma profilu bota.".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
-            var targetUser = await _repository.GetUserOrCreateAsync(user.Id);
-            var thisUser = await _repository.GetUserOrCreateAsync(Context.User.Id);
+            var targetUser = await _userRepository.GetUserOrCreateAsync(user.Id);
+            var thisUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
 
             if (thisUser.ScCnt < value)
             {
@@ -401,12 +414,12 @@ namespace Sanakan.Modules
         public async Task ShowRiddleAsync()
         {
             var riddles = new List<Question>();
-            riddles = await _repository.GetCachedAllQuestionsAsync();
+            riddles = await _questionRepository.GetCachedAllQuestionsAsync();
 
             riddles = riddles.Shuffle().ToList();
             var riddle = riddles.FirstOrDefault();
 
-            riddle.RandomizeAnswers();
+            riddle.RandomizeAnswers(_randomNumberGenerator);
             var msg = await ReplyAsync(riddle.Get());
             await msg.AddReactionsAsync(riddle.GetEmotes());
 

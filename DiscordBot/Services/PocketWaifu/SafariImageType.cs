@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Sanakan.DiscordBot.Services.PocketWaifu
+﻿namespace Sanakan.DiscordBot.Services.PocketWaifu
 {
     public enum SafariImageType
     {
-        Mystery, Truth
+        Mystery = 0,
+        Truth = 1
     }
 
 }

@@ -61,6 +61,23 @@ namespace Sanakan.DiscordBot.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to **Info:**
+        ///
+        ///✖ - nieaktywny rząd
+        ///✔ - aktywny rząd
+        ///
+        ///**Wygrane:**
+        ///
+        ///
+        ///3-5x{0} - tryb psaja (podwójne wygrane).
+        /// </summary>
+        internal static string GameInfo {
+            get {
+                return ResourceManager.GetString("GameInfo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to **Nastawa** / **Wartośći** 
         ///Info `(wypisywanie informacji)`
         ///Mnożnik / `1`, `2`, `3`
@@ -70,6 +87,23 @@ namespace Sanakan.DiscordBot.Resources {
         internal static string SlotMachineInfo {
             get {
                 return ResourceManager.GetString("SlotMachineInfo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0}**Gra:** {1}
+        ///
+        /// ➖➖➖➖➖➖ 
+        /// {2}
+        ///  ➖➖➖➖➖➖ 
+        ///**Stawka:** `{3} SC`
+        ///**Mnożnik:** `x{4}`
+        ///
+        ///**Wygrana:** `{5} SC`.
+        /// </summary>
+        internal static string SlotMachineResult {
+            get {
+                return ResourceManager.GetString("SlotMachineResult", resourceCulture);
             }
         }
     }

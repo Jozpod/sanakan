@@ -4,9 +4,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using static Sanakan.Web.ResponseExtensions;
 using Sanakan.Common;
-using DAL.Repositories.Abstractions;
 using Sanakan.DAL.Models;
 using Microsoft.AspNetCore.Http;
+using Sanakan.DAL.Repositories.Abstractions;
 
 namespace Sanakan.Web.Controllers
 {
@@ -15,14 +15,14 @@ namespace Sanakan.Web.Controllers
     [Produces("application/json")]
     public class QuizController : ControllerBase
     {
-        private readonly IAllRepository _repository;
+        private readonly IQuestionRepository _questionRepository;
         private readonly ICacheManager _cacheManager;
 
         public QuizController(
-            IAllRepository repository,
+            IQuestionRepository questionRepository,
             ICacheManager cacheManager)
         {
-            _repository = repository;
+            _questionRepository = questionRepository;
             _cacheManager = cacheManager;
         }
 
@@ -33,7 +33,7 @@ namespace Sanakan.Web.Controllers
         [ProducesResponseType(typeof(List<Question>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetQuestionsAsync()
         {
-            var result = await _repository.GetCachedAllQuestionsAsync();
+            var result = await _questionRepository.GetCachedAllQuestionsAsync();
 
             return Ok(result);
         }
@@ -47,7 +47,7 @@ namespace Sanakan.Web.Controllers
         [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetQuestionAsync(ulong id)
         {
-            var result = await _repository.GetCachedQuestionAsync(id);
+            var result = await _questionRepository.GetCachedQuestionAsync(id);
             return Ok(result);
         }
 
@@ -59,7 +59,8 @@ namespace Sanakan.Web.Controllers
         [ProducesResponseType(typeof(Question), StatusCodes.Status200OK)]
         public async Task<IActionResult> AddQuestionAsync([FromBody]Question question)
         {
-            await _repository.AddQuestionAsync(question);
+            _questionRepository.Add(question);
+            await _questionRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(new string[] { $"quiz" });
 
@@ -75,11 +76,12 @@ namespace Sanakan.Web.Controllers
         [ProducesResponseType(typeof(Question), StatusCodes.Status200OK)]
         public async Task<IActionResult> RemoveQuestionAsync(ulong id)
         {
-            var question = await _repository.GetQuestionAsync(id);
+            var question = await _questionRepository.GetByIdAsync(id);
             
             if (question != null)
             {
-                await _repository.RemoveQuestionAsync(question);
+                _questionRepository.Remove(question);
+                await _questionRepository.SaveChangesAsync();
 
                 _cacheManager.ExpireTag(new string[] { $"quiz" });
 

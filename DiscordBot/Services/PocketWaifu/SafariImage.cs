@@ -36,7 +36,8 @@ namespace Sanakan.Services.PocketWaifu
         public static int DefaultX() => 884;
         public static int DefaultY() => 198;
 
-        public string Uri(FileSystem fileSystem, SafariImageType type) => fileSystem.Exists(ThisUri(type)) ? ThisUri(type) : DefaultUri(type);
+        public string Uri(IFileSystem fileSystem, SafariImageType type) 
+            => fileSystem.Exists(ThisUri(type)) ? ThisUri(type) : DefaultUri(type);
 
         [JsonProperty("index")]
         public int Index { get; set; }

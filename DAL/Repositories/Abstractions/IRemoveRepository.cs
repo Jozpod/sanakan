@@ -5,8 +5,8 @@ using System.Threading.Tasks;
 
 namespace Sanakan.DAL.Repositories.Abstractions
 {
-    public interface ICreateRepository<T>
+    public interface IRemoveRepository<T>
     {
-        void Add(T entity);
+        void Remove(T entity);
     }
 }

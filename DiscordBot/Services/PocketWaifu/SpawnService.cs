@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using DAL.Repositories.Abstractions;
 using Discord;
 using Discord.WebSocket;
 using DiscordBot.Services.PocketWaifu.Abstractions;
@@ -12,6 +11,7 @@ using Microsoft.Extensions.Options;
 using Sanakan.Common;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Models.Analytics;
+using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot.Configuration;
 using Sanakan.Extensions;
 using Sanakan.Services.Executor;
@@ -28,7 +28,7 @@ namespace Sanakan.Services.PocketWaifu
         private readonly IWaifuService _waifu;
         private readonly ICacheManager _cacheManager;
         private readonly IUserRepository _userRepository;
-        private readonly IAllRepository _repository;
+        private readonly IUserAnalyticsRepository _userAnalyticsRepository;
         private readonly ISystemClock _systemClock;
         private readonly IGuildConfigRepository _guildConfigRepository;
         private readonly IRandomNumberGenerator _randomNumberGenerator;
@@ -99,7 +99,7 @@ namespace Sanakan.Services.PocketWaifu
                 return;
             }
 
-            if (!Fun.TakeATry(chance))
+            if (!_randomNumberGenerator.TakeATry(chance))
             {
                 return;
             }
@@ -147,7 +147,7 @@ namespace Sanakan.Services.PocketWaifu
                                 muted = true;
                         }
 
-                        var dUser = await db.GetCachedFullUserAsync(selected.Id);
+                        var dUser = await _userRepository.GetCachedFullUserAsync(selected.Id);
 
                         if (dUser != null && !muted)
                         {
@@ -165,7 +165,7 @@ namespace Sanakan.Services.PocketWaifu
                 }
                 catch (Exception ex)
                 {
-                    _logger.Log($"In Safari: {ex}");
+                    _logger.LogError($"In Safari", ex);
                     await msg.ModifyAsync(x => x.Embed = "Karta uciekła!".ToEmbedMessage(EMType.Error).Build());
                     await msg.RemoveAllReactionsAsync();
                 }
@@ -184,7 +184,7 @@ namespace Sanakan.Services.PocketWaifu
                 botUser.GameDeck.RemoveCharacterFromWishList(newCard.Character);
 
                 botUser.GameDeck.Cards.Add(newCard);
-                await db.SaveChangesAsync();
+                await _userRepository.SaveChangesAsync();
 
                 _cacheManager.ExpireTag(new string[] { $"user-{botUser.Id}", "users" });
 
@@ -192,13 +192,13 @@ namespace Sanakan.Services.PocketWaifu
                 {
                     Value = 1,
                     UserId = winner.Id,
-                    MeasureDate = DateTime.Now,
+                    MeasureDate = _systemClock.UtcNow,
                     GuildId = trashChannel?.Guild?.Id ?? 0,
                     Type = UserAnalyticsEventType.Card
                 };
 
-                dba.UsersData.Add(record);
-                await _userRepository.SaveChangesAsync();
+                _userAnalyticsRepository.Add(record);
+                await _userAnalyticsRepository.SaveChangesAsync();
 
                 _ = Task.Run(async () =>
                 {
@@ -264,8 +264,11 @@ namespace Sanakan.Services.PocketWaifu
                 return;
             }
 
-            var charNeeded = _config.Get().CharPerPacket;
-            if (charNeeded <= 0) charNeeded = 3250;
+            var charNeeded = _config.CurrentValue.CharPerPacket;
+            if (charNeeded <= 0)
+            {
+                charNeeded = 3250;
+            }
 
             UserCounter[author.Id] += GetMessageRealLenght(message);
             if (UserCounter[author.Id] > charNeeded)
@@ -314,7 +317,7 @@ namespace Sanakan.Services.PocketWaifu
                 };
 
                 botUser.GameDeck.BoosterPacks.Add(record);
-                await db.SaveChangesAsync();
+                await _userRepository.SaveChangesAsync();
 
                 _ = Task.Run(async () =>
                 {
@@ -331,8 +334,8 @@ namespace Sanakan.Services.PocketWaifu
                         Type = UserAnalyticsEventType.Pack
                     };
 
-                    dba.UsersData.Add(record);
-                    await _repo.SaveChangesAsync();
+                    _userAnalyticsRepository.Add(record);
+                    await _userAnalyticsRepository.SaveChangesAsync();
                 });
             }));
 
@@ -369,17 +372,19 @@ namespace Sanakan.Services.PocketWaifu
             };
 
             var user = userMessage.Author as SocketGuildUser;
-
+            
             if (user == null) {
                 return;
             };
 
-            if (_config.CurrentValue.BlacklistedGuilds.Any(x => x == user.Guild.Id))
+            var guildId = user.Guild.Id;
+
+            if (_config.CurrentValue.BlacklistedGuilds.Any(x => x == guildId))
             {
                 return;
             }
 
-            var config = await _repository.GetCachedGuildFullConfigAsync(user.Guild.Id);
+            var config = await _guildConfigRepository.GetCachedGuildFullConfigAsync(guildId);
             if (config == null)
             {
                 return;

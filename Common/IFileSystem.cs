@@ -21,5 +21,6 @@ namespace Sanakan.Common
         /// <inheritdoc cref="File.GetCreationTime(string)"/>
         DateTime GetCreationTime(string path);
         Task<string> ReadAllTextAsync(string path);
+        Stream OpenRead(string path);
     }
 }

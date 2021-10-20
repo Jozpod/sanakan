@@ -336,10 +336,10 @@ namespace Sanakan.ShindenApi
         }
         #endregion
         #region User
-        public async Task<Response<IUserInfo>> LoginAsync(UserAuth auth)
-        {
-            return await LoginAsync(auth).ConfigureAwait(false);
-        }
+        //public async Task<Response<IUserInfo>> LoginAsync(UserAuth auth)
+        //{
+        //    return await LoginAsync(auth).ConfigureAwait(false);
+        //}
 
         public async Task<Response<IUserInfo>> GetAsync(ulong id)
         {
@@ -357,10 +357,10 @@ namespace Sanakan.ShindenApi
             return await GetLastWatchedAsync(index.Id, limit).ConfigureAwait(false);
         }
 
-        public async Task<Response<List<ICharacterInfoShort>>> GetFavCharactersAsync(IIndexable index)
-        {
-            return await GetFavCharactersAsync(index.Id).ConfigureAwait(false);
-        }
+        //public async Task<Response<List<ICharacterInfoShort>>> GetFavCharactersAsync(ulong id)
+        //{
+        //    return await GetFavCharactersAsync(id).ConfigureAwait(false);
+        //}
 
         public async Task<Response<List<ICharacterInfoShort>>> GetFavCharactersAsync(ulong userId)
         {

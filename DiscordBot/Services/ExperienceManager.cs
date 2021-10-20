@@ -1,10 +1,10 @@
-﻿using DAL.Repositories.Abstractions;
-using Discord.WebSocket;
+﻿using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Sanakan.Common;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Models.Analytics;
+using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot.Configuration;
 using Sanakan.DiscordBot.Services;
 using Sanakan.Extensions;
@@ -33,15 +33,18 @@ namespace Sanakan.Services
         private IExecutor _executor;
         private readonly IOptionsMonitor<BotConfiguration> _config;
         private readonly IAllRepository _repository;
+        private readonly IUserRepository _userRepository;
         private readonly IUserAnalyticsRepository _userAnalyticsRepository;
         private readonly ISystemClock _systemClock;
 
         public ExperienceManager(
             DiscordSocketClient client,
             IExecutor executor,
-            IOptionsMonitor<Test> config,
+            IOptionsMonitor<BotConfiguration> config,
             IImageProcessing img,
             IAllRepository repository,
+            IUserRepository userRepository,
+            IUserAnalyticsRepository userAnalyticsRepository,
             ISystemClock systemClock)
         {
             _executor = executor;
@@ -49,6 +52,8 @@ namespace Sanakan.Services
             _config = config;
             _img = img;
             _repository = repository;
+            _userRepository = userRepository;
+            _userAnalyticsRepository = userAnalyticsRepository;
             _systemClock = systemClock;
 
             _exp = new Dictionary<ulong, double>();
@@ -85,7 +90,7 @@ namespace Sanakan.Services
             };
 
             _userAnalyticsRepository.Add(record);
-            _userAnalyticsRepository.SaveChanges();
+            await _userAnalyticsRepository.SaveChangesAsync();
         }
 
         private async Task HandleMessageAsync(SocketMessage message)
@@ -138,11 +143,11 @@ namespace Sanakan.Services
 
             if (!_messages.Any(x => x.Key == user.Id))
             {
-                if (!db.Users.AsNoTracking()
-                    .Any(x => x.Id == user.Id))
+                if (!await _userRepository.ExistsByDiscordIdAsync(user.Id))
                 {
-                    var task = CreateUserTask(user);
-                    await _executor.TryAdd(new Executable("add user", task), TimeSpan.FromSeconds(1));
+                    var databseUser = new User(user.Id, _systemClock.StartOfMonth);
+                    _userRepository.Add(databseUser);
+                    await _userRepository.SaveChangesAsync();
                 }
             }
 
@@ -264,64 +269,62 @@ namespace Sanakan.Services
             if (!fMn.IsActive())
                 fMn.IValue = 101;
 
-            fMn.EndsAt = DateTime.Now.AddMinutes(10);
-            if (--fMn.IValue < 20) fMn.IValue = 20;
+            fMn.EndsAt = _systemClock.UtcNow.AddMinutes(10);
+            if (--fMn.IValue < 20)
+            {
+                fMn.IValue = 20;
+            }
+
             double ratio = fMn.IValue / 100d;
 
             return (long) (exp * ratio);
         }
 
-        private Task<Task> CreateUserTask(SocketGuildUser user)
+        private Task<Task> CreateTask(
+            SocketGuildUser discordUser,
+            ISocketMessageChannel channel,
+            long exp,
+            ulong messages,
+            ulong commands,
+            ulong characters,
+            bool calculateExp)
         {
             return new Task<Task>(async () =>
             {
-                if (!db.Users.Any(x => x.Id == user.Id))
-                {
-                    var bUser = new User().Default(user.Id);
-                    db.Users.Add(bUser);
-                    await db.SaveChangesAsync();
-                }
-            });
-        }
-
-        private Task<Task> CreateTask(SocketGuildUser user, ISocketMessageChannel channel, long exp, ulong messages, ulong commands, ulong characters, bool calculateExp)
-        {
-            return new Task<Task>(async () =>
-            {
-                var usr = await _repository.GetUserOrCreateAsync(user.Id);
-                if (usr == null)
+                var user = await _userRepository.GetUserOrCreateAsync(discordUser.Id);
+                if (user == null)
                 {
                     return;
                 }
 
-                var totalSeconds = (_systemClock.UtcNow - usr.MeasureDate.AddMonths(1)).TotalSeconds;
+                var totalSeconds = (_systemClock.UtcNow - user.MeasureDate.AddMonths(1)).TotalSeconds;
 
                 if (totalSeconds > 1)
                 {
-                    usr.MeasureDate = _systemClock.StartOfMonth;
-                    usr.MessagesCntAtDate = usr.MessagesCnt;
-                    usr.CharacterCntFromDate = characters;
+                    user.MeasureDate = _systemClock.StartOfMonth;
+                    user.MessagesCntAtDate = user.MessagesCnt;
+                    user.CharacterCntFromDate = characters;
                 }
                 else
-                    usr.CharacterCntFromDate += characters;
+                    user.CharacterCntFromDate += characters;
 
-                exp = CheckFloodAndReturnExp(exp, usr);
+                exp = CheckFloodAndReturnExp(exp, user);
                 if (exp < 1) exp = 1;
 
-                usr.ExpCnt += exp;
-                usr.MessagesCnt += messages;
-                usr.CommandsCnt += commands;
+                user.ExpCnt += exp;
+                user.MessagesCnt += messages;
+                user.CommandsCnt += commands;
 
-                var newLevel = CalculateLevel(usr.ExpCnt);
-                if (newLevel != usr.Level && calculateExp)
+                var newLevel = CalculateLevel(user.ExpCnt);
+                if (newLevel != user.Level && calculateExp)
                 {
-                    usr.Level = newLevel;
-                    _ = Task.Run(async () => { await NotifyAboutLevelAsync(user, channel, newLevel); });
+                    user.Level = newLevel;
+                    _ = Task.Run(async () => { await NotifyAboutLevelAsync(discordUser, channel, newLevel); });
                 }
 
                 _ = Task.Run(async () =>
                 {
-                    var config = await _repository.GetCachedGuildFullConfigAsync(user.Guild.Id);
+                    var config = await _repository.GetCachedGuildFullConfigAsync(discordUser.Guild.Id);
 
                     if (config == null)
                     {
@@ -335,26 +338,27 @@ namespace Sanakan.Services
 
                     foreach (var lvlRole in config.RolesPerLevel)
                     {
-                        var role = user.Guild.GetRole(lvlRole.Role);
+                        var role = discordUser.Guild.GetRole(lvlRole.Role);
                         if (role == null)
                         {
                             continue;
                         }
 
-                        bool hasRole = user.Roles.Any(x => x.Id == role.Id);
+                        bool hasRole = discordUser.Roles.Any(x => x.Id == role.Id);
+
                         if (newLevel >= (long)lvlRole.Level)
                         {
                             if (!hasRole)
-                                await user.AddRoleAsync(role);
+                                await discordUser.AddRoleAsync(role);
                         }
                         else if (hasRole)
                         {
-                            await user.RemoveRoleAsync(role);
+                            await discordUser.RemoveRoleAsync(role);
                         }
                     }
                 });
 
-                await _repository.SaveChangesAsync();
+                await _userRepository.SaveChangesAsync();
             });
         }
     }

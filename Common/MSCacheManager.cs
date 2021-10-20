@@ -27,6 +27,11 @@ namespace Sanakan.Common
             };
         }
 
+        public void Add<T>(string key, T entity)
+        {
+            _cache.Set(key, entity);
+        }
+
         public void AddTag(params string[] tags)
         {
             throw new NotImplementedException();

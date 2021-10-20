@@ -1,5 +1,4 @@
-﻿using DAL.Repositories.Abstractions;
-using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -10,6 +9,7 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using Sanakan.DAL.Repositories.Abstractions;
 
 namespace Sanakan.Web.HostedService
 {
@@ -67,7 +67,7 @@ namespace Sanakan.Web.HostedService
                 var memoryUsage = _process.WorkingSet64 / MB;
 
                 _logger.LogInformation($"Memory Usage: {memoryUsage} MiB");
-                var repository = _serviceProvider.GetRequiredService<IAllRepository>();
+                var repository = _serviceProvider.GetRequiredService<ISystemAnalyticsRepository>();
 
                 var record = new SystemAnalytics
                 {
@@ -76,7 +76,8 @@ namespace Sanakan.Web.HostedService
                     Type = SystemAnalyticsEventType.Ram,
                 };
 
-                await repository.AddSystemAnalyticsAsync(record);
+                repository.Add(record);
+                await repository.SaveChangesAsync();
             }
             catch (Exception ex)
             {

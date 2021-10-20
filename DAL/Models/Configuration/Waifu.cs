@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 
 namespace Sanakan.DAL.Models.Configuration
 {
-    public class Waifu
+    public class WaifuConfiguration
     {
         public ulong Id { get; set; }
         public ulong MarketChannel { get; set; }

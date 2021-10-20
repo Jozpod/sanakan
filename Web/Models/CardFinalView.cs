@@ -140,9 +140,12 @@ namespace Sanakan.Api.Models
         /// </summary>
         public List<string> Tags { get; set; }
 
-        public static CardFinalView ConvertFromRaw(Card card)
+        public static CardFinalView? ConvertFromRaw(Card card)
         {
-            if (card == null) return null;
+            if (card == null)
+            {
+                return null;
+            }
 
             return new CardFinalView
             {

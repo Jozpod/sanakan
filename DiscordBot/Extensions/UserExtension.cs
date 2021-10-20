@@ -29,114 +29,6 @@ namespace Sanakan.Extensions
         public static bool IsPVPSeasonalRankActive(this User u)
             => u.GameDeck.IsPVPSeasonalRankActive();
 
-        public static User Default(this User u, ulong id)
-        {
-            var user = new User
-            {
-                Id = id,
-                Level = 1,
-                AcCnt = 0,
-                TcCnt = 0,
-                ScCnt = 100,
-                ExpCnt = 10,
-                Shinden = 0,
-                Warnings = 0,
-                MessagesCnt = 0,
-                CommandsCnt = 0,
-                MessagesCntAtDate = 0,
-                IsBlacklisted = false,
-                CharacterCntFromDate = 0,
-                ShowWaifuInProfile = false,
-                ProfileType = ProfileType.Stats,
-                StatsReplacementProfileUri = "none",
-                TimeStatuses = new List<TimeStatus>(),
-                BackgroundProfileUri = $"./Pictures/defBg.png",
-                MeasureDate = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1),
-                GameDeck = new GameDeck
-                {
-                    Id = id,
-                    Waifu = 0,
-                    CTCnt = 0,
-                    Karma = 0,
-                    PVPCoins = 0,
-                    DeckPower = 0,
-                    PVPWinStreak = 0,
-                    ItemsDropped = 0,
-                    GlobalPVPRank = 0,
-                    SeasonalPVPRank = 0,
-                    CardsInGallery = 10,
-                    MatachMakingRatio = 0,
-                    ForegroundColor = null,
-                    ForegroundPosition = 0,
-                    BackgroundPosition = 35,
-                    PVPDailyGamesPlayed = 0,
-                    MaxNumberOfCards = 1000,
-                    Items = new List<Item>(),
-                    Cards = new List<Card>(),
-                    ExchangeConditions = null,
-                    BackgroundImageUrl = null,
-                    ForegroundImageUrl = null,
-                    WishlistIsPrivate = false,
-                    Figures = new List<Figure>(),
-                    Wishes = new List<WishlistObject>(),
-                    PvPStats = new List<CardPvPStats>(),
-                    BoosterPacks = new List<BoosterPack>(),
-                    PVPSeasonBeginDate = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1),
-                    ExpContainer = new ExpContainer
-                    {
-                        Id = id,
-                        ExpCount = 0,
-                        Level = ExpContainerLevel.Disabled
-                    }
-                },
-                Stats = new UserStats
-                {
-                    Hit = 0,
-                    Head = 0,
-                    Misd = 0,
-                    Tail = 0,
-                    ScLost = 0,
-                    IncomeInSc = 0,
-                    RightAnswers = 0,
-                    TotalAnswers = 0,
-                    UpgaredCards = 0,
-                    YamiUpgrades = 0,
-                    YatoUpgrades = 0,
-                    RaitoUpgrades = 0,
-                    ReleasedCards = 0,
-                    TurnamentsWon = 0,
-                    UpgradedToSSS = 0,
-                    UnleashedCards = 0,
-                    SacraficeCards = 0,
-                    DestroyedCards = 0,
-                    WastedTcOnCards = 0,
-                    SlotMachineGames = 0,
-                    WastedTcOnCookies = 0,
-                    OpenedBoosterPacks = 0,
-                    WastedPuzzlesOnCards = 0,
-                    WastedPuzzlesOnCookies = 0,
-                    OpenedBoosterPacksActivity = 0,
-                },
-                SMConfig = new SlotMachineConfig
-                {
-                    PsayMode = 0,
-                    Beat = SlotMachineBeat.b1,
-                    Rows = SlotMachineSelectedRows.r1,
-                    Multiplier = SlotMachineBeatMultiplier.x1,
-                }
-            };
-
-            user.GameDeck.BoosterPacks.Add(new BoosterPack
-            {
-                CardCnt = 5,
-                MinRarity = Rarity.A,
-                Name = "Startowy pakiet",
-                IsCardFromPackTradable = true
-            });
-
-            return user;
-        }
-
         public static List<TimeStatus> CreateOrGetAllDailyQuests(this User user)
         {
             var quests = new List<TimeStatus>();
@@ -412,12 +304,18 @@ namespace Sanakan.Extensions
 
         public static List<ulong> GetCardsWishList(this GameDeck deck)
         {
-            return deck.Wishes.Where(x => x.Type == WishlistObjectType.Card).Select(x => x.ObjectId).ToList();
+            return deck.Wishes
+                .Where(x => x.Type == WishlistObjectType.Card)
+                .Select(x => x.ObjectId)
+                .ToList();
         }
 
         public static List<ulong> GetCharactersWishList(this GameDeck deck)
         {
-            return deck.Wishes.Where(x => x.Type == WishlistObjectType.Character).Select(x => x.ObjectId).ToList();
+            return deck.Wishes
+                .Where(x => x.Type == WishlistObjectType.Character)
+                .Select(x => x.ObjectId)
+                .ToList();
         }
 
         public static bool RemoveCharacterFromWishList(this GameDeck deck, ulong id)

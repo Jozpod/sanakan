@@ -10,6 +10,8 @@ namespace Sanakan.ShindenApi
 {
     public interface IShindenClient
     {
+        Task<Response<List<IPersonSearch>>> CharacterAsync(string name);
+        Task<Response<List<ICharacterInfoShort>>> GetFavCharactersAsync(ulong userId);
         Task<Response<List<ulong>>> GetAllCharactersFromAnimeAsync();
         Task<Response<ITitleInfo>> GetInfoAsync(ulong id);
         Task<Response<List<IRelation>>> GetCharactersAsync(ulong id);

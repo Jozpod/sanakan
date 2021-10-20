@@ -43,7 +43,7 @@ namespace Sanakan.Web.Controllers
         private readonly ILogger _logger;
         private readonly SanakanConfiguration _config;
         private readonly IUserRepository _userRepository;
-        private readonly IAllRepository _repository;
+        private readonly ITransferAnalyticsRepository _transferAnalyticsRepository;
         private readonly IExecutor _executor;
         private readonly IShindenClient _shClient;
         private readonly IDiscordSocketClientAccessor _discordSocketClientAccessor;
@@ -56,7 +56,7 @@ namespace Sanakan.Web.Controllers
             IDiscordSocketClientAccessor discordSocketClientAccessor,
             IOptions<SanakanConfiguration> options,
             IUserRepository userRepository,
-            IAllRepository repository,
+            ITransferAnalyticsRepository transferAnalyticsRepository,
             IShindenClient shClient,
             ILogger<UserController> logger,
             IExecutor executor,
@@ -67,7 +67,7 @@ namespace Sanakan.Web.Controllers
         {
             _discordSocketClientAccessor = discordSocketClientAccessor;
             _userRepository = userRepository;
-            _repository = repository;
+            _transferAnalyticsRepository = transferAnalyticsRepository;
             _logger = logger;
             _executor = executor;
             _shClient = shClient;
@@ -254,9 +254,9 @@ namespace Sanakan.Web.Controllers
         [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status401Unauthorized)]
-        public async Task<IActionResult> RegisterUserAsync([FromBody, Required]UserRegistration id)
+        public async Task<IActionResult> RegisterUserAsync([FromBody, Required]UserRegistration model)
         {
-            if (id == null)
+            if (model == null)
             {
                 var body = new System.IO.StreamReader(ControllerContext.HttpContext.Request.Body);
                 body.BaseStream.Seek(0, System.IO.SeekOrigin.Begin);
@@ -274,40 +274,36 @@ namespace Sanakan.Web.Controllers
                 return ShindenForbidden("Could not access discord client");
             }
 
-            var discordUser = client.GetUser(id.DiscordUserId);
+            var discordUser = client.GetUser(model.DiscordUserId);
             
             if (discordUser == null)
             {
                 return ShindenNotFound(Strings.UserNotFound);
             }
 
-            var botUser = await _userRepository.GetByDiscordIdAsync(id.DiscordUserId);
+            var botUser = await _userRepository.GetByDiscordIdAsync(model.DiscordUserId);
 
             if (botUser != null || botUser.Shinden != 0)
             {
                 return ShindenNotFound("User already connected!");
             }
 
-            var response = await _shClient.SearchUserAsync(id.Username);
+            var response = await _shClient.SearchUserAsync(model.Username);
             if (!response.IsSuccessStatusCode())
             {
                 return ShindenForbidden("Can't connect to shinden!");
             }
 
             var sUser = (await _shClient.GetAsync(response.Body.First().Id)).Body;
-            if (sUser.ForumId.Value != id.ForumUserId)
+            if (sUser.ForumId.Value != model.ForumUserId)
             {
                 return ShindenInternalServerError("Something went wrong!");
             }
 
             if (await _userRepository.ExistsByShindenIdAsync(sUser.Id))
             {
-                var oldUsers = _userRepository.GetByShindenIdAsync();
-                    //await db.Users
-                    //.AsQueryable()
-                    //.Where(x => x.Shinden == sUser.Id
-                    //    && x.Id != id.DiscordUserId)
-                    //.ToListAsync();
+                var oldUsers = await _userRepository
+                    .GetByShindenIdExcludeDiscordIdAsync(sUser.Id, model.DiscordUserId);
 
                 if (oldUsers.Any())
                 {
@@ -327,8 +323,10 @@ namespace Sanakan.Web.Controllers
                             continue;
                         }
 
-                        var content = ($"Potencjalne multikonto:\nDID: {id.DiscordUserId}\nSID: {sUser.Id}\n"
-                            + $"SN: {sUser.Name}\n\noDID: {string.Join(",", oldUsers.Select(x => x.Id))}").TrimToLength(2000)
+                        var users = string.Join(",", oldUsers.Select(x => x.Id));
+
+                        var content = ($"Potencjalne multikonto:\nDID: {model.DiscordUserId}\nSID: {sUser.Id}\n"
+                            + $"SN: {sUser.Name}\n\noDID: {users}").TrimToLength(2000)
                             .ToEmbedMessage(EMType.Error).Build();
 
                         await channel.SendMessageAsync("", embed: content);
@@ -337,14 +335,14 @@ namespace Sanakan.Web.Controllers
 
                 return ShindenUnauthorized("This account is already linked!");
             }
-            var exe = new Executable($"api-register u{id.DiscordUserId}", new Task<Task>(async () =>
+            var exe = new Executable($"api-register u{model.DiscordUserId}", new Task<Task>(async () =>
             {
-                botUser = await _userRepository.GetUserOrCreateAsync(id.DiscordUserId);
+                botUser = await _userRepository.GetUserOrCreateAsync(model.DiscordUserId);
                 botUser.Shinden = sUser.Id;
 
                 await _userRepository.SaveChangesAsync();
 
-                _cacheManager.ExpireTag(new string[] { $"user-{user.Id}", "users" });
+                _cacheManager.ExpireTag(new string[] { $"user-{discordUser.Id}", "users" });
             }), Priority.High);
 
             await _executor.TryAdd(exe, TimeSpan.FromSeconds(1));
@@ -380,12 +378,12 @@ namespace Sanakan.Web.Controllers
                     Source = TransferSource.ByDiscordId,
                 };
 
-                await _repository.AddTransferAnalyticsAsync(record);
+                _transferAnalyticsRepository.Add(record);
 
-                user = await _repository.GetUserOrCreateAsync(id);
+                user = await _userRepository.GetUserOrCreateAsync(id);
                 user.TcCnt += value;
 
-                await _repository.SaveChangesAsync();
+                await _userRepository.SaveChangesAsync();
 
                 _cacheManager.ExpireTag(new string[] { $"user-{user.Id}", "users" });
             }), Priority.High);
@@ -413,23 +411,24 @@ namespace Sanakan.Web.Controllers
 
             var exe = new Executable($"api-tc su{id} ({value})", new Task<Task>(async () =>
             {
-                user = await _userRepository.GetByShindenIdAsync(id);
-                user.TcCnt += value;
+            user = await _userRepository.GetByShindenIdAsync(id);
+            user.TcCnt += value;
 
-                await _userRepository.SaveChangesAsync();
+            await _userRepository.SaveChangesAsync();
 
-                _cacheManager.ExpireTag(new string[] { $"user-{user.Id}", "users" });
+            _cacheManager.ExpireTag(new string[] { $"user-{user.Id}", "users" });
 
-                var record = new TransferAnalytics()
-                {
-                    Value = value,
-                    DiscordId = user.Id,
-                    Date = _systemClock.UtcNow,
-                    ShindenId = user.Shinden,
-                    Source = TransferSource.ByShindenId,
-                };
+            var record = new TransferAnalytics()
+            {
+                Value = value,
+                DiscordId = user.Id,
+                Date = _systemClock.UtcNow,
+                ShindenId = user.Shinden,
+                Source = TransferSource.ByShindenId,
+            };
 
-                await _repository.AddTransferAnalyticsAsync(record);
+            _transferAnalyticsRepository.Add(record);
+            await _transferAnalyticsRepository.SaveChangesAsync();
             }), Priority.High);
 
             await _executor.TryAdd(exe, TimeSpan.FromSeconds(1));

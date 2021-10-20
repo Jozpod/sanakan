@@ -22,10 +22,10 @@ namespace Sanakan.DAL.Models
         public ulong PVPDailyGamesPlayed { get; set; }
         public DateTime PVPSeasonBeginDate { get; set; }
 
-        public string ExchangeConditions { get; set; }
-        public string BackgroundImageUrl { get; set; }
-        public string ForegroundImageUrl { get; set; }
-        public string ForegroundColor { get; set; }
+        public string? ExchangeConditions { get; set; }
+        public string? BackgroundImageUrl { get; set; }
+        public string? ForegroundImageUrl { get; set; }
+        public string? ForegroundColor { get; set; }
         public int ForegroundPosition { get; set; }
         public int BackgroundPosition { get; set; }
 

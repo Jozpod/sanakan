@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Sanakan.DAL.Repositories.Abstractions
 {
-    public interface ICommandsAnalyticsRepository : ICreateRepository<CommandsAnalytics>
+    public interface ICommandsAnalyticsRepository : ICreateRepository<CommandsAnalytics>, ISaveRepository
     {
     }
 }

@@ -10,7 +10,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Sanakan.Common;
 using Sanakan.ShindenApi;
-using DAL.Repositories.Abstractions;
+using Shinden;
+using Sanakan.DAL.Repositories.Abstractions;
 
 namespace Sanakan.Modules
 {
@@ -21,23 +22,23 @@ namespace Sanakan.Modules
         private readonly SessionManager _session;
         private readonly Services.Shinden _shinden;
         private readonly ICacheManager _cacheManager;
-        private readonly IAllRepository _repository;
         private readonly IUserRepository _userRepository;
+        private readonly ISystemClock _systemClock;
 
         public ShindenModule(
             IShindenClient client,
             SessionManager session,
             Services.Shinden shinden,
             ICacheManager cacheManager,
-            IAllRepository repository,
-            IUserRepository userRepository)
+            IUserRepository userRepository,
+            ISystemClock systemClock)
         {
             _shclient = client;
             _session = session;
             _shinden = shinden;
             _cacheManager = cacheManager;
-            _repository = repository;
             _userRepository = userRepository;
+            _systemClock = systemClock;
         }
 
         [Command("odcinki", RunMode = RunMode.Async)]
@@ -85,7 +86,7 @@ namespace Sanakan.Modules
         [Remarks("Soul Eater")]
         public async Task SearchAnimeAsync([Summary("tytuł")][Remainder]string title)
         {
-            await _shinden.SendSearchInfoAsync(Context, title, Shden.QuickSearchType.Anime);
+            await _shinden.SendSearchInfoAsync(Context, title, QuickSearchType.Anime);
         }
 
         [Command("manga", RunMode = RunMode.Async)]
@@ -94,7 +95,7 @@ namespace Sanakan.Modules
         [Remarks("Gintama")]
         public async Task SearchMangaAsync([Summary("tytuł")][Remainder]string title)
         {
-            await _shinden.SendSearchInfoAsync(Context, title, Shden.QuickSearchType.Manga);
+            await _shinden.SendSearchInfoAsync(Context, title, QuickSearchType.Manga);
         }
 
         [Command("postać", RunMode = RunMode.Async)]
@@ -146,7 +147,7 @@ namespace Sanakan.Modules
             }
             
 
-            var botUser = await db.GetCachedFullUserAsync(usr.Id);
+            var botUser = await _userRepository.GetCachedFullUserAsync(usr.Id);
 
             if (botUser == null)
             {
@@ -209,7 +210,7 @@ namespace Sanakan.Modules
                 return;
             }
 
-            if (db.Users.Any(x => x.Shinden == shindenId))
+            if (await _userRepository.ExistsByShindenIdAsync(shindenId))
             {
                 await ReplyAsync("", embed: "Wygląda na to, że ktoś już połączył się z tym kontem.".ToEmbedMessage(EMType.Error).Build());
                 return;

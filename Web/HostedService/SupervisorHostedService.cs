@@ -1,5 +1,4 @@
-﻿using DAL.Repositories.Abstractions;
-using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -45,13 +44,7 @@ namespace Sanakan.Web.HostedService
         {
             try
             {
-                stoppingToken.ThrowIfCancellationRequested();
-                _timer.Tick += OnTick;
-                _timer.Start(
-                    _options.CaptureMemoryUsageDueTime,
-                    _options.CaptureMemoryUsagePeriod);
-                
-                await Task.Delay(Timeout.Infinite, stoppingToken);
+              
             }
             catch (OperationCanceledException)
             {

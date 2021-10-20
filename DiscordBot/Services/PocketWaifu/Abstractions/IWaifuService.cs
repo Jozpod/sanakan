@@ -12,6 +12,16 @@ namespace DiscordBot.Services.PocketWaifu.Abstractions
 {
     public interface IWaifuService
     {
+        Card GenerateNewCard(IUser user, ICharacterInfo character, Rarity rarity)
+        Embed GetBoosterPackList(SocketUser user, List<BoosterPack> packs);
+        double GetExpToUpgrade(Card toUp, Card toSac);
+        ItemType RandomizeItemFromMarket();
+        Quality RandomizeItemQualityFromMarket();
+        ItemType RandomizeItemFromBlackMarket();
+        Embed GetActiveList(IEnumerable<Card> list);
+        int RandomizeHealth(Card card);
+        int RandomizeDefence(Rarity rarity);
+        int RandomizeAttack(Rarity rarity);
         string EndExpedition(User user, Card card, bool showStats = false);
         bool GetEventSate();
         int GetDefenceAfterLevelUp(Rarity oldRarity, int oldDef);
@@ -45,8 +55,16 @@ namespace DiscordBot.Services.PocketWaifu.Abstractions
         Task<SafariImage?> GetRandomSarafiImage();
         void DeleteCardImageIfExist(Card card);
         Task<string> GenerateAndSaveCardAsync(Card card, CardImageType type = CardImageType.Normal);
-        Task<IEnumerable<Embed>> GetContentOfWishlist(List<ulong> cardsId, List<ulong> charactersId, List<ulong> titlesId);
-        Task<IEnumerable<Card>> GetCardsFromWishlist(List<ulong> cardsId, List<ulong> charactersId, List<ulong> titlesId, List<Card> cards, IEnumerable<Card> userCards);
+        Task<IEnumerable<Embed>> GetContentOfWishlist(
+            List<ulong> cardsId,
+            List<ulong> charactersId,
+            List<ulong> titlesId);
+        Task<IEnumerable<Card>> GetCardsFromWishlist(
+            List<ulong> cardsId,
+            List<ulong> charactersId,
+            List<ulong> titlesId,
+            List<Card> cards,
+            IEnumerable<Card> userCards);
         Tuple<double, double> GetRealTimeOnExpeditionInMinutes(Card card, double karma);
         double GetProgressiveValueFromExpedition(double baseValue, double duration, double div);
     }

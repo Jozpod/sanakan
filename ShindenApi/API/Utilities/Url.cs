@@ -2,9 +2,6 @@ namespace Shinden.API
 {
     public class Url
     {
-        private const string SHINDEN_URL = "https://shinden.pl/";
-        private const string IMAGE_SERVER_URL = "http://cdn.shinden.eu/";
-
         public static string GetBigImageURL(ulong? imageID)
         {
             if (!imageID.HasValue) return GetPlaceholderImageURL();

@@ -572,7 +572,7 @@ namespace Sanakan.Services
                 Reason = reason,
                 Guild = user.Guild.Id,
                 Type = PenaltyType.Ban,
-                StartDate = DateTime.Now,
+                StartDate = _systemClock.UtcNow,
                 DurationInHours = duration,
                 Roles = new List<OwnedRole>(),
             };

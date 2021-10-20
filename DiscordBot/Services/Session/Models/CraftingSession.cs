@@ -2,14 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using DAL.Repositories.Abstractions;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using DiscordBot.Services.PocketWaifu.Abstractions;
+using DiscordBot.Services.Session;
 using Microsoft.Extensions.Options;
 using Sanakan.Common;
 using Sanakan.DAL.Models;
+using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.Extensions;
 using Sanakan.Services.PocketWaifu;
 

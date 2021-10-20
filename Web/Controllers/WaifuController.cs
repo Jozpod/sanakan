@@ -162,7 +162,8 @@ namespace Sanakan.Web.Controllers
                 }
             }
 
-            var result = new FilteredCards { 
+            var result = new FilteredCards
+            { 
                 TotalCards = cards.Count,
                 Cards = cards.Skip((int)offset).Take((int)count).ToView(),
             };
@@ -192,18 +193,7 @@ namespace Sanakan.Web.Controllers
                 return ShindenNotFound("User not found");
             }
 
-            var cards = _card
-                await db.Cards
-                .AsQueryable()
-                .AsSplitQuery()
-                .Where(x => x.GameDeckId == user.GameDeck.Id)
-                .Include(x => x.ArenaStats)
-                .Include(x => x.TagList)
-                .Skip((int)offset)
-                .Take((int)count)
-                .AsNoTracking()
-                .ToListAsync();
-
+            var cards = await _cardRepository.GetByGameDeckIdAsync(user.GameDeck.Id, offset, count);
             var result = cards.ToView();
 
             return Ok(result);
@@ -440,7 +430,7 @@ namespace Sanakan.Web.Controllers
                         userRelease.Add($"user-{card.GameDeckId}");
                     }
 
-                    await db.SaveChangesAsync();
+                    await _cardRepository.SaveChangesAsync();
 
                     _cacheManager.ExpireTag(userRelease.ToArray());
                 }));
@@ -471,23 +461,29 @@ namespace Sanakan.Web.Controllers
                 return ShindenNotFound("Wishlist not found!");
             }
 
-            var p = user.GameDeck.GetCharactersWishList();
-            var t = user.GameDeck.GetTitlesWishList();
+            var characterIds = user.GameDeck.GetCharactersWishList();
+            var titleIds = user.GameDeck.GetTitlesWishList();
             var cardsId = user.GameDeck.GetCardsWishList();
 
-            var cards = new List<Card>();
+            var allCards = new List<Card>();
 
             if (cardsId != null)
             {
-                var cds = await db.Cards
-                    .Include(x => x.TagList)
-                    .Where(x => cardsId.Any(c => c == x.Id))
-                    .AsNoTracking()
-                    .ToListAsync();
-                cards.AddRange(cds);
+                var cards = await _cardRepository.GetByIdsAsync(cardsId.ToArray(), new CardQueryOptions
+                {
+                    IncludeTagList = true,
+                    AsNoTracking = true,
+                });
+
+                allCards.AddRange(cards);
             }
 
-            var result = await _waifu.GetCardsFromWishlist(cardsId, p, t, cards, user.GameDeck.Cards);
+            var result = await _waifu.GetCardsFromWishlist(
+                cardsId,
+                characterIds,
+                titleIds,
+                allCards,
+                user.GameDeck.Cards);
 
             return Ok(result);
         }
@@ -513,22 +509,31 @@ namespace Sanakan.Web.Controllers
                 return ShindenNotFound("Wishlist not found!");
             }
 
-            var p = user.GameDeck.GetCharactersWishList();
-            var t = user.GameDeck.GetTitlesWishList();
+            var characterIds = user.GameDeck.GetCharactersWishList();
+            var titleIds = user.GameDeck.GetTitlesWishList();
             var cardsId = user.GameDeck.GetCardsWishList();
 
-            var cards = new List<Card>();
+            var allCards = new List<Card>();
+
             if (cardsId != null)
             {
-                var cds = await db.Cards
-                    .Include(x => x.TagList)
-                    .Where(x => cardsId.Any(c => c == x.Id))
-                    .AsNoTracking()
-                    .ToListAsync();
-                cards.AddRange(cds);
+                var cards = await _cardRepository.GetByIdsAsync(
+                    cardsId.ToArray(),
+                    new CardQueryOptions
+                    {
+                        IncludeTagList = true,
+                        AsNoTracking = true,
+                    });
+             
+                allCards.AddRange(cards);
             }
 
-            var result = await _waifu.GetCardsFromWishlist(cardsId, p, t, cards, user.GameDeck.Cards);
+            var result = await _waifu.GetCardsFromWishlist(
+                cardsId,
+                characterIds,
+                titleIds,
+                allCards,
+                user.GameDeck.Cards);
             return Ok(result);
         }
 
@@ -566,11 +571,12 @@ namespace Sanakan.Web.Controllers
                 {
                     return ShindenNotFound(Strings.CardNotFound);
                 }
-
+                
                 _waifu.DeleteCardImageIfExist(card);
                 var cardImage = await _waifu.GenerateAndSaveCardAsync(card);
+                var stream = _fileSystem.OpenRead(cardImage);
 
-                return File(cardImage);
+                return File(stream, "image/png");
             }
 
             return ShindenForbidden("Card already exist!");
