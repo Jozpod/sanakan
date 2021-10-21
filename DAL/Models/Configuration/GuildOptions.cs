@@ -29,7 +29,7 @@ namespace Sanakan.DAL.Models.Configuration
         public bool ChaosMode { get; set; }
         public string Prefix { get; set; }
 
-        public virtual Waifu WaifuConfig { get; set; }
+        public virtual WaifuConfiguration WaifuConfig { get; set; }
 
         public virtual ICollection<WithoutSupervisionChannel> ChannelsWithoutSupervision { get; set; }
         public virtual ICollection<WithoutMsgCntChannel> IgnoredChannels { get; set; }

@@ -21,5 +21,14 @@ namespace Sanakan.DiscordBot
         public static Emoji HandSign = new Emoji("👌");
         public static Emoji LeftwardsArrow = new Emoji("⬅");
         public static Emoji RightwardsArrow = new Emoji("➡");
+
+        public static Emote DeclineEmote = Emote.Parse("<:redcross:581152766655856660>");
+
+        public static Emoji InboxTray = new Emoji("📥");
+        public static Emoji CrossMark = new Emoji("❌");
+        public static Emoji OutboxTray = new Emoji("📤");
+
+        public static Emoji OneEmote = new Emoji("\u0031\u20E3");
+        public static Emoji TwoEmote = new Emoji("\u0032\u20E3");
     }
 }

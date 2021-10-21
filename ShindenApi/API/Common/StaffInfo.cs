@@ -7,26 +7,37 @@ namespace Shinden.API
     {
         [JsonProperty("staff_id")]
         public string StaffId { get; set; }
+
         [JsonProperty("first_name")]
         public string FirstName { get; set; }
+
         [JsonProperty("last_name")]
         public string LastName { get; set; }
+
         [JsonProperty("staff_type")]
         public string StaffType { get; set; }
+
         [JsonProperty("birth_date")]
         public string BirthDate { get; set; }
+
         [JsonProperty("birth_place")]
         public string BirthPlace { get; set; }
+
         [JsonProperty("death_date")]
         public string DeathDate { get; set; }
+
         [JsonProperty("gender")]
         public string Gender { get; set; }
+
         [JsonProperty("nationality")]
         public string Nationality { get; set; }
+
         [JsonProperty("picture_artifact_id")]
         public string PictureArtifactId { get; set; }
+
         [JsonProperty("bio")]
         public StaffBio Bio { get; set; }
+
         [JsonProperty("relations")]
         public List<Relation> Relations { get; set; }
     }

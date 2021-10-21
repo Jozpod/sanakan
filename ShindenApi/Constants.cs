@@ -8,5 +8,6 @@ namespace Sanakan.ShindenApi
     {
         private const string SHINDEN_URL = "https://shinden.pl/";
         private const string IMAGE_SERVER_URL = "http://cdn.shinden.eu/";
+        public string BaseUri => "https://api.shinden.pl/api/";
     }
 }

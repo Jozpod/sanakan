@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Commands;
+using DiscordBot.Services.Session;
 using Microsoft.Extensions.Logging;
 using Sanakan.Services.Executor;
 using System;

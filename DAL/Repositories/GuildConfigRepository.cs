@@ -7,8 +7,16 @@ using System.Threading.Tasks;
 
 namespace Sanakan.DAL.Repositories
 {
-    public class GuildConfigRepository : IGuildConfigRepository
+    public class GuildConfigRepository : BaseRepository<GuildOptions>, IGuildConfigRepository
     {
+        private readonly BuildDatabaseContext _dbContext;
+
+        public GuildConfigRepository(
+            BuildDatabaseContext dbContext) : base(dbContext)
+        {
+            _dbContext = dbContext;
+        }
+
         public Task<GuildOptions> GetCachedGuildFullConfigAsync(ulong guildId)
         {
             throw new NotImplementedException();

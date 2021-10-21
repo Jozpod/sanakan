@@ -9,18 +9,6 @@ namespace Shinden.Extensions
             return $"{type.ToString().ToLower()}-{id}";
         }
 
-        public static string ToQuery(this MangaRateType type)
-        {
-            switch (type)
-            {
-                case MangaRateType.Characters: return "titlecahracters";
-                case MangaRateType.Stroy: return "story";
-                case MangaRateType.Total: return "total";
-                case MangaRateType.Art: return "lines";
-                default: return "total";
-            }
-        }
-
         public static string ToQuery(this AnimeRateType type)
         {
             switch (type)

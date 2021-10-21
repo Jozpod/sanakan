@@ -31,7 +31,7 @@ namespace Sanakan.Modules
     public class PocketWaifuModule : ModuleBase<SocketCommandContext>
     {
         private readonly IShindenClient _shclient;
-        private readonly SessionManager _session;
+        private readonly SessionManager _sessionManager;
         private readonly IExecutor _executor;
         private readonly ILogger _logger;
         private readonly object _config;
@@ -65,7 +65,7 @@ namespace Sanakan.Modules
             _logger = logger;
             _config = config.Value;
             _shclient = client;
-            _session = session;
+            _sessionManager = session;
             _executor = executor;
             _cacheManager = cacheManager;
             _gameDeckRepository = gameDeckRepository;
@@ -87,7 +87,7 @@ namespace Sanakan.Modules
             [Summary("tag)")][Remainder]string tag = null)
         {
             var session = new ListSession<Card>(Context.User, Context.Client.CurrentUser);
-            await _session.KillSessionIfExistAsync(session);
+            await _sessionManager.KillSessionIfExistAsync(session);
 
             if (type == HaremType.Tag && tag == null)
             {
@@ -120,7 +120,7 @@ namespace Sanakan.Modules
                 });
 
                 session.Message = msg;
-                await _session.TryAddSession(session);
+                await _sessionManager.TryAddSession(session);
 
                 await ReplyAsync("", embed: $"{Context.User.Mention} lista poszła na PW!".ToEmbedMessage(EMType.Success).Build());
             }
@@ -192,6 +192,12 @@ namespace Sanakan.Modules
             }
 
             var gConfig = await _repository.GetCachedGuildFullConfigAsync(Context.Guild.Id);
+
+            if(gConfig == null)
+            {
+                return;
+            }
+
             var trashChannel = Context.Guild.GetTextChannel(gConfig.WaifuConfig.TrashCommandsChannel);
             await ReplyAsync("", embed: await _waifu.BuildCardImageAsync(card, trashChannel, user, showStats));
         }
@@ -309,28 +315,29 @@ namespace Sanakan.Modules
             [Summary("WID")]ulong wid = 0,
             [Summary("liczba przedmiotów/link do obrazka/typ gwiazdki")]string detail = "1")
         {
-            var session = new CraftingSession(Context.User, _waifu, _config);
+            var discordUser = Context.User;
+            var session = new CraftingSession(discordUser, _waifu);
             
-            if (_session.SessionExist(session))
+            if (_sessionManager.SessionExist(session))
             {
-                await ReplyAsync("", embed: $"{Context.User.Mention} nie możesz używać przedmiotów, gdy masz otwarte menu tworzenia kart.".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync("", embed: $"{discordUser.Mention} nie możesz używać przedmiotów, gdy masz otwarte menu tworzenia kart.".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
             var imgCnt = 0;
             var itemCnt = 1;
-            var bUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
+            var bUser = await _userRepository.GetUserOrCreateAsync(discordUser.Id);
             var itemList = bUser.GameDeck.Items.OrderBy(x => x.Type).ToList();
 
             if (itemList.Count < 1)
             {
-                await ReplyAsync("", embed: $"{Context.User.Mention} nie masz żadnych przedmiotów.".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync("", embed: $"{discordUser.Mention} nie masz żadnych przedmiotów.".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
             if (itemNumber <= 0 || itemNumber > itemList.Count)
             {
-                await ReplyAsync("", embed: $"{Context.User.Mention} nie masz aż tylu przedmiotów.".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync("", embed: $"{discordUser.Mention} nie masz aż tylu przedmiotów.".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
@@ -365,7 +372,7 @@ namespace Sanakan.Modules
                 default:
                     if (itemCnt != 1)
                     {
-                        await ReplyAsync("", embed: $"{Context.User.Mention} możesz użyć tylko jeden przedmiot tego typu na raz!".ToEmbedMessage(EMType.Error).Build());
+                        await ReplyAsync("", embed: $"{discordUser.Mention} możesz użyć tylko jeden przedmiot tego typu na raz!".ToEmbedMessage(EMType.Error).Build());
                         return;
                     }
                     break;
@@ -373,21 +380,22 @@ namespace Sanakan.Modules
 
             if (item.Count < itemCnt)
             {
-                await ReplyAsync("", embed: $"{Context.User.Mention} nie posiadasz tylu sztuk tego przedmiotu.".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync("", embed: $"{discordUser.Mention} nie posiadasz tylu sztuk tego przedmiotu.".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
-            bool noCardOperation = item.Type.CanUseWithoutCard();
+            var noCardOperation = item.Type.CanUseWithoutCard();
             var card = bUser.GameDeck.Cards.FirstOrDefault(x => x.Id == wid);
+
             if (card == null && !noCardOperation)
             {
-                await ReplyAsync("", embed: $"{Context.User.Mention} nie posiadasz takiej karty!".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync("", embed: $"{discordUser.Mention} nie posiadasz takiej karty!".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
             if (card.Expedition != CardExpedition.None && !noCardOperation)
             {
-                await ReplyAsync("", embed: $"{Context.User.Mention} ta karta jest na wyprawie!".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync("", embed: $"{discordUser.Mention} ta karta jest na wyprawie!".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
@@ -417,10 +425,10 @@ namespace Sanakan.Modules
             }
 
             double karmaChange = 0;
-            bool consumeItem = true;
+            var consumeItem = true;
             var cnt = (itemCnt > 1) ? $"x{itemCnt}" : "";
             var bonusFromQ = item.Quality.GetQualityModifier();
-            double affectionInc = item.Type.BaseAffection() * itemCnt;
+            var affectionInc = item.Type.BaseAffection() * itemCnt;
             var textRelation = noCardOperation ? "" : card.GetAffectionString();
             var cardString = noCardOperation ? "" : " na " + card.GetString(false, false, true);
             var embed = new EmbedBuilder
@@ -952,21 +960,24 @@ namespace Sanakan.Modules
         [Alias("update")]
         [Summary("pobiera dane na tamat karty z shindena")]
         [Remarks("5412"), RequireWaifuCommandChannel]
-        public async Task UpdateCardAsync([Summary("WID")]ulong id, [Summary("czy przywrócić obrazek ze strony")]bool defaultImage = false)
+        public async Task UpdateCardAsync(
+            [Summary("WID")]ulong id,
+            [Summary("czy przywrócić obrazek ze strony")]bool defaultImage = false)
         {
-            var bUser = await _repository.GetUserOrCreateAsync(Context.User.Id);
+            var discordUser = Context.User;
+            var bUser = await _userRepository.GetUserOrCreateAsync(discordUser.Id);
             var card = bUser.GameDeck.Cards.FirstOrDefault(x => x.Id == id);
 
             if (card == null)
             {
-                await ReplyAsync("", embed: $"{Context.User.Mention} nie posiadasz takiej karty.".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync("", embed: $"{discordUser.Mention} nie posiadasz takiej karty.".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
             if (card.FromFigure)
             {
                 _waifu.DeleteCardImageIfExist(card);
-                await ReplyAsync("", embed: $"{Context.User.Mention} tej karty nie można zaktualizować.".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync("", embed: $"{discordUser.Mention} tej karty nie można zaktualizować.".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
@@ -975,7 +986,17 @@ namespace Sanakan.Modules
 
             try
             {
-                await card.Update(Context.User, _shclient);
+                var response = await _shclient.GetCharacterInfoAsync(card.Character);
+                if (!response.IsSuccessStatusCode())
+                {
+                    card.Unique = true;
+                    throw new Exception($"Couldn't get card info!");
+                }
+
+                card.Unique = false;
+                card.Name = response.Body.ToString();
+                card.Image = response.Body.HasImage ? response.Body.PictureUrl : null;
+                card.Title = response.Body?.Relations?.OrderBy(x => x.Id).FirstOrDefault()?.Title ?? "????";
 
                 await _userRepository.SaveChangesAsync();
                 _waifu.DeleteCardImageIfExist(card);
@@ -1206,9 +1227,11 @@ namespace Sanakan.Modules
         [Alias("chest")]
         [Summary("przenosi doświadczenie z skrzyni do karty (kosztuje CT)")]
         [Remarks("2154"), RequireWaifuCommandChannel]
-        public async Task TransferExpFromChestAsync([Summary("WID")]ulong id, [Summary("liczba doświadczenia")]uint exp)
+        public async Task TransferExpFromChestAsync(
+            [Summary("WID")]ulong id,
+            [Summary("liczba doświadczenia")]uint exp)
         {
-            var bUser = await _repository.GetUserOrCreateAsync(Context.User.Id);
+            var bUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
             if (bUser.GameDeck.ExpContainer.Level == ExpContainerLevel.Disabled)
             {
                 await ReplyAsync("", embed: $"{Context.User.Mention} nie posiadasz jeszcze skrzyni doświadczenia.".ToEmbedMessage(EMType.Error).Build());
@@ -2958,7 +2981,7 @@ namespace Sanakan.Modules
 
             var session = new ExchangeSession(sourceUser, destinationUser);
 
-            if (_session.SessionExist(session))
+            if (_sessionManager.SessionExist(session))
             {
                 await ReplyAsync("", embed: $"{sourceUser.Mention} Ty lub twój partner znajdujecie się obecnie w trakcie wymiany.".ToEmbedMessage(EMType.Error).Build());
                 return;
@@ -2999,7 +3022,7 @@ namespace Sanakan.Modules
             await msg.AddReactionsAsync(session.StartReactions);
             session.Message = msg;
 
-            await _session.TryAddSession(session);
+            await _sessionManager.TryAddSession(session);
         }
 
         [Command("tworzenie")]
@@ -3011,8 +3034,8 @@ namespace Sanakan.Modules
             var user1 = Context.User as SocketGuildUser;
             if (user1 == null) return;
 
-            var session = new CraftingSession(user1, _waifu, _config);
-            if (_session.SessionExist(session))
+            var session = new CraftingSession(user1, _waifu);
+            if (_sessionManager.SessionExist(session))
             {
                 await ReplyAsync("", embed: $"{user1.Mention} już masz otwarte menu tworzenia kart."
                     .ToEmbedMessage(EMType.Error).Build());
@@ -3051,7 +3074,7 @@ namespace Sanakan.Modules
             await msg.AddReactionsAsync(session.StartReactions);
             session.Message = msg;
 
-            await _session.TryAddSession(session);
+            await _sessionManager.TryAddSession(session);
         }
 
         [Command("wyprawa status", RunMode = RunMode.Async)]
@@ -3309,7 +3332,7 @@ namespace Sanakan.Modules
         [Remarks("451"), RequireWaifuCommandChannel]
         public async Task SetProfileWaifuAsync([Summary("WID")]ulong wid)
         {
-            var bUser = await _repository.GetUserOrCreateAsync(Context.User.Id);
+            var bUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
 
             if (wid == 0)
             {

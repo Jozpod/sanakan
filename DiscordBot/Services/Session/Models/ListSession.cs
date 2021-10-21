@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
+using DiscordBot.Services.Session;
+using Sanakan.DiscordBot;
 using Sanakan.Extensions;
 
 namespace Sanakan.Services.Session.Models
@@ -18,8 +20,6 @@ namespace Sanakan.Services.Session.Models
         private int CurrentPage { get; set; }
 
         private readonly IUser Bot;
-        private readonly Emoji LeftEmote = new Emoji("⬅");
-        private readonly Emoji RightEmote = new Emoji("➡");
 
         public ListSession(IUser owner, IUser bot) : base(owner)
         {
@@ -72,14 +72,14 @@ namespace Sanakan.Services.Session.Models
             if (await Message.Channel.GetMessageAsync(Message.Id) is IUserMessage msg)
             {
                 var reaction = context.ReactionAdded ?? context.ReactionRemoved;
-                if (reaction.Emote.Equals(LeftEmote))
+                if (reaction.Emote.Equals(Emojis.LeftwardsArrow))
                 {
                     if (--CurrentPage < 0) CurrentPage = MaxPageReal();
                     await msg.ModifyAsync(x => x.Embed = BuildPage(CurrentPage));
 
                     RestartTimer();
                 }
-                else if (reaction.Emote.Equals(RightEmote))
+                else if (reaction.Emote.Equals(Emojis.RightwardsArrow))
                 {
                     if (++CurrentPage > MaxPageReal()) CurrentPage = 0;
                     await msg.ModifyAsync(x => x.Embed = BuildPage(CurrentPage));
@@ -103,7 +103,9 @@ namespace Sanakan.Services.Session.Models
                     }
                     catch (Exception)
                     {
-                        await msg.RemoveReactionsAsync(Bot, new IEmote[] { LeftEmote, RightEmote });
+                        await msg.RemoveReactionsAsync(Bot, new IEmote[] { 
+                            Emojis.LeftwardsArrow, Emojis.RightwardsArrow
+                        });
                     }
                 }
 

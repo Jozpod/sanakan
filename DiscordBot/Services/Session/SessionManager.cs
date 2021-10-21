@@ -53,7 +53,9 @@ namespace Sanakan.Services.Session
         public async Task<bool> TryAddSession<T>(T session) where T : ISession
         {
             if (SessionExist(session))
+            {
                 return false;
+            }
 
             await _semaphore.WaitAsync();
 

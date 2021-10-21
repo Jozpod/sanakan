@@ -9,6 +9,8 @@ using DiscordBot.Services.Session;
 using Microsoft.Extensions.Options;
 using Sanakan.Common;
 using Sanakan.DAL.Models;
+using Sanakan.DAL.Repositories.Abstractions;
+using Sanakan.DiscordBot;
 using Sanakan.Extensions;
 using Sanakan.Services.PocketWaifu;
 
@@ -28,32 +30,19 @@ namespace Sanakan.Services.Session.Models
         public string Tips { get; set; }
 
         private ExchangeStatus State;
-        private readonly object _config;
         private readonly ICacheManager _cacheManager;
-
-        private readonly Emoji AcceptEmote = new Emoji("✅");
-        private readonly Emote DeclineEmote = Emote.Parse("<:redcross:581152766655856660>");
-
-        private readonly Emoji InEmote = new Emoji("📥");
-        private readonly Emoji ErrEmote = new Emoji("❌");
-        private readonly Emoji OutEmote = new Emoji("📤");
-
-        private readonly Emoji OneEmote = new Emoji("\u0031\u20E3");
-        private readonly Emoji TwoEmote = new Emoji("\u0032\u20E3");
-
-        public IEmote[] StartReactions => new IEmote[] { OneEmote, TwoEmote };
+        private readonly IUserRepository _userRepository;
+        public IEmote[] StartReactions => new IEmote[] { Emojis.OneEmote, Emojis.TwoEmote };
 
         public ExchangeSession(
             IUser owner,
-            IUser exchanger,
-            IOptions<object> config) : base(owner)
+            IUser exchanger) : base(owner)
         {
             State = ExchangeStatus.Add;
             Event = ExecuteOn.AllEvents;
             AddParticipant(exchanger);
             RunMode = RunMode.Sync;
             TimeoutMs = 120000;
-            _config = config;
 
             Message = null;
 
@@ -102,8 +91,11 @@ namespace Sanakan.Services.Session.Models
             var cmdType = splitedCmd[0];
             if (cmdType == null) return;
 
-            PlayerInfo thisPlayer = null;
-            PlayerInfo targetPlayer = null;
+            PlayerInfo? thisPlayer = null;
+            PlayerInfo? targetPlayer = null;
+
+            var socketUserMessage = context.Message;
+
             if (context.User.Id == P1.User.Id)
             {
                 thisPlayer = P1;
@@ -121,13 +113,13 @@ namespace Sanakan.Services.Session.Models
                 var WIDStr = splitedCmd?[1];
                 if (string.IsNullOrEmpty(WIDStr))
                 {
-                    await context.Message.AddReactionAsync(ErrEmote);
+                    await socketUserMessage.AddReactionAsync(Emojis.CrossMark);
                     return;
                 }
 
                 if (ulong.TryParse(WIDStr, out var WID))
                 {
-                    await HandleDeleteAsync(thisPlayer, WID, context.Message);
+                    await HandleDeleteAsync(thisPlayer, WID, socketUserMessage);
                 }
                 RestartTimer();
             }
@@ -135,14 +127,22 @@ namespace Sanakan.Services.Session.Models
             {
                 var ids = new List<ulong>();
                 foreach (var WIDStr in splitedCmd)
-                    if (ulong.TryParse(WIDStr, out var WID))
-                        ids.Add(WID);
-
-                if (ids.Count > 0)
                 {
-                    await HandleAddAsync(thisPlayer, ids, context.Message, targetPlayer);
+                    if (ulong.TryParse(WIDStr, out var WID))
+                    {
+                        ids.Add(WID);
+                    }
                 }
-                else await context.Message.AddReactionAsync(ErrEmote);
+
+                if (ids.Any())
+                {
+                    await HandleAddAsync(thisPlayer, ids, socketUserMessage, targetPlayer);
+                }
+                else
+                {
+                    await socketUserMessage.AddReactionAsync(Emojis.CrossMark);
+                }
+
                 RestartTimer();
             }
         }
@@ -167,7 +167,7 @@ namespace Sanakan.Services.Session.Models
                     continue;
                 }
 
-                if (card.InCage || !card.IsTradable || card.IsBroken())
+                if (card.InCage || !card.IsTradable || card.IsBroken)
                 {
                     error = true;
                     continue;
@@ -217,8 +217,15 @@ namespace Sanakan.Services.Session.Models
             player.Accepted = false;
             player.CustomString = BuildProposition(player);
 
-            if (added) await message.AddReactionAsync(InEmote);
-            if (error) await message.AddReactionAsync(ErrEmote);
+            if (added)
+            {
+                await message.AddReactionAsync(Emojis.InboxTray);
+            }
+
+            if (error)
+            {
+                await message.AddReactionAsync(Emojis.CrossMark);
+            }
 
             if (await Message.Channel.GetMessageAsync(Message.Id) is IUserMessage msg)
             {
@@ -231,7 +238,7 @@ namespace Sanakan.Services.Session.Models
             var card = player.Cards.FirstOrDefault(x => x.Id == wid);
             if (card == null)
             {
-                await message.AddReactionAsync(ErrEmote);
+                await message.AddReactionAsync(Emojis.CrossMark);
                 return;
             }
 
@@ -242,7 +249,7 @@ namespace Sanakan.Services.Session.Models
             player.Cards.Remove(card);
             player.CustomString = BuildProposition(player);
 
-            await message.AddReactionAsync(OutEmote);
+            await message.AddReactionAsync(Emojis.OutboxTray);
 
             if (await Message.Channel.GetMessageAsync(Message.Id) is IUserMessage msg)
             {
@@ -297,12 +304,12 @@ namespace Sanakan.Services.Session.Models
 
         private async Task HandleReactionInAdd(SocketReaction reaction, IUserMessage msg)
         {
-            if (reaction.Emote.Equals(OneEmote) && reaction.UserId == P1.User.Id)
+            if (reaction.Emote.Equals(Emojis.OneEmote) && reaction.UserId == P1.User.Id)
             {
                 P1.Accepted = true;
                 RestartTimer();
             }
-            else if (reaction.Emote.Equals(TwoEmote) && reaction.UserId == P2.User.Id)
+            else if (reaction.Emote.Equals(Emojis.TwoEmote) && reaction.UserId == P2.User.Id)
             {
                 P2.Accepted = true;
                 RestartTimer();
@@ -311,13 +318,13 @@ namespace Sanakan.Services.Session.Models
             if (P1.Accepted && P2.Accepted)
             {
                 State = ExchangeStatus.AcceptP1;
-                Tips = $"{P1.User.Mention} daj {AcceptEmote} aby zaakceptować, lub {DeclineEmote} aby odrzucić.";
+                Tips = $"{P1.User.Mention} daj {Emojis.Checked} aby zaakceptować, lub {Emojis.DeclineEmote} aby odrzucić.";
 
                 await msg.RemoveAllReactionsAsync();
                 await msg.ModifyAsync(x => x.Embed = BuildEmbed());
                 await msg.AddReactionsAsync(new IEmote[] {
-                    AcceptEmote,
-                    DeclineEmote
+                    Emojis.Checked,
+                    Emojis.DeclineEmote
                 });
             }
         }
@@ -329,14 +336,14 @@ namespace Sanakan.Services.Session.Models
 
             if (reaction.UserId == player.User.Id)
             {
-                if (reaction.Emote.Equals(AcceptEmote))
+                if (reaction.Emote.Equals(Emojis.Checked))
                 {
                     if (State == ExchangeStatus.AcceptP1)
                     {
                         msgCh = true;
                         RestartTimer();
                         State = ExchangeStatus.AcceptP2;
-                        Tips = $"{P2.User.Mention} daj {AcceptEmote} aby zaakceptować, lub {DeclineEmote} aby odrzucić.";
+                        Tips = $"{P2.User.Mention} daj {Emojis.Checked} aby zaakceptować, lub {Emojis.DeclineEmote} aby odrzucić.";
                     }
                     else if (State == ExchangeStatus.AcceptP2)
                     {
@@ -349,8 +356,8 @@ namespace Sanakan.Services.Session.Models
                             return end;
                         }
                             
-                        var user1 = await db.GetUserOrCreateAsync(P1.User.Id);
-                        var user2 = await db.GetUserOrCreateAsync(P2.User.Id);
+                        var user1 = await _userRepository.GetUserOrCreateAsync(P1.User.Id);
+                        var user2 = await _userRepository.GetUserOrCreateAsync(P2.User.Id);
 
                         double avgValueP1 = P1.Cards.Sum(x => x.MarketValue) / ((P1.Cards.Count == 0) ? 1 : P1.Cards.Count);
                         double avgValueP2 = P2.Cards.Sum(x => x.MarketValue) / ((P2.Cards.Count == 0) ? 1 : P2.Cards.Count);
@@ -441,13 +448,13 @@ namespace Sanakan.Services.Session.Models
                             }
                         }
 
-                        await _repository.SaveChangesAsync();
+                        await _userRepository.SaveChangesAsync();
 
                         State = ExchangeStatus.End;
                         _cacheManager.ExpireTag(new string[] { $"user-{P1.User.Id}", $"user-{P2.User.Id}", "users" });
                     }
                 }
-                else if (reaction.Emote.Equals(DeclineEmote) && State != ExchangeStatus.End)
+                else if (reaction.Emote.Equals(Emojis.DeclineEmote) && State != ExchangeStatus.End)
                 {
                     RestartTimer();
                     Tips = $"{player.User.Mention} odrzucił propozycje wymiany!";

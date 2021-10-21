@@ -71,14 +71,14 @@ namespace Sanakan.Services
 
             foreach (var item in list)
             {
-                temp += $"[{++i}] {item.ToString()}\n";
+                temp += $"[{++i}] {item}\n";
                 if (temp.Length > 1800)
                 {
                     toSend[messageNr] += "\n```";
-                    toSend[++messageNr] += $"```ini\n[{i}] {item.ToString()}\n";
+                    toSend[++messageNr] += $"```ini\n[{i}] {item}\n";
                     temp = "";
                 }
-                else toSend[messageNr] += $"[{i}] {item.ToString()}\n";
+                else toSend[messageNr] += $"[{i}] {item}\n";
             }
             toSend[messageNr] += "```\nNapisz `koniec`, aby zamknąć menu.";
 
@@ -90,9 +90,13 @@ namespace Sanakan.Services
             if (title.Equals("fate/loli")) title = "Fate/kaleid Liner Prisma Illya";
 
             var session = new SearchSession(context.User, _shClient);
-            if (_session.SessionExist(session)) return;
+            
+            if (_session.SessionExist(session))
+            {
+                return;
+            }
 
-            var res = await _shClient.Search.QuickSearchAsync(title, type);
+            var res = await _shClient.QuickSearchAsync(title, type);
             if (!res.IsSuccessStatusCode())
             {
                 await context.Channel.SendMessageAsync("", false, GetResponseFromSearchCode(res).ToEmbedMessage(EMType.Error).Build());
@@ -104,7 +108,7 @@ namespace Sanakan.Services
 
             if (list.Count == 1)
             {
-                var info = (await _shClient.Title.GetInfoAsync(list.First())).Body;
+                var info = (await _shClient.GetInfoAsync(list.First())).Body;
                 await context.Channel.SendMessageAsync("", false, info.ToEmbed());
             }
             else
@@ -138,11 +142,15 @@ namespace Sanakan.Services
 
         public async Task<Stream> GetSiteStatisticAsync(ulong shindenId, SocketGuildUser user)
         {
-            var response = await _shClient.User.GetAsync(shindenId);
-            if (!response.IsSuccessStatusCode()) return null;
+            var response = await _shClient.GetAsync(shindenId);
+            
+            if (!response.IsSuccessStatusCode())
+            {
+                return null;
+            }
 
-            var resLR = await _shClient.User.GetLastReadedAsync(shindenId);
-            var resLW = await _shClient.User.GetLastWatchedAsync(shindenId);
+            var resLR = await _shClient.GetLastReadedAsync(shindenId);
+            var resLW = await _shClient.GetLastWatchedAsync(shindenId);
 
             using (var image = await _img.GetSiteStatisticAsync(response.Body,
                 user.Roles.OrderByDescending(x => x.Position).FirstOrDefault()?.Color ?? Discord.Color.DarkerGrey,

@@ -697,7 +697,7 @@ namespace Sanakan.Modules
             [Summary("id użytkownika")]ulong id,
             [Summary("wartość tc")]long value)
         {
-            var user = await _repository.GetUserOrCreateAsync(id);
+            var user = await _userRepository.GetUserOrCreateAsync(id);
             foreach (var card in user.GameDeck.Cards.OrderByDescending(x => x.CreationDate).ToList())
             {
                 value -= 50;
@@ -736,7 +736,7 @@ namespace Sanakan.Modules
                 }
             }
 
-            await _repository.SaveChangesAsync();
+            await _userRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(new string[] { "users", $"user-{id}" });
 
@@ -869,7 +869,7 @@ namespace Sanakan.Modules
                 });
             }
 
-            await ReplyAsync("", embed: $"Safari: `{config.SafariEnabled.GetYesNo()}` `Zapisano: {save.GetYesNo()}`".ToEmbedMessage(EMType.Success).Build());
+            await ReplyAsync("", embed: $"Safari: `{_config.Value.SafariEnabled.GetYesNo()}` `Zapisano: {save.GetYesNo()}`".ToEmbedMessage(EMType.Success).Build());
         }
 
         [Command("twevent"), Priority(1)]

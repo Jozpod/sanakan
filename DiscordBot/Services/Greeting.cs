@@ -4,13 +4,13 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
 using DiscordBot.Services.Executor;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Sanakan.Common;
+using Sanakan.DAL.Repositories.Abstractions;
+using Sanakan.DiscordBot.Configuration;
 using Sanakan.Extensions;
 using Sanakan.Services.Executor;
-using Sanakan.Web.Configuration;
 
 namespace Sanakan.Services
 {
@@ -19,15 +19,18 @@ namespace Sanakan.Services
         private readonly DiscordSocketClient _client;
         private readonly IExecutor _executor;
         private readonly ILogger _logger;
-        private readonly IOptionsMonitor<SanakanConfiguration> _config;
+        private readonly IOptionsMonitor<BotConfiguration> _config;
         private readonly ICacheManager _cacheManager;
-
+        private readonly IGuildConfigRepository _guildConfigRepository;
+        private readonly ITimeStatusRepository _timeStatusRepository;
+        private readonly IPenaltyInfoRepository _penaltyInfoRepository;
+        private readonly IUserRepository _userRepository;
         public Greeting(
             DiscordSocketClient client,
             ILogger<Greeting> logger,
-            IOptionsMonitor<SanakanConfiguration> config,
+            IOptionsMonitor<BotConfiguration> config,
             IExecutor exe,
-            ICacheManager _cacheManager)
+            ICacheManager cacheManager)
         {
             _client = client;
             _logger = logger;
@@ -44,27 +47,18 @@ namespace Sanakan.Services
 
         private async Task BotLeftGuildAsync(SocketGuild guild)
         {
-            var gConfig = await db.GetGuildConfigOrCreateAsync(guild.Id);
-            db.Guilds.Remove(gConfig);
+            var gConfig = await _guildConfigRepository.GetGuildConfigOrCreateAsync(guild.Id);
+            _guildConfigRepository.Remove(gConfig);
+           
+            var stats = await _timeStatusRepository.GetByGuildIdAsync(guild.Id);
+            _timeStatusRepository.RemoveRange(stats);
 
-            var stats = db.TimeStatuses
-                .AsQueryable()
-                .AsSplitQuery()
-                .Where(x => x.Guild == guild.Id)
-                .ToList();
-            db.TimeStatuses.RemoveRange(stats);
+            await _timeStatusRepository.SaveChangesAsync();
 
-            await db.SaveChangesAsync();
+            var mutes = await _penaltyInfoRepository.GetByGuildIdAsync(guild.Id);
+            _penaltyInfoRepository.RemoveRange(mutes);
 
-            var mute = db.Penalties
-                .AsQueryable()
-                .AsSplitQuery()
-                .Where(x => x.Guild == guild.Id)
-                .ToList();
-
-            db.Penalties.RemoveRange(mute);
-
-            await db.SaveChangesAsync();
+            await _penaltyInfoRepository.SaveChangesAsync();
         }
 
         private async Task UserJoinedAsync(SocketGuildUser user)
@@ -74,12 +68,15 @@ namespace Sanakan.Services
                 return;
             }
 
-            if (_config.BlacklistedGuilds.Any(x => x == user.Guild.Id))
+            var guildId = user.Guild.Id;
+
+            if (_config.CurrentValue
+                .BlacklistedGuilds.Any(x => x == guildId))
             {
                 return;
             }
 
-            var guildConfig = await db.GetCachedGuildFullConfigAsync(user.Guild.Id);
+            var guildConfig = await _guildConfigRepository.GetCachedGuildFullConfigAsync(guildId);
 
             if (guildConfig?.WelcomeMessage == null)
             {
@@ -91,7 +88,9 @@ namespace Sanakan.Services
                 return;
             }
 
-            await SendMessageAsync(ReplaceTags(user, config.WelcomeMessage), user.Guild.GetTextChannel(config.GreetingChannel));
+            var content = ReplaceTags(user, guildConfig.WelcomeMessage);
+            var textChannel = user.Guild.GetTextChannel(guildConfig.GreetingChannel);
+            await SendMessageAsync(content, textChannel);
 
             if (guildConfig?.WelcomeMessagePW == null)
             {
@@ -123,10 +122,11 @@ namespace Sanakan.Services
             }
 
             var config = _config.CurrentValue;
+            var guildId = user.Guild.Id;
 
-            if (!config.BlacklistedGuilds.Any(x => x == user.Guild.Id))
+            if (!config.BlacklistedGuilds.Any(x => x == guildId))
             {
-                var guildConfig = await db.GetCachedGuildFullConfigAsync(user.Guild.Id);
+                var guildConfig = await _guildConfigRepository.GetCachedGuildFullConfigAsync(guildId);
                 if (guildConfig?.GoodbyeMessage == null)
                 {
                     return;
@@ -137,7 +137,9 @@ namespace Sanakan.Services
                     return;
                 }
 
-                await SendMessageAsync(ReplaceTags(user, config.GoodbyeMessage), user.Guild.GetTextChannel(config.GreetingChannel));
+                var content = ReplaceTags(user, guildConfig.GoodbyeMessage);
+                var textChannel = user.Guild.GetTextChannel(guildConfig.GreetingChannel);
+                await SendMessageAsync(content, textChannel);
             }
 
             var thisUser = _client.Guilds.FirstOrDefault(x => x.Id == user.Id);
@@ -148,8 +150,8 @@ namespace Sanakan.Services
 
             var moveTask = new Task<Task>(async () =>
             {
-                var duser = await db.GetUserOrCreateAsync(user.Id);
-                var fakeu = await db.GetUserOrCreateAsync(1);
+                var duser = await _userRepository.GetUserOrCreateAsync(user.Id);
+                var fakeu = await _userRepository.GetUserOrCreateAsync(1);
 
                 foreach (var card in duser.GameDeck.Cards)
                 {
@@ -159,9 +161,9 @@ namespace Sanakan.Services
                     card.GameDeckId = fakeu.GameDeck.Id;
                 }
 
-                db.Users.Remove(duser);
+                _userRepository.Remove(duser);
 
-                await db.SaveChangesAsync();
+                await _userRepository.SaveChangesAsync();
 
                 _cacheManager.ExpireTag(new string[] { "users" });
             });

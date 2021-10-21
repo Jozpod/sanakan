@@ -1411,8 +1411,8 @@ namespace Sanakan.Modules
         public async Task CheckUserAsync([Summary("użytkownik")]SocketGuildUser user)
         {
             var report = "**Globalki:** ✅\n\n";
-            var guildConfig = await _repository.GetCachedGuildFullConfigAsync(user.Guild.Id);
-            var duser = await _repository.GetUserOrCreateAsync(user.Id);
+            var guildConfig = await _guildConfigRepository.GetCachedGuildFullConfigAsync(user.Guild.Id);
+            var duser = await _userRepository.GetUserOrCreateAsync(user.Id);
             var globalRole = user.Guild.GetRole(guildConfig.GlobalEmotesRole);
 
             if (globalRole != null)

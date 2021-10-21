@@ -3,7 +3,7 @@ namespace Shinden.Models
     public enum MangaRateType
     {
         Characters,
-        Stroy,
+        Story,
         Total,
         Art
     }

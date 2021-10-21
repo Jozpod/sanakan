@@ -9,6 +9,23 @@ namespace Sanakan.Extensions
 {
     public static class CardExtension
     {
+        public static int GetValue(this Card card)
+        {
+            switch (card.Rarity)
+            {
+                case Rarity.SSS: return 50;
+                case Rarity.SS: return 25;
+                case Rarity.S: return 15;
+                case Rarity.A: return 10;
+                case Rarity.B: return 7;
+                case Rarity.C: return 5;
+                case Rarity.D: return 3;
+
+                default:
+                case Rarity.E: return 1;
+            }
+        }
+        public static bool HasCustomBorder(this Card card) => card.CustomBorder != null;
         public static double ExpToUpgrade(this Card card)
         {
             switch (card.Rarity)
@@ -175,6 +192,28 @@ namespace Sanakan.Extensions
                     icons.Add("🔄");
             }
             return string.Join(" ", icons);
+        }
+        public static string GetString(this CardSource source)
+        {
+            switch (source)
+            {
+                case CardSource.Activity: return "Aktywność";
+                case CardSource.Safari: return "Safari";
+                case CardSource.Shop: return "Sklepik";
+                case CardSource.GodIntervention: return "Czity";
+                case CardSource.Api: return "Strona";
+                case CardSource.Migration: return "Stara baza";
+                case CardSource.PvE: return "Walki na boty";
+                case CardSource.Daily: return "Karta+";
+                case CardSource.Crafting: return "Tworzenie";
+                case CardSource.PvpShop: return "Koszary";
+                case CardSource.Figure: return "Figurka";
+                case CardSource.Expedition: return "Wyprawa";
+                case CardSource.ActivityShop: return "Kiosk";
+
+                default:
+                case CardSource.Other: return "Inne";
+            }
         }
         public static string GetDesc(this Card card)
         {
@@ -376,7 +415,10 @@ namespace Sanakan.Extensions
                     return 0;
             }
 
-            if (!card.HasImage()) perMinute *= 2;
+            if (!card.HasImage())
+            {
+                perMinute *= 2;
+            }
             param += affOffset + addOFK;
             var t = param / perMinute;
             if (t > 10080) t = 10080;

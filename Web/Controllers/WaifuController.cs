@@ -181,7 +181,7 @@ namespace Sanakan.Web.Controllers
         [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(IEnumerable<CardFinalView>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetUsersCardsByShindenIdWithOffsetAsync(
-            ulong id, uint offset, uint count)
+            ulong id, int offset, int count)
         {
             var user = await _userRepository.GetByShindenIdAsync(id, new UserQueryOptions
             {
@@ -623,7 +623,7 @@ namespace Sanakan.Web.Controllers
 
             var exe = new Executable($"api-packet u{id}", new Task<Task>(async () =>
             {
-                var botUser = await _repository.GetUserOrCreateAsync(id);
+                var botUser = await _userRepository.GetUserOrCreateAsync(id);
 
                 foreach (var pack in packs)
                 {
@@ -685,7 +685,7 @@ namespace Sanakan.Web.Controllers
             var discordId = user.Id;
             var exe = new Executable($"api-packet u{discordId}", new Task<Task>(async () =>
             {
-                var botUser = await _repository.GetUserOrCreateAsync(discordId);
+                var botUser = await _userRepository.GetUserOrCreateAsync(discordId);
 
                 foreach (var pack in packs)
                 {
@@ -777,7 +777,7 @@ namespace Sanakan.Web.Controllers
 
             var exe = new Executable($"api-packet-open u{discordId}", new Task<Task>(async () =>
             {
-                var botUser = await _repository.GetUserOrCreateAsync(discordId);
+                var botUser = await _userRepository.GetUserOrCreateAsync(discordId);
 
                 botUser.Stats.OpenedBoosterPacks += packs.Count;
 

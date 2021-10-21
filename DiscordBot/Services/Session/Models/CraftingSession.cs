@@ -11,6 +11,7 @@ using Microsoft.Extensions.Options;
 using Sanakan.Common;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Repositories.Abstractions;
+using Sanakan.DiscordBot;
 using Sanakan.Extensions;
 using Sanakan.Services.PocketWaifu;
 
@@ -24,31 +25,22 @@ namespace Sanakan.Services.Session.Models
         public string Name { get; set; }
         public string Tips { get; set; }
 
-        private readonly object _config;
         private readonly IWaifuService _waifu;
         private readonly ICacheManager _cacheManager;
         private readonly IAllRepository _repository;
+        private readonly IUserRepository _userRepository;
 
-        private readonly Emoji AcceptEmote = new Emoji("✅");
-        private readonly Emote DeclineEmote = Emote.Parse("<:redcross:581152766655856660>");
-
-        private readonly Emoji InEmote = new Emoji("📥");
-        private readonly Emoji ErrEmote = new Emoji("❌");
-        private readonly Emoji OutEmote = new Emoji("📤");
-
-        public IEmote[] StartReactions => new IEmote[] { AcceptEmote, DeclineEmote };
+        public IEmote[] StartReactions => new IEmote[] { Emojis.Checked, Emojis.DeclineEmote };
 
         public CraftingSession(
             IUser owner,
             IWaifuService waifu,
-            IOptions<object> config,
             ICacheManager cacheManager,
             IAllRepository repository) : base(owner)
         {
             Event = ExecuteOn.AllEvents;
             RunMode = RunMode.Sync;
             TimeoutMs = 120000;
-            _config = config;
             _waifu = waifu;
             _cacheManager = cacheManager;
             _repository = repository;
@@ -153,7 +145,7 @@ namespace Sanakan.Services.Session.Models
 
             if (itemNum < 1)
             {
-                await context.Message.AddReactionAsync(ErrEmote);
+                await context.Message.AddReactionAsync(Emojis.CrossMark);
                 return;
             }
 
@@ -173,7 +165,7 @@ namespace Sanakan.Services.Session.Models
         {
             if (number >= Items.Count)
             {
-                await message.AddReactionAsync(ErrEmote);
+                await message.AddReactionAsync(Emojis.CrossMark);
                 return;
             }
 
@@ -193,7 +185,7 @@ namespace Sanakan.Services.Session.Models
             }
             else thisItem2.Count += count;
 
-            await message.AddReactionAsync(InEmote);
+            await message.AddReactionAsync(Emojis.InboxTray);
 
             if (await Message.Channel.GetMessageAsync(Message.Id) is IUserMessage msg)
             {
@@ -205,7 +197,7 @@ namespace Sanakan.Services.Session.Models
         {
             if (number >= P1.Items.Count)
             {
-                await message.AddReactionAsync(ErrEmote);
+                await message.AddReactionAsync(Emojis.CrossMark);
                 return;
             }
 
@@ -227,7 +219,7 @@ namespace Sanakan.Services.Session.Models
             }
             else thisItem2.Count += count;
 
-            await message.AddReactionAsync(OutEmote);
+            await message.AddReactionAsync(Emojis.OutboxTray);
 
             if (await Message.Channel.GetMessageAsync(Message.Id) is IUserMessage msg)
             {
@@ -249,7 +241,7 @@ namespace Sanakan.Services.Session.Models
                     return false;
                 }
 
-                if (reaction.Emote.Equals(DeclineEmote))
+                if (reaction.Emote.Equals(Emojis.DeclineEmote))
                 {
                     await msg.ModifyAsync(x => x.Embed = $"{Name}\n\nOdrzucono tworzenie karty.".ToEmbedMessage(EMType.Bot).Build());
 
@@ -258,7 +250,7 @@ namespace Sanakan.Services.Session.Models
                     return true;
                 }
 
-                if (reaction.Emote.Equals(AcceptEmote))
+                if (reaction.Emote.Equals(Emojis.Checked))
                 {
                     bool error = true;
 
@@ -266,7 +258,7 @@ namespace Sanakan.Services.Session.Models
                     {
                         error = false;
 
-                        var user = await _repository.GetUserOrCreateAsync(P1.User.Id);
+                        var user = await _userRepository.GetUserOrCreateAsync(P1.User.Id);
                         var newCard = _waifu.GenerateNewCard(
                             P1.User,
                             await _waifu.GetRandomCharacterAsync(),

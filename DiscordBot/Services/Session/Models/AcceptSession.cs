@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using DiscordBot.Services.Session;
+using Sanakan.DiscordBot;
 
 namespace Sanakan.Services.Session.Models
 {
@@ -12,10 +13,8 @@ namespace Sanakan.Services.Session.Models
         public IAcceptActions Actions { get; set; }
 
         private readonly IUser Bot;
-        private readonly Emoji AcceptEmote = new Emoji("✅");
-        private readonly Emote DeclineEmote = Emote.Parse("<:redcross:581152766655856660>");
 
-        public IEmote[] StartReactions => new IEmote[] { AcceptEmote, DeclineEmote };
+        public IEmote[] StartReactions => new IEmote[] { Emojis.Checked, Emojis.DeclineEmote };
 
         public AcceptSession(IUser owner, IUser challenger, IUser bot) : base(owner)
         {
@@ -48,11 +47,11 @@ namespace Sanakan.Services.Session.Models
             if (await Message.Channel.GetMessageAsync(Message.Id) is IUserMessage msg)
             {
                 var reaction = context.ReactionAdded ?? context.ReactionRemoved;
-                if (reaction.Emote.Equals(AcceptEmote))
+                if (reaction.Emote.Equals(Emojis.Checked))
                 {
                     return await Actions?.OnAccept(context);
                 }
-                else if (reaction.Emote.Equals(DeclineEmote))
+                else if (reaction.Emote.Equals(Emojis.DeclineEmote))
                 {
                     return await Actions?.OnDecline(context);
                 }
@@ -73,7 +72,7 @@ namespace Sanakan.Services.Session.Models
                     }
                     catch (Exception)
                     {
-                        await msg.RemoveReactionsAsync(Bot, new IEmote[] { AcceptEmote, DeclineEmote });
+                        await msg.RemoveReactionsAsync(Bot, new IEmote[] { Emojis.Checked, Emojis.DeclineEmote });
                     }
                 }
 

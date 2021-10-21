@@ -22,7 +22,7 @@ namespace Sanakan.DAL.Configuration
         IEntityTypeConfiguration<BoosterPackCharacter>,
         IEntityTypeConfiguration<RarityExcluded>,
         IEntityTypeConfiguration<GuildOptions>,
-        IEntityTypeConfiguration<Waifu>,
+        IEntityTypeConfiguration<WaifuConfiguration>,
         IEntityTypeConfiguration<Raport>
     {
         public void Configure(EntityTypeBuilder<Raport> builder)
@@ -153,7 +153,7 @@ namespace Sanakan.DAL.Configuration
             builder.HasKey(e => e.Id);
         }
 
-        public void Configure(EntityTypeBuilder<Waifu> builder)
+        public void Configure(EntityTypeBuilder<WaifuConfiguration> builder)
         {
             builder.HasKey(e => e.Id);
 

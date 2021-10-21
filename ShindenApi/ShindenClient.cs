@@ -1,5 +1,8 @@
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Shinden;
 using Shinden.API;
 using Shinden.Extensions;
@@ -9,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Json;
 using System.Threading.Tasks;
 
 namespace Sanakan.ShindenApi
@@ -17,160 +21,114 @@ namespace Sanakan.ShindenApi
     {
         private readonly Uri _baseUri;
         private readonly IOptionsMonitor<ShindenClientOptions> _options;
-        private readonly ILogger<ShindenClient> _logger;
-
-        //public TitleModule Title { get; }
-        //public SearchModule Search { get; }
-        //public ExperimentalModule Ex { get; }
-        //public LoggedInUserModule.UserModule User { get; }
+        private readonly ILogger _logger;
+        private readonly CookieContainer _cookies;
+        private readonly HttpClient _httpClient;
+        private ILoggedUser _loggedUser;
+        private ISession _session;
 
         public ShindenClient(
             IOptionsMonitor<ShindenClientOptions> options,
             ILogger<ShindenClient> logger)
         {
-            //Auth authenticator,
-            //_logger.LogInformation($"Runing as: {authenticator.GetUserAgent()}");
-            //_manager = new RequestManager(authenticator, logger);
-
-            //Title = new TitleModule(_manager);
-            //Search = new SearchModule(_manager);
-            //Ex = new ExperimentalModule(_manager);
-            //User = new LoggedInUserModule.UserModule(_manager, _logger);
-        }
-
-        public async Task<Response<List<INewEpisode>>> GetNewEpisodesAsync()
-        {
-            var raw = await QueryAsync(new GetNewEpisodesQuery()).ConfigureAwait(false);
-            return new ResponseFinal<List<INewEpisode>>(raw.Code, new List<INewEpisode>(raw.Body?.ToModel()));
-        }
-
-        public async Task<Response<IStaffInfo>> GetStaffInfoAsync(ulong id)
-        {
-            var raw = await QueryAsync(new GetStaffInfoQuery(id)).ConfigureAwait(false);
-            return new ResponseFinal<IStaffInfo>(raw.Code, raw.Body?.ToModel());
-        }
-
-        public async Task<Response<IStaffInfo>> GetStaffInfoAsync(IIndexable id)
-        {
-            return await GetStaffInfoAsync(id.Id).ConfigureAwait(false);
-        }
-
-        public async Task<Response<ICharacterInfo>> GetCharacterInfoAsync(ulong id)
-        {
-            var raw = await QueryAsync(new GetCharacterfInfoQuery(id)).ConfigureAwait(false);
-            var content = raw.Body?.ToModel();
-            return new ResponseFinal<ICharacterInfo>(raw.Code, content);
-        }
-
-        public async Task<Response<ICharacterInfo>> GetCharacterInfoAsync(IIndexable id)
-        {
-            return await GetCharacterInfoAsync(id.Id).ConfigureAwait(false);
-        }
-
-        public void WithUserSession(ISession session)
-        {
-            _session = session;
-            AddSessionCookies();
-            _logger.Log(LogLevel.Information, "User session has been crated.");
-        }
-
-        public async Task<IResponse<T>> QueryAsync<T>(IQuery<T> query) where T : class
-        {
-            var options = _options.CurrentValue;
-            await CheckQuery(query);
-
-            using var handler = new HttpClientHandler() { CookieContainer = _cookies };
-            using var client = new HttpClient(handler);
-            query.WithToken(options.Token);
-
-            client.DefaultRequestHeaders.Add("Accept-Language", "pl");
-            client.DefaultRequestHeaders.Add("Accept", "application/json");
-            client.DefaultRequestHeaders.Add("User-Agent", $"{_auth.GetUserAgent()}");
-
-            if (options.Marmolade != null)
-            {
-                client.DefaultRequestHeaders.Add(options.Marmolade, "marmolada");
-            }
-
-            _logger.Log(LogLevel.Information, $"Processing request: [{query.Message.Method}] {query.Uri}");
-
-            if (query.Message.Content != null)
-            {
-                _logger.Log(LogLevel.Trace, $"Request body: {await query.Message.Content.ReadAsStringAsync()}");
-            }
-
-            var response = await client.SendAsync(query.Message).ConfigureAwait(false);
-
-            if (response == null)
-            {
-                _logger.Log(LogLevel.Critical, "Null response!");
-                throw new Exception("Null response!");
-            }
-
-            _logger.Log(LogLevel.Information, $"Response code: {(int)response.StatusCode}");
-
-            var final = new ResponseFinal<T>(response.StatusCode);
-            var responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-
-            _logger.Log(response.IsSuccessStatusCode ? LogLevel.Trace : LogLevel.Debug, $"Response body: {responseBody}");
-
-            if (!response.IsSuccessStatusCode) return final;
-            _logger.Log(LogLevel.Debug, "Parsing response.");
-
-            try
-            {
-                final.SetBody(query.Parse(responseBody));
-            }
-            catch (Exception ex)
-            {
-                _logger.Log(LogLevel.Error, $"In parsing: {ex}");
-            }
-
-            return final;
-        }
-
-        private async Task CheckQuery<T>(IQuery<T> query) where T : class
-        {
-            if (query is LoginUserQuery)
-            {
-                if (_baseUri == null)
-                {
-                    _baseUri = new Uri(query.BaseUri);
-                }
-            }
-            else
-                await CheckSession();
-        }
-
-        private async Task CheckSession()
-        {
-            if (_session == null)
-            {
-                return;
-            }
-
-            if (!_session.IsValid())
-            {
-                var nS = await QueryAsync(new LoginUserQuery(_session.GetAuth())).ConfigureAwait(false);
-                if (nS.IsSuccessStatusCode())
-                {
-                    _logger.Log(LogLevel.Information, "User session has been renewed.");
-                    _session.Renew(nS.Body.ToModel(_session.GetAuth()).Session);
-                    AddSessionCookies();
-                }
-            }
-
-        }
-
-        private void AddSessionCookies()
-        {
-            if (_session == null || _baseUri == null || !_session.IsValid())
-            {
-                return;
-            }
-
+            _cookies = new CookieContainer();
             _cookies.Add(_baseUri, new Cookie() { Name = "name", Value = _session.Name, Expires = _session.Expires });
             _cookies.Add(_baseUri, new Cookie() { Name = "id", Value = _session.Id, Expires = _session.Expires });
+            var handler = new HttpClientHandler() { CookieContainer = _cookies };
+            _httpClient = new HttpClient(handler);
+
+
+            _httpClient.DefaultRequestHeaders.Add("Accept-Language", "pl");
+            _httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
+            _httpClient.DefaultRequestHeaders.Add("User-Agent", $"{options.CurrentValue.UserAgent}");
+
+            if (options.CurrentValue.Marmolade != null)
+            {
+                _httpClient.DefaultRequestHeaders.Add(options.CurrentValue.Marmolade, "marmolada");
+            }
+        }
+
+        public async Task<object> GetNewEpisodesAsync()
+        {
+            var response = await _httpClient.GetAsync("{BaseUri}episode/new?api_key={Token}");
+
+            if(!response.IsSuccessStatusCode)
+            {
+                return new Result<object>();
+            }
+
+            var json = await response.Content.ReadAsStringAsync();
+
+            var list = new List<NewEpisode>();
+            var jsonObj = JObject.Parse(json);
+            foreach (var item in jsonObj["lastonline"].Children())
+            {
+                list.Add(JsonConvert.DeserializeObject<NewEpisode>(item.ToString()));
+            }
+
+            return new Result<List<NewEpisode>>()
+            {
+                Value = list
+            };
+
+            //var raw = await QueryAsync(new GetNewEpisodesQuery()).ConfigureAwait(false);
+            //return new ResponseFinal<List<INewEpisode>>(raw.Code, new List<INewEpisode>(raw.Body?.ToModel()));
+        }
+
+        public async Task<object> GetStaffInfoAsync(ulong id)
+        {
+            var queryData = new Dictionary<string, string>()
+            {
+                { "api_key", _options.CurrentValue.Token },
+            };
+
+            var query = QueryHelpers.AddQueryString($"staff/{id}", queryData);
+
+            var response = await _httpClient.GetAsync(query);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return new Result<object>();
+            }
+
+            var json = await response.Content.ReadAsStringAsync();
+
+            var result = JsonConvert.DeserializeObject<StaffInfo>(json);
+
+            return new Result<StaffInfo>()
+            {
+                Value = result
+            };
+        }
+
+        public async Task<Result<CharacterInfo>> GetCharacterInfoAsync(ulong id)
+        {
+            var oneToStr = 1.ToString();
+            var queryData = new Dictionary<string, string>()
+            {
+                { "api_key", _options.CurrentValue.Token },
+                { "fav_stats", oneToStr },
+                { "relations", oneToStr },
+                { "points", oneToStr },
+                { "bio", oneToStr },
+                { "pictures", oneToStr },
+            };
+
+            var query = QueryHelpers.AddQueryString($"character/{id}", queryData);
+
+            var response = await _httpClient.GetAsync(query);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return new Result<CharacterInfo>();
+            }
+
+            var result = await response.Content.ReadFromJsonAsync<CharacterInfo>();
+
+            return new Result<CharacterInfo>()
+            {
+                Value = result
+            };
         }
 
         #region Title
@@ -178,11 +136,6 @@ namespace Sanakan.ShindenApi
         {
             var raw = await QueryAsync(new GetTitleEpisodesRangeQuery(id)).ConfigureAwait(false);
             return new ResponseFinal<IEpisodesRange>(raw.Code, raw.Body?.ToModel(id));
-        }
-
-        public async Task<Response<IEpisodesRange>> GetEpisodesRangeAsync(IIndexable index)
-        {
-            return await GetEpisodesRangeAsync(index.Id).ConfigureAwait(false);
         }
 
         public async Task<Response<List<IEpisode>>> GetEpisodesAsync(ulong id)
@@ -202,20 +155,10 @@ namespace Sanakan.ShindenApi
             return new ResponseFinal<ITitleInfo>(raw.Code, raw.Body?.ToModel());
         }
 
-        //public async Task<Response<ITitleInfo>> GetInfoAsync(IIndexable index)
-        //{
-        //    return await GetInfoAsync(index.Id).ConfigureAwait(false);
-        //}
-
         public async Task<Response<List<IRecommendation>>> GetRecommendationsAsync(ulong id)
         {
             var raw = await QueryAsync(new GetTitleRecommendationsQuery(id)).ConfigureAwait(false);
             return new ResponseFinal<List<IRecommendation>>(raw.Code, raw.Body?.ToModel());
-        }
-
-        public async Task<Response<List<IRecommendation>>> GetRecommendationsAsync(IIndexable index)
-        {
-            return await GetRecommendationsAsync(index.Id).ConfigureAwait(false);
         }
 
         public async Task<Response<List<IReview>>> GetReviewsAsync(ulong id)
@@ -224,20 +167,10 @@ namespace Sanakan.ShindenApi
             return new ResponseFinal<List<IReview>>(raw.Code, raw.Body?.ToModel(id));
         }
 
-        public async Task<Response<List<IReview>>> GetReviewsAsync(IIndexable index)
-        {
-            return await GetReviewsAsync(index.Id).ConfigureAwait(false);
-        }
-
         public async Task<Response<List<ITitleRelation>>> GetRelationsAsync(ulong id)
         {
             var raw = await QueryAsync(new GetTitleRelatedQuery(id)).ConfigureAwait(false);
             return new ResponseFinal<List<ITitleRelation>>(raw.Code, raw.Body?.ToModel());
-        }
-
-        public async Task<Response<List<ITitleRelation>>> GetRelationsAsync(IIndexable index)
-        {
-            return await GetRelationsAsync(index.Id).ConfigureAwait(false);
         }
 
         public async Task<Response<List<IRelation>>> GetCharactersAsync(ulong id)
@@ -252,150 +185,369 @@ namespace Sanakan.ShindenApi
         }
         #endregion
         #region Search
-        public async Task<Response<List<IUserSearch>>> SearchUserAsync(string nick)
+        public async Task<Result<List<UserSearchResult>>> SearchUserAsync(string nick)
         {
-            var raw = await QueryAsync(new SearchUserQuery(nick)).ConfigureAwait(false);
-            return new ResponseFinal<List<IUserSearch>>(raw.Code, raw.Body?.ToModel());
+            var queryData = new Dictionary<string, string>()
+            {
+                { "query", nick },
+            };
+
+            var query = QueryHelpers.AddQueryString($"user/search", queryData);
+
+            var response = await _httpClient.GetAsync(query);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return new Result<List<UserSearchResult>>();
+            }
+
+            var result = await response.Content.ReadFromJsonAsync<List<UserSearchResult>>();
+
+            return new Result<List<UserSearchResult>>()
+            {
+                Value = result
+            };
         }
 
-        public async Task<Response<List<IPersonSearch>>> CharacterAsync(string name)
+        public async Task<Result<List<CharacterSearchResult>>> SearchCharacterAsync(string name)
         {
-            var raw = await QueryAsync(new SearchCharacterQuery(name)).ConfigureAwait(false);
-            return new ResponseFinal<List<IPersonSearch>>(raw.Code, raw.Body?.ToModel());
+            var queryData = new Dictionary<string, string>()
+            {
+                { "query", name },
+            };
+
+            var query = QueryHelpers.AddQueryString($"character/search", queryData);
+
+            var response = await _httpClient.GetAsync(query);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return new Result<List<CharacterSearchResult>>();
+            }
+
+            var result = await response.Content.ReadFromJsonAsync<List<CharacterSearchResult>>();
+
+            return new Result<List<CharacterSearchResult>>()
+            {
+                Value = result
+            };
         }
 
-        public async Task<Response<List<IPersonSearch>>> StaffAsync(string name)
+        public async Task<Result<List<StaffSearchResult>>> SearchStaffAsync(string name)
         {
-            var raw = await QueryAsync(new SearchStaffQuery(name)).ConfigureAwait(false);
-            return new ResponseFinal<List<IPersonSearch>>(raw.Code, raw.Body?.ToModel());
+            var queryData = new Dictionary<string, string>()
+            {
+                { "query", name },
+            };
+
+            var query = QueryHelpers.AddQueryString($"staff/search", queryData);
+
+            var response = await _httpClient.GetAsync(query);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return new Result<List<StaffSearchResult>>();
+            }
+
+            var result = await response.Content.ReadFromJsonAsync<List<StaffSearchResult>>();
+
+            return new Result<List<StaffSearchResult>>()
+            {
+                Value = result
+            };
+
+            //var raw = await QueryAsync(new SearchStaffQuery(name)).ConfigureAwait(false);
+            //return new ResponseFinal<List<IPersonSearch>>(raw.Code, raw.Body?.ToModel());
         }
 
-        public async Task<Response<List<IQuickSearch>>> QuickSearchAsync(string search)
+        public async Task<Result<List<QuickSearchResult>>> QuickSearchAsync(string search)
         {
             var anime = await QuickSearchAnimeAsync(search).ConfigureAwait(false);
             var manga = await QuickSearchMangaAsync(search).ConfigureAwait(false);
+            var list = new List<QuickSearchResult>();
 
-            var response = new ResponseFinal<List<IQuickSearch>>(500, null);
-            var list = new List<IQuickSearch>();
-
-            if (anime.IsSuccessStatusCode())
+            if (anime.Value != null)
             {
-                list.AddRange(anime.Body);
-                response.SetCode(anime.Code);
-                response.SetBody(list);
-            }
-            if (manga.IsSuccessStatusCode())
-            {
-                list.AddRange(manga.Body);
-                response.SetCode(manga.Code);
-                response.SetBody(list);
+                list.AddRange(anime.Value);
             }
 
-            return response;
+            if (manga.Value != null)
+            {
+                list.AddRange(manga.Value);
+            }
+
+            return new Result<List<QuickSearchResult>>
+            {
+                Value = list,
+            };
         }
 
-        public async Task<Response<List<IQuickSearch>>> QuickSearchAsync(string search, QuickSearchType type)
+        public async Task<Result<List<QuickSearchResult>>> QuickSearchAsync(string search, QuickSearchType type)
         {
             switch (type)
             {
                 case QuickSearchType.Anime: return await QuickSearchAnimeAsync(search).ConfigureAwait(false);
                 case QuickSearchType.Manga: return await QuickSearchMangaAsync(search).ConfigureAwait(false);
-                default: return new ResponseFinal<List<IQuickSearch>>(500, null);
+                default: return new Result<List<QuickSearchResult>>();
             }
         }
 
-        private async Task<Response<List<IQuickSearch>>> QuickSearchAnimeAsync(string title)
+        private async Task<Result<List<QuickSearchResult>>> QuickSearchAnimeAsync(string title)
         {
-            var raw = await QueryAsync(new QuickSearchAnimeQuery(title)).ConfigureAwait(false);
-            return new ResponseFinal<List<IQuickSearch>>(raw.Code, raw.Body?.ToModel(QuickSearchType.Anime));
+            var queryData = new Dictionary<string, string>()
+            {
+                { "accepted_types", "Anime" },
+                { "decode", 1.ToString() },
+                { "query", title },
+            };
+
+            var query = QueryHelpers.AddQueryString($"title/search", queryData);
+
+            var response = await _httpClient.GetAsync(query);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return new Result<List<QuickSearchResult>>();
+            }
+
+            var result = await response.Content.ReadFromJsonAsync<List<QuickSearchResult>>();
+
+            return new Result<List<QuickSearchResult>>()
+            {
+                Value = result
+            };
         }
 
-        private async Task<Response<List<IQuickSearch>>> QuickSearchMangaAsync(string title)
+        private async Task<Result<List<QuickSearchResult>>> QuickSearchMangaAsync(string title)
         {
-            var raw = await QueryAsync(new QuickSearchMangaQuery(title)).ConfigureAwait(false);
-            return new ResponseFinal<List<IQuickSearch>>(raw.Code, raw.Body?.ToModel(QuickSearchType.Manga));
+            var queryData = new Dictionary<string, string>()
+            {
+                { "accepted_types", "Manga;Manhua;Novel;Doujin;Manhwa;OEL;One+Shot" },
+                { "decode", 1.ToString() },
+                { "query", title },
+            };
+
+            var query = QueryHelpers.AddQueryString($"title/search", queryData);
+
+            var response = await _httpClient.GetAsync(query);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return new Result<List<QuickSearchResult>>();
+            }
+
+            var result = await response.Content.ReadFromJsonAsync<List<QuickSearchResult>>();
+
+            return new Result<List<QuickSearchResult>>()
+            {
+                Value = result
+            };
         }
         #endregion
         #region Experimental
-        public async Task<Response<List<ulong>>> GetAllCharactersFromAnimeAsync()
+        public async Task<Result<List<ulong>>> GetAllCharactersFromAnimeAsync()
         {
-            var raw = await QueryAsync(new GetAllAnimeCharacters()).ConfigureAwait(false);
-            return new ResponseFinal<List<ulong>>(raw.Code, raw.Body);
+            var queryData = new Dictionary<string, string>()
+            {
+                { "api_key", _options.CurrentValue.Token }
+            };
+
+            var query = QueryHelpers.AddQueryString($"character/in-anime", queryData);
+
+            var response = await _httpClient.GetAsync(query);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return new Result<List<ulong>>();
+            }
+
+            var result = await response.Content.ReadFromJsonAsync<List<ulong>>();
+
+            return new Result<List<ulong>>()
+            {
+                Value = result
+            };
         }
 
-        public async Task<Response<List<ulong>>> GetAllCharactersFromMangaAsync()
+        public async Task<Result<List<ulong>>> GetAllCharactersFromMangaAsync()
         {
-            var raw = await QueryAsync(new GetAllMangaCharacters()).ConfigureAwait(false);
-            return new ResponseFinal<List<ulong>>(raw.Code, raw.Body);
+            var queryData = new Dictionary<string, string>()
+            {
+                { "api_key", _options.CurrentValue.Token }
+            };
+
+            var query = QueryHelpers.AddQueryString($"character/in-manga", queryData);
+
+            var response = await _httpClient.GetAsync(query);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return new Result<List<ulong>>();
+            }
+
+            var result = await response.Content.ReadFromJsonAsync<List<ulong>>();
+
+            return new Result<List<ulong>>()
+            {
+                Value = result
+            };
         }
 
-        public async Task<Response<List<ulong>>> GetAllCharactersAsync()
+        public async Task<Result<List<ulong>>> GetAllCharactersAsync()
         {
-            var raw = await QueryAsync(new GetAllCharacters()).ConfigureAwait(false);
-            return new ResponseFinal<List<ulong>>(raw.Code, raw.Body);
+            var queryData = new Dictionary<string, string>()
+            {
+                { "api_key", _options.CurrentValue.Token }
+            };
+
+            var query = QueryHelpers.AddQueryString($"character/in-manga", queryData);
+
+            var response = await _httpClient.GetAsync(query);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return new Result<List<ulong>>();
+            }
+
+            var result = await response.Content.ReadFromJsonAsync<List<ulong>>();
+
+            return new Result<List<ulong>>()
+            {
+                Value = result
+            };
         }
         #endregion
         #region User
-        //public async Task<Response<IUserInfo>> LoginAsync(UserAuth auth)
-        //{
-        //    return await LoginAsync(auth).ConfigureAwait(false);
-        //}
 
-        public async Task<Response<IUserInfo>> GetAsync(ulong id)
+        public async Task<Result<UserInfo>> GetAsync(ulong userId)
         {
-            var raw = await QueryAsync(new GetUserInfoQuery(id)).ConfigureAwait(false);
-            return new ResponseFinal<IUserInfo>(raw.Code, raw.Body?.ToModel());
+            var queryData = new Dictionary<string, string>()
+            {
+                { "api_key", _options.CurrentValue.Token },
+            };
+
+            var query = QueryHelpers.AddQueryString($"user/{userId}/info", queryData);
+
+            var response = await _httpClient.GetAsync(query);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return new Result<UserInfo>();
+            }
+
+            var result = await response.Content.ReadFromJsonAsync<UserInfo>();
+
+            return new Result<UserInfo>
+            {
+                Value = result
+            };
         }
 
-        public async Task<Response<IUserInfo>> GetAsync(IIndexable index)
+        public async Task<Result<List<FavCharacter>>> GetFavCharactersAsync(ulong userId)
         {
-            return await GetAsync(index.Id).ConfigureAwait(false);
+            var queryData = new Dictionary<string, string>()
+            {
+                { "api_key", _options.CurrentValue.Token },
+            };
+
+            var query = QueryHelpers.AddQueryString($"user/{userId}/fav-chars", queryData);
+
+            var response = await _httpClient.GetAsync(query);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return new Result<List<FavCharacter>>();
+            }
+
+            var result = await response.Content.ReadFromJsonAsync<List<FavCharacter>>();
+
+            return new Result<List<FavCharacter>>
+            {
+                Value = result,
+            };
         }
 
-        public async Task<Response<List<ILastWatched>>> GetLastWatchedAsync(IIndexable index, uint limit = 5)
+        public async Task<Result<List<LastWatchedReaded>>> GetLastWatchedAsync(ulong userId, uint limit = 5)
         {
-            return await GetLastWatchedAsync(index.Id, limit).ConfigureAwait(false);
+            var queryData = new Dictionary<string, string>()
+            {
+                { "api_key", _options.CurrentValue.Token },
+                { "limit", limit.ToString() },
+            };
+
+            var query = QueryHelpers.AddQueryString($"user/{userId}/last_view", queryData);
+
+            var response = await _httpClient.GetAsync(query);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return new Result<List<LastWatchedReaded>>();
+            }
+
+            var result = await response.Content.ReadFromJsonAsync<List<LastWatchedReaded>>();
+
+            return new Result<List<LastWatchedReaded>>
+            {
+                Value = result,
+            };
         }
 
-        //public async Task<Response<List<ICharacterInfoShort>>> GetFavCharactersAsync(ulong id)
-        //{
-        //    return await GetFavCharactersAsync(id).ConfigureAwait(false);
-        //}
-
-        public async Task<Response<List<ICharacterInfoShort>>> GetFavCharactersAsync(ulong userId)
+        public async Task<Result<List<LastWatchedReaded>>> GetLastReadedAsync(ulong userId, uint limit = 5)
         {
-            var raw = await QueryAsync(new GetUserFavCharactersQuery(userId)).ConfigureAwait(false);
-            return new ResponseFinal<List<ICharacterInfoShort>>(raw.Code, raw.Body?.ToModel());
-        }
+            var queryData = new Dictionary<string, string>()
+            {
+                { "api_key", _options.CurrentValue.Token },
+                { "limit", limit.ToString() },
+            };
 
-        public async Task<Response<List<ILastWatched>>> GetLastWatchedAsync(ulong userId, uint limit = 5)
-        {
-            var raw = await QueryAsync(new GetLastWatchedQuery(userId, limit)).ConfigureAwait(false);
-            return new ResponseFinal<List<ILastWatched>>(raw.Code, raw.Body?.ToAnimeModel());
-        }
+            var query = QueryHelpers.AddQueryString($"user/{userId}/last_read", queryData);
 
-        public async Task<Response<List<ILastReaded>>> GetLastReadedAsync(IIndexable index, uint limit = 5)
-        {
-            return await GetLastReadedAsync(index.Id, limit).ConfigureAwait(false);
-        }
+            var response = await _httpClient.GetAsync(query);
 
-        public async Task<Response<List<ILastReaded>>> GetLastReadedAsync(ulong userId, uint limit = 5)
-        {
-            var raw = await QueryAsync(new GetLastReadedQuery(userId, limit)).ConfigureAwait(false);
-            return new ResponseFinal<List<ILastReaded>>(raw.Code, raw.Body?.ToMangaModel());
+            if (!response.IsSuccessStatusCode)
+            {
+                return new Result<List<LastWatchedReaded>>();
+            }
+
+            var result = await response.Content.ReadFromJsonAsync<List<LastWatchedReaded>>();
+
+            return new Result<List<LastWatchedReaded>>
+            {
+                Value = result,
+            };
         }
         #endregion
         #region LoggedIn
-        protected async Task<Response<IUserInfo>> LoginAsync(UserAuth auth)
+        public async Task<Result<Logging>> LoginAsync(string username, string password)
         {
-            var raw = await QueryAsync(new LoginUserQuery(auth)).ConfigureAwait(false);
-
-            if (raw.IsSuccessStatusCode())
+            var formData = new Dictionary<string, string>()
             {
-                _loggedUser = raw.Body?.ToModel(auth);
-                WithUserSession(_loggedUser?.Session);
+                { nameof(username), username },
+                { nameof(password), password },
+            };
+
+            var content = new FormUrlEncodedContent(formData);
+
+            var queryData = new Dictionary<string, string>()
+            {
+                { "api_key", _options.CurrentValue.Token },
+            };
+
+            var query = QueryHelpers.AddQueryString("user/login", queryData);
+
+            var response = await _httpClient.PostAsync(query, content);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return new Result<Logging>();
             }
-            return new ResponseFinal<IUserInfo>(raw.Code, Get());
+
+            var result = await response.Content.ReadFromJsonAsync<Logging>();
+
+            return new Result<Logging>
+            {
+                Value = result,
+            };
         }
 
         public IUserInfo Get()
@@ -408,86 +560,230 @@ namespace Sanakan.ShindenApi
             return _loggedUser;
         }
 
-        public async Task<Response<IEmptyResponse>> ChangeTitleStatusAsync(ListType status, ulong id)
+        public async Task<Result<TitleStatusAfterChange>> ChangeTitleStatusAsync(
+            ulong userId, ListType status, ulong titleId)
         {
-            var config = new ChangeTitleStatusConfig() { TitleId = id, NewListType = status, UserId = Get().Id };
-            var raw = await QueryAsync(new ChangeTitleStatusQuery(config)).ConfigureAwait(false);
-            return new ResponseFinal<IEmptyResponse>(raw.Code, raw.Body?.ToModel());
+            var formData = new Dictionary<string, string>()
+            {
+                { nameof(status), status.ToQuery() },
+            };
+
+            var content = new FormUrlEncodedContent(formData);
+
+            var queryData = new Dictionary<string, string>()
+            {
+                { "api_key", _options.CurrentValue.Token },
+            };
+
+            var query = QueryHelpers.AddQueryString($"userlist/{userId}/series/{titleId}", queryData);
+
+            var response = await _httpClient.PostAsync(query, content);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return new Result<TitleStatusAfterChange>();
+            }
+
+            var result = await response.Content.ReadFromJsonAsync<TitleStatusAfterChange>();
+
+            return new Result<TitleStatusAfterChange>
+            {
+                Value = result,
+            };
+
+            //var config = new ChangeTitleStatusConfig() { TitleId = id, NewListType = status, UserId = Get().Id };
+            //var raw = await QueryAsync(new ChangeTitleStatusQuery(config)).ConfigureAwait(false);
+            //return new ResponseFinal<IEmptyResponse>(raw.Code, raw.Body?.ToModel());
         }
 
-        public async Task<Response<IEmptyResponse>> ChangeTitleStatusAsync(ListType status, IIndexable index)
+        //public async Task<Response<IEmptyResponse>> ChangeTitleStatusAsync(ListType status, IIndexable index)
+        //{
+        //    return await ChangeTitleStatusAsync(status, index.Id).ConfigureAwait(false);
+        //}
+
+        public async Task<Result<TitleStatusAfterChange>> RemoveTitleFromListAsync(ulong userId, ulong titleId)
         {
-            return await ChangeTitleStatusAsync(status, index.Id).ConfigureAwait(false);
+            var queryData = new Dictionary<string, string>()
+            {
+                { "api_key", _options.CurrentValue.Token },
+            };
+
+            var query = QueryHelpers.AddQueryString($"userlist/{userId}/series/{titleId}", queryData);
+
+            var response = await _httpClient.DeleteAsync(query);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return new Result<TitleStatusAfterChange>();
+            }
+
+            var result = await response.Content.ReadFromJsonAsync<TitleStatusAfterChange>();
+
+            return new Result<TitleStatusAfterChange>
+            {
+                Value = result,
+            };
         }
 
-        public async Task<Response<IEmptyResponse>> RemoveTitleFromListAsync(ulong id)
+        public async Task<Result<IncreaseWatched>> IncreaseNumberOfWatchedEpisodesAsync(ulong userId, ulong titleId)
         {
-            var raw = await QueryAsync(new RemoveTitleFromListQuery(Get().Id, id)).ConfigureAwait(false);
-            return new ResponseFinal<IEmptyResponse>(raw.Code, raw.Body?.ToModel());
+            userId = Get().Id;
+            var queryData = new Dictionary<string, string>()
+            {
+                { "api_key", _options.CurrentValue.Token },
+            };
+
+            var query = QueryHelpers.AddQueryString($"userlist/{userId}/increase-watched/{titleId}", queryData);
+
+            var response = await _httpClient.PostAsync(query, null);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return new Result<IncreaseWatched>();
+            }
+
+            var result = await response.Content.ReadFromJsonAsync<IncreaseWatched>();
+
+            return new Result<IncreaseWatched>
+            {
+                Value = result,
+            };
         }
 
-        public async Task<Response<IEmptyResponse>> RemoveTitleFromListAsync(IIndexable index)
+        public async Task<Result<Status>> RateAnimeAsync(ulong titleId, AnimeRateType type, uint value)
         {
-            return await RemoveTitleFromListAsync(index.Id).ConfigureAwait(false);
+            var formData = new Dictionary<string, string>()
+            {
+                { nameof(type), type.ToQuery() },
+                { nameof(value), value.ToString() },
+            };
+
+            var content = new FormUrlEncodedContent(formData);
+
+            var response = await _httpClient.PostAsync($"anime/{titleId}/rate", content);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return new Result<Status>();
+            }
+
+            var result = await response.Content.ReadFromJsonAsync<Status>();
+
+            return new Result<Status>()
+            {
+                Value = result
+            };
         }
 
-        public async Task<Response<IEmptyResponse>> IncreaseNumberOfWatchedEpisodesAsync(ulong id)
+        public string ToQuery(MangaRateType type)
         {
-            var raw = await QueryAsync(new IncreaseWatchedEpisode(Get().Id, id)).ConfigureAwait(false);
-            return new ResponseFinal<IEmptyResponse>(raw.Code, raw.Body?.ToModel());
+            switch (type)
+            {
+                case MangaRateType.Characters: return "titlecahracters";
+                case MangaRateType.Story: return "story";
+                case MangaRateType.Total: return "total";
+                case MangaRateType.Art: return "lines";
+                default: return "total";
+            }
         }
 
-        public async Task<Response<IEmptyResponse>> IncreaseNumberOfWatchedEpisodesAsync(IIndexable index)
+        public async Task<Result<Status>> RateMangaAsync(ulong titleId, MangaRateType type, uint value)
         {
-            return await IncreaseNumberOfWatchedEpisodesAsync(index.Id).ConfigureAwait(false);
+            var formData = new Dictionary<string, string>()
+            {
+                { "type", ToQuery(type) },
+                { "value", value.ToString() }
+            };
+
+            var content = new FormUrlEncodedContent(formData);
+
+            var queryData = new Dictionary<string, string>()
+            {
+                { "api_key", _options.CurrentValue.Token }
+            };
+
+            var query = QueryHelpers.AddQueryString($"manga/{titleId}/rate", queryData);
+
+            var response = await _httpClient.PostAsync(query, content);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return new Result<Status>();
+            }
+
+            var result = await response.Content.ReadFromJsonAsync<Status>();
+
+            return new Result<Status>()
+            {
+                Value = result
+            };
         }
 
-        public async Task<Response<IEmptyResponse>> RateAnimeAsync(ulong titleId, AnimeRateType type, uint value)
+        public async Task<Result<Modification>> AddToFavouritesAsync(ulong userId, FavouriteType type, ulong id)
         {
-            var config = new RateAnimeConfig() { TitleId = titleId, RateType = type, RateValue = value };
-            var raw = await QueryAsync(new RateAnimeQuery(config)).ConfigureAwait(false);
-            return new ResponseFinal<IEmptyResponse>(raw.Code, raw.Body?.ToModel());
+            var formData = new Dictionary<string, string>()
+            {
+                { "id", $"{type.ToString().ToLower()}-{id}" }
+            };
+
+            var content = new FormUrlEncodedContent(formData);
+
+            var queryData = new Dictionary<string, string>()
+            {
+                { "api_key", _options.CurrentValue.Token }
+            };
+
+            var query = QueryHelpers.AddQueryString($"userlist/{userId}/fav", queryData);
+
+            var response = await _httpClient.PostAsync(query, content);            
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return new Result<Modification>();
+            }
+
+            var result = await response.Content.ReadFromJsonAsync<Modification>();
+
+            return new Result<Modification>()
+            {
+                Value = result
+            };
         }
 
-        public async Task<Response<IEmptyResponse>> RateAnimeAsync(IIndexable index, AnimeRateType type, uint value)
+        public async Task<Result<Modification>> RemoveFromFavouritesAsync(ulong userId, FavouriteType type, ulong favouriteId)
         {
-            return await RateAnimeAsync(index.Id, type, value).ConfigureAwait(false);
-        }
+            var formData = new Dictionary<string, string>()
+            {
+                { "id", $"type.ToQuery(favouriteId)" }
+            };
 
-        public async Task<Response<IEmptyResponse>> RateMangaAsync(ulong titleId, MangaRateType type, uint value)
-        {
-            var config = new RateMangaConfig() { TitleId = titleId, RateType = type, RateValue = value };
-            var raw = await QueryAsync(new RateMangaQuery(config)).ConfigureAwait(false);
-            return new ResponseFinal<IEmptyResponse>(raw.Code, raw.Body?.ToModel());
-        }
+            var content = new FormUrlEncodedContent(formData);
 
-        public async Task<Response<IEmptyResponse>> RateMangaAsync(IIndexable index, MangaRateType type, uint value)
-        {
-            return await RateMangaAsync(index.Id, type, value).ConfigureAwait(false);
-        }
+            var queryData = new Dictionary<string, string>()
+            {
+                { "api_key", _options.CurrentValue.Token },
+            };
 
-        public async Task<Response<IEmptyResponse>> AddToFavouritesAsync(FavouriteType type, ulong id)
-        {
-            var config = new FavouriteConfig() { FavouriteId = id, Type = type, UserId = Get().Id };
-            var raw = await QueryAsync(new AddToFavouriteQuery(config)).ConfigureAwait(false);
-            return new ResponseFinal<IEmptyResponse>(raw.Code, raw.Body?.ToModel());
-        }
+            var query = QueryHelpers.AddQueryString($"userlist/{userId}/fav ", queryData);
 
-        public async Task<Response<IEmptyResponse>> AddToFavouritesAsync(FavouriteType type, IIndexable index)
-        {
-            return await AddToFavouritesAsync(type, index.Id).ConfigureAwait(false);
-        }
+            var response = await _httpClient.SendAsync(new HttpRequestMessage
+            {
+                RequestUri = new Uri(query),
+                Method = HttpMethod.Delete,
+                Content = content,
+            });
 
-        public async Task<Response<IEmptyResponse>> RemoveFromFavouritesAsync(FavouriteType type, ulong id)
-        {
-            var config = new FavouriteConfig() { FavouriteId = id, Type = type, UserId = Get().Id };
-            var raw = await QueryAsync(new RemoveFromFavouriteQuery(config)).ConfigureAwait(false);
-            return new ResponseFinal<IEmptyResponse>(raw.Code, raw.Body?.ToModel());
-        }
+            if (!response.IsSuccessStatusCode)
+            {
+                return new Result<Modification>();
+            }
 
-        public async Task<Response<IEmptyResponse>> RemoveFromFavouritesAsync(FavouriteType type, IIndexable index)
-        {
-            return await RemoveFromFavouritesAsync(type, index.Id).ConfigureAwait(false);
+            var result = await response.Content.ReadFromJsonAsync<Modification>();
+
+            return new Result<Modification>()
+            {
+                Value = result
+            };
         }
         #endregion
     }

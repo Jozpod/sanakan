@@ -9,5 +9,10 @@ namespace Sanakan.Common
         public static string SavedData = $"{BaseOutput}/Saved";
         public static string Profiles = $"{BaseOutput}/Profile";
         public static string PokeList = "./Pictures/Poke/List.json";
+        public const string ShieldPicture = "./Pictures/PW/shield.png";
+        public const string HeartPicture = "./Pictures/PW/heart.png";
+        public const string FirePicture = "./Pictures/PW/fire.png";
+        public const string StatsAnimePicture = "./Pictures/statsAnime.png";
+        public const string StatsMangaPicture = "./Pictures/statsManga.png";
     }
 }

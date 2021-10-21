@@ -6,8 +6,10 @@ namespace Shinden.API
     {
         [JsonProperty("logged_user")]
         public LoggedUser LoggedUser { get; set; }
+
         [JsonProperty("hash")]
         public string Hash { get; set; }
+
         [JsonProperty("session")]
         public Session Session { get; set; }
     }
@@ -54,6 +56,7 @@ namespace Shinden.API
     {
         [JsonProperty("name")]
         public string Name { get; set; }
+
         [JsonProperty("id")]
         public string Id { get; set; }
     }
