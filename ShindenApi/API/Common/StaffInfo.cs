@@ -46,10 +46,13 @@ namespace Shinden.API
     {
         [JsonProperty("staff_biography_id")]
         public string StaffBiographyId { get; set; }
+
         [JsonProperty("staff_id")]
         public string StaffId { get; set; }
+
         [JsonProperty("biography")]
         public string Biography { get; set; }
+
         [JsonProperty("lang")]
         public string Lang { get; set; }
     }
@@ -57,19 +60,26 @@ namespace Shinden.API
     public class Relation
     {
         [JsonProperty("many_id")]
-        public string ManyId { get; set; }
+        public ulong ManyId { get; set; }
+
         [JsonProperty("title_id")]
         public string TitleId { get; set; }
+
         [JsonProperty("staff_id")]
-        public string StaffId { get; set; }
+        public ulong StaffId { get; set; }
+
         [JsonProperty("staff_i18n_id")]
         public string StaffI18NId { get; set; }
+
         [JsonProperty("staff_detalis")]
         public string StaffDetalis { get; set; }
+
         [JsonProperty("character_id")]
-        public string CharacterId { get; set; }
+        public ulong? CharacterId { get; set; }
+
         [JsonProperty("character_i18n_id")]
         public string CharacterI18NId { get; set; }
+
         [JsonProperty("seiyuu_lang")]
         public string SeiyuuLang { get; set; }
         [JsonProperty("first_name")]

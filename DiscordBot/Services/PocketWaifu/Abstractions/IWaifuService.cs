@@ -3,32 +3,30 @@ using Discord.WebSocket;
 using Sanakan.DAL.Models;
 using Sanakan.Services.PocketWaifu;
 using Sanakan.Services.PocketWaifu.Fight;
+using Shinden.API;
 using Shinden.Models;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Item = Sanakan.DAL.Models.Item;
 
 namespace DiscordBot.Services.PocketWaifu.Abstractions
 {
     public interface IWaifuService
     {
-        Card GenerateNewCard(IUser user, ICharacterInfo character, Rarity rarity)
+        Card GenerateNewCard(IUser user, CharacterInfo character, Rarity rarity);
         Embed GetBoosterPackList(SocketUser user, List<BoosterPack> packs);
         double GetExpToUpgrade(Card toUp, Card toSac);
         ItemType RandomizeItemFromMarket();
         Quality RandomizeItemQualityFromMarket();
         ItemType RandomizeItemFromBlackMarket();
         Embed GetActiveList(IEnumerable<Card> list);
-        int RandomizeHealth(Card card);
-        int RandomizeDefence(Rarity rarity);
-        int RandomizeAttack(Rarity rarity);
         string EndExpedition(User user, Card card, bool showStats = false);
-        bool GetEventSate();
         int GetDefenceAfterLevelUp(Rarity oldRarity, int oldDef);
         int GetAttactAfterLevelUp(Rarity oldRarity, int oldAtk);
-        void SetEventState(bool state);
+        bool EventState { get; set; }
         void SetEventIds(List<ulong> ids);
-        Task<ICharacterInfo> GetRandomCharacterAsync();
+        Task<CharacterInfo> GetRandomCharacterAsync();
         Embed GetItemList(SocketUser user, List<Item> items);
         Task<string> GetWaifuProfileImageAsync(Card card, ITextChannel trashCh);
         List<Card> GetListInRightOrder(IEnumerable<Card> list, HaremType type, string tag);
@@ -39,10 +37,15 @@ namespace DiscordBot.Services.PocketWaifu.Abstractions
         Task<Embed> BuildCardViewAsync(Card card, ITextChannel trashChannel, SocketUser owner);
         FightHistory MakeFightAsync(List<PlayerInfo> players, bool oneCard = false);
         string GetDeathLog(FightHistory fight, List<PlayerInfo> players);
-        Card GenerateNewCard(IUser user, ICharacterInfo character);
-        Card GenerateNewCard(IUser user, ICharacterInfo character, List<Rarity> rarityExcluded);
+        Card GenerateNewCard(IUser user, CharacterInfo character);
+        Card GenerateNewCard(IUser user, CharacterInfo character, List<Rarity> rarityExcluded);
         Embed GetShopView(ItemWithCost[] items, string name = "Sklepik", string currency = "TC");
         Embed GetItemShopInfo(ItemWithCost item);
+        List<Embed> GetWaifuFromCharacterSearchResult(
+            string title,
+            IEnumerable<Card> cards,
+            DiscordSocketClient client,
+            bool mention);
         List<Embed> GetWaifuFromCharacterTitleSearchResult(
             IEnumerable<Card> cards,
             DiscordSocketClient client,

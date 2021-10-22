@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Sanakan.DAL.Models;
 using Sanakan.DAL.Models.Configuration;
 using System;
 
@@ -16,45 +17,7 @@ namespace Sanakan.DAL.Configuration
     {
         public void Configure(EntityTypeBuilder<Answer> builder)
         {
-            modelBuilder.Entity<MyLand>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-
-                entity.HasOne(e => e.GuildOptions)
-                     .WithMany(g => g.Lands);
-            });
-
-            modelBuilder.Entity<WaifuCommandChannel>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-
-                entity.HasOne(e => e.Waifu)
-                    .WithMany(w => w.CommandChannels);
-            });
-
-            modelBuilder.Entity<WaifuFightChannel>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-
-                entity.HasOne(e => e.Waifu)
-                    .WithMany(w => w.FightChannels);
-            });
-
-            modelBuilder.Entity<CommandChannel>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-
-                entity.HasOne(e => e.GuildOptions)
-                    .WithMany(g => g.CommandChannels);
-            });
-
-            modelBuilder.Entity<WithoutMsgCntChannel>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-
-                entity.HasOne(e => e.GuildOptions)
-                    .WithMany(g => g.IgnoredChannels);
-            });
+         
         }
 
         public void Configure(EntityTypeBuilder<WithoutExpChannel> builder)
@@ -77,27 +40,42 @@ namespace Sanakan.DAL.Configuration
 
         public void Configure(EntityTypeBuilder<MyLand> builder)
         {
-            throw new NotImplementedException();
+            builder.HasKey(e => e.Id);
+
+            builder.HasOne(e => e.GuildOptions)
+                 .WithMany(g => g.Lands);
         }
 
         public void Configure(EntityTypeBuilder<WaifuCommandChannel> builder)
         {
-            throw new NotImplementedException();
+            builder.HasKey(e => e.Id);
+
+            builder.HasOne(e => e.Waifu)
+                .WithMany(w => w.CommandChannels);
         }
 
         public void Configure(EntityTypeBuilder<WaifuFightChannel> builder)
         {
-            throw new NotImplementedException();
+            builder.HasKey(e => e.Id);
+
+            builder.HasOne(e => e.Waifu)
+                .WithMany(w => w.FightChannels);
         }
 
         public void Configure(EntityTypeBuilder<CommandChannel> builder)
         {
-            throw new NotImplementedException();
+            builder.HasKey(e => e.Id);
+
+            builder.HasOne(e => e.GuildOptions)
+                .WithMany(g => g.CommandChannels);
         }
 
         public void Configure(EntityTypeBuilder<WithoutMsgCntChannel> builder)
         {
-            throw new NotImplementedException();
+            builder.HasKey(e => e.Id);
+
+            builder.HasOne(e => e.GuildOptions)
+                .WithMany(g => g.IgnoredChannels);
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace Sanakan.DiscordBot.Configuration
+﻿namespace Sanakan.Configuration
 {
     public class ExperienceConfiguration
     {

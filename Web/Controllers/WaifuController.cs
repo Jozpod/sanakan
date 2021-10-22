@@ -18,11 +18,9 @@ using Sanakan.DAL.Repositories;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.Extensions;
 using Sanakan.Services.Executor;
-using Sanakan.Services.PocketWaifu;
 using Sanakan.ShindenApi;
 using Sanakan.Web.Models;
 using Sanakan.Web.Resources;
-using Shinden;
 using static Sanakan.Web.ResponseExtensions;
 
 namespace Sanakan.Web.Controllers
@@ -32,7 +30,7 @@ namespace Sanakan.Web.Controllers
     [Produces("application/json")]
     public class WaifuController : ControllerBase
     {
-        private readonly IShindenClient _shClient;
+        private readonly IShindenClient _shindenClient;
         private readonly IWaifuService _waifu;
         private readonly IExecutor _executor;
         private readonly IFileSystem _fileSystem;
@@ -56,7 +54,7 @@ namespace Sanakan.Web.Controllers
             _waifu = waifu;
             _fileSystem = fileSystem;
             _executor = executor;
-            _shClient = shClient;
+            _shindenClient = shClient;
             _repository = repository;
             _userRepository = userRepository;
             _userContext = userContext;
@@ -106,12 +104,10 @@ namespace Sanakan.Web.Controllers
         /// <summary>
         /// Pobiera x kart z przefiltrowanej listy użytkownika
         /// </summary>
-        /// <param name="id">id użytkownika shindena</param>
-        /// <param name="offset">przesunięcie</param>
-        /// <param name="count">liczba kart</param>
+        /// <param name="id">The user identifier</param>
+        /// <param name="offset">offset</param>
+        /// <param name="count">number of cards to take</param>
         /// <param name="filter">filtry listy</param>
-        /// <returns>lista kart</returns>
-        /// <response code="404">User not found</response>
         [HttpPost("user/{id}/cards/{offset}/{count}")]
         [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(FilteredCards), StatusCodes.Status200OK)]
@@ -121,46 +117,17 @@ namespace Sanakan.Web.Controllers
             uint count,
             [FromBody]CardsQueryFilter filter)
         {
-            var user = await _repository.GetUsersCardsByShindenIdWithOffsetAndFilterAsync1(id);
+            var user = await _userRepository.GetByShindenIdAsync(id, new UserQueryOptions
+            {
+                IncludeGameDeck = true,
+            });
 
             if (user == null)
             {
                 return ShindenNotFound(Strings.UserNotFound);
             }
 
-            var query = await _repository.GetUsersCardsByShindenIdWithOffsetAndFilterAsync2(user.GameDeck.Id);
-
-            if (!string.IsNullOrEmpty(filter.SearchText))
-            {
-                query = query.Where(x => x.Name.Contains(filter.SearchText) 
-                    || x.Title.Contains(filter.SearchText));
-            }
-
-            query = CardsQueryFilter.Use(filter.OrderBy, query);
-
-            var cards = await query.ToListAsync();
-
-            if (filter.IncludeTags != null && filter.IncludeTags.Count > 0)
-            {
-                if (filter.FilterTagsMethod == FilterTagsMethodType.And)
-                {
-                    foreach (var iTag in filter.IncludeTags)
-                        cards = cards.Where(x => x.HasTag(iTag)).ToList();
-                }
-                else
-                {
-                    cards = cards.Where(x => x.HasAnyTag(filter.IncludeTags)).ToList();
-                }
-            }
-
-            if (filter.ExcludeTags != null)
-            {
-                foreach (var eTag in filter.ExcludeTags)
-                {
-                    cards = cards.Where(x => !x.HasTag(eTag))
-                        .ToList();
-                }
-            }
+            var cards = await _cardRepository.GetAsync(user.GameDeck.Id, filter);
 
             var result = new FilteredCards
             { 
@@ -311,9 +278,9 @@ namespace Sanakan.Web.Controllers
         [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> RepairCardsAsync(ulong oldId, ulong newId)
         {
-            var response = await _shClient.GetCharacterInfoAsync(newId);
+            var characterResult = await _shindenClient.GetCharacterInfoAsync(newId);
 
-            if (!response.IsSuccessStatusCode())
+            if (characterResult.Value == null)
             {
                 return new ObjectResult("New character ID is invalid!")
                 {
@@ -399,14 +366,18 @@ namespace Sanakan.Web.Controllers
         [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status200OK)]
         public async Task<IActionResult> GenerateCharacterCardAsync(ulong id)
         {
-            var response = await _shClient.GetCharacterInfoAsync(id);
-            
-            if (!response.IsSuccessStatusCode())
+            var characterResult = await _shindenClient.GetCharacterInfoAsync(id);
+
+            if (characterResult.Value == null)
             {
                 return ShindenNotFound("Character not found!");
             }
 
-            if (!response.Body.HasImage)
+            var characterInfo = characterResult.Value;
+            var pictureUrl = Url.GetPersonPictureURL(characterInfo.PictureArtifactId);
+            var hasImage = pictureUrl != Url.GetPlaceholderImageURL();
+
+            if (!hasImage)
             {
                 return ShindenMethodNotAllowed("There is no character image!");
             }
@@ -418,7 +389,8 @@ namespace Sanakan.Web.Controllers
 
                     foreach (var card in cards)
                     {
-                        card.Image = response.Body.PictureUrl;
+                        var pictureUrl = Url.GetPersonPictureURL(characterInfo.PictureArtifactId);
+                        card.Image = pictureUrl;
 
                         try
                         {

@@ -1,9 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Sanakan.DAL.Models;
-using Sanakan.Web.Models;
 
-namespace Sanakan.Api.Models
+namespace Sanakan.DAL.Repositories
 {
     /// <summary>
     /// Filtrowanie listy kart
@@ -35,7 +34,7 @@ namespace Sanakan.Api.Models
         /// </summary>
         public FilterTagsMethodType FilterTagsMethod { get; set; }
 
-        public static IQueryable<Card> Use(OrderType type, IQueryable<Card> query)
+        public static IQueryable<Card> QueryOrderBy(OrderType type, IQueryable<Card> query)
         {
             switch (type)
             {

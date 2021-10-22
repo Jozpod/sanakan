@@ -2,6 +2,7 @@
 using Sanakan.DAL.Models;
 using Sanakan.Services;
 using Sanakan.Services.PocketWaifu;
+using Shinden.API;
 using Shinden.Models;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -19,14 +20,14 @@ namespace Sanakan.DiscordBot.Services
         Task SaveImageFromUrlAsync(string url, string path);
         Task SaveImageFromUrlAsync(string url, string path, Size size, bool strech = false);
         Task<Image<Rgba32>> GetUserProfileAsync(
-            IUserInfo shindenUser,
+            UserInfo shindenUser,
             User botUser,
             string avatarUrl,
             long topPos,
             string nickname,
             Discord.Color color);
         Task<Image<Rgba32>> GetSiteStatisticAsync(
-            IUserInfo shindenInfo,
+            UserInfo shindenInfo,
             Discord.Color color,
             List<ILastReaded> lastRead = null,
             List<ILastWatched> lastWatch = null);

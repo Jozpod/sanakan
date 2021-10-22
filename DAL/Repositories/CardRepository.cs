@@ -28,6 +28,53 @@ namespace Sanakan.DAL.Repositories
             return _dbContext.Cards.CountAsync(x => x.Rarity == rarity && x.Id >= wid);
         }
 
+        public async Task<List<Card>> GetAsync(ulong gameDeckId, CardsQueryFilter filter)
+        {
+            var query = _dbContext
+                .Cards
+                .AsQueryable()
+                .AsSplitQuery()
+                .Where(x => x.GameDeckId == gameDeckId)
+                .Include(x => x.ArenaStats)
+                .Include(x => x.TagList)
+                .AsNoTracking();
+
+
+            if (!string.IsNullOrEmpty(filter.SearchText))
+            {
+                query = query.Where(x => x.Name.Contains(filter.SearchText)
+                    || x.Title.Contains(filter.SearchText));
+            }
+
+            query = CardsQueryFilter.QueryOrderBy(filter.OrderBy, query);
+
+            var result = await query.ToListAsync();
+
+            if (filter.IncludeTags != null && filter.IncludeTags.Count > 0)
+            {
+                if (filter.FilterTagsMethod == FilterTagsMethodType.And)
+                {
+                    foreach (var iTag in filter.IncludeTags)
+                        result = result.Where(x => x.HasTag(iTag)).ToList();
+                }
+                else
+                {
+                    result = result.Where(x => x.HasAnyTag(filter.IncludeTags)).ToList();
+                }
+            }
+
+            if (filter.ExcludeTags != null)
+            {
+                foreach (var eTag in filter.ExcludeTags)
+                {
+                    result = result.Where(x => !x.HasTag(eTag))
+                        .ToList();
+                }
+            }
+
+            return result;
+        }
+
         public Task<List<Card>> GetByCharacterIdAsync(ulong characterId)
         {
             var cards = _dbContext
@@ -42,7 +89,38 @@ namespace Sanakan.DAL.Repositories
 
         public Task<List<Card>> GetByCharacterIdAsync(ulong characterId, CardQueryOptions cardQueryOptions)
         {
-            throw new NotImplementedException();
+            var query = _dbContext.Cards
+               .AsQueryable()
+               .Include(x => x.TagList)
+               .Include(x => x.GameDeck)
+               .Where(x => x.Character == characterId);
+
+            if (cardQueryOptions.IncludeTagList)
+            {
+                query = query.Include(pr => pr.TagList);
+            }
+
+            if (cardQueryOptions.IncludeArenaStats)
+            {
+                query = query.Include(pr => pr.ArenaStats);
+            }
+
+            if (cardQueryOptions.IncludeGameDeck)
+            {
+                query = query.Include(pr => pr.GameDeck);
+            }
+
+            if (cardQueryOptions.AsSingleQuery)
+            {
+                query = query.AsSingleQuery();
+            }
+
+            if (cardQueryOptions.AsNoTracking)
+            {
+                query = query.AsNoTracking();
+            }
+
+            return query.ToListAsync();
         }
 
         public Task<List<Card>> GetByCharacterIdsAsync(IEnumerable<ulong> characterIds)
@@ -76,6 +154,18 @@ namespace Sanakan.DAL.Repositories
                 .AsSplitQuery()
                 .Where(x => !allUsers.Any(id => id == x.GameDeckId))
                 .Select(x => x.Id)
+                .ToListAsync();
+        }
+
+        public Task<List<Card>> GetByGameDeckIdAsync(ulong gameDeckId)
+        {
+            return _dbContext.Cards
+                .AsQueryable()
+                .AsSplitQuery()
+                .Where(x => x.GameDeckId == gameDeckId)
+                .Include(x => x.ArenaStats)
+                .Include(x => x.TagList)
+                .AsNoTracking()
                 .ToListAsync();
         }
 

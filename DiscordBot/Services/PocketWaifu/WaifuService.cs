@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Web;
 using Discord;
 using Discord.WebSocket;
 using DiscordBot.Services;
@@ -16,7 +17,9 @@ using Sanakan.DiscordBot.Services.PocketWaifu;
 using Sanakan.Extensions;
 using Sanakan.Services.PocketWaifu.Fight;
 using Sanakan.ShindenApi;
+using Shinden.API;
 using Shinden.Models;
+using Item = Sanakan.DAL.Models.Item;
 
 namespace Sanakan.Services.PocketWaifu
 {
@@ -26,7 +29,7 @@ namespace Sanakan.Services.PocketWaifu
         private readonly IFileSystem _fileSystem;
         private readonly ISystemClock _systemClock;
         private readonly IImageProcessing _img;
-        private readonly IShindenClient _shClient;
+        private readonly IShindenClient _shindenClient;
         private readonly ICacheManager _cacheManager;
         private readonly IRandomNumberGenerator _randomNumberGenerator;
         private readonly IResourceManager _resourceManager;
@@ -48,12 +51,23 @@ namespace Sanakan.Services.PocketWaifu
             _fileSystem = fileSystem;
             _systemClock = systemClock;
             _events = events;
-            _shClient = client;
+            _shindenClient = client;
             _cacheManager = cacheManager;
             _randomNumberGenerator = randomNumberGenerator;
             _resourceManager = resourceManager;
             _userRepository = userRepository;
         }
+
+        private static List<RarityChance> _rarityChances = new List<RarityChance>()
+            {
+                new RarityChance(5,    Rarity.SS),
+                new RarityChance(25,   Rarity.S ),
+                new RarityChance(75,   Rarity.A ),
+                new RarityChance(175,  Rarity.B ),
+                new RarityChance(370,  Rarity.C ),
+                new RarityChance(650,  Rarity.D ),
+                new RarityChance(1000, Rarity.E ),
+            };
 
         private const int DERE_TAB_SIZE = ((int) Dere.Yato) + 1;
 
@@ -163,7 +177,7 @@ namespace Sanakan.Services.PocketWaifu
 
         static public double GetDereDmgMultiplier(Card atk, Card def) => _dereDmgRelation[(int)def.Dere, (int)atk.Dere];
 
-        public bool GetEventState { get; set; } = false;
+        public bool EventState { get; set; } = false;
 
         public DateTime LastUpdate { get; set; } = DateTime.MinValue;
 
@@ -240,7 +254,7 @@ namespace Sanakan.Services.PocketWaifu
             }
         }
 
-        static public Rarity RandomizeRarity(IRandomNumberGenerator randomNumberGenerator)
+        public static Rarity RandomizeRarity(IRandomNumberGenerator randomNumberGenerator)
         {
             var num = randomNumberGenerator.GetRandomValue(1000);
             if (num < 5)   return Rarity.SS;
@@ -252,7 +266,7 @@ namespace Sanakan.Services.PocketWaifu
             return Rarity.E;
         }
 
-        public Rarity RandomizeRarity(
+        public static Rarity RandomizeRarity(
             IRandomNumberGenerator randomNumberGenerator,
             List<Rarity> rarityExcluded)
         {
@@ -266,31 +280,26 @@ namespace Sanakan.Services.PocketWaifu
                 return RandomizeRarity(randomNumberGenerator);
             }
 
-            var list = new List<RarityChance>()
-            {
-                new RarityChance(5,    Rarity.SS),
-                new RarityChance(25,   Rarity.S ),
-                new RarityChance(75,   Rarity.A ),
-                new RarityChance(175,  Rarity.B ),
-                new RarityChance(370,  Rarity.C ),
-                new RarityChance(650,  Rarity.D ),
-                new RarityChance(1000, Rarity.E ),
-            };
-
-            var ex = list.Where(x => rarityExcluded.Any(c => c == x.Rarity)).ToList();
+            var ex = _rarityChances
+                .Where(x => rarityExcluded.Any(c => c == x.Rarity))
+                .ToList();
             
             foreach (var e in ex)
             {
-                list.Remove(e);
+                _rarityChances.Remove(e);
             }
 
-            var num = _randomNumberGenerator.GetRandomValue(1000);
-            foreach(var rar in list)
+            var num = randomNumberGenerator.GetRandomValue(1000);
+
+            foreach(var rar in _rarityChances)
             {
                 if (num < rar.Chance)
+                {
                     return rar.Rarity;
+                }
             }
-            return list.Last().Rarity;
+
+            return _rarityChances.Last().Rarity;
         }
 
         public ItemType RandomizeItemFromBlackMarket()
@@ -575,25 +584,38 @@ namespace Sanakan.Services.PocketWaifu
                         itemCount = 0;
                     }
                     
-                    var response = await _shClient.GetInfoAsync((ulong)itemCount);
+                    var animeMangaInfoResult = await _shindenClient.GetAnimeMangaInfoAsync((ulong)itemCount);
 
-                    if (!response.IsSuccessStatusCode())
+                    if (animeMangaInfoResult == null)
                     {
                         return $"{discordUser.Mention} nie odnaleziono tytułu o podanym id.".ToEmbedMessage(EMType.Error).Build();
                     }
 
-                    var response2 = await _shClient.GetCharactersAsync(response.Body.Id);
+                    var animeMangaInfo = animeMangaInfoResult.Value.Title;
+
+                    var charactersResult = await _shindenClient.GetCharactersAsync(animeMangaInfo.Description.DescriptionId);
                     
-                    if (!response2.IsSuccessStatusCode())
+                    if (charactersResult.Value == null)
                     {
                         return $"{discordUser.Mention} nie odnaleziono postaci pod podanym tytułem.".ToEmbedMessage(EMType.Error).Build();
                     }
-                    if (response2.Body.Select(x => x.CharacterId).Where(x => x.HasValue).Distinct().Count() < 8)
+
+                    var characters = charactersResult.Value;
+                    var belowEightCharacters = characters.Relations
+                        .Select(x => x.CharacterId)
+                        .Where(x => x.HasValue)
+                        .Distinct()
+                        .Count() < 8;
+
+                    if (belowEightCharacters)
                     {
                         return $"{discordUser.Mention} nie można kupić pakietu z tytułu z mniejszą liczbą postaci jak 8.".ToEmbedMessage(EMType.Error).Build();
                     }
-                    boosterPackTitleName = $" ({response.Body.Title})";
-                    boosterPackTitleId = response.Body.Id;
+
+                    var title = HttpUtility.HtmlDecode(animeMangaInfo.OtherTitle);
+
+                    boosterPackTitleName = $" ({title})";
+                    boosterPackTitleId = animeMangaInfo.TitleId;
                     itemCount = 1;
                     break;
 
@@ -705,7 +727,7 @@ namespace Sanakan.Services.PocketWaifu
             return rExp;
         }
 
-        static public FightWinner GetFightWinner(Card card1, Card card2)
+        public static FightWinner GetFightWinner(Card card1, Card card2)
         {
             var FAcard1 = GetFA(card1, card2);
             var FAcard2 = GetFA(card2, card1);
@@ -716,24 +738,40 @@ namespace Sanakan.Services.PocketWaifu
             var atkTk2 = c2Health / FAcard1;
 
             var winner = FightWinner.Draw;
-            if (atkTk1 > atkTk2 + 0.3) winner = FightWinner.Card1;
-            if (atkTk2 > atkTk1 + 0.3) winner = FightWinner.Card2;
+            if (atkTk1 > atkTk2 + 0.3)
+            {
+                winner = FightWinner.Card1;
+            }
+
+            if (atkTk2 > atkTk1 + 0.3)
+            {
+                winner = FightWinner.Card2;
+            }
 
             return winner;
         }
 
-        static public double GetFA(Card target, Card enemy)
+        public static double GetFA(Card target, Card enemy)
         {
             double atk1 = target.GetAttackWithBonus();
-            if (!target.HasImage()) atk1 -= atk1 * 20 / 100;
+            if (!target.HasImage())
+            {
+                atk1 -= atk1 * 20 / 100;
+            }
 
             double def2 = enemy.GetDefenceWithBonus();
-            if (!enemy.HasImage()) def2 -= def2 * 20 / 100;
+            if (!enemy.HasImage())
+            {
+                def2 -= def2 * 20 / 100;
+            }
 
             var realAtk1 = atk1 - def2;
             if (!target.FromFigure || !enemy.FromFigure)
             {
-                if (def2 > 99) def2 = 99;
+                if (def2 > 99)
+                {
+                    def2 = 99;
+                }
                 realAtk1 = atk1 * (100 - def2) / 100;
             }
 
@@ -742,16 +780,16 @@ namespace Sanakan.Services.PocketWaifu
             return realAtk1;
         }
 
-        public int RandomizeAttack(Rarity rarity)
-            => _randomNumberGenerator.GetRandomValue(rarity.GetAttackMin(), rarity.GetAttackMax() + 1);
+        public static int RandomizeAttack(IRandomNumberGenerator randomNumberGenerator, Rarity rarity)
+            => randomNumberGenerator.GetRandomValue(rarity.GetAttackMin(), rarity.GetAttackMax() + 1);
 
-        public int RandomizeDefence(Rarity rarity)
-            => _randomNumberGenerator.GetRandomValue(rarity.GetDefenceMin(), rarity.GetDefenceMax() + 1);
+        public static int RandomizeDefence(IRandomNumberGenerator randomNumberGenerator, Rarity rarity)
+            => randomNumberGenerator.GetRandomValue(rarity.GetDefenceMin(), rarity.GetDefenceMax() + 1);
 
-        public int RandomizeHealth(Card card)
-            => _randomNumberGenerator.GetRandomValue(card.Rarity.GetHealthMin(), card.GetHealthMax() + 1);
+        public static int RandomizeHealth(IRandomNumberGenerator randomNumberGenerator, Card card)
+            => randomNumberGenerator.GetRandomValue(card.Rarity.GetHealthMin(), card.GetHealthMax() + 1);
 
-        static public Dere RandomizeDere(IRandomNumberGenerator randomNumberGenerator)
+        public static Dere RandomizeDere(IRandomNumberGenerator randomNumberGenerator)
         {
             return randomNumberGenerator.GetOneRandomFrom(new List<Dere>()
             {
@@ -766,68 +804,50 @@ namespace Sanakan.Services.PocketWaifu
             });
         }
 
-        public Card GenerateNewCard(IUser user, ICharacterInfo character, Rarity rarity)
+        public Card GenerateNewCard(IUser user, CharacterInfo character, Rarity rarity)
         {
-            var card = new Card
-            {
-                Title = character?.Relations?.OrderBy(x => x.Id)?.FirstOrDefault()?.Title ?? "????",
-                Defence = RandomizeDefence(rarity),
-                ArenaStats = new CardArenaStats(),
-                Attack = RandomizeAttack(rarity),
-                Expedition = CardExpedition.None,
-                QualityOnStart = Quality.Broken,
-                ExpeditionDate = _systemClock.UtcNow,
-                PAS = PreAssembledFigure.None,
-                TagList = new List<CardTag>(),
-                CreationDate = _systemClock.UtcNow,
-                Name = character.ToString(),
-                StarStyle = StarStyle.Full,
-                Source = CardSource.Other,
-                Character = character.Id,
-                Quality = Quality.Broken,
-                Dere = RandomizeDere(_randomNumberGenerator),
-                Curse = CardCurse.None,
-                RarityOnStart = rarity,
-                CustomBorder = null,
-                FromFigure = false,
-                CustomImage = null,
-                IsTradable = true,
-                FirstIdOwner = 1,
-                DefenceBonus = 0,
-                HealthBonus = 0,
-                AttackBonus = 0,
-                UpgradesCnt = 2,
-                LastIdOwner = 0,
-                MarketValue = 1,
-                Rarity = rarity,
-                EnhanceCnt = 0,
-                Unique = false,
-                InCage = false,
-                RestartCnt = 0,
-                Active = false,
-                Affection = 0,
-                Image = null,
-                Health = 0,
-                ExpCnt = 0,
-            };
+            var date = _systemClock.UtcNow;
+            var defence = RandomizeDefence(_randomNumberGenerator, rarity);
+            var attack = RandomizeAttack(_randomNumberGenerator, rarity);
+            var name = character.ToString();
+            var dere = RandomizeDere(_randomNumberGenerator);
+            var characterId = character.CharacterId;
+            var title = character?.Relations?.OrderBy(x => x.CharacterId)?
+                .FirstOrDefault()?
+                .Title ?? "????";
+
+            var card = new Card(
+                characterId,
+                title,
+                name,
+                attack,
+                defence,
+                rarity,
+                dere,
+                date);
 
             if (user != null)
                 card.FirstIdOwner = user.Id;
 
-            if (character.HasImage)
-                card.Image = character.PictureUrl;
+            var pictureUrl = Url.GetPersonPictureURL(character.PictureArtifactId.Value);
+            var hasImage = pictureUrl != Url.GetPlaceholderImageURL();
 
-            card.Health = RandomizeHealth(card);
+            if (hasImage)
+            {
+                card.Image = pictureUrl;
+            }
+
+            card.Health = RandomizeHealth(_randomNumberGenerator, card);
 
             _ = card.CalculateCardPower();
 
             return card;
         }
 
-        public Card GenerateNewCard(IUser user, ICharacterInfo character)
+        public Card GenerateNewCard(IUser user, CharacterInfo character)
             => GenerateNewCard(user, character, RandomizeRarity(_randomNumberGenerator));
 
-        public Card GenerateNewCard(IUser user, ICharacterInfo character, List<Rarity> rarityExcluded)
+        public Card GenerateNewCard(IUser user, CharacterInfo character, List<Rarity> rarityExcluded)
             => GenerateNewCard(user, character, RandomizeRarity(_randomNumberGenerator, rarityExcluded));
 
         private int ScaleNumber(int oMin, int oMax, int nMin, int nMax, int value)
@@ -1014,38 +1034,38 @@ namespace Sanakan.Services.PocketWaifu
             }
         }
 
-        public async Task<ICharacterInfo?> GetRandomCharacterAsync()
+        public async Task<CharacterInfo?> GetRandomCharacterAsync()
         {
             int check = 2;
             var isNeedForUpdate = (_systemClock.UtcNow - LastUpdate).TotalDays >= 1;
 
             if (isNeedForUpdate)
             {
-                var characters = await _shClient.GetAllCharactersFromAnimeAsync();
+                var charactersResult = await _shindenClient.GetAllCharactersFromAnimeAsync();
                 
-                if (!characters.IsSuccessStatusCode())
+                if (charactersResult.Value == null)
                 {
                     return null;
                 }
 
                 LastUpdate = _systemClock.UtcNow;
-                Ids = characters;
+                Ids = charactersResult.Value;
             }
 
             var id = _randomNumberGenerator.GetOneRandomFrom(Ids);
-            var response = await _shClient.GetCharacterInfoAsync(id);
+            var response = await _shindenClient.GetCharacterInfoAsync(id);
 
-            while (!response.IsSuccessStatusCode())
+            while (response.Value == null)
             {
                 id = _randomNumberGenerator.GetOneRandomFrom(Ids);
-                response = await _shClient.GetCharacterInfoAsync(id);
+                response = await _shindenClient.GetCharacterInfoAsync(id);
 
                 await Task.Delay(TimeSpan.FromSeconds(2));
 
                 if (check-- == 0)
                     return null;
             }
-            return response.Body;
+            return response.Value;
         }
 
         public async Task<string> GetWaifuProfileImageAsync(Card card, ITextChannel trashCh)
@@ -1099,7 +1119,10 @@ namespace Sanakan.Services.PocketWaifu
             return list;
         }
 
-        public List<Embed> GetWaifuFromCharacterTitleSearchResult(IEnumerable<Card> cards, DiscordSocketClient client, bool mention)
+        public List<Embed> GetWaifuFromCharacterTitleSearchResult(
+            IEnumerable<Card> cards,
+            DiscordSocketClient client,
+            bool mention)
         {
             var list = new List<Embed>();
             var characters = cards.GroupBy(x => x.Character);
@@ -1189,7 +1212,7 @@ namespace Sanakan.Services.PocketWaifu
 
             for (int i = 0; i < pack.CardCnt; i++)
             {
-                ICharacterInfo? chara = null;
+                CharacterInfo? characterInfo = null;
                 if (pack.Characters.Count > 0)
                 {
                     var id = pack.Characters.First();
@@ -1198,39 +1221,59 @@ namespace Sanakan.Services.PocketWaifu
                         id = _randomNumberGenerator.GetOneRandomFrom(pack.Characters);
                     }
 
-                    var res = await _shClient.GetCharacterInfoAsync(id.Character);
-                    
-                    if (res.IsSuccessStatusCode())
+                    var result = await _shindenClient.GetCharacterInfoAsync(id.Character);
+
+                    if (result.Value != null)
                     {
-                        chara = res.Body;
+                        characterInfo = result.Value;
                     }
                 }
                 else if (pack.Title != 0)
                 {
-                    var res = await _shClient.GetCharactersAsync(pack.Title);
-                    if (res.IsSuccessStatusCode())
+                    var charactersResult = await _shindenClient.GetCharactersAsync(pack.Title);
+                    
+                    if (charactersResult != null)
                     {
-                        if (res.Body.Count > 0)
+                        var characters = charactersResult.Value.Relations;
+                        if (characters.Any())
                         {
-                            var id = _randomNumberGenerator.GetOneRandomFrom(res.Body).CharacterId;
+                            var id = _randomNumberGenerator.GetOneRandomFrom(characters).CharacterId;
                             if (id.HasValue)
                             {
-                                var response = await _shClient.GetCharacterInfoAsync(id.Value);
-                                if (response.IsSuccessStatusCode()) chara = response.Body;
+                                var characterResult = await _shindenClient.GetCharacterInfoAsync(id.Value);
+
+                                if (charactersResult != null)
+                                {
+                                    characterInfo = characterResult.Value;
+                                }
                             }
                         }
                     }
                 }
                 else
                 {
-                    chara = await GetRandomCharacterAsync();
+                    characterInfo = await GetRandomCharacterAsync();
                 }
 
-                if (chara != null)
+                if (characterInfo != null)
                 {
-                    var newCard = GenerateNewCard(user, chara, pack.RarityExcludedFromPack.Select(x => x.Rarity).ToList());
+                    var rarityList = pack.RarityExcludedFromPack
+                        .Select(x => x.Rarity)
+                        .ToList();
+
+                    var newCard = GenerateNewCard(
+                        user,
+                        characterInfo,
+                        rarityList);
+
                     if (pack.MinRarity != Rarity.E && i == pack.CardCnt - 1)
-                        newCard = GenerateNewCard(user, chara, pack.MinRarity);
+                    {
+                        newCard = GenerateNewCard(
+                            user,
+                            characterInfo,
+                            pack.MinRarity);
+                    }
+                        
 
                     newCard.IsTradable = pack.IsCardFromPackTradable;
                     newCard.Source = pack.CardSourceFromPack;
@@ -1461,14 +1504,22 @@ namespace Sanakan.Services.PocketWaifu
         public async Task<IEnumerable<Embed>> GetContentOfWishlist(List<ulong> cardsId, List<ulong> charactersId, List<ulong> titlesId)
         {
             var contentTable = new List<string>();
-            if (cardsId.Count > 0) contentTable.Add($"**Karty:** {string.Join(", ", cardsId)}");
+            
+            if (cardsId.Any())
+            {
+                contentTable.Add($"**Karty:** {string.Join(", ", cardsId)}");
+            }
 
             foreach (var character in charactersId)
             {
-                var res = await _shClient.GetCharacterInfoAsync(character);
-                if (res.IsSuccessStatusCode())
+                var characterResult = await _shindenClient.GetCharacterInfoAsync(character);
+
+                if (characterResult.Value != null)
                 {
-                    contentTable.Add($"**P[{res.Body.Id}]** [{res.Body}]({res.Body.CharacterUrl})");
+                    var characterInfo = characterResult.Value;
+                    var toString = $"{characterInfo.FirstName} {characterInfo.LastName}";
+                    var characterUrl = Url.GetCharacterURL(characterInfo.CharacterId);
+                    contentTable.Add($"**P[{characterInfo.CharacterId}]** [{toString}]({characterUrl})");
                 }
                 else
                 {
@@ -1478,14 +1529,29 @@ namespace Sanakan.Services.PocketWaifu
 
             foreach (var title in titlesId)
             {
-                var res = await _shClient.GetInfoAsync(title);
-                if (res.IsSuccessStatusCode())
-                {
-                    var url = "https://shinden.pl/";
-                    if (res.Body is IAnimeTitleInfo ai) url = ai.AnimeUrl;
-                    else if (res.Body is IMangaTitleInfo mi) url = mi.MangaUrl;
+                var result = await _shindenClient.GetAnimeMangaInfoAsync(title);
 
-                    contentTable.Add($"**T[{res.Body.Id}]** [{res.Body}]({url})");
+                if (result.Value != null)
+                {
+                    var animeMangaInfo = result.Value;
+                    ulong id = 0;
+                    string animeMangaTitle = string.Empty;
+
+                    var url = "https://shinden.pl/";
+                    if (animeMangaInfo.Title.Type == "anime")
+                    {
+                        id = animeMangaInfo.Title.Manga.TitleId.Value;
+                        animeMangaTitle = HttpUtility.HtmlDecode(animeMangaInfo.Title.OtherTitle);
+                        url = Url.GetSeriesURL(animeMangaInfo.Title.Anime.TitleId.Value);
+                    }
+                    else if (animeMangaInfo.Title.Type == "manga")
+                    {
+                        id = animeMangaInfo.Title.Manga.TitleId.Value;
+                        animeMangaTitle = HttpUtility.HtmlDecode(animeMangaInfo.Title.OtherTitle);
+                        url = Url.GetMangaURL(id);
+                    }
+
+                     contentTable.Add($"**T[{id}]** [{title}]({url})");
                 }
                 else
                 {
@@ -1533,14 +1599,16 @@ namespace Sanakan.Services.PocketWaifu
             {
                 foreach (var id in titlesId)
                 {
-                    var response = await _shClient.GetCharactersAsync(id);
+                    var response = await _shindenClient.GetCharactersAsync(id);
 
-                    if (!response.IsSuccessStatusCode())
+                    if (response != null)
                     {
                         continue;
                     }
 
-                    var charactersBatch = response.Body.Where(x => x.CharacterId.HasValue)
+                    var charactersBatch = response.Value
+                        .Relations
+                        .Where(x => x.CharacterId.HasValue)
                         .Select(x => x.CharacterId.Value);
 
                     characters.AddRange(charactersBatch);
@@ -1905,6 +1973,11 @@ namespace Sanakan.Services.PocketWaifu
                 case CardExpedition.UltimateHardcore:
                     return false;
             }
+        }
+
+        public void SetEventIds(List<ulong> ids)
+        {
+            
         }
     }
 }

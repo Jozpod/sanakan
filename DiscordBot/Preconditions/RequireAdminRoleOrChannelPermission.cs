@@ -1,7 +1,10 @@
-﻿using DAL.Repositories.Abstractions;
-using Discord;
+﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using Sanakan.Configuration;
+using Sanakan.DAL.Repositories.Abstractions;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -10,12 +13,6 @@ namespace Sanakan.Preconditions
 {
     public class RequireAdminRoleOrChannelPermission : PreconditionAttribute
     {
-        private readonly IAllRepository _repository;
-
-        public RequireAdminRoleOrChannelPermission(IAllRepository repository)
-        {
-            _repository = repository;
-        }
         
         private readonly ChannelPermission _permission;
 
@@ -23,6 +20,8 @@ namespace Sanakan.Preconditions
 
         public async override Task<PreconditionResult> CheckPermissionsAsync(ICommandContext context, CommandInfo command, IServiceProvider services)
         {
+            var guildConfigRepository = services.GetRequiredService<IGuildConfigRepository>();
+
             var user = context.User as SocketGuildUser;
             
             if (user == null)
@@ -30,19 +29,14 @@ namespace Sanakan.Preconditions
                 return PreconditionResult.FromError($"To polecenie działa tylko z poziomu serwera.");
             }
             
-            await Task.CompletedTask;
-
             var channel = context.Channel as IGuildChannel;
 
             if (channel == null)
             {
                 return PreconditionResult.FromError($"To polecenie działa tylko z poziomu serwera.");
             }
-            
 
-            var config = (IConfig)services.GetService(typeof(IConfig));
-
-            var gConfig = await db.GetCachedGuildFullConfigAsync(context.Guild.Id);
+            var gConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(context.Guild.Id);
             
             if (gConfig == null)
             {
@@ -50,7 +44,11 @@ namespace Sanakan.Preconditions
             }
 
             var role = context.Guild.GetRole(gConfig.AdminRole);
-            if (role == null) return CheckUser(user, channel);
+            
+            if (role == null)
+            {
+                return CheckUser(user, channel);
+            }
 
             if (user.Roles.Any(x => x.Id == role.Id)) return PreconditionResult.FromSuccess();
             return CheckUser(user, channel);

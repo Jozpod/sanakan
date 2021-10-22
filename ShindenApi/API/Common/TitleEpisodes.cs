@@ -7,6 +7,7 @@ namespace Shinden.API
     {
         [JsonProperty("episodes")]
         public List<Episode> Episodes { get; set; }
+
         [JsonProperty("connected_episodes")]
         public List<Episode> ConnectedEpisodes { get; set; }
     }

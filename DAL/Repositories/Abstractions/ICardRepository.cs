@@ -22,6 +22,8 @@ namespace Sanakan.DAL.Repositories.Abstractions
         Task<List<Card>> GetByCharactersAndNotInUserGameDeckAsync(ulong userId, IEnumerable<ulong> characterIds);
         Task<List<Card>> GetByCharacterIdsAsync(IEnumerable<ulong> characterIds);
         Task<List<Card>> GetByGameDeckIdAsync(ulong gameDeckId, int offset, int count);
+        Task<List<Card>> GetByGameDeckIdAsync(ulong gameDeckId);
         Task<List<ulong>> GetByExcludedGameDeckIdsAsync(IEnumerable<ulong> allUsers);
+        Task<List<Card>> GetAsync(ulong gameDeckId, CardsQueryFilter filter);
     }
 }

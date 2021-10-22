@@ -201,15 +201,6 @@ namespace Sanakan.DAL.Repositories
             return result;
         }
 
-        public async Task<User> GetBaseUserAndDontTrackAsync(ulong userId)
-        {
-            return await _dbContext.Users
-                .AsQueryable()
-                .AsNoTracking()
-                .AsSplitQuery()
-                .FirstOrDefaultAsync(x => x.Id == userId);
-        }
-
         public async Task<User> GetUserAndDontTrackAsync(ulong userId)
         {
             var result = await _dbContext

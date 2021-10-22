@@ -7,7 +7,7 @@ using Sanakan.Preconditions;
 using Discord.WebSocket;
 using System.Linq;
 using System;
-using DAL.Repositories.Abstractions;
+using Sanakan.DAL.Repositories.Abstractions;
 
 namespace Sanakan.Modules
 {
@@ -16,14 +16,16 @@ namespace Sanakan.Modules
     {
         private readonly LandManager _manager;
         private readonly IUserRepository _userRepository;
-        private readonly IAllRepository _repository;
+        private readonly IGuildConfigRepository _guildConfigRepository;
 
         public LandsModule(
             LandManager manager,
-            IAllRepository repository)
+            IUserRepository userRepository,
+            IGuildConfigRepository guildConfigRepository)
         {
             _manager = manager;
-            _repository = repository;
+            _userRepository = userRepository;
+            _guildConfigRepository = guildConfigRepository;
         }
 
         [Command("ludność", RunMode = RunMode.Async)]
@@ -32,7 +34,7 @@ namespace Sanakan.Modules
         [Remarks("Kotleciki")]
         public async Task ShowPeopleAsync([Summary("nazwa krainy (opcjonalne)")][Remainder]string name = null)
         {
-            var config = await _repository.GetCachedGuildFullConfigAsync(Context.Guild.Id);
+            var config = await _guildConfigRepository.GetCachedGuildFullConfigAsync(Context.Guild.Id);
             var land = _manager.DetermineLand(config.Lands, Context.User as SocketGuildUser, name);
 
             if (land == null)
@@ -56,7 +58,7 @@ namespace Sanakan.Modules
             [Summary("użytkownik")]SocketGuildUser user,
             [Summary("nazwa krainy (opcjonalne)")][Remainder]string name = null)
         {
-            var config = await _repository.GetCachedGuildFullConfigAsync(Context.Guild.Id);
+            var config = await _guildConfigRepository.GetCachedGuildFullConfigAsync(Context.Guild.Id);
             var land = _manager.DetermineLand(config.Lands, Context.User as SocketGuildUser, name);
 
             if (land == null)
@@ -88,7 +90,7 @@ namespace Sanakan.Modules
         public async Task RemovePersonAsync([Summary("użytkownik")]SocketGuildUser user, [Summary("nazwa krainy (opcjonalne)")][Remainder]string name = null)
         {
             var guild = Context.Guild;
-            var config = await _repository.GetCachedGuildFullConfigAsync(guild.Id);
+            var config = await _guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
             var land = _manager.DetermineLand(config.Lands, Context.User as SocketGuildUser, name);
 
             if (land == null)

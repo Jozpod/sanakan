@@ -1,15 +1,15 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.0;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net5.0</TargetFrameworks>
     <LangVersion>9.0</LangVersion>
     <Nullable>enable</Nullable>
-    <Version>0.3.8-beta</Version>
+    <Version>0.0.1</Version>
     <Authors>Jotpe</Authors>
     <Copyright>Copyright 2021 © Jotpe. All rights reserved.</Copyright>
     <PackageTags>Shinden REST API .NET shinden.pl wrapper</PackageTags>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Description>An official asynchronous .NET API Wrapper for the Shinden APIs.</Description>
+    <Description>An unofficial asynchronous .NET API Wrapper for the Shinden APIs.</Description>
     <PackageId>Shinden.NET</PackageId>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <RootNamespace>Sanakan.ShindenApi</RootNamespace>
@@ -21,7 +21,7 @@
     <PackageReference Include="Microsoft.Extensions.Http" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="5.0.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="System.Net.Http.Json" Version="5.0.0" />
 
   </ItemGroup>

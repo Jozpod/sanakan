@@ -7,6 +7,57 @@ namespace Sanakan.DAL.Models
 {
     public class Card
     {
+        public Card(
+            ulong characterId,
+            string title,
+            string name,
+            int attack,
+            int defence,
+            Rarity rarity,
+            Dere dere,
+            DateTime date)
+        {
+            Title = title;
+            Defence = defence;
+            ArenaStats = new CardArenaStats();
+            Attack = attack;
+            Expedition = CardExpedition.None;
+            QualityOnStart = Quality.Broken;
+            ExpeditionDate = date;
+            PAS = PreAssembledFigure.None;
+            TagList = new List<CardTag>();
+            CreationDate = date;
+            Name = name;
+            StarStyle = StarStyle.Full;
+            Source = CardSource.Other;
+            Character = characterId;
+            Quality = Quality.Broken;
+            Dere = dere;
+            Curse = CardCurse.None;
+            RarityOnStart = rarity;
+            CustomBorder = null;
+            FromFigure = false;
+            CustomImage = null;
+            IsTradable = true;
+            FirstIdOwner = 1;
+            DefenceBonus = 0;
+            HealthBonus = 0;
+            AttackBonus = 0;
+            UpgradesCnt = 2;
+            LastIdOwner = 0;
+            MarketValue = 1;
+            Rarity = rarity;
+            EnhanceCnt = 0;
+            Unique = false;
+            InCage = false;
+            RestartCnt = 0;
+            Active = false;
+            Affection = 0;
+            Image = null;
+            Health = 0;
+            ExpCnt = 0;
+    }
+
         public ulong Id { get; set; }
         public bool Active { get; set; }
         public bool InCage { get; set; }
@@ -75,28 +126,6 @@ namespace Sanakan.DAL.Models
         {
             return TagList
                 .Any(x => tags.Any(t => t.Equals(x.Name, StringComparison.CurrentCultureIgnoreCase)));
-        }
-
-        public override string ToString()
-        {
-            var marks = new[]
-            {
-                InCage ? "[C]" : "",
-                Active ? "[A]" : "",
-                Unique ? (FromFigure ? "[F]" : "[U]") : "",
-                Expedition != CardExpedition.None ? "[W]" : "",
-                IsBroken ? "[B]" : (IsUnusable ? "[N]" : ""),
-            };
-
-            string mark = marks.Any(x => x != "") ? $"**{string.Join("", marks)}** " : "";
-
-            string idStr = false ? "" : $"**[{Id}]** ";
-            string name = true ? GetNameWithUrl() : Name;
-            string upgCnt = (false && !FromFigure) ? $"_(U:{UpgradesCnt})_" : "";
-
-            return $"{idStr} {name} **{card.GetCardRealRarity()}** {card.GetCardParams(showBaseHp, allowZero)}
-
-            //return $"{mark}{this.GetString(false, false, true)}";
         }
     }
 }

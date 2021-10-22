@@ -20,17 +20,20 @@ using Sanakan.Services.PocketWaifu;
 using Sanakan.Services.Session;
 using Sanakan.Services.Session.Models;
 using Sanakan.ShindenApi;
+using Shinden.API;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Web;
+using Item = Sanakan.DAL.Models.Item;
 
 namespace Sanakan.Modules
 {
     [Name("PocketWaifu"), RequireUserRole]
     public class PocketWaifuModule : ModuleBase<SocketCommandContext>
     {
-        private readonly IShindenClient _shclient;
+        private readonly IShindenClient _shindenClient;
         private readonly SessionManager _sessionManager;
         private readonly IExecutor _executor;
         private readonly ILogger _logger;
@@ -64,7 +67,7 @@ namespace Sanakan.Modules
             _waifu = waifu;
             _logger = logger;
             _config = config.Value;
-            _shclient = client;
+            _shindenClient = client;
             _sessionManager = session;
             _executor = executor;
             _cacheManager = cacheManager;
@@ -191,7 +194,7 @@ namespace Sanakan.Modules
                 user = Context.Client.GetUser(card.GameDeck.UserId);
             }
 
-            var gConfig = await _repository.GetCachedGuildFullConfigAsync(Context.Guild.Id);
+            var gConfig = await _guildConfigRepository.GetCachedGuildFullConfigAsync(Context.Guild.Id);
 
             if(gConfig == null)
             {
@@ -261,7 +264,7 @@ namespace Sanakan.Modules
                 user = Context.Client.GetUser(card.GameDeck.UserId);
             }
 
-            var gConfig = await _repository.GetCachedGuildFullConfigAsync(Context.Guild.Id);
+            var gConfig = await _guildConfigRepository.GetCachedGuildFullConfigAsync(Context.Guild.Id);
             var trashChannel = Context.Guild.GetTextChannel(gConfig.WaifuConfig.TrashCommandsChannel);
             await ReplyAsync("", embed: await _waifu.BuildCardViewAsync(card, trashChannel, user));
         }
@@ -316,7 +319,7 @@ namespace Sanakan.Modules
             [Summary("liczba przedmiotów/link do obrazka/typ gwiazdki")]string detail = "1")
         {
             var discordUser = Context.User;
-            var session = new CraftingSession(discordUser, _waifu);
+            var session = new CraftingSession(discordUser, _waifu, null, null);
             
             if (_sessionManager.SessionExist(session))
             {
@@ -324,7 +327,7 @@ namespace Sanakan.Modules
                 return;
             }
 
-            var imgCnt = 0;
+            var imageCount = 0;
             var itemCnt = 1;
             var bUser = await _userRepository.GetUserOrCreateAsync(discordUser.Id);
             var itemList = bUser.GameDeck.Items.OrderBy(x => x.Type).ToList();
@@ -364,8 +367,15 @@ namespace Sanakan.Modules
                     break;
 
                 case ItemType.ChangeCardImage:
-                    if (dis) imgCnt = itemCnt;
-                    if (imgCnt < 0) imgCnt = 0;
+                    if (dis)
+                    {
+                        imageCount = itemCnt;
+                    }
+
+                    if (imageCount < 0)
+                    {
+                        imageCount = 0;
+                    }
                     itemCnt = 1;
                     break;
 
@@ -494,34 +504,61 @@ namespace Sanakan.Modules
                     break;
 
                 case ItemType.ChangeCardImage:
-                    var res = await _shclient.GetCharacterInfoAsync(card.Character);
-                    if (!res.IsSuccessStatusCode())
+                    var characterResult = await _shindenClient.GetCharacterInfoAsync(card.Character);
+
+                    if (characterResult.Value == null)
                     {
                         await ReplyAsync("", embed: "Nie odnaleziono postaci na shinden!".ToEmbedMessage(EMType.Error).Build());
                         return;
                     }
-                    var urls = res.Body.Pictures.GetPicList();
-                    if (imgCnt == 0 || !dis)
+
+                    var characterInfo = characterResult.Value;
+                    var urls = characterInfo
+                        .Pictures
+                        .Where(pr => !pr.Is18Plus)
+                        .ToList();
+
+
+                    //public static List<string> GetPicList(this List<IPicture> ps)
+                    //{
+                    //    var urls = new List<string>();
+                    //    if (ps == null) return urls;
+
+                    //    foreach (var p in ps)
+                    //    {
+                    //        var pic = p.GetStr();
+                    //        if (!string.IsNullOrEmpty(pic))
+                    //            urls.Add(pic);
+                    //    }
+
+                    //    return urls;
+                    //}
+
+                    if (imageCount == 0 || !dis)
                     {
                         int tidx = 0;
-                        var ls = "Obrazki: \n" + string.Join("\n", urls.Select(x => $"{++tidx}: {x}"));
+                        var ls = "Obrazki: \n" + string.Join("\n", characterInfo.Relations.Select(x => $"{++tidx}: {x}"));
                         await ReplyAsync("", embed: ls.ToEmbedMessage(EMType.Info).Build());
                         return;
                     }
                     else
                     {
-                        if (imgCnt > urls.Count)
+                        if (imageCount > urls.Count())
                         {
                             await ReplyAsync("", embed: "Nie odnaleziono obrazka!".ToEmbedMessage(EMType.Error).Build());
                             return;
                         }
-                        var turl = urls[imgCnt - 1];
-                        if (card.GetImage() == turl)
+
+                        var turl = urls[imageCount - 1];
+                        var getPersonPictureURL = Url.GetPersonPictureURL(turl.ArtifactId);
+
+                        if (card.GetImage() == getPersonPictureURL)
                         {
                             await ReplyAsync("", embed: "Taki obrazek jest już ustawiony!".ToEmbedMessage(EMType.Error).Build());
                             return;
                         }
-                        card.CustomImage = turl;
+
+                        card.CustomImage = string.Empty;
                     }
                     karmaChange += 0.001 * itemCnt;
                     embed.Description += "Ustawiono nowy obrazek.";
@@ -644,8 +681,8 @@ namespace Sanakan.Modules
 
                 case ItemType.CardParamsReRoll:
                     karmaChange += 0.03 * itemCnt;
-                    card.Attack = _waifu.RandomizeAttack(card.Rarity);
-                    card.Defence = _waifu.RandomizeDefence(card.Rarity);
+                    card.Attack = WaifuService.RandomizeAttack(_randomNumberGenerator, card.Rarity);
+                    card.Defence = WaifuService.RandomizeDefence(_randomNumberGenerator, card.Rarity);
                     embed.Description += $"Nowa moc karty to: 🔥{card.GetAttackWithBonus()} 🛡{card.GetDefenceWithBonus()}!";
                     _waifu.DeleteCardImageIfExist(card);
                     break;
@@ -708,14 +745,20 @@ namespace Sanakan.Modules
 
             if (!noCardOperation)
             {
-                var response = await _shclient.GetCharacterInfoAsync(card.Character);
-                if (response.IsSuccessStatusCode())
+                var characterResult = await _shindenClient.GetCharacterInfoAsync(card.Character);
+
+                if (characterResult.Value != null)
                 {
-                    if (response.Body?.Points != null)
+                    var characterInfo = characterResult.Value;
+
+                    if (characterInfo.Points != null)
                     {
-                        var ordered = response.Body.Points.OrderByDescending(x => x.Points);
+                        var ordered = characterInfo.Points.OrderByDescending(x => x.Points);
+                        
                         if (ordered.Any(x => x.Name == embed.Author.Name))
+                        {
                             affectionInc *= 1.1;
+                        }    
                     }
                 }
             }
@@ -925,8 +968,8 @@ namespace Sanakan.Modules
 
             bUser.GameDeck.Karma -= 5;
 
-            card.Defence = _waifu.RandomizeDefence(Rarity.E);
-            card.Attack = _waifu.RandomizeAttack(Rarity.E);
+            card.Defence = WaifuService.RandomizeDefence(_randomNumberGenerator,  Rarity.E);
+            card.Attack = WaifuService.RandomizeAttack(_randomNumberGenerator, Rarity.E);
             card.Dere = WaifuService.RandomizeDere(_randomNumberGenerator);
             card.Rarity = Rarity.E;
             card.UpgradesCnt = 2;
@@ -970,14 +1013,16 @@ namespace Sanakan.Modules
 
             if (card == null)
             {
-                await ReplyAsync("", embed: $"{discordUser.Mention} nie posiadasz takiej karty.".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync("", embed: $"{discordUser.Mention} nie posiadasz takiej karty."
+                    .ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
             if (card.FromFigure)
             {
                 _waifu.DeleteCardImageIfExist(card);
-                await ReplyAsync("", embed: $"{discordUser.Mention} tej karty nie można zaktualizować.".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync("", embed: $"{discordUser.Mention} tej karty nie można zaktualizować."
+                    .ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
@@ -986,17 +1031,25 @@ namespace Sanakan.Modules
 
             try
             {
-                var response = await _shclient.GetCharacterInfoAsync(card.Character);
-                if (!response.IsSuccessStatusCode())
+                var characterResult = await _shindenClient.GetCharacterInfoAsync(card.Character);
+
+                if (characterResult.Value == null)
                 {
                     card.Unique = true;
                     throw new Exception($"Couldn't get card info!");
                 }
 
+                var characterInfo = characterResult.Value;
+                var pictureUrl = Url.GetPersonPictureURL(characterInfo.PictureArtifactId);
+                var hasImage = pictureUrl != Url.GetPlaceholderImageURL();
+                var toString = $"{characterInfo.FirstName} {characterInfo.LastName}";
+
                 card.Unique = false;
-                card.Name = response.Body.ToString();
-                card.Image = response.Body.HasImage ? response.Body.PictureUrl : null;
-                card.Title = response.Body?.Relations?.OrderBy(x => x.Id).FirstOrDefault()?.Title ?? "????";
+                card.Name = characterInfo.ToString();
+                card.Image = hasImage ? pictureUrl : null;
+                card.Title = characterInfo?.Relations?
+                    .OrderBy(x => x.CharacterId)
+                    .FirstOrDefault()?.Title ?? "????";
 
                 await _userRepository.SaveChangesAsync();
                 _waifu.DeleteCardImageIfExist(card);
@@ -1755,12 +1808,15 @@ namespace Sanakan.Modules
                 foreach (var card in cardsInCage)
                 {
                     card.InCage = false;
-                    var response = await _shclient.GetCharacterInfoAsync(card.Id);
-                    if (response.IsSuccessStatusCode())
+                    var charactersResult = await _shindenClient.GetCharacterInfoAsync(card.Id);
+
+                    if (charactersResult.Value != null)
                     {
-                        if (response.Body?.Points != null)
+                        var characterInfo = charactersResult.Value;
+
+                        if (characterInfo?.Points != null)
                         {
-                            if (response.Body.Points.Any(x => x.Name.Equals(user.Nickname ?? user.Username)))
+                            if (characterInfo.Points.Any(x => x.Name.Equals(user.Nickname ?? user.Username)))
                                 card.Affection += 0.8;
                         }
                     }
@@ -1776,7 +1832,8 @@ namespace Sanakan.Modules
                 var thisCard = cardsInCage.FirstOrDefault(x => x.Id == wid);
                 if (thisCard == null)
                 {
-                    await ReplyAsync("", embed: $"{user.Mention} taka karta nie znajduje się w twojej klatce.".ToEmbedMessage(EMType.Error).Build());
+                    await ReplyAsync("", embed: $"{user.Mention} taka karta nie znajduje się w twojej klatce."
+                        .ToEmbedMessage(EMType.Error).Build());
                     return;
                 }
 
@@ -1854,7 +1911,7 @@ namespace Sanakan.Modules
                 return;
             }
 
-            var obj = new WishlistObject
+            var wishlistObject = new WishlistObject
             {
                 ObjectId = id,
                 Type = type
@@ -1876,33 +1933,36 @@ namespace Sanakan.Modules
                         return;
                     }
                     response = card.GetString(false, false, true);
-                    obj.ObjectName = $"{card.Id} - {card.Name}";
+                    wishlistObject.ObjectName = $"{card.Id} - {card.Name}";
                     break;
 
                 case WishlistObjectType.Title:
-                    var res1 = await _shclient.GetInfoAsync(id);
-                    if (!res1.IsSuccessStatusCode())
+                    var animeMangaInfoResult = await _shindenClient.GetAnimeMangaInfoAsync(id);
+
+                    if (animeMangaInfoResult.Value == null)
                     {
                         await ReplyAsync("", embed: $"Nie odnaleziono serii!".ToEmbedMessage(EMType.Error).Build());
                         return;
                     }
-                    response = res1.Body.Title;
-                    obj.ObjectName = res1.Body.Title;
+                    var title = animeMangaInfoResult.Value.Title.TitleStatus;
+                    wishlistObject.ObjectName = title;
                     break;
 
                 case WishlistObjectType.Character:
-                    var res2 = await _shclient.GetCharacterInfoAsync(id);
-                    if (!res2.IsSuccessStatusCode())
+                    var characterResult = await _shindenClient.GetCharacterInfoAsync(id);
+
+                    if (characterResult.Value == null)
                     {
                         await ReplyAsync("", embed: $"Nie odnaleziono postaci!".ToEmbedMessage(EMType.Error).Build());
                         return;
                     }
-                    response = res2.Body.ToString();
-                    obj.ObjectName = response;
+
+                    var characterName = characterResult.Value.ToString();
+                    wishlistObject.ObjectName = characterName;
                     break;
             }
 
-            bUser.GameDeck.Wishes.Add(obj);
+            bUser.GameDeck.Wishes.Add(wishlistObject);
 
             await _userRepository.SaveChangesAsync();
 
@@ -2199,8 +2259,9 @@ namespace Sanakan.Modules
             [Summary("id anime")]ulong id,
             [Summary("czy zamienić oznaczenia na nicki?")]bool showNames = false)
         {
-            var response = await _shclient.GetInfoAsync(id);
-            if (!response.IsSuccessStatusCode())
+            var animeMangaInfoResult = await _shindenClient.GetAnimeMangaInfoAsync(id);
+
+            if (animeMangaInfoResult.Value == null)
             {
                 await ReplyAsync("", embed: $"Nie odnaleziono tytułu!".ToEmbedMessage(EMType.Error).Build());
                 return;
@@ -2230,7 +2291,9 @@ namespace Sanakan.Modules
                 usersStr = string.Join("\n", wishlists.Select(x => $"<@{x.Id}>"));
             }
 
-            await ReplyAsync("", embed: $"**Karty z {response.Body.Title} chcą:**\n\n {usersStr}".TrimToLength(2000).ToEmbedMessage(EMType.Info).Build());
+            var title = HttpUtility.HtmlDecode(animeMangaInfoResult.Value.Title.OtherTitle);
+            var content = $"**Karty z {title} chcą:**\n\n {usersStr}".TrimToLength(2000).ToEmbedMessage(EMType.Info).Build();
+            await ReplyAsync("", embed: content);
         }
 
         [Command("wyzwól")]
@@ -2807,12 +2870,15 @@ namespace Sanakan.Modules
             [Summary("id postaci na shinden")]ulong id,
             [Summary("czy zamienić oznaczenia na nicki?")]bool showNames = false)
         {
-            var response = await _shclient.GetCharacterInfoAsync(id);
-            if (!response.IsSuccessStatusCode())
+            var characterResult = await _shindenClient.GetCharacterInfoAsync(id);
+            
+            if (characterResult.Value == null)
             {
                 await ReplyAsync("", embed: $"Nie odnaleziono postaci na shindenie!".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
+
+            var character = characterResult.Value;
 
             var cards = await _cardRepository.GetByCharacterIdAsync(id, new CardQueryOptions
             {
@@ -2824,12 +2890,14 @@ namespace Sanakan.Modules
 
             if (cards.Count() < 1)
             {
-                await ReplyAsync("", embed: $"Nie odnaleziono kart {response.Body}".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync("", embed: $"Nie odnaleziono kart {character}".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
+            var characterUrl = Url.GetCharacterURL(character.CharacterId);
+
             var msgs = _waifu.GetWaifuFromCharacterSearchResult(
-                $"[**{response.Body}**]({response.Body.CharacterUrl}) posiadają:",
+                $"[**{character}**]({characterUrl}) posiadają:",
                 cards,
                 Context.Client,
                 !showNames);
@@ -2870,18 +2938,19 @@ namespace Sanakan.Modules
                 return;
             }
 
-            var response = await _shclient.GetFavCharactersAsync(user.Shinden);
-            if (!response.IsSuccessStatusCode())
+            var charactersResult = await _shindenClient.GetFavCharactersAsync(user.Shinden);
+
+            if (charactersResult.Value == null)
             {
                 await ReplyAsync("", embed: $"Nie odnaleziono listy ulubionych postaci!".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
-            var characters = response.Body;
+            var characters = charactersResult.Value;
 
             var cards = await _cardRepository.GetByCharactersAndNotInUserGameDeckAsync(
                 user.Id,
-                characters.Select(pr => pr.Id));
+                characters.Select(pr => pr.CharacterId));
 
             if (!showFavs)
                 cards = cards.Where(x => !x.HasTag("ulubione")).ToList();
@@ -2916,14 +2985,16 @@ namespace Sanakan.Modules
             [Summary("id serii na shinden")]ulong id,
             [Summary("czy zamienić oznaczenia na nicki?")]bool showNames = false)
         {
-            var response = await _shclient.GetCharactersAsync(id);
-            if (!response.IsSuccessStatusCode())
+            var charactersResult = await _shindenClient.GetCharactersAsync(id);
+
+            if (charactersResult.Value == null)
             {
                 await ReplyAsync("", embed: $"Nie odnaleziono postaci z serii na shindenie!".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
-            var characterIds = response.Body
+            var characterIds = charactersResult.Value
+                .Relations
                 .Select(x => x.CharacterId)
                 .Distinct()
                 .Select(pr => pr.Value)
@@ -3031,26 +3102,31 @@ namespace Sanakan.Modules
         [Remarks(""), RequireWaifuCommandChannel]
         public async Task CraftCardAsync()
         {
-            var user1 = Context.User as SocketGuildUser;
-            if (user1 == null) return;
+            var discordUser = Context.User as SocketGuildUser;
+            
+            if (discordUser == null)
+            {
+                return;
+            }
 
-            var session = new CraftingSession(user1, _waifu);
+            var session = new CraftingSession(discordUser, _waifu, null, null);
             if (_sessionManager.SessionExist(session))
             {
-                await ReplyAsync("", embed: $"{user1.Mention} już masz otwarte menu tworzenia kart."
+                await ReplyAsync("", embed: $"{discordUser.Mention} już masz otwarte menu tworzenia kart."
                     .ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
-            var duser1 = await _userRepository.GetCachedFullUserAsync(user1.Id);
-            if (duser1 == null)
+            var databaseUser = await _userRepository.GetCachedFullUserAsync(discordUser.Id);
+
+            if (databaseUser == null)
             {
                 await ReplyAsync("", embed: "Jeden z graczy nie posiada profilu!"
                     .ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
-            if (duser1.GameDeck.Cards.Count + 1 > duser1.GameDeck.MaxNumberOfCards)
+            if (databaseUser.GameDeck.Cards.Count + 1 > databaseUser.GameDeck.MaxNumberOfCards)
             {
                 await ReplyAsync("", embed: $"{Context.User.Mention} nie masz już miejsca na kolejną kartę!"
                     .ToEmbedMessage(EMType.Error).Build());
@@ -3059,8 +3135,8 @@ namespace Sanakan.Modules
 
             session.P1 = new PlayerInfo
             {
-                User = user1,
-                Dbuser = duser1,
+                User = discordUser,
+                Dbuser = databaseUser,
                 Accepted = false,
                 CustomString = "",
                 Items = new List<Item>()
@@ -3068,7 +3144,7 @@ namespace Sanakan.Modules
 
             session.Name = "⚒ **Tworzenie:**";
             session.Tips = $"Polecenia: `dodaj/usuń [nr przedmiotu] [liczba]`.";
-            session.Items = duser1.GameDeck.Items.ToList();
+            session.Items = databaseUser.GameDeck.Items.ToList();
 
             var msg = await ReplyAsync("", embed: session.BuildEmbed());
             await msg.AddReactionsAsync(session.StartReactions);
@@ -3092,7 +3168,8 @@ namespace Sanakan.Modules
 
             if (cardsOnExpedition.Count < 1)
             {
-                await ReplyAsync("", embed: $"{Context.User.Mention} nie posiadasz kart znajdujących się na wyprawie.".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync("", embed: $"{Context.User.Mention} nie posiadasz kart znajdujących się na wyprawie."
+                    .ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 

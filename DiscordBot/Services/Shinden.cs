@@ -96,19 +96,20 @@ namespace Sanakan.Services
                 return;
             }
 
-            var res = await _shClient.QuickSearchAsync(title, type);
-            if (!res.IsSuccessStatusCode())
+            var result = await _shClient.QuickSearchAsync(title, type);
+
+            if (result == null)
             {
-                await context.Channel.SendMessageAsync("", false, GetResponseFromSearchCode(res).ToEmbedMessage(EMType.Error).Build());
+                await context.Channel.SendMessageAsync("", false, GetResponseFromSearchCode(result).ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
-            var list = res.Body;
+            var list = result.Value;
             var toSend = GetSearchResponse(list, "Wybierz tytuł, który chcesz wyświetlić poprzez wpisanie numeru odpowiadającemu mu na liście.");
 
             if (list.Count == 1)
             {
-                var info = (await _shClient.GetInfoAsync(list.First())).Body;
+                var info = (await _shClient.GetAnimeMangaInfoAsync(list.First())).Body;
                 await context.Channel.SendMessageAsync("", false, info.ToEmbed());
             }
             else
@@ -142,23 +143,26 @@ namespace Sanakan.Services
 
         public async Task<Stream> GetSiteStatisticAsync(ulong shindenId, SocketGuildUser user)
         {
-            var response = await _shClient.GetAsync(shindenId);
+            var result = await _shClient.GetUserInfoAsync(shindenId);
             
-            if (!response.IsSuccessStatusCode())
+            if (result.Value == null)
             {
                 return null;
             }
 
+            var shindenUser = result.Value;
             var resLR = await _shClient.GetLastReadedAsync(shindenId);
             var resLW = await _shClient.GetLastWatchedAsync(shindenId);
+            var color = user.Roles.OrderByDescending(x => x.Position)
+                .FirstOrDefault()?.Color ?? Discord.Color.DarkerGrey;
 
-            using (var image = await _img.GetSiteStatisticAsync(response.Body,
-                user.Roles.OrderByDescending(x => x.Position).FirstOrDefault()?.Color ?? Discord.Color.DarkerGrey,
-                resLR.IsSuccessStatusCode() ? resLR.Body : null,
-                resLW.IsSuccessStatusCode() ? resLW.Body : null))
-            {
-                return image.ToPngStream();
-            }
+            using var image = await _img.GetSiteStatisticAsync(
+                shindenUser,
+                color,
+                resLR.Value != null ? resLR.Value : null,
+                resLW.Value != null ? resLW.Value : null);
+            
+            return image.ToPngStream();
         }
     }
 }

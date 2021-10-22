@@ -1,7 +1,10 @@
-﻿using Discord.Commands;
+﻿using Discord;
+using Discord.Commands;
 using Discord.WebSocket;
-using Sanakan.Config;
-using Sanakan.Extensions;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using Sanakan.Configuration;
+using Sanakan.DAL.Repositories.Abstractions;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -16,6 +19,8 @@ namespace Sanakan.Preconditions
 
         public async override Task<PreconditionResult> CheckPermissionsAsync(ICommandContext context, CommandInfo command, IServiceProvider services)
         {
+            var guildConfigRepository = services.GetRequiredService<IGuildConfigRepository>();
+            var userRepository = services.GetRequiredService<IUserRepository>();
             var user = context.User as SocketGuildUser;
             
             if (user == null)
@@ -28,8 +33,8 @@ namespace Sanakan.Preconditions
                 return PreconditionResult.FromSuccess();
             }
 
-            var config = (IConfig)services.GetService(typeof(IConfig));
-            var gConfig = await db.GetCachedGuildFullConfigAsync(context.Guild.Id);
+            var gConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(context.Guild.Id);
+
             if (gConfig != null)
             {
                 var role = context.Guild.GetRole(gConfig.AdminRole);
@@ -39,7 +44,9 @@ namespace Sanakan.Preconditions
                         return PreconditionResult.FromSuccess();
                 }
             }
+
             var botUser = await db.GetBaseUserAndDontTrackAsync(user.Id);
+
             if (botUser != null)
             {
                 if (botUser.Level >= _level)

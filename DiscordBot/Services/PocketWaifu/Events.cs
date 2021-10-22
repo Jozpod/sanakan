@@ -13,13 +13,16 @@ namespace Sanakan.Services.PocketWaifu
     {
         private readonly IShindenClient _shindenClient;
         private readonly IRandomNumberGenerator _randomNumberGenerator;
+        private readonly ISystemClock _systemClock;
 
         public Events(
             IShindenClient shindenClient,
-            IRandomNumberGenerator randomNumberGenerator)
+            IRandomNumberGenerator randomNumberGenerator,
+            ISystemClock systemClock)
         {
             _shindenClient = shindenClient;
             _randomNumberGenerator = randomNumberGenerator;
+            _systemClock = systemClock;
         }
 
         private static List<ulong> _titles = new ()
@@ -263,7 +266,7 @@ namespace Sanakan.Services.PocketWaifu
 
         public bool ExecuteEvent(EventType e, User user, Card card, ref string msg)
         {
-            var aVal = _randomNumberGenerator.GetRandomValue(1, 4);
+            var randomValue = _randomNumberGenerator.GetRandomValue(1, 4);
 
             switch (e)
             {
@@ -289,7 +292,7 @@ namespace Sanakan.Services.PocketWaifu
                 case EventType.IncAtk:
                 {
                     var max = card.Rarity.GetAttackMax();
-                    card.Attack += aVal;
+                    card.Attack += randomValue;
 
                     if (card.Attack > max)
                         card.Attack = max;
@@ -301,7 +304,7 @@ namespace Sanakan.Services.PocketWaifu
                 case EventType.IncDef:
                 {
                     var max = card.Rarity.GetDefenceMax();
-                    card.Defence += aVal;
+                    card.Defence += randomValue;
 
                     if (card.Defence > max)
                         card.Defence = max;
@@ -340,7 +343,7 @@ namespace Sanakan.Services.PocketWaifu
 
                 case EventType.DecAff:
                 {
-                    card.Affection -= aVal;
+                    card.Affection -= randomValue;
                     msg += "Wydarzenie: Zmniejszenie relacji.\n";
                 }
                 break;
@@ -348,7 +351,7 @@ namespace Sanakan.Services.PocketWaifu
                 case EventType.DecAtk:
                 {
                     var min = card.Rarity.GetAttackMin();
-                    card.Attack -= aVal;
+                    card.Attack -= randomValue;
 
                     if (card.Attack < min)
                         card.Attack = min;
@@ -360,7 +363,7 @@ namespace Sanakan.Services.PocketWaifu
                 case EventType.DecDef:
                 {
                     var min = card.Rarity.GetDefenceMin();
-                    card.Defence -= aVal;
+                    card.Defence -= randomValue;
 
                     if (card.Defence < min)
                         card.Defence = min;
@@ -371,66 +374,29 @@ namespace Sanakan.Services.PocketWaifu
 
                 case EventType.Fight:
                 {
-                    string name, string title, string image, Rarity rarity
+                    var rarity = WaifuService.RandomizeRarity(_randomNumberGenerator);
+                    var name = "Miecu";
+                    var title = "Bajeczka";
+                        
+                    var date = _systemClock.UtcNow;
+                    var defence = WaifuService.RandomizeDefence(_randomNumberGenerator, rarity);
+                    var attack = WaifuService.RandomizeAttack(_randomNumberGenerator, rarity);
+                    var dere = WaifuService.RandomizeDere(_randomNumberGenerator);
+                    var characterId = 1ul;
 
-                    var enemyCard1 = new Card
-                    {
-                        Defence = RandomizeDefence(rarity),
-                        ArenaStats = new CardArenaStats(),
-                        Attack = RandomizeAttack(rarity),
-                        Expedition = CardExpedition.None,
-                        QualityOnStart = Quality.Broken,
-                        ExpeditionDate = _systemClock.UtcNow,
-                        PAS = PreAssembledFigure.None,
-                        TagList = new List<CardTag>(),
-                        CreationDate = _systemClock.UtcNow,
-                        StarStyle = StarStyle.Full,
-                        Source = CardSource.Other,
-                        Quality = Quality.Broken,
-                        Title = title ?? "????",
-                        Dere = RandomizeDere(randomNumberGenerator),
-                        Curse = CardCurse.None,
-                        RarityOnStart = rarity,
-                        CustomBorder = null,
-                        FromFigure = false,
-                        CustomImage = null,
-                        IsTradable = true,
-                        FirstIdOwner = 1,
-                        DefenceBonus = 0,
-                        HealthBonus = 0,
-                        AttackBonus = 0,
-                        UpgradesCnt = 2,
-                        LastIdOwner = 0,
-                        MarketValue = 1,
-                        Rarity = rarity,
-                        EnhanceCnt = 0,
-                        Unique = false,
-                        InCage = false,
-                        RestartCnt = 0,
-                        Active = false,
-                        Character = 1,
-                        Affection = 0,
-                        Image = null,
-                        Name = name,
-                        Health = 0,
-                        ExpCnt = 0,
-                    };
+                    var enemyCard = new Card(
+                        characterId,
+                        title,
+                        name,
+                        attack,
+                        defence,
+                        rarity,
+                        dere,
+                        date);
+                        
+                    card.CalculateCardPower();
 
-                        if (!string.IsNullOrEmpty(image))
-                            card.Image = image;
-
-                        card.Health = RandomizeHealth(card);
-
-                        _ = card.CalculateCardPower();
-
-                    return card;
-
-                        var enemyCard = Waifu.GenerateFakeNewCard(
-                        "Miecu",
-                        "Bajeczka",
-                        null,
-                        Waifu.RandomizeRarity());
-                    var result = Waifu.GetFightWinner(card, enemyCard);
+                    var result = WaifuService.GetFightWinner(card, enemyCard);
 
                     var resStr = result == FightWinner.Card1 ? "zwycięstwo!" : "przegrana!";
                     msg += $"Wydarzenie: Walka, wynik: {resStr}\n";

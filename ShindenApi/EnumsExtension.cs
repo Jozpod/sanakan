@@ -1,12 +1,24 @@
 ﻿using Shinden.Models;
 
-namespace Shinden.Extensions
+namespace Sanakan.ShindenApi
 {
     public static class EnumsExtension
     {
         public static string ToQuery(this FavouriteType type, ulong id)
         {
             return $"{type.ToString().ToLower()}-{id}";
+        }
+
+        public static string ToQuery(this MangaRateType type)
+        {
+            switch (type)
+            {
+                case MangaRateType.Characters: return "titlecahracters";
+                case MangaRateType.Story: return "story";
+                case MangaRateType.Total: return "total";
+                case MangaRateType.Art: return "lines";
+                default: return "total";
+            }
         }
 
         public static string ToQuery(this AnimeRateType type)

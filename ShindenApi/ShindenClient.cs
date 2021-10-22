@@ -5,9 +5,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Shinden;
 using Shinden.API;
-using Shinden.Extensions;
 using Shinden.Models;
-using Shinden.Modules;
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -24,19 +22,27 @@ namespace Sanakan.ShindenApi
         private readonly ILogger _logger;
         private readonly CookieContainer _cookies;
         private readonly HttpClient _httpClient;
-        private ILoggedUser _loggedUser;
-        private ISession _session;
 
         public ShindenClient(
             IOptionsMonitor<ShindenClientOptions> options,
             ILogger<ShindenClient> logger)
         {
-            _cookies = new CookieContainer();
-            _cookies.Add(_baseUri, new Cookie() { Name = "name", Value = _session.Name, Expires = _session.Expires });
-            _cookies.Add(_baseUri, new Cookie() { Name = "id", Value = _session.Id, Expires = _session.Expires });
+            //$"{auth.UserAgent} (Shinden.NET/{Assembly.GetAssembly(typeof(ShindenClient)).GetName().Version})"
+
+            //_cookies = new CookieContainer();
+            //_cookies.Add(_baseUri, new Cookie() { 
+            //    Name = "name",
+            //    Value = _session.Name,
+            //    Expires = _session.Expires
+            //});
+            //_cookies.Add(_baseUri, new Cookie() {
+            //    Name = "id",
+            //    Value = _session.Id,
+            //    Expires = _session.Expires
+            //});
             var handler = new HttpClientHandler() { CookieContainer = _cookies };
             _httpClient = new HttpClient(handler);
-
+            _logger = logger;
 
             _httpClient.DefaultRequestHeaders.Add("Accept-Language", "pl");
             _httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
@@ -48,13 +54,20 @@ namespace Sanakan.ShindenApi
             }
         }
 
-        public async Task<object> GetNewEpisodesAsync()
+        public async Task<Result<List<NewEpisode>>> GetNewEpisodesAsync()
         {
-            var response = await _httpClient.GetAsync("{BaseUri}episode/new?api_key={Token}");
+            var queryData = new Dictionary<string, string>()
+            {
+                { "api_key", _options.CurrentValue.Token },
+            };
+
+            var query = QueryHelpers.AddQueryString("episode/new", queryData);
+
+            var response = await _httpClient.GetAsync(query);
 
             if(!response.IsSuccessStatusCode)
             {
-                return new Result<object>();
+                return new Result<List<NewEpisode>>();
             }
 
             var json = await response.Content.ReadAsStringAsync();
@@ -70,9 +83,6 @@ namespace Sanakan.ShindenApi
             {
                 Value = list
             };
-
-            //var raw = await QueryAsync(new GetNewEpisodesQuery()).ConfigureAwait(false);
-            //return new ResponseFinal<List<INewEpisode>>(raw.Code, new List<INewEpisode>(raw.Body?.ToModel()));
         }
 
         public async Task<object> GetStaffInfoAsync(ulong id)
@@ -91,9 +101,7 @@ namespace Sanakan.ShindenApi
                 return new Result<object>();
             }
 
-            var json = await response.Content.ReadAsStringAsync();
-
-            var result = JsonConvert.DeserializeObject<StaffInfo>(json);
+            var result = await response.Content.ReadFromJsonAsync<StaffInfo>();
 
             return new Result<StaffInfo>()
             {
@@ -132,57 +140,176 @@ namespace Sanakan.ShindenApi
         }
 
         #region Title
-        public async Task<Response<IEpisodesRange>> GetEpisodesRangeAsync(ulong id)
+        public async Task<Result<EpisodesRange>> GetEpisodesRangeAsync(ulong episodeId)
         {
-            var raw = await QueryAsync(new GetTitleEpisodesRangeQuery(id)).ConfigureAwait(false);
-            return new ResponseFinal<IEpisodesRange>(raw.Code, raw.Body?.ToModel(id));
+            var queryData = new Dictionary<string, string>()
+            {
+                { "api_key", _options.CurrentValue.Token },
+            };
+
+            var query = QueryHelpers.AddQueryString($"episode/{episodeId}/range", queryData);
+
+            var response = await _httpClient.GetAsync(query);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return new Result<EpisodesRange>();
+            }
+
+            var result = await response.Content.ReadFromJsonAsync<EpisodesRange>();
+
+            return new Result<EpisodesRange>()
+            {
+                Value = result
+            };
         }
 
-        public async Task<Response<List<IEpisode>>> GetEpisodesAsync(ulong id)
+        public async Task<Result<List<TitleEpisodes>>> GetEpisodesAsync(ulong episodeId)
         {
-            var raw = await QueryAsync(new GetTitleEpisodesQuery(id)).ConfigureAwait(false);
-            return new ResponseFinal<List<IEpisode>>(raw.Code, raw.Body?.ToModel());
+            var queryData = new Dictionary<string, string>()
+            {
+                { "api_key", _options.CurrentValue.Token },
+            };
+
+            var query = QueryHelpers.AddQueryString($"title/{episodeId}/episodes", queryData);
+
+            var response = await _httpClient.GetAsync(query);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return new Result<List<TitleEpisodes>>();
+            }
+
+            var result = await response.Content.ReadFromJsonAsync<List<TitleEpisodes>>();
+
+            return new Result<List<TitleEpisodes>>()
+            {
+                Value = result
+            };
         }
 
-        public async Task<Response<List<IEpisode>>> GetEpisodesAsync(IIndexable index)
+        public async Task<Result<AnimeMangaInfo>> GetAnimeMangaInfoAsync(ulong id)
         {
-            return await GetEpisodesAsync(index.Id).ConfigureAwait(false);
+            var queryData = new Dictionary<string, string>()
+            {
+                { "api_key", _options.CurrentValue.Token },
+                { "lang", "pl" },
+                { "decode", 1.ToString() },
+            };
+
+            var query = QueryHelpers.AddQueryString($"title/{id}/info", queryData);
+
+            var response = await _httpClient.GetAsync(query);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return new Result<AnimeMangaInfo>();
+            }
+
+            var result = await response.Content.ReadFromJsonAsync<AnimeMangaInfo>();
+
+            return new Result<AnimeMangaInfo>()
+            {
+                Value = result
+            };
         }
 
-        public async Task<Response<ITitleInfo>> GetInfoAsync(ulong id)
+        public async Task<Result<TitleRecommendation>> GetRecommendationsAsync(ulong id)
         {
-            var raw = await QueryAsync(new GetTitleInfoQuery(id)).ConfigureAwait(false);
-            return new ResponseFinal<ITitleInfo>(raw.Code, raw.Body?.ToModel());
+            var queryData = new Dictionary<string, string>()
+            {
+                { "api_key", _options.CurrentValue.Token },
+            };
+
+            var query = QueryHelpers.AddQueryString($"title/{id}/recommendations", queryData);
+
+            var response = await _httpClient.GetAsync(query);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return new Result<TitleRecommendation>();
+            }
+
+            var result = await response.Content.ReadFromJsonAsync<TitleRecommendation>();
+
+            return new Result<TitleRecommendation>()
+            {
+                Value = result
+            };
         }
 
-        public async Task<Response<List<IRecommendation>>> GetRecommendationsAsync(ulong id)
+        public async Task<Result<TitleReviews>> GetReviewsAsync(ulong id)
         {
-            var raw = await QueryAsync(new GetTitleRecommendationsQuery(id)).ConfigureAwait(false);
-            return new ResponseFinal<List<IRecommendation>>(raw.Code, raw.Body?.ToModel());
+            var queryData = new Dictionary<string, string>()
+            {
+                { "api_key", _options.CurrentValue.Token },
+            };
+
+            var query = QueryHelpers.AddQueryString($"title/{id}/reviews", queryData);
+
+            var response = await _httpClient.GetAsync(query);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return new Result<TitleReviews>();
+            }
+
+            var result = await response.Content.ReadFromJsonAsync<TitleReviews>();
+
+            return new Result<TitleReviews>()
+            {
+                Value = result
+            };
         }
 
-        public async Task<Response<List<IReview>>> GetReviewsAsync(ulong id)
+        public async Task<Result<TitleRelations>> GetRelationsAsync(ulong id)
         {
-            var raw = await QueryAsync(new GetTitleReviewsQuery(id)).ConfigureAwait(false);
-            return new ResponseFinal<List<IReview>>(raw.Code, raw.Body?.ToModel(id));
+            var queryData = new Dictionary<string, string>()
+            {
+                { "api_key", _options.CurrentValue.Token },
+            };
+
+            var query = QueryHelpers.AddQueryString($"title/{id}/related", queryData);
+
+            var response = await _httpClient.GetAsync(query);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return new Result<TitleRelations>();
+            }
+
+            var result = await response.Content.ReadFromJsonAsync<TitleRelations>();
+
+            return new Result<TitleRelations>()
+            {
+                Value = result
+            };
         }
 
-        public async Task<Response<List<ITitleRelation>>> GetRelationsAsync(ulong id)
+        public async Task<Result<TitleCharacters>> GetCharactersAsync(ulong id)
         {
-            var raw = await QueryAsync(new GetTitleRelatedQuery(id)).ConfigureAwait(false);
-            return new ResponseFinal<List<ITitleRelation>>(raw.Code, raw.Body?.ToModel());
+            var queryData = new Dictionary<string, string>()
+            {
+                { "api_key", _options.CurrentValue.Token },
+            };
+
+            var query = QueryHelpers.AddQueryString($"title/{id}/characters", queryData);
+
+            var response = await _httpClient.GetAsync(query);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return new Result<TitleCharacters>();
+            }
+
+            var result = await response.Content.ReadFromJsonAsync<TitleCharacters>();
+
+            return new Result<TitleCharacters>()
+            {
+                Value = result
+            };
         }
 
-        public async Task<Response<List<IRelation>>> GetCharactersAsync(ulong id)
-        {
-            var raw = await QueryAsync(new GetTitleCharactersQuery(id)).ConfigureAwait(false);
-            return new ResponseFinal<List<IRelation>>(raw.Code, raw.Body?.Relations?.ToModel());
-        }
-
-        public async Task<Response<List<IRelation>>> GetCharactersAsync(IIndexable index)
-        {
-            return await GetCharactersAsync(index.Id).ConfigureAwait(false);
-        }
         #endregion
         #region Search
         public async Task<Result<List<UserSearchResult>>> SearchUserAsync(string nick)
@@ -255,9 +382,6 @@ namespace Sanakan.ShindenApi
             {
                 Value = result
             };
-
-            //var raw = await QueryAsync(new SearchStaffQuery(name)).ConfigureAwait(false);
-            //return new ResponseFinal<List<IPersonSearch>>(raw.Code, raw.Body?.ToModel());
         }
 
         public async Task<Result<List<QuickSearchResult>>> QuickSearchAsync(string search)
@@ -419,7 +543,7 @@ namespace Sanakan.ShindenApi
         #endregion
         #region User
 
-        public async Task<Result<UserInfo>> GetAsync(ulong userId)
+        public async Task<Result<UserInfo>> GetUserInfoAsync(ulong userId)
         {
             var queryData = new Dictionary<string, string>()
             {
@@ -518,7 +642,7 @@ namespace Sanakan.ShindenApi
         }
         #endregion
         #region LoggedIn
-        public async Task<Result<Logging>> LoginAsync(string username, string password)
+        public async Task<Result<LogInResult>> LoginAsync(string username, string password)
         {
             var formData = new Dictionary<string, string>()
             {
@@ -539,27 +663,16 @@ namespace Sanakan.ShindenApi
 
             if (!response.IsSuccessStatusCode)
             {
-                return new Result<Logging>();
+                return new Result<LogInResult>();
             }
 
-            var result = await response.Content.ReadFromJsonAsync<Logging>();
+            var result = await response.Content.ReadFromJsonAsync<LogInResult>();
 
-            return new Result<Logging>
+            return new Result<LogInResult>
             {
                 Value = result,
             };
         }
-
-        public IUserInfo Get()
-        {
-            if (_loggedUser == null)
-            {
-                _logger.Log(LogLevel.Critical, "User is not logged in!");
-                throw new Exception("User is not logged in!");
-            }
-            return _loggedUser;
-        }
-
         public async Task<Result<TitleStatusAfterChange>> ChangeTitleStatusAsync(
             ulong userId, ListType status, ulong titleId)
         {
@@ -627,7 +740,6 @@ namespace Sanakan.ShindenApi
 
         public async Task<Result<IncreaseWatched>> IncreaseNumberOfWatchedEpisodesAsync(ulong userId, ulong titleId)
         {
-            userId = Get().Id;
             var queryData = new Dictionary<string, string>()
             {
                 { "api_key", _options.CurrentValue.Token },

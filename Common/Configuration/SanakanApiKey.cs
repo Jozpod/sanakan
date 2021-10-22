@@ -1,4 +1,4 @@
-﻿namespace Sanakan.Config.Model
+﻿namespace Sanakan.Configuration
 {
     public class SanakanApiKey
     {

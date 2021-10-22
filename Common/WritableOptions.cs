@@ -6,12 +6,14 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Sanakan.Common
 {
     public class WritableOptions<T> : IWritableOptions<T> where T : class, new()
     {
         private readonly IHostingEnvironment _environment;
+        private readonly IFileSystem _fileSystem;
         private readonly IOptionsMonitor<T> _options;
         private readonly IConfigurationRoot _configuration;
         private readonly string _section;
@@ -19,6 +21,7 @@ namespace Sanakan.Common
 
         public WritableOptions(
             IHostingEnvironment environment,
+            IFileSystem _fileSystem,
             IOptionsMonitor<T> options,
             IConfigurationRoot configuration,
             string section,
@@ -34,20 +37,22 @@ namespace Sanakan.Common
         public T Value => _options.CurrentValue;
         public T Get(string name) => _options.Get(name);
 
-        public void Update(Action<T> applyChanges)
+        public async Task UpdateAsync(Action<T> applyChanges)
         {
             var fileProvider = _environment.ContentRootFileProvider;
             var fileInfo = fileProvider.GetFileInfo(_file);
             var physicalPath = fileInfo.PhysicalPath;
 
-            var jObject = JsonConvert.DeserializeObject<JObject>(File.ReadAllText(physicalPath));
+            var jObject = JsonConvert.DeserializeObject<JObject>(await _fileSystem.ReadAllTextAsync(physicalPath));
+
             var sectionObject = jObject.TryGetValue(_section, out JToken section) ?
                 JsonConvert.DeserializeObject<T>(section.ToString()) : (Value ?? new T());
 
             applyChanges(sectionObject);
 
             jObject[_section] = JObject.Parse(JsonConvert.SerializeObject(sectionObject));
-            File.WriteAllText(physicalPath, JsonConvert.SerializeObject(jObject, Formatting.Indented));
+
+            await _fileSystem.WriteAllTextAsync(physicalPath, JsonConvert.SerializeObject(jObject, Formatting.Indented));
             _configuration.Reload();
         }
     }

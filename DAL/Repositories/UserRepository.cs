@@ -27,6 +27,14 @@ namespace Sanakan.DAL.Repositories
             _systemClock = systemClock;
             _cacheManager = cacheManager;
         }
+        public Task<User?> GetBaseUserAndDontTrackAsync(ulong userId)
+        {
+            return _dbContext.Users
+                .AsQueryable()
+                .AsNoTracking()
+                .AsSplitQuery()
+                .FirstOrDefaultAsync(x => x.Id == userId);
+        }
 
         public async Task<User> GetCachedFullUserAsync(ulong userId)
         {

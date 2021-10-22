@@ -3,7 +3,7 @@
     public enum FightResult
     {
         Win = 1,
-        Lose = 1,
-        Draw = 2
+        Lose = 2,
+        Draw = 3
     }
 }

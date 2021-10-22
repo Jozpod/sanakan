@@ -12,20 +12,5 @@ namespace Sanakan.Extensions
 
             return Shinden.API.Url.GetPersonPictureURL(p.PictureId);
         }
-
-        public static List<string> GetPicList(this List<IPicture> ps)
-        {
-            var urls = new List<string>();
-            if (ps == null) return urls;
-
-            foreach(var p in ps)
-            {
-                var pic = p.GetStr();
-                if (!string.IsNullOrEmpty(pic))
-                    urls.Add(pic);
-            }
-
-            return urls;
-        }
     }
 }

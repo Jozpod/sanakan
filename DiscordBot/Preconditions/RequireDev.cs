@@ -1,12 +1,13 @@
-﻿using Discord.Commands;
+﻿using Discord;
+using Discord.Commands;
+using Discord.WebSocket;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using Sanakan.DiscordBot.Extensions;
-using Sanakan.Web.Configuration;
+using Sanakan.Configuration;
+using Sanakan.DAL.Repositories.Abstractions;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
-using Sanakan.Common;
 
 namespace Sanakan.Preconditions
 {

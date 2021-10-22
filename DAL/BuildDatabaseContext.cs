@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
+using Sanakan.Configuration;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Models.Analytics;
 using Sanakan.DAL.Models.Configuration;
@@ -12,9 +13,10 @@ namespace Sanakan.DAL
 {
     public class BuildDatabaseContext : DbContext
     {
-        private object _config;
+        private IOptionsMonitor<SanakanConfiguration> _config;
 
-        public BuildDatabaseContext(IOptions<object> config) : base()
+        public BuildDatabaseContext(
+            IOptionsMonitor<SanakanConfiguration> config) : base()
         {
             _config = config;
         }
@@ -68,14 +70,15 @@ namespace Sanakan.DAL
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseMySql(_config.Get().ConnectionString,
-                new MySqlServerVersion(Version.Parse("5.7")),
-                mySqlOptions => mySqlOptions.CharSetBehavior(CharSetBehavior.NeverAppend));
+            optionsBuilder.UseMySql(
+                _config.CurrentValue.ConnectionString,
+                new MySqlServerVersion(_config.CurrentValue.MySqlVersion));
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+            modelBuilder.HasCharSet("utf8mb4", DelegationModes.ApplyToDatabases);
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(BuildDatabaseContext).Assembly);
         }
     }

@@ -2,7 +2,9 @@
 using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
-using Sanakan.Common;
+using Microsoft.Extensions.Options;
+using Sanakan.Configuration;
+using Sanakan.DAL.Repositories.Abstractions;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -14,27 +16,27 @@ namespace Sanakan.Preconditions
         public async override Task<PreconditionResult> CheckPermissionsAsync(
             ICommandContext context, CommandInfo command, IServiceProvider services)
         {
+            var guildConfigRepository = services.GetRequiredService<IGuildConfigRepository>();
+
             var user = context.User as SocketGuildUser;
             
             if (user == null)
             {
                 return PreconditionResult.FromError($"To polecenie działa tylko z poziomu serwera.");
             }
-            
-            var config = (IConfig)services.GetService(typeof(IConfig));
 
-            var gConfig = await db.GetCachedGuildFullConfigAsync(context.Guild.Id);
+            var gConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(context.Guild.Id);
 
             if (gConfig == null)
             {
-                return CheckUser(user);
+                return CheckPermissions(user.GuildPermissions);
             }
 
             var role = context.Guild.GetRole(gConfig.AdminRole);
 
             if (role == null)
             {
-                return CheckUser(user);
+                return CheckPermissions(user.GuildPermissions);
             }
 
             if (user.Roles.Any(x => x.Id == role.Id))
@@ -42,26 +44,18 @@ namespace Sanakan.Preconditions
                 return PreconditionResult.FromSuccess();
             }
 
-            return CheckUser(user);
+            return CheckPermissions(user.GuildPermissions);
         }
 
-        private async Task<PreconditionResult> CheckPermissionsAsync(
-             GuildPermissions guildPermissions,
-             IMessageChannel channel,
-             IServiceProvider services)
+        private PreconditionResult CheckPermissions(GuildPermissions guildPermissions)
         {
             if (guildPermissions.Administrator)
             {
                 return PreconditionResult.FromSuccess();
             }
 
-            var resourceManager = services.GetRequiredService<IResourceManager>();
-
-            using var stream = resourceManager.GetResourceStream(Resources.YouHaveNoPowerHere);
-
-            await channel.SendFileAsync(stream, "no.gif");
-
             return PreconditionResult.FromError("Insufficient permission");
+            return PreconditionResult.FromError($"|IMAGE|https://i.giphy.com/RX3vhj311HKLe.gif");
         }
     }
 }

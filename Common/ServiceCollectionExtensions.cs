@@ -21,7 +21,14 @@ namespace Sanakan.Common
                 var configuration = (IConfigurationRoot)provider.GetRequiredService<IConfiguration>();
                 var environment = provider.GetService<IHostingEnvironment>();
                 var options = provider.GetService<IOptionsMonitor<T>>();
-                return new WritableOptions<T>(environment, options, configuration, section.Key, file);
+                var fileSystem = provider.GetRequiredService<IFileSystem>();
+                return new WritableOptions<T>(
+                    environment,
+                    fileSystem,
+                    options,
+                    configuration,
+                    section.Key,
+                    file);
             });
         }
     }

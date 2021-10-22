@@ -9,6 +9,31 @@ namespace Sanakan.Extensions
 {
     public static class CardExtension
     {
+        public static int GetMaxCardsRestartsOnStarType(this Card card)
+        {
+            return card.GetMaxStarsPerType() * card.GetRestartCntPerStar() * card.GetCardStarType();
+        }
+        public static int GetCardStarCount(this Card card)
+        {
+            var max = card.GetMaxStarsPerType();
+            var starCnt = (card.RestartCnt - card.GetMaxCardsRestartsOnStarType()) / card.GetRestartCntPerStar();
+            if (starCnt > max) starCnt = max;
+            return starCnt;
+        }
+        public static int GetCardStarType(this Card card)
+        {
+            var max = card.MaxStarType();
+            var maxRestartsPerType = card.GetMaxStarsPerType() * card.GetRestartCntPerStar();
+            var type = (card.RestartCnt - 1) / maxRestartsPerType;
+            if (type > 0)
+            {
+                var ths = card.RestartCnt - (maxRestartsPerType + ((type - 1) * maxRestartsPerType));
+                if (ths < card.GetRestartCntPerStar()) --type;
+            }
+
+            if (type > max) type = max;
+            return type;
+        }
         public static int GetValue(this Card card)
         {
             switch (card.Rarity)
@@ -215,6 +240,7 @@ namespace Sanakan.Extensions
                 case CardSource.Other: return "Inne";
             }
         }
+        public static string GetNameWithUrl(this Card card) => $"[{card.Name}]({card.GetCharacterUrl()})";
         public static string GetDesc(this Card card)
         {
             var tags = string.Join(" ", card.TagList.Select(x => x.Name));
@@ -524,7 +550,6 @@ namespace Sanakan.Extensions
             }
         }
         public static string GetCharacterUrl(this Card card) => Shinden.API.Url.GetCharacterURL(card.Character);
-        public static string GetNameWithUrl(this Card card) => $"[{card.Name}]({card.GetCharacterUrl()})";
         public static string GetYesNo(this bool b) => b ? "Tak" : "Nie";
         public static bool CanGiveRing(this Card card) => card.Affection >= 5;
         public static bool CanGiveBloodOrUpgradeToSSS(this Card card) => card.Affection >= 50;

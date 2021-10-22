@@ -12,13 +12,15 @@ using Sanakan.Common;
 using Sanakan.ShindenApi;
 using Shinden;
 using Sanakan.DAL.Repositories.Abstractions;
+using Shinden.API;
+using Discord;
 
 namespace Sanakan.Modules
 {
     [Name("Shinden"), RequireUserRole]
     public class ShindenModule : ModuleBase<SocketCommandContext>
     {
-        private readonly IShindenClient _shclient;
+        private readonly IShindenClient _shindenclient;
         private readonly SessionManager _session;
         private readonly Services.Shinden _shinden;
         private readonly ICacheManager _cacheManager;
@@ -33,7 +35,7 @@ namespace Sanakan.Modules
             IUserRepository userRepository,
             ISystemClock systemClock)
         {
-            _shclient = client;
+            _shindenclient = client;
             _session = session;
             _shinden = shinden;
             _cacheManager = cacheManager;
@@ -47,15 +49,16 @@ namespace Sanakan.Modules
         [Remarks(""), RequireCommandChannel]
         public async Task ShowNewEpisodesAsync()
         {
-            var response = await _shclient.GetNewEpisodesAsync();
+            var response = await _shindenclient.GetNewEpisodesAsync();
 
-            if (response.IsSuccessStatusCode())
+            if (response.Value == null)
             {
                 await ReplyAsync("", embed: "Nie udało się pobrać listy odcinków.".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
             
-            var episodes = response.Body;
+            var episodes = response.Value;
+            var user = Context.User;
 
             if (episodes?.Count > 0)
             {
@@ -63,17 +66,27 @@ namespace Sanakan.Modules
 
                 try
                 {
-                    var dm = await Context.User.GetOrCreateDMChannelAsync();
-                    foreach (var ep in episodes)
+                    var dm = await user.GetOrCreateDMChannelAsync();
+                    foreach (var episode in episodes)
                     {
-                        await dm.SendMessageAsync("", false, ep.ToEmbed());
+                        var embed = new EmbedBuilder()
+                        {
+                            Title = episode.AnimeTitle.TrimToLength(EmbedBuilder.MaxTitleLength),
+                            ThumbnailUrl = episode.AnimeCoverUrl,
+                            Color = EMType.Info.Color(),
+                            Fields = episode.GetFields(),
+                            Url = episode.AnimeUrl,
+                        }.Build();
+
+                        await dm.SendMessageAsync("", false, embed);
                         await Task.Delay(500);
                     }
+
                     await dm.CloseAsync();
                 }
                 catch (Exception ex)
                 {
-                    await msg.ModifyAsync(x => x.Embed = $"{Context.User.Mention} nie udało się wyłać PW! ({ex.Message})".ToEmbedMessage(EMType.Error).Build());
+                    await msg.ModifyAsync(x => x.Embed = $"{user.Mention} nie udało się wyłać PW! ({ex.Message})".ToEmbedMessage(EMType.Error).Build());
                 }
 
                 return;
@@ -104,27 +117,42 @@ namespace Sanakan.Modules
         [Remarks("Gintoki")]
         public async Task SearchCharacterAsync([Summary("imie")][Remainder]string name)
         {
-            var session = new SearchSession(Context.User, _shclient);
+            var session = new SearchSession(Context.User, _shindenclient);
             
             if (_session.SessionExist(session))
             {
                 return;
             }
 
-            var response = await _shclient.CharacterAsync(name);
-            if (!response.IsSuccessStatusCode())
+            var searchResult = await _shindenclient.SearchCharacterAsync(name);
+
+            if (searchResult.Value == null)
             {
-                await ReplyAsync("", embed: _shinden.GetResponseFromSearchCode(response).ToEmbedMessage(EMType.Error).Build());
+                var content = _shinden.GetResponseFromSearchCode(System.Net.HttpStatusCode.BadRequest)
+                    .ToEmbedMessage(EMType.Error).Build();
+                await ReplyAsync("", embed: content);
                 return;
             }
 
-            var list = response.Body;
+            var list = searchResult.Value;
             var toSend = _shinden.GetSearchResponse(list, "Wybierz postać, którą chcesz wyświetlić poprzez wpisanie numeru odpowiadającemu jej na liście.");
 
             if (list.Count == 1)
             {
-                var info = (await _shclient.GetCharacterInfoAsync(list.First())).Body;
-                await ReplyAsync("", false, info.ToEmbed());
+                var firstCharacter = list.First();
+                var info = (await _shindenclient.GetCharacterInfoAsync(firstCharacter.Id)).Value;
+
+                var embed = new EmbedBuilder()
+                {
+                    Title = $"{info} ({info.Id})".TrimToLength(EmbedBuilder.MaxTitleLength),
+                    Description = info?.Biography?.Content?.TrimToLength(1000),
+                    Color = EMType.Info.Color(),
+                    ImageUrl = info.PictureUrl,
+                    Fields = info.GetFields(),
+                    Url = info.CharacterUrl,
+                }.Build();
+
+                await ReplyAsync("", false, embed);
             }
             else
             {
@@ -137,17 +165,17 @@ namespace Sanakan.Modules
         [Alias("ile", "otaku", "site", "mangozjeb")]
         [Summary("wyświetla statystyki użytkownika z strony")]
         [Remarks("karna")]
-        public async Task ShowSiteStatisticAsync([Summary("użytkownik (opcjonalne)")]SocketGuildUser user = null)
+        public async Task ShowSiteStatisticAsync(
+            [Summary("użytkownik (opcjonalne)")]SocketGuildUser? socketGuildUser = null)
         {
-            var usr = user ?? Context.User as SocketGuildUser;
+            var user = socketGuildUser ?? Context.User as SocketGuildUser;
             
-            if (usr == null)
+            if (user == null)
             {
                 return;
             }
             
-
-            var botUser = await _userRepository.GetCachedFullUserAsync(usr.Id);
+            var botUser = await _userRepository.GetCachedFullUserAsync(user.Id);
 
             if (botUser == null)
             {
@@ -161,7 +189,7 @@ namespace Sanakan.Modules
                 return;
             }
 
-            using var stream = await _shinden.GetSiteStatisticAsync(botUser.Shinden, usr);
+            using var stream = await _shinden.GetSiteStatisticAsync(botUser.Shinden, user);
                 
             if (stream == null)
             {
@@ -169,7 +197,9 @@ namespace Sanakan.Modules
                 return;
             }
 
-            await Context.Channel.SendFileAsync(stream, $"{usr.Id}.png", $"{Shden.API.Url.GetProfileURL(botUser.Shinden)}");
+            var profileUrl = Url.GetProfileURL(botUser.Shinden);
+
+            await Context.Channel.SendFileAsync(stream, $"{user.Id}.png", $"{profileUrl}");
         }
 
         [Command("połącz")]
@@ -193,15 +223,16 @@ namespace Sanakan.Modules
                     break;
             }
 
-            var response = await _shclient.GetAsync(shindenId);
+            var userResult = await _shindenclient.GetUserInfoAsync(shindenId);
 
-            if (response.IsSuccessStatusCode())
+            if (userResult.Value == null)
             {
-                await ReplyAsync("", embed: $"Brak połączenia z Shindenem! ({response.Code})".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync("", embed: $"Wystapil blad podczas polaczenia konta".ToEmbedMessage(EMType.Error).Build());
+                //await ReplyAsync("", embed: $"Brak połączenia z Shindenem! ({response.Code})".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
-            var user = response.Body;
+            var user = userResult.Value;
             var userNameInDiscord = (Context.User as SocketGuildUser).Nickname ?? Context.User.Username;
 
             if (!user.Name.Equals(userNameInDiscord))

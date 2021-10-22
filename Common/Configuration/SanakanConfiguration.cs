@@ -1,8 +1,7 @@
-﻿using Sanakan.Config.Model;
-using System;
+﻿using System;
 using System.Collections.Generic;
 
-namespace Sanakan.Web.Configuration
+namespace Sanakan.Configuration
 {
     public class SanakanConfiguration
     {
@@ -44,12 +43,14 @@ namespace Sanakan.Web.Configuration
         /// The list of discord user identifier which can access Debug module.
         /// </summary>
         public List<ulong> Dev { get; set; }
-        
+
         /// <summary>
-        /// 
+        /// The list of API keys.
         /// </summary>
         public List<SanakanApiKey> ApiKeys { get; set; }
-        
+
+        public ExperienceConfiguration Exp { get; set; }
+
         /// <summary>
         /// 
         /// </summary>
@@ -59,5 +60,7 @@ namespace Sanakan.Web.Configuration
         /// The list of discord guild identifiers to blacklist
         /// </summary>
         public List<ulong> BlacklistedGuilds { get; set; }
+        public Version MySqlVersion { get; set; } = Version.Parse("5.7");
+        public string ConnectionString { get; set; }
     }
 }

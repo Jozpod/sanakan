@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Sanakan.Common;
+using Sanakan.Configuration;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Repositories;
 using Sanakan.DAL.Repositories.Abstractions;
@@ -19,6 +20,8 @@ using Sanakan.Services.Executor;
 using Sanakan.Services.PocketWaifu;
 using Sanakan.ShindenApi;
 using Shinden;
+using Shinden.API;
+using Shinden.Models;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -91,7 +94,7 @@ namespace Sanakan.Modules
                     return;
                 }
 
-                var character = (await _shClient.GetCharacterInfoAsync(2)).Body;
+                var character = (await _shClient.GetCharacterInfoAsync(2)).Value;
                 var channel = Context.Channel as ITextChannel;
 
                 _ = await _waifuService.GetSafariViewAsync(
@@ -240,17 +243,24 @@ namespace Sanakan.Modules
             {
                 try
                 {
-                    var response = await _shClient.GetCharacterInfoAsync(card.Character);
-                    if (!response.IsSuccessStatusCode())
+                    var result = await _shClient.GetCharacterInfoAsync(card.Character);
+                    
+                    if (result.Value == null)
                     {
                         card.Unique = true;
                         throw new Exception($"Couldn't get card info!");
                     }
 
+                    var characterInfo = result.Value;
+                    var pictureUrl = Url.GetPersonPictureURL(characterInfo.PictureArtifactId.Value);
+                    var hasImage = pictureUrl != Url.GetPlaceholderImageURL();
+
                     card.Unique = false;
-                    card.Name = response.Body.ToString();
-                    card.Image = response.Body.HasImage ? response.Body.PictureUrl : null;
-                    card.Title = response.Body?.Relations?.OrderBy(x => x.Id).FirstOrDefault()?.Title ?? "????";
+                    card.Name = characterInfo.ToString();
+                    card.Image = hasImage ? pictureUrl : null;
+                    card.Title = characterInfo?.Relations?.OrderBy(x => x.CharacterId)
+                        .FirstOrDefault()?
+                        .Title ?? "????";
 
                     _waifuService.DeleteCardImageIfExist(card);
                 }
@@ -290,17 +300,18 @@ namespace Sanakan.Modules
         {
             var emote = Emotes.GreenChecked;
             var time = _systemClock.UtcNow.AddMinutes(duration);
+            var guild = Context.Guild;
 
             var mention = "";
             SocketRole? mutedRole = null;
-            var config = await _repository.GetCachedGuildFullConfigAsync(Context.Guild.Id);
+            var config = await _repository.GetCachedGuildFullConfigAsync(guild.Id);
 
             if (config != null)
             {
                 var wRole = Context.Guild.GetRole(config.WaifuRole);
                 if (wRole != null) mention = wRole.Mention;
 
-                mutedRole = Context.Guild.GetRole(config.MuteRole);
+                mutedRole = guild.GetRole(config.MuteRole);
             }
 
             var msg = await ReplyAsync(mention, embed: $"Loteria kart. Zareaguj {emote}, aby wziąć udział.\n\nKoniec `{time.ToShortTimeString()}:{time.Second.ToString("00")}`".ToEmbedMessage(EMType.Bot).Build());
@@ -398,17 +409,22 @@ namespace Sanakan.Modules
                 _cacheManager.ExpireTag(new string[] { $"user-{Context.User.Id}", "users", $"user-{id}" });
 
                 msg = await ReplyAsync(embed: $"Loterie wygrywa {winner.Mention}.\nOtrzymuje: {string.Join("\n", cardsIds)}".TrimToLength(2000).ToEmbedMessage(EMType.Success).Build());
+                var jumpUrl = msg.GetJumpUrl();
 
                 try
                 {
                     var privEmb = new EmbedBuilder()
                     {
                         Color = EMType.Info.Color(),
-                        Description = $"Na [loterii]({msg.GetJumpUrl()}) zdobyłeś {cardsIds.Count} kart."
+                        Description = $"Na [loterii]({jumpUrl}) zdobyłeś {cardsIds.Count} kart."
                     };
 
-                    var pw = await winner.GetOrCreateDMChannelAsync();
-                    if (pw != null) await pw.SendMessageAsync("", embed: privEmb.Build());
+                    var dmChannel = await winner.GetOrCreateDMChannelAsync();
+                    
+                    if (dmChannel != null)
+                    {
+                        await dmChannel.SendMessageAsync("", embed: privEmb.Build());
+                    }
                 }
                 catch(Exception){}
             }), Priority.High);
@@ -764,11 +780,11 @@ namespace Sanakan.Modules
             }
             else
             {
-                var res = await _shClient.GetCharacterInfoAsync(thisCard.Character);
-                if (res.IsSuccessStatusCode())
+                var result = await _shClient.GetCharacterInfoAsync(thisCard.Character);
+                if (result.Value != null)
                 {
-                    thisCard.Title = res.Body?.Relations?
-                        .OrderBy(x => x.Id)?
+                    thisCard.Title = result.Value.Relations?
+                        .OrderBy(x => x.CharacterId)?
                         .FirstOrDefault()?.Title ?? "????";
                 }
             }
@@ -827,7 +843,7 @@ namespace Sanakan.Modules
         public async Task SetCharCntPerPacketAsync([Summary("liczba znaków")]long count, [Summary("true/false - czy zapisać")]bool save = false)
         {
             if (save) {
-                _config.Update(opt =>
+                await _config.UpdateAsync(opt =>
                 {
                     opt.CharPerPacket = count;
                 });
@@ -846,7 +862,7 @@ namespace Sanakan.Modules
         {
             if (save)
             {
-                _config.Update(opt =>
+                await _config.UpdateAsync(opt =>
                 {
                     opt.Exp.CharPerPoint = count;
                 });
@@ -863,7 +879,7 @@ namespace Sanakan.Modules
         {
             if (save)
             {
-                _config.Update(opt =>
+                await _config.UpdateAsync(opt =>
                 {
                     opt.SafariEnabled = !opt.SafariEnabled;
                 });
@@ -877,8 +893,9 @@ namespace Sanakan.Modules
         [Remarks("")]
         public async Task ToggleWaifuEventAsync()
         {
-            var state = _waifuService.GetEventSate();
-            _waifuService.SetEventState(!state);
+            var state = _waifuService.EventState;
+            _waifuService.EventState = !state;
+
             var content = $"Waifu event: `{(!state).GetYesNo()}`.".ToEmbedMessage(EMType.Success).Build();
 
             await ReplyAsync("", embed: content);
@@ -1017,8 +1034,21 @@ namespace Sanakan.Modules
             [Summary("id postaci na shinden (nie podanie - losowo)")]ulong id = 0,
             [Summary("jakość karty (nie podanie - losowo)")]Rarity rarity = Rarity.E)
         {
-            var character = (id == 0) ? await _waifuService.GetRandomCharacterAsync() : (await _shClient.GetCharacterInfoAsync(id)).Body;
-            var card = (rarity == Rarity.E) ? _waifuService.GenerateNewCard(user, character) : _waifuService.GenerateNewCard(user, character, rarity);
+            CharacterInfo character;
+            Card card;
+
+            if (id == 0) {
+                character = await _waifuService.GetRandomCharacterAsync();
+            }
+            else {
+                character = (await _shClient.GetCharacterInfoAsync(id)).Value;
+            }
+
+            if (rarity == Rarity.E) {
+                card = _waifuService.GenerateNewCard(user, character);
+            } else {
+                card = _waifuService.GenerateNewCard(user, character, rarity);
+            }
 
             card.Source = CardSource.GodIntervention;
             var botuser = await _userRepository.GetUserOrCreateAsync(user.Id);
@@ -1300,7 +1330,7 @@ namespace Sanakan.Modules
 
             if (save)
             {
-                _config.Update(opt =>
+                await _config.UpdateAsync(opt =>
                 {
                     opt.RMConfig = config.RMConfig;
                 });
@@ -1318,7 +1348,7 @@ namespace Sanakan.Modules
 
             if (config.BlacklistedGuilds.Contains(Context.Guild.Id))
             {
-                _config.Update(opt =>
+                await _config.UpdateAsync(opt =>
                 {
                     opt.BlacklistedGuilds.Remove(Context.Guild.Id);
                 });
@@ -1327,7 +1357,7 @@ namespace Sanakan.Modules
             else
             {
                 
-                _config.Update(opt =>
+                await _config.UpdateAsync(opt =>
                 {
                     opt.BlacklistedGuilds.Add(Context.Guild.Id);
                 });

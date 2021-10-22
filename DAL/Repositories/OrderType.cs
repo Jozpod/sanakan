@@ -1,4 +1,4 @@
-﻿namespace Sanakan.Web.Models
+﻿namespace Sanakan.DAL.Repositories
 {
     public enum OrderType
     {

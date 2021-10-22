@@ -10,6 +10,6 @@ namespace Sanakan.DAL.Models.Configuration
         public ulong WaifuId { get; set; }
         
         [JsonIgnore]
-        public virtual Waifu Waifu { get; set; }
+        public virtual WaifuConfiguration Waifu { get; set; }
     }
 }

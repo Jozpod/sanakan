@@ -43,31 +43,5 @@ namespace Sanakan.DAL.Repositories
 
             return wishlists;
         }
-
-        public Task<Card> GetByCardIdAsync(ulong id)
-        {
-               .Include(x => x.Wishes)
-                .AsNoTracking()
-                .Where(x => !x.WishlistIsPrivate
-                    && (x.Wishes.Any(c => c.Type == WishlistObjectType.Card
-                    && c.ObjectId == card.Id)
-                        || x.Wishes.Any(c => c.Type == WishlistObjectType.Character
-                            && c.ObjectId == card.Character)))
-                .ToList();
-
-                            .Include(x => x.Wishes)
-                .Where(x => !x.WishlistIsPrivate
-                    && (x.Wishes.Any(c => c.Type == WishlistObjectType.Card
-                        && c.ObjectId == thisCards.Id)
-                            || x.Wishes.Any(c => c.Type == WishlistObjectType.Character
-                                && c.ObjectId == thisCards.Character)))
-                .ToList();
-        }
-
-        public async Task<Question?> GetByIdAsync(ulong id)
-        {
-            var entity = await _dbContext.Questions.FindAsync(id);
-            return entity;
-        }
     }
 }

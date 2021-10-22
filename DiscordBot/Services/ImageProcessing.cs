@@ -32,12 +32,15 @@ namespace Sanakan.DiscordBot.Services
         private FontFamily _latoBold = new FontCollection().Install("Fonts/Lato-Bold.ttf");
         private FontFamily _latoLight = new FontCollection().Install("Fonts/Lato-Light.ttf");
         private FontFamily _latoRegular = new FontCollection().Install("Fonts/Lato-Regular.ttf");
-
+        private readonly IFileSystem _fileSystem;
         private readonly IShindenClient _shclient;
 
-        public ImageProcessing(IShindenClient shinden)
+        public ImageProcessing(
+            IShindenClient shinden,
+             IFileSystem fileSystem)
         {
             _shclient = shinden;
+            _fileSystem = fileSystem;
         }
 
         private async Task<Stream> GetImageFromUrlAsync(string url, bool fixExt = false)
@@ -151,7 +154,7 @@ namespace Sanakan.DiscordBot.Services
             var template = Image.Load("./Pictures/profileBody.png");
             var profilePic = new Image<Rgba32>(template.Width, template.Height);
 
-            if (!File.Exists(botUser.BackgroundProfileUri))
+            if (!_fileSystem.Exists(botUser.BackgroundProfileUri))
                 botUser.BackgroundProfileUri = "./Pictures/defBg.png";
 
             using var userBg = Image.Load(botUser.BackgroundProfileUri);
@@ -248,7 +251,7 @@ namespace Sanakan.DiscordBot.Services
         {
             var image = new Image<Rgba32>(325, 272);
 
-            if (!File.Exists(botUser.StatsReplacementProfileUri))
+            if (!_fileSystem.Exists(botUser.StatsReplacementProfileUri))
             {
                 if ((botUser.ProfileType == ProfileType.Img || botUser.ProfileType == ProfileType.StatsWithImg))
                     botUser.ProfileType = ProfileType.Stats;
@@ -282,19 +285,15 @@ namespace Sanakan.DiscordBot.Services
 
                 case ProfileType.Cards:
                     {
-                        using (var cardsBg = GetCardsProfileImage(botUser).Result)
-                        {
-                            image.Mutate(x => x.DrawImage(cardsBg, new Point(0, 0), 1));
-                        }
+                        using var cardsBg = GetCardsProfileImage(botUser).Result;
+                        image.Mutate(x => x.DrawImage(cardsBg, new Point(0, 0), 1));
                     }
                     break;
 
                 case ProfileType.Img:
                     {
-                        using (var userBg = Image.Load(botUser.StatsReplacementProfileUri))
-                        {
-                            image.Mutate(x => x.DrawImage(userBg, new Point(0, 0), 1));
-                        }
+                        using var userBg = Image.Load(botUser.StatsReplacementProfileUri);
+                        image.Mutate(x => x.DrawImage(userBg, new Point(0, 0), 1));
                     }
                     break;
             }
@@ -308,18 +307,20 @@ namespace Sanakan.DiscordBot.Services
 
             if (botUser.GameDeck.Waifu != 0)
             {
-                var tChar = botUser.GameDeck.Cards.OrderBy(x => x.Rarity).FirstOrDefault(x => x.Character == botUser.GameDeck.Waifu);
+                var tChar = botUser.GameDeck.Cards
+                    .OrderBy(x => x.Rarity)
+                    .FirstOrDefault(x => x.Character == botUser.GameDeck.Waifu);
+
                 if (tChar != null)
                 {
-                    using (var cardImage = await GetWaifuInProfileCardAsync(tChar))
+                    using var cardImage = await GetWaifuInProfileCardAsync(tChar);
+                    
+                    cardImage.Mutate(x => x.Resize(new ResizeOptions
                     {
-                        cardImage.Mutate(x => x.Resize(new ResizeOptions
-                        {
-                            Mode = ResizeMode.Max,
-                            Size = new Size(0, 260)
-                        }));
-                        profilePic.Mutate(x => x.DrawImage(cardImage, new Point(10, 6), 1));
-                    }
+                        Mode = ResizeMode.Max,
+                        Size = new Size(0, 260)
+                    }));
+                    profilePic.Mutate(x => x.DrawImage(cardImage, new Point(10, 6), 1));
                 }
             }
 
@@ -392,27 +393,24 @@ namespace Sanakan.DiscordBot.Services
             var badge = new Image<Rgba32>(450, 65);
             badge.Mutate(x => x.DrawText(name, font, Rgba32.FromHex(Dawn), new Point(72, 6 + (int)((58 - font.Size) / 2))));
 
-            using (var border = new Image<Rgba32>(3, 57))
-            {
-                border.Mutate(x => x.BackgroundColor(Rgba32.FromHex(color)));
-                badge.Mutate(x => x.DrawImage(border, new Point(63, 5), 1));
-            }
+            using var border = new Image<Rgba32>(3, 57);
+            border.Mutate(x => x.BackgroundColor(Rgba32.FromHex(color)));
+            badge.Mutate(x => x.DrawImage(border, new Point(63, 5), 1));
 
-            using (var stream = await GetImageFromUrlAsync(avatarUrl))
-            {
-                if (stream == null)
-                    return badge;
 
-                using (var avatar = Image.Load(stream))
-                {
-                    avatar.Mutate(x => x.Resize(new ResizeOptions
-                    {
-                        Mode = ResizeMode.Crop,
-                        Size = new Size(57, 57)
-                    }));
-                    badge.Mutate(x => x.DrawImage(avatar, new Point(6, 5), 1));
-                }
-            }
+            using var stream = await GetImageFromUrlAsync(avatarUrl);
+            
+            if (stream == null)
+                return badge;
+
+            using var avatar = Image.Load(stream);
+                
+            avatar.Mutate(x => x.Resize(new ResizeOptions
+            {
+                Mode = ResizeMode.Crop,
+                Size = new Size(57, 57)
+            }));
+            badge.Mutate(x => x.DrawImage(avatar, new Point(6, 5), 1));
 
             return badge;
         }
@@ -981,12 +979,10 @@ namespace Sanakan.DiscordBot.Services
 
         private void ApplyUltimateStats(Image<Rgba32> image, Card card)
         {
-            if (File.Exists($"./Pictures/PW/CG/{card.Quality}/Stats.png"))
+            if (_fileSystem.Exists($"./Pictures/PW/CG/{card.Quality}/Stats.png"))
             {
-                using (var stats = Image.Load($"./Pictures/PW/CG/{card.Quality}/Stats.png"))
-                {
-                    image.Mutate(x => x.DrawImage(stats, new Point(0, 0), 1));
-                }
+                using var stats = Image.Load($"./Pictures/PW/CG/{card.Quality}/Stats.png");
+                image.Mutate(x => x.DrawImage(stats, new Point(0, 0), 1));
             }
 
             switch (card.Quality)
@@ -1085,12 +1081,10 @@ namespace Sanakan.DiscordBot.Services
             var isFromFigureOriginalBorder = !card.HasCustomBorder() && card.FromFigure;
             var backBorderStr = $"./Pictures/PW/CG/{card.Quality}/BorderBack.png";
 
-            if (isFromFigureOriginalBorder && File.Exists(backBorderStr))
+            if (isFromFigureOriginalBorder && _fileSystem.Exists(backBorderStr))
             {
-                using (var back = Image.Load(backBorderStr))
-                {
-                     image.Mutate(x => x.DrawImage(back, new Point(0, 0), 1));
-                }
+                using var back = Image.Load(backBorderStr);
+                image.Mutate(x => x.DrawImage(back, new Point(0, 0), 1));
             }
         }
 
