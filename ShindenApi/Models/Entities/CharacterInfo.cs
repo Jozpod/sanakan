@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Sanakan.ShindenApi.Utilities;
 using Shinden.API;
 using Shinden.Models.Initializers;
 
@@ -55,9 +56,9 @@ namespace Shinden.Models.Entities
         public List<IEditPoints> Points { get; }
         public List<IRelation> Relations { get; }
         public ICharacterBiography Biography { get; }
-        public string CharacterUrl => Url.GetCharacterURL(Id);
-        public string PictureUrl => Url.GetPersonPictureURL(PictureId);
-        public bool HasImage => PictureUrl != Url.GetPlaceholderImageURL();
+        public string CharacterUrl => UrlHelpers.GetCharacterURL(Id);
+        public string PictureUrl => UrlHelpers.GetPersonPictureURL(PictureId);
+        public bool HasImage => PictureUrl != UrlHelpers.GetPlaceholderImageURL();
 
         public override string ToString() => $"{FirstName} {LastName}";
     }

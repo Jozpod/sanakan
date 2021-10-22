@@ -13,7 +13,6 @@ namespace Sanakan.Services.Session.Models
         public SocketRole UserRole { get; set; }
         public SocketRole MuteRole { get; set; }
         public SocketGuildUser User { get; set; }
-        public Moderator Moderation { get; set; }
         public SocketTextChannel NotifChannel { get; set; }
 
         private readonly IRandomNumberGenerator _randomNumberGenerator;

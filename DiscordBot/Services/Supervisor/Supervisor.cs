@@ -3,19 +3,26 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using DAL.Repositories.Abstractions;
 using Discord;
 using Discord.WebSocket;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Sanakan.Configuration;
+using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.Extensions;
-using Sanakan.Web.Configuration;
 
 namespace Sanakan.Services.Supervisor
 {
     public class Supervisor
     {
-        private enum Action { None, Ban, Mute, Warn }
+        private enum Action
+        {
+            None,
+            Ban,
+            Mute,
+            Warn
+        }
 
         private const int MAX_TOTAL = 13;
         private const int MAX_SPECIFIED = 8;
@@ -27,25 +34,25 @@ namespace Sanakan.Services.Supervisor
         private Dictionary<ulong, Dictionary<ulong, SupervisorEntity>> _guilds;
 
         private readonly DiscordSocketClient _client;
-        private readonly Moderator _moderator;
+        private readonly ModeratorService _moderatorService;
         private readonly ILogger _logger;
-        private readonly SanakanConfiguration _config;
-        private readonly IAllRepository _repository;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
+        private readonly IOptionsMonitor<SanakanConfiguration> _config;
 
         private Timer _timer;
 
         public Supervisor(
             DiscordSocketClient client,
-            IOptions<SanakanConfiguration> config,
-            ILogger logger,
-            Moderator moderator,
-            IAllRepository repository)
+            IOptionsMonitor<SanakanConfiguration> config,
+            ILogger<Supervisor> logger,
+            ModeratorService moderatorService,
+            IServiceScopeFactory serviceScopeFactory)
         {
-            _moderator = moderator;
+            _moderatorService = moderatorService;
             _client = client;
-            _config = config.Value;
+            _config = config;
             _logger = logger;
-            _repository = repository;
+            _serviceScopeFactory = serviceScopeFactory;
 
             _guilds = new Dictionary<ulong, Dictionary<ulong, SupervisorEntity>>();
 
@@ -72,7 +79,7 @@ namespace Sanakan.Services.Supervisor
 
         private async Task HandleMessageAsync(SocketMessage message)
         {
-            if (!_config.Supervision)
+            if (!_config.CurrentValue.Supervision)
             {
                 return;
             }
@@ -96,7 +103,7 @@ namespace Sanakan.Services.Supervisor
                 return;
             }
 
-            if (_config.BlacklistedGuilds.Any(x => x == user.Guild.Id))
+            if (_config.CurrentValue.BlacklistedGuilds.Any(x => x == user.Guild.Id))
             {
                 return;
             }
@@ -120,7 +127,11 @@ namespace Sanakan.Services.Supervisor
 
         private async Task Analize(SocketGuildUser user, SocketUserMessage message)
         {
-            var gConfig = await _repository.GetCachedGuildFullConfigAsync(user.Guild.Id);
+            using var serviceScope = _serviceScopeFactory.CreateScope();
+            var serviceProvider = serviceScope.ServiceProvider;
+            var guildConfigRepository = serviceProvider.GetRequiredService<IGuildConfigRepository>();
+
+            var gConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(user.Guild.Id);
             
             if (gConfig == null)
             {
@@ -190,14 +201,14 @@ namespace Sanakan.Services.Supervisor
                         if (user.Roles.Contains(muteRole))
                             return;
 
-                        var info = await _moderator.MuteUserAysnc(
+                        var info = await _moderatorService.MuteUserAysnc(
                             user,
                             muteRole,
                             null,
                             userRole,
                             24,
                             "spam/flood");
-                        await _moderator.NotifyAboutPenaltyAsync(user, notifChannel, info);
+                        await _moderatorService.NotifyAboutPenaltyAsync(user, notifChannel, info);
                     }
                     break;
 
@@ -216,7 +227,7 @@ namespace Sanakan.Services.Supervisor
             int mSpecified = MAX_SPECIFIED;
             int mTotal = MAX_TOTAL;
 
-            if (content.IsCommand(_config.Prefix))
+            if (content.IsCommand(_config.CurrentValue.Prefix))
             {
                 mTotal += COMMAND_MOD;
                 mSpecified += COMMAND_MOD;

@@ -9,9 +9,13 @@ namespace Sanakan.DAL.Models
     public enum StatusType
     {
         Hourly = 0,
-        Daily = 1, Globals = 2,
-        Color = 3, Market = 4, Card = 5,
-        Packet = 6, Pvp = 7,
+        Daily = 1,
+        Globals = 2,
+        Color = 3,
+        Market = 4,
+        Card = 5,
+        Packet = 6,
+        Pvp = 7,
         Flood = 16,   // normal
         DPacket = 8,
         DHourly = 9,

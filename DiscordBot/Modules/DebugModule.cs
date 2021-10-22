@@ -42,7 +42,6 @@ namespace Sanakan.Modules
         private readonly HelperService _helper;
         private readonly IShindenClient _shClient;
         private readonly IImageProcessing _img;
-        private readonly IAllRepository _repository;
         private readonly IUserRepository _userRepository;
         private readonly ICardRepository _cardRepository;
         private readonly IQuestionRepository _questionRepository;

@@ -21,7 +21,6 @@ namespace Sanakan.Services
     {
         private readonly DiscordSocketClient _client;
         private readonly ILogger _logger;
-        private readonly object _config;
         private readonly Timer _timer;
         private readonly ICacheManager _cacheManager;
         private readonly IModerationRepository _moderationRepository;
@@ -30,14 +29,12 @@ namespace Sanakan.Services
 
         public ModeratorService(
             ILogger<ModeratorService> logger,
-            IOptions<object> config,
             DiscordSocketClient client,
             ICacheManager cacheManager,
             IModerationRepository moderationRepository,
             ISystemClock systemClock)
         {
             _logger = logger;
-            _config = config.Value;
             _client = client;
             _cacheManager = cacheManager;
             _moderationRepository = moderationRepository;
@@ -593,7 +590,7 @@ namespace Sanakan.Services
             SocketRole userRole,
             long duration,
             string reason = "nie podano",
-            IEnumerable<ModeratorRoles> modRoles = null)
+            IEnumerable<ModeratorRoles> modRoles? = null)
         {
             var info = new PenaltyInfo
             {

@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Sanakan.Common;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Models.Analytics;
 using Sanakan.DAL.Repositories.Abstractions;
@@ -11,11 +12,14 @@ namespace Sanakan.DAL.Repositories
     public class TimeStatusRepository : BaseRepository<TimeStatus>, ITimeStatusRepository
     {
         private readonly BuildDatabaseContext _dbContext;
+        private readonly ICacheManager _cacheManager;
 
         public TimeStatusRepository(
-            BuildDatabaseContext dbContext) : base(dbContext)
+            BuildDatabaseContext dbContext,
+            ICacheManager cacheManager) : base(dbContext)
         {
             _dbContext = dbContext;
+            _cacheManager = cacheManager;
         }
 
         public Task<List<TimeStatus>> GetByGuildIdAsync(ulong discordGuildId)
@@ -25,6 +29,19 @@ namespace Sanakan.DAL.Repositories
                 .AsSplitQuery()
                 .Where(x => x.Guild == discordGuildId)
                 .ToListAsync();
+        }
+
+        public async Task<List<TimeStatus>> GetBySubTypeAsync()
+        {
+            var result = await _dbContext
+                .TimeStatuses
+                .AsNoTracking()
+                //.FromCache(new[] { "users" })
+                .Where(x => x.Type == StatusType.Color
+                    || x.Type == StatusType.Globals)
+                .ToListAsync();
+
+            return result;
         }
     }
 }

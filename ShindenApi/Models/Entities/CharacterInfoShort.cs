@@ -1,4 +1,5 @@
-﻿using Shinden.API;
+﻿using Sanakan.ShindenApi.Utilities;
+using Shinden.API;
 
 namespace Shinden.Models.Entities
 {
@@ -20,9 +21,9 @@ namespace Shinden.Models.Entities
         // ICharacterInfoShort
         public string LastName { get; }
         public string FirstName { get; }
-        public string CharacterUrl => Url.GetCharacterURL(Id);
-        public string PictureUrl => Url.GetPersonPictureURL(PictureId);
-        public bool HasImage => PictureUrl != Url.GetPlaceholderImageURL();
+        public string CharacterUrl => UrlHelpers.GetCharacterURL(Id);
+        public string PictureUrl => UrlHelpers.GetPersonPictureURL(PictureId);
+        public bool HasImage => PictureUrl != UrlHelpers.GetPlaceholderImageURL();
 
         public override string ToString() => $"{FirstName} {LastName}";
     }

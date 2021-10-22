@@ -28,7 +28,8 @@ namespace Sanakan.Modules
         private readonly Services.Profile _profile;
         private readonly SessionManager _session;
         private readonly ICacheManager _cacheManager;
-        private readonly IAllRepository _repository;
+        private readonly IGuildConfigRepository _guildConfigRepository;
+        private readonly IGameDeckRepository _gameDeckRepository;
         private readonly IUserRepository _userRepository;
         private readonly ISystemClock _systemClock;
 
@@ -36,14 +37,16 @@ namespace Sanakan.Modules
             Services.Profile prof,
             SessionManager session,
             ICacheManager cacheManager,
-            IAllRepository repository,
+            IGuildConfigRepository guildConfigRepository,
+            IGameDeckRepository gameDeckRepository,
             IUserRepository userRepository,
             ISystemClock systemClock)
         {
             _profile = prof;
             _session = session;
             _cacheManager = cacheManager;
-            _repository = repository;
+            _guildConfigRepository = guildConfigRepository;
+            _gameDeckRepository = gameDeckRepository;
             _userRepository = userRepository;
             _systemClock = systemClock;
         }
@@ -111,7 +114,7 @@ namespace Sanakan.Modules
                 return;
             }
 
-            var config = await _repository.GetCachedGuildFullConfigAsync(Context.Guild.Id);
+            var config = await _guildConfigRepository.GetCachedGuildFullConfigAsync(Context.Guild.Id);
             var selfRole = config.SelfRoles.FirstOrDefault(x => x.Name == name);
             var gRole = Context.Guild.GetRole(selfRole?.Role ?? 0);
 
@@ -143,7 +146,7 @@ namespace Sanakan.Modules
                 return;
             }
 
-            var config = await _repository.GetCachedGuildFullConfigAsync(Context.Guild.Id);
+            var config = await _guildConfigRepository.GetCachedGuildFullConfigAsync(Context.Guild.Id);
             var selfRole = config.SelfRoles.FirstOrDefault(x => x.Name == name);
             var gRole = Context.Guild.GetRole(selfRole?.Role ?? 0);
 
@@ -167,7 +170,7 @@ namespace Sanakan.Modules
         [Remarks(""), RequireCommandChannel]
         public async Task ShowRolesAsync()
         {
-            var config = await _repository.GetCachedGuildFullConfigAsync(Context.Guild.Id);
+            var config = await _guildConfigRepository.GetCachedGuildFullConfigAsync(Context.Guild.Id);
 
             if (config.SelfRoles.Count < 1)
             {
@@ -311,7 +314,7 @@ namespace Sanakan.Modules
                 return;
             }
 
-            botUser.GameDeck = await _repository.GetCachedUserGameDeckAsync(user.Id);
+            botUser.GameDeck = await _gameDeckRepository.GetCachedUserGameDeckAsync(user.Id);
             var topPosition = allUsers
                 .OrderByDescending(x => x.ExpCnt)
                 .ToList()
@@ -518,7 +521,7 @@ namespace Sanakan.Modules
                 return;
             }
 
-            var gConfig = await _repository.GetCachedGuildFullConfigAsync(Context.Guild.Id);
+            var gConfig = await _guildConfigRepository.GetCachedGuildFullConfigAsync(Context.Guild.Id);
             var gRole = Context.Guild.GetRole(gConfig.GlobalEmotesRole);
             if (gRole == null)
             {
@@ -608,7 +611,7 @@ namespace Sanakan.Modules
                     colort.EndsAt = _systemClock.UtcNow.AddMonths(1);
                 }
 
-                var gConfig = await _repository.GetCachedGuildFullConfigAsync(Context.Guild.Id);
+                var gConfig = await _guildConfigRepository.GetCachedGuildFullConfigAsync(Context.Guild.Id);
                 if (!await _profile.SetUserColorAsync(user, gConfig.AdminRole, color))
                 {
                     await ReplyAsync("", embed: $"Coś poszło nie tak!".ToEmbedMessage(EMType.Error).Build());

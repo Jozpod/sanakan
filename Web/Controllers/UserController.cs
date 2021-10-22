@@ -51,6 +51,7 @@ namespace Sanakan.Web.Controllers
         private readonly ICacheManager _cacheManager;
         private readonly IUserContext _userContext;
         private readonly IJwtBuilder _jwtBuilder;
+        private readonly IRequestBodyReader _requestBodyReader;
 
         public UserController(
             IDiscordSocketClientAccessor discordSocketClientAccessor,
@@ -63,7 +64,8 @@ namespace Sanakan.Web.Controllers
             ISystemClock systemClock,
             ICacheManager cacheManager,
             IUserContext userContext,
-            IJwtBuilder jwtBuilder)
+            IJwtBuilder jwtBuilder,
+            IRequestBodyReader requestBodyReader)
         {
             _discordSocketClientAccessor = discordSocketClientAccessor;
             _userRepository = userRepository;
@@ -75,6 +77,7 @@ namespace Sanakan.Web.Controllers
             _cacheManager = cacheManager;
             _userContext = userContext;
             _jwtBuilder = jwtBuilder;
+            requestBodyReader = requestBodyReader;
         }
 
         /// <summary>
@@ -98,33 +101,33 @@ namespace Sanakan.Web.Controllers
         [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetUserIdByNameAsync([FromBody, Required]string name)
         {
-            var response = await _shClient.SearchUserAsync(name);
+            var searchUserResult = await _shClient.SearchUserAsync(name);
 
-            if (!response.IsSuccessStatusCode())
+            if (searchUserResult.Value == null)
             {
                 return ShindenNotFound(Strings.UserNotFound);
             }
 
-            return Ok(response.Body);
+            return Ok(searchUserResult);
         }
 
         /// <summary>
         /// Gets the username from Shinden.
         /// </summary>
-        /// <param name="id">The Shinden user identifier.</param>
-        [HttpGet("shinden/{id}/username")]
+        /// <param name="shindenUserId">The Shinden user identifier.</param>
+        [HttpGet("shinden/{shindenUserId}/username")]
         [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetShindenUsernameByShindenId(ulong id)
+        public async Task<IActionResult> GetShindenUsernameByShindenId(ulong shindenUserId)
         {
-            var response = await _shClient.GetAsync(id);
+            var userResult = await _shClient.GetUserInfoAsync(shindenUserId);
 
-            if (!response.IsSuccessStatusCode())
+            if (userResult.Value == null)
             {
                 return ShindenNotFound(Strings.UserNotFound);
             }
 
-            var username = response.Body.Name;
+            var username = userResult.Value.Name;
 
             return Ok(username);
         }
@@ -245,9 +248,8 @@ namespace Sanakan.Web.Controllers
         }
 
         /// <summary>
-        /// Pełne łączenie użytkownika
+        /// Connects the shinden user with the discord user.
         /// </summary>
-        /// <param name="id">relacja</param>
         [HttpPut("register"), Authorize(Policy = AuthorizePolicies.Site)]
         [ProducesResponseType(typeof(UserWithToken), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status500InternalServerError)]
@@ -258,9 +260,7 @@ namespace Sanakan.Web.Controllers
         {
             if (model == null)
             {
-                var body = new System.IO.StreamReader(ControllerContext.HttpContext.Request.Body);
-                body.BaseStream.Seek(0, System.IO.SeekOrigin.Begin);
-                var requestBody = body.ReadToEnd();
+                var requestBody = await _requestBodyReader.GetStringAsync();
 
                 _logger.LogDebug(requestBody);
 
@@ -288,22 +288,33 @@ namespace Sanakan.Web.Controllers
                 return ShindenNotFound("User already connected!");
             }
 
-            var response = await _shClient.SearchUserAsync(model.Username);
-            if (!response.IsSuccessStatusCode())
+            var searchUserResult = await _shClient.SearchUserAsync(model.Username);
+
+            if (searchUserResult.Value == null)
             {
                 return ShindenForbidden("Can't connect to shinden!");
             }
 
-            var sUser = (await _shClient.GetAsync(response.Body.First().Id)).Body;
-            if (sUser.ForumId.Value != model.ForumUserId)
+            var firstMatch = searchUserResult.Value.First();
+
+            var userResult = await _shClient.GetUserInfoAsync(firstMatch.Id);
+
+            if (userResult.Value == null)
+            {
+                return ShindenForbidden("Can't connect to shinden!");
+            }
+
+            var shindenUser = userResult.Value;
+
+            if (shindenUser.VbId.Value != model.ForumUserId)
             {
                 return ShindenInternalServerError("Something went wrong!");
             }
 
-            if (await _userRepository.ExistsByShindenIdAsync(sUser.Id))
+            if (await _userRepository.ExistsByShindenIdAsync(shindenUser.VbId.Value))
             {
                 var oldUsers = await _userRepository
-                    .GetByShindenIdExcludeDiscordIdAsync(sUser.Id, model.DiscordUserId);
+                    .GetByShindenIdExcludeDiscordIdAsync(shindenUser.VbId.Value, model.DiscordUserId);
 
                 if (oldUsers.Any())
                 {
@@ -325,8 +336,8 @@ namespace Sanakan.Web.Controllers
 
                         var users = string.Join(",", oldUsers.Select(x => x.Id));
 
-                        var content = ($"Potencjalne multikonto:\nDID: {model.DiscordUserId}\nSID: {sUser.Id}\n"
-                            + $"SN: {sUser.Name}\n\noDID: {users}").TrimToLength(2000)
+                        var content = ($"Potencjalne multikonto:\nDID: {model.DiscordUserId}\nSID: {shindenUser.VbId.Value}\n"
+                            + $"SN: {shindenUser.Name}\n\noDID: {users}").TrimToLength(2000)
                             .ToEmbedMessage(EMType.Error).Build();
 
                         await channel.SendMessageAsync("", embed: content);
@@ -335,6 +346,7 @@ namespace Sanakan.Web.Controllers
 
                 return ShindenUnauthorized("This account is already linked!");
             }
+
             var exe = new Executable($"api-register u{model.DiscordUserId}", new Task<Task>(async () =>
             {
                 botUser = await _userRepository.GetUserOrCreateAsync(model.DiscordUserId);
@@ -360,7 +372,6 @@ namespace Sanakan.Web.Controllers
         public async Task<IActionResult> ModifyPointsTCDiscordAsync(ulong id, [FromBody, Required]long value)
         {
             var user = await _userRepository.GetByDiscordIdAsync(id);
-            //db.Users.FirstOrDefault(x => x.Id == id);
 
             if (user == null)
             {

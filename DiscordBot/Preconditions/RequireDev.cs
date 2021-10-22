@@ -22,12 +22,6 @@ namespace Sanakan.Preconditions
                 return PreconditionResult.FromSuccess();
             }
 
-            var resourceManager = services.GetRequiredService<IResourceManager>();
-
-            using var stream = resourceManager.GetResourceStream(Resources.ManWaggingFinger);
-
-            await context.Channel.SendFileAsync(stream, "no.gif");
-
             return PreconditionResult.FromError("Insufficient permission");
         }
     }

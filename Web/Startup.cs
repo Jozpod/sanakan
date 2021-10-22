@@ -1,7 +1,4 @@
-﻿using DAL.Repositories;
-using DAL.Repositories.Abstractions;
-using Discord;
-using Discord.WebSocket;
+﻿using Discord.WebSocket;
 using DiscordBot.Services.PocketWaifu.Abstractions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -161,7 +158,6 @@ namespace Sanakan
             services.AddSingleton<Services.LandManager>();
             services.AddSingleton<IRandomNumberGenerator, RandomNumberGenerator>();
             services.AddSingleton<IDiscordSocketClientAccessor, DiscordSocketClientAccessor>();
-            services.AddScoped<IAllRepository, AllRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddHostedService<DiscordBotHostedService>();
             services.AddHostedService<MemoryUsageHostedService>();

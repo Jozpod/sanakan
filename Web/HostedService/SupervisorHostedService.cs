@@ -4,11 +4,12 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Sanakan.Common;
 using Sanakan.DAL.Models.Analytics;
-using Sanakan.Web.Configuration;
 using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using Sanakan.Configuration;
+using Sanakan.DAL.Repositories.Abstractions;
 
 namespace Sanakan.Web.HostedService
 {
@@ -16,8 +17,8 @@ namespace Sanakan.Web.HostedService
     {
         private readonly ILogger _logger;
         private readonly ISystemClock _systemClock;
-        private readonly SanakanConfiguration _options;
-        private readonly IServiceProvider _serviceProvider;
+        private readonly IOptionsMonitor<SanakanConfiguration> _options;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly Process _process;
         private readonly IOperatingSystem _operatingSystem;
         private readonly ITimer _timer;
@@ -25,16 +26,16 @@ namespace Sanakan.Web.HostedService
 
         public SupervisorHostedService(
             ILogger<MemoryUsageHostedService> logger,
-            IOptions<SanakanConfiguration> options,
+            IOptionsMonitor<SanakanConfiguration> options,
             ISystemClock systemClock,
-            IServiceProvider serviceProvider,
+            IServiceScopeFactory serviceScopeFactory,
             IOperatingSystem operatingSystem,
             ITimer timer)
         {
             _logger = logger;
             _systemClock = systemClock;
-            _serviceProvider = serviceProvider;
-            _options = options.Value;
+            _serviceScopeFactory = serviceScopeFactory;
+            _options = options;
             _operatingSystem = operatingSystem;
             _timer = timer;
             _process = _operatingSystem.GetCurrentProcess();
@@ -60,7 +61,9 @@ namespace Sanakan.Web.HostedService
                 var memoryUsage = _process.WorkingSet64 / MB;
 
                 _logger.LogInformation($"Memory Usage: {memoryUsage} MiB");
-                var repository = _serviceProvider.GetRequiredService<IAllRepository>();
+                using var serviceScope = _serviceScopeFactory.CreateScope();
+                var serviceProvider = serviceScope.ServiceProvider;
+                var repository = serviceProvider.GetRequiredService<ISystemAnalyticsRepository>();
 
                 var record = new SystemAnalytics
                 {
@@ -69,7 +72,8 @@ namespace Sanakan.Web.HostedService
                     Type = SystemAnalyticsEventType.Ram,
                 };
 
-                await repository.AddSystemAnalyticsAsync(record);
+                repository.Add(record);
+                await repository.SaveChangesAsync();
             }
             catch (Exception ex)
             {

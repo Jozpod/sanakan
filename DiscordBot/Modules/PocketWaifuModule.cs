@@ -37,7 +37,6 @@ namespace Sanakan.Modules
         private readonly SessionManager _sessionManager;
         private readonly IExecutor _executor;
         private readonly ILogger _logger;
-        private readonly object _config;
         private readonly IWaifuService _waifu;
         private readonly ICacheManager _cacheManager;
         private readonly IGameDeckRepository _gameDeckRepository;
@@ -45,7 +44,6 @@ namespace Sanakan.Modules
         private readonly ICardRepository _cardRepository;
         private readonly IRandomNumberGenerator _randomNumberGenerator;
         private readonly IGuildConfigRepository _guildConfigRepository;
-        private readonly IAllRepository _repository;
         private readonly ISystemClock _systemClock;
 
         public PocketWaifuModule(
@@ -53,7 +51,6 @@ namespace Sanakan.Modules
             IShindenClient client,
             ILogger<PocketWaifuModule> logger,
             SessionManager session,
-            IOptions<object> config,
             IExecutor executor,
             ICacheManager cacheManager,
             IRandomNumberGenerator randomNumberGenerator,
@@ -61,12 +58,10 @@ namespace Sanakan.Modules
             IGameDeckRepository gameDeckRepository,
             IUserRepository userRepository,
             ICardRepository cardRepository,
-            IAllRepository repository,
             ISystemClock systemClock)
         {
             _waifu = waifu;
             _logger = logger;
-            _config = config.Value;
             _shindenClient = client;
             _sessionManager = session;
             _executor = executor;
@@ -76,7 +71,6 @@ namespace Sanakan.Modules
             _cardRepository = cardRepository;
             _randomNumberGenerator = randomNumberGenerator;
             _guildConfigRepository = guildConfigRepository;
-            _repository = repository;
             _systemClock = systemClock;
         }
 
@@ -3425,7 +3419,7 @@ namespace Sanakan.Modules
                     }
 
                     bUser.GameDeck.Waifu = 0;
-                    await _repository.SaveChangesAsync();
+                    await _userRepository.SaveChangesAsync();
                 }
 
                 await ReplyAsync("", embed: $"{Context.User.Mention} zresetował ulubioną karte.".ToEmbedMessage(EMType.Success).Build());

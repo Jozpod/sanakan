@@ -11,6 +11,9 @@ namespace Sanakan.DAL.Repositories.Abstractions
         IRemoveRepository<Card>,
         ISaveRepository
     {
+        Task<List<Card>> GetCardsWithTagAsync(string tag);
+        Task<List<Card>> GetCardsByCharacterIdAsync(ulong id);
+        Task<User?> GetUserCardsAsync(ulong id);
         Task<List<Card>> GetByIdsAsync(ulong[] ids);
         Task<List<Card>> GetByIdsAsync(ulong[] ids, CardQueryOptions cardQueryOptions);
         Task<List<Card>> GetByCharacterIdAsync(ulong characterId);

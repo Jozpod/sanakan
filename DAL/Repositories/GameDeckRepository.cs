@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Sanakan.Common;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Repositories.Abstractions;
 using System;
@@ -12,13 +13,57 @@ namespace Sanakan.DAL.Repositories
     public class GameDeckRepository : BaseRepository<GameDeck>, IGameDeckRepository
     {
         private readonly BuildDatabaseContext _dbContext;
+        private readonly ICacheManager _cacheManager;
 
         public GameDeckRepository(
-            BuildDatabaseContext dbContext) : base(dbContext)
+            BuildDatabaseContext dbContext,
+            ICacheManager cacheManager) : base(dbContext)
         {
             _dbContext = dbContext;
+            _cacheManager = cacheManager;
         }
 
+        public const double MAX_DECK_POWER = 800;
+        public const double MIN_DECK_POWER = 200;
+
+        public async Task<List<GameDeck>> GetCachedPlayersForPVP(ulong ignore = 1)
+        {
+            var result = await _dbContext
+                .GameDecks
+                .AsQueryable()
+                .Where(x => x.DeckPower > MIN_DECK_POWER
+                    && x.DeckPower < MAX_DECK_POWER
+                    && x.UserId != ignore)
+                .AsNoTracking()
+                .AsSplitQuery()
+                //.FromCacheAsync(new MemoryCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(2) })
+                .ToListAsync();
+
+            return result;
+        }
+        public async Task<GameDeck> GetCachedUserGameDeckAsync(ulong userId)
+        {
+            var key = $"gamedeck-user-{userId}";
+
+            var cached = _cacheManager.Get<GameDeck>(key);
+
+            if (cached != null)
+            {
+                return cached;
+            }
+
+            var result = await _dbContext
+                .GameDecks
+                .AsQueryable()
+                .Where(x => x.UserId == userId)
+                .Include(x => x.Cards)
+                .AsNoTracking()
+                .AsSplitQuery()
+                //.FromCacheAsync(new string[] { $"user-{userId}", "users" }))
+                .FirstOrDefaultAsync();
+
+            return result;
+        }
         public Task<List<GameDeck>> GetByAnimeIdAsync(ulong id)
         {
             return _dbContext.GameDecks

@@ -32,8 +32,8 @@ namespace Sanakan.Services
         private readonly IImageProcessing _img;
         private IExecutor _executor;
         private readonly IOptionsMonitor<BotConfiguration> _config;
-        private readonly IAllRepository _repository;
         private readonly IUserRepository _userRepository;
+        private readonly IGuildConfigRepository _guildConfigRepository;
         private readonly IUserAnalyticsRepository _userAnalyticsRepository;
         private readonly ISystemClock _systemClock;
 
@@ -42,7 +42,6 @@ namespace Sanakan.Services
             IExecutor executor,
             IOptionsMonitor<BotConfiguration> config,
             IImageProcessing img,
-            IAllRepository repository,
             IUserRepository userRepository,
             IUserAnalyticsRepository userAnalyticsRepository,
             ISystemClock systemClock)
@@ -51,7 +50,6 @@ namespace Sanakan.Services
             _client = client;
             _config = config;
             _img = img;
-            _repository = repository;
             _userRepository = userRepository;
             _userAnalyticsRepository = userAnalyticsRepository;
             _systemClock = systemClock;
@@ -116,7 +114,7 @@ namespace Sanakan.Services
             var countMsg = true;
             var calculateExp = true;
 
-            var config = await _repository.GetCachedGuildFullConfigAsync(user.Guild.Id);
+            var config = await _guildConfigRepository.GetCachedGuildFullConfigAsync(user.Guild.Id);
             if (config != null)
             {
                 var role = user.Guild.GetRole(config.UserRole);
@@ -324,7 +322,7 @@ namespace Sanakan.Services
 
                 _ = Task.Run(async () =>
                 {
-                    var config = await _repository.GetCachedGuildFullConfigAsync(discordUser.Guild.Id);
+                    var config = await _guildConfigRepository.GetCachedGuildFullConfigAsync(discordUser.Guild.Id);
 
                     if (config == null)
                     {

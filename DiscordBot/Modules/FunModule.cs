@@ -27,8 +27,8 @@ namespace Sanakan.Modules
         private readonly ModeratorService _moderation;
         private readonly SessionManager _session;
         private readonly ICacheManager _cacheManager;
-        private readonly IAllRepository _repository;
         private readonly IUserRepository _userRepository;
+        private readonly IGuildConfigRepository _guildConfigRepository;
         private readonly IQuestionRepository _questionRepository;
         private readonly ISystemClock _systemClock;
         private readonly IRandomNumberGenerator _randomNumberGenerator;
@@ -56,7 +56,7 @@ namespace Sanakan.Modules
         [Remarks(""), RequireCommandChannel]
         public async Task GiveDailyScAsync()
         {
-            var botuser = await _repository.GetUserOrCreateAsync(Context.User.Id);
+            var botuser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
             
             var daily = botuser.TimeStatuses.FirstOrDefault(x => x.Type == StatusType.Daily);
             
@@ -108,7 +108,7 @@ namespace Sanakan.Modules
                 return;
             }
 
-            var config = await _repository.GetCachedGuildFullConfigAsync(Context.Guild.Id);
+            var config = await _guildConfigRepository.GetCachedGuildFullConfigAsync(Context.Guild.Id);
 
             if (config == null)
             {
@@ -143,7 +143,6 @@ namespace Sanakan.Modules
             session.Actions = new AcceptMute(_randomNumberGenerator)
             {
                 NotifChannel = notifChannel,
-                Moderation = _moderation,
                 MuteRole = muteRole,
                 UserRole = userRole,
                 Message = msg,
@@ -160,7 +159,7 @@ namespace Sanakan.Modules
         [Remarks(""), RequireCommandChannel]
         public async Task GiveHourlyScAsync()
         {
-            var botuser = await _repository.GetUserOrCreateAsync(Context.User.Id);
+            var botuser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
             var hourly = botuser.TimeStatuses.FirstOrDefault(x => x.Type == StatusType.Hourly);
             
             if (hourly == null)
@@ -231,7 +230,8 @@ namespace Sanakan.Modules
                 return;
             }
 
-            var botuser = await _repository.GetUserOrCreateAsync(Context.User.Id);
+            var botuser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
+
             if (botuser.ScCnt < amount)
             {
                 await ReplyAsync("", embed: $"{Context.User.Mention} nie posiadasz wystarczającej liczby SC!".ToEmbedMessage(EMType.Error).Build());
@@ -280,7 +280,7 @@ namespace Sanakan.Modules
                 return;
             }
 
-            var botuser = await _repository.GetUserOrCreateAsync(Context.User.Id);
+            var botuser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
             if (!botuser.ApplySlotMachineSetting(setting, value))
             {
                 await ReplyAsync("", embed: $"Podano niewłaściwą wartość parametru!".ToEmbedMessage(EMType.Error).Build());

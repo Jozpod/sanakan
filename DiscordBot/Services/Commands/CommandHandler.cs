@@ -1,9 +1,9 @@
-﻿using DAL.Repositories.Abstractions;
-using Discord;
+﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using DiscordBot.Services;
 using DiscordBot.Services.PocketWaifu;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Sanakan.Common;
@@ -30,14 +30,12 @@ namespace Sanakan.Services.Commands
         private readonly CommandService _commandService;
         private readonly IExecutor _executor;
         private readonly ILogger _logger;
-        private readonly IAllRepository _repository;
-        private readonly ICommandsAnalyticsRepository _commandsAnalyticsRepository;
         
         private readonly ISystemClock _systemClock;
         private readonly IOptionsMonitor<BotConfiguration> _config;
         private readonly HelperService _helper;
         private readonly IServiceProvider _serviceProvider;
-        private Timer _timer;
+        private readonly IServiceScopeFactory _scopeFactory;
 
         public CommandHandler(
             IDiscordSocketClientAccessor discordSocketClientAccessor,
@@ -47,16 +45,17 @@ namespace Sanakan.Services.Commands
             IAllRepository repository,
             CommandService commandService,
             ISystemClock systemClock,
-            IServiceProvider serviceProvider)
+            IServiceProvider serviceProvider,
+            IServiceScopeFactory scopeFactory)
         {
             _discordSocketClientAccessor = discordSocketClientAccessor;
             _config = config;
             _logger = logger;
             _executor = executor;
-            _repository = repository;
             _commandService = commandService;
             _systemClock = systemClock;
             _serviceProvider = serviceProvider;
+            _scopeFactory = scopeFactory;
         }
 
         public async Task InitializeAsync()
@@ -65,6 +64,7 @@ namespace Sanakan.Services.Commands
             {
                 throw new Exception("Client not connected");
             }
+
             var client = _discordSocketClientAccessor.Client;
 
             _commandService.AddTypeReader<SlotMachineSetting>(new TypeReaders.SlotMachineSettingTypeReader());
@@ -92,6 +92,7 @@ namespace Sanakan.Services.Commands
             {
                 throw new Exception("Client not connected");
             }
+
             var client = _discordSocketClientAccessor.Client;
 
             var userMessage = message as SocketUserMessage;
@@ -109,14 +110,22 @@ namespace Sanakan.Services.Commands
             var config = _config.CurrentValue;
             var prefix = config.Prefix;
             var context = new SocketCommandContext(client, userMessage);
+            using var serviceScope = _scopeFactory.CreateScope();
 
             if (context.Guild != null)
             {
-                var gConfig = await _repository.GetCachedGuildFullConfigAsync(context.Guild.Id);
-                if (gConfig?.Prefix != null) prefix = gConfig.Prefix;
+                var guildConfigRepository = serviceScope.ServiceProvider.GetRequiredService<IGuildConfigRepository>();
+
+                var gConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(context.Guild.Id);
+
+                if (gConfig?.Prefix != null)
+                {
+                    prefix = gConfig.Prefix;
+                }
             }
 
             var argPos = 0;
+
             if (!userMessage.HasStringPrefix(prefix, ref argPos, StringComparison.OrdinalIgnoreCase))
             {
                 return;
@@ -163,8 +172,10 @@ namespace Sanakan.Services.Commands
                 CmdParams = param,
             };
 
-            _commandsAnalyticsRepository.Add(record);
-            await _commandsAnalyticsRepository.SaveChangesAsync();
+            var commandsAnalyticsRepository = serviceScope.ServiceProvider.GetRequiredService<ICommandsAnalyticsRepository>();
+
+            commandsAnalyticsRepository.Add(record);
+            await commandsAnalyticsRepository.SaveChangesAsync();
 
             switch (command.Match.Command.RunMode)
             {

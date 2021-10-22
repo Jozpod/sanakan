@@ -121,30 +121,6 @@ namespace Sanakan.DAL.Repositories
             return result;
         }
 
-        public async Task<GameDeck> GetCachedUserGameDeckAsync(ulong userId)
-        {
-            var key = $"user-{userId}";
-
-            var cached = _cacheManager.Get<GameDeck>(key);
-
-            if (cached != null)
-            {
-                return cached;
-            }
-
-            var result = await _dbContext
-                .GameDecks
-                .AsQueryable()
-                .Where(x => x.UserId == userId)
-                .Include(x => x.Cards)
-                .AsNoTracking()
-                .AsSplitQuery()
-                //.FromCacheAsync(new string[] { $"user-{userId}", "users" }))
-                .FirstOrDefaultAsync();
-
-            return result;
-        }
-
         public async Task<List<User>> GetCachedAllUsersAsync()
         {
             var result = await _dbContext.Users
@@ -177,25 +153,6 @@ namespace Sanakan.DAL.Repositories
                 .AsNoTracking()
                 .AsSplitQuery()
                 //.FromCacheAsync(new MemoryCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(6) }))
-                .ToListAsync();
-
-            return result;
-        }
-
-        public const double MAX_DECK_POWER = 800;
-        public const double MIN_DECK_POWER = 200;
-
-        public async Task<List<GameDeck>> GetCachedPlayersForPVP(ulong ignore = 1)
-        {
-            var result = await _dbContext
-                .GameDecks
-                .AsQueryable()
-                .Where(x => x.DeckPower > MIN_DECK_POWER
-                    && x.DeckPower < MAX_DECK_POWER
-                    && x.UserId != ignore)
-                .AsNoTracking()
-                .AsSplitQuery()
-                //.FromCacheAsync(new MemoryCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(2) })
                 .ToListAsync();
 
             return result;
@@ -250,34 +207,6 @@ namespace Sanakan.DAL.Repositories
 
             return result;
         }
-
-        public async Task<IEnumerable<ulong>> GetUserShindenIdsByHavingCharacterAsync(ulong id)
-        {
-            var result = await _dbContext.Cards
-               .Include(x => x.GameDeck)
-                   .ThenInclude(x => x.User)
-               .Where(x => x.Character == id
-                   && x.GameDeck.User.Shinden != 0)
-               .AsNoTracking()
-               .Select(x => x.GameDeck.User.Shinden)
-               .Distinct()
-               .ToListAsync();
-
-            return result;
-        }
-
-        public async Task AddQuestionAsync(Question question)
-        {
-            _dbContext.Questions.Add(question);
-            await _dbContext.SaveChangesAsync();
-        }
-
-        public async Task RemoveQuestionAsync(Question question)
-        {
-            _dbContext.Questions.Remove(question);
-            await _dbContext.SaveChangesAsync();
-        }
-
         public async Task<Question> GetQuestionAsync(ulong id)
         {
             var result = await _dbContext
@@ -286,31 +215,6 @@ namespace Sanakan.DAL.Repositories
                 .FirstOrDefaultAsync(x => x.Id == id);
 
             return result;
-        }
-
-        public async Task<User?> GetUserCardsAsync(ulong id)
-        {
-            var result = await _dbContext
-                .Users
-               .AsQueryable()
-               .Where(x => x.Shinden == id)
-               .Include(x => x.GameDeck)
-                   .ThenInclude(x => x.Cards)
-                   .ThenInclude(x => x.ArenaStats)
-               .Include(x => x.GameDeck)
-                  .ThenInclude(x => x.Cards)
-                  .ThenInclude(x => x.TagList)
-               .AsNoTracking()
-               .AsSplitQuery()
-               .FirstOrDefaultAsync();
-
-            return result;
-        }
-
-        public async Task AddSystemAnalyticsAsync(SystemAnalytics record)
-        {
-            _dbContext.SystemData.Add(record);
-            await _dbContext.SaveChangesAsync();
         }
 
         public async Task<User> GetUsersCardsByShindenIdWithOffsetAndFilterAsync1(ulong id)
@@ -335,55 +239,6 @@ namespace Sanakan.DAL.Repositories
                .Include(x => x.TagList)
                .AsNoTracking()
                .ToListAsync();
-
-            return result;
-        }
-
-        public async Task<List<Card>> GetCardsWithTagAsync(string tag)
-        {
-            var result = await _dbContext
-                .Cards
-               .Include(x => x.ArenaStats)
-               .Include(x => x.TagList)
-               .Where(x => x.TagList
-                   .Any(c => c.Name.Equals(tag, StringComparison.CurrentCultureIgnoreCase)))
-               .AsNoTracking()
-               .ToListAsync();
-
-            return result;
-        }
-
-        public async Task<List<Card>> GetCardsByCharacterIdAsync(ulong id)
-        {
-            var cards = await _dbContext
-                .Cards
-                .AsQueryable()
-                .AsSplitQuery()
-                .Where(x => x.Character == id)
-                .ToListAsync();
-
-            return cards;
-        }
-
-        public async Task SaveChangesAsync()
-        {
-            await _dbContext.SaveChangesAsync();
-        }
-
-        public async Task<User?> GetUserWaifuProfileAsync(ulong id)
-        {
-            var result = await _dbContext.Users
-               .AsQueryable()
-               .AsSplitQuery()
-               .Where(x => x.Shinden == id)
-               .Include(x => x.GameDeck)
-                   .ThenInclude(x => x.Cards)
-                   .ThenInclude(x => x.ArenaStats)
-               .Include(x => x.GameDeck)
-                   .ThenInclude(x => x.Cards)
-                   .ThenInclude(x => x.TagList)
-               .AsNoTracking()
-               .FirstOrDefaultAsync();
 
             return result;
         }

@@ -17,7 +17,10 @@ namespace Sanakan.Preconditions
 
         public RequireLevel(long level) => _level = level;
 
-        public async override Task<PreconditionResult> CheckPermissionsAsync(ICommandContext context, CommandInfo command, IServiceProvider services)
+        public async override Task<PreconditionResult> CheckPermissionsAsync(
+            ICommandContext context,
+            CommandInfo command,
+            IServiceProvider services)
         {
             var guildConfigRepository = services.GetRequiredService<IGuildConfigRepository>();
             var userRepository = services.GetRequiredService<IUserRepository>();
@@ -41,16 +44,22 @@ namespace Sanakan.Preconditions
                 if (role != null)
                 {
                     if (user.Roles.Any(x => x.Id == role.Id))
+                    {
                         return PreconditionResult.FromSuccess();
+                    }
                 }
             }
 
-            var botUser = await db.GetBaseUserAndDontTrackAsync(user.Id);
+            var botUser = await userRepository.GetBaseUserAndDontTrackAsync(user.Id);
 
-            if (botUser != null)
+            if (botUser == null)
             {
-                if (botUser.Level >= _level)
-                    return PreconditionResult.FromSuccess();
+                return PreconditionResult.FromError($"|IMAGE|https://i.imgur.com/YEuawi2.gif|Wymagany poziom do użycia polecenia: {_level}!");
+            }
+
+            if (botUser.Level >= _level)
+            {
+                return PreconditionResult.FromSuccess();
             }
 
             return PreconditionResult.FromError($"|IMAGE|https://i.imgur.com/YEuawi2.gif|Wymagany poziom do użycia polecenia: {_level}!");

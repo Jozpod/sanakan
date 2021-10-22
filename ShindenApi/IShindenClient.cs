@@ -8,6 +8,7 @@ namespace Sanakan.ShindenApi
 {
     public interface IShindenClient
     {
+        Task<Result<List<UserSearchResult>>> SearchUserAsync(string nick);
         Task<Result<List<CharacterSearchResult>>> SearchCharacterAsync(string name);
         Task<Result<List<NewEpisode>>> GetNewEpisodesAsync();
         Task<Result<TitleCharacters>> GetCharactersAsync(ulong id);

@@ -22,6 +22,7 @@ using Sanakan.ShindenApi;
 using Sanakan.Web.Models;
 using Sanakan.Web.Resources;
 using static Sanakan.Web.ResponseExtensions;
+using Sanakan.ShindenApi.Utilities;
 
 namespace Sanakan.Web.Controllers
 {
@@ -34,7 +35,6 @@ namespace Sanakan.Web.Controllers
         private readonly IWaifuService _waifu;
         private readonly IExecutor _executor;
         private readonly IFileSystem _fileSystem;
-        private readonly IAllRepository _repository;
         private readonly IUserRepository _userRepository;
         private readonly ICardRepository _cardRepository;
         private readonly IUserContext _userContext;
@@ -46,7 +46,6 @@ namespace Sanakan.Web.Controllers
             IWaifuService waifu,
             IExecutor executor,
             IFileSystem fileSystem,
-            IAllRepository repository,
             IUserRepository userRepository,
             IUserContext userContext,
             ICacheManager cacheManager)
@@ -55,7 +54,6 @@ namespace Sanakan.Web.Controllers
             _fileSystem = fileSystem;
             _executor = executor;
             _shindenClient = shClient;
-            _repository = repository;
             _userRepository = userRepository;
             _userContext = userContext;
             _cacheManager = cacheManager;
@@ -70,7 +68,7 @@ namespace Sanakan.Web.Controllers
         [ProducesResponseType(typeof(IEnumerable<ulong>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetUsersOwningCharacterCardAsync(ulong id)
         {
-            var shindenIds = await _repository.GetUserShindenIdsByHavingCharacterAsync(id);
+            var shindenIds = await _userRepository.GetUserShindenIdsByHavingCharacterAsync(id);
 
             if (shindenIds.Any())
             {
@@ -89,7 +87,7 @@ namespace Sanakan.Web.Controllers
         [ProducesResponseType(typeof(IEnumerable<Card>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetUserCardsAsync(ulong id)
         {
-            var user = await _repository.GetUserCardsAsync(id);
+            var user = await _cardRepository.GetUserCardsAsync(id);
 
             if (user == null)
             {
@@ -207,7 +205,7 @@ namespace Sanakan.Web.Controllers
         [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetUserWaifuProfileAsync(ulong id)
         {
-            var user = await _repository.GetUserWaifuProfileAsync(id);
+            var user = await _userRepository.GetUserWaifuProfileAsync(id);
 
             if (user == null)
             {
@@ -323,7 +321,7 @@ namespace Sanakan.Web.Controllers
             var exe = new Executable($"update cards-{id} img", new Task<Task>(async () =>
             {
                 var userRelease = new List<string>() { "users" };
-                var cards = await _repository.GetCardsByCharacterIdAsync(id);
+                var cards = await _cardRepository.GetCardsByCharacterIdAsync(id);
 
                 foreach (var card in cards)
                 {
@@ -346,7 +344,7 @@ namespace Sanakan.Web.Controllers
                     userRelease.Add($"user-{card.GameDeckId}");
                 }
 
-                await _repository.SaveChangesAsync();
+                await _cardRepository.SaveChangesAsync();
 
                 _cacheManager.ExpireTag(userRelease.ToArray());
             }), Priority.High);
@@ -374,8 +372,8 @@ namespace Sanakan.Web.Controllers
             }
 
             var characterInfo = characterResult.Value;
-            var pictureUrl = Url.GetPersonPictureURL(characterInfo.PictureArtifactId);
-            var hasImage = pictureUrl != Url.GetPlaceholderImageURL();
+            var pictureUrl = UrlHelpers.GetPersonPictureURL(characterInfo.PictureArtifactId);
+            var hasImage = pictureUrl != UrlHelpers.GetPlaceholderImageURL();
 
             if (!hasImage)
             {
@@ -389,7 +387,7 @@ namespace Sanakan.Web.Controllers
 
                     foreach (var card in cards)
                     {
-                        var pictureUrl = Url.GetPersonPictureURL(characterInfo.PictureArtifactId);
+                        var pictureUrl = UrlHelpers.GetPersonPictureURL(characterInfo.PictureArtifactId);
                         card.Image = pictureUrl;
 
                         try
@@ -517,7 +515,7 @@ namespace Sanakan.Web.Controllers
         [ProducesResponseType(typeof(IEnumerable<Card>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetCardsWithTagAsync(string tag)
         {
-            var result = await _repository.GetCardsWithTagAsync(tag);
+            var result = await _cardRepository.GetCardsWithTagAsync(tag);
 
             return Ok(result);
         }
@@ -602,7 +600,7 @@ namespace Sanakan.Web.Controllers
                     botUser.GameDeck.BoosterPacks.Add(pack);
                 }
 
-                await _repository.SaveChangesAsync();
+                await _userRepository.SaveChangesAsync();
 
                 _cacheManager.ExpireTag(new string[] { $"user-{botUser.Id}", "users" });
             }));
@@ -664,7 +662,7 @@ namespace Sanakan.Web.Controllers
                     botUser.GameDeck.BoosterPacks.Add(pack);
                 }
 
-                await _repository.SaveChangesAsync();
+                await _userRepository.SaveChangesAsync();
 
                 _cacheManager.ExpireTag(new string[] { $"user-{botUser.Id}", "users" });
             }));
@@ -762,7 +760,7 @@ namespace Sanakan.Web.Controllers
                     botUser.GameDeck.RemoveCharacterFromWishList(card.Character);
                 }
 
-                await _repository.SaveChangesAsync();
+                await _userRepository.SaveChangesAsync();
 
                 _cacheManager.ExpireTag(new string[] { $"user-{botUser.Id}", "users" });
             }));

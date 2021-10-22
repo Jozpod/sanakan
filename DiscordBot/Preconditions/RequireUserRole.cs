@@ -1,7 +1,10 @@
-﻿using Discord.Commands;
+﻿using Discord;
+using Discord.Commands;
 using Discord.WebSocket;
-using Sanakan.Config;
-using Sanakan.Extensions;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using Sanakan.Configuration;
+using Sanakan.DAL.Repositories.Abstractions;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -12,6 +15,7 @@ namespace Sanakan.Preconditions
     {
         public async override Task<PreconditionResult> CheckPermissionsAsync(ICommandContext context, CommandInfo command, IServiceProvider services)
         {
+            var guildConfigRepository = services.GetRequiredService<IGuildConfigRepository>();
             var user = context.User as SocketGuildUser;
             
             if (user == null)
@@ -19,8 +23,7 @@ namespace Sanakan.Preconditions
                 return PreconditionResult.FromError($"To polecenie działa tylko z poziomu serwera.");
             }
 
-            var config = (IConfig)services.GetService(typeof(IConfig));
-            var gConfig = await db.GetCachedGuildFullConfigAsync(context.Guild.Id);
+            var gConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(context.Guild.Id);
             
             if (gConfig == null)
             {

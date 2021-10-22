@@ -1,4 +1,5 @@
-﻿using Shinden.API;
+﻿using Sanakan.ShindenApi.Utilities;
+using Shinden.API;
 
 namespace Shinden.Models.Entities
 {
@@ -23,8 +24,8 @@ namespace Shinden.Models.Entities
         // IPersonSearch
         public string LastName { get; }
         public string FirstName { get; }
-        public string PictureUrl => Url.GetPersonPictureURL(PictureId);
-        public string PersonUrl => IsStaff ? Url.GetStaffURL(Id) : Url.GetCharacterURL(Id);
+        public string PictureUrl => UrlHelpers.GetPersonPictureURL(PictureId);
+        public string PersonUrl => IsStaff ? UrlHelpers.GetStaffURL(Id) : UrlHelpers.GetCharacterURL(Id);
 
         public override string ToString() => $"{FirstName} {LastName}";
     }

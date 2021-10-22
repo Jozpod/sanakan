@@ -22,6 +22,50 @@ namespace Sanakan.DAL.Repositories
             _dbContext = dbContext;
             _cacheManager = cacheManager;
         }
+        public async Task<List<Card>> GetCardsWithTagAsync(string tag)
+        {
+            var result = await _dbContext
+                .Cards
+               .Include(x => x.ArenaStats)
+               .Include(x => x.TagList)
+               .Where(x => x.TagList
+                   .Any(c => c.Name.Equals(tag, StringComparison.CurrentCultureIgnoreCase)))
+               .AsNoTracking()
+               .ToListAsync();
+
+            return result;
+        }
+
+        public async Task<List<Card>> GetCardsByCharacterIdAsync(ulong id)
+        {
+            var cards = await _dbContext
+                .Cards
+                .AsQueryable()
+                .AsSplitQuery()
+                .Where(x => x.Character == id)
+                .ToListAsync();
+
+            return cards;
+        }
+
+        public async Task<User?> GetUserCardsAsync(ulong id)
+        {
+            var result = await _dbContext
+                .Users
+               .AsQueryable()
+               .Where(x => x.Shinden == id)
+               .Include(x => x.GameDeck)
+                   .ThenInclude(x => x.Cards)
+                   .ThenInclude(x => x.ArenaStats)
+               .Include(x => x.GameDeck)
+                  .ThenInclude(x => x.Cards)
+                  .ThenInclude(x => x.TagList)
+               .AsNoTracking()
+               .AsSplitQuery()
+               .FirstOrDefaultAsync();
+
+            return result;
+        }
 
         public Task<int> CountByRarityAndSucceedingIdAsync(Rarity rarity, ulong wid)
         {

@@ -1,4 +1,5 @@
-﻿using Shinden.API;
+﻿using Sanakan.ShindenApi.Utilities;
+using Shinden.API;
 
 namespace Shinden.Models.Entities
 {
@@ -20,7 +21,7 @@ namespace Shinden.Models.Entities
         // IEditPoints
         public string Name { get; }
         public double Points { get; }
-        public string AvatarUrl => Url.GetUserAvatarURL(AvatarId, Id);
+        public string AvatarUrl => UrlHelpers.GetUserAvatarURL(AvatarId, Id);
 
         public override string ToString() => $"{Name} - {Points}";
     }

@@ -5,7 +5,7 @@ namespace Shinden.API
     public class UserSearchResult
     {
         [JsonProperty("user_id")]
-        public string? Id { get; set; }
+        public ulong Id { get; set; }
 
         [JsonProperty("name")]
         public string? Name { get; set; }

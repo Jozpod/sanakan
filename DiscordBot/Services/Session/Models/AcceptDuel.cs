@@ -1,10 +1,10 @@
-﻿using DAL.Repositories.Abstractions;
-using Discord;
+﻿using Discord;
 using DiscordBot.Services.PocketWaifu.Abstractions;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Sanakan.Common;
-using Sanakan.Config;
 using Sanakan.DAL.Models;
+using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.Extensions;
 using Sanakan.Services.PocketWaifu;
 using System.Collections.Generic;
@@ -20,16 +20,16 @@ namespace Sanakan.Services.Session.Models
         public PlayerInfo P2 { get; set; }
 
         private IWaifuService _waifu;
-        private readonly IAllRepository _repository;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly ICacheManager _cacheManager;
 
         public AcceptDuel(
             IWaifuService waifu,
-            IAllRepository repository,
+            IServiceScopeFactory serviceScopeFactory,
             ICacheManager cacheManager)
         {
             _waifu = waifu;
-            _repository = repository;
+            _serviceScopeFactory = serviceScopeFactory;
             _cacheManager = cacheManager;
         }
 
@@ -38,9 +38,9 @@ namespace Sanakan.Services.Session.Models
             var players = new List<PlayerInfo> { P1, P2 };
 
             var fight = _waifu.MakeFightAsync(players);
-            string deathLog = _waifu.GetDeathLog(fight, players);
+            var deathLog = _waifu.GetDeathLog(fight, players);
 
-            bool isWinner = fight.Winner != null;
+            var isWinner = fight.Winner != null;
             string winString = isWinner ? $"Zwycięża {fight.Winner.User.Mention}!": "Remis!";
 
             if (await Message.Channel.GetMessageAsync(Message.Id) is IUserMessage msg)
@@ -48,8 +48,12 @@ namespace Sanakan.Services.Session.Models
                 await msg.ModifyAsync(x => x.Embed = $"{DuelName}{deathLog.TrimToLength(1400)}{winString}".ToEmbedMessage(EMType.Error).Build());
             }
 
-            var user1 = await _repository.GetUserOrCreateAsync(P1.User.Id);
-            var user2 = await _repository.GetUserOrCreateAsync(P2.User.Id);
+            using var serviceScope = _serviceScopeFactory.CreateScope();
+            var serviceProvider = serviceScope.ServiceProvider;
+            var userRepository = serviceProvider.GetRequiredService<IUserRepository>();
+
+            var user1 = await userRepository.GetUserOrCreateAsync(P1.User.Id);
+            var user2 = await userRepository.GetUserOrCreateAsync(P2.User.Id);
 
             user1.GameDeck.PvPStats.Add(new CardPvPStats
             {
@@ -63,7 +67,7 @@ namespace Sanakan.Services.Session.Models
                 Result = isWinner ? (fight.Winner.User.Id == user2.Id ? FightResult.Win : FightResult.Lose) : FightResult.Draw
             });
 
-            await _repository.SaveChangesAsync();
+            await userRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(new string[] { $"user-{user1.Id}", $"user-{user2.Id}", "users" });
 

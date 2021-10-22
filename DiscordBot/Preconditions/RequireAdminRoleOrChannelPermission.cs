@@ -50,7 +50,11 @@ namespace Sanakan.Preconditions
                 return CheckUser(user, channel);
             }
 
-            if (user.Roles.Any(x => x.Id == role.Id)) return PreconditionResult.FromSuccess();
+            if (user.Roles.Any(x => x.Id == role.Id))
+            {
+                return PreconditionResult.FromSuccess();
+            }
+
             return CheckUser(user, channel);
         }
 

@@ -117,6 +117,7 @@ namespace Sanakan.DAL.Models
         /// <summary>
         /// The user identifer in Shinden.
         /// </summary>
+        /// <remarks>The value of zero means the user has not been connected.</remarks>
         public ulong Shinden { get; set; }
         public bool IsBlacklisted { get; set; }
         public long AcCnt { get; set; }

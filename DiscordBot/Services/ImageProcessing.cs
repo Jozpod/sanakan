@@ -14,6 +14,7 @@ using Sanakan.Services;
 using Sanakan.Services.PocketWaifu;
 using Sanakan.ShindenApi;
 using Shinden;
+using Shinden.API;
 using Shinden.Models;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
@@ -137,12 +138,17 @@ namespace Sanakan.DiscordBot.Services
         }
 
         public async Task<Image<Rgba32>> GetUserProfileAsync(
-            IUserInfo shindenUser,
+            UserInfo shindenUser,
             User botUser,
-            string avatarUrl, long topPos, string nickname, Discord.Color color)
+            string avatarUrl,
+            long topPos,
+            string nickname,
+            Discord.Color color)
         {
             if (color == Discord.Color.Default)
+            {
                 color = Discord.Color.DarkerGrey;
+            }
 
             string rangName = shindenUser?.Rank ?? "";
             string colorRank = color.RawValue.ToString("X6");
@@ -247,7 +253,7 @@ namespace Sanakan.DiscordBot.Services
             return profilePic;
         }
 
-        private Image<Rgba32> GetProfileInside(IUserInfo shindenUser, User botUser)
+        private Image<Rgba32> GetProfileInside(UserInfo shindenUser, User botUser)
         {
             var image = new Image<Rgba32>(325, 272);
 
@@ -263,10 +269,13 @@ namespace Sanakan.DiscordBot.Services
                 case ProfileType.StatsWithImg:
                     if (shindenUser != null)
                     {
+                        
                         if (shindenUser?.ListStats?.AnimeStatus != null)
                         {
-                            using var stats = GetRWStats(shindenUser?.ListStats?.AnimeStatus,
-                                Paths.StatsAnimePicture, shindenUser.GetMoreSeriesStats(false));
+                            using var stats = GetRWStats(
+                                shindenUser?.ListStats?.AnimeStatus,
+                                Paths.StatsAnimePicture,
+                                shindenUser.GetMoreSeriesStats(false));
                             image.Mutate(x => x.DrawImage(stats, new Point(0, 2), 1));
                         }
                         if (shindenUser?.ListStats?.MangaStatus != null)
@@ -415,20 +424,28 @@ namespace Sanakan.DiscordBot.Services
             return badge;
         }
 
-        private Image<Rgba32> GetRWStats(ISeriesStatus status, string path, MoreSeriesStatus more)
+        private Image<Rgba32> GetRWStats(UserInfo userInfo, string path)
         {
             int startPointX = 7;
             int startPointY = 3;
             var baseImg = Image.Load(path);
 
+            var status = userInfo.ReadedStatus;
+            var mean = userInfo.MeanAnimeScore;
+
             if (status.Total.HasValue && status.Total > 0)
             {
-                using (var bar = GetStatusBar(status.Total.Value, status.InProgress.Value, status.Completed.Value,
-                     status.Skipped.Value, status.OnHold.Value, status.Dropped.Value, status.InPlan.Value))
-                {
-                    bar.Mutate(x => x.Round(5));
-                    baseImg.Mutate(x => x.DrawImage(bar, new Point(startPointX, startPointY), 1));
-                }
+                using var bar = GetStatusBar(
+                    status.Total.Value,
+                    status.InProgress.Value,
+                    status.Completed.Value,
+                    status.Skip.Value,
+                    status.Hold.Value,
+                    status.Dropped.Value,
+                    status.Plan.Value);
+                
+                bar.Mutate(x => x.Round(5));
+                baseImg.Mutate(x => x.DrawImage(bar, new Point(startPointX, startPointY), 1));
             }
 
             startPointY += 24;
@@ -439,7 +456,15 @@ namespace Sanakan.DiscordBot.Services
             int xSecondRow = startPointX + 200;
             var fontColor = Rgba32.FromHex("#727272");
 
-            ulong?[] rowArr = { status?.InProgress, status?.Completed, status?.Skipped, status?.OnHold, status?.Dropped, status?.InPlan };
+            ulong?[] rowArr = { 
+                status?.InProgress,
+                status?.Completed,
+                status?.Skip,
+                status?.Hold,
+                status?.Dropped,
+                status?.Plan
+            };
+
             for (int i = 0; i < rowArr.Length; i++)
             {
                 baseImg.Mutate(x => x.DrawText($"{rowArr[i]}", font, fontColor, new Point(startPointX, startPointY)));
@@ -553,6 +578,7 @@ namespace Sanakan.DiscordBot.Services
 
             var image = new Image<Rgba32>(175, 248);
             image.Mutate(x => x.DrawText($"Ostatnio obejrzane:", nameFont, fColor, new Point(0, 5)));
+
             if (lastWatch != null)
             {
                 int max = -1;
@@ -598,10 +624,16 @@ namespace Sanakan.DiscordBot.Services
             return image;
         }
 
-        public async Task<Image<Rgba32>> GetSiteStatisticAsync(IUserInfo shindenInfo, Discord.Color color, List<ILastReaded> lastRead = null, List<ILastWatched> lastWatch = null)
+        public async Task<Image<Rgba32>> GetSiteStatisticAsync(
+            UserInfo shindenInfo,
+            Discord.Color color,
+            List<ILastReaded>? lastRead = null,
+            List<ILastWatched>? lastWatch = null)
         {
             if (color == Discord.Color.Default)
+            {
                 color = Discord.Color.DarkerGrey;
+            }
 
             var baseImg = new Image<Rgba32>(500, 320);
             baseImg.Mutate(x => x.BackgroundColor(Rgba32.FromHex(Onyx)));
@@ -611,28 +643,32 @@ namespace Sanakan.DiscordBot.Services
                 baseImg.Mutate(x => x.DrawImage(template, new Point(0, 0), 1));
             }
 
-            using (var avatar = await GetSiteStatisticUserBadge(shindenInfo.AvatarUrl, shindenInfo.Name, color.RawValue.ToString("X6")))
-            {
-                baseImg.Mutate(x => x.DrawImage(avatar, new Point(0, 0), 1));
-            }
+            using var avatar = await GetSiteStatisticUserBadge(
+                shindenInfo.AvatarUrl,
+                shindenInfo.Name,
+                color.RawValue.ToString("X6"));
+            baseImg.Mutate(x => x.DrawImage(avatar, new Point(0, 0), 1));
 
             using (var image = new Image<Rgba32>(325, 248))
             {
-                if (shindenInfo?.ListStats?.AnimeStatus != null)
+                if (shindenInfo?.MeanAnimeScore != null)
                 {
-                    using (var stats = GetRWStats(shindenInfo?.ListStats?.AnimeStatus,
-                        "./Pictures/statsAnime.png", shindenInfo.GetMoreSeriesStats(false)))
-                    {
-                        image.Mutate(x => x.DrawImage(stats, new Point(0, 0), 1));
-                    }
+                    using var stats = GetRWStats(
+                        shindenInfo,
+                        Paths.StatsAnimePicture
+                        false);
+                    
+                    image.Mutate(x => x.DrawImage(stats, new Point(0, 0), 1));
                 }
-                if (shindenInfo?.ListStats?.MangaStatus != null)
+                if (shindenInfo?.MeanMangaScore != null)
                 {
-                    using (var stats = GetRWStats(shindenInfo?.ListStats?.MangaStatus,
-                        "./Pictures/statsManga.png", shindenInfo.GetMoreSeriesStats(true)))
-                    {
-                        image.Mutate(x => x.DrawImage(stats, new Point(0, 128), 1));
-                    }
+                    using var stats = GetRWStats(
+                        shindenInfo,
+                        Paths.StatsMangaPicture,
+                        true);
+                    
+                    image.Mutate(x => x.DrawImage(stats, new Point(0, 128), 1));
+                    
                 }
                 baseImg.Mutate(x => x.DrawImage(image, new Point(5, 71), 1));
             }
@@ -674,28 +710,27 @@ namespace Sanakan.DiscordBot.Services
             baseImg.Mutate(x => x.DrawText(msgText2, textFont, Rgba32.Gray, new Point(98, 33)));
             baseImg.Mutate(x => x.DrawText($"{ulvl}", lvlFont, Rgba32.Gray, new Point(96, 61)));
 
-            using (var colorRec = new Image<Rgba32>(82, 82))
+            using var colorRec = new Image<Rgba32>(82, 82);
+            
+            colorRec.Mutate(x => x.BackgroundColor(Rgba32.FromHex(nickNameColor)));
+            baseImg.Mutate(x => x.DrawImage(colorRec, new Point(9, 9), 1));
+
+            using var stream = await GetImageFromUrlAsync(avatarUrl);
+
+            if (stream == null)
             {
-                colorRec.Mutate(x => x.BackgroundColor(Rgba32.FromHex(nickNameColor)));
-                baseImg.Mutate(x => x.DrawImage(colorRec, new Point(9, 9), 1));
-
-                using (var stream = await GetImageFromUrlAsync(avatarUrl))
-                {
-                    if (stream == null)
-                        return baseImg;
-
-                    using (var avatar = Image.Load(stream))
-                    {
-                        avatar.Mutate(x => x.Resize(new ResizeOptions
-                        {
-                            Mode = ResizeMode.Crop,
-                            Size = new Size(80, 80)
-                        }));
-                        baseImg.Mutate(x => x.DrawImage(avatar, new Point(10, 10), 1));
-                    }
-                }
+                return baseImg;
             }
 
+            using var avatar = Image.Load(stream);
+                    
+            avatar.Mutate(x => x.Resize(new ResizeOptions
+            {
+                Mode = ResizeMode.Crop,
+                Size = new Size(80, 80)
+            }));
+            baseImg.Mutate(x => x.DrawImage(avatar, new Point(10, 10), 1));
+    
             return baseImg;
         }
 
@@ -773,27 +808,28 @@ namespace Sanakan.DiscordBot.Services
                 characterImg = new Image<Rgba32>(475, 667);
             }
 
-            using (var stream = await GetImageFromUrlAsync(characterUrl ?? "http://cdn.shinden.eu/cdn1/other/placeholders/title/225x350.jpg", true))
+            using var stream = await GetImageFromUrlAsync(characterUrl ?? "http://cdn.shinden.eu/cdn1/other/placeholders/title/225x350.jpg", true);
+            
+            if (stream == null)
             {
-                if (stream == null)
-                {
-                    return characterImg;
-                }
-
-                using var image = Image.Load(stream);
-                
-                image.Mutate(x => x.Resize(new ResizeOptions
-                {
-                    Mode = ResizeMode.Max,
-                    Size = new Size(characterImg.Width, 0)
-                }));
-
-                int startY = 0;
-                if (characterImg.Height > image.Height)
-                    startY = (characterImg.Height / 2) - (image.Height / 2);
-
-                characterImg.Mutate(x => x.DrawImage(image, new Point(0, startY), 1));
+                return characterImg;
             }
+
+            using var image = Image.Load(stream);
+                
+            image.Mutate(x => x.Resize(new ResizeOptions
+            {
+                Mode = ResizeMode.Max,
+                Size = new Size(characterImg.Width, 0)
+            }));
+
+            int startY = 0;
+            if (characterImg.Height > image.Height)
+            {
+                startY = (characterImg.Height / 2) - (image.Height / 2);
+            }
+
+            characterImg.Mutate(x => x.DrawImage(image, new Point(0, startY), 1));
 
             return characterImg;
         }
@@ -861,29 +897,29 @@ namespace Sanakan.DiscordBot.Services
             int def = card.GetDefenceWithBonus();
             int atk = card.GetAttackWithBonus();
 
-            using (var hpImg = new Image<Rgba32>(120, 40))
-            {
-                hpImg.Mutate(x => x.DrawText($"{hp}", hpFont, Rgba32.FromHex("#006633"), new Point(1)));
-                hpImg.Mutate(x => x.Rotate(18));
+            using var hpImg = new Image<Rgba32>(120, 40);
+            
+            hpImg.Mutate(x => x.DrawText($"{hp}", hpFont, Rgba32.FromHex("#006633"), new Point(1)));
+            hpImg.Mutate(x => x.Rotate(18));
 
-                image.Mutate(x => x.DrawImage(hpImg, new Point(342, 338), 1));
-            }
+            image.Mutate(x => x.DrawImage(hpImg, new Point(342, 338), 1));
 
-            using (var defImg = new Image<Rgba32>(120, 40))
-            {
-                defImg.Mutate(x => x.DrawText($"{def}", adFont, Rgba32.FromHex("#1154b8"), new Point(1)));
-                defImg.Mutate(x => x.Rotate(19));
 
-                image.Mutate(x => x.DrawImage(defImg, new Point(28, 175), 1));
-            }
+            using var defImg = new Image<Rgba32>(120, 40);
+            
+            defImg.Mutate(x => x.DrawText($"{def}", adFont, Rgba32.FromHex("#1154b8"), new Point(1)));
+            defImg.Mutate(x => x.Rotate(19));
 
-            using (var atkImg = new Image<Rgba32>(120, 40))
-            {
-                atkImg.Mutate(x => x.DrawText($"{atk}", adFont, Rgba32.FromHex("#7d0e0e"), new Point(1)));
-                atkImg.Mutate(x => x.Rotate(-16));
+            image.Mutate(x => x.DrawImage(defImg, new Point(28, 175), 1));
 
-                image.Mutate(x => x.DrawImage(atkImg, new Point(50, 502), 1));
-            }
+
+            using var atkImg = new Image<Rgba32>(120, 40);
+            
+            atkImg.Mutate(x => x.DrawText($"{atk}", adFont, Rgba32.FromHex("#7d0e0e"), new Point(1)));
+            atkImg.Mutate(x => x.Rotate(-16));
+
+            image.Mutate(x => x.DrawImage(atkImg, new Point(50, 502), 1));
+            
         }
 
         private void ApplyGammaStats(Image<Rgba32> image, Card card)
@@ -909,13 +945,13 @@ namespace Sanakan.DiscordBot.Services
             int def = card.GetDefenceWithBonus();
             int atk = card.GetAttackWithBonus();
 
-            using (var hpImg = new Image<Rgba32>(120, 40))
-            {
-                hpImg.Mutate(x => x.DrawText($"{hp}", hpFont, Rgba32.FromHex("#356231"), new Point(1)));
-                hpImg.Mutate(x => x.Rotate(-27));
+            using var hpImg = new Image<Rgba32>(120, 40);
+            
+            hpImg.Mutate(x => x.DrawText($"{hp}", hpFont, Rgba32.FromHex("#356231"), new Point(1)));
+            hpImg.Mutate(x => x.Rotate(-27));
 
-                image.Mutate(x => x.DrawImage(hpImg, new Point(333, 490), 1));
-            }
+            image.Mutate(x => x.DrawImage(hpImg, new Point(333, 490), 1));
+            
 
             // TODO: center numbers
             image.Mutate(x => x.DrawText($"{atk}", adFont, Rgba32.FromHex("#78261a"), new Point(62, 600)));

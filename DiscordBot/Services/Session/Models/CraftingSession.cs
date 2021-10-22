@@ -27,7 +27,6 @@ namespace Sanakan.Services.Session.Models
 
         private readonly IWaifuService _waifu;
         private readonly ICacheManager _cacheManager;
-        private readonly IAllRepository _repository;
         private readonly IUserRepository _userRepository;
 
         public IEmote[] StartReactions => new IEmote[] { Emojis.Checked, Emojis.DeclineEmote };
@@ -43,7 +42,6 @@ namespace Sanakan.Services.Session.Models
             TimeoutMs = 120000;
             _waifu = waifu;
             _cacheManager = cacheManager;
-            _repository = repository;
 
             Message = null;
 
@@ -292,7 +290,7 @@ namespace Sanakan.Services.Session.Models
                         {
                             user.GameDeck.Cards.Add(newCard);
 
-                            await _repository.SaveChangesAsync();
+                            await _userRepository.SaveChangesAsync();
 
                             await msg.ModifyAsync(x => x.Embed = $"{Name}\n\n**Utworzono:** {newCard.GetString(false, false, true)}".ToEmbedMessage(EMType.Success).Build());
                         }

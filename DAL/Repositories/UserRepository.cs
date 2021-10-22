@@ -27,18 +27,51 @@ namespace Sanakan.DAL.Repositories
             _systemClock = systemClock;
             _cacheManager = cacheManager;
         }
-        public Task<User?> GetBaseUserAndDontTrackAsync(ulong userId)
+
+        public async Task<IEnumerable<ulong>> GetUserShindenIdsByHavingCharacterAsync(ulong id)
+        {
+            var result = await _dbContext.Cards
+               .Include(x => x.GameDeck)
+                   .ThenInclude(x => x.User)
+               .Where(x => x.Character == id
+                   && x.GameDeck.User.Shinden != 0)
+               .AsNoTracking()
+               .Select(x => x.GameDeck.User.Shinden)
+               .Distinct()
+               .ToListAsync();
+
+            return result;
+        }
+
+        public async Task<User?> GetUserWaifuProfileAsync(ulong shindenUserId)
+        {
+            var result = await _dbContext.Users
+               .AsQueryable()
+               .AsSplitQuery()
+               .Where(x => x.Shinden == shindenUserId)
+               .Include(x => x.GameDeck)
+                   .ThenInclude(x => x.Cards)
+                   .ThenInclude(x => x.ArenaStats)
+               .Include(x => x.GameDeck)
+                   .ThenInclude(x => x.Cards)
+                   .ThenInclude(x => x.TagList)
+               .AsNoTracking()
+               .FirstOrDefaultAsync();
+
+            return result;
+        }
+        public Task<User?> GetBaseUserAndDontTrackAsync(ulong discordUserId)
         {
             return _dbContext.Users
                 .AsQueryable()
                 .AsNoTracking()
                 .AsSplitQuery()
-                .FirstOrDefaultAsync(x => x.Id == userId);
+                .FirstOrDefaultAsync(x => x.Id == discordUserId);
         }
 
-        public async Task<User> GetCachedFullUserAsync(ulong userId)
+        public async Task<User> GetCachedFullUserAsync(ulong shindenUserId)
         {
-            var key = $"user-{userId}";
+            var key = $"user-{shindenUserId}";
 
             var cached = _cacheManager.Get<User>(key);
 
@@ -49,7 +82,7 @@ namespace Sanakan.DAL.Repositories
 
             var result = await _dbContext.Users
                 .AsQueryable()
-                .Where(x => x.Id == userId)
+                .Where(x => x.Id == shindenUserId)
                 .Include(x => x.Stats)
                 .Include(x => x.SMConfig)
                 .Include(x => x.TimeStatuses)
@@ -157,11 +190,11 @@ namespace Sanakan.DAL.Repositories
             await _dbContext.SaveChangesAsync();
         }
 
-        public async Task<User> GetUserOrCreateAsync(ulong userId)
+        public async Task<User> GetUserOrCreateAsync(ulong discordUserId)
         {
             var user = await _dbContext.Users
                .AsQueryable()
-               .Where(x => x.Id == userId)
+               .Where(x => x.Id == discordUserId)
                .Include(x => x.Stats)
                .Include(x => x.SMConfig)
                .Include(x => x.TimeStatuses)
@@ -269,7 +302,7 @@ namespace Sanakan.DAL.Repositories
         public Task<bool> ExistsByShindenIdAsync(ulong userShindenId)
             => _dbContext.Users.AnyAsync(x => x.Shinden == userShindenId);
 
-        public Task<User> GetUserAndDontTrackAsync(ulong userId)
+        public Task<User> GetUserAndDontTrackAsync(ulong discordUserId)
         {
             var result = _dbContext
               .Users
@@ -301,7 +334,7 @@ namespace Sanakan.DAL.Repositories
                   .ThenInclude(x => x.Figures)
               .AsNoTracking()
               .AsSplitQuery()
-              .FirstOrDefaultAsync(x => x.Id == userId);
+              .FirstOrDefaultAsync(x => x.Id == discordUserId);
 
             return result;
         }

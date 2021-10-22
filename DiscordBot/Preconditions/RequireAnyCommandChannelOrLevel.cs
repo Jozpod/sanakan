@@ -21,6 +21,7 @@ namespace Sanakan.Preconditions
             ICommandContext context, CommandInfo command, IServiceProvider services)
         {
             var guildConfigRepository = services.GetRequiredService<IGuildConfigRepository>();
+            var userRepository = services.GetRequiredService<IUserRepository>();
             var user = context.User as SocketGuildUser;
             
             if (user == null)
@@ -58,7 +59,8 @@ namespace Sanakan.Preconditions
                 }
             }
 
-            var botUser = await dbu.GetBaseUserAndDontTrackAsync(user.Id);
+            var botUser = await userRepository.GetBaseUserAndDontTrackAsync(user.Id);
+
             if (botUser != null)
             {
                 if (botUser.Level >= _level)

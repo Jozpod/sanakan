@@ -1,4 +1,5 @@
-﻿using Shinden.API;
+﻿using Sanakan.ShindenApi.Utilities;
+using Shinden.API;
 using Shinden.Models.Initializers;
 using System;
 
@@ -34,8 +35,8 @@ namespace Shinden.Models.Entities
         public TimeSpan EpisodeLength { get; }
         public IAlternativeTitle EpisodeTitle { get; }
 
-        public string AnimeUrl => Url.GetSeriesURL(AnimeId);
-        public string EpisodeUrl => Url.GetEpisodeURL(AnimeId, Id);
+        public string AnimeUrl => UrlHelpers.GetSeriesURL(AnimeId);
+        public string EpisodeUrl => UrlHelpers.GetEpisodeURL(AnimeId, Id);
 
         public override string ToString() => EpisodeTitle?.ToString() ?? $"{EpisodeNumber}";
     }

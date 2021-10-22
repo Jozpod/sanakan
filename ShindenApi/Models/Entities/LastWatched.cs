@@ -1,4 +1,5 @@
 ﻿using System;
+using Sanakan.ShindenApi.Utilities;
 using Shinden.API;
 
 namespace Shinden.Models.Entities
@@ -36,9 +37,9 @@ namespace Shinden.Models.Entities
         public string EpisodeTitle { get; }
         public DateTime WatchedDate { get; }
 
-        public string AnimeUrl => Url.GetSeriesURL(TitleId);
-        public string AnimeCoverUrl => Url.GetBigImageURL(TitleCoverId);
-        public string EpisodeUrl => Url.GetEpisodeURL(TitleId, EpisodeId);
+        public string AnimeUrl => UrlHelpers.GetSeriesURL(TitleId);
+        public string AnimeCoverUrl => UrlHelpers.GetBigImageURL(TitleCoverId);
+        public string EpisodeUrl => UrlHelpers.GetEpisodeURL(TitleId, EpisodeId);
 
         public override string ToString() => $"{AnimeTitle}: {EpisodeNo}/{EpisodesCnt}";
     }

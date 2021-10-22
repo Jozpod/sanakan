@@ -1,4 +1,5 @@
-﻿using Shinden.API;
+﻿using Sanakan.ShindenApi.Utilities;
+using Shinden.API;
 using Shinden.Models.Initializers;
 
 namespace Shinden.Models.Entities
@@ -25,8 +26,8 @@ namespace Shinden.Models.Entities
         public MangaType Type { get; }
         public MangaStatus Status { get; }
 
-        public string MangaUrl => Url.GetMangaURL(MangaId);
-        public string CoverUrl => Url.GetBigImageURL(CoverId);
+        public string MangaUrl => UrlHelpers.GetMangaURL(MangaId);
+        public string CoverUrl => UrlHelpers.GetBigImageURL(CoverId);
 
         public override string ToString() => Title;
     }

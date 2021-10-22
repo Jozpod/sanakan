@@ -30,22 +30,23 @@ namespace Sanakan.Preconditions
                 return PreconditionResult.FromSuccess();
             }
 
-            if (gConfig?.WaifuConfig?.DuelChannel != null)
+            if (gConfig?.WaifuConfig?.DuelChannel == null)
             {
-                if (gConfig.WaifuConfig.DuelChannel == context.Channel.Id)
-                {
-                    return PreconditionResult.FromSuccess();
-                }
-
-                if (user.GuildPermissions.Administrator)
-                {
-                    return PreconditionResult.FromSuccess();
-                }
-
-                var channel = await context.Guild.GetTextChannelAsync(gConfig.WaifuConfig.DuelChannel);
-                return PreconditionResult.FromError($"To polecenie działa na kanale {channel?.Mention}");
+                return PreconditionResult.FromSuccess();
             }
-            return PreconditionResult.FromSuccess();
+
+            if (gConfig.WaifuConfig.DuelChannel == context.Channel.Id)
+            {
+                return PreconditionResult.FromSuccess();
+            }
+
+            if (user.GuildPermissions.Administrator)
+            {
+                return PreconditionResult.FromSuccess();
+            }
+
+            var channel = await context.Guild.GetTextChannelAsync(gConfig.WaifuConfig.DuelChannel);
+            return PreconditionResult.FromError($"To polecenie działa na kanale {channel?.Mention}");
         }
     }
 }

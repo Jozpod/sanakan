@@ -14,6 +14,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Sanakan.DiscordBot;
+using Sanakan.Configuration;
 
 namespace Sanakan.Web.HostedService
 {
@@ -42,18 +43,19 @@ namespace Sanakan.Web.HostedService
         private readonly ILogger _logger;
 
         private readonly IFileSystem _fileSystem;
-        private readonly IServiceProvider _serviceProvider;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
         
         public DiscordBotHostedService(
             IFileSystem fileSystem,
             ILogger<DiscordBotHostedService> logger,
-            IServiceProvider serviceProvider,
+            IServiceScopeFactory serviceScopeFactory,
             IDiscordSocketClientAccessor discordSocketClientAccessor,
             CommandHandler commandHandler)
         {
             _logger = logger;
             _fileSystem = fileSystem;
             _discordSocketClientAccessor = discordSocketClientAccessor;
+            _serviceScopeFactory = serviceScopeFactory;
             _commandHandler = commandHandler;
         }
 
@@ -82,9 +84,13 @@ namespace Sanakan.Web.HostedService
             try
             {
                 stoppingToken.ThrowIfCancellationRequested();
-                var database = _serviceProvider.GetRequiredService<DatabaseFacade>();
-                var configuration = _serviceProvider.GetRequiredService<IOptions<SanakanConfiguration>>().Value;
+
+                using var serviceScope = _serviceScopeFactory.CreateScope();
+                var serviceProvider = serviceScope.ServiceProvider;
+                var database = serviceProvider.GetRequiredService<DatabaseFacade>();
+                var configuration = serviceProvider.GetRequiredService<IOptionsMonitor<SanakanConfiguration>>().CurrentValue;
                 await database.EnsureCreatedAsync();
+
                 stoppingToken.ThrowIfCancellationRequested();
 
                 _fileSystem.CreateDirectory(Paths.CardsMiniatures);
@@ -93,12 +99,12 @@ namespace Sanakan.Web.HostedService
                 _fileSystem.CreateDirectory(Paths.Profiles);
                 stoppingToken.ThrowIfCancellationRequested();
 
-                _client = _serviceProvider.GetRequiredService<DiscordSocketClient>();
+                _client = serviceProvider.GetRequiredService<DiscordSocketClient>();
                 _client.Log += onLog;
                 stoppingToken.ThrowIfCancellationRequested();
 
                 await _client.LoginAsync(TokenType.Bot, configuration.BotToken);
-                await _client.SetGameAsync(configuration.Prefix + "pomoc");
+                await _client.SetGameAsync($"{configuration.Prefix}pomoc");
                 await _client.StartAsync();
                 _discordSocketClientAccessor.Client = _client;
                 stoppingToken.ThrowIfCancellationRequested();

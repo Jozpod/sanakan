@@ -1,4 +1,5 @@
-﻿using Shinden.API;
+﻿using Sanakan.ShindenApi.Utilities;
+using Shinden.API;
 using Shinden.Models.Initializers;
 
 namespace Shinden.Models.Entities
@@ -20,7 +21,7 @@ namespace Shinden.Models.Entities
 
         // ISimpleUser
         public string Name { get; }
-        public string AvatarUrl => Url.GetUserAvatarURL(AvatarId, Id);
+        public string AvatarUrl => UrlHelpers.GetUserAvatarURL(AvatarId, Id);
 
         // IUserSearch
         public string Rank { get; }

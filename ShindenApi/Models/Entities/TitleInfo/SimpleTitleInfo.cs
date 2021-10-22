@@ -1,4 +1,5 @@
-﻿using Shinden.API;
+﻿using Sanakan.ShindenApi.Utilities;
+using Shinden.API;
 
 namespace Shinden.Models.Entities
 {
@@ -19,7 +20,7 @@ namespace Shinden.Models.Entities
 
         // ISimpleTitleInfo
         public string Title { get; }
-        public string CoverUrl => Url.GetBigImageURL(CoverId);
+        public string CoverUrl => UrlHelpers.GetBigImageURL(CoverId);
 
         public override string ToString() => Title;
     }

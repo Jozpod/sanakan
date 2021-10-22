@@ -2,8 +2,11 @@
 using Discord.WebSocket;
 using DiscordBot.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Sanakan.Common;
 using Sanakan.DAL.Models;
+using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot.Services;
 using Sanakan.Extensions;
 using Sanakan.ShindenApi;
@@ -22,6 +25,8 @@ namespace Sanakan.Services
         private readonly DiscordSocketClient _client;
         private readonly IShindenClient _shClient;
         private readonly IImageProcessing _img;
+        private readonly IFileSystem _fileSystem;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
         private ILogger _logger;
         private Timer _timer;
 
@@ -29,11 +34,15 @@ namespace Sanakan.Services
             DiscordSocketClient client,
             IShindenClient shClient,
             IImageProcessing img,
+            IFileSystem fileSystem,
+            IServiceScopeFactory serviceScopeFactory,
             ILogger<Profile> logger)
         {
             _shClient = shClient;
             _client = client;
             _logger = logger;
+            _fileSystem = fileSystem;
+            _serviceScopeFactory = serviceScopeFactory;
             _img = img;
 
             _timer = new Timer(async _ =>
@@ -54,21 +63,25 @@ namespace Sanakan.Services
 
         private async Task CyclicCheckAsync()
         {
-            var subs = context.TimeStatuses
-                .AsNoTracking()
-                .FromCache(new[] { "users" })
-                .Where(x => x.Type.IsSubType());
+            using var serviceScope = _serviceScopeFactory.CreateScope();
+            var serviceProvider = serviceScope.ServiceProvider;
+            var guildConfigRepository = serviceProvider.GetRequiredService<IGuildConfigRepository>();
+            var timeStatusRepository = serviceProvider.GetRequiredService<ITimeStatusRepository>();
+
+            var subs = await timeStatusRepository.GetBySubTypeAsync();
 
             foreach (var sub in subs)
             {
                 if (sub.IsActive())
+                {
                     continue;
+                }
 
                 var guild = _client.GetGuild(sub.Guild);
                 switch (sub.Type)
                 {
                     case StatusType.Globals:
-                        var guildConfig = await guildContext.GetCachedGuildFullConfigAsync(sub.Guild);
+                        var guildConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(sub.Guild);
                         await RemoveRoleAsync(guild, guildConfig?.GlobalEmotesRole ?? 0, sub.UserId);
                         break;
 
@@ -228,24 +241,32 @@ namespace Sanakan.Services
             }
         }
 
-        public async Task<Stream> GetProfileImageAsync(SocketGuildUser user, User botUser, long topPosition)
+        public async Task<Stream> GetProfileImageAsync(SocketGuildUser discordUser, User botUser, long topPosition)
         {
-            bool isConnected = botUser.Shinden != 0;
-            var response = _shClient.User.GetAsync(botUser.Shinden);
-            var roleColor = user.Roles.OrderByDescending(x => x.Position)
+            var isConnected = botUser.Shinden != 0;
+
+            var userResult = await _shClient.GetUserInfoAsync(botUser.Shinden);
+            var user = userResult.Value;
+
+            var roleColor = discordUser.Roles.OrderByDescending(x => x.Position)
                 .FirstOrDefault()?.Color ?? Discord.Color.DarkerGrey;
 
             using var image = await _img.GetUserProfileAsync(
-                isConnected ? (await response).Body : null,
+                isConnected ? user : null,
                 botUser,
-                user.GetUserOrDefaultAvatarUrl(),
+                discordUser.GetUserOrDefaultAvatarUrl(),
                 topPosition,
-                user.Nickname ?? user.Username,
+                discordUser.Nickname ?? discordUser.Username,
                 roleColor);
             return image.ToPngStream();
         }
 
-        public async Task<SaveResult> SaveProfileImageAsync(string imgUrl, string path, int width = 0, int height = 0, bool streach = false)
+        public async Task<SaveResult> SaveProfileImageAsync(
+            string imgUrl,
+            string path,
+            int width = 0,
+            int height = 0,
+            bool streach = false)
         {
             if (imgUrl == null)
                 return SaveResult.BadUrl;

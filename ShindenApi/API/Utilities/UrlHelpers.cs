@@ -1,8 +1,8 @@
 using Sanakan.ShindenApi;
 
-namespace Shinden.API
+namespace Sanakan.ShindenApi.Utilities
 {
-    public class Url
+    public class UrlHelpers
     {
         public static string GetBigImageURL(ulong? imageID)
         {

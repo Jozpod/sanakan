@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Sanakan.Models;
+using System.Collections.Generic;
 
 namespace Sanakan.Api.Models
 {
@@ -11,18 +12,22 @@ namespace Sanakan.Api.Models
         /// Czy posiada uprawnienia su
         /// </summary>
         public bool IsSuperAdmin { get; set; }
+
         /// <summary>
-        /// Id użytkownika forum
+        /// The user identifier in Shinden forum.
         /// </summary>
         public ulong ForumUserId { get; set; }
+
         /// <summary>
-        /// Id użytkownika discord
+        /// The user identifier in Discord.
         /// </summary>
         public ulong DiscordUserId { get; set; }
+
         /// <summary>
-        /// Nazwa użytkownika na stronie
+        /// The username
         /// </summary>
         public string Username { get; set; }
+
         /// <summary>
         /// Lista rang użytkownika na forum
         /// </summary>

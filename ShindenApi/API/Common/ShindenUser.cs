@@ -21,7 +21,8 @@ namespace Sanakan.ShindenApi.API.Common
         //DateTime.ParseExact(info.LoggedUser.LastActive, "yyyy-MM-dd HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture);
 
         [JsonProperty("register_date")]
-        public string RegisterDate { get; set; }
+        public DateTime? RegisterDate { get; set; }
+        //DateTime.ParseExact(info.RegisterDate, "yyyy-MM-dd HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture);
 
         [JsonProperty("rank")]
         public string Rank { get; set; }

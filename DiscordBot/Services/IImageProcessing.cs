@@ -20,7 +20,7 @@ namespace Sanakan.DiscordBot.Services
         Task SaveImageFromUrlAsync(string url, string path);
         Task SaveImageFromUrlAsync(string url, string path, Size size, bool strech = false);
         Task<Image<Rgba32>> GetUserProfileAsync(
-            UserInfo shindenUser,
+            UserInfo? shindenUser,
             User botUser,
             string avatarUrl,
             long topPos,

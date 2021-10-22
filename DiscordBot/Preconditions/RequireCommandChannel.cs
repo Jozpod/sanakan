@@ -15,6 +15,7 @@ namespace Sanakan.Preconditions
     {
         public async override Task<PreconditionResult> CheckPermissionsAsync(ICommandContext context, CommandInfo command, IServiceProvider services)
         {
+            var guildConfigRepository = services.GetRequiredService<IGuildConfigRepository>();
             var user = context.User as SocketGuildUser;
 
             if (user == null)
@@ -22,26 +23,31 @@ namespace Sanakan.Preconditions
                 return PreconditionResult.FromSuccess();
             }
             
-            var config = (IConfig)services.GetService(typeof(IConfig));
-            var gConfig = await db.GetCachedGuildFullConfigAsync(context.Guild.Id);
+            var gConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(context.Guild.Id);
 
             if (gConfig == null)
             {
                 return PreconditionResult.FromSuccess();
             }
 
-            if (gConfig.CommandChannels != null)
+            if (gConfig.CommandChannels == null)
             {
-                if (gConfig.CommandChannels.Any(x => x.Channel == context.Channel.Id))
-                    return PreconditionResult.FromSuccess();
-
-                if (user.GuildPermissions.Administrator)
-                    return PreconditionResult.FromSuccess();
-
-                var channel = await context.Guild.GetTextChannelAsync(gConfig.CommandChannels.First().Channel);
-                return PreconditionResult.FromError($"To polecenie działa na kanale {channel?.Mention}");
+                return PreconditionResult.FromSuccess();
             }
-            return PreconditionResult.FromSuccess();
+
+            if (gConfig.CommandChannels.Any(x => x.Channel == context.Channel.Id))
+            {
+                return PreconditionResult.FromSuccess();
+            }
+
+            if (user.GuildPermissions.Administrator)
+            {
+                return PreconditionResult.FromSuccess();
+            }
+
+            var channel = await context.Guild.GetTextChannelAsync(gConfig.CommandChannels.First().Channel);
+            return PreconditionResult.FromError($"To polecenie działa na kanale {channel?.Mention}");
+
         }
     }
 }

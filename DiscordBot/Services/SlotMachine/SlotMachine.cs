@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Sanakan.DAL.Models;
+using Sanakan.DiscordBot.Services;
 using Sanakan.Extensions;
 
 namespace Sanakan.Services.SlotMachine

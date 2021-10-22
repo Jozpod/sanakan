@@ -11,5 +11,6 @@ namespace Sanakan.DAL.Repositories.Abstractions
         ISaveRepository
     {
         Task<List<TimeStatus>> GetByGuildIdAsync(ulong discordGuildId);
+        Task<List<TimeStatus>> GetBySubTypeAsync();
     }
 }

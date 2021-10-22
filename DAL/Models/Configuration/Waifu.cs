@@ -17,7 +17,14 @@ namespace Sanakan.DAL.Models.Configuration
         [JsonIgnore]
         public virtual GuildOptions GuildOptions { get; set; }
 
+        /// <summary>
+        /// The list of discord command channels.
+        /// </summary>
         public virtual ICollection<WaifuCommandChannel> CommandChannels { get; set; }
+
+        /// <summary>
+        /// The list of discord fight channels.
+        /// </summary>
         public virtual ICollection<WaifuFightChannel> FightChannels { get; set; }
     }
 }

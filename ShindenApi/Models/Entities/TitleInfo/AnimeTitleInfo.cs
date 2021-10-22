@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Sanakan.ShindenApi.Utilities;
 using Shinden.API;
 using Shinden.Models.Initializers;
 
@@ -40,7 +41,7 @@ namespace Shinden.Models.Entities
 
         // ISimpleTitleInfo
         public string Title { get; }
-        public string CoverUrl => Url.GetBigImageURL(CoverId);
+        public string CoverUrl => UrlHelpers.GetBigImageURL(CoverId);
 
         // IAnimeTitleInfo
         public AnimeType Type { get; }
@@ -61,7 +62,7 @@ namespace Shinden.Models.Entities
         public List<ITagCategory> TagCategories { get; }
         public List<IAlternativeTitle> AlternativeTitles { get; }
 
-        public string AnimeUrl => Url.GetSeriesURL(Id);
+        public string AnimeUrl => UrlHelpers.GetSeriesURL(Id);
 
         public override string ToString() => Title;
     }

@@ -1,4 +1,5 @@
 ﻿using System;
+using Sanakan.ShindenApi.Utilities;
 using Shinden.API;
 
 namespace Shinden.Models.Entities
@@ -36,9 +37,9 @@ namespace Shinden.Models.Entities
         public string ChapterTitle { get; }
         public DateTime ReadedDate { get; }
 
-        public string MangaUrl => Url.GetSeriesURL(TitleId);
-        public string MangaCoverUrl => Url.GetBigImageURL(TitleCoverId);
-        public string ChapterUrl => Url.GetChapterURL(TitleId, ChapterId);
+        public string MangaUrl => UrlHelpers.GetSeriesURL(TitleId);
+        public string MangaCoverUrl => UrlHelpers.GetBigImageURL(TitleCoverId);
+        public string ChapterUrl => UrlHelpers.GetChapterURL(TitleId, ChapterId);
 
         public override string ToString() => $"{MangaTitle}: {ChapterNo}/{ChaptersCnt}";
     }

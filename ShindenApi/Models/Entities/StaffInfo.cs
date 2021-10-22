@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Sanakan.ShindenApi.Utilities;
 using Shinden.API;
 using Shinden.Models.Initializers;
 
@@ -39,8 +40,8 @@ namespace Shinden.Models.Entities
         public Language Nationality { get; }
         public IStaffBiography Biography { get; }
         public List<IRelation> Relations { get; }
-        public string StaffUrl => Url.GetStaffURL(Id);
-        public string PictureUrl => Url.GetPersonPictureURL(PictureId);
+        public string StaffUrl => UrlHelpers.GetStaffURL(Id);
+        public string PictureUrl => UrlHelpers.GetPersonPictureURL(PictureId);
 
         public override string ToString() => $"{FirstName} {LastName}";
     }

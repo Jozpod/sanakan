@@ -1,4 +1,3 @@
-using DAL.Repositories.Abstractions;
 using Discord.WebSocket;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
