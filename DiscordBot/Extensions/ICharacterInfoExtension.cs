@@ -1,17 +1,18 @@
 ﻿using System.Collections.Generic;
 using Shinden.Models;
 using Discord;
+using Shinden.API;
 
 namespace Sanakan.Extensions
 {
     public static class ICharacterInfoExtension
     {
-        public static Embed ToEmbed(this ICharacterInfo info)
+        public static Embed ToEmbed(this CharacterInfo info)
         {
             return new EmbedBuilder()
             {
-                Title = $"{info} ({info.Id})".TrimToLength(EmbedBuilder.MaxTitleLength),
-                Description = info?.Biography?.Content?.TrimToLength(1000),
+                Title = $"{info} ({info.CharacterId})".TrimToLength(EmbedBuilder.MaxTitleLength),
+                Description = info?.Biography?.Biography?.TrimToLength(1000),
                 Color = EMType.Info.Color(),
                 ImageUrl = info.PictureUrl,
                 Fields = info.GetFields(),
@@ -19,7 +20,7 @@ namespace Sanakan.Extensions
             }.Build();
         }
 
-        public static List<EmbedFieldBuilder> GetFields(this ICharacterInfo info)
+        public static List<EmbedFieldBuilder> GetFields(this CharacterInfo info)
         {
             var fields = new List<EmbedFieldBuilder>
             {

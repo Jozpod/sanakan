@@ -42,7 +42,6 @@ namespace Sanakan.Services.Commands
             IOptionsMonitor<BotConfiguration> config,
             ILogger<CommandHandler> logger,
             IExecutor executor,
-            IAllRepository repository,
             CommandService commandService,
             ISystemClock systemClock,
             IServiceProvider serviceProvider,

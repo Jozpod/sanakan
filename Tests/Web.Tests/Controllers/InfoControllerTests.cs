@@ -1,4 +1,9 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.Extensions.Options;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
+using Sanakan.Configuration;
+using Sanakan.Services;
+using Sanakan.Web.Controllers;
 using System;
 using System.Threading.Tasks;
 
@@ -8,10 +13,14 @@ namespace Sanakan.Web.Tests
     public class InfoControllerTests
     {
         private readonly InfoController _controller;
+        private readonly Mock<HelperService> _helperServiceMock;
+        private readonly Mock<IOptionsMonitor<SanakanConfiguration>> _optionMock;
 
         public InfoControllerTests()
         {
-            _controller = new InfoController();
+            _controller = new InfoController(
+                _helperServiceMock.Object,
+                _optionMock.Object);
         }
 
         [TestMethod]
@@ -19,7 +28,6 @@ namespace Sanakan.Web.Tests
         {
 
             var commands = await _controller.GetCommandsInfoAsync();
-            commands;
         }
     }
 }

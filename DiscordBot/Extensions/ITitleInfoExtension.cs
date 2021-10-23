@@ -2,6 +2,9 @@
 using Shinden.Models;
 using Discord;
 using System;
+using Shinden.Models.Entities;
+using Shinden.API;
+using System.Linq;
 
 namespace Sanakan.Extensions
 {
@@ -16,33 +19,48 @@ namespace Sanakan.Extensions
             return (info as IMangaTitleInfo)?.ToEmbed();
         }
 
-        public static Embed ToEmbed(this IAnimeTitleInfo info)
+        //public static Embed ToEmbed(this MangaTitleInfo info)
+        //{
+        //    return new EmbedBuilder()
+        //    {
+        //        Title = info.Title.TrimToLength(EmbedBuilder.MaxTitleLength),
+        //        Description = info.Description.Content.TrimToLength(1000),
+        //        ThumbnailUrl = info.CoverUrl,
+        //        Color = EMType.Info.Color(),
+        //        Fields = info.GetFields(),
+        //        Footer = info.GetFooter(),
+        //        Url = info.MangaUrl,
+        //    }.Build();
+        //}
+
+        public static Embed ToEmbed(this AnimeMangaInfo info)
         {
             return new EmbedBuilder()
             {
-                Title = info.Title.TrimToLength(EmbedBuilder.MaxTitleLength),
-                Description = info.Description.Content.TrimToLength(1000),
-                ThumbnailUrl = info.CoverUrl,
+                Title = info.Title.Title.TrimToLength(EmbedBuilder.MaxTitleLength),
+                Description = info.Title.Description.OtherDescription.TrimToLength(1000),
+                ThumbnailUrl = info.Title.CoverUrl,
                 Color = EMType.Info.Color(),
                 Fields = info.GetFields(),
                 Footer = info.GetFooter(),
-                Url = info.AnimeUrl,
+                Url = info.Title.AnimeUrl,
             }.Build();
         }
 
-        public static EmbedFooterBuilder GetFooter(this ITitleInfo info)
+        public static EmbedFooterBuilder GetFooter(this AnimeMangaInfo info)
         {
             string start = "";
             string finish = "";
             var def = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc).ToLocalTime();
-            if (info.FinishDate.IsSpecified)
+
+            if (info.Title.FinishDate.HasValue)
             {
-                finish = info.FinishDate.Date == def.Date ? "" : $" - {info.FinishDate.Date.ToShortDateString()}";
+                finish = info.Title.FinishDate.Value == def.Date ? "" : $" - {info.Title.FinishDate.Value.ToShortDateString()}";
             }
 
-            if (info.StartDate.IsSpecified)
+            if (info.Title.StartDate.HasValue)
             {
-                start = info.StartDate.Date.ToShortDateString();
+                start = info.Title.StartDate.Value.ToShortDateString();
             }
 
             return new EmbedFooterBuilder()
@@ -112,26 +130,27 @@ namespace Sanakan.Extensions
             }
         }
 
-        public static List<EmbedFieldBuilder> GetFields(this ITitleInfo info)
+        public static List<EmbedFieldBuilder> GetFields(this AnimeMangaInfo info)
         {
             var fields = new List<EmbedFieldBuilder>();
 
-            if (info.AlternativeTitles.Count > 0)
+            if (info.Title.TitleOther.Count > 0)
             {
                 fields.Add(new EmbedFieldBuilder()
                 {
                     Name = "Tytuły alternatywne",
-                    Value = string.Join(", ", info.AlternativeTitles).TrimToLength(EmbedFieldBuilder.MaxFieldValueLength),
+                    Value = string.Join(", ", info.Title.TitleOther).TrimToLength(EmbedFieldBuilder.MaxFieldValueLength),
                     IsInline = false
                 });
             }
 
-            foreach (var tagType in info.TagCategories)
+            foreach (var tagType in info.Title.Tags)
             {
                 fields.Add(new EmbedFieldBuilder()
                 {
                     Name = tagType.Name.TrimToLength(EmbedFieldBuilder.MaxFieldNameLength),
-                    Value = string.Join(", ", tagType.Tags).TrimToLength(EmbedFieldBuilder.MaxFieldValueLength),
+                    Value = string.Join(", ", tagType.Items.Select(pr => pr.TagName))
+                        .TrimToLength(EmbedFieldBuilder.MaxFieldValueLength),
                     IsInline = false
                 });
             }
@@ -139,18 +158,18 @@ namespace Sanakan.Extensions
             fields.Add(new EmbedFieldBuilder()
             {
                 Name = "Id",
-                Value = info.Id,
+                Value = info.Title.TitleId,
                 IsInline = true
             });
 
-            if (info.TotalRating.HasValue)
+            if (info.Title.TotalRating.HasValue)
             {
-                if (info.TotalRating > 0)
+                if (info.Title.TotalRating > 0)
                 {
                     fields.Add(new EmbedFieldBuilder()
                     {
                         Name = "Ocena ogólna",
-                        Value = info.TotalRating.Value.ToString("0.0"),
+                        Value = info.Title.TotalRating.Value.ToString("0.0"),
                         IsInline = true
                     });
                 }
@@ -210,20 +229,6 @@ namespace Sanakan.Extensions
             });
 
             return fields;
-        }
-
-        public static Embed ToEmbed(this IMangaTitleInfo info)
-        {
-            return new EmbedBuilder()
-            {
-                Title = info.Title.TrimToLength(EmbedBuilder.MaxTitleLength),
-                Description = info.Description.Content.TrimToLength(1000),
-                ThumbnailUrl = info.CoverUrl,
-                Color = EMType.Info.Color(),
-                Fields = info.GetFields(),
-                Footer = info.GetFooter(),
-                Url = info.MangaUrl,
-            }.Build();
         }
     }
 }

@@ -14,6 +14,7 @@ using Shinden;
 using Sanakan.DAL.Repositories.Abstractions;
 using Shinden.API;
 using Discord;
+using Sanakan.ShindenApi.Utilities;
 
 namespace Sanakan.Modules
 {
@@ -22,7 +23,7 @@ namespace Sanakan.Modules
     {
         private readonly IShindenClient _shindenclient;
         private readonly SessionManager _session;
-        private readonly Services.Shinden _shinden;
+        private readonly Services.Shinden _shindenService;
         private readonly ICacheManager _cacheManager;
         private readonly IUserRepository _userRepository;
         private readonly ISystemClock _systemClock;
@@ -37,7 +38,7 @@ namespace Sanakan.Modules
         {
             _shindenclient = client;
             _session = session;
-            _shinden = shinden;
+            _shindenService = shinden;
             _cacheManager = cacheManager;
             _userRepository = userRepository;
             _systemClock = systemClock;
@@ -66,23 +67,15 @@ namespace Sanakan.Modules
 
                 try
                 {
-                    var dm = await user.GetOrCreateDMChannelAsync();
+                    var dmChannel = await user.GetOrCreateDMChannelAsync();
                     foreach (var episode in episodes)
                     {
-                        var embed = new EmbedBuilder()
-                        {
-                            Title = episode.AnimeTitle.TrimToLength(EmbedBuilder.MaxTitleLength),
-                            ThumbnailUrl = episode.AnimeCoverUrl,
-                            Color = EMType.Info.Color(),
-                            Fields = episode.GetFields(),
-                            Url = episode.AnimeUrl,
-                        }.Build();
-
-                        await dm.SendMessageAsync("", false, embed);
+                        var embed = episode.ToEmbed();
+                        await dmChannel.SendMessageAsync("", false, embed);
                         await Task.Delay(500);
                     }
 
-                    await dm.CloseAsync();
+                    await dmChannel.CloseAsync();
                 }
                 catch (Exception ex)
                 {
@@ -99,7 +92,7 @@ namespace Sanakan.Modules
         [Remarks("Soul Eater")]
         public async Task SearchAnimeAsync([Summary("tytuł")][Remainder]string title)
         {
-            await _shinden.SendSearchInfoAsync(Context, title, QuickSearchType.Anime);
+            await _shindenService.SendSearchInfoAsync(Context, title, QuickSearchType.Anime);
         }
 
         [Command("manga", RunMode = RunMode.Async)]
@@ -108,7 +101,7 @@ namespace Sanakan.Modules
         [Remarks("Gintama")]
         public async Task SearchMangaAsync([Summary("tytuł")][Remainder]string title)
         {
-            await _shinden.SendSearchInfoAsync(Context, title, QuickSearchType.Manga);
+            await _shindenService.SendSearchInfoAsync(Context, title, QuickSearchType.Manga);
         }
 
         [Command("postać", RunMode = RunMode.Async)]
@@ -128,14 +121,14 @@ namespace Sanakan.Modules
 
             if (searchResult.Value == null)
             {
-                var content = _shinden.GetResponseFromSearchCode(System.Net.HttpStatusCode.BadRequest)
+                var content = _shindenService.GetResponseFromSearchCode(System.Net.HttpStatusCode.BadRequest)
                     .ToEmbedMessage(EMType.Error).Build();
                 await ReplyAsync("", embed: content);
                 return;
             }
 
             var list = searchResult.Value;
-            var toSend = _shinden.GetSearchResponse(list, "Wybierz postać, którą chcesz wyświetlić poprzez wpisanie numeru odpowiadającemu jej na liście.");
+            var toSend = _shindenService.GetSearchResponse(list, "Wybierz postać, którą chcesz wyświetlić poprzez wpisanie numeru odpowiadającemu jej na liście.");
 
             if (list.Count == 1)
             {
@@ -144,8 +137,8 @@ namespace Sanakan.Modules
 
                 var embed = new EmbedBuilder()
                 {
-                    Title = $"{info} ({info.Id})".TrimToLength(EmbedBuilder.MaxTitleLength),
-                    Description = info?.Biography?.Content?.TrimToLength(1000),
+                    Title = $"{info} ({info.CharacterId})".TrimToLength(EmbedBuilder.MaxTitleLength),
+                    Description = info?.Biography?.Biography?.TrimToLength(1000),
                     Color = EMType.Info.Color(),
                     ImageUrl = info.PictureUrl,
                     Fields = info.GetFields(),
@@ -157,7 +150,7 @@ namespace Sanakan.Modules
             else
             {
                 session.PList = list;
-                await _shinden.SendSearchResponseAsync(Context, toSend, session);
+                await _shindenService.SendSearchResponseAsync(Context, toSend, session);
             }
         }
 
@@ -189,7 +182,7 @@ namespace Sanakan.Modules
                 return;
             }
 
-            using var stream = await _shinden.GetSiteStatisticAsync(botUser.Shinden, user);
+            using var stream = await _shindenService.GetSiteStatisticAsync(botUser.Shinden, user);
                 
             if (stream == null)
             {
@@ -197,7 +190,7 @@ namespace Sanakan.Modules
                 return;
             }
 
-            var profileUrl = Url.GetProfileURL(botUser.Shinden);
+            var profileUrl = UrlHelpers.GetProfileURL(botUser.Shinden);
 
             await Context.Channel.SendFileAsync(stream, $"{user.Id}.png", $"{profileUrl}");
         }
@@ -208,7 +201,7 @@ namespace Sanakan.Modules
         [Remarks("https://shinden.pl/user/136-mo0nisi44")]
         public async Task ConnectAsync([Summary("adres do profilu")]string url)
         {
-            switch (_shinden.ParseUrlToShindenId(url, out var shindenId))
+            switch (_shindenService.ParseUrlToShindenId(url, out var shindenId))
             {
                 case Services.UrlParsingError.InvalidUrl:
                     await ReplyAsync("", embed: "Wygląda na to, że podałeś niepoprawny link.".ToEmbedMessage(EMType.Error).Build());

@@ -10,17 +10,22 @@ namespace Sanakan.Services.Supervisor
         public DateTime LastMessage { get; private set; }
         public int TotalMessages { get; private set; }
 
-        public SupervisorEntity(string contentOfFirstMessage) : this()
+        public SupervisorEntity(
+            string? contentOfFirstMessage, DateTime date)
         {
-            TotalMessages = 1;
-            Messages.Add(new SupervisorMessage(contentOfFirstMessage));
-        }
-
-        public SupervisorEntity()
-        {
-            Messages = new List<SupervisorMessage>();
-            LastMessage = _systemClock.UtcNow;
-            TotalMessages = 0;
+            if(string.IsNullOrEmpty(contentOfFirstMessage))
+            {
+                Messages = new();
+                TotalMessages = 1;
+            }
+            else
+            {
+                Messages.Add(new SupervisorMessage(contentOfFirstMessage));
+                TotalMessages = 1;
+            }
+            
+            LastMessage = date;
+            
         }
 
         public SupervisorMessage Get(string content)
@@ -34,14 +39,16 @@ namespace Sanakan.Services.Supervisor
             return msg;
         }
 
-        public bool IsValid() => (_systemClock.UtcNow - LastMessage).TotalMinutes <= 2;
+        public bool IsValid(DateTime date) => (date - LastMessage).TotalMinutes <= 2;
         public void Add(SupervisorMessage message) => Messages.Add(message);
-        public int Inc()
+        public int Inc(DateTime date)
         {
-            if ((_systemClock.UtcNow - LastMessage).TotalSeconds > 5)
+            if ((date - LastMessage).TotalSeconds > 5)
+            {
                 TotalMessages = 0;
+            }
 
-            LastMessage = _systemClock.UtcNow;
+            LastMessage = date;
 
             return ++TotalMessages;
         }

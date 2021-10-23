@@ -17,6 +17,7 @@ using Sanakan.DiscordBot.Services.PocketWaifu;
 using Sanakan.Extensions;
 using Sanakan.Services.PocketWaifu.Fight;
 using Sanakan.ShindenApi;
+using Sanakan.ShindenApi.Utilities;
 using Shinden.API;
 using Shinden.Models;
 using Item = Sanakan.DAL.Models.Item;
@@ -28,7 +29,7 @@ namespace Sanakan.Services.PocketWaifu
         private readonly Events _events;
         private readonly IFileSystem _fileSystem;
         private readonly ISystemClock _systemClock;
-        private readonly IImageProcessing _img;
+        private readonly IImageProcessor _imageProcessor;
         private readonly IShindenClient _shindenClient;
         private readonly ICacheManager _cacheManager;
         private readonly IRandomNumberGenerator _randomNumberGenerator;
@@ -37,7 +38,7 @@ namespace Sanakan.Services.PocketWaifu
         private readonly IUserRepository _userRepository;
 
         public WaifuService(
-            IImageProcessing img,
+            IImageProcessor imageProcessor,
             IFileSystem fileSystem,
             ISystemClock systemClock,
             IShindenClient client,
@@ -47,7 +48,7 @@ namespace Sanakan.Services.PocketWaifu
             IResourceManager resourceManager,
             IUserRepository userRepository)
         {
-            _img = img;
+            _imageProcessor = imageProcessor;
             _fileSystem = fileSystem;
             _systemClock = systemClock;
             _events = events;
@@ -612,7 +613,7 @@ namespace Sanakan.Services.PocketWaifu
                         return $"{discordUser.Mention} nie można kupić pakietu z tytułu z mniejszą liczbą postaci jak 8.".ToEmbedMessage(EMType.Error).Build();
                     }
 
-                    var title = HttpUtility.HtmlDecode(animeMangaInfo.OtherTitle);
+                    var title = HttpUtility.HtmlDecode(animeMangaInfo.Title);
 
                     boosterPackTitleName = $" ({title})";
                     boosterPackTitleId = animeMangaInfo.TitleId;
@@ -829,8 +830,8 @@ namespace Sanakan.Services.PocketWaifu
             if (user != null)
                 card.FirstIdOwner = user.Id;
 
-            var pictureUrl = Url.GetPersonPictureURL(character.PictureArtifactId.Value);
-            var hasImage = pictureUrl != Url.GetPlaceholderImageURL();
+            var pictureUrl = UrlHelpers.GetPersonPictureURL(character.PictureId.Value);
+            var hasImage = pictureUrl != UrlHelpers.GetPlaceholderImageURL();
 
             if (hasImage)
             {
@@ -941,7 +942,7 @@ namespace Sanakan.Services.PocketWaifu
             while (fight)
             {
                 var round = new RoundInfo();
-                totalCards = totalCards.Shuffle().ToList();
+                totalCards = _randomNumberGenerator.Shuffle(totalCards).ToList();
 
                 foreach (var card in totalCards)
                 {
@@ -1291,11 +1292,11 @@ namespace Sanakan.Services.PocketWaifu
             var sImageLocation = $"{Paths.CardsMiniatures}/{card.Id}.png";
             var pImageLocation = $"{Paths.CardsInProfiles}/{card.Id}.png";
 
-            using var image = await _img.GetWaifuCardAsync(card);
+            using var image = await _imageProcessor.GetWaifuCardAsync(card);
             image.SaveToPath(imageLocation, 300);
             image.SaveToPath(sImageLocation, 133);
 
-            using var cardImage = await _img.GetWaifuInProfileCardAsync(card);
+            using var cardImage = await _imageProcessor.GetWaifuInProfileCardAsync(card);
             cardImage.SaveToPath(pImageLocation, 380);
 
             switch (type)
@@ -1400,10 +1401,10 @@ namespace Sanakan.Services.PocketWaifu
             var GetX = _fileSystem.Exists(ThisUri(info, SafariImageType.Truth)) ? info.X : DefaultX;
             var GetY = _fileSystem.Exists(ThisUri(info, SafariImageType.Truth)) ? info.Y : DefaultY;
 
-            using var cardImage = await _img.GetWaifuCardAsync(card);
+            using var cardImage = await _imageProcessor.GetWaifuCardAsync(card);
             var posX = info != null ? GetX : SafariImage.DefaultX();
             int posY = info != null ? GetY : SafariImage.DefaultY();
-            using var pokeImage = _img.GetCatchThatWaifuImage(cardImage, uri, posX, posY);
+            using var pokeImage = _imageProcessor.GetCatchThatWaifuImage(cardImage, uri, posX, posY);
             using var stream = pokeImage.ToJpgStream();
 
             var msg = await trashChannel.SendFileAsync(stream, $"poke.jpg");
@@ -1518,7 +1519,7 @@ namespace Sanakan.Services.PocketWaifu
                 {
                     var characterInfo = characterResult.Value;
                     var toString = $"{characterInfo.FirstName} {characterInfo.LastName}";
-                    var characterUrl = Url.GetCharacterURL(characterInfo.CharacterId);
+                    var characterUrl = UrlHelpers.GetCharacterURL(characterInfo.CharacterId);
                     contentTable.Add($"**P[{characterInfo.CharacterId}]** [{toString}]({characterUrl})");
                 }
                 else
@@ -1541,14 +1542,14 @@ namespace Sanakan.Services.PocketWaifu
                     if (animeMangaInfo.Title.Type == "anime")
                     {
                         id = animeMangaInfo.Title.Manga.TitleId.Value;
-                        animeMangaTitle = HttpUtility.HtmlDecode(animeMangaInfo.Title.OtherTitle);
-                        url = Url.GetSeriesURL(animeMangaInfo.Title.Anime.TitleId.Value);
+                        animeMangaTitle = HttpUtility.HtmlDecode(animeMangaInfo.Title.Title);
+                        url = UrlHelpers.GetSeriesURL(animeMangaInfo.Title.Anime.TitleId.Value);
                     }
                     else if (animeMangaInfo.Title.Type == "manga")
                     {
                         id = animeMangaInfo.Title.Manga.TitleId.Value;
-                        animeMangaTitle = HttpUtility.HtmlDecode(animeMangaInfo.Title.OtherTitle);
-                        url = Url.GetMangaURL(id);
+                        animeMangaTitle = HttpUtility.HtmlDecode(animeMangaInfo.Title.Title);
+                        url = UrlHelpers.GetMangaURL(id);
                     }
 
                      contentTable.Add($"**T[{id}]** [{title}]({url})");

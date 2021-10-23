@@ -225,7 +225,7 @@ namespace Sanakan.DAL.Repositories
 
                 if (user == null)
                 {
-                    user = new User(userId, _systemClock.StartOfMonth);
+                    user = new User(discordUserId, _systemClock.StartOfMonth);
                     await _dbContext.Users.AddAsync(user);
                 }
 

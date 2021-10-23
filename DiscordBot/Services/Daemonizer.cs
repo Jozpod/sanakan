@@ -5,6 +5,7 @@ using Discord;
 using Discord.WebSocket;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Sanakan.Configuration;
 
 namespace Sanakan.Services
 {
@@ -14,13 +15,13 @@ namespace Sanakan.Services
 
         private CancellationTokenSource _cts { get; set; }
         private DiscordSocketClient _client { get; set; }
-        private ILogger _logger { get; set; }
-        private object _config { get; set; }
+        private readonly ILogger _logger;
+        private readonly IOptionsMonitor<SanakanConfiguration> _config;
 
         public Daemonizer(
             DiscordSocketClient client,
             ILogger<Daemonizer> logger,
-            IOptions<object> config)
+            IOptionsMonitor<SanakanConfiguration> config)
         {
             _client = client;
             _logger = logger;
@@ -51,14 +52,17 @@ namespace Sanakan.Services
 
         private async Task CheckStateAsync()
         {
-            if (!_config.Get().Demonization)
+            if (!_config.CurrentValue.Demonization)
             {
                 return;
             }
             
             _logger.LogInformation("Disconnected! Running demonization check.");
 
-            if (_client.ConnectionState == ConnectionState.Connected) return;
+            if (_client.ConnectionState == ConnectionState.Connected)
+            {
+                return;
+            }
 
             var timeout = Task.Delay(_timeout);
             var connect = _client.StartAsync();

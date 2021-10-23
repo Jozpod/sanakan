@@ -1,15 +1,19 @@
 ﻿using Newtonsoft.Json;
 using Sanakan.ShindenApi.API.Common;
+using System;
 
 namespace Shinden.API
 {
     public class UserInfo
     {
+        [JsonProperty("vb_id")]
+        public ulong? Id { get; set; }
+
         [JsonProperty("manga_css")]
         public string MangaCss { get; set; }
 
         [JsonProperty("read_time")]
-        public Time ReadTime { get; set; }
+        public Time? ReadTime { get; set; }
 
         [JsonProperty("anime_css")]
         public string AnimeCss { get; set; }
@@ -18,10 +22,10 @@ namespace Shinden.API
         public string AboutMe { get; set; }
 
         [JsonProperty("avatar")]
-        public ulong? Avatar { get; set; }
+        public ulong? AvatarId { get; set; }
 
         [JsonProperty("last_active")]
-        public string LastActive { get; set; }
+        public DateTime LastActive { get; set; }
 
         [JsonProperty("email")]
         public string Email { get; set; }
@@ -53,14 +57,11 @@ namespace Shinden.API
         [JsonProperty("skin_id")]
         public ulong? SkinId { get; set; }
 
-        [JsonProperty("vb_id")]
-        public ulong? VbId { get; set; }
-
         [JsonProperty("register_date")]
-        public string RegisterDate { get; set; }
+        public DateTime RegisterDate { get; set; }
 
         [JsonProperty("readed_status")]
-        public ReadWatchStatuses ReadedStatus { get; set; }
+        public ReadWatchStatuses? ReadedStatus { get; set; }
 
         [JsonProperty("signature")]
         public string Signature { get; set; }
@@ -87,7 +88,7 @@ namespace Shinden.API
         public string WatchedMoreThan1 { get; set; }
 
         [JsonProperty("watched_status")]
-        public ReadWatchStatuses WatchedStatus { get; set; }
+        public ReadWatchStatuses? WatchedStatus { get; set; }
     }
    
 }

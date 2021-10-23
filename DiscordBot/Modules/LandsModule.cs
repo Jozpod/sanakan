@@ -15,16 +15,13 @@ namespace Sanakan.Modules
     public class LandsModule : ModuleBase<SocketCommandContext>
     {
         private readonly LandManager _manager;
-        private readonly IUserRepository _userRepository;
         private readonly IGuildConfigRepository _guildConfigRepository;
 
         public LandsModule(
             LandManager manager,
-            IUserRepository userRepository,
             IGuildConfigRepository guildConfigRepository)
         {
             _manager = manager;
-            _userRepository = userRepository;
             _guildConfigRepository = guildConfigRepository;
         }
 

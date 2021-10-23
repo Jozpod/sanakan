@@ -13,6 +13,7 @@ using Sanakan.Extensions;
 using Sanakan.Services;
 using Sanakan.Services.PocketWaifu;
 using Sanakan.ShindenApi;
+using Sanakan.ShindenApi.Utilities;
 using Shinden;
 using Shinden.API;
 using Shinden.Models;
@@ -24,7 +25,7 @@ using SixLabors.Primitives;
 
 namespace Sanakan.DiscordBot.Services
 {
-    public class ImageProcessing : IImageProcessing
+    public class ImageProcessing : IImageProcessor
     {
         private const string White = "#000000";
         private const string Onyx = "#36393E";
@@ -34,13 +35,13 @@ namespace Sanakan.DiscordBot.Services
         private FontFamily _latoLight = new FontCollection().Install("Fonts/Lato-Light.ttf");
         private FontFamily _latoRegular = new FontCollection().Install("Fonts/Lato-Regular.ttf");
         private readonly IFileSystem _fileSystem;
-        private readonly IShindenClient _shclient;
+        private readonly IShindenClient _shindenClient;
 
         public ImageProcessing(
             IShindenClient shinden,
              IFileSystem fileSystem)
         {
-            _shclient = shinden;
+            _shindenClient = shinden;
             _fileSystem = fileSystem;
         }
 
@@ -270,20 +271,20 @@ namespace Sanakan.DiscordBot.Services
                     if (shindenUser != null)
                     {
                         
-                        if (shindenUser?.ListStats?.AnimeStatus != null)
+                        if (shindenUser.WatchedStatus != null)
                         {
                             using var stats = GetRWStats(
-                                shindenUser?.ListStats?.AnimeStatus,
+                                shindenUser,
                                 Paths.StatsAnimePicture,
-                                shindenUser.GetMoreSeriesStats(false));
+                                false);
                             image.Mutate(x => x.DrawImage(stats, new Point(0, 2), 1));
                         }
-                        if (shindenUser?.ListStats?.MangaStatus != null)
+                        if (shindenUser.ReadedStatus != null)
                         {
                             using var stats = GetRWStats(
-                                shindenUser?.ListStats?.MangaStatus,
+                                shindenUser,
                                 Paths.StatsMangaPicture,
-                                shindenUser.GetMoreSeriesStats(true)); 
+                                true); 
                             image.Mutate(x => x.DrawImage(stats, new Point(0, 142), 1));
                         }
 
@@ -424,14 +425,14 @@ namespace Sanakan.DiscordBot.Services
             return badge;
         }
 
-        private Image<Rgba32> GetRWStats(UserInfo userInfo, string path)
+        private Image<Rgba32> GetRWStats(UserInfo userInfo, string path, bool isManga)
         {
             int startPointX = 7;
             int startPointY = 3;
             var baseImg = Image.Load(path);
 
             var status = userInfo.ReadedStatus;
-            var mean = userInfo.MeanAnimeScore;
+            var meanScore = isManga ? userInfo.MeanMangaScore : userInfo.MeanAnimeScore;
 
             if (status.Total.HasValue && status.Total > 0)
             {
@@ -473,23 +474,40 @@ namespace Sanakan.DiscordBot.Services
 
             var gOptions = new TextGraphicsOptions { HorizontalAlignment = HorizontalAlignment.Right };
 
-            baseImg.Mutate(x => x.DrawText(gOptions, $"{more?.Score?.Rating.Value.ToString("0.0")}", font, fontColor, new Point(xSecondRow, ySecondStart)));
+            baseImg.Mutate(x => x.DrawText(gOptions, $"{meanScore.ScoreCount.Value.ToString("0.0")}", font, fontColor, new Point(xSecondRow, ySecondStart)));
             ySecondStart += fontSizeAndInterline;
 
             baseImg.Mutate(x => x.DrawText(gOptions, $"{status?.Total}", font, fontColor, new Point(xSecondRow, ySecondStart)));
             ySecondStart += fontSizeAndInterline;
 
-            baseImg.Mutate(x => x.DrawText(gOptions, $"{more?.Count}", font, fontColor, new Point(xSecondRow, ySecondStart)));
+            baseImg.Mutate(x => x.DrawText(gOptions, $"{meanScore.ScoreCount.Value}", font, fontColor, new Point(xSecondRow, ySecondStart)));
             ySecondStart += fontSizeAndInterline;
 
             var listTime = new List<string>();
-            if (more.Time != null)
+            if (userInfo.ReadTime != null)
             {
-                if (more.Time.Years != 0) listTime.Add($"{more?.Time?.Years} lat");
-                if (more.Time.Months != 0) listTime.Add($"{more?.Time?.Months} mies.");
-                if (more.Time.Days != 0) listTime.Add($"{more?.Time?.Days} dni");
-                if (more.Time.Hours != 0) listTime.Add($"{more?.Time?.Hours} h");
-                if (more.Time.Minutes != 0) listTime.Add($"{more?.Time?.Minutes} m");
+                var time = userInfo.ReadTime;
+
+                if (time.Years != 0)
+                {
+                    listTime.Add($"{time.Years} lat");
+                }
+                if (time.Months != 0)
+                {
+                    listTime.Add($"{time.Months} mies.");
+                }
+                if (time.Days != 0)
+                {
+                    listTime.Add($"{time.Days} dni");
+                }
+                if (time.Hours != 0)
+                {
+                    listTime.Add($"{time.Hours} h");
+                }
+                if (time.Minutes != 0)
+                {
+                    listTime.Add($"{time.Minutes} m");
+                }
             }
 
             ySecondStart += fontSizeAndInterline;
@@ -643,8 +661,10 @@ namespace Sanakan.DiscordBot.Services
                 baseImg.Mutate(x => x.DrawImage(template, new Point(0, 0), 1));
             }
 
+            var avatarUrl = UrlHelpers.GetUserAvatarURL(shindenInfo.AvatarId, shindenInfo.Id.Value);
+
             using var avatar = await GetSiteStatisticUserBadge(
-                shindenInfo.AvatarUrl,
+                avatarUrl,
                 shindenInfo.Name,
                 color.RawValue.ToString("X6"));
             baseImg.Mutate(x => x.DrawImage(avatar, new Point(0, 0), 1));
@@ -655,7 +675,7 @@ namespace Sanakan.DiscordBot.Services
                 {
                     using var stats = GetRWStats(
                         shindenInfo,
-                        Paths.StatsAnimePicture
+                        Paths.StatsAnimePicture,
                         false);
                     
                     image.Mutate(x => x.DrawImage(stats, new Point(0, 0), 1));

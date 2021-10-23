@@ -2,6 +2,7 @@ using Discord.WebSocket;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.DAL.Models.Configuration;
+using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.Modules;
 using Sanakan.Services;
 using System.Collections.Generic;
@@ -14,20 +15,20 @@ namespace DiscordBot.Test
     {
         private readonly LandsModule _module;
         private readonly Mock<LandManager> _landManagerMock;
-        private readonly Mock<IAllRepository> _repositoryMock;
+        private readonly Mock<IGuildConfigRepository> _guildConfigRepositoryMock;
 
         public LandsModuleTests()
         {
             _module = new LandsModule(
                 _landManagerMock.Object,
-                _repositoryMock.Object);
+                _guildConfigRepositoryMock.Object);
         }
 
         [TestMethod]
         public async Task Should_Tell_When_User_Does_Not_Own_Land()
         {
 
-            _repositoryMock
+            _guildConfigRepositoryMock
                 .Setup(pr => pr.GetCachedGuildFullConfigAsync(It.IsAny<ulong>()));
 
             _landManagerMock

@@ -29,7 +29,7 @@ namespace Sanakan.Services
         private Dictionary<ulong, ulong> _characters;
 
         private DiscordSocketClient _client;
-        private readonly IImageProcessing _img;
+        private readonly IImageProcessor _imageProcessor;
         private IExecutor _executor;
         private readonly IOptionsMonitor<BotConfiguration> _config;
         private readonly IUserRepository _userRepository;
@@ -41,7 +41,7 @@ namespace Sanakan.Services
             DiscordSocketClient client,
             IExecutor executor,
             IOptionsMonitor<BotConfiguration> config,
-            IImageProcessing img,
+            IImageProcessor imageProcessor,
             IUserRepository userRepository,
             IUserAnalyticsRepository userAnalyticsRepository,
             ISystemClock systemClock)
@@ -49,7 +49,7 @@ namespace Sanakan.Services
             _executor = executor;
             _client = client;
             _config = config;
-            _img = img;
+            _imageProcessor = imageProcessor;
             _userRepository = userRepository;
             _userAnalyticsRepository = userAnalyticsRepository;
             _systemClock = systemClock;
@@ -70,7 +70,7 @@ namespace Sanakan.Services
 
         public async Task NotifyAboutLevelAsync(SocketGuildUser user, ISocketMessageChannel channel, long level)
         {
-            using var badge = await _img.GetLevelUpBadgeAsync(
+            using var badge = await _imageProcessor.GetLevelUpBadgeAsync(
                 user.Nickname ?? user.Username,
                 level,
                 user.GetUserOrDefaultAvatarUrl(),

@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Sanakan.Common;
@@ -220,7 +221,10 @@ namespace Sanakan.Modules
             if (repMsg.Author.Id == Context.User.Id)
             {
                 var user = Context.User as SocketGuildUser;
-                if (user == null) return;
+                if (user == null)
+                {
+                    return;
+                }
 
                 var notifChannel = Context.Guild.GetTextChannel(config.NotificationChannel);
                 var userRole = Context.Guild.GetRole(config.UserRole);
@@ -246,10 +250,9 @@ namespace Sanakan.Modules
 
                 await msg.AddReactionsAsync(session.StartReactions);
 
-                session.Actions = new AcceptMute()
+                session.Actions = new AcceptMute(null, null)
                 {
                     NotifChannel = notifChannel,
-                    Moderation = _moderation,
                     MuteRole = muteRole,
                     UserRole = userRole,
                     Message = msg,

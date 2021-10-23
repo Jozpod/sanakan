@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Sanakan.DAL.Repositories.Abstractions
 {
-    public interface IAllRepository : ISaveRepository
+    public interface IAllRepository
     {
         //Task<IEnumerable<PenaltyInfo>> GetCachedFullPenalties();
         //Task<List<User>> GetCachedAllUsersAsync();

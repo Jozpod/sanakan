@@ -22,6 +22,18 @@ namespace Sanakan.DAL.Repositories
             _dbContext = dbContext;
             _cacheManager = cacheManager;
         }
+        public async Task<Card> GetCardAsync(ulong wid)
+        {
+            var result = await _dbContext
+                .Cards
+                .Include(x => x.GameDeck)
+                .Include(x => x.ArenaStats)
+                .Include(x => x.TagList)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.Id == wid);
+
+            return result;
+        }
         public async Task<List<Card>> GetCardsWithTagAsync(string tag)
         {
             var result = await _dbContext

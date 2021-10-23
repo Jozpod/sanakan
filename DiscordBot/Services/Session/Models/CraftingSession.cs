@@ -34,8 +34,7 @@ namespace Sanakan.Services.Session.Models
         public CraftingSession(
             IUser owner,
             IWaifuService waifu,
-            ICacheManager cacheManager,
-            IAllRepository repository) : base(owner)
+            ICacheManager cacheManager) : base(owner)
         {
             Event = ExecuteOn.AllEvents;
             RunMode = RunMode.Sync;

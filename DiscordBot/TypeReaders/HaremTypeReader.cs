@@ -1,4 +1,5 @@
 ﻿using Discord.Commands;
+using DiscordBot.Services.PocketWaifu;
 using Sanakan.Services.PocketWaifu;
 using System;
 using System.Threading.Tasks;

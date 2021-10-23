@@ -1,7 +1,10 @@
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using Sanakan.ShindenApi;
 using Sanakan.ShindenApi.API.Common;
+using Sanakan.ShindenApi.Utilities;
+using Shinden.Models;
 
 namespace Shinden.API
 {
@@ -17,7 +20,7 @@ namespace Shinden.API
         public string LastName { get; set; }
 
         [JsonProperty("is_real")]
-        public string IsReal { get; set; }
+        public bool IsReal { get; set; }
 
         [JsonProperty("birth_date")]
         public string BirthDate { get; set; }
@@ -29,7 +32,8 @@ namespace Shinden.API
         public string DeathDate { get; set; }
 
         [JsonProperty("gender")]
-        public string Gender { get; set; }
+        [JsonConverter(typeof(StringEnumConverter))]
+        public Sex Gender { get; set; } // TO-DO
 
         [JsonProperty("bloodtype")]
         public string Bloodtype { get; set; }
@@ -50,10 +54,10 @@ namespace Shinden.API
         public string Hips { get; set; }
 
         [JsonProperty("picture_artifact_id")]
-        public ulong? PictureArtifactId { get; set; }
+        public ulong? PictureId { get; set; }
 
         [JsonProperty("bio")]
-        public CharacterBio Bio { get; set; }
+        public CharacterBio Biography { get; set; }
 
         [JsonProperty("fav_stats")]
         public CharacterFav FavStats { get; set; }
@@ -66,6 +70,9 @@ namespace Shinden.API
 
         [JsonProperty("pictures")]
         public List<ImagePicture> Pictures { get; set; }
+
+        public string CharacterUrl => UrlHelpers.GetCharacterURL(CharacterId);
+        public string PictureUrl => UrlHelpers.GetPersonPictureURL(PictureId);
 
         public override string ToString() => $"{FirstName} {LastName}";
     }

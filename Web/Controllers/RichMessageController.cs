@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Sanakan.Api.Models;
 using Sanakan.Configuration;
+using Sanakan.DiscordBot;
 using Sanakan.DiscordBot.Models;
 using Sanakan.Extensions;
 using Sanakan.Web.Configuration;
@@ -24,10 +25,10 @@ namespace Sanakan.Web.Controllers
     public class RichMessageController : ControllerBase
     {
         private readonly IOptionsMonitor<SanakanConfiguration> _config;
-        private readonly DiscordSocketClient _client;
+        private readonly IDiscordSocketClientAccessor _client;
 
         public RichMessageController(
-            DiscordSocketClient client,
+            IDiscordSocketClientAccessor client,
             IOptionsMonitor<SanakanConfiguration> config)
         {
             _client = client;
@@ -51,7 +52,7 @@ namespace Sanakan.Web.Controllers
             {
                 foreach (var rmc in config.RMConfig)
                 {
-                    var guild = _client.GetGuild(rmc.GuildId);
+                    var guild = _client.Client.GetGuild(rmc.GuildId);
                     
                     if (guild == null)
                     {
@@ -100,7 +101,7 @@ namespace Sanakan.Web.Controllers
             {
                 foreach (var rmc in config.RMConfig)
                 {
-                    var guild = _client.GetGuild(rmc.GuildId);
+                    var guild = _client.Client.GetGuild(rmc.GuildId);
 
                     if (guild == null)
                     {
@@ -160,7 +161,7 @@ namespace Sanakan.Web.Controllers
             {
                 if (rmc.Type == RichMessageType.UserNotify)
                 {
-                    var user = _client.GetUser(rmc.ChannelId);
+                    var user = _client.Client.GetUser(rmc.ChannelId);
                     if (user == null)
                     {
                         continue;
@@ -173,7 +174,7 @@ namespace Sanakan.Web.Controllers
                     continue;
                 }
 
-                var guild = _client.GetGuild(rmc.GuildId);
+                var guild = _client.Client.GetGuild(rmc.GuildId);
                 
                 if (guild == null)
                 {

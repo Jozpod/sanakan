@@ -590,7 +590,7 @@ namespace Sanakan.Services
             SocketRole userRole,
             long duration,
             string reason = "nie podano",
-            IEnumerable<ModeratorRoles> modRoles? = null)
+            IEnumerable<ModeratorRoles>? modRoles = null)
         {
             var info = new PenaltyInfo
             {

@@ -23,8 +23,8 @@ namespace Sanakan.Services
     public class Profile
     {
         private readonly DiscordSocketClient _client;
-        private readonly IShindenClient _shClient;
-        private readonly IImageProcessing _img;
+        private readonly IShindenClient _shindenClient;
+        private readonly IImageProcessor _imageProcessor;
         private readonly IFileSystem _fileSystem;
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private ILogger _logger;
@@ -32,18 +32,18 @@ namespace Sanakan.Services
 
         public Profile(
             DiscordSocketClient client,
-            IShindenClient shClient,
-            IImageProcessing img,
+            IShindenClient shindenClient,
+            IImageProcessor img,
             IFileSystem fileSystem,
             IServiceScopeFactory serviceScopeFactory,
             ILogger<Profile> logger)
         {
-            _shClient = shClient;
+            _shindenClient = shindenClient;
             _client = client;
             _logger = logger;
             _fileSystem = fileSystem;
             _serviceScopeFactory = serviceScopeFactory;
-            _img = img;
+            _imageProcessor = img;
 
             _timer = new Timer(async _ =>
             {
@@ -235,7 +235,7 @@ namespace Sanakan.Services
 
         public Stream GetColorList(SCurrency currency)
         {
-            using (var image = _img.GetFColorsView(currency))
+            using (var image = _imageProcessor.GetFColorsView(currency))
             {
                 return image.ToPngStream();
             }
@@ -245,13 +245,13 @@ namespace Sanakan.Services
         {
             var isConnected = botUser.Shinden != 0;
 
-            var userResult = await _shClient.GetUserInfoAsync(botUser.Shinden);
+            var userResult = await _shindenClient.GetUserInfoAsync(botUser.Shinden);
             var user = userResult.Value;
 
             var roleColor = discordUser.Roles.OrderByDescending(x => x.Position)
                 .FirstOrDefault()?.Color ?? Discord.Color.DarkerGrey;
 
-            using var image = await _img.GetUserProfileAsync(
+            using var image = await _imageProcessor.GetUserProfileAsync(
                 isConnected ? user : null,
                 botUser,
                 discordUser.GetUserOrDefaultAvatarUrl(),
@@ -281,7 +281,7 @@ namespace Sanakan.Services
                     _fileSystem.Delete(path);
                 }
 
-                await _img.SaveImageFromUrlAsync(imgUrl, path, new Size(width, height), streach);
+                await _imageProcessor.SaveImageFromUrlAsync(imgUrl, path, new Size(width, height), streach);
             }
             catch (Exception)
             {

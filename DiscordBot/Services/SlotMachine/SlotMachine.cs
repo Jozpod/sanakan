@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Sanakan.Common;
 using Sanakan.DAL.Models;
 using Sanakan.DiscordBot.Services;
 using Sanakan.Extensions;
@@ -7,27 +8,28 @@ namespace Sanakan.Services.SlotMachine
 {
     public class SlotMachine
     {
+        private readonly IRandomNumberGenerator _randomNumberGenerator;
         private const int Rows = 3;
         private const int Slots = 5;
 
-        private User User;
-
         public SlotMachineSlots[,] Row { get; private set; }
 
-        public SlotMachine(User user)
+        public SlotMachine(IRandomNumberGenerator randomNumberGenerator)
         {
+            _randomNumberGenerator = randomNumberGenerator;
             Row = new SlotMachineSlots[Rows, Slots];
-            User = user;
         }
 
-        public long ToPay() => User.SMConfig.Beat.Value() * User.SMConfig.Multiplier.Value() * User.SMConfig.Rows.Value();
+        public long ToPay(User user) => user.SMConfig.Beat.Value() 
+            * user.SMConfig.Multiplier.Value() 
+            * user.SMConfig.Rows.Value();
 
-        private string RowIsSelected(int index)
+        private string RowIsSelected(User user, int index)
         {
             string nok = "✖";
             string ok = "✔";
 
-            switch (User.SMConfig.Rows)
+            switch (user.SMConfig.Rows)
             {
                 case SlotMachineSelectedRows.r3:
                 {
@@ -53,89 +55,114 @@ namespace Sanakan.Services.SlotMachine
             }
         }
 
-        public string Draw()
+        public string Draw(User user)
         {
-            string[] m = new string[Rows];
+            var m = new string[Rows];
+
             for (int i = 0; i < Rows; i++)
             {
-                m[i] += RowIsSelected(i) + " ";               
+                m[i] += RowIsSelected(user, i) + " ";               
                 for (int j = 0; j < Slots; j++)
-                    m[i] += Row[i, j].Icon(User.SMConfig.PsayMode > 0);
+                    m[i] += Row[i, j].Icon(user.SMConfig.PsayMode > 0);
             }
+            
             return string.Join("\n", m);
         }
 
-        public List<List<string>> DrawUCS()
+        public List<List<string>> DrawUCS(User user)
         {
             var ucs = new List<List<string>>();
-            for (int i = 0; i < Rows; i++)
+            for (var i = 0; i < Rows; i++)
             {
                 var tl = new List<string>();
-                tl.Add(RowIsSelected(i) + " ");
+                tl.Add(RowIsSelected(user, i) + " ");
                 for (int j = 0; j < Slots; j++)
-                    tl.Add(Row[i, j].Icon(User.SMConfig.PsayMode > 0));
+                    tl.Add(Row[i, j].Icon(user.SMConfig.PsayMode > 0));
 
                 ucs.Add(tl);
             }
             return ucs;
         }
 
-        public long Play(ISlotRandom rng)
+        public long Play(User user)
         {
             var lst = new List<SlotMachineWinSlots>();
 
-            Randomize(rng);
-            var win = GetWin(ref lst);
-            UpdateStats(win, lst);
+            Randomize();
+            var win = GetWin(user, ref lst);
+            UpdateStats(user, win, lst);
 
-            if (User.SMConfig.PsayMode > 0) 
-                --User.SMConfig.PsayMode;
+            if (user.SMConfig.PsayMode > 0) 
+                --user.SMConfig.PsayMode;
 
             return win;
         }
 
-        private void UpdateStats(long win, List<SlotMachineWinSlots> slots)
+        private void UpdateStats(User user, long win, List<SlotMachineWinSlots> slots)
         {
-            ++User.Stats.SlotMachineGames;
-            var scLost = ToPay() - win;
+            ++user.Stats.SlotMachineGames;
+            var scLost = ToPay(user) - win;
+
             if (scLost > 0)
             {
-                User.Stats.ScLost += scLost;
-                User.Stats.IncomeInSc -= scLost;
+                user.Stats.ScLost += scLost;
+                user.Stats.IncomeInSc -= scLost;
             }
             else
-                User.Stats.IncomeInSc += win;
+                user.Stats.IncomeInSc += win;
         }
 
-        private long GetWin(ref List<SlotMachineWinSlots> list)
+        private long GetWin(User user, ref List<SlotMachineWinSlots> list)
         {
-            long rBeat = User.SMConfig.Beat.Value() * User.SMConfig.Multiplier.Value();
+            long rBeat = user.SMConfig.Beat.Value() * user.SMConfig.Multiplier.Value();
             long win = 0;
 
-            switch(User.SMConfig.Rows)
+            switch(user.SMConfig.Rows)
             {
                 case SlotMachineSelectedRows.r3:
-                    win += CheckRow(2, rBeat, ref list);
+                    win += CheckRow(user, 2, rBeat, ref list);
                     goto case SlotMachineSelectedRows.r2;
                 case SlotMachineSelectedRows.r2:
-                    win += CheckRow(0, rBeat, ref list);
+                    win += CheckRow(user, 0, rBeat, ref list);
                     goto case SlotMachineSelectedRows.r1;
                 case SlotMachineSelectedRows.r1:
                 default:
-                    return win + CheckRow(1, rBeat, ref list);
+                    return win + CheckRow(user, 1, rBeat, ref list);
             }
         }
 
-        private void Randomize(ISlotRandom rng)
+        private void Randomize()
         {
             for (int i = 0; i < Rows; i++)
             {
                 for (int j = 0; j < Slots; j++)
-                    Row[i, j] = rng.Next(0, SlotMachineSlots.max.Value()).ToSMS();
+                    Row[i, j] = Next(0, SlotMachineSlots.max.Value()).ToSMS();
             }
         }
 
-        private long CheckRow(int index, long beat, ref List<SlotMachineWinSlots> list)
+        public int Next(int min, int max)
+        {
+            double sum = 0;
+            double rMax = 100;
+            double[] chance = new double[max];
+            for (int i = 0; i < (max + 1); i++) sum += i;
+            for (int i = 0; i < max; i++) chance[i] = (max - i) * (rMax / sum);
+
+            int low = 0;
+            int high = 0;
+            int next = _randomNumberGenerator.GetRandomValue(min, (int)(rMax * 10));
+            for (int i = 0; i < max; i++)
+            {
+                if (i > 0) low = (int)(chance[i - 1] * 10);
+                high += (int)(chance[i] * 10);
+
+                if (next >= low && next < high)
+                    return i;
+            }
+            return 0;
+        }
+
+        private long CheckRow(User user, int index, long beat, ref List<SlotMachineWinSlots> list)
         {
             int rt = 0;
             bool broken = false;
@@ -161,10 +188,10 @@ namespace Sanakan.Services.SlotMachine
             list.Add(ft.WinType(rt));
             if (ft == SlotMachineSlots.q)
             {
-                User.SMConfig.PsayMode += ft.WinValue(rt);
+                user.SMConfig.PsayMode += ft.WinValue(rt);
                 return 0;
             }
-            return ft.WinValue(rt, User.SMConfig.PsayMode > 0) * beat;
+            return ft.WinValue(rt, user.SMConfig.PsayMode > 0) * beat;
         }
     }
 }

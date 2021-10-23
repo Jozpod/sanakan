@@ -17,6 +17,8 @@ using Sanakan.DiscordBot.Services;
 using Sanakan.Common;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot.Resources;
+using Sanakan.DiscordBot;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Sanakan.Modules
 {
@@ -32,22 +34,20 @@ namespace Sanakan.Modules
         private readonly IQuestionRepository _questionRepository;
         private readonly ISystemClock _systemClock;
         private readonly IRandomNumberGenerator _randomNumberGenerator;
-        private readonly IServiceProvider _serviceProvider;
-
+        private readonly IServiceScopeFactory _serviceScopeFactory;
+        private readonly SlotMachine _slotMachine;
         public FunModule(
             ModeratorService moderation,
             SessionManager session,
             ICacheManager cacheManager,
-            IAllRepository repository,
             ISystemClock systemClock,
-            IServiceProvider serviceProvider)
+            IServiceScopeFactory serviceScopeFactory)
         {
             _session = session;
             _moderation = moderation;
             _cacheManager = cacheManager;
-            _repository = repository;
             _systemClock = systemClock;
-            _serviceProvider = serviceProvider;
+            _serviceScopeFactory = serviceScopeFactory;
         }
 
         [Command("drobne")]
@@ -88,7 +88,7 @@ namespace Sanakan.Modules
             daily.EndsAt = _systemClock.UtcNow.AddHours(20);
             botuser.ScCnt += 100;
 
-            await _repository.SaveChangesAsync();
+            await _userRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(new string[] { $"user-{botuser.Id}" });
 
@@ -140,7 +140,7 @@ namespace Sanakan.Modules
             await msg.AddReactionsAsync(session.StartReactions);
 
             // _serviceProvider.GetService();
-            session.Actions = new AcceptMute(_randomNumberGenerator)
+            session.Actions = new AcceptMute(_randomNumberGenerator, null)
             {
                 NotifChannel = notifChannel,
                 MuteRole = muteRole,
@@ -186,7 +186,7 @@ namespace Sanakan.Modules
             }
             mission.Count();
 
-            await _repository.SaveChangesAsync();
+            await _userRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(new string[] { $"user-{botuser.Id}", "users" });
 
@@ -206,13 +206,12 @@ namespace Sanakan.Modules
                 return;
             }
 
-            var emote = Emote.Parse("<a:pinkarrow:826132578016559144>");
-            var allOptions = options.Shuffle().ToList();
+            var allOptions = _randomNumberGenerator.Shuffle(options).ToList();
 
             var delay = _randomNumberGenerator.GetRandomValue(100, 500);
             await Task.Delay(delay);
 
-            var content = $"{emote} {_randomNumberGenerator.GetOneRandomFrom(allOptions)}".ToEmbedMessage(EMType.Success).WithAuthor(new EmbedAuthorBuilder().WithUser(Context.User)).Build();
+            var content = $"{Emotes.PinkArrow} {_randomNumberGenerator.GetOneRandomFrom(allOptions)}".ToEmbedMessage(EMType.Success).WithAuthor(new EmbedAuthorBuilder().WithUser(Context.User)).Build();
             await ReplyAsync("", embed: content);
         }
 
@@ -259,7 +258,7 @@ namespace Sanakan.Modules
                 botuser.Stats.IncomeInSc -= amount;
             }
 
-            await _repository.SaveChangesAsync();
+            await _userRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(new string[] { $"user-{botuser.Id}", "users" });
 
@@ -287,7 +286,7 @@ namespace Sanakan.Modules
                 return;
             }
 
-            await _repository.SaveChangesAsync();
+            await _userRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(new string[] { $"user-{botuser.Id}", "users" });
 
@@ -326,16 +325,18 @@ namespace Sanakan.Modules
 
             var discordUser = Context.User;
             var botUser = await _userRepository.GetUserOrCreateAsync(discordUser.Id);
-            var machine = new SlotMachine(botUser);
 
-            var toPay = machine.ToPay();
+            var toPay = _slotMachine.ToPay(botUser);
+
             if (botUser.ScCnt < toPay)
             {
-                await ReplyAsync("", embed: $"{Context.User.Mention} brakuje Ci SC, aby za tyle zagrać.".ToEmbedMessage(EMType.Error).Build());
+                var content1 = $"{Context.User.Mention} brakuje Ci SC, aby za tyle zagrać.".ToEmbedMessage(EMType.Error).Build();
+                await ReplyAsync("", embed: content1);
                 return;
             }
 
-            var win = machine.Play(new SlotWickedRandom());
+            //new SlotWickedRandom()
+            var win = _slotMachine.Play(botUser);
             // var win = machine.Play(new SlotEqualRandom());
             botUser.ScCnt += win - toPay;
 
@@ -353,7 +354,7 @@ namespace Sanakan.Modules
                 Strings.SlotMachineResult,
                 psay,
                 discordUser.Mention,
-                machine.Draw(),
+                _slotMachine.Draw(botUser),
                 beatValue,
                 multiplierValue,
                 win);
@@ -400,7 +401,7 @@ namespace Sanakan.Modules
             var newScCnt = (value * 60) / 100;
             targetUser.ScCnt += newScCnt;
 
-            await _repository.SaveChangesAsync();
+            await _userRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(new string[] { $"user-{thisUser.Id}", "users", $"user-{targetUser.Id}" });
 
@@ -416,7 +417,7 @@ namespace Sanakan.Modules
             var riddles = new List<Question>();
             riddles = await _questionRepository.GetCachedAllQuestionsAsync();
 
-            riddles = riddles.Shuffle().ToList();
+            riddles = _randomNumberGenerator.Shuffle(riddles).ToList();
             var riddle = riddles.FirstOrDefault();
 
             riddle.RandomizeAnswers(_randomNumberGenerator);

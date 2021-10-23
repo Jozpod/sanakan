@@ -195,18 +195,6 @@ namespace Sanakan.DAL.Repositories
             return result;
         }
 
-        public async Task<Card> GetCardAsync(ulong wid)
-        {
-            var result = await _dbContext
-                .Cards
-                .Include(x => x.GameDeck)
-                .Include(x => x.ArenaStats)
-                .Include(x => x.TagList)
-                .AsNoTracking()
-                .FirstOrDefaultAsync(x => x.Id == wid);
-
-            return result;
-        }
         public async Task<Question> GetQuestionAsync(ulong id)
         {
             var result = await _dbContext

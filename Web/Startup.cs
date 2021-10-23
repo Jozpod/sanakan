@@ -13,6 +13,7 @@ using Microsoft.OpenApi.Models;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
 using Sanakan.Common;
+using Sanakan.DAL.Builder;
 using Sanakan.DAL.Repositories;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot;
@@ -142,7 +143,7 @@ namespace Sanakan
             
             services.AddSingleton<HelperService>();
             services.AddSingleton<CommandHandler>();
-            services.AddSingleton<IImageProcessing, ImageProcessing>();
+            services.AddSingleton<IImageProcessor, ImageProcessing>();
             services.AddSingleton<IWaifuService, WaifuService>();
             //_shindenClient =
 
@@ -158,7 +159,7 @@ namespace Sanakan
             services.AddSingleton<Services.LandManager>();
             services.AddSingleton<IRandomNumberGenerator, RandomNumberGenerator>();
             services.AddSingleton<IDiscordSocketClientAccessor, DiscordSocketClientAccessor>();
-            services.AddScoped<IUserRepository, UserRepository>();
+            services.AddRepositories();
             services.AddHostedService<DiscordBotHostedService>();
             services.AddHostedService<MemoryUsageHostedService>();
             services.AddHostedService<DiscordBotHostedService>();

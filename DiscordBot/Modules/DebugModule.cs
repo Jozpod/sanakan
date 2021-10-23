@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using DiscordBot.Services.Executor;
 using DiscordBot.Services.PocketWaifu.Abstractions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -19,6 +20,7 @@ using Sanakan.Services.Commands;
 using Sanakan.Services.Executor;
 using Sanakan.Services.PocketWaifu;
 using Sanakan.ShindenApi;
+using Sanakan.ShindenApi.Utilities;
 using Shinden;
 using Shinden.API;
 using Shinden.Models;
@@ -39,12 +41,13 @@ namespace Sanakan.Modules
         private readonly IWaifuService _waifuService;
         private readonly WritableOptions<SanakanConfiguration> _config;
         private readonly IExecutor _executor;
-        private readonly HelperService _helper;
-        private readonly IShindenClient _shClient;
-        private readonly IImageProcessing _img;
+        private readonly HelperService _helperService;
+        private readonly IShindenClient _shindenClient;
+        private readonly IImageProcessor _imageProcessor;
         private readonly IUserRepository _userRepository;
         private readonly ICardRepository _cardRepository;
         private readonly IQuestionRepository _questionRepository;
+        private readonly IGuildConfigRepository _guildConfigRepository;
         private readonly ISystemClock _systemClock;
         private readonly ICacheManager _cacheManager;
         private readonly IResourceManager _resourceManager;
@@ -52,30 +55,30 @@ namespace Sanakan.Modules
 
         public DebugModule(
             IWaifuService waifuService,
-            IShindenClient shClient,
+            IShindenClient shindenClient,
             HelperService helper,
-            IImageProcessing img,
+            IImageProcessor imageProcessor,
             WritableOptions<SanakanConfiguration> config,
-            IAllRepository repository,
             IUserRepository userRepository,
             ICardRepository cardRepository,
+            IGuildConfigRepository guildConfigRepository,
             ISystemClock systemClock,
             IResourceManager resourceManager,
             IRandomNumberGenerator randomNumberGenerator,
             IExecutor executor)
         {
-            _shClient = shClient;
+            _shindenClient = shindenClient;
             _executor = executor;
-            _helper = helper;
+            _helperService = helper;
             _config = config;
             _waifuService = waifuService;
-            _repository = repository;
+            _guildConfigRepository = guildConfigRepository;
             _userRepository = userRepository;
             _cardRepository = cardRepository;
             _systemClock = systemClock;
             _resourceManager = resourceManager;
             _randomNumberGenerator = randomNumberGenerator;
-            _img = img;
+            _imageProcessor = imageProcessor;
         }
 
         [Command("poke", RunMode = RunMode.Async)]
@@ -93,7 +96,7 @@ namespace Sanakan.Modules
                     return;
                 }
 
-                var character = (await _shClient.GetCharacterInfoAsync(2)).Value;
+                var character = (await _shindenClient.GetCharacterInfoAsync(2)).Value;
                 var channel = Context.Channel as ITextChannel;
 
                 _ = await _waifuService.GetSafariViewAsync(
@@ -242,7 +245,7 @@ namespace Sanakan.Modules
             {
                 try
                 {
-                    var result = await _shClient.GetCharacterInfoAsync(card.Character);
+                    var result = await _shindenClient.GetCharacterInfoAsync(card.Character);
                     
                     if (result.Value == null)
                     {
@@ -251,8 +254,8 @@ namespace Sanakan.Modules
                     }
 
                     var characterInfo = result.Value;
-                    var pictureUrl = Url.GetPersonPictureURL(characterInfo.PictureArtifactId.Value);
-                    var hasImage = pictureUrl != Url.GetPlaceholderImageURL();
+                    var pictureUrl = UrlHelpers.GetPersonPictureURL(characterInfo.PictureId.Value);
+                    var hasImage = pictureUrl != UrlHelpers.GetPlaceholderImageURL();
 
                     card.Unique = false;
                     card.Name = characterInfo.ToString();
@@ -303,7 +306,7 @@ namespace Sanakan.Modules
 
             var mention = "";
             SocketRole? mutedRole = null;
-            var config = await _repository.GetCachedGuildFullConfigAsync(guild.Id);
+            var config = await _guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
 
             if (config != null)
             {
@@ -313,14 +316,14 @@ namespace Sanakan.Modules
                 mutedRole = guild.GetRole(config.MuteRole);
             }
 
-            var msg = await ReplyAsync(mention, embed: $"Loteria kart. Zareaguj {emote}, aby wziąć udział.\n\nKoniec `{time.ToShortTimeString()}:{time.Second.ToString("00")}`".ToEmbedMessage(EMType.Bot).Build());
-            await msg.AddReactionAsync(emote);
+            var userMessage = await ReplyAsync(mention, embed: $"Loteria kart. Zareaguj {emote}, aby wziąć udział.\n\nKoniec `{time.ToShortTimeString()}:{time.Second.ToString("00")}`".ToEmbedMessage(EMType.Bot).Build());
+            await userMessage.AddReactionAsync(emote);
 
             await Task.Delay(TimeSpan.FromMinutes(duration));
-            await msg.RemoveReactionAsync(emote, Context.Client.CurrentUser);
+            await userMessage.RemoveReactionAsync(emote, Context.Client.CurrentUser);
 
-            var reactions = await msg.GetReactionUsersAsync(emote, 300).FlattenAsync();
-            var users = reactions.Shuffle().ToList();
+            var reactions = await userMessage.GetReactionUsersAsync(emote, 300).FlattenAsync();
+            var users = _randomNumberGenerator.Shuffle(reactions).ToList();
 
             IUser? winner = null;
             var watch = Stopwatch.StartNew();
@@ -331,7 +334,7 @@ namespace Sanakan.Modules
 
                 if (users.Count < 1)
                 {
-                    await msg.ModifyAsync(x => x.Embed = "Na loterie nie stawił się żaden użytkownik!".ToEmbedMessage(EMType.Error).Build());
+                    await userMessage.ModifyAsync(x => x.Embed = "Na loterie nie stawił się żaden użytkownik!".ToEmbedMessage(EMType.Error).Build());
                     return;
                 }
 
@@ -357,14 +360,14 @@ namespace Sanakan.Modules
                 var user = await _userRepository.GetUserOrCreateAsync(id);
                 if (user == null)
                 {
-                    await msg.ModifyAsync(x => x.Embed = "Nie odnaleziono kart do rozdania!".ToEmbedMessage(EMType.Error).Build());
+                    await userMessage.ModifyAsync(x => x.Embed = "Nie odnaleziono kart do rozdania!".ToEmbedMessage(EMType.Error).Build());
                     return;
                 }
 
                 var loteryCards = user.GameDeck.Cards.ToList();
                 if (loteryCards.Count < 1)
                 {
-                    await msg.ModifyAsync(x => x.Embed = "Nie odnaleziono kart do rozdania!".ToEmbedMessage(EMType.Error).Build());
+                    await userMessage.ModifyAsync(x => x.Embed = "Nie odnaleziono kart do rozdania!".ToEmbedMessage(EMType.Error).Build());
                     return;
                 }
 
@@ -372,7 +375,7 @@ namespace Sanakan.Modules
 
                 if (winnerUser == null)
                 {
-                    await msg.ModifyAsync(x => x.Embed = "Nie odnaleziono docelowego użytkownika!".ToEmbedMessage(EMType.Error).Build());
+                    await userMessage.ModifyAsync(x => x.Embed = "Nie odnaleziono docelowego użytkownika!".ToEmbedMessage(EMType.Error).Build());
                     return;
                 }
 
@@ -402,13 +405,16 @@ namespace Sanakan.Modules
                     idsToSelect.Remove(wid);
                 }
 
-                await _repository.SaveChangesAsync();
-                await msg.DeleteAsync();
+                await _guildConfigRepository.SaveChangesAsync();
+                await userMessage.DeleteAsync();
 
                 _cacheManager.ExpireTag(new string[] { $"user-{Context.User.Id}", "users", $"user-{id}" });
 
-                msg = await ReplyAsync(embed: $"Loterie wygrywa {winner.Mention}.\nOtrzymuje: {string.Join("\n", cardsIds)}".TrimToLength(2000).ToEmbedMessage(EMType.Success).Build());
-                var jumpUrl = msg.GetJumpUrl();
+                userMessage = await ReplyAsync(embed: $"Loterie wygrywa {winner.Mention}.\nOtrzymuje: {string.Join("\n", cardsIds)}"
+                    .TrimToLength(2000)
+                    .ToEmbedMessage(EMType.Success).Build());
+
+                var jumpUrl = userMessage.GetJumpUrl();
 
                 try
                 {
@@ -429,7 +435,7 @@ namespace Sanakan.Modules
             }), Priority.High);
 
             await _executor.TryAdd(exe, TimeSpan.FromSeconds(1));
-            await msg.RemoveAllReactionsAsync();
+            await userMessage.RemoveAllReactionsAsync();
         }
 
         [Command("tranc"), Priority(1)]
@@ -779,7 +785,7 @@ namespace Sanakan.Modules
             }
             else
             {
-                var result = await _shClient.GetCharacterInfoAsync(thisCard.Character);
+                var result = await _shindenClient.GetCharacterInfoAsync(thisCard.Character);
                 if (result.Value != null)
                 {
                     thisCard.Title = result.Value.Relations?
@@ -951,7 +957,7 @@ namespace Sanakan.Modules
                 return;
             }
 
-            using var badge = await _img.GetLevelUpBadgeAsync(
+            using var badge = await _imageProcessor.GetLevelUpBadgeAsync(
                 "Very very long nickname of trolly user",
                 2154,
                 user.GetUserOrDefaultAvatarUrl(),
@@ -1040,7 +1046,7 @@ namespace Sanakan.Modules
                 character = await _waifuService.GetRandomCharacterAsync();
             }
             else {
-                character = (await _shClient.GetCharacterInfoAsync(id)).Value;
+                character = (await _shindenClient.GetCharacterInfoAsync(id)).Value;
             }
 
             if (rarity == Rarity.E) {
@@ -1055,7 +1061,7 @@ namespace Sanakan.Modules
 
             botuser.GameDeck.RemoveCharacterFromWishList(card.Character);
 
-            await _repository.SaveChangesAsync();
+            await _userRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(new string[] { $"user-{botuser.Id}", "users" });
 
@@ -1373,7 +1379,7 @@ namespace Sanakan.Modules
         {
             if (command == null)
             {
-                await ReplyAsync(_helper.GivePrivateHelp("Debug"));
+                await ReplyAsync(_helperService.GivePrivateHelp("Debug"));
 
                 return;
             }
@@ -1383,7 +1389,7 @@ namespace Sanakan.Modules
                 var prefix = _config.Value.Prefix;
                 if (Context.Guild != null)
                 {
-                    var gConfig = await _repository.GetCachedGuildFullConfigAsync(Context.Guild.Id);
+                    var gConfig = await _guildConfigRepository.GetCachedGuildFullConfigAsync(Context.Guild.Id);
 
                     if (gConfig?.Prefix != null)
                     {
@@ -1391,7 +1397,7 @@ namespace Sanakan.Modules
                     }
                 }
 
-                await ReplyAsync(_helper.GiveHelpAboutPrivateCmd("Debug", command, prefix));
+                await ReplyAsync(_helperService.GiveHelpAboutPrivateCmd("Debug", command, prefix));
             }
             catch (Exception ex)
             {

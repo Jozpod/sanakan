@@ -32,7 +32,7 @@ namespace Sanakan.Web.Controllers
     public class WaifuController : ControllerBase
     {
         private readonly IShindenClient _shindenClient;
-        private readonly IWaifuService _waifu;
+        private readonly IWaifuService _waifuService;
         private readonly IExecutor _executor;
         private readonly IFileSystem _fileSystem;
         private readonly IUserRepository _userRepository;
@@ -42,21 +42,25 @@ namespace Sanakan.Web.Controllers
         private readonly IJwtBuilder _jwtBuilder;
 
         public WaifuController(
-            IShindenClient shClient,
-            IWaifuService waifu,
+            IShindenClient shindenClient,
+            IWaifuService waifuService,
             IExecutor executor,
             IFileSystem fileSystem,
             IUserRepository userRepository,
+            ICardRepository cardRepository,
             IUserContext userContext,
-            ICacheManager cacheManager)
+            ICacheManager cacheManager,
+            IJwtBuilder jwtBuilder)
         {
-            _waifu = waifu;
-            _fileSystem = fileSystem;
+            _shindenClient = shindenClient;
+            _waifuService = waifuService;
             _executor = executor;
-            _shindenClient = shClient;
+            _fileSystem = fileSystem;
             _userRepository = userRepository;
+            _cardRepository = cardRepository;
             _userContext = userContext;
             _cacheManager = cacheManager;
+            _jwtBuilder = jwtBuilder;
         }
 
         /// <summary>
@@ -336,8 +340,8 @@ namespace Sanakan.Web.Controllers
 
                     try
                     {
-                        _waifu.DeleteCardImageIfExist(card);
-                        _ = _waifu.GenerateAndSaveCardAsync(card).Result;
+                        _waifuService.DeleteCardImageIfExist(card);
+                        _ = _waifuService.GenerateAndSaveCardAsync(card).Result;
                     }
                     catch (Exception) { }
 
@@ -372,7 +376,7 @@ namespace Sanakan.Web.Controllers
             }
 
             var characterInfo = characterResult.Value;
-            var pictureUrl = UrlHelpers.GetPersonPictureURL(characterInfo.PictureArtifactId);
+            var pictureUrl = UrlHelpers.GetPersonPictureURL(characterInfo.PictureId);
             var hasImage = pictureUrl != UrlHelpers.GetPlaceholderImageURL();
 
             if (!hasImage)
@@ -387,13 +391,13 @@ namespace Sanakan.Web.Controllers
 
                     foreach (var card in cards)
                     {
-                        var pictureUrl = UrlHelpers.GetPersonPictureURL(characterInfo.PictureArtifactId);
+                        var pictureUrl = UrlHelpers.GetPersonPictureURL(characterInfo.PictureId);
                         card.Image = pictureUrl;
 
                         try
                         {
-                            _waifu.DeleteCardImageIfExist(card);
-                            _ = _waifu.GenerateAndSaveCardAsync(card).Result;
+                            _waifuService.DeleteCardImageIfExist(card);
+                            _ = _waifuService.GenerateAndSaveCardAsync(card).Result;
                         }
                         catch (Exception) { }
 
@@ -448,7 +452,7 @@ namespace Sanakan.Web.Controllers
                 allCards.AddRange(cards);
             }
 
-            var result = await _waifu.GetCardsFromWishlist(
+            var result = await _waifuService.GetCardsFromWishlist(
                 cardsId,
                 characterIds,
                 titleIds,
@@ -498,7 +502,7 @@ namespace Sanakan.Web.Controllers
                 allCards.AddRange(cards);
             }
 
-            var result = await _waifu.GetCardsFromWishlist(
+            var result = await _waifuService.GetCardsFromWishlist(
                 cardsId,
                 characterIds,
                 titleIds,
@@ -542,8 +546,8 @@ namespace Sanakan.Web.Controllers
                     return ShindenNotFound(Strings.CardNotFound);
                 }
                 
-                _waifu.DeleteCardImageIfExist(card);
-                var cardImage = await _waifu.GenerateAndSaveCardAsync(card);
+                _waifuService.DeleteCardImageIfExist(card);
+                var cardImage = await _waifuService.GenerateAndSaveCardAsync(card);
                 var stream = _fileSystem.OpenRead(cardImage);
 
                 return File(stream, "image/png");
@@ -742,7 +746,7 @@ namespace Sanakan.Web.Controllers
             var cards = new List<Card>();
             foreach (var pack in packs)
             {
-                cards.AddRange(await _waifu.OpenBoosterPackAsync(null, pack));
+                cards.AddRange(await _waifuService.OpenBoosterPackAsync(null, pack));
             }
 
             var exe = new Executable($"api-packet-open u{discordId}", new Task<Task>(async () =>
@@ -817,7 +821,7 @@ namespace Sanakan.Web.Controllers
                 return ShindenNotAcceptable("User has no space left in deck!");
             }
 
-            cards = await _waifu.OpenBoosterPackAsync(null, pack);
+            cards = await _waifuService.OpenBoosterPackAsync(null, pack);
             bPackName = pack.Name;
 
             //var exe = new Executable($"api-packet-open u{discordId}", new Task<Task>(async () =>

@@ -15,6 +15,7 @@ using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot.Configuration;
 using Sanakan.Extensions;
 using Sanakan.Services.Executor;
+using Shinden.API;
 using Shinden.Models;
 
 namespace Sanakan.Services.PocketWaifu
@@ -111,8 +112,14 @@ namespace Sanakan.Services.PocketWaifu
             });
         }
 
-        private void RunSafari(EmbedBuilder embed, IUserMessage msg, Card newCard,
-            SafariImage pokeImage, ICharacterInfo character, ITextChannel trashChannel, SocketRole mutedRole)
+        private void RunSafari(
+            EmbedBuilder embed,
+            IUserMessage msg,
+            Card newCard,
+            SafariImage pokeImage,
+            CharacterInfo character,
+            ITextChannel trashChannel,
+            SocketRole mutedRole)
         {
             _ = Task.Run(async () =>
             {
@@ -172,8 +179,14 @@ namespace Sanakan.Services.PocketWaifu
             });
         }
 
-        private Executable GetSafariExe(EmbedBuilder embed, IUserMessage msg, Card newCard,
-            SafariImage pokeImage, ICharacterInfo character, ITextChannel trashChannel, IUser winner)
+        private Executable GetSafariExe(
+            EmbedBuilder embed,
+            IUserMessage msg,
+            Card newCard,
+            SafariImage pokeImage,
+            CharacterInfo character,
+            ITextChannel trashChannel,
+            IUser winner)
         {
             return new Executable("safari", new Task<Task>(async () =>
             {

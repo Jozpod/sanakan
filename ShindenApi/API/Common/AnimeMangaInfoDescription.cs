@@ -11,7 +11,7 @@ namespace Sanakan.ShindenApi.API.Common
         public ulong DescriptionId { get; set; }
 
         [JsonProperty("description")]
-        public string OtherDescription { get; set; }
+        public string OtherDescription { get; set; } // HttpUtility.HtmlDecode(desc?.OtherDescription)?.RemoveBBCode(),
 
         [JsonProperty("lang_code")]
         public string LangCode { get; set; }

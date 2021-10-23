@@ -1,4 +1,5 @@
 ﻿using Discord.Commands;
+using DiscordBot.Services.Executor;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -93,7 +94,10 @@ namespace Sanakan.Extensions
             }
 
             var chosenOverload = successfulParses[0];
-            return new Services.Commands.SearchResult(command: new Services.Commands.Command(chosenOverload.Key, chosenOverload.Value, context, (Services.Executor.Priority) chosenOverload.Key.Command.Priority));
+            return new Services.Commands.SearchResult(
+                command: new Services.Commands.Command(chosenOverload.Key,
+                chosenOverload.Value, context,
+                (Priority) chosenOverload.Key.Command.Priority));
         }
     }
 }

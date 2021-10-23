@@ -1,8 +1,7 @@
 ﻿using Newtonsoft.Json;
+using Sanakan.ShindenApi.Utilities;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using static Shinden.API.AnimeMangaInfo;
 
 namespace Sanakan.ShindenApi.API.Common
 {
@@ -18,19 +17,19 @@ namespace Sanakan.ShindenApi.API.Common
         public AnimeMangaInfoDescription Description { get; set; }
 
         [JsonProperty("anime")]
-        public Anime Anime { get; set; }
+        public AnimeInfo Anime { get; set; }
 
         [JsonProperty("manga")]
-        public Manga Manga { get; set; }
+        public MangaInfo Manga { get; set; }
 
         [JsonProperty("add_date")]
-        public string AddDate { get; set; }
+        public DateTime AddDate { get; set; } // DateTime.ParseExact(title.AddDate, "yyyy-MM-dd HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture);
 
         [JsonProperty("cover_artifact_id")]
-        public ulong CoverArtifactId { get; set; }
+        public ulong CoverId { get; set; }
 
         [JsonProperty("finish_date")]
-        public string FinishDate { get; set; }
+        public DateTime? FinishDate { get; set; }
 
         [JsonProperty("dmca")]
         public string Dmca { get; set; }
@@ -45,7 +44,7 @@ namespace Sanakan.ShindenApi.API.Common
         public string PremierePrecision { get; set; }
 
         [JsonProperty("premiere_date")]
-        public string PremiereDate { get; set; }
+        public DateTime? StartDate { get; set; }
 
         [JsonProperty("ranking_position")]
         public string RankingPosition { get; set; }
@@ -60,7 +59,7 @@ namespace Sanakan.ShindenApi.API.Common
         public string RatingStoryCnt { get; set; }
 
         [JsonProperty("rating_total_sum")]
-        public string RatingTotalSum { get; set; }
+        public double? RatingTotalSum { get; set; }
 
         [JsonProperty("rating_titlecahracters_sum")]
         public string RatingTitlecahractersSum { get; set; }
@@ -69,16 +68,16 @@ namespace Sanakan.ShindenApi.API.Common
         public string RatingTitlecahractersCnt { get; set; }
 
         [JsonProperty("rating_total_cnt")]
-        public string RatingTotalCnt { get; set; }
+        public double RatingTotalCnt { get; set; }
 
         [JsonProperty("title")]
-        public string OtherTitle { get; set; }
+        public string Title { get; set; } // HttpUtility.HtmlDecode(title?.OtherTitle),
 
         [JsonProperty("title_other")]
-        public TitleOther[] TitleOther { get; set; }
+        public List<TitleOther> TitleOther { get; set; }
 
         [JsonProperty("tags")]
-        public Tags Tags { get; set; }
+        public AnimeMangaInfoTags TagCategories { get; set; }
 
         [JsonProperty("title_id")]
         public ulong TitleId { get; set; }
@@ -88,5 +87,19 @@ namespace Sanakan.ShindenApi.API.Common
 
         [JsonProperty("type")]
         public string Type { get; set; }
+
+        public string AnimeUrl => UrlHelpers.GetSeriesURL(TitleId);
+        public string CoverUrl => UrlHelpers.GetBigImageURL(CoverId);
+
+        public double? TotalRating => RatingTotalSum == 0 ? 0 : RatingTotalCnt / RatingTotalSum;
+
+        public IEnumerable<AnimeMangaInfoEntity> Tags => new[] {
+            TagCategories.Entity,
+            TagCategories.Source,
+            TagCategories.Studio,
+            TagCategories.Genre,
+            TagCategories.Place,
+            TagCategories.Tag,
+        };
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Discord.Commands;
+using Sanakan.Common.Models;
 using Sanakan.DAL.Models;
 using System;
 using System.Threading.Tasks;

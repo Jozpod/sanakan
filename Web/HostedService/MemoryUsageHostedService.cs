@@ -4,12 +4,12 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Sanakan.Common;
 using Sanakan.DAL.Models.Analytics;
-using Sanakan.Web.Configuration;
 using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Sanakan.DAL.Repositories.Abstractions;
+using Sanakan.Configuration;
 
 namespace Sanakan.Web.HostedService
 {
@@ -17,8 +17,8 @@ namespace Sanakan.Web.HostedService
     {
         private readonly ILogger _logger;
         private readonly ISystemClock _systemClock;
-        private readonly SanakanConfiguration _options;
-        private readonly IServiceProvider _serviceProvider;
+        private readonly IOptionsMonitor<SanakanConfiguration> _options;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly Process _process;
         private readonly IOperatingSystem _operatingSystem;
         private readonly ITimer _timer;
@@ -26,30 +26,30 @@ namespace Sanakan.Web.HostedService
 
         public MemoryUsageHostedService(
             ILogger<MemoryUsageHostedService> logger,
-            IOptions<SanakanConfiguration> options,
             ISystemClock systemClock,
-            IServiceProvider serviceProvider,
+            IOptionsMonitor<SanakanConfiguration> options,
+            IServiceScopeFactory serviceScopeFactory,
             IOperatingSystem operatingSystem,
             ITimer timer)
         {
             _logger = logger;
             _systemClock = systemClock;
-            _serviceProvider = serviceProvider;
-            _options = options.Value;
+            _options = options;
+            _serviceScopeFactory = serviceScopeFactory;
             _operatingSystem = operatingSystem;
             _timer = timer;
             _process = _operatingSystem.GetCurrentProcess();
         }
 
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken = default)
         {
             try
             {
                 stoppingToken.ThrowIfCancellationRequested();
                 _timer.Tick += OnTick;
                 _timer.Start(
-                    _options.CaptureMemoryUsageDueTime,
-                    _options.CaptureMemoryUsagePeriod);
+                    _options.CurrentValue.CaptureMemoryUsageDueTime,
+                    _options.CurrentValue.CaptureMemoryUsagePeriod);
                 
                 await Task.Delay(Timeout.Infinite, stoppingToken);
             }
@@ -67,7 +67,9 @@ namespace Sanakan.Web.HostedService
                 var memoryUsage = _process.WorkingSet64 / MB;
 
                 _logger.LogInformation($"Memory Usage: {memoryUsage} MiB");
-                var repository = _serviceProvider.GetRequiredService<ISystemAnalyticsRepository>();
+                using var serviceScope = _serviceScopeFactory.CreateScope();
+                var serviceProvider = serviceScope.ServiceProvider;
+                var repository = serviceProvider.GetRequiredService<ISystemAnalyticsRepository>();
 
                 var record = new SystemAnalytics
                 {

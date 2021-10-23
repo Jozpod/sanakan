@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Sanakan.DAL.Models;
+using Sanakan.ShindenApi.Utilities;
 
 namespace Sanakan.Extensions
 {
@@ -549,7 +550,7 @@ namespace Sanakan.Extensions
                     return 0;
             }
         }
-        public static string GetCharacterUrl(this Card card) => Shinden.API.Url.GetCharacterURL(card.Character);
+        public static string GetCharacterUrl(this Card card) => UrlHelpers.GetCharacterURL(card.Character);
         public static string GetYesNo(this bool b) => b ? "Tak" : "Nie";
         public static bool CanGiveRing(this Card card) => card.Affection >= 5;
         public static bool CanGiveBloodOrUpgradeToSSS(this Card card) => card.Affection >= 50;

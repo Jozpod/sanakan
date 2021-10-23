@@ -21,18 +21,18 @@ namespace Sanakan.Services
 
     public class Shinden
     {
-        private readonly IShindenClient _shClient;
+        private readonly IShindenClient _shindenClient;
         private readonly SessionManager _session;
-        private readonly IImageProcessing _img;
+        private readonly IImageProcessor _imageProcessor;
 
         public Shinden(
             IShindenClient client,
             SessionManager session,
-            IImageProcessing img)
+            IImageProcessor imageProcessor)
         {
-            _shClient = client;
+            _shindenClient = client;
             _session = session;
-            _img = img;
+            _imageProcessor = imageProcessor;
         }
 
         public UrlParsingError ParseUrlToShindenId(string url, out ulong shindenId)
@@ -89,27 +89,29 @@ namespace Sanakan.Services
         {
             if (title.Equals("fate/loli")) title = "Fate/kaleid Liner Prisma Illya";
 
-            var session = new SearchSession(context.User, _shClient);
+            var session = new SearchSession(context.User, _shindenClient);
             
             if (_session.SessionExist(session))
             {
                 return;
             }
 
-            var result = await _shClient.QuickSearchAsync(title, type);
+            var searchResult = await _shindenClient.QuickSearchAsync(title, type);
 
-            if (result == null)
+            if (searchResult.Value == null)
             {
-                await context.Channel.SendMessageAsync("", false, GetResponseFromSearchCode(result).ToEmbedMessage(EMType.Error).Build());
+                await context.Channel.SendMessageAsync("", false, GetResponseFromSearchCode(HttpStatusCode.BadRequest)
+                    .ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
-            var list = result.Value;
+            var list = searchResult.Value;
             var toSend = GetSearchResponse(list, "Wybierz tytuł, który chcesz wyświetlić poprzez wpisanie numeru odpowiadającemu mu na liście.");
 
             if (list.Count == 1)
             {
-                var info = (await _shClient.GetAnimeMangaInfoAsync(list.First())).Body;
+                var first = list.First();
+                var info = (await _shindenClient.GetAnimeMangaInfoAsync(first.TitleId)).Value;
                 await context.Channel.SendMessageAsync("", false, info.ToEmbed());
             }
             else
@@ -143,7 +145,7 @@ namespace Sanakan.Services
 
         public async Task<Stream> GetSiteStatisticAsync(ulong shindenId, SocketGuildUser user)
         {
-            var result = await _shClient.GetUserInfoAsync(shindenId);
+            var result = await _shindenClient.GetUserInfoAsync(shindenId);
             
             if (result.Value == null)
             {
@@ -151,18 +153,19 @@ namespace Sanakan.Services
             }
 
             var shindenUser = result.Value;
-            var resLR = await _shClient.GetLastReadedAsync(shindenId);
-            var resLW = await _shClient.GetLastWatchedAsync(shindenId);
+            var resLR = await _shindenClient.GetLastReadedAsync(shindenId);
+            var resLW = await _shindenClient.GetLastWatchedAsync(shindenId);
             var color = user.Roles.OrderByDescending(x => x.Position)
                 .FirstOrDefault()?.Color ?? Discord.Color.DarkerGrey;
 
-            using var image = await _img.GetSiteStatisticAsync(
-                shindenUser,
-                color,
-                resLR.Value != null ? resLR.Value : null,
-                resLW.Value != null ? resLW.Value : null);
+            return null;
+            //using var image = await _img.GetSiteStatisticAsync(
+            //    shindenUser,
+            //    color,
+            //    resLR.Value != null ? resLR.Value : null,
+            //    resLW.Value != null ? resLW.Value : null);
             
-            return image.ToPngStream();
+            //return image.ToPngStream();
         }
     }
 }

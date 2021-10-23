@@ -1,24 +1,25 @@
-﻿using System;
+﻿using Sanakan.DAL.Models;
+using System;
 
 namespace Sanakan.Api.Models
 {
     /// <summary>
-    /// Użytkownik wraz z tokenem
+    /// User with token.
     /// </summary>
     public class UserWithToken
     {
         /// <summary>
-        /// Token JWT
+        /// The json web token
         /// </summary>
         public string? Token { get; set; }
 
         /// <summary>
-        /// Data wygaśnięcia
+        /// The expire date
         /// </summary>
         public DateTime? Expire { get; set; }
 
         /// <summary>
-        /// Uzytkownik
+        /// The user
         /// </summary>
         public User User { get; set; }
     }

@@ -7,6 +7,7 @@ using DiscordBot.Services.Session;
 using Sanakan.Extensions;
 using Sanakan.ShindenApi;
 using Shinden;
+using Shinden.API;
 using Shinden.Models;
 
 namespace Sanakan.Services.Session.Models
@@ -14,11 +15,13 @@ namespace Sanakan.Services.Session.Models
     public class SearchSession : Session
     {
         public IMessage[] Messages { get; set; }
-        public List<IQuickSearch> SList { get; set; }
-        public List<IPersonSearch> PList { get; set; }
+        public List<QuickSearchResult> SList { get; set; }
+        public List<CharacterSearchResult> PList { get; set; }
         public readonly IShindenClient _shindenClient;
 
-        public SearchSession(IUser owner, IShindenClient client) : base(owner)
+        public SearchSession(
+            IUser owner,
+            IShindenClient client) : base(owner)
         {
             Event = ExecuteOn.Message;
             RunMode = RunMode.Async;
@@ -53,8 +56,8 @@ namespace Sanakan.Services.Session.Models
                     if (number > 0 && SList.Count >= number)
                     {
                         var parameter = SList[number - 1];
-                        var info = (await _shindenClient.GetInfoAsync(parameter.Id)).Body;
-                        await context.Channel.SendMessageAsync("", false, info.ToEmbed());
+                        var animeMangaInfo = (await _shindenClient.GetAnimeMangaInfoAsync(parameter.TitleId)).Value;
+                        await context.Channel.SendMessageAsync("", false, animeMangaInfo.ToEmbed());
                         await context.Message.DeleteAsync();
                         return true;
                     }
@@ -63,8 +66,10 @@ namespace Sanakan.Services.Session.Models
                 {
                     if (number > 0 && PList.Count >= number)
                     {
-                        var info = (await _shindenClient.GetCharacterInfoAsync(PList.ToArray()[number - 1])).Body;
-                        await context.Channel.SendMessageAsync("", false, info.ToEmbed());
+                        var person = PList.ToArray()[number - 1];
+                        var characterInfo = (await _shindenClient.GetCharacterInfoAsync(person.Id)).Value;
+
+                        await context.Channel.SendMessageAsync("", false, characterInfo.ToEmbed());
                         await context.Message.DeleteAsync();
                         return true;
                     }

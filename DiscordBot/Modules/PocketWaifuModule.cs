@@ -20,6 +20,7 @@ using Sanakan.Services.PocketWaifu;
 using Sanakan.Services.Session;
 using Sanakan.Services.Session.Models;
 using Sanakan.ShindenApi;
+using Sanakan.ShindenApi.Utilities;
 using Shinden.API;
 using System;
 using System.Collections.Generic;
@@ -173,7 +174,7 @@ namespace Sanakan.Modules
             [Summary("WID")]ulong wid,
             [Summary("czy wyświetlić statystyki?")]bool showStats = true)
         {
-            var card = await _repository.GetCardAsync(wid);
+            var card = await _cardRepository.GetCardAsync(wid);
 
             if (card == null)
             {
@@ -313,7 +314,7 @@ namespace Sanakan.Modules
             [Summary("liczba przedmiotów/link do obrazka/typ gwiazdki")]string detail = "1")
         {
             var discordUser = Context.User;
-            var session = new CraftingSession(discordUser, _waifu, null, null);
+            var session = new CraftingSession(discordUser, _waifu, null);
             
             if (_sessionManager.SessionExist(session))
             {
@@ -544,7 +545,7 @@ namespace Sanakan.Modules
                         }
 
                         var turl = urls[imageCount - 1];
-                        var getPersonPictureURL = Url.GetPersonPictureURL(turl.ArtifactId);
+                        string? getPersonPictureURL = UrlHelpers.GetPersonPictureURL(turl.ArtifactId);
 
                         if (card.GetImage() == getPersonPictureURL)
                         {
@@ -985,7 +986,7 @@ namespace Sanakan.Modules
                 else inUserItem.Count++;
             }
 
-            await _repository.SaveChangesAsync();
+            await _userRepository.SaveChangesAsync();
             _waifu.DeleteCardImageIfExist(card);
 
             _cacheManager.ExpireTag(new string[] { $"user-{bUser.Id}", "users" });
@@ -1034,8 +1035,8 @@ namespace Sanakan.Modules
                 }
 
                 var characterInfo = characterResult.Value;
-                var pictureUrl = Url.GetPersonPictureURL(characterInfo.PictureArtifactId);
-                var hasImage = pictureUrl != Url.GetPlaceholderImageURL();
+                var pictureUrl = UrlHelpers.GetPersonPictureURL(characterInfo.PictureId);
+                var hasImage = pictureUrl != UrlHelpers.GetPlaceholderImageURL();
                 var toString = $"{characterInfo.FirstName} {characterInfo.LastName}";
 
                 card.Unique = false;
@@ -1279,6 +1280,7 @@ namespace Sanakan.Modules
             [Summary("liczba doświadczenia")]uint exp)
         {
             var bUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
+
             if (bUser.GameDeck.ExpContainer.Level == ExpContainerLevel.Disabled)
             {
                 await ReplyAsync("", embed: $"{Context.User.Mention} nie posiadasz jeszcze skrzyni doświadczenia.".ToEmbedMessage(EMType.Error).Build());
@@ -1322,7 +1324,7 @@ namespace Sanakan.Modules
             bUser.GameDeck.ExpContainer.ExpCount -= exp;
             bUser.GameDeck.CTCnt -= cost;
 
-            await _repository.SaveChangesAsync();
+            await _userRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(new string[] { $"user-{bUser.Id}", "users" });
 
@@ -2285,7 +2287,7 @@ namespace Sanakan.Modules
                 usersStr = string.Join("\n", wishlists.Select(x => $"<@{x.Id}>"));
             }
 
-            var title = HttpUtility.HtmlDecode(animeMangaInfoResult.Value.Title.OtherTitle);
+            var title = HttpUtility.HtmlDecode(animeMangaInfoResult.Value.Title.Title);
             var content = $"**Karty z {title} chcą:**\n\n {usersStr}".TrimToLength(2000).ToEmbedMessage(EMType.Info).Build();
             await ReplyAsync("", embed: content);
         }
@@ -2888,7 +2890,7 @@ namespace Sanakan.Modules
                 return;
             }
 
-            var characterUrl = Url.GetCharacterURL(character.CharacterId);
+            var characterUrl = UrlHelpers.GetCharacterURL(character.CharacterId);
 
             var msgs = _waifu.GetWaifuFromCharacterSearchResult(
                 $"[**{character}**]({characterUrl}) posiadają:",
@@ -3103,7 +3105,7 @@ namespace Sanakan.Modules
                 return;
             }
 
-            var session = new CraftingSession(discordUser, _waifu, null, null);
+            var session = new CraftingSession(discordUser, _waifu, null);
             if (_sessionManager.SessionExist(session))
             {
                 await ReplyAsync("", embed: $"{discordUser.Mention} już masz otwarte menu tworzenia kart."
@@ -3140,9 +3142,9 @@ namespace Sanakan.Modules
             session.Tips = $"Polecenia: `dodaj/usuń [nr przedmiotu] [liczba]`.";
             session.Items = databaseUser.GameDeck.Items.ToList();
 
-            var msg = await ReplyAsync("", embed: session.BuildEmbed());
-            await msg.AddReactionsAsync(session.StartReactions);
-            session.Message = msg;
+            var userMessage = await ReplyAsync("", embed: session.BuildEmbed());
+            await userMessage.AddReactionsAsync(session.StartReactions);
+            session.Message = userMessage;
 
             await _sessionManager.TryAddSession(session);
         }
@@ -3322,7 +3324,7 @@ namespace Sanakan.Modules
                 duser.GameDeck.SeasonalPVPRank = 0;
             }
 
-            var allPvpPlayers = await _repository.GetCachedPlayersForPVP(duser.Id);
+            var allPvpPlayers = await _gameDeckRepository.GetCachedPlayersForPVP(duser.Id);
 
             if (allPvpPlayers.Count < 10)
             {
@@ -3448,7 +3450,7 @@ namespace Sanakan.Modules
             }
 
             bUser.GameDeck.Waifu = thisCard.Character;
-            await _repository.SaveChangesAsync();
+            await _userRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(new string[] { $"user-{bUser.Id}", "users" });
 

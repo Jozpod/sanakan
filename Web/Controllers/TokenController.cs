@@ -9,6 +9,7 @@ using static Sanakan.Web.ResponseExtensions;
 using Microsoft.Extensions.Options;
 using Sanakan.Web.Configuration;
 using Sanakan.Web.Resources;
+using Sanakan.Configuration;
 
 namespace Sanakan.Web.Controllers
 {
@@ -17,14 +18,14 @@ namespace Sanakan.Web.Controllers
     [Produces("application/json")]
     public class TokenController : ControllerBase
     {
-        private readonly SanakanConfiguration _config;
+        private readonly IOptionsMonitor<SanakanConfiguration> _config;
         private readonly IJwtBuilder _jwtBuilder;
 
         public TokenController(
-            IOptions<SanakanConfiguration> config,
+            IOptionsMonitor<SanakanConfiguration> config,
             IJwtBuilder jwtBuilder)
         {
-            _config = config.Value;
+            _config = config;
             _jwtBuilder = jwtBuilder;
         }
 
@@ -43,7 +44,7 @@ namespace Sanakan.Web.Controllers
                 return ShindenUnauthorized(Strings.ApiKeyNotProvided);
             }
 
-            var user = _config.ApiKeys
+            var user = _config.CurrentValue.ApiKeys
                 .FirstOrDefault(x => x.Key.Equals(apikey))?.Bearer;
 
             var claims = new[]

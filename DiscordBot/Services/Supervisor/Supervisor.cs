@@ -8,6 +8,7 @@ using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Sanakan.Common;
 using Sanakan.Configuration;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.Extensions;
@@ -37,6 +38,7 @@ namespace Sanakan.Services.Supervisor
         private readonly ModeratorService _moderatorService;
         private readonly ILogger _logger;
         private readonly IServiceScopeFactory _serviceScopeFactory;
+        private readonly ISystemClock _systemClock;
         private readonly IOptionsMonitor<SanakanConfiguration> _config;
 
         private Timer _timer;
@@ -46,13 +48,15 @@ namespace Sanakan.Services.Supervisor
             IOptionsMonitor<SanakanConfiguration> config,
             ILogger<Supervisor> logger,
             ModeratorService moderatorService,
-            IServiceScopeFactory serviceScopeFactory)
+            IServiceScopeFactory serviceScopeFactory,
+            ISystemClock systemClock)
         {
             _moderatorService = moderatorService;
             _client = client;
             _config = config;
             _logger = logger;
             _serviceScopeFactory = serviceScopeFactory;
+            _systemClock = systemClock;
 
             _guilds = new Dictionary<ulong, Dictionary<ulong, SupervisorEntity>>();
 
@@ -153,14 +157,14 @@ namespace Sanakan.Services.Supervisor
             var messageContent = GetMessageContent(message);
             if (!guild.Any(x => x.Key == user.Id))
             {
-                guild.Add(user.Id, new SupervisorEntity(messageContent));
+                guild.Add(user.Id, new SupervisorEntity(messageContent, _systemClock.UtcNow));
                 return;
             }
 
             var susspect = guild[user.Id];
-            if (!susspect.IsValid())
+            if (!susspect.IsValid(_systemClock.UtcNow))
             {
-                susspect = new SupervisorEntity(messageContent);
+                susspect = new SupervisorEntity(messageContent, _systemClock.UtcNow);
                 return;
             }
 
@@ -182,7 +186,7 @@ namespace Sanakan.Services.Supervisor
             var notifChannel = user.Guild.GetTextChannel(gConfig.NotificationChannel);
 
             bool hasRole = user.Roles.Any(x => x.Id == gConfig.UserRole || x.Id == gConfig.MuteRole) || gConfig.UserRole == 0;
-            var action = MakeDecision(messageContent, susspect.Inc(), thisMessage.Inc(), hasRole);
+            var action = MakeDecision(messageContent, susspect.Inc(_systemClock.UtcNow), thisMessage.Inc(), hasRole);
             await MakeActionAsync(action, user, message, userRole, muteRole, notifChannel);
         }
 
@@ -270,19 +274,21 @@ namespace Sanakan.Services.Supervisor
                 var toClean = new Dictionary<ulong, List<ulong>>();
                 foreach (var guild in _guilds)
                 {
-                    var usrs = new List<ulong>();
+                    var users = new List<ulong>();
                     foreach (var susspect in guild.Value)
                     {
-                        if (!susspect.Value.IsValid())
-                            usrs.Add(susspect.Key);
+                        if (!susspect.Value.IsValid(_systemClock.UtcNow))
+                        {
+                            users.Add(susspect.Key);
+                        }
                     }
-                    toClean.Add(guild.Key, usrs);
+                    toClean.Add(guild.Key, users);
                 }
 
                 foreach (var guild in toClean)
                 {
                     foreach (var uId in guild.Value)
-                        _guilds[guild.Key][uId] = new SupervisorEntity();
+                        _guilds[guild.Key][uId] = new SupervisorEntity(null, _systemClock.UtcNow);
                 }
             }
             catch (Exception ex)

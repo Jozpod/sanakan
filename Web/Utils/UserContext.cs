@@ -30,5 +30,7 @@ namespace Sanakan.Web
                 return discordId;
             }
         }
+
+        public bool HasWebpageClaim() => _user.HasClaim(x => x.Type == ClaimTypes.Webpage);
     }
 }

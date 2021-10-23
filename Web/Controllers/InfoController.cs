@@ -11,6 +11,7 @@ using Sanakan.Api.Models;
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Http;
 using Sanakan.Web.Configuration;
+using Sanakan.Configuration;
 
 namespace Sanakan.Web.Controllers
 {
@@ -19,15 +20,15 @@ namespace Sanakan.Web.Controllers
     [Produces("application/json")]
     public class InfoController : ControllerBase
     {
-        private readonly Helper _helper;
-        private readonly SanakanConfiguration _config;
+        private readonly HelperService _helperService;
+        private readonly IOptionsMonitor<SanakanConfiguration> _config;
 
         public InfoController(
-            Helper helper,
-            IOptions<SanakanConfiguration> config)
+            HelperService helper,
+            IOptionsMonitor<SanakanConfiguration> config)
         {
-            _helper = helper;
-            _config = config.Value;
+            _helperService = _helperService;
+            _config = config;
         }
 
         /// <summary>
@@ -42,8 +43,8 @@ namespace Sanakan.Web.Controllers
             {
                 var result = new Commands
                 {
-                    Prefix = _config.Prefix,
-                    Modules = GetInfoAboutModules(_helper.PublicModulesInfo)
+                    Prefix = _config.CurrentValue.Prefix,
+                    Modules = GetInfoAboutModules(_helperService.PublicModulesInfo)
                 };
 
                 return Ok(result);

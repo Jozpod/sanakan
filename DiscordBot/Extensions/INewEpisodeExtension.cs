@@ -1,20 +1,21 @@
 ﻿using System.Collections.Generic;
 using Discord;
+using Shinden.API;
 using Shinden.Models;
 
 namespace Sanakan.Extensions
 {
     public static class INewEpisodeExtension
     {
-        public static Embed ToEmbed(this INewEpisode ep)
+        public static Embed ToEmbed(this NewEpisode episode)
         {
             return new EmbedBuilder()
             {
-                Title = ep.AnimeTitle.TrimToLength(EmbedBuilder.MaxTitleLength),
-                ThumbnailUrl = ep.AnimeCoverUrl,
+                Title = episode.Title.TrimToLength(EmbedBuilder.MaxTitleLength),
+                ThumbnailUrl = episode.AnimeCoverUrl,
                 Color = EMType.Info.Color(),
-                Fields = ep.GetFields(),
-                Url = ep.AnimeUrl,
+                Fields = episode.GetFields(),
+                Url = episode.AnimeUrl,
             }.Build();
         }
 
@@ -32,7 +33,7 @@ namespace Sanakan.Extensions
             }
         }
 
-        public static List<EmbedFieldBuilder> GetFields(this INewEpisode ep)
+        public static List<EmbedFieldBuilder> GetFields(this NewEpisode ep)
         {
             return new List<EmbedFieldBuilder>
             {

@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace Sanakan.DiscordBot.Services
 {
-    public interface IImageProcessing
+    public interface IImageProcessor
     {
         Task SaveImageFromUrlAsync(string url, string path);
         Task SaveImageFromUrlAsync(string url, string path, Size size, bool strech = false);

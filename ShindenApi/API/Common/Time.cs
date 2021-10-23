@@ -5,21 +5,21 @@ namespace Sanakan.ShindenApi.API.Common
     public class Time
     {
         [JsonProperty("h")]
-        public string H { get; set; }
+        public ulong Hours { get; set; }
 
         [JsonProperty("n")]
-        public string N { get; set; }
+        public ulong Months { get; set; }
 
         [JsonProperty("d")]
-        public string D { get; set; }
+        public ulong Days { get; set; }
 
         [JsonProperty("m")]
-        public string M { get; set; }
+        public ulong Minutes { get; set; }
 
         [JsonProperty("t")]
         public string T { get; set; }
 
         [JsonProperty("y")]
-        public string Y { get; set; }
+        public ulong Years { get; set; }
     }
 }

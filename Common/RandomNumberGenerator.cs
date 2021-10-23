@@ -14,6 +14,18 @@ namespace Sanakan.Common
             _randomNumberGenerator = new RNGCryptoServiceProvider();
         }
 
+        public IEnumerable<T> Shuffle<T>(IEnumerable<T> list)
+        {
+            var buffer = list.ToList();
+            for (var i = 0; i < buffer.Count; i++)
+            {
+                var j = GetRandomValue(i, buffer.Count);
+                yield return buffer[j];
+
+                buffer[j] = buffer[i];
+            }
+        }
+
         public int GetRandomValue(int max) => GetRandomValue(0, max);
 
         public int GetRandomValue(int min, int max)
