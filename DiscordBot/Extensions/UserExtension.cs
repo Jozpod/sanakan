@@ -142,9 +142,9 @@ namespace Sanakan.Extensions
 
         public static bool IsNearMMR(this GameDeck d1, GameDeck d2, double margin = 0.3)
         {
-            var d1MMR = d1.MatachMakingRatio;
-            var mDown = d2.MatachMakingRatio - margin;
-            var mUp = d2.MatachMakingRatio + (margin * 1.2);
+            var d1MMR = d1.MatchMakingRatio;
+            var mDown = d2.MatchMakingRatio - margin;
+            var mUp = d2.MatchMakingRatio + (margin * 1.2);
 
             return d1MMR >= mDown && d1MMR <= mUp;
         }
@@ -162,7 +162,7 @@ namespace Sanakan.Extensions
         {
             ++d1.PVPDailyGamesPlayed;
 
-            var mmrDif = d1.MatachMakingRatio - d2.MatachMakingRatio;
+            var mmrDif = d1.MatchMakingRatio - d2.MatchMakingRatio;
             var chanceD1 = 1 / (1 + Math.Pow(10, -mmrDif / 40f));
             var chanceD2 = 1 / (1 + Math.Pow(10, mmrDif / 40f));
 
@@ -212,8 +212,8 @@ namespace Sanakan.Extensions
                 break;
             }
 
-            d1.MatachMakingRatio += mmrChange;
-            d2.MatachMakingRatio += mmreChange;
+            d1.MatchMakingRatio += mmrChange;
+            d2.MatchMakingRatio += mmreChange;
 
             d1.GlobalPVPRank += gRank;
             d1.SeasonalPVPRank += sRank;

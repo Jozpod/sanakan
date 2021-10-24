@@ -52,7 +52,7 @@ namespace Sanakan.Web.HostedService
                     _options.CurrentValue.CaptureMemoryUsagePeriod);
                 
                 await Task.Delay(Timeout.Infinite, stoppingToken);
-            }
+            } 
             catch (OperationCanceledException)
             {
                 _timer.Stop();

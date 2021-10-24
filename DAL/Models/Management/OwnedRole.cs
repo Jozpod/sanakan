@@ -8,6 +8,7 @@ namespace Sanakan.DAL.Models.Management
         public ulong Role { get; set; }
 
         public ulong PenaltyInfoId { get; set; }
+
         [JsonIgnore]
         public virtual PenaltyInfo PenaltyInfo { get; set; }
     }

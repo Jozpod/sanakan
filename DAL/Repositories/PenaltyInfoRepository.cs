@@ -11,10 +11,10 @@ namespace Sanakan.DAL.Repositories
 {
     public class PenaltyInfoRepository : BaseRepository<PenaltyInfo>, IPenaltyInfoRepository
     {
-        private readonly BuildDatabaseContext _dbContext;
+        private readonly SanakanDbContext _dbContext;
 
         public PenaltyInfoRepository(
-            BuildDatabaseContext dbContext) : base(dbContext)
+            SanakanDbContext dbContext) : base(dbContext)
         {
             _dbContext = dbContext;
         }

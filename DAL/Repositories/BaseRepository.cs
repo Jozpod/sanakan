@@ -9,10 +9,10 @@ namespace Sanakan.DAL.Repositories
         ICreateRepository<T>, IRemoveRepository<T>, ISaveRepository
         where T : class
     {
-        private readonly BuildDatabaseContext _dbContext;
+        private readonly SanakanDbContext _dbContext;
         private readonly DbSet<T> _dbSet;
 
-        public BaseRepository(BuildDatabaseContext dbContext)
+        public BaseRepository(SanakanDbContext dbContext)
         {
             _dbContext = dbContext;
             _dbSet = dbContext.Set<T>();

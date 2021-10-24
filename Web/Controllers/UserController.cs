@@ -41,7 +41,7 @@ namespace Sanakan.Web.Controllers
     public class UserController : ControllerBase
     {
         private readonly ILogger _logger;
-        private readonly SanakanConfiguration _config;
+        private readonly IOptionsMonitor<SanakanConfiguration> _config;
         private readonly IUserRepository _userRepository;
         private readonly ITransferAnalyticsRepository _transferAnalyticsRepository;
         private readonly IExecutor _executor;
@@ -55,7 +55,7 @@ namespace Sanakan.Web.Controllers
 
         public UserController(
             IDiscordSocketClientAccessor discordSocketClientAccessor,
-            IOptions<SanakanConfiguration> options,
+            IOptionsMonitor<SanakanConfiguration> config,
             IUserRepository userRepository,
             ITransferAnalyticsRepository transferAnalyticsRepository,
             IShindenClient shClient,
@@ -68,6 +68,7 @@ namespace Sanakan.Web.Controllers
             IRequestBodyReader requestBodyReader)
         {
             _discordSocketClientAccessor = discordSocketClientAccessor;
+            _config = config;
             _userRepository = userRepository;
             _transferAnalyticsRepository = transferAnalyticsRepository;
             _logger = logger;
@@ -133,7 +134,7 @@ namespace Sanakan.Web.Controllers
         }
 
         /// <summary>
-        /// Gets the user
+        /// Gets the user with token.
         /// </summary>
         /// <param name="id">The Shinden user identifier.</param>
         [HttpGet("shinden/{id}"), Authorize(Policy = AuthorizePolicies.Site)]
@@ -152,7 +153,7 @@ namespace Sanakan.Web.Controllers
             
             if (_userContext.HasWebpageClaim())
             {
-                tokenData = _jwtBuilder.Build();
+                tokenData = _jwtBuilder.Build(_config.CurrentValue.UserWithTokenExpiry);
             }
 
             var result = new UserWithToken()
@@ -188,7 +189,7 @@ namespace Sanakan.Web.Controllers
             
             if (_userContext.HasWebpageClaim())
             {
-                tokenData = _jwtBuilder.Build();
+                tokenData = _jwtBuilder.Build(_config.CurrentValue.UserWithTokenExpiry);
             }
 
             var result = new UserWithToken()
@@ -318,7 +319,9 @@ namespace Sanakan.Web.Controllers
 
                 if (oldUsers.Any())
                 {
-                    var rmcs = _config.RMConfig
+                    var rmcs = _config
+                        .CurrentValue
+                        .RMConfig
                         .Where(x => x.Type == RichMessageType.AdminNotify);
                     foreach (var rmc in rmcs)
                     {
@@ -404,7 +407,7 @@ namespace Sanakan.Web.Controllers
         }
 
         /// <summary>
-        /// Zmiana ilości punktów TC użytkownika
+        /// Changes TC points for given user.
         /// </summary>
         /// <param name="id">id użytkownika shindena</param>
         /// <param name="value">liczba TC</param>

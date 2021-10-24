@@ -14,5 +14,7 @@ namespace Sanakan.Common
         public const string FirePicture = "./Pictures/PW/fire.png";
         public const string StatsAnimePicture = "./Pictures/statsAnime.png";
         public const string StatsMangaPicture = "./Pictures/statsManga.png";
+        public const string DefaultBackgroundPicture = "./Pictures/defBg.png";
+        public const string ProfileBodyPicture = "./Pictures/profileBody.png";
     }
 }

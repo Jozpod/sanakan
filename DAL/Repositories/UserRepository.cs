@@ -14,12 +14,12 @@ namespace Sanakan.DAL.Repositories
 {
     public class UserRepository : BaseRepository<User>, IUserRepository
     {
-        private readonly BuildDatabaseContext _dbContext;
+        private readonly SanakanDbContext _dbContext;
         private readonly ISystemClock _systemClock;
         private readonly ICacheManager _cacheManager;
 
         public UserRepository(
-            BuildDatabaseContext dbContext,
+            SanakanDbContext dbContext,
             ISystemClock systemClock,
             ICacheManager cacheManager) : base(dbContext)
         {
@@ -232,9 +232,41 @@ namespace Sanakan.DAL.Repositories
                 return user;
         }
 
-        public Task<List<User>> GetCachedAllUsersAsync()
+        public async Task<List<User>> GetCachedAllUsersAsync()
         {
-            throw new NotImplementedException();
+            var result = await _dbContext.Users
+               .AsQueryable()
+               .Include(x => x.Stats)
+               .Include(x => x.SMConfig)
+               .Include(x => x.TimeStatuses)
+               .Include(x => x.GameDeck)
+                   .ThenInclude(x => x.PvPStats)
+               .Include(x => x.GameDeck)
+                   .ThenInclude(x => x.Wishes)
+               .Include(x => x.GameDeck)
+                   .ThenInclude(x => x.Items)
+               .Include(x => x.GameDeck)
+                   .ThenInclude(x => x.ExpContainer)
+               .Include(x => x.GameDeck)
+                   .ThenInclude(x => x.Cards)
+                   .ThenInclude(x => x.ArenaStats)
+               .Include(x => x.GameDeck)
+                   .ThenInclude(x => x.BoosterPacks)
+                   .ThenInclude(x => x.Characters)
+               .Include(x => x.GameDeck)
+                   .ThenInclude(x => x.BoosterPacks)
+                   .ThenInclude(x => x.RarityExcludedFromPack)
+               .Include(x => x.GameDeck)
+                   .ThenInclude(x => x.Cards)
+                   .ThenInclude(x => x.TagList)
+               .Include(x => x.GameDeck)
+                   .ThenInclude(x => x.Figures)
+               .AsNoTracking()
+               .AsSplitQuery()
+               //.FromCacheAsync(new MemoryCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(6) }))
+               .ToListAsync();
+
+            return result;
         }
 
         public Task<bool> ExistsByDiscordIdAsync(ulong discordUserId)

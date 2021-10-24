@@ -23,6 +23,8 @@ using Sanakan.Web.Models;
 using Sanakan.Web.Resources;
 using static Sanakan.Web.ResponseExtensions;
 using Sanakan.ShindenApi.Utilities;
+using Microsoft.Extensions.Options;
+using Sanakan.Configuration;
 
 namespace Sanakan.Web.Controllers
 {
@@ -32,6 +34,7 @@ namespace Sanakan.Web.Controllers
     public class WaifuController : ControllerBase
     {
         private readonly IShindenClient _shindenClient;
+        private readonly IOptionsMonitor<SanakanConfiguration> _config;
         private readonly IWaifuService _waifuService;
         private readonly IExecutor _executor;
         private readonly IFileSystem _fileSystem;
@@ -43,6 +46,7 @@ namespace Sanakan.Web.Controllers
 
         public WaifuController(
             IShindenClient shindenClient,
+            IOptionsMonitor<SanakanConfiguration> config,
             IWaifuService waifuService,
             IExecutor executor,
             IFileSystem fileSystem,
@@ -53,6 +57,7 @@ namespace Sanakan.Web.Controllers
             IJwtBuilder jwtBuilder)
         {
             _shindenClient = shindenClient;
+            _config = config;
             _waifuService = waifuService;
             _executor = executor;
             _fileSystem = fileSystem;
@@ -89,9 +94,9 @@ namespace Sanakan.Web.Controllers
         [HttpGet("user/{id}/cards"), Authorize(Policy = AuthorizePolicies.Site)]
         [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(IEnumerable<Card>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetUserCardsAsync(ulong id)
+        public async Task<IActionResult> GetUserCardsAsync(ulong shindenUserId)
         {
-            var user = await _cardRepository.GetUserCardsAsync(id);
+            var user = await _cardRepository.GetUserCardsAsync(shindenUserId);
 
             if (user == null)
             {
@@ -677,7 +682,7 @@ namespace Sanakan.Web.Controllers
             
             if (_userContext.HasWebpageClaim())
             {
-                tokenData = _jwtBuilder.Build();
+                tokenData = _jwtBuilder.Build(_config.CurrentValue.UserWithTokenExpiry);
             }
 
             var result = new UserWithToken()
@@ -691,10 +696,10 @@ namespace Sanakan.Web.Controllers
         }
 
         /// <summary>
-        /// Otwiera pakiety i dodaje użytkownikowi karty wylosowane z nich
+        /// Opens packet and add cards to user collection.
         /// </summary>
-        /// <param name="id">id użytkownika shindena</param>
-        /// <param name="boosterPacks">model pakietu</param>
+        /// <param name="id">The Shinden user identifier</param>
+        /// <param name="boosterPacks">Packet model</param>
         [HttpPost("shinden/{id}/boosterpack/open"), Authorize(Policy = AuthorizePolicies.Site)]
         [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status503ServiceUnavailable)]
@@ -715,7 +720,10 @@ namespace Sanakan.Web.Controllers
             foreach (var pack in boosterPacks)
             {
                 var rPack = pack.ToRealPack();
-                if (rPack != null) packs.Add(rPack);
+                if (rPack != null)
+                {
+                    packs.Add(rPack);
+                }
             }
 
             if (packs.Count < 1)
@@ -737,7 +745,7 @@ namespace Sanakan.Web.Controllers
             {
                 return ShindenNotFound("User not found");
             }
-            if (gameDeck.Cards.Count + packs.Sum(x => x.CardCnt) > gameDeck.MaxNumberOfCards)
+            if (gameDeck.Cards.Count + packs.Sum(x => x.CardCount) > gameDeck.MaxNumberOfCards)
             {
                 return ShindenNotAcceptable("User has no space left in deck");
             }
@@ -816,7 +824,7 @@ namespace Sanakan.Web.Controllers
 
             var pack = botUserCh.GameDeck.BoosterPacks.ToArray()[packNumber - 1];
 
-            if (botUserCh.GameDeck.Cards.Count + pack.CardCnt > botUserCh.GameDeck.MaxNumberOfCards)
+            if (botUserCh.GameDeck.Cards.Count + pack.CardCount > botUserCh.GameDeck.MaxNumberOfCards)
             {
                 return ShindenNotAcceptable("User has no space left in deck!");
             }

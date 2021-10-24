@@ -840,7 +840,7 @@ namespace Sanakan.Modules
             }
 
             var packs = bUser.GameDeck.BoosterPacks.ToList().GetRange(numberOfPack - 1, count);
-            var cardsCount = packs.Sum(x => x.CardCnt);
+            var cardsCount = packs.Sum(x => x.CardCount);
 
             if (cardsCount > 20)
             {
@@ -869,7 +869,7 @@ namespace Sanakan.Modules
             foreach (var pack in packs)
             {
                 var cards = await _waifu.OpenBoosterPackAsync(Context.User, pack);
-                if (cards.Count < pack.CardCnt)
+                if (cards.Count < pack.CardCount)
                 {
                     await ReplyAsync("", embed: $"{Context.User.Mention} nie udało się otworzyć pakietu.".ToEmbedMessage(EMType.Error).Build());
                     return;

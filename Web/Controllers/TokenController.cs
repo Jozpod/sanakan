@@ -56,7 +56,7 @@ namespace Sanakan.Web.Controllers
             if (user != null)
             {
                 // expires: DateTime.Now.AddHours(24),
-                var tokenData = _jwtBuilder.Build(claims);
+                var tokenData = _jwtBuilder.Build(_config.CurrentValue.TokenExpiry, claims);
                 return Ok(tokenData);
             }
 

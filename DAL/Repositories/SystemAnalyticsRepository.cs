@@ -5,10 +5,10 @@ namespace Sanakan.DAL.Repositories
 {
     public class SystemAnalyticsRepository : BaseRepository<SystemAnalytics>, ISystemAnalyticsRepository
     {
-        private readonly BuildDatabaseContext _dbContext;
+        private readonly SanakanDbContext _dbContext;
 
         public SystemAnalyticsRepository(
-            BuildDatabaseContext dbContext) : base(dbContext)
+            SanakanDbContext dbContext) : base(dbContext)
         {
             _dbContext = dbContext;
         }

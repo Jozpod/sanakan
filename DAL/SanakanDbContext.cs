@@ -11,11 +11,11 @@ using System;
 
 namespace Sanakan.DAL
 {
-    public class BuildDatabaseContext : DbContext
+    public class SanakanDbContext : DbContext
     {
         private IOptionsMonitor<SanakanConfiguration> _config;
 
-        public BuildDatabaseContext(
+        public SanakanDbContext(
             IOptionsMonitor<SanakanConfiguration> config) : base()
         {
             _config = config;
@@ -79,7 +79,7 @@ namespace Sanakan.DAL
         {
             base.OnModelCreating(modelBuilder);
             modelBuilder.HasCharSet("utf8mb4", DelegationModes.ApplyToDatabases);
-            modelBuilder.ApplyConfigurationsFromAssembly(typeof(BuildDatabaseContext).Assembly);
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(SanakanDbContext).Assembly);
         }
     }
 }

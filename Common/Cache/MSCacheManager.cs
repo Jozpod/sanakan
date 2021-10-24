@@ -5,7 +5,7 @@ using System;
 
 namespace Sanakan.Common
 {
-    public class MSCacheManager : ICacheManager
+    internal class MSCacheManager : ICacheManager
     {
         private readonly IMemoryCache _cache;
         private readonly MemoryCacheOptions _options;
@@ -13,11 +13,6 @@ namespace Sanakan.Common
 
         public MSCacheManager(IOptions<MSCacheManagerOptions> options)
         {
-            //QueryCacheManager.DefaultMemoryCacheEntryOptions = new MemoryCacheEntryOptions()
-            //{
-            //    SlidingExpiration = TimeSpan.FromHours(4),
-            //    AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(24)
-            //};
             _options = new MemoryCacheOptions();
             _cache = new MemoryCache(_options);
             _cacheEntryOptions = new MemoryCacheEntryOptions()
@@ -30,11 +25,6 @@ namespace Sanakan.Common
         public void Add<T>(string key, T entity)
         {
             _cache.Set(key, entity);
-        }
-
-        public void AddTag(params string[] tags)
-        {
-            throw new NotImplementedException();
         }
 
         public void ExpireTag(params string[] tags)

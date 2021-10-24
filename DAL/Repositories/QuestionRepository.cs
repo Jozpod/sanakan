@@ -11,11 +11,11 @@ namespace Sanakan.DAL.Repositories
 {
     public class QuestionRepository : BaseRepository<Question>, IQuestionRepository
     {
-        private readonly BuildDatabaseContext _dbContext;
+        private readonly SanakanDbContext _dbContext;
         private readonly ICacheManager _cacheManager;
 
         public QuestionRepository(
-            BuildDatabaseContext dbContext,
+            SanakanDbContext dbContext,
             ICacheManager cacheManager) : base(dbContext)
         {
             _dbContext = dbContext;

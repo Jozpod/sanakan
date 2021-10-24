@@ -450,15 +450,12 @@ namespace Sanakan.Modules
         public async Task ShowConfigAsync(
             [Summary("typ (opcjonalne)")][Remainder]ConfigType type = ConfigType.Global)
         {
-            var config = await _guildConfigRepository.GetCachedGuildFullConfigAsync(Context.Guild.Id);
+            var guildId = Context.Guild.Id;
+            var config = await _guildConfigRepository.GetCachedGuildFullConfigAsync(guildId);
 
             if (config == null)
             {
-                config = new GuildOptions
-                {
-                    SafariLimit = 50,
-                    Id = Context.Guild.Id
-                };
+                config = new GuildOptions(guildId, Sanakan.DAL.Constants.SafariLimit);
                 _guildConfigRepository.Add(config);
 
                 config.WaifuConfig = new WaifuConfiguration();

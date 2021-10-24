@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Options;
+﻿using FluentAssertions;
+using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.Api;
@@ -34,14 +35,8 @@ namespace Sanakan.Web.Test
         [TestMethod]
         public void Should_Generate_Token()
         {
-            var userId = 0;
-
-            var claims = new[]
-            {
-                new Claim("", "")
-            };
-
-            var tokenData = _jwtBuilder.Build(claims);
+            var tokenData = _jwtBuilder.Build(TimeSpan.FromMinutes(1));
+            tokenData.Token.Should().NotBeNullOrEmpty();
         }
     }
 }

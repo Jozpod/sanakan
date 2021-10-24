@@ -4,8 +4,16 @@ namespace Sanakan.DAL.Models.Configuration
 {
     public class GuildOptions
     {
+        private GuildOptions() { }
+
+        public GuildOptions(ulong id, long safariLimit)
+        {
+            Id = id;
+            SafariLimit = safariLimit;
+        }
+
         /// <summary>
-        /// The Discord guild identifier.
+        /// The Discord guild (server) identifier.
         /// </summary>
         public ulong Id { get; set; }
         public ulong MuteRole { get; set; }

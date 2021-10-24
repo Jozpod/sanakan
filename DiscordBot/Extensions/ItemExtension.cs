@@ -567,7 +567,7 @@ namespace Sanakan.Extensions
             return new BoosterPack
             {
                 Name = type.Name(),
-                CardCnt = type.Count(),
+                CardCount = type.Count(),
                 MinRarity = type.MinRarity(),
                 CardSourceFromPack = type.GetSource(),
                 IsCardFromPackTradable = type.IsTradable(),

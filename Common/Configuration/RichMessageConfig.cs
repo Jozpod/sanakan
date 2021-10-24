@@ -6,17 +6,17 @@
     public class RichMessageConfig
     {
         /// <summary>
-        /// The discord role identifier.
+        /// The Discord role identifier which is used to mention.
         /// </summary>
         public ulong RoleId { get; set; }
 
         /// <summary>
-        /// The discord guild identifier.
+        /// The Discord guild (server) identifier of the guild (server) where to post messages.
         /// </summary>
         public ulong GuildId { get; set; }
 
         /// <summary>
-        /// The discord channel identifier.
+        /// The Discord channel identifier of the channel where to post messages.
         /// </summary>
         public ulong ChannelId { get; set; }
 

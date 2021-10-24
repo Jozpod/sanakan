@@ -47,7 +47,7 @@ namespace Sanakan.Api.Models
                 CardSourceFromPack = CardSource.Api,
                 IsCardFromPackTradable = Tradable,
                 MinRarity = Rarity,
-                CardCnt = Count,
+                CardCount = Count,
                 Name = Name
             };
 

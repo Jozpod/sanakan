@@ -7,6 +7,8 @@ namespace Sanakan.DAL.Models
 {
     public class Card
     {
+        private Card() { }
+
         public Card(
             ulong characterId,
             string title,

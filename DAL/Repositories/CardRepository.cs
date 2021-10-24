@@ -12,11 +12,11 @@ namespace Sanakan.DAL.Repositories
 {
     public class CardRepository : BaseRepository<Card>, ICardRepository
     {
-        private readonly BuildDatabaseContext _dbContext;
+        private readonly SanakanDbContext _dbContext;
         private readonly ICacheManager _cacheManager;
 
         public CardRepository(
-            BuildDatabaseContext dbContext,
+            SanakanDbContext dbContext,
             ICacheManager cacheManager) : base(dbContext)
         {
             _dbContext = dbContext;
@@ -70,8 +70,8 @@ namespace Sanakan.DAL.Repositories
                    .ThenInclude(x => x.Cards)
                    .ThenInclude(x => x.ArenaStats)
                .Include(x => x.GameDeck)
-                  .ThenInclude(x => x.Cards)
-                  .ThenInclude(x => x.TagList)
+                    .ThenInclude(x => x.Cards)
+                    .ThenInclude(x => x.TagList)
                .AsNoTracking()
                .AsSplitQuery()
                .FirstOrDefaultAsync();

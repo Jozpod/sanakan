@@ -18,7 +18,7 @@ namespace Sanakan.DAL.Models
         public long PVPWinStreak { get; set; }
         public long GlobalPVPRank { get; set; }
         public long SeasonalPVPRank { get; set; }
-        public double MatachMakingRatio { get; set; }
+        public double MatchMakingRatio { get; set; }
         public ulong PVPDailyGamesPlayed { get; set; }
         public DateTime PVPSeasonBeginDate { get; set; }
 

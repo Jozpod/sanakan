@@ -5,19 +5,28 @@ namespace Sanakan.Configuration
 {
     public class SanakanConfiguration
     {
+        /// <summary>
+        /// The MySql version.
+        /// </summary>
+        public Version MySqlVersion { get; set; } = new Version();
 
-        public TimeSpan CaptureMemoryUsageDueTime { get; set; } = TimeSpan.FromMinutes(1);
-        public TimeSpan CaptureMemoryUsagePeriod { get; set; } = TimeSpan.FromMinutes(1);
+        /// <summary>
+        /// The MySql connection string.
+        /// </summary>
+        public string ConnectionString { get; set; } = string.Empty;
+
+        public TimeSpan CaptureMemoryUsageDueTime { get; set; }
+        public TimeSpan CaptureMemoryUsagePeriod { get; set; }
 
         /// <summary>
         /// Runs commands on Discord only when they start with given prefix.
         /// </summary>
-        public string Prefix { get; set; }
+        public string Prefix { get; set; } = string.Empty;
 
         /// <summary>
         /// The Discord bot token.
         /// </summary>
-        public string BotToken { get; set; }
+        public string BotToken { get; set; } = string.Empty;
 
         /// <summary>
         /// Enables flood/spam supervision
@@ -25,7 +34,7 @@ namespace Sanakan.Configuration
         public bool Supervision { get; set; }
 
         /// <summary>
-        /// Exits app if it detects discord timeout.
+        /// Enables background service which exits app if it detects Discord timeout.
         /// </summary>
         public bool Demonization { get; set; }
 
@@ -40,9 +49,9 @@ namespace Sanakan.Configuration
         public long CharPerPacket { get; set; }
         
         /// <summary>
-        /// The list of discord user identifier which can access Debug module.
+        /// The list of Discord user identifiers which can access Debug module.
         /// </summary>
-        public List<ulong> Dev { get; set; }
+        public List<ulong> AllowedToDebug { get; set; }
 
         /// <summary>
         /// The list of API keys.
@@ -52,15 +61,23 @@ namespace Sanakan.Configuration
         public ExperienceConfiguration Exp { get; set; }
 
         /// <summary>
-        /// 
+        /// The list of rich message configuration.
         /// </summary>
         public List<RichMessageConfig> RMConfig { get; set; }
 
         /// <summary>
-        /// The list of discord guild identifiers to blacklist
+        /// The list of Discord guild identifiers to blacklist
         /// </summary>
         public List<ulong> BlacklistedGuilds { get; set; }
-        public Version MySqlVersion { get; set; } = Version.Parse("5.7");
-        public string ConnectionString { get; set; }
+
+        /// <summary>
+        /// The time span after JWT expires.
+        /// </summary>
+        public TimeSpan TokenExpiry { get; set; } = TimeSpan.FromDays(1);
+
+        /// <summary>
+        /// The time span after JWT with user expires.
+        /// </summary>
+        public TimeSpan UserWithTokenExpiry { get; set; } = TimeSpan.FromDays(1);
     }
 }

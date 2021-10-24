@@ -12,11 +12,11 @@ namespace Sanakan.DAL.Repositories
 {
     public class GameDeckRepository : BaseRepository<GameDeck>, IGameDeckRepository
     {
-        private readonly BuildDatabaseContext _dbContext;
+        private readonly SanakanDbContext _dbContext;
         private readonly ICacheManager _cacheManager;
 
         public GameDeckRepository(
-            BuildDatabaseContext dbContext,
+            SanakanDbContext dbContext,
             ICacheManager cacheManager) : base(dbContext)
         {
             _dbContext = dbContext;

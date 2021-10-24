@@ -158,11 +158,13 @@ namespace Sanakan.DiscordBot.Services
             var rangFont = new Font(_latoRegular, 16);
             var levelFont = new Font(_latoBold, 40);
 
-            var template = Image.Load("./Pictures/profileBody.png");
+            var template = Image.Load(Paths.ProfileBodyPicture);
             var profilePic = new Image<Rgba32>(template.Width, template.Height);
 
             if (!_fileSystem.Exists(botUser.BackgroundProfileUri))
-                botUser.BackgroundProfileUri = "./Pictures/defBg.png";
+            {
+                botUser.BackgroundProfileUri = Paths.DefaultBackgroundPicture;
+            }
 
             using var userBg = Image.Load(botUser.BackgroundProfileUri);
             profilePic.Mutate(x => x.DrawImage(userBg, new Point(0, 0), 1));

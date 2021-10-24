@@ -9,10 +9,10 @@ namespace Sanakan.DAL.Repositories
     public class CommandsAnalyticsRepository : 
         BaseRepository<CommandsAnalytics>, ICommandsAnalyticsRepository
     {
-        private readonly BuildDatabaseContext _dbContext;
+        private readonly SanakanDbContext _dbContext;
 
         public CommandsAnalyticsRepository(
-            BuildDatabaseContext dbContext) : base(dbContext)
+            SanakanDbContext dbContext) : base(dbContext)
         {
             _dbContext = dbContext;
         }

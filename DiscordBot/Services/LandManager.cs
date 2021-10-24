@@ -1,21 +1,18 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
 using Sanakan.DAL.Models.Configuration;
+using Sanakan.DiscordBot.Services.Abstractions;
 using Sanakan.Extensions;
 
 namespace Sanakan.Services
 {
-    public class LandManager
+    public class LandManager : ILandManager
     {
-        public MyLand? DetermineLand(IEnumerable<MyLand> lands, SocketGuildUser user, string name)
-        {
-            if (user == null)
-            {
-                return null;
-            }
-            
+        public MyLand? DetermineLand(IEnumerable<MyLand> lands, IEnumerable<SocketRole> roles, string name)
+        {            
             if (name != null)
             {
                 var land = lands.FirstOrDefault(x => x.Name == name);
@@ -25,7 +22,7 @@ namespace Sanakan.Services
                     return null;
                 }
 
-                if(user.Roles.Any(x => x.Id == land.Manager))
+                if(roles.Any(x => x.Id == land.Manager))
                 {
                     return land;
                 }
@@ -33,9 +30,9 @@ namespace Sanakan.Services
                 return null;
             }
 
-            var all = lands.Where(x => user.Roles.Any(c => c.Id == x.Manager));
+            var all = lands.Where(x => roles.Any(c => c.Id == x.Manager));
             
-            if (all.Count() < 1)
+            if (!all.Any())
             {
                 return null;
             }
@@ -44,11 +41,13 @@ namespace Sanakan.Services
             return all.First();
         }
 
-        public List<Embed> GetMembersList(MyLand land, SocketGuild guild)
+        public async Task<List<Embed>> GetMembersList(MyLand land, IGuild guild)
         {
             var embs = new List<Embed>();
-            string temp = $"**Członkowie**: *{land.Name}*\n\n";
-            var underlings = guild.Users.Where(x => x.Roles.Any(r => r.Id == land.Underling));
+            var temp = $"**Członkowie**: *{land.Name}*\n\n";
+            var users = await guild.GetUsersAsync(CacheMode.CacheOnly);
+
+            var underlings = users.Where(x => x.RoleIds.Any(r => r == land.Underling));
 
             foreach (var user in underlings)
             {

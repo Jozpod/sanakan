@@ -1,30 +1,86 @@
-﻿using Sanakan.DAL.Models.Configuration;
+﻿using Microsoft.EntityFrameworkCore;
+using Sanakan.Common;
+using Sanakan.DAL.Models.Configuration;
 using Sanakan.DAL.Repositories.Abstractions;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Sanakan.DAL.Repositories
 {
     public class GuildConfigRepository : BaseRepository<GuildOptions>, IGuildConfigRepository
     {
-        private readonly BuildDatabaseContext _dbContext;
+        private readonly SanakanDbContext _dbContext;
+        private readonly ICacheManager _cacheManager;
 
         public GuildConfigRepository(
-            BuildDatabaseContext dbContext) : base(dbContext)
+            SanakanDbContext dbContext,
+            ICacheManager cacheManager) : base(dbContext)
         {
             _dbContext = dbContext;
+            _cacheManager = cacheManager;
         }
 
-        public Task<GuildOptions> GetCachedGuildFullConfigAsync(ulong guildId)
+        public async Task<GuildOptions> GetCachedGuildFullConfigAsync(ulong guildId)
         {
-            throw new NotImplementedException();
+            var key = $"config-{guildId}";
+
+            var cached = _cacheManager.Get<GuildOptions>(key);
+
+            if (cached != null)
+            {
+                return cached;
+            }
+
+            var result = await _dbContext
+                .Guilds
+                .AsQueryable()
+                .Include(x => x.IgnoredChannels)
+                .Include(x => x.ChannelsWithoutExp)
+                .Include(x => x.ChannelsWithoutSupervision)
+                .Include(x => x.CommandChannels)
+                .Include(x => x.SelfRoles)
+                .Include(x => x.Lands)
+                .Include(x => x.ModeratorRoles)
+                .Include(x => x.RolesPerLevel)
+                .Include(x => x.WaifuConfig)
+                    .ThenInclude(x => x.CommandChannels)
+                    .Include(x => x.Raports)
+                .Include(x => x.WaifuConfig)
+                    .ThenInclude(x => x.FightChannels)
+                .AsNoTracking()
+                .AsSplitQuery()
+                .FirstOrDefaultAsync(x => x.Id == guildId);
+
+            return result;
         }
 
-        public Task<GuildOptions> GetGuildConfigOrCreateAsync(ulong guildId)
+        public async Task<GuildOptions> GetGuildConfigOrCreateAsync(ulong guildId)
         {
-            throw new NotImplementedException();
+            var config = await _dbContext.Guilds
+                .AsQueryable()
+                .Include(x => x.IgnoredChannels)
+                .Include(x => x.ChannelsWithoutExp)
+                .Include(x => x.ChannelsWithoutSupervision)
+                .Include(x => x.CommandChannels)
+                .Include(x => x.SelfRoles)
+                .Include(x => x.Lands)
+                .Include(x => x.ModeratorRoles)
+                .Include(x => x.RolesPerLevel)
+                .Include(x => x.WaifuConfig)
+                    .ThenInclude(x => x.CommandChannels)
+                .Include(x => x.Raports)
+                .Include(x => x.WaifuConfig)
+                    .ThenInclude(x => x.FightChannels)
+                .AsSplitQuery()
+                .FirstOrDefaultAsync(x => x.Id == guildId);
+
+            if (config == null)
+            {
+                config = new GuildOptions(guildId, Constants.SafariLimit);
+                _dbContext.Guilds.Add(config);
+                await _dbContext.SaveChangesAsync();
+            }
+
+            return config;
         }
     }
 }

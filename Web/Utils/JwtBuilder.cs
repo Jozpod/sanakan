@@ -24,23 +24,23 @@ namespace Sanakan.Api
             ISystemClock systemClock)
         {
             _options = options;
-            _encoding = encoding; // Encoding.UTF8
+            _encoding = encoding;
             _systemClock = systemClock;
             var securityKey = new SymmetricSecurityKey(_encoding.GetBytes(_options.CurrentValue.Key));
             _signingCredentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
         }
 
-        public TokenData Build(params Claim[] claims)
+        public TokenData Build(TimeSpan expiresOn, params Claim[] claims)
         {
             var options = _options.CurrentValue;
             var allClaims = claims.Append(
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()));
 
             var token = new JwtSecurityToken(options.Issuer,
-              options.Issuer,
-              allClaims,
-              expires: _systemClock.UtcNow + options.ExpiresOn, //DateTime.Now.AddMinutes(30),
-              signingCredentials: _signingCredentials);
+                options.Issuer,
+                allClaims,
+                expires: _systemClock.UtcNow + expiresOn,
+                signingCredentials: _signingCredentials);
 
             return new TokenData()
             {

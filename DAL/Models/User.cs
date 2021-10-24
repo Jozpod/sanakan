@@ -1,4 +1,5 @@
-﻿using Sanakan.Common.Models;
+﻿using Sanakan.Common;
+using Sanakan.Common.Models;
 using System;
 using System.Collections.Generic;
 
@@ -6,6 +7,8 @@ namespace Sanakan.DAL.Models
 {
     public class User
     {
+        private User() { }
+
         public User(ulong discordUserId, DateTime datetime)
         {
             Id = discordUserId;
@@ -25,7 +28,7 @@ namespace Sanakan.DAL.Models
             ProfileType = ProfileType.Stats;
             StatsReplacementProfileUri = "none";
             TimeStatuses = new List<TimeStatus>();
-            BackgroundProfileUri = $"./Pictures/defBg.png";
+            BackgroundProfileUri = Paths.DefaultBackgroundPicture;
             MeasureDate = datetime;
             GameDeck = new GameDeck
             {
@@ -39,13 +42,13 @@ namespace Sanakan.DAL.Models
                 ItemsDropped = 0,
                 GlobalPVPRank = 0,
                 SeasonalPVPRank = 0,
-                CardsInGallery = 10,
-                MatachMakingRatio = 0,
+                CardsInGallery = Constants.CardsInGallery,
+                MatchMakingRatio = 0,
                 ForegroundColor = null,
                 ForegroundPosition = 0,
-                BackgroundPosition = 35,
+                BackgroundPosition = Constants.BackgroundPosition,
                 PVPDailyGamesPlayed = 0,
-                MaxNumberOfCards = 1000,
+                MaxNumberOfCards = Constants.MaxNumberOfCards,
                 Items = new List<Item>(),
                 Cards = new List<Card>(),
                 ExchangeConditions = null,
@@ -102,7 +105,7 @@ namespace Sanakan.DAL.Models
 
             GameDeck.BoosterPacks.Add(new BoosterPack
             {
-                CardCnt = 5,
+                CardCount = 5,
                 MinRarity = Rarity.A,
                 Name = "Startowy pakiet",
                 IsCardFromPackTradable = true

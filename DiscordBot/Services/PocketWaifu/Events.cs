@@ -281,7 +281,7 @@ namespace Sanakan.Services.PocketWaifu
                         Name = "Losowa karta z wyprawy",
                         IsCardFromPackTradable = true,
                         MinRarity = Rarity.E,
-                        CardCnt = 1
+                        CardCount = 1
                     };
 
                     user.GameDeck.BoosterPacks.Add(boosterPack);

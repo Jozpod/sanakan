@@ -12,11 +12,11 @@ namespace Sanakan.DAL.Repositories
 {
     public class ModerationRepository : IModerationRepository
     {
-        private readonly BuildDatabaseContext _dbContext;
+        private readonly SanakanDbContext _dbContext;
         private readonly ICacheManager _cacheManager;
 
         public ModerationRepository(
-            BuildDatabaseContext dbContext,
+            SanakanDbContext dbContext,
             ICacheManager cacheManager)
         {
             _dbContext = dbContext;
@@ -29,9 +29,28 @@ namespace Sanakan.DAL.Repositories
             await _dbContext.SaveChangesAsync();
         }
 
-        public Task<IEnumerable<PenaltyInfo>> GetCachedFullPenalties()
+        public async Task<IEnumerable<PenaltyInfo>> GetCachedFullPenalties()
         {
-            throw new NotImplementedException();
+            var key = $"mute";
+
+            var cached = _cacheManager.Get<IEnumerable<PenaltyInfo>>(key);
+
+            if (cached != null)
+            {
+                return cached;
+            }
+
+            var result = await _dbContext
+                .Penalties
+                .AsQueryable()
+                .Include(x => x.Roles)
+                .AsNoTracking()
+                .AsSplitQuery()
+                .ToListAsync();
+
+            _cacheManager.Add(key, result);
+
+            return result;
         }
 
         public async Task<List<PenaltyInfo>> GetMutedPenaltiesAsync(ulong discordGuildId)

@@ -322,7 +322,7 @@ namespace Sanakan.Services.PocketWaifu
 
                 var record = new BoosterPack
                 {
-                    CardCnt = 2,
+                    CardCount = 2,
                     MinRarity = Rarity.E,
                     IsCardFromPackTradable = true,
                     Name = "Pakiet kart za aktywność",

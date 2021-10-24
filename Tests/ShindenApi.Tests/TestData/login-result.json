@@ -1,0 +1,26 @@
+{
+  "logged_user": {
+    "user_id": 1,
+    "vb_id": 1,
+    "name": "test",
+    "last_active": "",
+    "register_date": "",
+    "rank": "",
+    "portal_lang": "",
+    "email": "",
+    "status": "",
+    "avatar": "",
+    "anime_css": "",
+    "manga_css": "",
+    "total_points": 1,
+    "birthdate": "",
+    "sex": "m",
+    "signature": "signature",
+    "about_me": "about_me"
+  },
+  "hash": "hash",
+  "session": {
+      "name": "session_name",
+      "id": "session_id"
+  }
+}

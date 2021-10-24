@@ -1211,7 +1211,7 @@ namespace Sanakan.Services.PocketWaifu
         {
             var cardsFromPack = new List<Card>();
 
-            for (int i = 0; i < pack.CardCnt; i++)
+            for (int i = 0; i < pack.CardCount; i++)
             {
                 CharacterInfo? characterInfo = null;
                 if (pack.Characters.Count > 0)
@@ -1267,7 +1267,7 @@ namespace Sanakan.Services.PocketWaifu
                         characterInfo,
                         rarityList);
 
-                    if (pack.MinRarity != Rarity.E && i == pack.CardCnt - 1)
+                    if (pack.MinRarity != Rarity.E && i == pack.CardCount - 1)
                     {
                         newCard = GenerateNewCard(
                             user,

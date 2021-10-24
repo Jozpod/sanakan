@@ -11,19 +11,21 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace Sanakan.ShindenApi
 {
     public class ShindenClient : IShindenClient
     {
-        private readonly Uri _baseUri;
+        private readonly HttpClient _httpClient;
+        private readonly CookieContainer _cookieContainer;
         private readonly IOptionsMonitor<ShindenClientOptions> _options;
         private readonly ILogger _logger;
-        private readonly CookieContainer _cookies;
-        private readonly HttpClient _httpClient;
 
         public ShindenClient(
+            HttpClient httpClient,
+            CookieContainer cookieContainer,
             IOptionsMonitor<ShindenClientOptions> options,
             ILogger<ShindenClient> logger)
         {
@@ -40,18 +42,12 @@ namespace Sanakan.ShindenApi
             //    Value = _session.Id,
             //    Expires = _session.Expires
             //});
-            var handler = new HttpClientHandler() { CookieContainer = _cookies };
-            _httpClient = new HttpClient(handler);
+            //var handler = new HttpClientHandler() { CookieContainer = _cookies };
+            //new HttpClient(handler);
+            _httpClient = httpClient;
+            _cookieContainer = cookieContainer;
+            _options = options;
             _logger = logger;
-
-            _httpClient.DefaultRequestHeaders.Add("Accept-Language", "pl");
-            _httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
-            _httpClient.DefaultRequestHeaders.Add("User-Agent", $"{options.CurrentValue.UserAgent}");
-
-            if (options.CurrentValue.Marmolade != null)
-            {
-                _httpClient.DefaultRequestHeaders.Add(options.CurrentValue.Marmolade, "marmolada");
-            }
         }
 
         public async Task<Result<List<NewEpisode>>> GetNewEpisodesAsync()
