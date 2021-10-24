@@ -116,13 +116,21 @@ namespace Sanakan.Services
 
         public async Task<bool> SetUserColorAsync(SocketGuildUser user, ulong adminRole, FColor color)
         {
-            if (user == null) return false;
+            if (user == null)
+            {
+                return false;
+            }
 
             var colorNumeric = (uint)color;
             var aRole = user.Guild.GetRole(adminRole);
-            if (aRole == null) return false;
+
+            if (aRole == null)
+            {
+                return false;
+            }
 
             var cRole = user.Guild.Roles.FirstOrDefault(x => x.Name == colorNumeric.ToString());
+
             if (cRole == null)
             {
                 var dColor = new Color(colorNumeric);
@@ -133,14 +141,19 @@ namespace Sanakan.Services
             }
 
             if (!user.Roles.Contains(cRole))
+            {
                 await user.AddRoleAsync(cRole);
+            }
 
             return true;
         }
 
         public async Task RomoveUserColorAsync(SocketGuildUser user)
         {
-            if (user == null) return;
+            if (user == null)
+            {
+                return;
+            }
 
             foreach(uint color in Enum.GetValues(typeof(FColor)))
             {
@@ -243,9 +256,9 @@ namespace Sanakan.Services
 
         public async Task<Stream> GetProfileImageAsync(SocketGuildUser discordUser, User botUser, long topPosition)
         {
-            var isConnected = botUser.Shinden != 0;
+            var isConnected = botUser.ShindenId.HasValue;
 
-            var userResult = await _shindenClient.GetUserInfoAsync(botUser.Shinden);
+            var userResult = await _shindenClient.GetUserInfoAsync(botUser.ShindenId.Value);
             var user = userResult.Value;
 
             var roleColor = discordUser.Roles.OrderByDescending(x => x.Position)

@@ -3,7 +3,7 @@ using Sanakan.DAL.Repositories.Abstractions;
 
 namespace Sanakan.DAL.Repositories
 {
-    public class SystemAnalyticsRepository : BaseRepository<SystemAnalytics>, ISystemAnalyticsRepository
+    internal class SystemAnalyticsRepository : BaseRepository<SystemAnalytics>, ISystemAnalyticsRepository
     {
         private readonly SanakanDbContext _dbContext;
 

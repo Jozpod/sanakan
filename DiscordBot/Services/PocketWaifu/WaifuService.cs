@@ -705,7 +705,7 @@ namespace Sanakan.Services.PocketWaifu
         {
             double rExp = 30f / 5f;
 
-            if (toUp.Character == toSac.Character)
+            if (toUp.CharacterId == toSac.CharacterId)
                 rExp *= 10f;
 
             var sacVal = (int) toSac.Rarity;
@@ -1126,7 +1126,7 @@ namespace Sanakan.Services.PocketWaifu
             bool mention)
         {
             var list = new List<Embed>();
-            var characters = cards.GroupBy(x => x.Character);
+            var characters = cards.GroupBy(x => x.CharacterId);
 
             string contentString = "";
             foreach (var cardsG in characters)
@@ -1619,7 +1619,7 @@ namespace Sanakan.Services.PocketWaifu
             if (characters.Any())
             {
                 characters = characters.Distinct()
-                    .Where(c => !userCards.Any(x => x.Character == c))
+                    .Where(c => !userCards.Any(x => x.CharacterId == c))
                     .ToList();
 
                 var cards = await _cardRepository

@@ -9,6 +9,7 @@ namespace Sanakan.DAL.Models.Configuration
         public ulong Message { get; set; }
 
         public ulong GuildOptionsId { get; set; }
+
         [JsonIgnore]
         public virtual GuildOptions GuildOptions { get; set; }
     }

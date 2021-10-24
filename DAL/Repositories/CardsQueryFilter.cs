@@ -1,36 +1,38 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Sanakan.DAL.Models;
 
 namespace Sanakan.DAL.Repositories
 {
     /// <summary>
-    /// Filtrowanie listy kart
+    /// Card filter.
     /// </summary>
     public class CardsQueryFilter
     {
         /// <summary>
-        /// Sortowanie po parametrze
+        /// Order by criteria
         /// </summary>
         public OrderType OrderBy { get; set; }
 
         /// <summary>
-        /// Tekst wyszukiwania
+        /// Text to search
         /// </summary>
+        [StringLength(50)]
         public string SearchText { get; set; }
 
         /// <summary>
-        /// Tagi jakie ma zawierać karta
+        /// Tags to include in query
         /// </summary>
         public List<string> IncludeTags { get; set; }
 
         /// <summary>
-        /// Tagi jakich karta ma nie mieć
+        /// Tags to exclude in query.
         /// </summary>
         public List<string> ExcludeTags { get; set; }
 
         /// <summary>
-        /// W jaki sposów filtrować po tagach
+        /// Descibes the method by which tags are filtered.
         /// </summary>
         public FilterTagsMethodType FilterTagsMethod { get; set; }
 

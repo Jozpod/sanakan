@@ -6,10 +6,13 @@ namespace Sanakan.DAL.Models.Configuration
     public class MyLand
     {
         public ulong Id { get; set; }
+
+        [StringLength(100)]
+        [Required]
         public string Name { get; set; }
 
         /// <summary>
-        /// The Discord role identifier.
+        /// The Discord role identifier of land manager.
         /// </summary>
         public ulong Manager { get; set; }
 

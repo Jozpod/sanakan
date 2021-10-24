@@ -243,7 +243,8 @@ namespace Sanakan.Modules
         [Alias("top")]
         [Summary("wyświetla topke użytkowników")]
         [Remarks(""), RequireAnyCommandChannel]
-        public async Task ShowTopAsync([Summary("rodzaj topki (poziom/sc/tc/pc/ac/posty(m/ms)/kart(a/y/ym)/karma(-))/pvp(s)")]TopType type = TopType.Level)
+        public async Task ShowTopAsync(
+            [Summary("rodzaj topki (poziom/sc/tc/pc/ac/posty(m/ms)/kart(a/y/ym)/karma(-))/pvp(s)")]TopType type = TopType.Level)
         {
             var session = new ListSession<string>(Context.User, Context.Client.CurrentUser);
             await _session.KillSessionIfExistAsync(session);
@@ -382,19 +383,24 @@ namespace Sanakan.Modules
             var daily = $"**Dzienne misje:**\n\n{string.Join("\n", dailyQuests.Select(x => x.ToView()))}";
             var weekly = $"**Tygodniowe misje:**\n\n{string.Join("\n", weeklyQuests.Select(x => x.ToView()))}";
 
-            await ReplyAsync("", embed: $"{daily}\n\n{dailyTip}\n\n\n{weekly}\n\n{totalTip}".ToEmbedMessage(EMType.Bot).WithUser(Context.User).Build());
+            var content = $"{daily}\n\n{dailyTip}\n\n\n{weekly}\n\n{totalTip}".ToEmbedMessage(EMType.Bot).WithUser(Context.User).Build();
+            await ReplyAsync("", embed: content);
         }
 
         [Command("styl")]
         [Alias("style")]
         [Summary("zmienia styl profilu (koszt 3000 SC/1000 TC)")]
         [Remarks("1 https://i.imgur.com/8UK8eby.png"), RequireCommandChannel]
-        public async Task ChangeStyleAsync([Summary("typ stylu (statystyki(0), obrazek(1), brzydkie(2), karcianka(3))")]ProfileType type, [Summary("bezpośredni adres do obrazka gdy wybrany styl 1 lub 2 (325 x 272)")]string imgUrl = null, [Summary("waluta (SC/TC)")]SCurrency currency = SCurrency.Sc)
+        public async Task ChangeStyleAsync(
+            [Summary("typ stylu (statystyki(0), obrazek(1), brzydkie(2), karcianka(3))")]ProfileType type,
+            [Summary("bezpośredni adres do obrazka gdy wybrany styl 1 lub 2 (325 x 272)")]string? imgUrl = null,
+            [Summary("waluta (SC/TC)")]SCurrency currency = SCurrency.Sc)
         {
             var scCost = 3000;
             var tcCost = 1000;
 
             var botuser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
+
             if (botuser.ScCnt < scCost && currency == SCurrency.Sc)
             {
                 await ReplyAsync("", embed: $"{Context.User.Mention} nie posiadasz wystarczającej liczby SC!".ToEmbedMessage(EMType.Error).Build());

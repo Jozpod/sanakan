@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace Sanakan.DAL.Models.Configuration
 {
@@ -29,12 +30,20 @@ namespace Sanakan.DAL.Models.Configuration
         public ulong NsfwChannel { get; set; }
         public ulong LogChannel { get; set; }
         public ulong GreetingChannel { get; set; }
+
+        [StringLength(50)]
         public string WelcomeMessage { get; set; }
+        
+        [StringLength(50)]
         public string WelcomeMessagePW { get; set; }
+
+        [StringLength(50)]
         public string GoodbyeMessage { get; set; }
         public long SafariLimit { get; set; }
         public bool Supervision { get; set; }
         public bool ChaosMode { get; set; }
+
+        [StringLength(50)]
         public string Prefix { get; set; }
 
         public virtual WaifuConfiguration WaifuConfig { get; set; }

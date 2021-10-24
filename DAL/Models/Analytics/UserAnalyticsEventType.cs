@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Sanakan.DAL.Models.Analytics
+﻿namespace Sanakan.DAL.Models.Analytics
 {
     public enum UserAnalyticsEventType
     {
-        Card, Pack, Level
+        Card = 0,
+        Pack = 1,
+        Level = 2
     }
 }

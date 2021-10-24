@@ -7,38 +7,37 @@ using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using DiscordBot.Services;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Sanakan.Common;
 using Sanakan.DAL.Models.Configuration;
 using Sanakan.DAL.Models.Management;
-using Sanakan.DAL.Repositories.Abstractions;
+using Sanakan.DiscordBot.Services.Abstractions;
 using Sanakan.Extensions;
 
 namespace Sanakan.Services
 {
-    public class ModeratorService
+    public class ModeratorService : IModeratorService
     {
         private readonly DiscordSocketClient _client;
         private readonly ILogger _logger;
         private readonly Timer _timer;
         private readonly ICacheManager _cacheManager;
-        private readonly IModerationRepository _moderationRepository;
-        private readonly IGuildConfigRepository _guildConfigRepository;
         private readonly ISystemClock _systemClock;
-
+        private readonly IServiceScopeFactory _serviceScopeFactory;
         public ModeratorService(
-            ILogger<ModeratorService> logger,
+            ILogger<IModeratorService> logger,
             DiscordSocketClient client,
             ICacheManager cacheManager,
-            IModerationRepository moderationRepository,
-            ISystemClock systemClock)
+            ISystemClock systemClock,
+            IServiceScopeFactory serviceScopeFactory)
         {
             _logger = logger;
             _client = client;
             _cacheManager = cacheManager;
-            _moderationRepository = moderationRepository;
             _systemClock = systemClock;
+            _serviceScopeFactory = serviceScopeFactory;
 
             _timer = new Timer(async _ =>
             {
@@ -48,7 +47,7 @@ namespace Sanakan.Services
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError($"in penalty: {ex}", ex);
+                    _logger.LogError($"Error occurered while checking penalties.", ex);
                 }
             },
             null,
@@ -58,6 +57,10 @@ namespace Sanakan.Services
 
         private async Task CyclicCheckPenalties()
         {
+            using var serviceScope = _serviceScopeFactory.CreateScope();
+            var serviceProvider = serviceScope.ServiceProvider;
+            var repository = serviceProvider.GetRequiredService<IPenalty>();
+
             foreach (var penalty in await _moderationRepository.GetCachedFullPenalties())
             {
                 var guild = _client.GetGuild(penalty.Guild);
@@ -69,36 +72,44 @@ namespace Sanakan.Services
 
                 var user = guild.GetUser(penalty.User);
 
-                if (user != null)
-                {
-                    var gconfig = await _guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
-                    var muteModRole = guild.GetRole(gconfig.ModMuteRole);
-                    var muteRole = guild.GetRole(gconfig.MuteRole);
-
-                    if ((_systemClock.UtcNow - penalty.StartDate).TotalHours < penalty.DurationInHours)
-                    {
-                        var muteMod = penalty.Roles.Any(x => gconfig.ModeratorRoles.Any(z => z.Role == x.Role)) ? muteModRole : null;
-                        _ = Task.Run(async () => { await MuteUserGuildAsync(user, muteRole, penalty.Roles, muteMod); });
-                        continue;
-                    }
-
-                    if (penalty.Type == PenaltyType.Mute)
-                    {
-                        await UnmuteUserGuildAsync(user, muteRole, muteModRole, penalty.Roles);
-                        await RemovePenaltyFromDb(penalty);
-                    }
-                }
-                else
+                if (user == null)
                 {
                     if ((_systemClock.UtcNow - penalty.StartDate).TotalHours > penalty.DurationInHours)
                     {
                         if (penalty.Type == PenaltyType.Ban)
                         {
                             var ban = await guild.GetBanAsync(penalty.User);
-                            if (ban != null) await guild.RemoveBanAsync(penalty.User);
+                            if (ban != null)
+                            {
+                                await guild.RemoveBanAsync(penalty.User);
+                            }
                         }
                         await RemovePenaltyFromDb(penalty);
                     }
+                    continue;
+                }
+
+                var gconfig = await _guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
+                var muteModRole = guild.GetRole(gconfig.ModMuteRole);
+                var muteRole = guild.GetRole(gconfig.MuteRole);
+
+                if ((_systemClock.UtcNow - penalty.StartDate).TotalHours < penalty.DurationInHours)
+                {
+                    var muteMod = penalty
+                        .Roles
+                        .Any(x => gconfig.ModeratorRoles.Any(z =>
+                            z.Role == x.Role)) ? muteModRole : null;
+
+                    _ = Task.Run(async () => {
+                        await MuteUserGuildAsync(user, muteRole, penalty.Roles, muteMod);
+                    });
+                    continue;
+                }
+
+                if (penalty.Type == PenaltyType.Mute)
+                {
+                    await UnmuteUserGuildAsync(user, muteRole, muteModRole, penalty.Roles);
+                    await RemovePenaltyFromDb(penalty);
                 }
             }
         }
@@ -565,9 +576,9 @@ namespace Sanakan.Services
         {
             var info = new PenaltyInfo
             {
-                User = user.Id,
+                UserId = user.Id,
                 Reason = reason,
-                Guild = user.Guild.Id,
+                GuildId = user.Guild.Id,
                 Type = PenaltyType.Ban,
                 StartDate = _systemClock.UtcNow,
                 DurationInHours = duration,
@@ -594,9 +605,9 @@ namespace Sanakan.Services
         {
             var info = new PenaltyInfo
             {
-                User = user.Id,
+                UserId = user.Id,
                 Reason = reason,
-                Guild = user.Guild.Id,
+                GuildId = user.Guild.Id,
                 Type = PenaltyType.Mute,
                 StartDate = _systemClock.UtcNow,
                 DurationInHours = duration,

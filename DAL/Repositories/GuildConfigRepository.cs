@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Sanakan.DAL.Repositories
 {
-    public class GuildConfigRepository : BaseRepository<GuildOptions>, IGuildConfigRepository
+    internal class GuildConfigRepository : BaseRepository<GuildOptions>, IGuildConfigRepository
     {
         private readonly SanakanDbContext _dbContext;
         private readonly ICacheManager _cacheManager;

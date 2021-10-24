@@ -284,7 +284,7 @@ namespace Sanakan.Web.Controllers
 
             var botUser = await _userRepository.GetByDiscordIdAsync(model.DiscordUserId);
 
-            if (botUser != null || botUser.Shinden != 0)
+            if (botUser != null || botUser.ShindenId != 0)
             {
                 return ShindenNotFound("User already connected!");
             }
@@ -353,7 +353,7 @@ namespace Sanakan.Web.Controllers
             var exe = new Executable($"api-register u{model.DiscordUserId}", new Task<Task>(async () =>
             {
                 botUser = await _userRepository.GetUserOrCreateAsync(model.DiscordUserId);
-                botUser.Shinden = shindenUser.Id.Value;
+                botUser.ShindenId = shindenUser.Id.Value;
 
                 await _userRepository.SaveChangesAsync();
 
@@ -388,7 +388,7 @@ namespace Sanakan.Web.Controllers
                     Value = value,
                     DiscordId = user.Id,
                     Date = _systemClock.UtcNow,
-                    ShindenId = user.Shinden,
+                    ShindenId = user.ShindenId,
                     Source = TransferSource.ByDiscordId,
                 };
 
@@ -437,7 +437,7 @@ namespace Sanakan.Web.Controllers
                 Value = value,
                 DiscordId = user.Id,
                 Date = _systemClock.UtcNow,
-                ShindenId = user.Shinden,
+                ShindenId = user.ShindenId,
                 Source = TransferSource.ByShindenId,
             };
 

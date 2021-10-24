@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 
 namespace Sanakan.DAL.Models
@@ -32,7 +33,7 @@ namespace Sanakan.DAL.Models
             Name = name;
             StarStyle = StarStyle.Full;
             Source = CardSource.Other;
-            Character = characterId;
+            CharacterId = characterId;
             Quality = Quality.Broken;
             Dere = dere;
             Curse = CardCurse.None;
@@ -74,12 +75,21 @@ namespace Sanakan.DAL.Models
         public int Defence { get; set; }
         public int Attack { get; set; }
         public int Health { get; set; }
-        public string Name { get; set; }
-        public ulong Character { get; set; }
+
+        [StringLength(100)]
+        [Required]
+        public string Name { get; set; } = string.Empty;
+        public ulong CharacterId { get; set; }
         public DateTime CreationDate { get; set; }
         public CardSource Source { get; set; }
+
+        [StringLength(50)]
         public string? Title { get; set; }
+
+        [StringLength(50)]
         public string? Image { get; set; }
+
+        [StringLength(50)]
         public string? CustomImage { get; set; }
         public ulong FirstIdOwner { get; set; }
         public ulong LastIdOwner { get; set; }

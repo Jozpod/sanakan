@@ -2,6 +2,7 @@
 using Sanakan.Common.Models;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace Sanakan.DAL.Models
 {
@@ -17,7 +18,7 @@ namespace Sanakan.DAL.Models
             TcCnt = 0;
             ScCnt = 100;
             ExpCnt = 10;
-            Shinden = 0;
+            ShindenId = 0;
             Warnings = 0;
             MessagesCnt = 0;
             CommandsCnt = 0;
@@ -120,8 +121,11 @@ namespace Sanakan.DAL.Models
         /// <summary>
         /// The user identifer in Shinden.
         /// </summary>
-        /// <remarks>The value of zero means the user has not been connected.</remarks>
-        public ulong Shinden { get; set; }
+        public ulong? ShindenId { get; set; }
+
+        /// <summary>
+        /// Specifies whether the user is blacklisted in Discord.
+        /// </summary>
         public bool IsBlacklisted { get; set; }
         public long AcCnt { get; set; }
         public long TcCnt { get; set; }
@@ -129,7 +133,11 @@ namespace Sanakan.DAL.Models
         public long Level { get; set; }
         public long ExpCnt { get; set; }
         public ProfileType ProfileType { get; set; }
+
+        [StringLength(50)]
         public string BackgroundProfileUri { get; set; }
+
+        [StringLength(50)]
         public string StatsReplacementProfileUri { get; set; }
         public ulong MessagesCnt { get; set; }
         public ulong CommandsCnt { get; set; }

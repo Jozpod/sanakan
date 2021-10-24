@@ -143,7 +143,7 @@ namespace Sanakan
             
             services.AddSingleton<HelperService>();
             services.AddSingleton<CommandHandler>();
-            services.AddSingleton<IImageProcessor, ImageProcessing>();
+            services.AddSingleton<IImageProcessor, ImageProcessor>();
             services.AddSingleton<IWaifuService, WaifuService>();
             //_shindenClient =
 

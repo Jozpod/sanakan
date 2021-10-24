@@ -3,6 +3,7 @@ using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Sanakan.Common;
+using Sanakan.DiscordBot.Services.Abstractions;
 using Sanakan.Extensions;
 using System.Threading.Tasks;
 
@@ -41,7 +42,7 @@ namespace Sanakan.Services.Session.Models
 
             using var serviceScope = _serviceScopeFactory.CreateScope();
             var serviceProvider = serviceScope.ServiceProvider;
-            var moderatorService = serviceProvider.GetRequiredService<ModeratorService>();
+            var moderatorService = serviceProvider.GetRequiredService<DiscordBot.Services.Abstractions.IModeratorService>();
              
             var info = await moderatorService.MuteUserAysnc(
                 User,

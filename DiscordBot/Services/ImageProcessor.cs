@@ -25,7 +25,7 @@ using SixLabors.Primitives;
 
 namespace Sanakan.DiscordBot.Services
 {
-    public class ImageProcessing : IImageProcessor
+    public class ImageProcessor : IImageProcessor
     {
         private const string White = "#000000";
         private const string Onyx = "#36393E";
@@ -37,7 +37,7 @@ namespace Sanakan.DiscordBot.Services
         private readonly IFileSystem _fileSystem;
         private readonly IShindenClient _shindenClient;
 
-        public ImageProcessing(
+        public ImageProcessor(
             IShindenClient shinden,
              IFileSystem fileSystem)
         {
@@ -216,7 +216,7 @@ namespace Sanakan.DiscordBot.Services
             {
                 var tChar = botUser.GameDeck.Cards
                     .OrderBy(x => x.Rarity)
-                    .FirstOrDefault(x => x.Character == botUser.GameDeck.Waifu);
+                    .FirstOrDefault(x => x.CharacterId == botUser.GameDeck.Waifu);
 
                 if (tChar != null)
                 {
@@ -321,7 +321,7 @@ namespace Sanakan.DiscordBot.Services
             {
                 var tChar = botUser.GameDeck.Cards
                     .OrderBy(x => x.Rarity)
-                    .FirstOrDefault(x => x.Character == botUser.GameDeck.Waifu);
+                    .FirstOrDefault(x => x.CharacterId == botUser.GameDeck.Waifu);
 
                 if (tChar != null)
                 {

@@ -164,11 +164,11 @@ namespace Sanakan.Services.Commands
 
             var record = new CommandsAnalytics
             {
-                CmdName = command.Match.Command.Name,
+                CommandName = command.Match.Command.Name,
                 GuildId = context.Guild?.Id ?? 0,
                 UserId = context.User.Id,
                 Date = _systemClock.UtcNow,
-                CmdParams = param,
+                CommandParameters = param,
             };
 
             var commandsAnalyticsRepository = serviceScope.ServiceProvider.GetRequiredService<ICommandsAnalyticsRepository>();

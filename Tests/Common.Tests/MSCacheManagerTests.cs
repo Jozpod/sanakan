@@ -30,9 +30,8 @@ namespace Sanakan.DAL.Tests
             var configurationRoot = builder.Build();
             
             serviceCollection.AddOptions();
-            serviceCollection.AddCache();
+            serviceCollection.AddCache(configurationRoot.GetSection("Cache"));
             serviceCollection.AddSingleton(configurationRoot);
-            serviceCollection.Configure<MSCacheManagerOptions>(configurationRoot.GetSection("Cache"));
             _serviceProvider = serviceCollection.BuildServiceProvider();
         }
 
@@ -45,6 +44,9 @@ namespace Sanakan.DAL.Tests
             cacheManager.Add("test", new Entity());
             result = cacheManager.Get<Entity>("test");
             result.Should().NotBeNull();
+            cacheManager.ExpireTag("test");
+            result = cacheManager.Get<Entity>("test");
+            result.Should().BeNull();
         }
 
         public class Entity

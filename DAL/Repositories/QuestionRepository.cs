@@ -2,14 +2,12 @@
 using Sanakan.Common;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Repositories.Abstractions;
-using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Sanakan.DAL.Repositories
 {
-    public class QuestionRepository : BaseRepository<Question>, IQuestionRepository
+    internal class QuestionRepository : BaseRepository<Question>, IQuestionRepository
     {
         private readonly SanakanDbContext _dbContext;
         private readonly ICacheManager _cacheManager;

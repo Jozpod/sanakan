@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 using Newtonsoft.Json;
 
 namespace Sanakan.DAL.Models
@@ -11,7 +12,13 @@ namespace Sanakan.DAL.Models
         public int Attack { get; set; }
         public int Health { get; set; }
         public int Defence { get; set; }
+
+        [StringLength(50)]
+        [Required]
         public string Name { get; set; }
+
+        [StringLength(50)]
+        [Required]
         public string Title { get; set; }
         public bool IsFocus { get; set; }
         public double ExpCnt { get; set; }
@@ -34,6 +41,7 @@ namespace Sanakan.DAL.Models
         public Quality ClothesQuality { get; set; }
 
         public ulong GameDeckId { get; set; }
+
         [JsonIgnore]
         public virtual GameDeck GameDeck { get; set; }
     }

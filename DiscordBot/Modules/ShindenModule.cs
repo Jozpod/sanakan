@@ -176,13 +176,13 @@ namespace Sanakan.Modules
                 return;
             }
 
-            if (botUser?.Shinden == 0)
+            if (botUser?.ShindenId == 0)
             {
                 await ReplyAsync("", embed: "Ta osoba nie połączyła konta bota z kontem na stronie.".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
-            using var stream = await _shindenService.GetSiteStatisticAsync(botUser.Shinden, user);
+            using var stream = await _shindenService.GetSiteStatisticAsync(botUser.ShindenId, user);
                 
             if (stream == null)
             {
@@ -190,7 +190,7 @@ namespace Sanakan.Modules
                 return;
             }
 
-            var profileUrl = UrlHelpers.GetProfileURL(botUser.Shinden);
+            var profileUrl = UrlHelpers.GetProfileURL(botUser.ShindenId);
 
             await Context.Channel.SendFileAsync(stream, $"{user.Id}.png", $"{profileUrl}");
         }
@@ -241,7 +241,7 @@ namespace Sanakan.Modules
             }
 
             var botuser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
-            botuser.Shinden = shindenId;
+            botuser.ShindenId = shindenId;
 
             await _userRepository.SaveChangesAsync();
 

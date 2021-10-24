@@ -1,16 +1,16 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Sanakan.Common;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Repositories.Abstractions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Sanakan.DAL.Repositories
 {
-    public class GameDeckRepository : BaseRepository<GameDeck>, IGameDeckRepository
+    internal class GameDeckRepository : BaseRepository<GameDeck>, IGameDeckRepository
     {
         private readonly SanakanDbContext _dbContext;
         private readonly ICacheManager _cacheManager;
@@ -28,6 +28,15 @@ namespace Sanakan.DAL.Repositories
 
         public async Task<List<GameDeck>> GetCachedPlayersForPVP(ulong ignore = 1)
         {
+            var key = "gamedecks";
+
+            var cached = _cacheManager.Get<List<GameDeck>>(key);
+
+            if (cached != null)
+            {
+                return cached;
+            }
+
             var result = await _dbContext
                 .GameDecks
                 .AsQueryable()
@@ -36,8 +45,12 @@ namespace Sanakan.DAL.Repositories
                     && x.UserId != ignore)
                 .AsNoTracking()
                 .AsSplitQuery()
-                //.FromCacheAsync(new MemoryCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(2) })
                 .ToListAsync();
+
+            _cacheManager.Add(key, result, new MemoryCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(2)
+            });
 
             return result;
         }

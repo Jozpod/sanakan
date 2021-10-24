@@ -194,7 +194,7 @@ namespace Sanakan.Services.PocketWaifu
 
                 newCard.FirstIdOwner = winner.Id;
                 newCard.Affection += botUser.GameDeck.AffectionFromKarma();
-                botUser.GameDeck.RemoveCharacterFromWishList(newCard.Character);
+                botUser.GameDeck.RemoveCharacterFromWishList(newCard.CharacterId);
 
                 botUser.GameDeck.Cards.Add(newCard);
                 await _userRepository.SaveChangesAsync();

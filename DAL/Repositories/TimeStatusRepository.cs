@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Sanakan.Common;
 using Sanakan.DAL.Models;
-using Sanakan.DAL.Models.Analytics;
 using Sanakan.DAL.Repositories.Abstractions;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Sanakan.DAL.Repositories
 {
-    public class TimeStatusRepository : BaseRepository<TimeStatus>, ITimeStatusRepository
+    internal class TimeStatusRepository : BaseRepository<TimeStatus>, ITimeStatusRepository
     {
         private readonly SanakanDbContext _dbContext;
         private readonly ICacheManager _cacheManager;

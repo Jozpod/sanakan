@@ -268,7 +268,7 @@ namespace Sanakan.Web.Controllers
                 BackgroundImageUrl = user.GameDeck.BackgroundImageUrl,
                 ForegroundImageUrl = user.GameDeck.ForegroundImageUrl,
                 Expeditions = user.GameDeck.Cards.Where(x => x.Expedition != CardExpedition.None).ToExpeditionView(user.GameDeck.Karma),
-                Waifu = user.GameDeck.Cards.Where(x => x.Character == user.GameDeck.Waifu).OrderBy(x => x.Rarity).ThenByDescending(x => x.Quality).FirstOrDefault().ToView(),
+                Waifu = user.GameDeck.Cards.Where(x => x.CharacterId == user.GameDeck.Waifu).OrderBy(x => x.Rarity).ThenByDescending(x => x.Quality).FirstOrDefault().ToView(),
                 Gallery = user.GameDeck.Cards.Where(x => x.HasTag("galeria")).Take(user.GameDeck.CardsInGallery).OrderBy(x => x.Rarity).ThenByDescending(x => x.Quality).ToView()
             };
 
@@ -302,7 +302,7 @@ namespace Sanakan.Web.Controllers
 
                 foreach (var card in cards)
                 {
-                    card.Character = newId;
+                    card.CharacterId = newId;
                     userRelease.Add($"user-{card.GameDeckId}");
                 }
 
@@ -769,7 +769,7 @@ namespace Sanakan.Web.Controllers
                     card.FirstIdOwner = botUser.Id;
 
                     botUser.GameDeck.Cards.Add(card);
-                    botUser.GameDeck.RemoveCharacterFromWishList(card.Character);
+                    botUser.GameDeck.RemoveCharacterFromWishList(card.CharacterId);
                 }
 
                 await _userRepository.SaveChangesAsync();

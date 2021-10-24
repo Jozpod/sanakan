@@ -13,6 +13,7 @@ namespace Sanakan.ShindenApi.Builder
         public static IServiceCollection AddDiscordBotServices(this IServiceCollection services)
         {
             services.AddSingleton<ILandManager, LandManager>();
+            services.AddSingleton<IModeratorService, ModeratorService>();
             return services;
         }
     }

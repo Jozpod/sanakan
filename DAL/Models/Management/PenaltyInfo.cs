@@ -1,25 +1,45 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace Sanakan.DAL.Models.Management
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class PenaltyInfo
     {
+        /// <summary>
+        /// The unique identifier.
+        /// </summary>
         public ulong Id { get; set; }
 
         /// <summary>
         /// The Discord user identifier.
         /// </summary>
-        public ulong User { get; set; }
+        public ulong UserId { get; set; }
 
         /// <summary>
-        /// The Discord guild identifer.
+        /// The Discord guild (server) identifer.
         /// </summary>
-        public ulong Guild { get; set; }
-        public string Reason { get; set; }
+        public ulong GuildId { get; set; }
+
+        /// <summary>
+        /// Describes the reason why penalty was given to user on Discord.
+        /// </summary>
+        [StringLength(100)]
+        public string? Reason { get; set; }
+
+        /// <summary>
+        /// The type of penalty.
+        /// </summary>
         public PenaltyType Type { get; set; }
         public DateTime StartDate { get; set; }
-        public long DurationInHours { get; set; }
+
+        /// <summary>
+        /// The time span of penalty applied to user on Discord.
+        /// </summary>
+        public TimeSpan Duration { get; set; }
 
         public virtual ICollection<OwnedRole> Roles { get; set; }
     }

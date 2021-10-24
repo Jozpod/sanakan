@@ -331,7 +331,7 @@ namespace Sanakan.Extensions
 
         public static void RemoveFromWaifu(this GameDeck deck, Card card)
         {
-            if (deck.Waifu == card.Character)
+            if (deck.Waifu == card.CharacterId)
             {
                 card.Affection -= 25;
                 deck.Waifu = 0;

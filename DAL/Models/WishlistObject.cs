@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System.ComponentModel.DataAnnotations;
 
 namespace Sanakan.DAL.Models
 {
@@ -7,6 +8,9 @@ namespace Sanakan.DAL.Models
     {
         public ulong Id { get; set; }
         public ulong ObjectId { get; set; }
+
+        [StringLength(100)]
+        [Required]
         public string ObjectName { get; set; }
         public WishlistObjectType Type { get; set; }
 

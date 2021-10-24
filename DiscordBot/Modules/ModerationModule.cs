@@ -29,7 +29,7 @@ namespace Sanakan.Modules
         private readonly HelperService _helper;
         private readonly IShindenClient _shindenClient;
         private readonly Services.Profile _profile;
-        private readonly ModeratorService _moderation;
+        private readonly IModeratorService _moderation;
         private readonly ICacheManager _cacheManager;
         private readonly IUserRepository _userRepository;
         private readonly IGuildConfigRepository _guildConfigRepository;
@@ -37,14 +37,13 @@ namespace Sanakan.Modules
         private readonly IRandomNumberGenerator _randomNumberGenerator;
         public ModerationModule(
             HelperService helper,
-            ModeratorService moderation,
+            IModeratorService moderation,
             Services.Profile prof,
             IShindenClient sh,
             IOptionsMonitor<BotConfiguration> config,
             ICacheManager _cacheManager,
             ISystemClock systemClock,
             IUserRepository userRepository,
-            IAllRepository repository,
             IGuildConfigRepository guildConfigRepository,
             IRandomNumberGenerator randomNumberGenerator)
         {
@@ -315,7 +314,8 @@ namespace Sanakan.Modules
         [Command("prefix")]
         [Summary("ustawia prefix serwera (nie podanie reset)")]
         [Remarks("."), RequireAdminRole]
-        public async Task SetPrefixPerServerAsync([Summary("nowy prefix")]string prefix = null)
+        public async Task SetPrefixPerServerAsync(
+            [Summary("nowy prefix")]string? prefix = null)
         {
             var guildId = Context.Guild.Id;
             var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(guildId);
@@ -335,7 +335,7 @@ namespace Sanakan.Modules
         [Remarks("No elo ^mention!"), RequireAdminRole]
         public async Task SetOrShowWelcomeMessageAsync(
             [Summary("wiadomość (opcjonalne, off - wyłączenie)")]
-            [Remainder]string messsage = null)
+            [Remainder]string? messsage = null)
         {
             var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(Context.Guild.Id);
             if (messsage == null)
@@ -364,7 +364,7 @@ namespace Sanakan.Modules
         [Remarks("No elo ^mention!"), RequireAdminRole]
         public async Task SetOrShowWelcomeMessagePWAsync(
             [Summary("wiadomość (opcjonalne, off - wyłączenie)")]
-            [Remainder]string messsage = null)
+            [Remainder]string? messsage = null)
         {
             var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(Context.Guild.Id);
 
@@ -394,7 +394,7 @@ namespace Sanakan.Modules
         [Summary("ustawia/wyświetla wiadomość pożegnalną")]
         [Remarks("Nara ^nick?"), RequireAdminRole]
         public async Task SetOrShowGoodbyeMessageAsync(
-            [Summary("wiadomość (opcjonalne, off - wyłączenie)")][Remainder]string messsage = null)
+            [Summary("wiadomość (opcjonalne, off - wyłączenie)")][Remainder]string? messsage = null)
         {
             var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(Context.Guild.Id);
 
@@ -1458,9 +1458,9 @@ namespace Sanakan.Modules
                 {
                     var realNick = user.Nickname ?? user.Username;
 
-                    if (duser.Shinden != 0)
+                    if (duser.ShindenId != 0)
                     {
-                        var userResult = await _shindenClient.GetUserInfoAsync(duser.Shinden);
+                        var userResult = await _shindenClient.GetUserInfoAsync(duser.ShindenId.Value);
 
                         if (userResult.Value == null)
                         {
@@ -1472,7 +1472,7 @@ namespace Sanakan.Modules
                         }
                         else
                         {
-                            nickRep = $"**Nick:** ❗ D: {duser.Shinden}";
+                            nickRep = $"**Nick:** ❗ D: {duser.ShindenId}";
                         }
                     }
                     else

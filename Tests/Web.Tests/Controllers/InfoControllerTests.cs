@@ -2,6 +2,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.Configuration;
+using Sanakan.DiscordBot.Services.Abstractions;
 using Sanakan.Services;
 using Sanakan.Web.Controllers;
 using System;
@@ -13,7 +14,7 @@ namespace Sanakan.Web.Tests
     public class InfoControllerTests
     {
         private readonly InfoController _controller;
-        private readonly Mock<HelperService> _helperServiceMock;
+        private readonly Mock<IHelperService> _helperServiceMock;
         private readonly Mock<IOptionsMonitor<SanakanConfiguration>> _optionMock;
 
         public InfoControllerTests()

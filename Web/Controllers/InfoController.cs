@@ -12,6 +12,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Http;
 using Sanakan.Web.Configuration;
 using Sanakan.Configuration;
+using Sanakan.DiscordBot.Services.Abstractions;
 
 namespace Sanakan.Web.Controllers
 {
@@ -20,11 +21,11 @@ namespace Sanakan.Web.Controllers
     [Produces("application/json")]
     public class InfoController : ControllerBase
     {
-        private readonly HelperService _helperService;
+        private readonly IHelperService _helperService;
         private readonly IOptionsMonitor<SanakanConfiguration> _config;
 
         public InfoController(
-            HelperService helper,
+            IHelperService helper,
             IOptionsMonitor<SanakanConfiguration> config)
         {
             _helperService = _helperService;

@@ -48,24 +48,24 @@ namespace Sanakan.DAL.Repositories
             return result;
         }
 
-        public async Task<List<Card>> GetCardsByCharacterIdAsync(ulong id)
+        public async Task<List<Card>> GetCardsByCharacterIdAsync(ulong characterId)
         {
             var cards = await _dbContext
                 .Cards
                 .AsQueryable()
                 .AsSplitQuery()
-                .Where(x => x.Character == id)
+                .Where(x => x.CharacterId == characterId)
                 .ToListAsync();
 
             return cards;
         }
 
-        public async Task<User?> GetUserCardsAsync(ulong id)
+        public async Task<User?> GetUserCardsAsync(ulong shindenUserId)
         {
             var result = await _dbContext
                 .Users
                .AsQueryable()
-               .Where(x => x.Shinden == id)
+               .Where(x => x.ShindenId == shindenUserId)
                .Include(x => x.GameDeck)
                    .ThenInclude(x => x.Cards)
                    .ThenInclude(x => x.ArenaStats)
@@ -137,7 +137,7 @@ namespace Sanakan.DAL.Repositories
                 .Cards
                 .AsQueryable()
                 .AsSplitQuery()
-                .Where(x => x.Character == characterId)
+                .Where(x => x.CharacterId == characterId)
                 .ToListAsync();
 
             return cards;
@@ -149,7 +149,7 @@ namespace Sanakan.DAL.Repositories
                .AsQueryable()
                .Include(x => x.TagList)
                .Include(x => x.GameDeck)
-               .Where(x => x.Character == characterId);
+               .Where(x => x.CharacterId == characterId);
 
             if (cardQueryOptions.IncludeTagList)
             {
@@ -186,7 +186,7 @@ namespace Sanakan.DAL.Repositories
                 .Include(x => x.TagList)
                 .Include(x => x.GameDeck)
                 .AsSplitQuery()
-                .Where(x => characterIds.Contains(x.Character))
+                .Where(x => characterIds.Contains(x.CharacterId))
                 .AsNoTracking()
                 .ToListAsync();
                 //.FromCacheAsync(new[] { "users" });
@@ -198,7 +198,7 @@ namespace Sanakan.DAL.Repositories
                 .Include(x => x.TagList)
                 .Include(x => x.GameDeck)
                 .Where(x => x.GameDeckId != userId
-                    && characterIds.Any(pr => pr == x.Character))
+                    && characterIds.Any(pr => pr == x.CharacterId))
                 .AsNoTracking()
                 .ToListAsync();
         }

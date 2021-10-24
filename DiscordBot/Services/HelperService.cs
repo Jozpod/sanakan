@@ -3,6 +3,7 @@ using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.Extensions.Options;
 using Sanakan.DiscordBot.Configuration;
+using Sanakan.DiscordBot.Services.Abstractions;
 using Sanakan.Extensions;
 using System;
 using System.Collections.Generic;
@@ -11,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace Sanakan.Services
 {
-    public class HelperService
+    public class HelperService : IHelperService
     {
         private readonly IOptionsMonitor<BotConfiguration> _config;
 
@@ -27,7 +28,7 @@ namespace Sanakan.Services
 
         public string GivePublicHelp()
         {
-            string commands = "**Lista poleceń:**\n";
+            var commands = "**Lista poleceń:**\n";
             foreach (var item in GetInfoAboutModules(PublicModulesInfo))
             {
                 var sSubInfo = new List<string>();
@@ -35,7 +36,9 @@ namespace Sanakan.Services
                 {
                     var info = "";
                     if (!string.IsNullOrWhiteSpace(module.Prefix))
+                    {
                         info += $"      ***{module.Prefix}***";
+                    }
 
                     sSubInfo.Add(info + " " + string.Join("  ", module.Commands));
                 }
@@ -59,13 +62,19 @@ namespace Sanakan.Services
             var thisCommands = info.Commands.FirstOrDefault(x => x.Name == command);
 
             if (thisCommands == null)
+            {
                 thisCommands = info.Commands.FirstOrDefault(x => x.Aliases.Any(c => c == command));
+            }
 
             if (thisCommands != null)
+            {
                 return GetCommandInfo(thisCommands, prefix);
+            }
 
             if (throwEx)
+            {
                 throw new Exception("Polecenie nie istnieje!");
+            }
 
             return null;
         }

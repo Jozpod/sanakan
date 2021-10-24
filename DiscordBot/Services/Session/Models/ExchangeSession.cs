@@ -203,7 +203,7 @@ namespace Sanakan.Services.Session.Models
                     }
 
                     if (target.Dbuser.GameDeck.Cards
-                        .Any(x => x.FromFigure && x.Character == card.Character))
+                        .Any(x => x.FromFigure && x.CharacterId == card.CharacterId))
                     {
                         error = true;
                         continue;
@@ -413,7 +413,7 @@ namespace Sanakan.Services.Session.Models
 
                                 card.GameDeckId = user2.GameDeck.Id;
 
-                                user2.GameDeck.RemoveCharacterFromWishList(card.Character);
+                                user2.GameDeck.RemoveCharacterFromWishList(card.CharacterId);
                                 user2.GameDeck.RemoveCardFromWishList(card.Id);
                             }
                         }
@@ -443,7 +443,7 @@ namespace Sanakan.Services.Session.Models
 
                                 card.GameDeckId = user1.GameDeck.Id;
 
-                                user1.GameDeck.RemoveCharacterFromWishList(card.Character);
+                                user1.GameDeck.RemoveCharacterFromWishList(card.CharacterId);
                                 user1.GameDeck.RemoveCardFromWishList(card.Id);
                             }
                         }

@@ -19,6 +19,7 @@ using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot.Resources;
 using Sanakan.DiscordBot;
 using Microsoft.Extensions.DependencyInjection;
+using Sanakan.DiscordBot.Services.Abstractions;
 
 namespace Sanakan.Modules
 {
@@ -26,7 +27,7 @@ namespace Sanakan.Modules
     public class FunModule : ModuleBase<SocketCommandContext>
     {
         public const string PsyduckEmoji = "<:klasycznypsaj:482136878120828938>";
-        private readonly ModeratorService _moderation;
+        private readonly DiscordBot.Services.Abstractions.IModeratorService _moderatorService;
         private readonly SessionManager _session;
         private readonly ICacheManager _cacheManager;
         private readonly IUserRepository _userRepository;
@@ -37,14 +38,14 @@ namespace Sanakan.Modules
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly SlotMachine _slotMachine;
         public FunModule(
-            ModeratorService moderation,
+            DiscordBot.Services.Abstractions.IModeratorService moderatorService,
             SessionManager session,
             ICacheManager cacheManager,
             ISystemClock systemClock,
             IServiceScopeFactory serviceScopeFactory)
         {
             _session = session;
-            _moderation = moderation;
+            _moderatorService = moderatorService;
             _cacheManager = cacheManager;
             _systemClock = systemClock;
             _serviceScopeFactory = serviceScopeFactory;

@@ -13,8 +13,8 @@ namespace Sanakan.DAL.Repositories.Abstractions
     {
         Task<Card?> GetCardAsync(ulong wid);
         Task<List<Card>> GetCardsWithTagAsync(string tag);
-        Task<List<Card>> GetCardsByCharacterIdAsync(ulong id);
-        Task<User?> GetUserCardsAsync(ulong id);
+        Task<List<Card>> GetCardsByCharacterIdAsync(ulong characterId);
+        Task<User?> GetUserCardsAsync(ulong shindenUserId);
         Task<List<Card>> GetByIdsAsync(ulong[] ids);
         Task<List<Card>> GetByIdsAsync(ulong[] ids, CardQueryOptions cardQueryOptions);
         Task<List<Card>> GetByCharacterIdAsync(ulong characterId);

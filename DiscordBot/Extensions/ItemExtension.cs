@@ -508,7 +508,7 @@ namespace Sanakan.Extensions
                 Health = card.Health,
                 Attack = card.Attack,
                 Defence = card.Defence,
-                Character = card.Character,
+                Character = card.CharacterId,
                 BodyQuality = Quality.Broken,
                 RestartCnt = card.RestartCnt,
                 HeadQuality = Quality.Broken,

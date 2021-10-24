@@ -256,7 +256,7 @@ namespace Sanakan.Extensions
                 + $"**W klatce:** {card.InCage.GetYesNo()}\n"
                 + $"**Aktywna:** {card.Active.GetYesNo()}\n"
                 + $"**Możliwość wymiany:** {card.IsTradable.GetYesNo()}\n\n"
-                + $"**WID:** {card.Id} *({card.Character})*\n"
+                + $"**WID:** {card.Id} *({card.CharacterId})*\n"
                 + $"**Restarty:** {card.RestartCnt}\n"
                 + $"**Pochodzenie:** {card.Source.GetString()}\n"
                 + $"**Tagi:** {tags}\n"
@@ -267,7 +267,7 @@ namespace Sanakan.Extensions
             var tags = string.Join(" ", card.TagList.Select(x => x.Name));
             if (card.TagList.Count < 1) tags = "---";
 
-            return $"**[{card.Id}]** *({card.Character})*\n"
+            return $"**[{card.Id}]** *({card.CharacterId})*\n"
                 + $"{card.GetString(true, true, true, false, true)}\n"
                 + $"_{card.Title}_\n\n"
                 + $"{card.Dere}\n"
@@ -550,7 +550,7 @@ namespace Sanakan.Extensions
                     return 0;
             }
         }
-        public static string GetCharacterUrl(this Card card) => UrlHelpers.GetCharacterURL(card.Character);
+        public static string GetCharacterUrl(this Card card) => UrlHelpers.GetCharacterURL(card.CharacterId);
         public static string GetYesNo(this bool b) => b ? "Tak" : "Nie";
         public static bool CanGiveRing(this Card card) => card.Affection >= 5;
         public static bool CanGiveBloodOrUpgradeToSSS(this Card card) => card.Affection >= 50;

@@ -11,6 +11,7 @@ using Microsoft.Extensions.Options;
 using Sanakan.Common;
 using Sanakan.Configuration;
 using Sanakan.DAL.Repositories.Abstractions;
+using Sanakan.DiscordBot.Services.Abstractions;
 using Sanakan.Extensions;
 
 namespace Sanakan.Services.Supervisor
@@ -35,7 +36,7 @@ namespace Sanakan.Services.Supervisor
         private Dictionary<ulong, Dictionary<ulong, SupervisorEntity>> _guilds;
 
         private readonly DiscordSocketClient _client;
-        private readonly ModeratorService _moderatorService;
+        private readonly DiscordBot.Services.Abstractions.IModeratorService _moderatorService;
         private readonly ILogger _logger;
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly ISystemClock _systemClock;
@@ -47,7 +48,7 @@ namespace Sanakan.Services.Supervisor
             DiscordSocketClient client,
             IOptionsMonitor<SanakanConfiguration> config,
             ILogger<Supervisor> logger,
-            ModeratorService moderatorService,
+            DiscordBot.Services.Abstractions.IModeratorService moderatorService,
             IServiceScopeFactory serviceScopeFactory,
             ISystemClock systemClock)
         {

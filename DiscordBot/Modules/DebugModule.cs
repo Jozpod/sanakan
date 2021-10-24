@@ -13,6 +13,7 @@ using Sanakan.DAL.Repositories;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot;
 using Sanakan.DiscordBot.Services;
+using Sanakan.DiscordBot.Services.Abstractions;
 using Sanakan.Extensions;
 using Sanakan.Preconditions;
 using Sanakan.Services;
@@ -41,7 +42,7 @@ namespace Sanakan.Modules
         private readonly IWaifuService _waifuService;
         private readonly WritableOptions<SanakanConfiguration> _config;
         private readonly IExecutor _executor;
-        private readonly HelperService _helperService;
+        private readonly IHelperService _helperService;
         private readonly IShindenClient _shindenClient;
         private readonly IImageProcessor _imageProcessor;
         private readonly IUserRepository _userRepository;
@@ -56,7 +57,7 @@ namespace Sanakan.Modules
         public DebugModule(
             IWaifuService waifuService,
             IShindenClient shindenClient,
-            HelperService helper,
+            IHelperService helperService,
             IImageProcessor imageProcessor,
             WritableOptions<SanakanConfiguration> config,
             IUserRepository userRepository,
@@ -69,7 +70,7 @@ namespace Sanakan.Modules
         {
             _shindenClient = shindenClient;
             _executor = executor;
-            _helperService = helper;
+            _helperService = helperService;
             _config = config;
             _waifuService = waifuService;
             _guildConfigRepository = guildConfigRepository;
@@ -245,7 +246,7 @@ namespace Sanakan.Modules
             {
                 try
                 {
-                    var result = await _shindenClient.GetCharacterInfoAsync(card.Character);
+                    var result = await _shindenClient.GetCharacterInfoAsync(card.CharacterId);
                     
                     if (result.Value == null)
                     {
@@ -399,7 +400,7 @@ namespace Sanakan.Modules
 
                     thisCard.GameDeckId = winnerUser.GameDeck.Id;
 
-                    winnerUser.GameDeck.RemoveCharacterFromWishList(thisCard.Character);
+                    winnerUser.GameDeck.RemoveCharacterFromWishList(thisCard.CharacterId);
                     winnerUser.GameDeck.RemoveCardFromWishList(thisCard.Id);
 
                     idsToSelect.Remove(wid);
@@ -785,7 +786,7 @@ namespace Sanakan.Modules
             }
             else
             {
-                var result = await _shindenClient.GetCharacterInfoAsync(thisCard.Character);
+                var result = await _shindenClient.GetCharacterInfoAsync(thisCard.CharacterId);
                 if (result.Value != null)
                 {
                     thisCard.Title = result.Value.Relations?
@@ -1059,7 +1060,7 @@ namespace Sanakan.Modules
             var botuser = await _userRepository.GetUserOrCreateAsync(user.Id);
             botuser.GameDeck.Cards.Add(card);
 
-            botuser.GameDeck.RemoveCharacterFromWishList(card.Character);
+            botuser.GameDeck.RemoveCharacterFromWishList(card.CharacterId);
 
             await _userRepository.SaveChangesAsync();
 

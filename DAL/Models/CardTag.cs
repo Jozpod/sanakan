@@ -1,10 +1,13 @@
 ﻿using Newtonsoft.Json;
+using System.ComponentModel.DataAnnotations;
 
 namespace Sanakan.DAL.Models
 {
     public class CardTag
     {
         public ulong Id { get; set; }
+
+        [StringLength(50)]
         public string Name { get; set; }
 
         public ulong CardId { get; set; }

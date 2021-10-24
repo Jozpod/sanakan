@@ -8,6 +8,7 @@ using Sanakan.Common;
 using Sanakan.DAL.Models.Configuration;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot.Configuration;
+using Sanakan.DiscordBot.Services.Abstractions;
 using Sanakan.Extensions;
 using Sanakan.Preconditions;
 using Sanakan.Services;
@@ -24,9 +25,8 @@ namespace Sanakan.Modules
     [Name("Ogólne")]
     public class HelperModule : ModuleBase<SocketCommandContext>
     {
-        private ModeratorService _moderation;
         private SessionManager _session;
-        private HelperService _helper;
+        private IHelperService _helperService;
         private ILogger _logger;
         private IOptionsMonitor<BotConfiguration> _config;
         private readonly IGuildConfigRepository _guildConfigRepository;
@@ -35,8 +35,7 @@ namespace Sanakan.Modules
         private readonly IServiceProvider _serviceProvider;
 
         public HelperModule(
-            HelperService helper,
-            ModeratorService moderation,
+            IHelperService helper,
             SessionManager session,
             ILogger<HelperModule> logger,
             IOptionsMonitor<BotConfiguration> config,
@@ -44,9 +43,8 @@ namespace Sanakan.Modules
             IOperatingSystem operatingSystem,
             IServiceProvider serviceProvider)
         {
-            _moderation = moderation;
             _session = session;
-            _helper = helper;
+            _helperService = helper;
             _logger = logger;
             _config = config;
             _guildConfigRepository = guildConfigRepository;
@@ -69,7 +67,7 @@ namespace Sanakan.Modules
             
             if (command == null)
             {
-                await ReplyAsync(_helper.GivePublicHelp());
+                await ReplyAsync(_helperService.GivePublicHelp());
                 return;
             }
 
@@ -92,7 +90,7 @@ namespace Sanakan.Modules
                     dev = _config.CurrentValue.Dev.Any(x => x == gUser.Id);
                 }
 
-                await ReplyAsync(_helper.GiveHelpAboutPublicCmd(command, prefix, admin, dev));
+                await ReplyAsync(_helperService.GiveHelpAboutPublicCmd(command, prefix, admin, dev));
             }
             catch (Exception ex)
             {
@@ -114,7 +112,7 @@ namespace Sanakan.Modules
                 return;
             }
 
-            await ReplyAsync("", embed: _helper.GetInfoAboutUser(usr));
+            await ReplyAsync("", embed: _helperService.GetInfoAboutUser(usr));
         }
 
         [Command("ping", RunMode = RunMode.Async)]
@@ -143,7 +141,7 @@ namespace Sanakan.Modules
                 return;
             }
 
-            await ReplyAsync("", embed: _helper.GetInfoAboutServer(Context.Guild));
+            await ReplyAsync("", embed: _helperService.GetInfoAboutServer(Context.Guild));
         }
 
         [Command("awatar", RunMode = RunMode.Async)]
@@ -271,7 +269,7 @@ namespace Sanakan.Modules
 
             try
             {
-                await sendMsg.ModifyAsync(x => x.Embed = _helper.BuildRaportInfo(repMsg, userName, reason, sendMsg.Id));
+                await sendMsg.ModifyAsync(x => x.Embed = _helperService.BuildRaportInfo(repMsg, userName, reason, sendMsg.Id));
 
                 var rConfig = await _guildConfigRepository.GetGuildConfigOrCreateAsync(Context.Guild.Id);
 

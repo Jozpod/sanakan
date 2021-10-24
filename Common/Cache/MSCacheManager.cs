@@ -27,6 +27,11 @@ namespace Sanakan.Common
             _cache.Set(key, entity);
         }
 
+        public void Add<T>(string key, T entity, MemoryCacheEntryOptions memoryCacheEntryOptions)
+        {
+            _cache.Set(key, entity, memoryCacheEntryOptions);
+        }
+
         public void ExpireTag(params string[] tags)
         {
             foreach (var tag in tags)

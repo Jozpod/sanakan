@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using Newtonsoft.Json;
 
 namespace Sanakan.DAL.Models
@@ -6,7 +7,9 @@ namespace Sanakan.DAL.Models
     public class BoosterPack
     {
         public ulong Id { get; set; }
-        public string Name { get; set; }
+
+        [StringLength(50)]
+        public string Name { get; set; } = string.Empty;
         public ulong Title { get; set; }
         public int CardCount { get; set; }
         public Rarity MinRarity { get; set; }

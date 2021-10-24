@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using Newtonsoft.Json;
 
 namespace Sanakan.DAL.Models
@@ -22,9 +23,16 @@ namespace Sanakan.DAL.Models
         public ulong PVPDailyGamesPlayed { get; set; }
         public DateTime PVPSeasonBeginDate { get; set; }
 
+        [StringLength(50)]
         public string? ExchangeConditions { get; set; }
+
+        [StringLength(50)]
         public string? BackgroundImageUrl { get; set; }
+
+        [StringLength(50)]
         public string? ForegroundImageUrl { get; set; }
+
+        [StringLength(50)]
         public string? ForegroundColor { get; set; }
         public int ForegroundPosition { get; set; }
         public int BackgroundPosition { get; set; }

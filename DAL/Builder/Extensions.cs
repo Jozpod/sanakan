@@ -19,10 +19,10 @@ namespace Sanakan.DAL.Builder
             services.AddScoped<IGuildConfigRepository, GuildConfigRepository>();
             services.AddScoped<IGameDeckRepository, GameDeckRepository>();
             services.AddScoped<ITimeStatusRepository, TimeStatusRepository>();
-            services.AddScoped<ISystemAnalyticsRepository, SystemAnalyticsRepository>();
             services.AddScoped<IQuestionRepository, QuestionRepository>();
             services.AddScoped<IPenaltyInfoRepository, PenaltyInfoRepository>();
-            services.AddScoped<IModerationRepository, ModerationRepository>();
+            services.AddScoped<ITransferAnalyticsRepository, TransferAnalyticsRepository>();
+            services.AddScoped<ISystemAnalyticsRepository, SystemAnalyticsRepository>();
             services.AddScoped<ICommandsAnalyticsRepository, CommandsAnalyticsRepository>();
             services.AddScoped<IUserAnalyticsRepository, UserAnalyticsRepository>();
             return services;

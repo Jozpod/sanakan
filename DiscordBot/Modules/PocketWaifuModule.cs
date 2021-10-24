@@ -499,7 +499,7 @@ namespace Sanakan.Modules
                     break;
 
                 case ItemType.ChangeCardImage:
-                    var characterResult = await _shindenClient.GetCharacterInfoAsync(card.Character);
+                    var characterResult = await _shindenClient.GetCharacterInfoAsync(card.CharacterId);
 
                     if (characterResult.Value == null)
                     {
@@ -735,12 +735,12 @@ namespace Sanakan.Modules
                     return;
             }
 
-            if (!noCardOperation && card.Character == bUser.GameDeck.Waifu)
+            if (!noCardOperation && card.CharacterId == bUser.GameDeck.Waifu)
                 affectionInc *= 1.15;
 
             if (!noCardOperation)
             {
-                var characterResult = await _shindenClient.GetCharacterInfoAsync(card.Character);
+                var characterResult = await _shindenClient.GetCharacterInfoAsync(card.CharacterId);
 
                 if (characterResult.Value != null)
                 {
@@ -890,7 +890,7 @@ namespace Sanakan.Modules
 
                 foreach (var card in cards)
                 {
-                    if (bUser.GameDeck.RemoveCharacterFromWishList(card.Character))
+                    if (bUser.GameDeck.RemoveCharacterFromWishList(card.CharacterId))
                     {
                         charactersOnWishlist.Add(card.Name);
                     }
@@ -912,7 +912,7 @@ namespace Sanakan.Modules
             {
                 if (checkWishlists && count == 1)
                 {
-                    var wishlists = await _gameDeckRepository.GetByCardIdAndCharacterAsync(card.Id, card.Character);
+                    var wishlists = await _gameDeckRepository.GetByCardIdAndCharacterAsync(card.Id, card.CharacterId);
 
                     openString += charactersOnWishlist.Any(x => x == card.Name) ? "💚 " : ((wishlists.Count > 0) ? "💗 " : "🤍 ");
                 }
@@ -1026,7 +1026,7 @@ namespace Sanakan.Modules
 
             try
             {
-                var characterResult = await _shindenClient.GetCharacterInfoAsync(card.Character);
+                var characterResult = await _shindenClient.GetCharacterInfoAsync(card.CharacterId);
 
                 if (characterResult.Value == null)
                 {
@@ -1440,7 +1440,7 @@ namespace Sanakan.Modules
             var card = _waifu.GenerateNewCard(Context.User, await _waifu.GetRandomCharacterAsync(),
                 new List<Rarity>() { Rarity.SS, Rarity.S, Rarity.A });
 
-            bool wasOnWishlist = botuser.GameDeck.RemoveCharacterFromWishList(card.Character);
+            bool wasOnWishlist = botuser.GameDeck.RemoveCharacterFromWishList(card.CharacterId);
             card.Affection += botuser.GameDeck.AffectionFromKarma();
             card.Source = CardSource.Daily;
 
@@ -1448,7 +1448,7 @@ namespace Sanakan.Modules
 
             await _userRepository.SaveChangesAsync();
 
-            var wishlists = await _gameDeckRepository.GetByCardIdAndCharacterAsync(card.Id, card.Character);
+            var wishlists = await _gameDeckRepository.GetByCardIdAndCharacterAsync(card.Id, card.CharacterId);
 
             var wishStr = wasOnWishlist ? "💚 " : ((wishlists.Count > 0) ? "💗 " : "🤍 ");
 
@@ -2221,7 +2221,7 @@ namespace Sanakan.Modules
                 return;
             }
 
-            var wishlists = await _gameDeckRepository.GetByCardIdAndCharacterAsync(thisCards.Id, thisCards.Character);
+            var wishlists = await _gameDeckRepository.GetByCardIdAndCharacterAsync(thisCards.Id, thisCards.CharacterId);
 
             if (wishlists.Count < 1)
             {
@@ -2924,7 +2924,9 @@ namespace Sanakan.Modules
         [Alias("favs")]
         [Summary("pozwala wyszukać użytkowników posiadających karty z naszej listy ulubionych postaci")]
         [Remarks("tak tak"), RequireWaifuCommandChannel]
-        public async Task SearchCharacterCardsFromFavListAsync([Summary("czy pokazać ulubione (true/false) domyślnie ukryte")]bool showFavs = false, [Summary("czy zamienić oznaczenia na nicki?")]bool showNames = false)
+        public async Task SearchCharacterCardsFromFavListAsync(
+            [Summary("czy pokazać ulubione (true/false) domyślnie ukryte")]bool showFavs = false,
+            [Summary("czy zamienić oznaczenia na nicki?")]bool showNames = false)
         {
             var user = await _userRepository.GetCachedFullUserAsync(Context.User.Id);
 
@@ -2934,7 +2936,7 @@ namespace Sanakan.Modules
                 return;
             }
 
-            var charactersResult = await _shindenClient.GetFavCharactersAsync(user.Shinden);
+            var charactersResult = await _shindenClient.GetFavCharactersAsync(user.ShindenId.Value);
 
             if (charactersResult.Value == null)
             {
@@ -3412,7 +3414,7 @@ namespace Sanakan.Modules
                 if (bUser.GameDeck.Waifu != 0)
                 {
                     var prevWaifus = bUser.GameDeck.Cards
-                        .Where(x => x.Character == bUser.GameDeck.Waifu);
+                        .Where(x => x.CharacterId == bUser.GameDeck.Waifu);
 
                     foreach (var card in prevWaifus)
                     {
@@ -3436,20 +3438,20 @@ namespace Sanakan.Modules
                 return;
             }
 
-            if (bUser.GameDeck.Waifu == thisCard.Character)
+            if (bUser.GameDeck.Waifu == thisCard.CharacterId)
             {
                 await ReplyAsync("", embed: $"{Context.User.Mention} masz już ustawioną tą postać!".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
-            var allPrevWaifus = bUser.GameDeck.Cards.Where(x => x.Character == bUser.GameDeck.Waifu);
+            var allPrevWaifus = bUser.GameDeck.Cards.Where(x => x.CharacterId == bUser.GameDeck.Waifu);
             foreach (var card in allPrevWaifus)
             {
                 card.Affection -= 5;
                 _ = card.CalculateCardPower();
             }
 
-            bUser.GameDeck.Waifu = thisCard.Character;
+            bUser.GameDeck.Waifu = thisCard.CharacterId;
             await _userRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(new string[] { $"user-{bUser.Id}", "users" });
@@ -3555,9 +3557,9 @@ namespace Sanakan.Modules
         [Alias("cpf")]
         [Summary("wyświetla profil PocketWaifu")]
         [Remarks("Karna"), RequireWaifuCommandChannel]
-        public async Task ShowProfileAsync([Summary("użytkownik (opcjonalne)")]SocketGuildUser usr = null)
+        public async Task ShowProfileAsync([Summary("użytkownik (opcjonalne)")]SocketGuildUser? socketGuildUser = null)
         {
-            var user = (usr ?? Context.User) as SocketGuildUser;
+            var user = (socketGuildUser ?? Context.User) as SocketGuildUser;
             if (user == null)
             {
                 return;
@@ -3609,7 +3611,7 @@ namespace Sanakan.Modules
                 var tChar = bUser.GameDeck
                     .Cards
                     .OrderBy(x => x.Rarity)
-                    .FirstOrDefault(x => x.Character == bUser.GameDeck.Waifu);
+                    .FirstOrDefault(x => x.CharacterId == bUser.GameDeck.Waifu);
 
                 if (tChar != null)
                 {

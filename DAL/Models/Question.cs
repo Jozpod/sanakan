@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace Sanakan.DAL.Models
 {
@@ -9,6 +10,8 @@ namespace Sanakan.DAL.Models
         public int Answer { get; set; }
         public int PointsWin { get; set; }
         public int PointsLose { get; set; }
+
+        [StringLength(100)]
         public string Content { get; set; }
         public int TimeToAnswer { get; set; }
 
