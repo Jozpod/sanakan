@@ -36,7 +36,7 @@ namespace Sanakan.Services.Supervisor
         private Dictionary<ulong, Dictionary<ulong, SupervisorEntity>> _guilds;
 
         private readonly DiscordSocketClient _client;
-        private readonly DiscordBot.Services.Abstractions.IModeratorService _moderatorService;
+        private readonly IModeratorService _moderatorService;
         private readonly ILogger _logger;
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly ISystemClock _systemClock;
@@ -170,9 +170,10 @@ namespace Sanakan.Services.Supervisor
             }
 
             var thisMessage = susspect.Get(messageContent);
-            if (!thisMessage.IsValid())
+            var utcNow = _systemClock.UtcNow;
+            if (!thisMessage.IsValid(utcNow))
             {
-                thisMessage = new SupervisorMessage(messageContent);
+                thisMessage = new SupervisorMessage(utcNow, messageContent);
             }
 
             if (gConfig.AdminRole != 0)
@@ -211,7 +212,7 @@ namespace Sanakan.Services.Supervisor
                             muteRole,
                             null,
                             userRole,
-                            24,
+                            TimeSpan.FromDays(1),
                             "spam/flood");
                         await _moderatorService.NotifyAboutPenaltyAsync(user, notifChannel, info);
                     }

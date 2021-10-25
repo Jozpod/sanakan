@@ -9,8 +9,10 @@ namespace Sanakan.Common
     /// </summary>
     public interface IFileSystem
     {
-        /// <inheritdoc cref="File.Exists(string)"/>
+        /// <inheritdoc cref="File.Exists(string?)"/>
         bool Exists(string path);
+        /// <inheritdoc cref="Directory.Exists(string?)"/>
+        bool DirectoryExists(string path);
 
         /// <inheritdoc cref="Directory.CreateDirectory(string)"/>
         DirectoryInfo CreateDirectory(string path);

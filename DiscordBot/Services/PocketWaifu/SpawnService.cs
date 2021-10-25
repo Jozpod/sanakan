@@ -311,7 +311,7 @@ namespace Sanakan.Services.PocketWaifu
 
                 if (!pCnt.IsActive())
                 {
-                    pCnt.EndsAt = DateTime.Now.Date.AddDays(1);
+                    pCnt.EndsAt = _systemClock.UtcNow.Date.AddDays(1);
                     pCnt.IValue = 0;
                 }
 

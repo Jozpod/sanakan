@@ -41,21 +41,21 @@ namespace Sanakan.DAL.Repositories
             switch (type)
             {
                 case OrderType.Atack:
-                    return query.OrderBy(x => x.Attack + x.AttackBonus + (x.RestartCnt * 2d));
+                    return query.OrderBy(x => x.Attack + x.AttackBonus + (x.RestartCount * 2d));
                 case OrderType.AtackDes:
-                    return query.OrderByDescending(x => x.Attack + x.AttackBonus + (x.RestartCnt * 2d));
+                    return query.OrderByDescending(x => x.Attack + x.AttackBonus + (x.RestartCount * 2d));
                 case OrderType.Exp:
-                    return query.OrderBy(x => x.ExpCnt);
+                    return query.OrderBy(x => x.ExpCount);
                 case OrderType.ExpDes:
-                    return query.OrderByDescending(x => x.ExpCnt);
+                    return query.OrderByDescending(x => x.ExpCount);
                 case OrderType.Dere:
                     return query.OrderBy(x => x.Dere);
                 case OrderType.DereDes:
                     return query.OrderByDescending(x => x.Dere);
                 case OrderType.Defence:
-                    return query.OrderBy(x => x.Defence + x.DefenceBonus + x.RestartCnt);
+                    return query.OrderBy(x => x.Defence + x.DefenceBonus + x.RestartCount);
                 case OrderType.DefenceDes:
-                    return query.OrderByDescending(x => x.Defence + x.DefenceBonus + x.RestartCnt);
+                    return query.OrderByDescending(x => x.Defence + x.DefenceBonus + x.RestartCount);
                 case OrderType.Health:
                     return query.OrderBy(x => x.Health + (x.Health * (x.Affection * 5d / 100d) + x.HealthBonus));
                 case OrderType.HealthDes:

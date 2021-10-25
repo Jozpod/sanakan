@@ -1795,11 +1795,11 @@ namespace Sanakan.Services.PocketWaifu
                 karmaCost *= 2.5;
             }
 
-            card.ExpCnt += totalExp;
+            card.ExpCount += totalExp;
             card.Affection -= affectionCost;
 
             double minAff = 0;
-            reward += $"Zdobywa:\n+{totalExp.ToString("F")} exp ({card.ExpCnt.ToString("F")})\n";
+            reward += $"Zdobywa:\n+{totalExp.ToString("F")} exp ({card.ExpCount.ToString("F")})\n";
             for (int i = 0; i < totalItemsCnt && allowItems; i++)
             {
                 if (CheckChanceForItemInExpedition(i, totalItemsCnt, card.Expedition))

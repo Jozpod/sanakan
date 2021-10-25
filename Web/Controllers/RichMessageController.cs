@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Sanakan.Api.Models;
+using Sanakan.Common;
 using Sanakan.Configuration;
 using Sanakan.DiscordBot;
 using Sanakan.DiscordBot.Models;
@@ -24,13 +25,16 @@ namespace Sanakan.Web.Controllers
     [Produces("application/json")]
     public class RichMessageController : ControllerBase
     {
+        private readonly ISystemClock _systemClock;
         private readonly IOptionsMonitor<SanakanConfiguration> _config;
         private readonly IDiscordSocketClientAccessor _client;
 
         public RichMessageController(
+            ISystemClock systemClock,
             IDiscordSocketClientAccessor client,
             IOptionsMonitor<SanakanConfiguration> config)
         {
+            _systemClock = systemClock;
             _client = client;
             _config = config;
         }
@@ -38,13 +42,9 @@ namespace Sanakan.Web.Controllers
         /// <summary>
         /// Deletes rich message
         /// </summary>
-        /// <remarks>
-        /// Do usunięcia wystarczy podać id poprzednio wysłanej wiadomości.
-        /// </remarks>
-        /// <param name="id">id wiadomości</param>
         [HttpDelete("{id}")]
-        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status200OK)]
-        public async Task<IActionResult> DeleteRichMessageAsync(ulong id)
+        [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status200OK)]
+        public async Task<IActionResult> DeleteRichMessageAsync(ulong messageId)
         {
             var config = _config.CurrentValue;
 
@@ -66,7 +66,7 @@ namespace Sanakan.Web.Controllers
                         continue;
                     }
 
-                    var msg = await channel.GetMessageAsync(id);
+                    var msg = await channel.GetMessageAsync(messageId);
 
                     if (msg == null)
                     {
@@ -91,7 +91,7 @@ namespace Sanakan.Web.Controllers
         /// <param name="id">id wiadomości</param>
         /// <param name="message">wiadomość</param>
         [HttpPut("{id}")]
-        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status200OK)]
         public async Task<IActionResult> ModifyeRichMessageAsync(
             ulong id, [FromBody, Required]RichMessage message)
         {
@@ -139,7 +139,6 @@ namespace Sanakan.Web.Controllers
         /// </remarks>
         /// <param name="message">wiadomość</param>
         /// <param name="mention">czy oznanczyć zainteresowanych</param>
-        /// <response code="500">Internal Server Error</response>
         [HttpPost]
         [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
@@ -155,13 +154,13 @@ namespace Sanakan.Web.Controllers
             }
 
             var msgList = new List<ulong>();
-            var rmcs = config.RMConfig.Where(x => x.Type == message.MessageType);
+            var richMessageConfigEntries = config.RMConfig.Where(x => x.Type == message.MessageType);
 
-            foreach (var rmc in rmcs)
+            foreach (var richMessageConfig in richMessageConfigEntries)
             {
-                if (rmc.Type == RichMessageType.UserNotify)
+                if (richMessageConfig.Type == RichMessageType.UserNotify)
                 {
-                    var user = _client.Client.GetUser(rmc.ChannelId);
+                    var user = _client.Client.GetUser(richMessageConfig.ChannelId);
                     if (user == null)
                     {
                         continue;
@@ -174,32 +173,37 @@ namespace Sanakan.Web.Controllers
                     continue;
                 }
 
-                var guild = _client.Client.GetGuild(rmc.GuildId);
+                var guild = _client.Client.GetGuild(richMessageConfig.GuildId);
                 
                 if (guild == null)
                 {
                     continue;
                 }
 
-                var channel = guild.GetTextChannel(rmc.ChannelId);
+                var channel = guild.GetTextChannel(richMessageConfig.ChannelId);
 
                 if (channel == null)
                 {
                     continue;
                 }
 
-                string mentionContent = "";
+                var mentionContent = "";
+
                 if (mention.Value)
                 {
-                    var role = guild.GetRole(rmc.RoleId);
+                    var role = guild.GetRole(richMessageConfig.RoleId);
                     if (role != null)
                     {
                         mentionContent = role.Mention;
                     }
                 }
 
-                var msg = await channel.SendMessageAsync(mentionContent, embed: message.ToEmbed());
-                if (msg != null) msgList.Add(msg.Id);
+                var discordMessage = await channel.SendMessageAsync(mentionContent, embed: message.ToEmbed());
+
+                if (discordMessage != null)
+                {
+                    msgList.Add(discordMessage.Id);
+                }
             }
 
             if (msgList.Count == 0)
@@ -218,12 +222,47 @@ namespace Sanakan.Web.Controllers
         /// <summary>
         /// Zwraca przykładową wiadomość typu RichMessage
         /// </summary>
-        /// <returns>wiadomość typu RichMessage</returns>
         [HttpGet]
         [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
         public IActionResult GetExampleMsg()
         {
-            var result = new RichMessage().Example();
+            var result = new RichMessage
+            {
+                Content = "sample content",
+                Timestamp = _systemClock.UtcNow,
+                Url = "https://gooogle.com",
+                Title = "Max 256 characters",
+                MessageType = RichMessageType.News,
+                Description = "Max 2048 characters",
+                ImageUrl = "http://cdn.shinden.eu/cdn1/avatars/225x350/85.jpg",
+                ThumbnailUrl = "http://cdn.shinden.eu/cdn1/avatars/225x350/85.jpg",
+                Author = new RichMessageAuthor
+                {
+                    Name = "Max 256 characters",
+                    NameUrl = "https://gooogle.com",
+                    ImageUrl = "http://cdn.shinden.eu/cdn1/avatars/225x350/85.jpg",
+                },
+                Footer = new RichMessageFooter
+                {
+                    Text = "Max 2048 characters",
+                    ImageUrl = "http://cdn.shinden.eu/cdn1/avatars/225x350/85.jpg",
+                },
+                Fields = new List<RichMessageField>
+                {
+                    new RichMessageField
+                    {
+                        IsInline = true,
+                        Name = "Max 256 characters",
+                        Value = "Max 1024 characters",
+                    },
+                    new RichMessageField
+                    {
+                        Value = "25",
+                        IsInline = false,
+                        Name = "Max fields count",
+                    },
+                },
+            };
 
             return Ok(result);
         }

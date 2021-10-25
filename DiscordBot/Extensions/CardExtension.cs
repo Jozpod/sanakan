@@ -17,7 +17,7 @@ namespace Sanakan.Extensions
         public static int GetCardStarCount(this Card card)
         {
             var max = card.GetMaxStarsPerType();
-            var starCnt = (card.RestartCnt - card.GetMaxCardsRestartsOnStarType()) / card.GetRestartCntPerStar();
+            var starCnt = (card.RestartCount - card.GetMaxCardsRestartsOnStarType()) / card.GetRestartCntPerStar();
             if (starCnt > max) starCnt = max;
             return starCnt;
         }
@@ -25,10 +25,10 @@ namespace Sanakan.Extensions
         {
             var max = card.MaxStarType();
             var maxRestartsPerType = card.GetMaxStarsPerType() * card.GetRestartCntPerStar();
-            var type = (card.RestartCnt - 1) / maxRestartsPerType;
+            var type = (card.RestartCount - 1) / maxRestartsPerType;
             if (type > 0)
             {
-                var ths = card.RestartCnt - (maxRestartsPerType + ((type - 1) * maxRestartsPerType));
+                var ths = card.RestartCount - (maxRestartsPerType + ((type - 1) * maxRestartsPerType));
                 if (ths < card.GetRestartCntPerStar()) --type;
             }
 
@@ -251,13 +251,13 @@ namespace Sanakan.Extensions
                 + $"*{card.Title ?? "????"}*\n\n"
                 + $"*{card.GetCardParams(true, false, true)}*\n\n"
                 + $"**Relacja:** {card.GetAffectionString()}\n"
-                + $"**Doświadczenie:** {card.ExpCnt.ToString("F")}/{card.ExpToUpgrade().ToString("F")}\n"
-                + $"**Dostępne ulepszenia:** {card.UpgradesCnt}\n\n"
+                + $"**Doświadczenie:** {card.ExpCount.ToString("F")}/{card.ExpToUpgrade().ToString("F")}\n"
+                + $"**Dostępne ulepszenia:** {card.UpgradesCount}\n\n"
                 + $"**W klatce:** {card.InCage.GetYesNo()}\n"
                 + $"**Aktywna:** {card.Active.GetYesNo()}\n"
                 + $"**Możliwość wymiany:** {card.IsTradable.GetYesNo()}\n\n"
                 + $"**WID:** {card.Id} *({card.CharacterId})*\n"
-                + $"**Restarty:** {card.RestartCnt}\n"
+                + $"**Restarty:** {card.RestartCount}\n"
                 + $"**Pochodzenie:** {card.Source.GetString()}\n"
                 + $"**Tagi:** {tags}\n"
                 + $"{card.GetStatusIcons()}\n\n";
@@ -272,7 +272,7 @@ namespace Sanakan.Extensions
                 + $"_{card.Title}_\n\n"
                 + $"{card.Dere}\n"
                 + $"{card.GetAffectionString()}\n"
-                + $"{card.ExpCnt.ToString("F")}/{card.ExpToUpgrade().ToString("F")} exp\n\n"
+                + $"{card.ExpCount.ToString("F")}/{card.ExpToUpgrade().ToString("F")} exp\n\n"
                 + $"{tags}\n"
                 + $"{card.GetStatusIcons()}";
         }
@@ -397,7 +397,7 @@ namespace Sanakan.Extensions
         {
             string idStr = withoutId ? "" : $"**[{card.Id}]** ";
             string name = nameAsUrl ? card.GetNameWithUrl() : card.Name;
-            string upgCnt = (withUpgrades && !card.FromFigure) ? $"_(U:{card.UpgradesCnt})_" : "";
+            string upgCnt = (withUpgrades && !card.FromFigure) ? $"_(U:{card.UpgradesCount})_" : "";
 
             return $"{idStr} {name} **{card.GetCardRealRarity()}** {card.GetCardParams(showBaseHp, allowZero)} {upgCnt}";
         }
@@ -604,7 +604,7 @@ namespace Sanakan.Extensions
         public static int GetTotalCardStarCount(this Card card)
         {
             var max = card.GetMaxStarsPerType() * card.MaxStarType();
-            var stars = card.RestartCnt / card.GetRestartCntPerStar();
+            var stars = card.RestartCount / card.GetRestartCntPerStar();
             if (stars > max) stars = max;
             return stars;
         }
@@ -615,7 +615,7 @@ namespace Sanakan.Extensions
             if (card.FromFigure)
                 maxAttack = 9999;
 
-            var newAttack = card.Attack + (card.RestartCnt * 2) + (card.GetTotalCardStarCount() * 8);
+            var newAttack = card.Attack + (card.RestartCount * 2) + (card.GetTotalCardStarCount() * 8);
             if (card.FromFigure)
             {
                 newAttack += card.AttackBonus;
@@ -638,7 +638,7 @@ namespace Sanakan.Extensions
             if (card.FromFigure)
                 maxDefence = 9999;
 
-            var newDefence = card.Defence + card.RestartCnt;
+            var newDefence = card.Defence + card.RestartCount;
             if (card.FromFigure)
             {
                 newDefence += card.DefenceBonus;

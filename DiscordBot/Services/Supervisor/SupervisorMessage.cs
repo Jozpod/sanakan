@@ -4,9 +4,12 @@ namespace Sanakan.Services.Supervisor
 {
     public class SupervisorMessage
     {
-        public SupervisorMessage(string content, int count = 1)
+        public SupervisorMessage(
+            DateTime previousOccurrence,
+            string content,
+            int count = 1)
         {
-            PreviousOccurrence = DateTime.Now;
+            PreviousOccurrence = previousOccurrence;
             Content = content;
             Count = count;
         }
@@ -15,7 +18,7 @@ namespace Sanakan.Services.Supervisor
         public string Content { get; private set; }
         public int Count { get; private set; }
 
-        public bool IsValid() => (DateTime.Now - PreviousOccurrence).TotalMinutes <= 1;
+        public bool IsValid(DateTime dateTime) => (dateTime - PreviousOccurrence).TotalMinutes <= 1;
         public int Inc() => ++Count;
     }
 }

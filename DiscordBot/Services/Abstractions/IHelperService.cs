@@ -10,5 +10,6 @@ namespace Sanakan.DiscordBot.Services.Abstractions
     {
         string GivePrivateHelp(string moduleName);
         string GivePublicHelp();
+        string GiveHelpAboutPrivateCmd(string moduleName, string command, string prefix, bool throwEx = true);
     }
 }

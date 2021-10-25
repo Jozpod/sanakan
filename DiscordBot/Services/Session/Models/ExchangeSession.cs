@@ -397,8 +397,8 @@ namespace Sanakan.Services.Session.Models
                                 card.TagList.Clear();
                                 card.Affection -= 1.5;
 
-                                if (card.ExpCnt > 1)
-                                    card.ExpCnt *= 0.3;
+                                if (card.ExpCount > 1)
+                                    card.ExpCount *= 0.3;
 
                                 var valueDiff = card.MarketValue - exchangeRateP1;
                                 var changed = card.MarketValue + valueDiff * 0.8;
@@ -427,8 +427,8 @@ namespace Sanakan.Services.Session.Models
                                 card.TagList.Clear();
                                 card.Affection -= 1.5;
 
-                                if (card.ExpCnt > 1)
-                                    card.ExpCnt *= 0.3;
+                                if (card.ExpCount > 1)
+                                    card.ExpCount *= 0.3;
 
                                 var valueDiff = card.MarketValue - exchangeRateP2;
                                 var changed = card.MarketValue + valueDiff * 0.8;

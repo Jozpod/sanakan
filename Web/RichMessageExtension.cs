@@ -11,47 +11,6 @@ namespace Sanakan.Web
 {
     public static class RichMessageExtension
     {
-        public static RichMessage Example(this RichMessage msg)
-        {
-            return new RichMessage
-            {
-                Content = "ble ble ble",
-                Timestamp = DateTime.Now,
-                Url = "https://gooogle.com",
-                Title = "Max 256 characters",
-                MessageType = RichMessageType.News,
-                Description = "Max 2048 characters",
-                ImageUrl = "http://cdn.shinden.eu/cdn1/avatars/225x350/85.jpg",
-                ThumbnailUrl = "http://cdn.shinden.eu/cdn1/avatars/225x350/85.jpg",
-                Author = new RichMessageAuthor
-                {
-                    Name = "Max 256 characters",
-                    NameUrl = "https://gooogle.com",
-                    ImageUrl = "http://cdn.shinden.eu/cdn1/avatars/225x350/85.jpg",
-                },
-                Footer = new RichMessageFooter
-                {
-                    Text = "Max 2048 characters",
-                    ImageUrl = "http://cdn.shinden.eu/cdn1/avatars/225x350/85.jpg",
-                },
-                Fields = new List<RichMessageField>
-                {
-                    new RichMessageField
-                    {
-                        IsInline = true,
-                        Name = "Max 256 characters",
-                        Value = "Max 1024 characters",
-                    },
-                    new RichMessageField
-                    {
-                        Value = "25",
-                        IsInline = false,
-                        Name = "Max fields count",
-                    },
-                },
-            };
-        }
-
         public static Embed ToEmbed(this RichMessage msg)
         {
             var embed = new EmbedBuilder

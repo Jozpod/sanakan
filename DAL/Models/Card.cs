@@ -46,29 +46,29 @@ namespace Sanakan.DAL.Models
             DefenceBonus = 0;
             HealthBonus = 0;
             AttackBonus = 0;
-            UpgradesCnt = 2;
+            UpgradesCount = 2;
             LastIdOwner = 0;
             MarketValue = 1;
             Rarity = rarity;
-            EnhanceCnt = 0;
+            EnhanceCount = 0;
             Unique = false;
             InCage = false;
-            RestartCnt = 0;
+            RestartCount = 0;
             Active = false;
             Affection = 0;
             Image = null;
             Health = 0;
-            ExpCnt = 0;
+            ExpCount = 0;
     }
 
         public ulong Id { get; set; }
         public bool Active { get; set; }
         public bool InCage { get; set; }
         public bool IsTradable { get; set; }
-        public double ExpCnt { get; set; }
+        public double ExpCount { get; set; }
         public double Affection { get; set; }
-        public int UpgradesCnt { get; set; }
-        public int RestartCnt { get; set; }
+        public int UpgradesCount { get; set; }
+        public int RestartCount { get; set; }
         public Rarity Rarity { get; set; }
         public Rarity RarityOnStart { get; set; }
         public Dere Dere { get; set; }
@@ -100,7 +100,7 @@ namespace Sanakan.DAL.Models
         public CardCurse Curse { get; set; }
         public double CardPower { get; set; }
 
-        public int EnhanceCnt { get; set; }
+        public int EnhanceCount { get; set; }
         public bool FromFigure { get; set; }
         public Quality Quality { get; set; }
         public int AttackBonus { get; set; }

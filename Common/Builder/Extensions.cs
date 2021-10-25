@@ -6,6 +6,12 @@ namespace Sanakan.Common.Builder
 {
     public static class Extensions
     {
+        public static IServiceCollection AddFileSystem(this IServiceCollection services)
+        {
+            services.AddSingleton<IFileSystem, FileSystem>();
+            return services;
+        }
+
         public static IServiceCollection AddCache(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddMemoryCache();

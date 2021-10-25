@@ -9,6 +9,7 @@ using Sanakan.DAL.Models.Configuration;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot;
 using Sanakan.DiscordBot.Configuration;
+using Sanakan.DiscordBot.Services.Abstractions;
 using Sanakan.Extensions;
 using Sanakan.Preconditions;
 using Sanakan.Services;
@@ -26,10 +27,10 @@ namespace Sanakan.Modules
     public class ModerationModule : ModuleBase<SocketCommandContext>
     {
         private readonly IOptionsMonitor<BotConfiguration> _config;
-        private readonly HelperService _helper;
+        private readonly IHelperService _helperService;
         private readonly IShindenClient _shindenClient;
-        private readonly Services.Profile _profile;
-        private readonly IModeratorService _moderation;
+        private readonly IProfileService _profileService;
+        private readonly IModeratorService _moderatorService;
         private readonly ICacheManager _cacheManager;
         private readonly IUserRepository _userRepository;
         private readonly IGuildConfigRepository _guildConfigRepository;
@@ -37,8 +38,8 @@ namespace Sanakan.Modules
         private readonly IRandomNumberGenerator _randomNumberGenerator;
         public ModerationModule(
             HelperService helper,
-            IModeratorService moderation,
-            Services.Profile prof,
+            IModeratorService moderatorService,
+            Services.ProfileService prof,
             IShindenClient sh,
             IOptionsMonitor<BotConfiguration> config,
             ICacheManager _cacheManager,
@@ -48,12 +49,12 @@ namespace Sanakan.Modules
             IRandomNumberGenerator randomNumberGenerator)
         {
             _shindenClient = sh;
-            _profile = prof;
+            _profileService = prof;
             _config = config;
-            _helper = helper;
+            _helperService = helper;
             _userRepository = userRepository;
             _guildConfigRepository = guildConfigRepository;
-            _moderation = moderation;
+            _moderatorService = moderatorService;
             _systemClock = systemClock;
             _randomNumberGenerator = randomNumberGenerator;
         }
@@ -126,15 +127,21 @@ namespace Sanakan.Modules
         [Summary("banuje użytkownika")]
         [Remarks("karna"), RequireAdminRole, Priority(1)]
         public async Task BanUserAsync(
-            [Summary("użytkownik")]SocketGuildUser user,
-            [Summary("czas trwania w godzinach")]long duration,
+            [Summary("użytkownik")]SocketGuildUser userToBan,
+            [Summary("czas trwania w godzinach")]string durationStr,
             [Summary("powód (opcjonalne)")][Remainder]string reason = "nie podano")
         {
             Embed content;
 
-            if (duration < 1)
+            if (string.IsNullOrEmpty(durationStr))
             {
-                await ReplyAsync("Invalid argument value");
+                await ReplyAsync("", embed: $"Podano zla dlugosc".ToEmbedMessage(EMType.Error).Build());
+                return;
+            }
+
+            if (!TimeSpan.TryParse(durationStr, out var duration))
+            {
+                await ReplyAsync("", embed: $"Podano zla dlugosc".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
@@ -149,21 +156,31 @@ namespace Sanakan.Modules
 
             var notifChannel = Context.Guild.GetTextChannel(config.NotificationChannel);
 
-            var usr = Context.User as SocketGuildUser;
-            var info = await _moderation.BanUserAysnc(user, duration, reason);
-            await _moderation.NotifyAboutPenaltyAsync(user, notifChannel, info, $"{usr.Nickname ?? usr.Username}");
+            var user = Context.User as SocketGuildUser;
+            var info = await _moderatorService.BanUserAysnc(userToBan, duration, reason);
+            await _moderatorService.NotifyAboutPenaltyAsync(userToBan, notifChannel, info, $"{user.Nickname ?? user.Username}");
 
-            content = $"{user.Mention} został zbanowany.".ToEmbedMessage(EMType.Success).Build();
+            content = $"{userToBan.Mention} został zbanowany.".ToEmbedMessage(EMType.Success).Build();
             await ReplyAsync("", embed: content);
         }
 
         [Command("mute")]
         [Summary("wycisza użytkownika")]
         [Remarks("karna"), RequireAdminRoleOrChannelPermission(ChannelPermission.ManageRoles), Priority(1)]
-        public async Task MuteUserAsync([Summary("użytkownik")]SocketGuildUser user, [Summary("czas trwania w godzinach")]long duration, [Summary("powód (opcjonalne)")][Remainder]string reason = "nie podano")
+        public async Task MuteUserAsync(
+            [Summary("użytkownik")]SocketGuildUser user,
+            [Summary("czas trwania w d.hh:mm:ss | hh:mm:ss")]string durationStr,
+            [Summary("powód (opcjonalne)")][Remainder]string reason = "nie podano")
         {
-            if (duration < 1)
+            if (string.IsNullOrEmpty(durationStr))
             {
+                await ReplyAsync("", embed: $"Podano zla dlugosc wyciszenia".ToEmbedMessage(EMType.Error).Build());
+                return;
+            }
+
+            if (!TimeSpan.TryParse(durationStr, out var duration))
+            {
+                await ReplyAsync("", embed: $"Podano zla dlugosc wyciszenia".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
@@ -193,14 +210,14 @@ namespace Sanakan.Modules
             }
 
             var usr = Context.User as SocketGuildUser;
-            var info = await _moderation.MuteUserAysnc(
+            var info = await _moderatorService.MuteUserAysnc(
                 user,
                 muteRole,
                 null,
                 userRole,
                 duration,
                 reason);
-            await _moderation.NotifyAboutPenaltyAsync(user, notifChannel, info, $"{usr.Nickname ?? usr.Username}");
+            await _moderatorService.NotifyAboutPenaltyAsync(user, notifChannel, info, $"{usr.Nickname ?? usr.Username}");
 
             var content = $"{user.Mention} został wyciszony.".ToEmbedMessage(EMType.Success).Build();
             await ReplyAsync("", embed: content);
@@ -211,11 +228,18 @@ namespace Sanakan.Modules
         [Remarks("karna"), RequireAdminRole, Priority(1)]
         public async Task MuteModUserAsync(
             [Summary("użytkownik")]SocketGuildUser user,
-            [Summary("czas trwania w godzinach")]long duration,
+            [Summary("czas trwania hh:mm:ss")]string durationStr,
             [Summary("powód (opcjonalne)")][Remainder]string reason = "nie podano")
         {
-            if (duration < 1)
+            if (string.IsNullOrEmpty(durationStr))
             {
+                await ReplyAsync("", embed: "Podano zly parametr.".ToEmbedMessage(EMType.Bot).Build());
+                return;
+            }
+
+            if (!TimeSpan.TryParse(durationStr, out var duration))
+            {
+                await ReplyAsync("", embed: $"Podano zla dlugosc".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
@@ -253,7 +277,7 @@ namespace Sanakan.Modules
             }
 
             var usr = Context.User as SocketGuildUser;
-            var info = await _moderation.MuteUserAysnc(
+            var info = await _moderatorService.MuteUserAysnc(
                 user,
                 muteRole,
                 muteModRole,
@@ -262,7 +286,7 @@ namespace Sanakan.Modules
                 reason,
                 config.ModeratorRoles);
 
-            await _moderation.NotifyAboutPenaltyAsync(user, notifChannel, info, $"{usr.Nickname ?? usr.Username}");
+            await _moderatorService.NotifyAboutPenaltyAsync(user, notifChannel, info, $"{usr.Nickname ?? usr.Username}");
 
             await ReplyAsync("", embed: $"{user.Mention} został wyciszony.".ToEmbedMessage(EMType.Success).Build());
         }
@@ -293,7 +317,7 @@ namespace Sanakan.Modules
                 return;
             }
 
-            await _moderation.UnmuteUserAsync(
+            await _moderatorService.UnmuteUserAsync(
                 user,
                 muteRole,
                 muteModRole);
@@ -307,7 +331,7 @@ namespace Sanakan.Modules
         [Remarks(""), RequireAdminRoleOrChannelPermission(ChannelPermission.ManageRoles)]
         public async Task ShowMutedUsersAsync()
         {
-            var mutedList = await _moderation.GetMutedListAsync(Context);
+            var mutedList = await _moderatorService.GetMutedListAsync(Context);
             await ReplyAsync("", embed: mutedList);
         }
 
@@ -463,7 +487,10 @@ namespace Sanakan.Modules
                 await _guildConfigRepository.SaveChangesAsync();
             }
 
-            var content = _moderation.GetConfiguration(config, Context, type).WithTitle($"Konfiguracja {Context.Guild.Name}:").Build();
+            var content = _moderatorService.GetConfiguration(config, Context, type)
+                .WithTitle($"Konfiguracja {Context.Guild.Name}:")
+                .Build();
+
             await ReplyAsync("", embed: content);
         }
 
@@ -1342,7 +1369,7 @@ namespace Sanakan.Modules
             }
 
             await Context.Message.AddReactionAsync(Emojis.HandSign);
-            var content = _moderation.BuildTodo(message, Context.User as SocketGuildUser);
+            var content = _moderatorService.BuildTodo(message, Context.User as SocketGuildUser);
             await todoChannel.SendMessageAsync(message.GetJumpUrl(), embed: content);
         }
 
@@ -1368,7 +1395,7 @@ namespace Sanakan.Modules
             }
 
             await Context.Message.AddReactionAsync(Emojis.HandSign);
-            await channel2Send.SendMessageAsync(message.GetJumpUrl(), embed: _moderation.BuildTodo(message, Context.User as SocketGuildUser));
+            await channel2Send.SendMessageAsync(message.GetJumpUrl(), embed: _moderatorService.BuildTodo(message, Context.User as SocketGuildUser));
         }
 
         [Command("tchaos")]
@@ -1440,12 +1467,12 @@ namespace Sanakan.Modules
                 if (sub == null)
                 {
                     kolorRep = $"**Kolor:** ❗\n\n";
-                    await _profile.RomoveUserColorAsync(user);
+                    await _profileService.RomoveUserColorAsync(user);
                 }
                 else if (!sub.IsActive())
                 {
                     kolorRep = $"**Kolor:** ⚠\n\n";
-                    await _profile.RomoveUserColorAsync(user);
+                    await _profileService.RomoveUserColorAsync(user);
                 }
             }
             report += kolorRep;
@@ -1536,7 +1563,9 @@ namespace Sanakan.Modules
                 pairs.Add(new Tuple<int, int>(first, second));
             }
 
-            await ReplyAsync("", embed: $"**Pary**:\n\n{string.Join("\n", pairs.Select(x => $"{x.Item1} - {x.Item2}"))}".TrimToLength(2000).ToEmbedMessage(EMType.Success).Build());
+            var content = $"**Pary**:\n\n{string.Join("\n", pairs.Select(x => $"{x.Item1} - {x.Item2}"))}"
+                .TrimToLength(2000).ToEmbedMessage(EMType.Success).Build();
+            await ReplyAsync("", embed: content);
         }
 
         [Command("pozycja gracza", RunMode = RunMode.Async)]
@@ -1560,36 +1589,91 @@ namespace Sanakan.Modules
                 pairs.Add(new Tuple<string, int>(player, number));
             }
 
-            var content = $"**Numerki**:\n\n{string.Join("\n", pairs.Select(x => $"{x.Item1} - {x.Item2}"))}".TrimToLength(2000).ToEmbedMessage(EMType.Success).Build();
+            var content = $"**Numerki**:\n\n{string.Join("\n", pairs.Select(x => $"{x.Item1} - {x.Item2}"))}"
+                .TrimToLength(2000)
+                .ToEmbedMessage(EMType.Success)
+                .Build();
+
             await ReplyAsync("", embed: content);
         }
 
         [Command("raport")]
         [Alias("report")]
-        [Summary("rozwiązuje raport, nie podanie czasu odrzuca go, podanie czasu 0 ostrzega użytkownika")]
+        [Summary("rozwiązuje raport, nie podanie czasu odrzuca go, podanie 'warn' ostrzega użytkownika")]
         [Remarks("2342123444212 4 kara dla Ciebie"), RequireAdminRole, Priority(1)]
         public async Task ResolveReportAsync(
-            [Summary("id raportu")]ulong rId,
-            [Summary("długość wyciszenia w h")]long duration = -1,
+            [Summary("id raportu")]ulong discordMessageId,
+            [Summary("długość wyciszenia w d.hh:mm:ss | hh:mm:ss")]string? durationStr,
             [Summary("powód")][Remainder]string reason = "z raportu")
         {
-            var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(Context.Guild.Id);
+            var warnUser = durationStr == "warn";
+            var guild = Context.Guild;
+            var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(guild.Id);
+            var raport = config.Raports.FirstOrDefault(x => x.Message == discordMessageId);
 
-            var raport = config.Raports.FirstOrDefault(x => x.Message == rId);
             if (raport == null)
             {
                 await ReplyAsync("", embed: $"Taki raport nie istnieje.".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
-            var notifChannel = Context.Guild.GetTextChannel(config.NotificationChannel);
-            var reportChannel = Context.Guild.GetTextChannel(config.RaportChannel);
-            var userRole = Context.Guild.GetRole(config.UserRole);
-            var muteRole = Context.Guild.GetRole(config.MuteRole);
+            var invokingUser = Context.User as SocketGuildUser;
+            var byWho = invokingUser.Nickname ?? invokingUser.Username;
+            var user = Context.Guild.GetUser(raport.User);
+            var notifChannel = guild.GetTextChannel(config.NotificationChannel);
+            var reportChannel = guild.GetTextChannel(config.RaportChannel);
+            var userRole = guild.GetRole(config.UserRole);
+            var muteRole = guild.GetRole(config.MuteRole);
 
             if (muteRole == null)
             {
                 await ReplyAsync("", embed: "Rola wyciszająca nie jest ustawiona.".ToEmbedMessage(EMType.Bot).Build());
+                return;
+            }
+
+            if (user == null)
+            {
+                await ReplyAsync("", embed: $"Użytkownika nie ma serwerze.".ToEmbedMessage(EMType.Error).Build());
+                return;
+            }
+
+            if (user.Roles.Contains(muteRole) && !warnUser)
+            {
+                await ReplyAsync("", embed: $"{user.Mention} już jest wyciszony.".ToEmbedMessage(EMType.Error).Build());
+                return;
+            }
+
+            var reportMessage = await reportChannel.GetMessageAsync(raport.Message);
+
+            if(reportMessage == null)
+            {
+                await ReplyAsync("", embed: $"Taki raport nie istnieje.".ToEmbedMessage(EMType.Error).Build());
+                return;
+            }
+
+            if (string.IsNullOrEmpty(durationStr))
+            {
+                try
+                {
+                    var embedBuilder = reportMessage?.Embeds?.FirstOrDefault().ToEmbedBuilder();
+
+                    embedBuilder.Color = EMType.Info.Color();
+                    embedBuilder.Fields.FirstOrDefault(x => x.Name == "Id zgloszenia:").Value = "Odrzucone!";
+                    await ReplyAsync("", embed: embedBuilder.Build());
+                }
+                catch (Exception) {}
+                await reportMessage.DeleteAsync();
+
+                config.Raports.Remove(raport);
+                await _userRepository.SaveChangesAsync();
+                return;
+            }
+
+            var duration = new TimeSpan();
+
+            if(!warnUser && !TimeSpan.TryParse(durationStr, out duration))
+            {
+                await ReplyAsync("", embed: $"Podano zla dlugosc wyciszenia".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
@@ -1599,103 +1683,64 @@ namespace Sanakan.Modules
                 return;
             }
 
-            var reportMsg = await reportChannel.GetMessageAsync(raport.Message);
-            if (duration == -1)
+            try
             {
-                if (reportMsg != null)
+                var embedBuilder = reportMessage?.Embeds?.FirstOrDefault().ToEmbedBuilder();
+                if (reason == "z raportu")
                 {
-                    try
-                    {
-                        var rEmbedBuilder = reportMsg?.Embeds?.FirstOrDefault().ToEmbedBuilder();
-
-                        rEmbedBuilder.Color = EMType.Info.Color();
-                        rEmbedBuilder.Fields.FirstOrDefault(x => x.Name == "Id zgloszenia:").Value = "Odrzucone!";
-                        await ReplyAsync("", embed: rEmbedBuilder.Build());
-                    }
-                    catch (Exception) { }
-                    await reportMsg.DeleteAsync();
+                    reason = embedBuilder?.Fields.FirstOrDefault(x => x.Name == "Powód:").Value.ToString() ?? reason;
                 }
+
+                embedBuilder.Color = warnUser ? EMType.Success.Color() : EMType.Bot.Color();
+                embedBuilder.Fields.FirstOrDefault(x => x.Name == "Id zgloszenia:").Value = "Rozpatrzone!";
+                await ReplyAsync("", embed: embedBuilder.Build());
+                await reportMessage.DeleteAsync();
 
                 config.Raports.Remove(raport);
                 await _userRepository.SaveChangesAsync();
+
                 return;
             }
+            catch (Exception) { }
 
-            if (duration < 0)
+            if(warnUser)
             {
-                return;
-            }
+                var databaseUser = await _userRepository.GetUserOrCreateAsync(user.Id);
 
-            bool warning = duration == 0;
-            if (reportMsg != null)
-            {
-                try
-                {
-                    var rEmbedBuilder = reportMsg?.Embeds?.FirstOrDefault().ToEmbedBuilder();
-                    if (reason == "z raportu")
-                        reason = rEmbedBuilder?.Fields.FirstOrDefault(x => x.Name == "Powód:").Value.ToString() ?? reason;
-
-                    rEmbedBuilder.Color = warning ? EMType.Success.Color() : EMType.Bot.Color();
-                    rEmbedBuilder.Fields.FirstOrDefault(x => x.Name == "Id zgloszenia:").Value = "Rozpatrzone!";
-                    await ReplyAsync("", embed: rEmbedBuilder.Build());
-                }
-                catch (Exception) { }
-
-                await reportMsg.DeleteAsync();
-            }
-
-            config.Raports.Remove(raport);
-            await _userRepository.SaveChangesAsync();
-
-            var user = Context.Guild.GetUser(raport.User);
-            if (user == null)
-            {
-                await ReplyAsync("", embed: $"Użytkownika nie ma serwerze.".ToEmbedMessage(EMType.Error).Build());
-                return;
-            }
-
-            if (user.Roles.Contains(muteRole) && !warning)
-            {
-                await ReplyAsync("", embed: $"{user.Mention} już jest wyciszony.".ToEmbedMessage(EMType.Error).Build());
-                return;
-            }
-
-            var usr = Context.User as SocketGuildUser;
-            string byWho = $"{usr.Nickname ?? usr.Username}";
-
-            if (warning)
-            {
-                var dbUser = await _userRepository.GetUserOrCreateAsync(user.Id);
-
-                ++dbUser.Warnings;
+                ++databaseUser.WarningsCount;
                 await _userRepository.SaveChangesAsync();
 
-                if (dbUser.Warnings < 5)
+                if (databaseUser.WarningsCount < 5)
                 {
-                    await _moderation.NotifyUserAsync(user, reason);
+                    await _moderatorService.NotifyUserAsync(user, reason);
                     return;
                 }
 
                 var multiplier = 1;
-                if (dbUser.Warnings > 30)
+                if (databaseUser.WarningsCount > 30)
                 {
                     multiplier = 30;
                 }
-                else if (dbUser.Warnings > 20)
+                else if (databaseUser.WarningsCount > 20)
                 {
                     multiplier = 10;
                 }
-                else if (dbUser.Warnings > 10)
+                else if (databaseUser.WarningsCount > 10)
                 {
                     multiplier = 2;
                 }
 
                 byWho = "automat";
-                duration = 24 * multiplier;
-                reason = $"przekroczono maksymalną liczbę ostrzeżeń o {dbUser.Warnings - 4}";
+                duration = TimeSpan.FromDays(1 * multiplier);
+                reason = $"przekroczono maksymalną liczbę ostrzeżeń o {databaseUser.WarningsCount - 4}";
             }
 
-            var info = await _moderation.MuteUserAysnc(
+            await reportMessage.DeleteAsync();
+
+            config.Raports.Remove(raport);
+            await _userRepository.SaveChangesAsync();
+
+            var info = await _moderatorService.MuteUserAysnc(
                 user,
                 muteRole,
                 null,
@@ -1703,7 +1748,7 @@ namespace Sanakan.Modules
                 duration,
                 reason);
 
-            await _moderation.NotifyAboutPenaltyAsync(user, notifChannel, info, byWho);
+            await _moderatorService.NotifyAboutPenaltyAsync(user, notifChannel, info, byWho);
             var content = $"{user.Mention} został wyciszony.".ToEmbedMessage(EMType.Success).Build();
             await ReplyAsync("", embed: content);
         }
@@ -1717,7 +1762,7 @@ namespace Sanakan.Modules
         {
             if (command == null)
             {
-                await ReplyAsync(_helper.GivePrivateHelp("Moderacja"));
+                await ReplyAsync(_helperService.GivePrivateHelp("Moderacja"));
             }
 
             try
@@ -1733,7 +1778,7 @@ namespace Sanakan.Modules
                     }
                 }
 
-                await ReplyAsync(_helper.GiveHelpAboutPrivateCmd("Moderacja", command, prefix));
+                await ReplyAsync(_helperService.GiveHelpAboutPrivateCmd("Moderacja", command, prefix));
             }
             catch (Exception ex)
             {

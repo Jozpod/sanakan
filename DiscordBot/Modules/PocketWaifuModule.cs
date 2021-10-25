@@ -469,7 +469,7 @@ namespace Sanakan.Modules
                     var exS = 1.5 * itemCnt;
                     exS += exS * bonusFromQ;
 
-                    card.ExpCnt += exS;
+                    card.ExpCount += exS;
                     karmaChange += 0.1 * itemCnt;
                     embed.Description += "Twoja karta otrzymała odrobinę punktów doświadczenia!";
                     break;
@@ -478,7 +478,7 @@ namespace Sanakan.Modules
                     var exB = 5d * itemCnt;
                     exB += exB * bonusFromQ;
 
-                    card.ExpCnt += exB;
+                    card.ExpCount += exB;
                     karmaChange += 0.3 * itemCnt;
                     embed.Description += "Twoja karta otrzymała punkty doświadczenia!";
                     break;
@@ -636,8 +636,8 @@ namespace Sanakan.Modules
                     {
                         karmaChange += 2;
                         affectionInc = 1.5;
-                        card.UpgradesCnt += 2;
-                        embed.Description += $"Zwiększono liczbę ulepszeń do {card.UpgradesCnt}!";
+                        card.UpgradesCount += 2;
+                        embed.Description += $"Zwiększono liczbę ulepszeń do {card.UpgradesCount}!";
                     }
                     break;
 
@@ -652,14 +652,14 @@ namespace Sanakan.Modules
                         await ReplyAsync("", embed: $"{Context.User.Mention} karty **SSS** nie można już ulepszyć!".ToEmbedMessage(EMType.Error).Build());
                         return;
                     }
-                    if (card.UpgradesCnt + itemCnt > 5)
+                    if (card.UpgradesCount + itemCnt > 5)
                     {
                         await ReplyAsync("", embed: $"{Context.User.Mention} nie można mieć więcej jak pięć ulepszeń dostępnych na karcie.".ToEmbedMessage(EMType.Error).Build());
                         return;
                     }
                     karmaChange += itemCnt;
-                    card.UpgradesCnt += itemCnt;
-                    embed.Description += $"Zwiększono liczbę ulepszeń do {card.UpgradesCnt}!";
+                    card.UpgradesCount += itemCnt;
+                    embed.Description += $"Zwiększono liczbę ulepszeń do {card.UpgradesCount}!";
                     break;
 
                 case ItemType.DereReRoll:
@@ -967,15 +967,15 @@ namespace Sanakan.Modules
             card.Attack = WaifuService.RandomizeAttack(_randomNumberGenerator, Rarity.E);
             card.Dere = WaifuService.RandomizeDere(_randomNumberGenerator);
             card.Rarity = Rarity.E;
-            card.UpgradesCnt = 2;
-            card.RestartCnt += 1;
-            card.ExpCnt = 0;
+            card.UpgradesCount = 2;
+            card.RestartCount += 1;
+            card.ExpCount = 0;
 
-            card.Affection = card.RestartCnt * -0.2;
+            card.Affection = card.RestartCount * -0.2;
 
             _ = card.CalculateCardPower();
 
-            if (card.RestartCnt > 1 && card.RestartCnt % 10 == 0 && card.RestartCnt <= 100)
+            if (card.RestartCount > 1 && card.RestartCount % 10 == 0 && card.RestartCount <= 100)
             {
                 var inUserItem = bUser.GameDeck.Items.FirstOrDefault(x => x.Type == ItemType.SetCustomImage);
                 if (inUserItem == null)
@@ -1087,19 +1087,19 @@ namespace Sanakan.Modules
                 return;
             }
 
-            if (card.UpgradesCnt < 1)
+            if (card.UpgradesCount < 1)
             {
                 await ReplyAsync("", embed: $"{Context.User.Mention} ta karta nie ma już dostępnych ulepszeń.".ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
 
-            if (card.ExpCnt < card.ExpToUpgrade())
+            if (card.ExpCount < card.ExpToUpgrade())
             {
                 await ReplyAsync("", embed: $"{Context.User.Mention} ta karta ma niewystarczającą ilość punktów doświadczenia. Wymagane {card.ExpToUpgrade().ToString("F")}.".ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
 
-            if (card.UpgradesCnt < 5 && card.Rarity == Rarity.SS)
+            if (card.UpgradesCount < 5 && card.Rarity == Rarity.SS)
             {
                 await ReplyAsync("", embed: $"{Context.User.Mention} ta karta ma zbyt małą ilość ulepszeń.".ToEmbedMessage(EMType.Bot).Build());
                 return;
@@ -1116,16 +1116,16 @@ namespace Sanakan.Modules
 
             card.Defence = _waifu.GetDefenceAfterLevelUp(card.Rarity, card.Defence);
             card.Attack = _waifu.GetAttactAfterLevelUp(card.Rarity, card.Attack);
-            card.UpgradesCnt -= (card.Rarity == Rarity.SS ? 5 : 1);
+            card.UpgradesCount -= (card.Rarity == Rarity.SS ? 5 : 1);
             card.Rarity = --card.Rarity;
             card.Affection += 1;
-            card.ExpCnt = 0;
+            card.ExpCount = 0;
 
             _ = card.CalculateCardPower();
 
             if (card.Rarity == Rarity.SSS)
             {
-                if (bUser.Stats.UpgradedToSSS++ % 10 == 0 && card.RestartCnt < 1)
+                if (bUser.Stats.UpgradedToSSS++ % 10 == 0 && card.RestartCount < 1)
                 {
                     var inUserItem = bUser.GameDeck.Items.FirstOrDefault(x => x.Type == ItemType.SetCustomImage);
                     if (inUserItem == null)
@@ -1173,9 +1173,9 @@ namespace Sanakan.Modules
                     continue;
                 }
 
-                bUser.StoreExpIfPossible(((card.ExpCnt / 2) > card.GetMaxExpToChest(chLvl))
+                bUser.StoreExpIfPossible(((card.ExpCount / 2) > card.GetMaxExpToChest(chLvl))
                     ? card.GetMaxExpToChest(chLvl)
-                    : (card.ExpCnt / 2));
+                    : (card.ExpCount / 2));
 
                 var incKarma = 1 * card.MarketValue;
                 if (incKarma > 0.001 && incKarma < 1.5)
@@ -1235,9 +1235,9 @@ namespace Sanakan.Modules
                     continue;
                 }
 
-                bUser.StoreExpIfPossible((card.ExpCnt > card.GetMaxExpToChest(chLvl))
+                bUser.StoreExpIfPossible((card.ExpCount > card.GetMaxExpToChest(chLvl))
                     ? card.GetMaxExpToChest(chLvl)
-                    : card.ExpCnt);
+                    : card.ExpCount);
 
                 var incKarma = 1 * card.MarketValue;
                 if (incKarma > 0.001 && incKarma < 1.5)
@@ -1320,7 +1320,7 @@ namespace Sanakan.Modules
                 return;
             }
 
-            card.ExpCnt += exp;
+            card.ExpCount += exp;
             bUser.GameDeck.ExpContainer.ExpCount -= exp;
             bUser.GameDeck.CTCnt -= cost;
 
@@ -1751,7 +1751,7 @@ namespace Sanakan.Modules
 
                 var exp = _waifu.GetExpToUpgrade(cardToUp, card);
                 cardToUp.Affection += 0.07;
-                cardToUp.ExpCnt += exp;
+                cardToUp.ExpCount += exp;
                 totalExp += exp;
 
                 bUser.GameDeck.Cards.Remove(card);
@@ -2243,7 +2243,11 @@ namespace Sanakan.Modules
                 usersStr = string.Join("\n", wishlists.Select(x => $"<@{x.Id}>"));
             }
 
-            var content = $"**{thisCards.GetNameWithUrl()} chcą:**\n\n {usersStr}".TrimToLength(2000).ToEmbedMessage(EMType.Info).Build();
+            var content = $"**{thisCards.GetNameWithUrl()} chcą:**\n\n {usersStr}"
+                .TrimToLength(2000)
+                .ToEmbedMessage(EMType.Info)
+                .Build();
+
             await ReplyAsync("", embed: content);
         }
 
@@ -3396,8 +3400,10 @@ namespace Sanakan.Modules
 
             _ = Task.Run(async () =>
             {
-                string wStr = fight.Winner == null ? "Remis!" : $"Zwycięża {fight.Winner.User.Mention}!";
-                await ReplyAsync("", embed: $"⚔️ **Pojedynek**:\n{Context.User.Mention} vs. {euser.Mention}\n\n{deathLog.TrimToLength(2000)}\n{wStr}\n{info}".ToEmbedMessage(EMType.Bot).Build());
+                var wStr = fight.Winner == null ? "Remis!" : $"Zwycięża {fight.Winner.User.Mention}!";
+                var content = $"⚔️ **Pojedynek**:\n{Context.User.Mention} vs. {euser.Mention}\n\n{deathLog.TrimToLength(2000)}\n{wStr}\n{info}"
+                    .ToEmbedMessage(EMType.Bot).Build();
+                await ReplyAsync("", embed: content);
             });
         }
 

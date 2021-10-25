@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 namespace Sanakan.DAL.Repositories.Abstractions
 {
     public interface IPenaltyInfoRepository : 
+        ICreateRepository<PenaltyInfo>,
         IRemoveRepository<PenaltyInfo>,
         ISaveRepository
     {

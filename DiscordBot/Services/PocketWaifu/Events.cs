@@ -316,7 +316,7 @@ namespace Sanakan.Services.PocketWaifu
                 case EventType.MoreExp:
                 {
                     var addExp = _randomNumberGenerator.GetRandomValue(1, 5);
-                    card.ExpCnt += addExp;
+                    card.ExpCount += addExp;
 
                     msg += $"Wydarzenie: Dodatkowe punkty doświadczenia. (+{addExp} exp)\n";
                 }
@@ -330,7 +330,7 @@ namespace Sanakan.Services.PocketWaifu
 
                 case EventType.AddReset:
                 {
-                    ++card.RestartCnt;
+                    ++card.RestartCount;
                     msg += "Wydarzenie: Zwiększenie ilości restartów karty.\n";
                 }
                 break;

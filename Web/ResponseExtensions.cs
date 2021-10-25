@@ -6,20 +6,20 @@ namespace Sanakan.Web
 {
     public static class ResponseExtensions
     {
-        public  class BodyPayload
+        public  class ShindenPayload
         {
             public string Message { get; set; } = string.Empty;
             public bool Success { get; set; }
         }
 
-        private class RichPayload : BodyPayload
+        private class RichPayload : ShindenPayload
         {
             public IEnumerable<ulong> Ids { get; set; }
             public ulong Id { get; set; }
         }
 
         public static ObjectResult BaseResponse(string str, int statusCode = StatusCodes.Status200OK) =>  
-            new ObjectResult(new BodyPayload
+            new ObjectResult(new ShindenPayload
         {
             Message = str,
             Success = true,

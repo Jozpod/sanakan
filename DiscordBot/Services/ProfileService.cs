@@ -8,6 +8,7 @@ using Sanakan.Common;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot.Services;
+using Sanakan.DiscordBot.Services.Abstractions;
 using Sanakan.Extensions;
 using Sanakan.ShindenApi;
 using SixLabors.Primitives;
@@ -20,7 +21,7 @@ using System.Threading.Tasks;
 
 namespace Sanakan.Services
 {
-    public class Profile
+    public class ProfileService : IProfileService
     {
         private readonly DiscordSocketClient _client;
         private readonly IShindenClient _shindenClient;
@@ -30,13 +31,13 @@ namespace Sanakan.Services
         private ILogger _logger;
         private Timer _timer;
 
-        public Profile(
+        public ProfileService(
             DiscordSocketClient client,
             IShindenClient shindenClient,
             IImageProcessor img,
             IFileSystem fileSystem,
             IServiceScopeFactory serviceScopeFactory,
-            ILogger<Profile> logger)
+            ILogger<ProfileService> logger)
         {
             _shindenClient = shindenClient;
             _client = client;

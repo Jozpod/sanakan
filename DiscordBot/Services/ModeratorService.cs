@@ -7,12 +7,14 @@ using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using DiscordBot.Services;
+using Humanizer;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Sanakan.Common;
 using Sanakan.DAL.Models.Configuration;
 using Sanakan.DAL.Models.Management;
+using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot.Services.Abstractions;
 using Sanakan.Extensions;
 
@@ -59,29 +61,30 @@ namespace Sanakan.Services
         {
             using var serviceScope = _serviceScopeFactory.CreateScope();
             var serviceProvider = serviceScope.ServiceProvider;
-            var repository = serviceProvider.GetRequiredService<IPenalty>();
+            var penaltyInfoRepository = serviceProvider.GetRequiredService<IPenaltyInfoRepository>();
+            var guildConfigRepository = serviceProvider.GetRequiredService<IGuildConfigRepository>();
 
-            foreach (var penalty in await _moderationRepository.GetCachedFullPenalties())
+            foreach (var penalty in await penaltyInfoRepository.GetCachedFullPenalties())
             {
-                var guild = _client.GetGuild(penalty.Guild);
+                var guild = _client.GetGuild(penalty.GuildId);
 
                 if (guild == null)
                 {
                     continue;
                 }
 
-                var user = guild.GetUser(penalty.User);
+                var user = guild.GetUser(penalty.UserId);
 
                 if (user == null)
                 {
-                    if ((_systemClock.UtcNow - penalty.StartDate).TotalHours > penalty.DurationInHours)
+                    if ((_systemClock.UtcNow - penalty.StartDate) > penalty.Duration)
                     {
                         if (penalty.Type == PenaltyType.Ban)
                         {
-                            var ban = await guild.GetBanAsync(penalty.User);
+                            var ban = await guild.GetBanAsync(penalty.UserId);
                             if (ban != null)
                             {
-                                await guild.RemoveBanAsync(penalty.User);
+                                await guild.RemoveBanAsync(penalty.UserId);
                             }
                         }
                         await RemovePenaltyFromDb(penalty);
@@ -89,11 +92,11 @@ namespace Sanakan.Services
                     continue;
                 }
 
-                var gconfig = await _guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
+                var gconfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
                 var muteModRole = guild.GetRole(gconfig.ModMuteRole);
                 var muteRole = guild.GetRole(gconfig.MuteRole);
 
-                if ((_systemClock.UtcNow - penalty.StartDate).TotalHours < penalty.DurationInHours)
+                if ((_systemClock.UtcNow - penalty.StartDate) < penalty.Duration)
                 {
                     var muteMod = penalty
                         .Roles
@@ -376,14 +379,16 @@ namespace Sanakan.Services
         public async Task NotifyAboutPenaltyAsync(
             SocketGuildUser user,
             ITextChannel channel,
-            PenaltyInfo info,
+            PenaltyInfo penaltyInfo,
             string byWho = "automat")
         {
+            var durationFriendly = penaltyInfo.Duration.Humanize(4);
+
             var embed = new EmbedBuilder
             {
-                Color = (info.Type == PenaltyType.Mute) ? EMType.Warning.Color() : EMType.Error.Color(),
+                Color = (penaltyInfo.Type == PenaltyType.Mute) ? EMType.Warning.Color() : EMType.Error.Color(),
                 Footer = new EmbedFooterBuilder().WithText($"Przez: {byWho}"),
-                Description = $"Powód: {info.Reason}".TrimToLength(1800),
+                Description = $"Powód: {penaltyInfo.Reason}".TrimToLength(1800),
                 Author = new EmbedAuthorBuilder().WithUser(user),
                 Fields = new List<EmbedFieldBuilder>
                 {
@@ -397,19 +402,19 @@ namespace Sanakan.Services
                     {
                         IsInline = true,
                         Name = "Typ:",
-                        Value = info.Type,
+                        Value = penaltyInfo.Type,
                     },
                     new EmbedFieldBuilder
                     {
                         IsInline = true,
                         Name = "Kiedy:",
-                        Value = $"{info.StartDate.ToShortDateString()} {info.StartDate.ToShortTimeString()}"
+                        Value = $"{penaltyInfo.StartDate.ToShortDateString()} {penaltyInfo.StartDate.ToShortTimeString()}"
                     },
                     new EmbedFieldBuilder
                     {
                         IsInline = true,
                         Name = "Na ile:",
-                        Value = $"{info.DurationInHours/24} dni {info.DurationInHours%24} godzin",
+                        Value = durationFriendly,
                     }
                 }
             };
@@ -419,11 +424,12 @@ namespace Sanakan.Services
 
             try
             {
-                var dm = await user.GetOrCreateDMChannelAsync();
-                if (dm != null)
+                var directMessageChannel = await user.GetOrCreateDMChannelAsync();
+                if (directMessageChannel != null)
                 {
-                    await dm.SendMessageAsync($"Elo! Zostałeś ukarany mutem na {info.DurationInHours/24} dni {info.DurationInHours%24} godzin.\n\nPodany powód: {info.Reason}\n\nPozdrawiam serdecznie!".TrimToLength(2000));
-                    await dm.CloseAsync();
+                    var content = $"Elo! Zostałeś ukarany mutem na {durationFriendly}.\n\nPodany powód: {penaltyInfo.Reason}\n\nPozdrawiam serdecznie!".TrimToLength(2000);
+                    await directMessageChannel.SendMessageAsync(content);
+                    await directMessageChannel.CloseAsync();
                 }
             }
             catch (Exception ex)
@@ -435,15 +441,19 @@ namespace Sanakan.Services
         public async Task<Embed> GetMutedListAsync(SocketCommandContext context)
         {
             var mutedList = "Brak";
-            var list = await _moderationRepository.GetMutedPenaltiesAsync(context.Guild.Id);
+            using var serviceScope = _serviceScopeFactory.CreateScope();
+            var serviceProvider = serviceScope.ServiceProvider;
+            var penaltyInfoRepository = serviceProvider.GetRequiredService<IPenaltyInfoRepository>();
 
-            if (list.Any())
+            var penaltyList = await penaltyInfoRepository.GetMutedPenaltiesAsync(context.Guild.Id);
+
+            if (penaltyList.Any())
             {
                 mutedList = "";
-                foreach (var penalty in list)
+                foreach (var penalty in penaltyList)
                 {
-                    var endDate = penalty.StartDate.AddHours(penalty.DurationInHours);
-                    var name = context.Guild.GetUser(penalty.User)?.Mention;
+                    var endDate = penalty.StartDate + penalty.Duration;
+                    var name = context.Guild.GetUser(penalty.UserId)?.Mention;
                     
                     if (name is null)
                     {
@@ -491,7 +501,11 @@ namespace Sanakan.Services
             SocketRole muteRole,
             SocketRole muteModRole)
         {
-            var penalty = await _moderationRepository.GetPenaltyAsync(
+            using var serviceScope = _serviceScopeFactory.CreateScope();
+            var serviceProvider = serviceScope.ServiceProvider;
+            var penaltyInfoRepository = serviceProvider.GetRequiredService<IPenaltyInfoRepository>();
+
+            var penalty = await penaltyInfoRepository.GetPenaltyAsync(
                 user.Id,
                 user.Guild.Id,
                 PenaltyType.Mute);
@@ -507,8 +521,13 @@ namespace Sanakan.Services
                 return;
             }
 
-            await _moderationRepository.RemovePenaltyAsync(penalty);
-         
+            using var serviceScope = _serviceScopeFactory.CreateScope();
+            var serviceProvider = serviceScope.ServiceProvider;
+            var penaltyInfoRepository = serviceProvider.GetRequiredService<IPenaltyInfoRepository>();
+
+            penaltyInfoRepository.Remove(penalty);
+            await penaltyInfoRepository.SaveChangesAsync();
+
             _cacheManager.ExpireTag(new string[] { $"mute" });
         }
 
@@ -571,27 +590,32 @@ namespace Sanakan.Services
 
         public async Task<PenaltyInfo> BanUserAysnc(
             SocketGuildUser user,
-            long duration,
+            TimeSpan duration,
             string reason = "nie podano")
         {
-            var info = new PenaltyInfo
+            using var serviceScope = _serviceScopeFactory.CreateScope();
+            var serviceProvider = serviceScope.ServiceProvider;
+            var penaltyInfoRepository = serviceProvider.GetRequiredService<IPenaltyInfoRepository>();
+
+            var penalty = new PenaltyInfo
             {
                 UserId = user.Id,
                 Reason = reason,
                 GuildId = user.Guild.Id,
                 Type = PenaltyType.Ban,
                 StartDate = _systemClock.UtcNow,
-                DurationInHours = duration,
+                Duration = duration,
                 Roles = new List<OwnedRole>(),
             };
 
-            await _moderationRepository.AddPenaltyAsync(info);
+            penaltyInfoRepository.Add(penalty);
+            await penaltyInfoRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(new string[] { $"mute" });
 
             await user.Guild.AddBanAsync(user, 0, reason);
 
-            return info;
+            return penalty;
         }
 
         public async Task<PenaltyInfo> MuteUserAysnc(
@@ -599,18 +623,18 @@ namespace Sanakan.Services
             SocketRole muteRole,
             SocketRole muteModRole,
             SocketRole userRole,
-            long duration,
+            TimeSpan duration,
             string reason = "nie podano",
             IEnumerable<ModeratorRoles>? modRoles = null)
         {
-            var info = new PenaltyInfo
+            var penaltyInfo = new PenaltyInfo
             {
                 UserId = user.Id,
                 Reason = reason,
                 GuildId = user.Guild.Id,
                 Type = PenaltyType.Mute,
                 StartDate = _systemClock.UtcNow,
-                DurationInHours = duration,
+                Duration = duration,
                 Roles = new List<OwnedRole>(),
             };
 
@@ -619,7 +643,7 @@ namespace Sanakan.Services
                 if (user.Roles.Contains(userRole))
                 {
                     await user.RemoveRoleAsync(userRole);
-                    info.Roles.Add(new OwnedRole
+                    penaltyInfo.Roles.Add(new OwnedRole
                     {
                         Role = userRole.Id
                     });
@@ -637,7 +661,7 @@ namespace Sanakan.Services
                     }
 
                     await user.RemoveRoleAsync(role);
-                    info.Roles.Add(new OwnedRole
+                    penaltyInfo.Roles.Add(new OwnedRole
                     {
                         Role = role.Id
                     });
@@ -655,11 +679,16 @@ namespace Sanakan.Services
                 }   
             }
 
-            await _moderationRepository.AddPenaltyAsync(info);
+            using var serviceScope = _serviceScopeFactory.CreateScope();
+            var serviceProvider = serviceScope.ServiceProvider;
+            var penaltyInfoRepository = serviceProvider.GetRequiredService<IPenaltyInfoRepository>();
+
+            penaltyInfoRepository.Add(penaltyInfo);
+            await penaltyInfoRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(new string[] { $"mute" });
 
-            return info;
+            return penaltyInfo;
         }
     }
 }

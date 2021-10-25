@@ -25,7 +25,7 @@ namespace Sanakan.Modules
     [Name("Profil"), RequireUserRole]
     public class ProfileModule : ModuleBase<SocketCommandContext>
     {
-        private readonly Services.Profile _profile;
+        private readonly Services.ProfileService _profile;
         private readonly SessionManager _session;
         private readonly ICacheManager _cacheManager;
         private readonly IGuildConfigRepository _guildConfigRepository;
@@ -34,7 +34,7 @@ namespace Sanakan.Modules
         private readonly ISystemClock _systemClock;
 
         public ProfileModule(
-            Services.Profile prof,
+            Services.ProfileService prof,
             SessionManager session,
             ICacheManager cacheManager,
             IGuildConfigRepository guildConfigRepository,
@@ -98,7 +98,8 @@ namespace Sanakan.Modules
                     subs += $"{sub.ToView()}\n";
             }
 
-            await ReplyAsync("", embed: $"**Subskrypcje** {Context.User.Mention}:\n\n{subs.TrimToLength(1950)}".ToEmbedMessage(EMType.Info).Build());
+            var content = $"**Subskrypcje** {Context.User.Mention}:\n\n{subs.TrimToLength(1950)}".ToEmbedMessage(EMType.Info).Build();
+            await ReplyAsync("", embed: );
         }
 
         [Command("przyznaj role", RunMode = RunMode.Async)]

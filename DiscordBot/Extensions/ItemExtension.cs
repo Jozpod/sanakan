@@ -489,10 +489,12 @@ namespace Sanakan.Extensions
         public static Figure ToFigure(this Item item, Card card)
         {
             if (item.Type != ItemType.FigureSkeleton || card.Rarity != Rarity.SSS)
+            {
                 return null;
+            }
 
             var maxExp = card.ExpToUpgrade();
-            var expToMove = card.ExpCnt;
+            var expToMove = card.ExpCount;
             if (expToMove > maxExp)
                 expToMove = maxExp;
 
@@ -510,7 +512,7 @@ namespace Sanakan.Extensions
                 Defence = card.Defence,
                 Character = card.CharacterId,
                 BodyQuality = Quality.Broken,
-                RestartCnt = card.RestartCnt,
+                RestartCnt = card.RestartCount,
                 HeadQuality = Quality.Broken,
                 PAS = PreAssembledFigure.None,
                 CompletionDate = DateTime.Now,

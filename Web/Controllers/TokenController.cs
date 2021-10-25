@@ -34,8 +34,8 @@ namespace Sanakan.Web.Controllers
         /// </summary>
         /// <param name="apikey">API key</param>
         [HttpPost, AllowAnonymous]
-        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(TokenData), StatusCodes.Status200OK)]
         public IActionResult CreateToken([FromBody]string apikey)
         {
@@ -55,7 +55,6 @@ namespace Sanakan.Web.Controllers
 
             if (user != null)
             {
-                // expires: DateTime.Now.AddHours(24),
                 var tokenData = _jwtBuilder.Build(_config.CurrentValue.TokenExpiry, claims);
                 return Ok(tokenData);
             }

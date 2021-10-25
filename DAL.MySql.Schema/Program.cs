@@ -1,10 +1,15 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Sanakan.Common;
 using Sanakan.Common.Builder;
 using Sanakan.Configuration;
 using Sanakan.DAL.Builder;
 using Sanakan.DAL.Repositories.Abstractions;
+using System;
+using System.Collections.Generic;
+using System.Data.Common;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -29,20 +34,64 @@ namespace Sanakan.DAL.MySql.Schema
             serviceCollection.AddCache(configurationRoot.GetSection("Cache"));
             serviceCollection.Configure<SanakanConfiguration>(configurationRoot);
             serviceCollection.AddRepositories();
+            serviceCollection.AddFileSystem();
             var serviceProvider = serviceCollection.BuildServiceProvider();
 
+            var fileSystem = serviceProvider.GetRequiredService<IFileSystem>();
             var dbContext = serviceProvider.GetRequiredService<SanakanDbContext>();
-            await dbContext.Database.EnsureCreatedAsync();
-
-            var connection = dbContext.Database.GetDbConnection();
-
+            var databaseFacade = dbContext.Database;
+            await databaseFacade.EnsureCreatedAsync();
+            using var connection = databaseFacade.GetDbConnection();
             await connection.OpenAsync();
+            
+            var tableNames = await GetTableNamesAsync(connection);
 
+            var path = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..\\..\\..\\"));
+            var tablesFolder = Path.Combine(path, "Tables");
+            
+            if(!fileSystem.DirectoryExists(tablesFolder))
+            {
+                fileSystem.CreateDirectory(tablesFolder);
+            }
+
+            foreach(var tableName in tableNames)
+            {
+                var tableDefinition = await GetTableDefinitionAsync(connection, tableName);
+                var filePath = Path.Combine(tablesFolder, $"{tableName}.sql");
+                await fileSystem.WriteAllTextAsync(filePath, tableDefinition);
+            }
+        }
+
+        public static async Task<string> GetTableDefinitionAsync(DbConnection connection, string tableName)
+        {
             var command = connection.CreateCommand();
-            command.CommandText = "SHOW CREATE TABLE Card";
-            var schemaDefinition = await command.ExecuteScalarAsync();
+            command.CommandText = $"SHOW CREATE TABLE {tableName}";
 
-            await connection.CloseAsync();
+            using var reader = await command.ExecuteReaderAsync();
+            await reader.ReadAsync();
+
+            var text = reader.GetString(1);
+            
+            return text;
+        }
+
+        public static async Task<List<string>> GetTableNamesAsync(DbConnection connection)
+        {
+            var command = connection.CreateCommand();
+            command.CommandText = @"SELECT
+	table_name
+FROM INFORMATION_SCHEMA.TABLES
+WHERE TABLE_SCHEMA = DATABASE()";
+
+            using var reader = await command.ExecuteReaderAsync();
+            var list = new List<string>();
+            
+            while (await reader.ReadAsync())
+            {
+                list.Add(reader.GetString(0));
+            }
+
+            return list;
         }
     }
 }

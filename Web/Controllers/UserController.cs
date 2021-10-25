@@ -99,7 +99,7 @@ namespace Sanakan.Web.Controllers
         /// <param name="name">The name of the user</param>
         [HttpPost("find")]
         [ProducesResponseType(typeof(IEnumerable<IUserSearch>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetUserIdByNameAsync([FromBody, Required]string name)
         {
             var searchUserResult = await _shindenClient.SearchUserAsync(name);
@@ -117,7 +117,7 @@ namespace Sanakan.Web.Controllers
         /// </summary>
         /// <param name="shindenUserId">The Shinden user identifier.</param>
         [HttpGet("shinden/{shindenUserId}/username")]
-        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetShindenUsernameByShindenId(ulong shindenUserId)
         {
@@ -138,7 +138,7 @@ namespace Sanakan.Web.Controllers
         /// </summary>
         /// <param name="id">The Shinden user identifier.</param>
         [HttpGet("shinden/{id}"), Authorize(Policy = AuthorizePolicies.Site)]
-        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(UserWithToken), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetUserByShindenIdAsync(ulong id)
         {
@@ -171,7 +171,7 @@ namespace Sanakan.Web.Controllers
         /// </summary>
         /// <param name="id">id użytkownika shindena</param>
         [HttpGet("shinden/simple/{id}"), Authorize(Policy = AuthorizePolicies.Site)]
-        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(UserWithToken), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetUserByShindenIdSimpleAsync(ulong id)
         {
@@ -209,7 +209,7 @@ namespace Sanakan.Web.Controllers
         /// <param name="nickname">ksywka użytkownika</param>
         /// <response code="404">User not found</response>
         [HttpPost("shinden/{id}/nickname"), Authorize(Policy = AuthorizePolicies.Site)]
-        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(UserWithToken), StatusCodes.Status200OK)]
         public async Task<IActionResult> ChangeNicknameShindenUserAsync(
             ulong id,
@@ -253,10 +253,10 @@ namespace Sanakan.Web.Controllers
         /// </summary>
         [HttpPut("register"), Authorize(Policy = AuthorizePolicies.Site)]
         [ProducesResponseType(typeof(UserWithToken), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status500InternalServerError)]
-        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> RegisterUserAsync([FromBody, Required]UserRegistration model)
         {
             if (model == null)
@@ -370,8 +370,8 @@ namespace Sanakan.Web.Controllers
         /// <param name="id">The user identifier in Discord.</param>
         /// <param name="value">The number of TC</param>
         [HttpPut("discord/{id}/tc"), Authorize(Policy = AuthorizePolicies.Site)]
-        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> ModifyPointsTCDiscordAsync(ulong id, [FromBody, Required]long value)
         {
             var user = await _userRepository.GetByDiscordIdAsync(id);
@@ -412,8 +412,8 @@ namespace Sanakan.Web.Controllers
         /// <param name="id">id użytkownika shindena</param>
         /// <param name="value">liczba TC</param>
         [HttpPut("shinden/{id}/tc"), Authorize(Policy = AuthorizePolicies.Site)]
-        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status200OK)]
         public async Task<IActionResult> ModifyPointsTCAsync(ulong id, [FromBody, Required]long value)
         {
             var user = await _userRepository.GetByShindenIdAsync(id);

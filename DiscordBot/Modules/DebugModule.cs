@@ -1220,13 +1220,13 @@ namespace Sanakan.Modules
             [Summary("liczba ostrzeżeń")]long amount)
         {
             var botuser = await _userRepository.GetUserOrCreateAsync(user.Id);
-            botuser.Warnings += amount;
+            botuser.WarningsCount += amount;
 
             await _userRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(new string[] { $"user-{botuser.Id}", "users" });
 
-            var content = $"{user.Mention} ma teraz {botuser.Warnings} punktów ostrzeżeń.".ToEmbedMessage(EMType.Success).Build();
+            var content = $"{user.Mention} ma teraz {botuser.WarningsCount} punktów ostrzeżeń.".ToEmbedMessage(EMType.Success).Build();
             await ReplyAsync("", embed: content);
         }
 

@@ -76,6 +76,26 @@
           "lib/netstandard2.1/Discord.Net.WebSocket.dll": {}
         }
       },
+      "Humanizer.Core/2.11.10": {
+        "type": "package",
+        "compile": {
+          "lib/netstandard2.0/Humanizer.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/Humanizer.dll": {}
+        }
+      },
+      "Humanizer.Core.pl/2.11.10": {
+        "type": "package",
+        "dependencies": {
+          "Humanizer.Core": "[2.11.10]"
+        },
+        "resource": {
+          "lib/netstandard2.0/pl/Humanizer.resources.dll": {
+            "locale": "pl"
+          }
+        }
+      },
       "Microsoft.AspNetCore.Authentication/2.2.0": {
         "type": "package",
         "dependencies": {
@@ -2289,6 +2309,7 @@
         "framework": ".NETCoreApp,Version=v5.0",
         "dependencies": {
           "Discord.Net": "2.4.0",
+          "Humanizer.Core.pl": "2.11.10",
           "Microsoft.Extensions.DependencyInjection": "5.0.2",
           "Microsoft.Extensions.Options": "5.0.0",
           "Sanakan.Common": "1.0.0",
@@ -2449,6 +2470,39 @@
         "lib/netstandard2.0/Discord.Net.WebSocket.xml",
         "lib/netstandard2.1/Discord.Net.WebSocket.dll",
         "lib/netstandard2.1/Discord.Net.WebSocket.xml"
+      ]
+    },
+    "Humanizer.Core/2.11.10": {
+      "sha512": "4TBsHSXPocdsEB5dewIHeKykTzIz5Ui7ouXw4JsUGI+ax4jjviVJVD7+gsPCNyA+b3de2EjYI+jcEq8I/1ZFSQ==",
+      "type": "package",
+      "path": "humanizer.core/2.11.10",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "humanizer.core.2.11.10.nupkg.sha512",
+        "humanizer.core.nuspec",
+        "lib/net6.0/Humanizer.dll",
+        "lib/net6.0/Humanizer.xml",
+        "lib/netstandard1.0/Humanizer.dll",
+        "lib/netstandard1.0/Humanizer.xml",
+        "lib/netstandard2.0/Humanizer.dll",
+        "lib/netstandard2.0/Humanizer.xml",
+        "logo.png"
+      ]
+    },
+    "Humanizer.Core.pl/2.11.10": {
+      "sha512": "0aIMXEkrw3FByhoInV0mpFnmPT3gJf1FOpsy6HAxL74j2gIP+xOa2hjb/xKa3HhK/1b5V9DoxKUESrTBeA5dbg==",
+      "type": "package",
+      "path": "humanizer.core.pl/2.11.10",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "humanizer.core.pl.2.11.10.nupkg.sha512",
+        "humanizer.core.pl.nuspec",
+        "lib/net6.0/pl/Humanizer.resources.dll",
+        "lib/netstandard1.0/pl/Humanizer.resources.dll",
+        "lib/netstandard2.0/pl/Humanizer.resources.dll",
+        "logo.png"
       ]
     },
     "Microsoft.AspNetCore.Authentication/2.2.0": {

@@ -19,7 +19,7 @@ namespace Sanakan.DAL.Models
             ScCnt = 100;
             ExpCnt = 10;
             ShindenId = 0;
-            Warnings = 0;
+            WarningsCount = 0;
             MessagesCnt = 0;
             CommandsCnt = 0;
             MessagesCntAtDate = 0;
@@ -145,7 +145,11 @@ namespace Sanakan.DAL.Models
         public ulong MessagesCntAtDate { get; set; }
         public ulong CharacterCntFromDate { get; set; }
         public bool ShowWaifuInProfile { get; set; }
-        public long Warnings { get; set; }
+        
+        /// <summary>
+        /// The number of warnings issued for this user in Discord.
+        /// </summary>
+        public long WarningsCount { get; set; }
 
         public virtual UserStats Stats { get; set; }
         public virtual GameDeck GameDeck { get; set; }

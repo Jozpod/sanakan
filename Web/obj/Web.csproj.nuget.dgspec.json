@@ -211,6 +211,10 @@
               "target": "Package",
               "version": "[2.4.0, )"
             },
+            "Humanizer.Core.pl": {
+              "target": "Package",
+              "version": "[2.11.10, )"
+            },
             "Microsoft.Extensions.DependencyInjection": {
               "target": "Package",
               "version": "[5.0.2, )"

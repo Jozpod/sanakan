@@ -73,7 +73,7 @@ namespace Sanakan.Web.Controllers
         /// </summary>
         /// <param name="id">The shinden user identifier.</param>
         [HttpGet("users/owning/character/{id}"), Authorize(Policy = AuthorizePolicies.Site)]
-        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(IEnumerable<ulong>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetUsersOwningCharacterCardAsync(ulong id)
         {
@@ -92,7 +92,7 @@ namespace Sanakan.Web.Controllers
         /// </summary>
         /// <param name="id">The Shinden user identifier</param>
         [HttpGet("user/{id}/cards"), Authorize(Policy = AuthorizePolicies.Site)]
-        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(IEnumerable<Card>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetUserCardsAsync(ulong shindenUserId)
         {
@@ -116,7 +116,7 @@ namespace Sanakan.Web.Controllers
         /// <param name="count">number of cards to take</param>
         /// <param name="filter">filtry listy</param>
         [HttpPost("user/{id}/cards/{offset}/{count}")]
-        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(FilteredCards), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetUsersCardsByShindenIdWithOffsetAndFilterAsync(
             ulong id,
@@ -152,7 +152,7 @@ namespace Sanakan.Web.Controllers
         /// <param name="offset">przesunięcie</param>
         /// <param name="count">liczba kart</param>
         [HttpGet("user/{id}/cards/{offset}/{count}")]
-        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(IEnumerable<CardFinalView>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetUsersCardsByShindenIdWithOffsetAsync(
             ulong id, int offset, int count)
@@ -180,8 +180,8 @@ namespace Sanakan.Web.Controllers
         /// <returns>lista życzeń</returns>
         [HttpGet("user/shinden/{id}/wishlist/raw")]
         [ProducesResponseType(typeof(IEnumerable<WishlistObject>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> GetUsersRawWishlistByShindenIdAsync(ulong id)
         {
             var user = await _userRepository.GetByShindenIdAsync(id, new UserQueryOptions
@@ -210,8 +210,8 @@ namespace Sanakan.Web.Controllers
         /// </summary>
         /// <param name="id">The user identifier in Shinden.</param>
         [HttpGet("user/{id}/profile")]
-        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetUserWaifuProfileAsync(ulong id)
         {
             var user = await _userRepository.GetUserWaifuProfileAsync(id);
@@ -281,8 +281,8 @@ namespace Sanakan.Web.Controllers
         /// <param name="oldId">id postaci z bazy shindena, która została usunięta</param>
         /// <param name="newId">id nowej postaci z bazy shindena</param>
         [HttpPost("character/repair/{oldId}/{newId}"), Authorize(Policy = AuthorizePolicies.Site)]
-        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> RepairCardsAsync(ulong oldId, ulong newId)
         {
             var characterResult = await _shindenClient.GetCharacterInfoAsync(newId);
@@ -322,7 +322,7 @@ namespace Sanakan.Web.Controllers
         /// <param name="id">id postaci z bazy shindena</param>
         /// <param name="newData">nowe dane karty</param>
         [HttpPost("cards/character/{id}/update"), Authorize(Policy = AuthorizePolicies.Site)]
-        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status200OK)]
         public async Task<IActionResult> UpdateCardInfoAsync(
             ulong id,
             [FromBody]CharacterCardInfoUpdate newData)
@@ -368,9 +368,9 @@ namespace Sanakan.Web.Controllers
         /// </summary>
         /// <param name="id">id postaci z bazy shindena</param>
         [HttpPost("users/make/character/{id}"), Authorize(Policy = AuthorizePolicies.Site)]
-        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status405MethodNotAllowed)]
-        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status405MethodNotAllowed)]
+        [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status200OK)]
         public async Task<IActionResult> GenerateCharacterCardAsync(ulong id)
         {
             var characterResult = await _shindenClient.GetCharacterInfoAsync(id);
@@ -424,8 +424,8 @@ namespace Sanakan.Web.Controllers
         /// </summary>
         /// <param name="id">id użytkownika discorda</param>
         [HttpGet("user/discord/{id}/wishlist"), Authorize(Policy = AuthorizePolicies.Site)]
-        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetUserWishlistAsync(ulong id)
         {
             var user = await _userRepository.GetCachedFullUserAsync(id);
@@ -472,7 +472,7 @@ namespace Sanakan.Web.Controllers
         /// </summary>
         /// <param name="id">id użytkownika shindena</param>
         [HttpGet("user/shinden/{id}/wishlist"), Authorize(Policy = AuthorizePolicies.Site)]
-        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(IEnumerable<Card>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetShindenUserWishlistAsync(ulong id)
         {
@@ -535,8 +535,8 @@ namespace Sanakan.Web.Controllers
         /// </summary>
         /// <param name="id">id karty (wid)</param>
         [HttpGet("card/{id}")]
-        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(Stream), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetCardAsync(ulong id)
         {
@@ -568,9 +568,9 @@ namespace Sanakan.Web.Controllers
         /// <param name="boosterPacks">model pakietu</param>
         /// <returns>użytkownik bota</returns>
         [HttpPost("discord/{id}/boosterpack"), Authorize(Policy = AuthorizePolicies.Site)]
-        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status500InternalServerError)]
-        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status200OK)]
         public async Task<IActionResult> GiveUserAPacksAsync(
             ulong id,
             [FromBody]List<CardBoosterPack> boosterPacks)
@@ -628,8 +628,8 @@ namespace Sanakan.Web.Controllers
         /// <response code="500">Model is Invalid</response>
         [HttpPost("shinden/{id}/boosterpack"), Authorize(Policy = AuthorizePolicies.Site)]
         [ProducesResponseType(typeof(UserWithToken), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status500InternalServerError)]
-        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GiveShindenUserAPacksAsync(
             ulong id, [FromBody]List<CardBoosterPack> boosterPacks)
         {
@@ -701,12 +701,12 @@ namespace Sanakan.Web.Controllers
         /// <param name="id">The Shinden user identifier</param>
         /// <param name="boosterPacks">Packet model</param>
         [HttpPost("shinden/{id}/boosterpack/open"), Authorize(Policy = AuthorizePolicies.Site)]
-        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status500InternalServerError)]
-        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status503ServiceUnavailable)]
-        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status406NotAcceptable)]
-        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status503ServiceUnavailable)]
+        [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status406NotAcceptable)]
+        [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status200OK)]
         public async Task<IActionResult> GiveShindenUserAPacksAndOpenAsync(
             ulong id, [FromBody]List<CardBoosterPack> boosterPacks)
         {
@@ -792,10 +792,10 @@ namespace Sanakan.Web.Controllers
         /// </summary>
         /// <param name="packNumber">numer pakietu</param>
         [HttpPost("boosterpack/open/{packNumber}"), Authorize(Policy = AuthorizePolicies.Player)]
-        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status406NotAcceptable)]
-        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status406NotAcceptable)]
+        [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ObjectResult), StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status200OK)]
         public async Task<IActionResult> OpenAPackAsync(int packNumber)
         {
             var discordId = _userContext.DiscordId;
@@ -879,9 +879,9 @@ namespace Sanakan.Web.Controllers
         /// </summary>
         /// <param name="wid">id karty</param>
         [HttpPut("deck/toggle/card/{wid}"), Authorize(Policy = AuthorizePolicies.Player)]
-        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> ToggleCardStatusAsync(ulong wid)
         {
             var discordId = _userContext.DiscordId;

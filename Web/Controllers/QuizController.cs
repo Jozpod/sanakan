@@ -44,7 +44,7 @@ namespace Sanakan.Web.Controllers
         /// <param name="id">id pytania</param>
         /// <response code="500">Internal Server Error</response>
         [HttpGet("question/{id}")]
-        [ProducesResponseType(typeof(BodyPayload), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetQuestionAsync(ulong id)
         {
             var result = await _questionRepository.GetCachedQuestionAsync(id);
