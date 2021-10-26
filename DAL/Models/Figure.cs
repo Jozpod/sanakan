@@ -21,8 +21,8 @@ namespace Sanakan.DAL.Models
         [Required]
         public string Title { get; set; }
         public bool IsFocus { get; set; }
-        public double ExpCnt { get; set; }
-        public int RestartCnt { get; set; }
+        public double ExpCount { get; set; }
+        public int RestartCount { get; set; }
         public ulong Character { get; set; }
         public bool IsComplete { get; set; }
         public PreAssembledFigure PAS { get; set; }

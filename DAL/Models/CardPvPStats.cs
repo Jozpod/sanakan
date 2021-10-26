@@ -10,6 +10,7 @@ namespace Sanakan.DAL.Models
         public FightResult Result { get; set; }
 
         public ulong GameDeckId { get; set; }
+
         [JsonIgnore]
         public virtual GameDeck GameDeck { get; set; }
     }

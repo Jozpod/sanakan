@@ -33,7 +33,7 @@ namespace Sanakan.DiscordBot.Services
             List<ILastWatched> lastWatch = null);
         Task<Image<Rgba32>> GetLevelUpBadgeAsync(
             string name,
-            long ulvl,
+            ulong userLevel,
             string avatarUrl,
             Discord.Color color);
         Image<Rgba32> GetFColorsView(SCurrency currency);

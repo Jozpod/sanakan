@@ -224,16 +224,16 @@ namespace Sanakan.Extensions
             {
                 case StatusType.DExpeditions:
                 case StatusType.DUsedItems:
-                    user.AcCnt += 1;
+                    user.AcCount += 1;
                     break;
 
                 case StatusType.DHourly:
-                    user.ScCnt += 100;
+                    user.ScCount += 100;
                     break;
 
                 case StatusType.DPacket:
                 case StatusType.DMarket:
-                    user.AcCnt += 2;
+                    user.AcCount += 2;
                     break;
 
                 case StatusType.DPvp:
@@ -241,12 +241,12 @@ namespace Sanakan.Extensions
                     break;
 
                 case StatusType.WCardPlus:
-                    user.AcCnt += 50;
+                    user.AcCount += 50;
                     break;
 
                 case StatusType.WDaily:
-                    user.ScCnt += 1000;
-                    user.AcCnt += 10;
+                    user.ScCount += 1000;
+                    user.AcCount += 10;
                     break;
 
                 default:

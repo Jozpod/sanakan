@@ -15,9 +15,9 @@ namespace Sanakan.Preconditions
     {
         public async override Task<PreconditionResult> CheckPermissionsAsync(ICommandContext context, CommandInfo command, IServiceProvider services)
         {
-            var config = services.GetRequiredService<IOptions<SanakanConfiguration>>().Value;
+            var config = services.GetRequiredService<IOptionsMonitor<SanakanConfiguration>>().CurrentValue;
 
-            if (config.Dev.Any(x => x == context.User.Id))
+            if (config.AllowedToDebug.Any(x => x == context.User.Id))
             {
                 return PreconditionResult.FromSuccess();
             }

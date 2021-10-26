@@ -20,7 +20,7 @@ namespace Sanakan.Services
     {
 
         private const double SAVE_AT = 5;
-        private const double LM = 0.35;
+        private const double DefaultLevelMultiplier = 0.35;
 
         private Dictionary<ulong, double> _exp;
         private Dictionary<ulong, ulong> _messages;
@@ -65,10 +65,17 @@ namespace Sanakan.Services
 #endif
         }
 
-        public static long CalculateExpForLevel(long level, double lm = LM) => (level <= 0) ? 0 : Convert.ToInt64(Math.Floor(Math.Pow(level / lm, 2)) + 1);
-        public static long CalculateLevel(long exp, double lm = LM) => Convert.ToInt64(Math.Floor(lm * Math.Sqrt(exp)));
+        public static long CalculateExpForLevel(ulong level, double levelMultiplier = DefaultLevelMultiplier) 
+            => (level <= 0) ? 0 : Convert.ToInt64(Math.Floor(Math.Pow(level / levelMultiplier, 2)) + 1);
+        public static ulong CalculateLevel(
+            long experience,
+            double levelMultiplier = DefaultLevelMultiplier) 
+            => (ulong)Convert.ToInt64(Math.Floor(levelMultiplier * Math.Sqrt(experience)));
 
-        public async Task NotifyAboutLevelAsync(SocketGuildUser user, ISocketMessageChannel channel, long level)
+        public async Task NotifyAboutLevelAsync(
+            SocketGuildUser user,
+            ISocketMessageChannel channel,
+            ulong level)
         {
             using var badge = await _imageProcessor.GetLevelUpBadgeAsync(
                 user.Nickname ?? user.Username,
@@ -151,7 +158,7 @@ namespace Sanakan.Services
 
             if (countMsg)
             {
-                CountMessage(user.Id, message.Content.IsCommand(_config.CurrentValue.Prefix));
+                CountMessage(user.Id, _config.CurrentValue.IsCommand(message.Content));
             }
             CalculateExpAndCreateTask(user, message, calculateExp);
         }
@@ -300,7 +307,7 @@ namespace Sanakan.Services
                 if (totalSeconds > 1)
                 {
                     user.MeasureDate = _systemClock.StartOfMonth;
-                    user.MessagesCntAtDate = user.MessagesCnt;
+                    user.MessagesCntAtDate = user.MessagesCount;
                     user.CharacterCntFromDate = characters;
                 }
                 else
@@ -309,11 +316,11 @@ namespace Sanakan.Services
                 exp = CheckFloodAndReturnExp(exp, user);
                 if (exp < 1) exp = 1;
 
-                user.ExpCnt += exp;
-                user.MessagesCnt += messages;
-                user.CommandsCnt += commands;
+                user.ExpCount += exp;
+                user.MessagesCount += messages;
+                user.CommandsCount += commands;
 
-                var newLevel = CalculateLevel(user.ExpCnt);
+                var newLevel = CalculateLevel(user.ExpCount);
                 if (newLevel != user.Level && calculateExp)
                 {
                     user.Level = newLevel;
@@ -344,7 +351,7 @@ namespace Sanakan.Services
 
                         bool hasRole = discordUser.Roles.Any(x => x.Id == role.Id);
 
-                        if (newLevel >= (long)lvlRole.Level)
+                        if (newLevel >= lvlRole.Level)
                         {
                             if (!hasRole)
                                 await discordUser.AddRoleAsync(role);

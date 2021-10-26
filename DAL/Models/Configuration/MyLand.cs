@@ -14,12 +14,12 @@ namespace Sanakan.DAL.Models.Configuration
         /// <summary>
         /// The Discord role identifier of land manager.
         /// </summary>
-        public ulong Manager { get; set; }
+        public ulong ManagerId { get; set; }
 
         /// <summary>
         /// The Discord role identifier.
         /// </summary>
-        public ulong Underling { get; set; }
+        public ulong UnderlingId { get; set; }
 
         public ulong GuildOptionsId { get; set; }
 

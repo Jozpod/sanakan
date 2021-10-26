@@ -26,17 +26,8 @@ namespace Sanakan.DAL.Tests
             };
 
             repository.Add(entity);
-
             await repository.SaveChangesAsync();
 
-            var actual = await repository.GetByIdAsync(question.Id);
-            actual.Should().BeEquivalentTo(question);
-            
-            repository.Remove(actual);
-            await repository.SaveChangesAsync();
-
-            actual = await repository.GetByIdAsync(question.Id);
-            actual.Should().BeNull();
         }
     }
 }

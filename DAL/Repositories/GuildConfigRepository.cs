@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Sanakan.Common;
+using Sanakan.Common.Cache;
 using Sanakan.DAL.Models.Configuration;
 using Sanakan.DAL.Repositories.Abstractions;
 using System.Threading.Tasks;
@@ -21,7 +22,7 @@ namespace Sanakan.DAL.Repositories
 
         public async Task<GuildOptions> GetCachedGuildFullConfigAsync(ulong guildId)
         {
-            var key = $"config-{guildId}";
+            var key = string.Format(CacheKeys.GuilConfig, guildId);
 
             var cached = _cacheManager.Get<GuildOptions>(key);
 

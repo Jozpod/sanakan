@@ -7,3 +7,4 @@ CREATE TABLE `expcontainers` (
   UNIQUE KEY `IX_ExpContainers_GameDeckId` (`GameDeckId`),
   CONSTRAINT `FK_ExpContainers_GameDecks_GameDeckId` FOREIGN KEY (`GameDeckId`) REFERENCES `gamedecks` (`Id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+ALTER TABLE expcontainers ADD UNIQUE INDEX IX_ExpContainers_GameDeckId USING BTREE(GameDeckId);

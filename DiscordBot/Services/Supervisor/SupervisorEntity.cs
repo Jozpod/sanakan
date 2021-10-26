@@ -20,7 +20,7 @@ namespace Sanakan.Services.Supervisor
             }
             else
             {
-                Messages.Add(new SupervisorMessage(contentOfFirstMessage));
+                Messages.Add(new SupervisorMessage(date, contentOfFirstMessage));
                 TotalMessages = 1;
             }
             
@@ -28,12 +28,12 @@ namespace Sanakan.Services.Supervisor
             
         }
 
-        public SupervisorMessage Get(string content)
+        public SupervisorMessage Get(DateTime date, string content)
         {
             var msg = Messages.FirstOrDefault(x => x.Content == content);
             if (msg == null)
             {
-                msg = new SupervisorMessage(content, 0);
+                msg = new SupervisorMessage(date, content, 0);
                 Messages.Add(msg);
             }
             return msg;

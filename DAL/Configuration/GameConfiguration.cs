@@ -82,6 +82,10 @@ namespace Sanakan.DAL.Configuration
 
             builder.HasOne(e => e.GameDeck)
                 .WithMany(d => d.Cards);
+
+            builder.HasIndex(b => b.CharacterId);
+            builder.HasIndex(b => b.GameDeckId);
+            builder.HasIndex(b => b.Title);
         }
 
         public void Configure(EntityTypeBuilder<Item> builder)

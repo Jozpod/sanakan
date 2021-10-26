@@ -5,7 +5,11 @@ namespace Sanakan.DAL.Models.Analytics
     public class UserAnalytics
     {
         public ulong Id { get; set; }
-        public long Value { get; set; }
+
+        /// <summary>
+        /// The user level.
+        /// </summary>
+        public ulong Value { get; set; }
 
         /// <summary>
         /// The Discord user identifier.

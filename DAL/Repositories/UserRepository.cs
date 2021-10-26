@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Sanakan.Common;
+using Sanakan.Common.Cache;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Repositories.Abstractions;
 using System;
@@ -117,7 +118,7 @@ namespace Sanakan.DAL.Repositories
 
         public async Task<User?> GetCachedFullUserByShindenIdAsync(ulong userId)
         {
-            var key = $"user-{userId}";
+            var key = string.Format(CacheKeys.User, userId);
 
             var cached = _cacheManager.Get<User>(key);
 
@@ -165,9 +166,7 @@ namespace Sanakan.DAL.Repositories
 
         public async Task<List<User>> GetCachedAllUsersLiteAsync()
         {
-            var key = "users-lite";
-
-            var cached = _cacheManager.Get<List<User>>(key);
+            var cached = _cacheManager.Get<List<User>>(CacheKeys.UsersLite);
 
             if (cached != null)
             {
@@ -180,7 +179,7 @@ namespace Sanakan.DAL.Repositories
                 .AsSplitQuery()
                 .ToListAsync();
 
-            _cacheManager.Add(key, result, new MemoryCacheEntryOptions { 
+            _cacheManager.Add(CacheKeys.UsersLite, result, new MemoryCacheEntryOptions { 
                 AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1)
             });
 
@@ -239,9 +238,7 @@ namespace Sanakan.DAL.Repositories
 
         public async Task<List<User>> GetCachedAllUsersAsync()
         {
-            var key = "users";
-
-            var cached = _cacheManager.Get<List<User>>(key);
+            var cached = _cacheManager.Get<List<User>>(CacheKeys.Users);
 
             if (cached != null)
             {
@@ -279,7 +276,7 @@ namespace Sanakan.DAL.Repositories
                .AsSplitQuery()
                .ToListAsync();
 
-            _cacheManager.Add(key, result, new MemoryCacheEntryOptions
+            _cacheManager.Add(CacheKeys.Users, result, new MemoryCacheEntryOptions
             {
                 AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(6)
             });

@@ -22,7 +22,7 @@ namespace Sanakan.Services
                     return null;
                 }
 
-                if(roles.Any(x => x.Id == land.Manager))
+                if(roles.Any(x => x.Id == land.ManagerId))
                 {
                     return land;
                 }
@@ -30,7 +30,7 @@ namespace Sanakan.Services
                 return null;
             }
 
-            var all = lands.Where(x => roles.Any(c => c.Id == x.Manager));
+            var all = lands.Where(x => roles.Any(c => c.Id == x.ManagerId));
             
             if (!all.Any())
             {
@@ -47,7 +47,7 @@ namespace Sanakan.Services
             var temp = $"**Członkowie**: *{land.Name}*\n\n";
             var users = await guild.GetUsersAsync(CacheMode.CacheOnly);
 
-            var underlings = users.Where(x => x.RoleIds.Any(r => r == land.Underling));
+            var underlings = users.Where(x => x.RoleIds.Any(r => r == land.UnderlingId));
 
             foreach (var user in underlings)
             {

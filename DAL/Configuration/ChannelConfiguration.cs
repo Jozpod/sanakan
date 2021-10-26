@@ -13,7 +13,7 @@ namespace Sanakan.DAL.Configuration
         IEntityTypeConfiguration<WaifuCommandChannel>,
         IEntityTypeConfiguration<WaifuFightChannel>,
         IEntityTypeConfiguration<CommandChannel>,
-        IEntityTypeConfiguration<WithoutMsgCntChannel>
+        IEntityTypeConfiguration<WithoutMessageCountChannel>
     {
         public void Configure(EntityTypeBuilder<Answer> builder)
         {
@@ -70,7 +70,7 @@ namespace Sanakan.DAL.Configuration
                 .WithMany(g => g.CommandChannels);
         }
 
-        public void Configure(EntityTypeBuilder<WithoutMsgCntChannel> builder)
+        public void Configure(EntityTypeBuilder<WithoutMessageCountChannel> builder)
         {
             builder.HasKey(e => e.Id);
 

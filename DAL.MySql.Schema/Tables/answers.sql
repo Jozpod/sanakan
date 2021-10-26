@@ -7,3 +7,4 @@ CREATE TABLE `answers` (
   KEY `IX_Answers_QuestionId` (`QuestionId`),
   CONSTRAINT `FK_Answers_Questions_QuestionId` FOREIGN KEY (`QuestionId`) REFERENCES `questions` (`Id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+ALTER TABLE answers ADD INDEX IX_Answers_QuestionId USING BTREE(QuestionId);

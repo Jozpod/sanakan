@@ -112,7 +112,7 @@ namespace Sanakan.Modules
                 return;
             }
 
-            await ReplyAsync("", embed: _helperService.GetInfoAboutUser(usr));
+            await ReplyAsync("", embed: (Embed)_helperService.GetInfoAboutUser(usr));
         }
 
         [Command("ping", RunMode = RunMode.Async)]
@@ -141,7 +141,7 @@ namespace Sanakan.Modules
                 return;
             }
 
-            await ReplyAsync("", embed: _helperService.GetInfoAboutServer(Context.Guild));
+            await ReplyAsync("", embed: (Embed)_helperService.GetInfoAboutServer(Context.Guild));
         }
 
         [Command("awatar", RunMode = RunMode.Async)]
@@ -269,7 +269,7 @@ namespace Sanakan.Modules
 
             try
             {
-                await sendMsg.ModifyAsync(x => x.Embed = _helperService.BuildRaportInfo(repMsg, userName, reason, sendMsg.Id));
+                await sendMsg.ModifyAsync(x => x.Embed = (Embed)_helperService.BuildRaportInfo(repMsg, userName, reason, sendMsg.Id));
 
                 var rConfig = await _guildConfigRepository.GetGuildConfigOrCreateAsync(Context.Guild.Id);
 

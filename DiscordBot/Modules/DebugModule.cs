@@ -535,12 +535,12 @@ namespace Sanakan.Modules
         [Remarks("Karna 1")]
         public async Task ChangeUserLevelAsync(
             [Summary("użytkownik")]SocketGuildUser user,
-            [Summary("poziom")]long level)
+            [Summary("poziom")]ulong level)
         {
             var bUser = await _userRepository.GetUserOrCreateAsync(user.Id);
 
             bUser.Level = level;
-            bUser.ExpCnt = Services.ExperienceManager.CalculateExpForLevel(level);
+            bUser.ExpCount = Services.ExperienceManager.CalculateExpForLevel(level);
 
             await _userRepository.SaveChangesAsync();
 
@@ -1117,13 +1117,13 @@ namespace Sanakan.Modules
             [Summary("liczba SC")]long amount)
         {
             var botuser = await _userRepository.GetUserOrCreateAsync(user.Id);
-            botuser.ScCnt += amount;
+            botuser.ScCount += amount;
 
             await _userRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(new string[] { $"user-{botuser.Id}", "users" });
 
-            var content = $"{user.Mention} ma teraz {botuser.ScCnt} SC".ToEmbedMessage(EMType.Success).Build();
+            var content = $"{user.Mention} ma teraz {botuser.ScCount} SC".ToEmbedMessage(EMType.Success).Build();
             await ReplyAsync("", embed: content);
         }
 
@@ -1135,13 +1135,13 @@ namespace Sanakan.Modules
             [Summary("liczba AC")]long amount)
         {
             var botuser = await _userRepository.GetUserOrCreateAsync(user.Id);
-            botuser.AcCnt += amount;
+            botuser.AcCount += amount;
 
             await _userRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(new string[] { $"user-{botuser.Id}", "users" });
 
-            await ReplyAsync("", embed: $"{user.Mention} ma teraz {botuser.AcCnt} AC".ToEmbedMessage(EMType.Success).Build());
+            await ReplyAsync("", embed: $"{user.Mention} ma teraz {botuser.AcCount} AC".ToEmbedMessage(EMType.Success).Build());
         }
 
         [Command("tc"), Priority(1)]
@@ -1152,13 +1152,13 @@ namespace Sanakan.Modules
             [Summary("liczba TC")]long amount)
         {
             var botuser = await _userRepository.GetUserOrCreateAsync(user.Id);
-            botuser.TcCnt += amount;
+            botuser.TcCount += amount;
 
             await _userRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(new string[] { $"user-{botuser.Id}", "users" });
 
-            await ReplyAsync("", embed: $"{user.Mention} ma teraz {botuser.TcCnt} TC".ToEmbedMessage(EMType.Success).Build());
+            await ReplyAsync("", embed: $"{user.Mention} ma teraz {botuser.TcCount} TC".ToEmbedMessage(EMType.Success).Build());
         }
 
         [Command("pc"), Priority(1)]
@@ -1203,13 +1203,13 @@ namespace Sanakan.Modules
             [Summary("liczba punktów doświadczenia")]long amount)
         {
             var botuser = await _userRepository.GetUserOrCreateAsync(user.Id);
-            botuser.ExpCnt += amount;
+            botuser.ExpCount += amount;
 
             await _userRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(new string[] { $"user-{botuser.Id}", "users" });
 
-            await ReplyAsync("", embed: $"{user.Mention} ma teraz {botuser.ExpCnt} punktów doświadczenia.".ToEmbedMessage(EMType.Success).Build());
+            await ReplyAsync("", embed: $"{user.Mention} ma teraz {botuser.ExpCount} punktów doświadczenia.".ToEmbedMessage(EMType.Success).Build());
         }
 
         [Command("ost"), Priority(1)]

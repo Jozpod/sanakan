@@ -27,3 +27,5 @@ CREATE TABLE `gamedecks` (
   KEY `IX_GameDecks_DeckPower` (`DeckPower`),
   CONSTRAINT `FK_GameDecks_Users_UserId` FOREIGN KEY (`UserId`) REFERENCES `users` (`Id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+ALTER TABLE gamedecks ADD INDEX IX_GameDecks_DeckPower USING BTREE(DeckPower);
+ALTER TABLE gamedecks ADD UNIQUE INDEX IX_GameDecks_UserId USING BTREE(UserId);

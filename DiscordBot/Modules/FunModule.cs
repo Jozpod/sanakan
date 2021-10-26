@@ -87,7 +87,7 @@ namespace Sanakan.Modules
 
 
             daily.EndsAt = _systemClock.UtcNow.AddHours(20);
-            botuser.ScCnt += 100;
+            botuser.ScCount += 100;
 
             await _userRepository.SaveChangesAsync();
 
@@ -177,7 +177,7 @@ namespace Sanakan.Modules
             }
 
             hourly.EndsAt = _systemClock.UtcNow.AddHours(1);
-            botuser.ScCnt += 5;
+            botuser.ScCount += 5;
 
             var mission = botuser.TimeStatuses.FirstOrDefault(x => x.Type == StatusType.DHourly);
             if (mission == null)
@@ -232,15 +232,15 @@ namespace Sanakan.Modules
 
             var botuser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
 
-            if (botuser.ScCnt < amount)
+            if (botuser.ScCount < amount)
             {
                 await ReplyAsync("", embed: $"{Context.User.Mention} nie posiadasz wystarczającej liczby SC!".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
-            botuser.ScCnt -= amount;
+            botuser.ScCount -= amount;
             var thrown = (CoinSide)_randomNumberGenerator.GetRandomValue(2);
-            var embed = $"{Context.User.Mention} pudło! Obecnie posiadasz {botuser.ScCnt} SC.".ToEmbedMessage(EMType.Error);
+            var embed = $"{Context.User.Mention} pudło! Obecnie posiadasz {botuser.ScCount} SC.".ToEmbedMessage(EMType.Error);
 
             botuser.Stats.Tail += (thrown == CoinSide.Tail) ? 1 : 0;
             botuser.Stats.Head += (thrown == CoinSide.Head) ? 1 : 0;
@@ -248,9 +248,9 @@ namespace Sanakan.Modules
             if (thrown == side)
             {
                 ++botuser.Stats.Hit;
-                botuser.ScCnt += amount * 2;
+                botuser.ScCount += amount * 2;
                 botuser.Stats.IncomeInSc += amount;
-                embed = $"{Context.User.Mention} trafiony zatopiony! Obecnie posiadasz {botuser.ScCnt} SC.".ToEmbedMessage(EMType.Success);
+                embed = $"{Context.User.Mention} trafiony zatopiony! Obecnie posiadasz {botuser.ScCount} SC.".ToEmbedMessage(EMType.Success);
             }
             else
             {
@@ -329,7 +329,7 @@ namespace Sanakan.Modules
 
             var toPay = _slotMachine.ToPay(botUser);
 
-            if (botUser.ScCnt < toPay)
+            if (botUser.ScCount < toPay)
             {
                 var content1 = $"{Context.User.Mention} brakuje Ci SC, aby za tyle zagrać.".ToEmbedMessage(EMType.Error).Build();
                 await ReplyAsync("", embed: content1);
@@ -339,7 +339,7 @@ namespace Sanakan.Modules
             //new SlotWickedRandom()
             var win = _slotMachine.Play(botUser);
             // var win = machine.Play(new SlotEqualRandom());
-            botUser.ScCnt += win - toPay;
+            botUser.ScCount += win - toPay;
 
             await _userRepository.SaveChangesAsync();
 
@@ -391,16 +391,16 @@ namespace Sanakan.Modules
             var targetUser = await _userRepository.GetUserOrCreateAsync(user.Id);
             var thisUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
 
-            if (thisUser.ScCnt < value)
+            if (thisUser.ScCount < value)
             {
                 await ReplyAsync("", embed: $"{Context.User.Mention} nie masz wystarczającej ilości SC.".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
-            thisUser.ScCnt -= value;
+            thisUser.ScCount -= value;
 
             var newScCnt = (value * 60) / 100;
-            targetUser.ScCnt += newScCnt;
+            targetUser.ScCount += newScCnt;
 
             await _userRepository.SaveChangesAsync();
 

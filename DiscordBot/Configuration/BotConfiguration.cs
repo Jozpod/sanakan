@@ -8,7 +8,7 @@ namespace Sanakan.DiscordBot.Configuration
     public class BotConfiguration
     {
         /// <summary>
-        /// The list of discord guild ( servers ) identifiers to blacklist
+        /// The list of Discord guild ( servers ) identifiers to blacklist
         /// </summary>
         public List<ulong> BlacklistedGuilds { get; set; }
 

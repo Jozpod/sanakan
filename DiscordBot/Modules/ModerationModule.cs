@@ -778,7 +778,7 @@ namespace Sanakan.Modules
 
             var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(Context.Guild.Id);
 
-            var land = config.Lands.FirstOrDefault(x => x.Manager == manager.Id);
+            var land = config.Lands.FirstOrDefault(x => x.ManagerId == manager.Id);
             if (land != null)
             {
                 await ReplyAsync("", embed: $"Usunięto {land.Name}.".ToEmbedMessage(EMType.Success).Build());
@@ -810,8 +810,8 @@ namespace Sanakan.Modules
 
             land = new MyLand
             {
-                Manager = manager.Id,
-                Underling = underling.Id,
+                ManagerId = manager.Id,
+                UnderlingId = underling.Id,
                 Name = name
             };
 
@@ -1245,7 +1245,7 @@ namespace Sanakan.Modules
                 return;
             }
 
-            chan = new WithoutMsgCntChannel {
+            chan = new WithoutMessageCountChannel {
                 Channel = Context.Channel.Id
             };
             config.IgnoredChannels.Add(chan);

@@ -9,3 +9,4 @@ CREATE TABLE `slotmachineconfigs` (
   UNIQUE KEY `IX_SlotMachineConfigs_UserId` (`UserId`),
   CONSTRAINT `FK_SlotMachineConfigs_Users_UserId` FOREIGN KEY (`UserId`) REFERENCES `users` (`Id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+ALTER TABLE slotmachineconfigs ADD UNIQUE INDEX IX_SlotMachineConfigs_UserId USING BTREE(UserId);

@@ -6,7 +6,14 @@ namespace Sanakan.DAL.Models
 
     public class WishlistObject
     {
+        /// <summary>
+        /// The unique identifer.
+        /// </summary>
         public ulong Id { get; set; }
+
+        /// <summary>
+        /// The anime/card/character identifier.
+        /// </summary>
         public ulong ObjectId { get; set; }
 
         [StringLength(100)]

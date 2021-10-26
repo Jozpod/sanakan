@@ -273,7 +273,7 @@ namespace Sanakan.Services.PocketWaifu
             var author = message.Author;
             if (!UserCounter.Any(x => x.Key == author.Id))
             {
-                UserCounter.Add(author.Id, GetMessageRealLenght(message));
+                UserCounter.Add(author.Id, GetMessageRealLength(message));
                 return;
             }
 
@@ -283,7 +283,7 @@ namespace Sanakan.Services.PocketWaifu
                 charNeeded = 3250;
             }
 
-            UserCounter[author.Id] += GetMessageRealLenght(message);
+            UserCounter[author.Id] += GetMessageRealLength(message);
             if (UserCounter[author.Id] > charNeeded)
             {
                 UserCounter[author.Id] = 0;
@@ -355,10 +355,12 @@ namespace Sanakan.Services.PocketWaifu
             _executor.TryAdd(exe, TimeSpan.FromSeconds(1));
         }
 
-        private long GetMessageRealLenght(SocketUserMessage message)
+        private long GetMessageRealLength(SocketUserMessage message)
         {
             if (string.IsNullOrEmpty(message.Content))
+            {
                 return 1;
+            }
 
             int emoteChars = message.Tags.CountEmotesTextLenght();
             int linkChars = message.Content.CountLinkTextLength();

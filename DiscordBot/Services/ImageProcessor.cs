@@ -203,14 +203,14 @@ namespace Sanakan.DiscordBot.Services
             var mTopPos = TextMeasurer.Measure($"{topPos}", new RendererOptions(levelFont));
             profilePic.Mutate(x => x.DrawText($"{topPos}", levelFont, posColor, new Point((int)(125 - mTopPos.Width) / 2, 284)));
 
-            var mScOwn = TextMeasurer.Measure($"{botUser.ScCnt}", new RendererOptions(rangFont));
-            profilePic.Mutate(x => x.DrawText($"{botUser.ScCnt}", rangFont, defFontColor, new Point((int)(125 - mScOwn.Width) / 2, 365)));
+            var mScOwn = TextMeasurer.Measure($"{botUser.ScCount}", new RendererOptions(rangFont));
+            profilePic.Mutate(x => x.DrawText($"{botUser.ScCount}", rangFont, defFontColor, new Point((int)(125 - mScOwn.Width) / 2, 365)));
 
-            var mTcOwn = TextMeasurer.Measure($"{botUser.TcCnt}", new RendererOptions(rangFont));
-            profilePic.Mutate(x => x.DrawText($"{botUser.TcCnt}", rangFont, defFontColor, new Point((int)(125 - mTcOwn.Width) / 2, 405)));
+            var mTcOwn = TextMeasurer.Measure($"{botUser.TcCount}", new RendererOptions(rangFont));
+            profilePic.Mutate(x => x.DrawText($"{botUser.TcCount}", rangFont, defFontColor, new Point((int)(125 - mTcOwn.Width) / 2, 405)));
 
-            var mMsg = TextMeasurer.Measure($"{botUser.MessagesCnt}", new RendererOptions(rangFont));
-            profilePic.Mutate(x => x.DrawText($"{botUser.MessagesCnt}", rangFont, defFontColor, new Point((int)(125 - mMsg.Width) / 2, 445)));
+            var mMsg = TextMeasurer.Measure($"{botUser.MessagesCount}", new RendererOptions(rangFont));
+            profilePic.Mutate(x => x.DrawText($"{botUser.MessagesCount}", rangFont, defFontColor, new Point((int)(125 - mMsg.Width) / 2, 445)));
 
             if (botUser.GameDeck.Waifu != 0 && botUser.ShowWaifuInProfile)
             {
@@ -232,7 +232,7 @@ namespace Sanakan.DiscordBot.Services
 
             var prevLvlExp = ExperienceManager.CalculateExpForLevel(botUser.Level);
             var nextLvlExp = ExperienceManager.CalculateExpForLevel(botUser.Level + 1);
-            var expOnLvl = botUser.ExpCnt - prevLvlExp;
+            var expOnLvl = botUser.ExpCount - prevLvlExp;
             var lvlExp = nextLvlExp - prevLvlExp;
 
             if (expOnLvl < 0) expOnLvl = 0;
@@ -703,10 +703,16 @@ namespace Sanakan.DiscordBot.Services
             return baseImg;
         }
 
-        public async Task<Image<Rgba32>> GetLevelUpBadgeAsync(string name, long ulvl, string avatarUrl, Discord.Color color)
+        public async Task<Image<Rgba32>> GetLevelUpBadgeAsync(
+            string name,
+            ulong userLevel,
+            string avatarUrl,
+            Discord.Color color)
         {
             if (color == Discord.Color.Default)
+            {
                 color = Discord.Color.DarkerGrey;
+            }
 
             var msgText1 = "POZIOM";
             var msgText2 = "Awansuje na:";
@@ -718,7 +724,7 @@ namespace Sanakan.DiscordBot.Services
             var msgText1Length = TextMeasurer.Measure(msgText1, new RendererOptions(textFont));
             var msgText2Length = TextMeasurer.Measure(msgText2, new RendererOptions(textFont));
             var nameLength = TextMeasurer.Measure(name, new RendererOptions(nickNameFont));
-            var lvlLength = TextMeasurer.Measure($"{ulvl}", new RendererOptions(lvlFont));
+            var lvlLength = TextMeasurer.Measure($"{userLevel}", new RendererOptions(lvlFont));
 
             var textLength = lvlLength.Width + msgText1Length.Width > nameLength.Width ? lvlLength.Width + msgText1Length.Width : nameLength.Width;
             var estimatedLength = 106 + (int)(textLength > msgText2Length.Width ? textLength : msgText2Length.Width);
@@ -730,7 +736,7 @@ namespace Sanakan.DiscordBot.Services
             baseImg.Mutate(x => x.DrawText(msgText1, textFont, Rgba32.Gray, new Point(98 + (int)lvlLength.Width, 75)));
             baseImg.Mutate(x => x.DrawText(name, nickNameFont, Rgba32.FromHex(nickNameColor), new Point(98, 10)));
             baseImg.Mutate(x => x.DrawText(msgText2, textFont, Rgba32.Gray, new Point(98, 33)));
-            baseImg.Mutate(x => x.DrawText($"{ulvl}", lvlFont, Rgba32.Gray, new Point(96, 61)));
+            baseImg.Mutate(x => x.DrawText($"{userLevel}", lvlFont, Rgba32.Gray, new Point(96, 61)));
 
             using var colorRec = new Image<Rgba32>(82, 82);
             
@@ -812,7 +818,10 @@ namespace Sanakan.DiscordBot.Services
                 var val = (uint)arrayOfColours.GetValue(i);
 
                 var thisColor = (FColor)val;
-                if (thisColor == FColor.None) continue;
+                if (thisColor == FColor.None)
+                {
+                    continue;
+                }
 
                 posY += (int)firstColumnMaxLength.Height + 2;
                 var tname = $"{thisColor.ToString()} ({thisColor.Price(currency)} {currency.ToString().ToUpper()})";

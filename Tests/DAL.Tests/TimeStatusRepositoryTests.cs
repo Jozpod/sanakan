@@ -4,6 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Models.Configuration;
 using Sanakan.DAL.Repositories.Abstractions;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Sanakan.DAL.Tests
@@ -19,13 +20,14 @@ namespace Sanakan.DAL.Tests
             {
                 Id = 1,
                 UserId = 1,
-                BValue = 1,
+                BValue = true,
             };
 
-
+            DbContext.TimeStatuses.Add(entity);
+            await DbContext.SaveChangesAsync();
 
             var actual = await repository.GetByGuildIdAsync(1);
-            actual.Should().BeEquivalentTo(entity);
+            actual.First().Should().BeEquivalentTo(entity);
         }
     }
 }

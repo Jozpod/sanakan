@@ -47,37 +47,37 @@ namespace Sanakan.Configuration
         /// Character for one cards packet.
         /// </summary>
         public long CharPerPacket { get; set; }
-        
+
         /// <summary>
         /// The list of Discord user identifiers which can access Debug module.
         /// </summary>
-        public List<ulong> AllowedToDebug { get; set; }
+        public List<ulong> AllowedToDebug { get; set; } = new();
 
         /// <summary>
         /// The list of API keys.
         /// </summary>
-        public List<SanakanApiKey> ApiKeys { get; set; }
+        public List<SanakanApiKey> ApiKeys { get; set; } = new();
 
-        public ExperienceConfiguration Exp { get; set; }
+        public ExperienceConfiguration Exp { get; set; } = new();
 
         /// <summary>
         /// The list of rich message configuration.
         /// </summary>
-        public List<RichMessageConfig> RMConfig { get; set; }
+        public List<RichMessageConfig> RMConfig { get; set; } = new();
 
         /// <summary>
         /// The list of Discord guild identifiers to blacklist
         /// </summary>
-        public List<ulong> BlacklistedGuilds { get; set; }
+        public List<ulong> BlacklistedGuilds { get; set; } = new();
 
         /// <summary>
         /// The time span after JWT expires.
         /// </summary>
-        public TimeSpan TokenExpiry { get; set; } = TimeSpan.FromDays(1);
+        public TimeSpan TokenExpiry { get; set; }
 
         /// <summary>
         /// The time span after JWT with user expires.
         /// </summary>
-        public TimeSpan UserWithTokenExpiry { get; set; } = TimeSpan.FromDays(1);
+        public TimeSpan UserWithTokenExpiry { get; set; }
     }
 }

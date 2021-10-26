@@ -13,9 +13,9 @@ namespace Sanakan.Preconditions
 {
     public class RequireLevel : PreconditionAttribute
     {
-        private readonly long _level;
+        private readonly ulong _level;
 
-        public RequireLevel(long level) => _level = level;
+        public RequireLevel(ulong level) => _level = level;
 
         public async override Task<PreconditionResult> CheckPermissionsAsync(
             ICommandContext context,

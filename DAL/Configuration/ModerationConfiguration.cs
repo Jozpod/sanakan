@@ -42,6 +42,8 @@ namespace Sanakan.DAL.Configuration
         public void Configure(EntityTypeBuilder<PenaltyInfo> builder)
         {
             builder.HasKey(e => e.Id);
+            builder.HasIndex(b => b.UserId);
+            builder.HasIndex(b => b.GuildId);
         }
 
         public void Configure(EntityTypeBuilder<OwnedRole> builder)

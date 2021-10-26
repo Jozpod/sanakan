@@ -183,31 +183,31 @@ namespace Sanakan.Services
             {
                 default:
                 case TopType.Level:
-                    return list.OrderByDescending(x => x.ExpCnt).ToList();
+                    return list.OrderByDescending(x => x.ExpCount).ToList();
 
                 case TopType.ScCnt:
-                    return list.OrderByDescending(x => x.ScCnt).ToList();
+                    return list.OrderByDescending(x => x.ScCount).ToList();
 
                 case TopType.TcCnt:
-                    return list.OrderByDescending(x => x.TcCnt).ToList();
+                    return list.OrderByDescending(x => x.TcCount).ToList();
 
                 case TopType.AcCnt:
-                    return list.OrderByDescending(x => x.AcCnt).ToList();
+                    return list.OrderByDescending(x => x.AcCount).ToList();
 
                 case TopType.PcCnt:
                     return list.OrderByDescending(x => x.GameDeck.PVPCoins).ToList();
 
                 case TopType.Posts:
-                    return list.OrderByDescending(x => x.MessagesCnt).ToList();
+                    return list.OrderByDescending(x => x.MessagesCount).ToList();
 
                 case TopType.PostsMonthly:
-                    return list.Where(x => x.IsCharCounterActive()).OrderByDescending(x => x.MessagesCnt - x.MessagesCntAtDate).ToList();
+                    return list.Where(x => x.IsCharCounterActive()).OrderByDescending(x => x.MessagesCount - x.MessagesCntAtDate).ToList();
 
                 case TopType.PostsMonthlyCharacter:
-                    return list.Where(x => x.IsCharCounterActive() && x.SendAnyMsgInMonth()).OrderByDescending(x => x.CharacterCntFromDate / (x.MessagesCnt - x.MessagesCntAtDate)).ToList();
+                    return list.Where(x => x.IsCharCounterActive() && x.SendAnyMsgInMonth()).OrderByDescending(x => x.CharacterCntFromDate / (x.MessagesCount - x.MessagesCntAtDate)).ToList();
 
                 case TopType.Commands:
-                    return list.OrderByDescending(x => x.CommandsCnt).ToList();
+                    return list.OrderByDescending(x => x.CommandsCount).ToList();
 
                 case TopType.Card:
                     return list.OrderByDescending(x => x.GameDeck.GetStrongestCardPower()).ToList();

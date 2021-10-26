@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Sanakan.Common;
+using Sanakan.Common.Cache;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Repositories.Abstractions;
 using System;
@@ -28,9 +29,7 @@ namespace Sanakan.DAL.Repositories
 
         public async Task<List<GameDeck>> GetCachedPlayersForPVP(ulong ignore = 1)
         {
-            var key = "gamedecks";
-
-            var cached = _cacheManager.Get<List<GameDeck>>(key);
+            var cached = _cacheManager.Get<List<GameDeck>>(CacheKeys.GameDecks);
 
             if (cached != null)
             {
@@ -47,7 +46,7 @@ namespace Sanakan.DAL.Repositories
                 .AsSplitQuery()
                 .ToListAsync();
 
-            _cacheManager.Add(key, result, new MemoryCacheEntryOptions
+            _cacheManager.Add(CacheKeys.GameDecks, result, new MemoryCacheEntryOptions
             {
                 AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(2)
             });
@@ -56,7 +55,7 @@ namespace Sanakan.DAL.Repositories
         }
         public async Task<GameDeck> GetCachedUserGameDeckAsync(ulong userId)
         {
-            var key = $"gamedeck-user-{userId}";
+            var key = string.Format(CacheKeys.GameDeckUser, userId);
 
             var cached = _cacheManager.Get<GameDeck>(key);
 

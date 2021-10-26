@@ -14,14 +14,14 @@ namespace Sanakan.DAL.Models
         {
             Id = discordUserId;
             Level = 1;
-            AcCnt = 0;
-            TcCnt = 0;
-            ScCnt = 100;
-            ExpCnt = 10;
+            AcCount = 0;
+            TcCount = 0;
+            ScCount = Constants.ScCount;
+            ExpCount = 10;
             ShindenId = 0;
             WarningsCount = 0;
-            MessagesCnt = 0;
-            CommandsCnt = 0;
+            MessagesCount = 0;
+            CommandsCount = 0;
             MessagesCntAtDate = 0;
             IsBlacklisted = false;
             CharacterCntFromDate = 0;
@@ -127,11 +127,11 @@ namespace Sanakan.DAL.Models
         /// Specifies whether the user is blacklisted in Discord.
         /// </summary>
         public bool IsBlacklisted { get; set; }
-        public long AcCnt { get; set; }
-        public long TcCnt { get; set; }
-        public long ScCnt { get; set; }
-        public long Level { get; set; }
-        public long ExpCnt { get; set; }
+        public long AcCount { get; set; }
+        public long TcCount { get; set; }
+        public long ScCount { get; set; }
+        public ulong Level { get; set; }
+        public long ExpCount { get; set; }
         public ProfileType ProfileType { get; set; }
 
         [StringLength(50)]
@@ -139,8 +139,8 @@ namespace Sanakan.DAL.Models
 
         [StringLength(50)]
         public string StatsReplacementProfileUri { get; set; }
-        public ulong MessagesCnt { get; set; }
-        public ulong CommandsCnt { get; set; }
+        public ulong MessagesCount { get; set; }
+        public ulong CommandsCount { get; set; }
         public DateTime MeasureDate { get; set; }
         public ulong MessagesCntAtDate { get; set; }
         public ulong CharacterCntFromDate { get; set; }

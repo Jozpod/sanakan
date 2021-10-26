@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Sanakan.Common;
+using Sanakan.Common.Cache;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Repositories.Abstractions;
 using System.Collections.Generic;
@@ -50,9 +51,7 @@ namespace Sanakan.DAL.Repositories
         }
         public async Task<List<Question>> GetCachedAllQuestionsAsync()
         {
-            var key = $"quiz";
-
-            var cached = _cacheManager.Get<List<Question>>(key);
+            var cached = _cacheManager.Get<List<Question>>(CacheKeys.Quiz);
 
             if (cached != null)
             {
@@ -67,7 +66,7 @@ namespace Sanakan.DAL.Repositories
                 .AsSplitQuery()
                 .ToListAsync();
 
-            _cacheManager.Add(key, result);
+            _cacheManager.Add(CacheKeys.Quiz, result);
 
             return result;
         }

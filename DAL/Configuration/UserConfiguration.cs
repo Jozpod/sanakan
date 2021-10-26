@@ -12,8 +12,7 @@ namespace Sanakan.DAL.Configuration
         {
             builder.HasKey(e => e.Id);
 
-            builder
-                .HasIndex(b => b.ShindenId);
+            builder.HasIndex(b => b.ShindenId);
         }
 
         public void Configure(EntityTypeBuilder<UserStats> builder)

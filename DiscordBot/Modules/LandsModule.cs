@@ -86,7 +86,7 @@ namespace Sanakan.Modules
                 return;
             }
 
-            var role = Context.Guild.GetRole(land.Underling);
+            var role = Context.Guild.GetRole(land.UnderlingId);
 
             if (role == null)
             {
@@ -130,7 +130,7 @@ namespace Sanakan.Modules
                 return;
             }
 
-            var role = guild.GetRole(land.Underling);
+            var role = guild.GetRole(land.UnderlingId);
             if (role == null)
             {
                 await ReplyAsync("", embed: "Nie odnaleziono roli członka!".ToEmbedMessage(EMType.Error).Build());

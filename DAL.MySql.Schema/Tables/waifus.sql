@@ -11,3 +11,4 @@ CREATE TABLE `waifus` (
   UNIQUE KEY `IX_Waifus_GuildOptionsId` (`GuildOptionsId`),
   CONSTRAINT `FK_Waifus_Guilds_GuildOptionsId` FOREIGN KEY (`GuildOptionsId`) REFERENCES `guilds` (`Id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+ALTER TABLE waifus ADD UNIQUE INDEX IX_Waifus_GuildOptionsId USING BTREE(GuildOptionsId);

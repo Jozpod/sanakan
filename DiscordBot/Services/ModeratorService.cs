@@ -221,7 +221,9 @@ namespace Sanakan.Services
             if (config.Lands?.Count > 0)
             {
                 foreach (var land in config.Lands)
-                    value += $"*{land.Name}*: M:{context.Guild.GetRole(land.Manager)?.Mention ?? "usunięta"} U:{context.Guild.GetRole(land.Underling)?.Mention ?? "usunięta"}\n";
+                {
+                    value += $"*{land.Name}*: M:{context.Guild.GetRole(land.ManagerId)?.Mention ?? "usunięta"} U:{context.Guild.GetRole(land.UnderlingId)?.Mention ?? "usunięta"}\n";
+                }
             }
             else value += "*brak*";
 

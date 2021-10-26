@@ -7,8 +7,8 @@ CREATE TABLE `figures` (
   `Name` varchar(50) NOT NULL,
   `Title` varchar(50) NOT NULL,
   `IsFocus` tinyint(1) NOT NULL,
-  `ExpCnt` double NOT NULL,
-  `RestartCnt` int NOT NULL,
+  `ExpCount` double NOT NULL,
+  `RestartCount` int NOT NULL,
   `Character` bigint unsigned NOT NULL,
   `IsComplete` tinyint(1) NOT NULL,
   `PAS` int NOT NULL,
@@ -28,3 +28,4 @@ CREATE TABLE `figures` (
   KEY `IX_Figures_GameDeckId` (`GameDeckId`),
   CONSTRAINT `FK_Figures_GameDecks_GameDeckId` FOREIGN KEY (`GameDeckId`) REFERENCES `gamedecks` (`Id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+ALTER TABLE figures ADD INDEX IX_Figures_GameDeckId USING BTREE(GameDeckId);

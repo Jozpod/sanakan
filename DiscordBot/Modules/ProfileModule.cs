@@ -72,7 +72,7 @@ namespace Sanakan.Modules
                 return;
             }
             
-            var content = ($"**Portfel** {user.Mention}:\n\n{botuser?.ScCnt} **SC**\n{botuser?.TcCnt} **TC**\n{botuser?.AcCnt} **AC**\n\n"
+            var content = ($"**Portfel** {user.Mention}:\n\n{botuser?.ScCount} **SC**\n{botuser?.TcCount} **TC**\n{botuser?.AcCount} **AC**\n\n"
                 + $"**PW**:\n{botuser?.GameDeck?.CTCnt} **CT**\n{botuser?.GameDeck?.PVPCoins} **PC**")
                 .ToEmbedMessage(EMType.Info)
                 .Build();
@@ -95,11 +95,13 @@ namespace Sanakan.Modules
             {
                 subs = "";
                 foreach (var sub in rsubs)
+                {
                     subs += $"{sub.ToView()}\n";
+                }
             }
 
             var content = $"**Subskrypcje** {Context.User.Mention}:\n\n{subs.TrimToLength(1950)}".ToEmbedMessage(EMType.Info).Build();
-            await ReplyAsync("", embed: );
+            await ReplyAsync("", embed: content);
         }
 
         [Command("przyznaj role", RunMode = RunMode.Async)]
@@ -318,7 +320,7 @@ namespace Sanakan.Modules
 
             botUser.GameDeck = await _gameDeckRepository.GetCachedUserGameDeckAsync(user.Id);
             var topPosition = allUsers
-                .OrderByDescending(x => x.ExpCnt)
+                .OrderByDescending(x => x.ExpCount)
                 .ToList()
                 .IndexOf(botUser) + 1;
             using var stream = await _profile
@@ -353,7 +355,7 @@ namespace Sanakan.Modules
 
                 if (!allClaimedBefore && dailyQuests.Count(x => x.IsClaimed()) == dailyQuests.Count)
                 {
-                    botuser.AcCnt += 10;
+                    botuser.AcCount += 10;
                     rewards.Add("10 AC");
                 }
 
@@ -402,12 +404,12 @@ namespace Sanakan.Modules
 
             var botuser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
 
-            if (botuser.ScCnt < scCost && currency == SCurrency.Sc)
+            if (botuser.ScCount < scCost && currency == SCurrency.Sc)
             {
                 await ReplyAsync("", embed: $"{Context.User.Mention} nie posiadasz wystarczającej liczby SC!".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
-            if (botuser.TcCnt < tcCost && currency == SCurrency.Tc)
+            if (botuser.TcCount < tcCost && currency == SCurrency.Tc)
             {
                 await ReplyAsync("", embed: $"{Context.User.Mention} nie posiadasz wystarczającej liczby TC!".ToEmbedMessage(EMType.Error).Build());
                 return;
@@ -437,11 +439,11 @@ namespace Sanakan.Modules
 
             if (currency == SCurrency.Sc)
             {
-                botuser.ScCnt -= scCost;
+                botuser.ScCount -= scCost;
             }
             else
             {
-                botuser.TcCnt -= tcCost;
+                botuser.TcCount -= tcCost;
             }
             botuser.ProfileType = type;
 
@@ -463,12 +465,12 @@ namespace Sanakan.Modules
             var scCost = 5000;
 
             var botuser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
-            if (botuser.ScCnt < scCost && currency == SCurrency.Sc)
+            if (botuser.ScCount < scCost && currency == SCurrency.Sc)
             {
                 await ReplyAsync("", embed: $"{Context.User.Mention} nie posiadasz wystarczającej liczby SC!".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
-            if (botuser.TcCnt < tcCost && currency == SCurrency.Tc)
+            if (botuser.TcCount < tcCost && currency == SCurrency.Tc)
             {
                 await ReplyAsync("", embed: $"{Context.User.Mention} nie posiadasz wystarczającej liczby TC!".ToEmbedMessage(EMType.Error).Build());
                 return;
@@ -493,11 +495,11 @@ namespace Sanakan.Modules
 
             if (currency == SCurrency.Sc)
             {
-                botuser.ScCnt -= scCost;
+                botuser.ScCount -= scCost;
             }
             else
             {
-                botuser.TcCnt -= tcCost;
+                botuser.TcCount -= tcCost;
             }
 
             await _userRepository.SaveChangesAsync();
@@ -522,7 +524,7 @@ namespace Sanakan.Modules
             }
 
             var botuser = await _userRepository.GetUserOrCreateAsync(user.Id);
-            if (botuser.TcCnt < cost)
+            if (botuser.TcCount < cost)
             {
                 await ReplyAsync("", embed: $"{user.Mention} nie posiadasz wystarczającej liczby TC!".ToEmbedMessage(EMType.Error).Build());
                 return;
@@ -552,7 +554,7 @@ namespace Sanakan.Modules
             }
 
             global.EndsAt = global.EndsAt.AddMonths(1);
-            botuser.TcCnt -= cost;
+            botuser.TcCount -= cost;
 
             await _userRepository.SaveChangesAsync();
 
@@ -583,7 +585,7 @@ namespace Sanakan.Modules
             }
 
             var botuser = await _userRepository.GetUserOrCreateAsync(user.Id);
-            var points = currency == SCurrency.Tc ? botuser.TcCnt : botuser.ScCnt;
+            var points = currency == SCurrency.Tc ? botuser.TcCount : botuser.ScCount;
 
             if (points < color.Price(currency))
             {
@@ -627,11 +629,11 @@ namespace Sanakan.Modules
 
                 if (currency == SCurrency.Tc)
                 {
-                    botuser.TcCnt -= color.Price(currency);
+                    botuser.TcCount -= color.Price(currency);
                 }
                 else
                 {
-                    botuser.ScCnt -= color.Price(currency);
+                    botuser.ScCount -= color.Price(currency);
                 }
             }
 

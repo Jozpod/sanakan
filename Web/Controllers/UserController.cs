@@ -395,7 +395,7 @@ namespace Sanakan.Web.Controllers
                 _transferAnalyticsRepository.Add(record);
 
                 user = await _userRepository.GetUserOrCreateAsync(id);
-                user.TcCnt += value;
+                user.TcCount += value;
 
                 await _userRepository.SaveChangesAsync();
 
@@ -426,7 +426,7 @@ namespace Sanakan.Web.Controllers
             var exe = new Executable($"api-tc su{id} ({value})", new Task<Task>(async () =>
             {
             user = await _userRepository.GetByShindenIdAsync(id);
-            user.TcCnt += value;
+            user.TcCount += value;
 
             await _userRepository.SaveChangesAsync();
 

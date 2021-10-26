@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace Sanakan.DAL.Models
@@ -12,8 +13,8 @@ namespace Sanakan.DAL.Models
         public int PointsLose { get; set; }
 
         [StringLength(100)]
-        public string Content { get; set; }
-        public int TimeToAnswer { get; set; }
+        public string Content { get; set; } = string.Empty;
+        public TimeSpan TimeToAnswer { get; set; }
 
         public virtual ICollection<Answer> Answers { get; set; }
     }

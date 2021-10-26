@@ -223,7 +223,7 @@ namespace Sanakan.Services
             public List<string> Commands { get; set; }
         }
 
-        public Embed GetInfoAboutUser(SocketGuildUser user)
+        public IEmbed GetInfoAboutUser(SocketGuildUser user)
         {
             return new EmbedBuilder
             {
@@ -292,7 +292,7 @@ namespace Sanakan.Services
             };
         }
 
-        public Embed GetInfoAboutServer(SocketGuild guild)
+        public IEmbed GetInfoAboutServer(SocketGuild guild)
         {
             var author = new EmbedAuthorBuilder().WithName(guild.Name);
             if (guild.IconUrl != null) author.WithIconUrl(guild.IconUrl);
@@ -367,7 +367,7 @@ namespace Sanakan.Services
 
         public async Task<IMessage> FindMessageInGuildAsync(SocketGuild guild, ulong id)
         {
-            IMessage msg = null;
+            IMessage? msg = null;
             foreach (ITextChannel channel in guild.Channels)
                 if (channel != null)
                 {
@@ -379,7 +379,7 @@ namespace Sanakan.Services
             return msg;
         }
 
-        public Embed BuildRaportInfo(IMessage message, string reportAuthor, string reason, ulong reportId)
+        public IEmbed BuildRaportInfo(IMessage message, string reportAuthor, string reason, ulong reportId)
         {
             string attach = "brak";
             if (message.Attachments.Count > 0)

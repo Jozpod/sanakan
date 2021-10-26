@@ -2,9 +2,10 @@
 {
     public static class Constants
     {
-        public static int CardsInGallery = 10;
-        public static int BackgroundPosition = 35;
+        public const int CardsInGallery = 10;
+        public const int BackgroundPosition = 35;
         public static long MaxNumberOfCards = 1000;
-        public static long SafariLimit = 50;
+        public const long SafariLimit = 50;
+        public const long ScCount = 100;
     }
 }

@@ -2,7 +2,7 @@
 
 namespace Sanakan.DAL.Models.Configuration
 {
-    public class WithoutMsgCntChannel
+    public class WithoutMessageCountChannel
     {
         public ulong Id { get; set; }
         public ulong Channel { get; set; }

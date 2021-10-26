@@ -13,9 +13,9 @@ namespace Sanakan.Preconditions
 {
     public class RequireAnyCommandChannelOrLevel : PreconditionAttribute
     {
-        private readonly long _level;
+        private readonly ulong _level;
 
-        public RequireAnyCommandChannelOrLevel(long level = 40) => _level = level;
+        public RequireAnyCommandChannelOrLevel(ulong level = 40) => _level = level;
 
         public async override Task<PreconditionResult> CheckPermissionsAsync(
             ICommandContext context, CommandInfo command, IServiceProvider services)
@@ -65,9 +65,8 @@ namespace Sanakan.Preconditions
             {
                 if (botUser.Level >= _level)
                 {
-
-                }
                     return PreconditionResult.FromSuccess();
+                }
             }
 
             var channel = await context.Guild.GetTextChannelAsync(gConfig.CommandChannels.First().Channel);

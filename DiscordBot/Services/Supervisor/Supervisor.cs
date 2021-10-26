@@ -48,7 +48,7 @@ namespace Sanakan.Services.Supervisor
             DiscordSocketClient client,
             IOptionsMonitor<SanakanConfiguration> config,
             ILogger<Supervisor> logger,
-            DiscordBot.Services.Abstractions.IModeratorService moderatorService,
+            IModeratorService moderatorService,
             IServiceScopeFactory serviceScopeFactory,
             ISystemClock systemClock)
         {
@@ -169,8 +169,9 @@ namespace Sanakan.Services.Supervisor
                 return;
             }
 
-            var thisMessage = susspect.Get(messageContent);
             var utcNow = _systemClock.UtcNow;
+            var thisMessage = susspect.Get(utcNow, messageContent);
+            
             if (!thisMessage.IsValid(utcNow))
             {
                 thisMessage = new SupervisorMessage(utcNow, messageContent);
@@ -192,7 +193,13 @@ namespace Sanakan.Services.Supervisor
             await MakeActionAsync(action, user, message, userRole, muteRole, notifChannel);
         }
 
-        private async Task MakeActionAsync(Action action, SocketGuildUser user, SocketUserMessage message, SocketRole userRole, SocketRole muteRole, ITextChannel notifChannel)
+        private async Task MakeActionAsync(
+            Action action,
+            SocketGuildUser user,
+            SocketUserMessage message,
+            SocketRole userRole,
+            SocketRole muteRole,
+            ITextChannel notifChannel)
         {
             switch (action)
             {
@@ -233,7 +240,7 @@ namespace Sanakan.Services.Supervisor
             int mSpecified = MAX_SPECIFIED;
             int mTotal = MAX_TOTAL;
 
-            if (content.IsCommand(_config.CurrentValue.Prefix))
+            if (content.IsCommand())
             {
                 mTotal += COMMAND_MOD;
                 mSpecified += COMMAND_MOD;

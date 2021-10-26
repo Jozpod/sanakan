@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Sanakan.Common;
+using Sanakan.Common.Cache;
 using Sanakan.DAL.Models.Management;
 using Sanakan.DAL.Repositories.Abstractions;
 using System.Collections.Generic;
@@ -32,9 +33,7 @@ namespace Sanakan.DAL.Repositories
 
         public async Task<IEnumerable<PenaltyInfo>> GetCachedFullPenalties()
         {
-            var key = $"mute";
-
-            var cached = _cacheManager.Get<IEnumerable<PenaltyInfo>>(key);
+            var cached = _cacheManager.Get<IEnumerable<PenaltyInfo>>(CacheKeys.Muted);
 
             if (cached != null)
             {
@@ -49,13 +48,20 @@ namespace Sanakan.DAL.Repositories
                 .AsSplitQuery()
                 .ToListAsync();
 
-            _cacheManager.Add(key, result);
+            _cacheManager.Add(CacheKeys.Muted, result);
 
             return result;
         }
 
         public async Task<List<PenaltyInfo>> GetMutedPenaltiesAsync(ulong discordGuildId)
         {
+            var cached = _cacheManager.Get<List<PenaltyInfo>>(CacheKeys.Muted);
+
+            if (cached != null)
+            {
+                return cached;
+            }
+
             var list = await _dbContext
                 .Penalties
                 .Include(x => x.Roles)
@@ -63,7 +69,7 @@ namespace Sanakan.DAL.Repositories
                    && x.Type == PenaltyType.Mute)
                .ToListAsync();
 
-            //.FromCacheAsync(new string[] { $"mute" }))
+            _cacheManager.Add(CacheKeys.Muted, list);
 
             return list;
         }

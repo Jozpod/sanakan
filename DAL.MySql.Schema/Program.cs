@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 
 
@@ -54,18 +55,33 @@ namespace Sanakan.DAL.MySql.Schema
                 fileSystem.CreateDirectory(tablesFolder);
             }
 
+            var stringBuilder = new StringBuilder(1000);
+
             foreach(var tableName in tableNames)
             {
                 var tableDefinition = await GetTableDefinitionAsync(connection, tableName);
                 var filePath = Path.Combine(tablesFolder, $"{tableName}.sql");
-                await fileSystem.WriteAllTextAsync(filePath, tableDefinition);
+
+                var indexes = await GetTableIndexesAsync(connection, tableName);
+
+                stringBuilder.AppendLine(tableDefinition);
+
+                foreach (var index in indexes)
+                {
+                    stringBuilder.AppendLine(index);
+                }
+
+                await fileSystem.WriteAllTextAsync(filePath, stringBuilder.ToString());
+                stringBuilder.Clear();
             }
+
+            await databaseFacade.EnsureDeletedAsync();
         }
 
         public static async Task<string> GetTableDefinitionAsync(DbConnection connection, string tableName)
         {
             var command = connection.CreateCommand();
-            command.CommandText = $"SHOW CREATE TABLE {tableName}";
+            command.CommandText = string.Format(Queries.TableDefinition, tableName);
 
             using var reader = await command.ExecuteReaderAsync();
             await reader.ReadAsync();
@@ -75,13 +91,26 @@ namespace Sanakan.DAL.MySql.Schema
             return text;
         }
 
+        public static async Task<List<string>> GetTableIndexesAsync(DbConnection connection, string tableName)
+        {
+            var command = connection.CreateCommand();
+            command.CommandText = string.Format(Queries.IndexesForTable, tableName);
+
+            using var reader = await command.ExecuteReaderAsync();
+            var list = new List<string>();
+
+            while (await reader.ReadAsync())
+            {
+                list.Add(reader.GetString(0));
+            }
+
+            return list;
+        }
+
         public static async Task<List<string>> GetTableNamesAsync(DbConnection connection)
         {
             var command = connection.CreateCommand();
-            command.CommandText = @"SELECT
-	table_name
-FROM INFORMATION_SCHEMA.TABLES
-WHERE TABLE_SCHEMA = DATABASE()";
+            command.CommandText = Queries.TablesInDatabase;
 
             using var reader = await command.ExecuteReaderAsync();
             var list = new List<string>();

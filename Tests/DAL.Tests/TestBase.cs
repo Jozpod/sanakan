@@ -14,7 +14,7 @@ namespace Sanakan.DAL.Tests
     [TestClass]
     public class TestBase
     {
-        private static SanakanDbContext _dbContext;
+        protected static SanakanDbContext DbContext;
         protected static ServiceProvider ServiceProvider;
 
         [AssemblyInitialize()]
@@ -36,16 +36,16 @@ namespace Sanakan.DAL.Tests
             serviceCollection.AddRepositories();
             ServiceProvider = serviceCollection.BuildServiceProvider();
 
-            _dbContext = ServiceProvider.GetRequiredService<SanakanDbContext>();
-            await _dbContext.Database.EnsureCreatedAsync();
+            DbContext = ServiceProvider.GetRequiredService<SanakanDbContext>();
+            await DbContext.Database.EnsureCreatedAsync();
         }
 
         [AssemblyCleanup()]
         public static async Task AssemblyCleanup()
         {
-            if (_dbContext != null)
+            if (DbContext != null)
             {
-                await _dbContext.Database.EnsureDeletedAsync();
+                await DbContext.Database.EnsureDeletedAsync();
             }
         }
     }

@@ -2363,13 +2363,13 @@ namespace Sanakan.Modules
             }
 
             long cost = bUser.GameDeck.CalculatePriceOfIncMaxCardCount(count);
-            if (bUser.TcCnt < cost)
+            if (bUser.TcCount < cost)
             {
                 await ReplyAsync("", embed: $"{Context.User.Mention} nie masz wystarczającej liczby TC, aby zwiększyć limit o {100 * count} potrzebujesz {cost} TC.".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
-            bUser.TcCnt -= cost;
+            bUser.TcCount -= cost;
             bUser.GameDeck.MaxNumberOfCards += 100 * count;
 
             await _userRepository.SaveChangesAsync();
@@ -2388,7 +2388,7 @@ namespace Sanakan.Modules
             var tcCost = 500;
 
             var botuser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
-            if (botuser.TcCnt < tcCost)
+            if (botuser.TcCount < tcCost)
             {
                 await ReplyAsync("", embed: $"{Context.User.Mention} nie posiadasz wystarczającej liczby TC!".ToEmbedMessage(EMType.Error).Build());
                 return;
@@ -2400,7 +2400,7 @@ namespace Sanakan.Modules
                 return;
             }
 
-            botuser.TcCnt -= tcCost;
+            botuser.TcCount -= tcCost;
             botuser.GameDeck.ForegroundColor = color;
 
             await _userRepository.SaveChangesAsync();
@@ -2417,7 +2417,7 @@ namespace Sanakan.Modules
             var tcCost = 500;
 
             var botuser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
-            if (botuser.TcCnt < tcCost)
+            if (botuser.TcCount < tcCost)
             {
                 await ReplyAsync("", embed: $"{Context.User.Mention} nie posiadasz wystarczającej liczby TC!".ToEmbedMessage(EMType.Error).Build());
                 return;
@@ -2429,7 +2429,7 @@ namespace Sanakan.Modules
                 return;
             }
 
-            botuser.TcCnt -= tcCost;
+            botuser.TcCount -= tcCost;
             botuser.GameDeck.ForegroundImageUrl = imgUrl;
 
             await _userRepository.SaveChangesAsync();
@@ -2447,7 +2447,7 @@ namespace Sanakan.Modules
             var tcCost = 2000;
 
             var botuser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
-            if (botuser.TcCnt < tcCost)
+            if (botuser.TcCount < tcCost)
             {
                 await ReplyAsync("", embed: $"{Context.User.Mention} nie posiadasz wystarczającej liczby TC!".ToEmbedMessage(EMType.Error).Build());
                 return;
@@ -2459,7 +2459,7 @@ namespace Sanakan.Modules
                 return;
             }
 
-            botuser.TcCnt -= tcCost;
+            botuser.TcCount -= tcCost;
             botuser.GameDeck.BackgroundImageUrl = imgUrl;
 
             await _userRepository.SaveChangesAsync();
@@ -2524,13 +2524,13 @@ namespace Sanakan.Modules
                 return;
             }
 
-            if (bUser.TcCnt < cost)
+            if (bUser.TcCount < cost)
             {
                 await ReplyAsync("", embed: $"{Context.User.Mention} nie masz wystarczającej liczby TC.".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
-            bUser.TcCnt -= cost;
+            bUser.TcCount -= cost;
             bUser.GameDeck.CardsInGallery += 5 * (int)count;
 
             await _userRepository.SaveChangesAsync();

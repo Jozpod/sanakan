@@ -49,7 +49,7 @@ namespace Sanakan.DAL.Models.Configuration
         public virtual WaifuConfiguration WaifuConfig { get; set; }
 
         public virtual ICollection<WithoutSupervisionChannel> ChannelsWithoutSupervision { get; set; }
-        public virtual ICollection<WithoutMsgCntChannel> IgnoredChannels { get; set; }
+        public virtual ICollection<WithoutMessageCountChannel> IgnoredChannels { get; set; }
         public virtual ICollection<WithoutExpChannel> ChannelsWithoutExp { get; set; }
         public virtual ICollection<CommandChannel> CommandChannels { get; set; }
         public virtual ICollection<ModeratorRoles> ModeratorRoles { get; set; }

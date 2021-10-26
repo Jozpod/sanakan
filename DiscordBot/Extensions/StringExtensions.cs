@@ -1,20 +1,31 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using Discord;
+using Sanakan.Configuration;
+using Sanakan.DiscordBot.Configuration;
 
 namespace Sanakan.Extensions
 {
     public static class StringExtension
     {
+        private static Regex _hexRegex = new ("^#(?:[0-9a-fA-F]{3}){1,2}$", RegexOptions.Compiled);
+        public static Regex? CommandRegex;
+        private static Regex _linkRegex = new ("(http|ftp|https)://[\\w-]+(\\.[\\w-]+)+([\\w.,@?^=%&:/~+#-]*[\\w@?^=%&/~+#-])?", RegexOptions.Compiled);
+        private static Regex _quotedTextLengthRegex = new(@"(^>[ ][^\n]*\n)|(\n>[ ][^\n]*\n)|(\n>[ ][^\n]*$)", RegexOptions.Compiled);
+        private static Regex _isEmotikunEmoteRegex = new(@"\B-\w+", RegexOptions.Compiled);
+        private static Regex _replaceUrlRegex = new (@"\[url=['""]?([^\['""]+)['""]?\]([^\[]+)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
         private static readonly string[] _bbCodes =
-        {
+      {
             "list", "quote", "code", "spoiler", "chk", "size", "color", "bg", "center", "right",
             "left", "font", "align", "mail", "img", "small", "sub", "sup", "p", "gvideo", "bull",
             "copyright", "registered", "tm", "indent", "iframe", "url", "youtube", "i", "b", "s",
             "u", "color", "size"
         };
+        private static Regex _replaceBBCodesRegex = new($@"\[/?({string.Join('|', _bbCodes)})(=[^\]]*)?\]", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         public static EmbedBuilder ToEmbedMessage(
             this string message,
@@ -25,27 +36,49 @@ namespace Sanakan.Extensions
                 WithDescription($"{type.Emoji(!icon)}{message}");
         }
 
-        public static string TrimToLength(this string s, int length)
+        public static string TrimToLength(this string str, int length)
         {
-            if (s == null) return "";
-            if (s.Length <= length) return s;
+            if (str == null)
+            {
+                return string.Empty;
+            }
+            if (str.Length <= length)
+            {
+                return str;
+            }
 
-            var charAr = s.ToCharArray();
-            for (int i = 1; i < 4; i++) charAr[length - i] = '.';
+            var charAr = str.ToCharArray();
+            for (int i = 1; i < 4; i++)
+            {
+                charAr[length - i] = '.';
+            }
+            
             charAr[length] = '\0';
 
-            return new String(charAr, 0, Array.IndexOf(charAr, '\0'));
+            return new (charAr, 0, Array.IndexOf(charAr, '\0'));
         }
 
-        public static string ConvertBBCodeToMarkdown(this string s)
+        public static string ConvertBBCodeToMarkdown(this string str)
         {
-            s = s.Replace("[*]", "— ").Replace("[i]", "*").Replace("[/i]", "*").Replace("[b]", "**").Replace("[/b]", "**")
-                .Replace("[u]", "__").Replace("[/u]", "__").Replace("[s]", "~~").Replace("[/s]", "~~")
-                .Replace("[code]", "```").Replace("[/code]", "```").Replace("[youtube]", "https://www.youtube.com/watch?v=");
+            var stringBuilder = new StringBuilder(str);
 
-            s = new Regex(@"\[url=['""]?([^\['""]+)['""]?\]([^\[]+)", RegexOptions.Compiled | RegexOptions.IgnoreCase).Replace(s, "[$2]($1)");
+            stringBuilder = stringBuilder
+                .Replace("[*]", "— ")
+                .Replace("[i]", "*")
+                .Replace("[/i]", "*")
+                .Replace("[b]", "**")
+                .Replace("[/b]", "**")
+                .Replace("[u]", "__")
+                .Replace("[/u]", "__")
+                .Replace("[s]", "~~")
+                .Replace("[/s]", "~~")
+                .Replace("[code]", "```")
+                .Replace("[/code]", "```")
+                .Replace("[youtube]", "https://www.youtube.com/watch?v=");
 
-            return new Regex($@"\[/?({string.Join('|', _bbCodes)})(=[^\]]*)?\]", RegexOptions.Compiled | RegexOptions.IgnoreCase).Replace(s, "");
+            str = _replaceUrlRegex.Replace(stringBuilder.ToString(), "[$2]($1)");
+
+            return _replaceBBCodesRegex.Replace(str, "");
         }
 
         public static bool IsURLToImage(this string s)
@@ -81,30 +114,21 @@ namespace Sanakan.Extensions
             return tags.Where(tag => tag.Type == Discord.TagType.Emoji).Sum(x => x.Value.ToString().Length);
         }
 
-        public static bool IsEmotikunEmote(this string message)
-        {
-            return new Regex(@"\B-\w+", RegexOptions.Compiled).Matches(message).Count > 0;
-        }
+        public static bool IsEmotikunEmote(this string message) => _isEmotikunEmoteRegex.Matches(message).Count > 0;
 
-        public static int CountQuotedTextLength(this string message)
-        {
-            return new Regex(@"(^>[ ][^\n]*\n)|(\n>[ ][^\n]*\n)|(\n>[ ][^\n]*$)", RegexOptions.Compiled).Matches(message).Sum(x => x.Length);
-        }
+        public static int CountQuotedTextLength(this string message) => _quotedTextLengthRegex.Matches(message).Sum(x => x.Length);
 
-        public static int CountLinkTextLength(this string message)
+        public static int CountLinkTextLength(this string message) => _linkRegex.Matches(message).Sum(x => x.Length);
+        public static bool IsAColorInHEX(this string message) => _hexRegex.IsMatch(message);
+        public static bool IsCommand(this BotConfiguration sanakanConfiguration, string message)
         {
-            return new Regex("(http|ftp|https)://[\\w-]+(\\.[\\w-]+)+([\\w.,@?^=%&:/~+#-]*[\\w@?^=%&/~+#-])?", RegexOptions.Compiled).Matches(message).Sum(x => x.Length);
-        }
+            if (CommandRegex == null)
+            {
+                var prefix = sanakanConfiguration.Prefix.Replace(".", @"\.").Replace("?", @"\?");
+                CommandRegex = new Regex($@"^{prefix}\w+", RegexOptions.Compiled);
+            }
 
-        public static bool IsAColorInHEX(this string message)
-        {
-            return new Regex("^#(?:[0-9a-fA-F]{3}){1,2}$", RegexOptions.Compiled).IsMatch(message);
-        }
-
-        public static bool IsCommand(this string message, string prefix)
-        {
-            prefix = prefix.Replace(".", @"\.").Replace("?", @"\?");
-            return new Regex($@"^{prefix}\w+", RegexOptions.Compiled).Matches(message).Count > 0;
+            return CommandRegex.Matches(message).Count > 0;
         }
     }
 }

@@ -512,7 +512,7 @@ namespace Sanakan.Services.PocketWaifu
             switch (type)
             {
                 case ShopType.Normal:
-                    user.TcCnt -= cost;
+                    user.TcCount -= cost;
                     break;
 
                 case ShopType.Pvp:
@@ -520,7 +520,7 @@ namespace Sanakan.Services.PocketWaifu
                     break;
 
                 case ShopType.Activity:
-                    user.AcCnt -= cost;
+                    user.AcCount -= cost;
                     break;
 
                 default:
@@ -533,13 +533,13 @@ namespace Sanakan.Services.PocketWaifu
             switch (type)
             {
                 case ShopType.Normal:
-                    return user.TcCnt >= cost;
+                    return user.TcCount >= cost;
 
                 case ShopType.Pvp:
                     return user.GameDeck.PVPCoins >= cost;
 
                 case ShopType.Activity:
-                    return user.AcCnt >= cost;
+                    return user.AcCount >= cost;
 
                 default:
                    return false;

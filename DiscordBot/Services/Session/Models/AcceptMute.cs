@@ -5,6 +5,7 @@ using Microsoft.Extensions.Options;
 using Sanakan.Common;
 using Sanakan.DiscordBot.Services.Abstractions;
 using Sanakan.Extensions;
+using System;
 using System.Threading.Tasks;
 
 namespace Sanakan.Services.Session.Models
@@ -37,7 +38,7 @@ namespace Sanakan.Services.Session.Models
 
             const int daysInYear = 365;
             const int hoursInDay = 24;
-            var duration = (_randomNumberGenerator.GetRandomValue(daysInYear) * hoursInDay) + hoursInDay;
+            var duration = TimeSpan.FromDays(_randomNumberGenerator.GetRandomValue(daysInYear) + 1);
             var reason = "Chciał to dostał :)";
 
             using var serviceScope = _serviceScopeFactory.CreateScope();

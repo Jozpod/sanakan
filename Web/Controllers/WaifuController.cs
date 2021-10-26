@@ -249,9 +249,9 @@ namespace Sanakan.Web.Controllers
                 {
                     {"PC", user.GameDeck.PVPCoins},
                     {"CT", user.GameDeck.CTCnt},
-                    {"AC", user.AcCnt},
-                    {"TC", user.TcCnt},
-                    {"SC", user.ScCnt},
+                    {"AC", user.AcCount},
+                    {"TC", user.TcCount},
+                    {"SC", user.ScCount},
                 };
 
             var result = new UserSiteProfile()

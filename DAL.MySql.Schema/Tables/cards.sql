@@ -3,10 +3,10 @@ CREATE TABLE `cards` (
   `Active` tinyint(1) NOT NULL,
   `InCage` tinyint(1) NOT NULL,
   `IsTradable` tinyint(1) NOT NULL,
-  `ExpCnt` double NOT NULL,
+  `ExpCount` double NOT NULL,
   `Affection` double NOT NULL,
-  `UpgradesCnt` int NOT NULL,
-  `RestartCnt` int NOT NULL,
+  `UpgradesCount` int NOT NULL,
+  `RestartCount` int NOT NULL,
   `Rarity` int NOT NULL,
   `RarityOnStart` int NOT NULL,
   `Dere` int NOT NULL,
@@ -28,7 +28,7 @@ CREATE TABLE `cards` (
   `MarketValue` double NOT NULL,
   `Curse` int NOT NULL,
   `CardPower` double NOT NULL,
-  `EnhanceCnt` int NOT NULL,
+  `EnhanceCount` int NOT NULL,
   `FromFigure` tinyint(1) NOT NULL,
   `Quality` int NOT NULL,
   `AttackBonus` int NOT NULL,
@@ -41,6 +41,12 @@ CREATE TABLE `cards` (
   `GameDeckId` bigint unsigned NOT NULL,
   PRIMARY KEY (`Id`),
   KEY `IX_Cards_Active` (`Active`),
+  KEY `IX_Cards_CharacterId` (`CharacterId`),
   KEY `IX_Cards_GameDeckId` (`GameDeckId`),
+  KEY `IX_Cards_Title` (`Title`),
   CONSTRAINT `FK_Cards_GameDecks_GameDeckId` FOREIGN KEY (`GameDeckId`) REFERENCES `gamedecks` (`Id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+ALTER TABLE cards ADD INDEX IX_Cards_Active USING BTREE(Active);
+ALTER TABLE cards ADD INDEX IX_Cards_CharacterId USING BTREE(CharacterId);
+ALTER TABLE cards ADD INDEX IX_Cards_GameDeckId USING BTREE(GameDeckId);
+ALTER TABLE cards ADD INDEX IX_Cards_Title USING BTREE(Title);

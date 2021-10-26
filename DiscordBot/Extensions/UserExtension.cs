@@ -18,7 +18,7 @@ namespace Sanakan.Extensions
         public const double MIN_DECK_POWER = 200;
 
         public static bool SendAnyMsgInMonth(this User u)
-            => (u.MessagesCnt - u.MessagesCntAtDate) > 0;
+            => (u.MessagesCount - u.MessagesCntAtDate) > 0;
 
         public static bool IsCharCounterActive(this User u)
             => DateTime.Now.Month == u.MeasureDate.Month && DateTime.Now.Year == u.MeasureDate.Year;
@@ -149,13 +149,22 @@ namespace Sanakan.Extensions
             return d1MMR >= mDown && d1MMR <= mUp;
         }
 
-        public static long GetPVPCoinsFromDuel(this GameDeck deck, FightResult res)
+        public static ulong GetPVPCoinsFromDuel(this GameDeck deck, FightResult fightResult)
         {
             var step = (ExperienceManager.CalculateLevel(deck.SeasonalPVPRank, PVPRankMultiplier) / 10);
-            if (step > 5) step = 5;
+            if (step > 5)
+            {
+                step = 5;
+            }
 
-            var coinCnt = 40 + (20 * step);
-            return (res == FightResult.Win) ? coinCnt : coinCnt / 2;
+            var coinCount = 40 + (20 * step);
+
+            if(fightResult == FightResult.Win)
+            {
+                return coinCount;
+            }
+
+            return coinCount / 2;
         }
 
         public static string CalculatePVPParams(this GameDeck d1, GameDeck d2, FightResult res)
@@ -225,7 +234,7 @@ namespace Sanakan.Extensions
                 d1.SeasonalPVPRank = 0;
 
             var coins = d1.GetPVPCoinsFromDuel(res);
-            d1.PVPCoins += coins;
+            d1.PVPCoins += (long)coins;
 
             return $"**{coins.ToString("+0;-#")}** PC **{gRank.ToString("+0;-#")}** GR  **{sRank.ToString("+0;-#")}** SR";
         }
@@ -294,12 +303,17 @@ namespace Sanakan.Extensions
 
         public static double GetStrongestCardPower(this GameDeck deck)
         {
-            return deck.Cards.OrderByDescending(x => x.CardPower).FirstOrDefault()?.CardPower ?? 0;
+            return deck.Cards
+                .OrderByDescending(x => x.CardPower)
+                .FirstOrDefault()?.CardPower ?? 0;
         }
 
         public static List<ulong> GetTitlesWishList(this GameDeck deck)
         {
-            return deck.Wishes.Where(x => x.Type == WishlistObjectType.Title).Select(x => x.ObjectId).ToList();
+            return deck.Wishes
+                .Where(x => x.Type == WishlistObjectType.Title)
+                .Select(x => x.ObjectId)
+                .ToList();
         }
 
         public static List<ulong> GetCardsWishList(this GameDeck deck)
@@ -346,7 +360,7 @@ namespace Sanakan.Extensions
 
         public static EmbedBuilder GetStatsView(this User u, IUser user)
         {
-            string stats = $"**Wiadomości**: {u.MessagesCnt}\n**Polecenia:** {u.CommandsCnt}";
+            string stats = $"**Wiadomości**: {u.MessagesCount}\n**Polecenia:** {u.CommandsCount}";
 
             return new EmbedBuilder
             {
@@ -358,7 +372,7 @@ namespace Sanakan.Extensions
         public static long GetRemainingExp(this User u)
         {
             var nextLvlExp = ExperienceManager.CalculateExpForLevel(u.Level + 1);
-            var exp = nextLvlExp - u.ExpCnt;
+            var exp = nextLvlExp - u.ExpCount;
             if (exp < 1) exp = 1;
 
             return exp;
@@ -370,31 +384,31 @@ namespace Sanakan.Extensions
             {
                 default:
                 case TopType.Level:
-                    return $"{u.Level} **LVL** ({u.ExpCnt} **EXP**)";
+                    return $"{u.Level} **LVL** ({u.ExpCount} **EXP**)";
 
                 case TopType.ScCnt:
-                    return $"{u.ScCnt} **SC**";
+                    return $"{u.ScCount} **SC**";
 
                 case TopType.TcCnt:
-                    return $"{u.TcCnt} **TC**";
+                    return $"{u.TcCount} **TC**";
 
                 case TopType.AcCnt:
-                    return $"{u.AcCnt} **AC**";
+                    return $"{u.AcCount} **AC**";
 
                 case TopType.PcCnt:
                     return $"{u.GameDeck.PVPCoins} **PC**";
 
                 case TopType.Posts:
-                    return $"{u.MessagesCnt}";
+                    return $"{u.MessagesCount}";
 
                 case TopType.PostsMonthly:
-                    return $"{u.MessagesCnt - u.MessagesCntAtDate}";
+                    return $"{u.MessagesCount - u.MessagesCntAtDate}";
 
                 case TopType.PostsMonthlyCharacter:
-                    return $"{u.CharacterCntFromDate / (u.MessagesCnt - u.MessagesCntAtDate)}";
+                    return $"{u.CharacterCntFromDate / (u.MessagesCount - u.MessagesCntAtDate)}";
 
                 case TopType.Commands:
-                    return $"{u.CommandsCnt}";
+                    return $"{u.CommandsCount}";
 
                 case TopType.Card:
                     return u.GameDeck.Cards.OrderByDescending(x => x.CardPower)?.FirstOrDefault()?.GetString(false, false, true) ?? "---";
