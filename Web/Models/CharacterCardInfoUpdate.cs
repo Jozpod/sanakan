@@ -1,17 +1,19 @@
 ﻿namespace Sanakan.Api.Models
 {
     /// <summary>
-    /// Informacje o karcie
+    /// Describes the card
     /// </summary>
     public class CharacterCardInfoUpdate
     {
         /// <summary>
-        /// Url do nowego obrazka karty
+        /// The image URL.
         /// </summary>
-        public string ImageUrl { get; set; }
+        public string? ImageUrl { get; set; }
+
         /// <summary>
         /// Imię i nazwisko na karcie
         /// </summary>
+        
         public string CharacterName { get; set; }
         /// <summary>
         /// Nazwa serii z której pochodzi karta

@@ -27,5 +27,10 @@ namespace Sanakan.DiscordBot.Configuration
         /// The amount of characters needed for one card packet.
         /// </summary>
         public long CharPerPacket { get; set; }
+
+        /// <summary>
+        /// Enables flood/spam supervision
+        /// </summary>
+        public bool Supervision { get; set; }
     }
 }

@@ -73,7 +73,7 @@ namespace Sanakan.Modules
             }
             
             var content = ($"**Portfel** {user.Mention}:\n\n{botuser?.ScCount} **SC**\n{botuser?.TcCount} **TC**\n{botuser?.AcCount} **AC**\n\n"
-                + $"**PW**:\n{botuser?.GameDeck?.CTCnt} **CT**\n{botuser?.GameDeck?.PVPCoins} **PC**")
+                + $"**PW**:\n{botuser?.GameDeck?.CTCount} **CT**\n{botuser?.GameDeck?.PVPCoins} **PC**")
                 .ToEmbedMessage(EMType.Info)
                 .Build();
 
@@ -320,7 +320,7 @@ namespace Sanakan.Modules
 
             botUser.GameDeck = await _gameDeckRepository.GetCachedUserGameDeckAsync(user.Id);
             var topPosition = allUsers
-                .OrderByDescending(x => x.ExpCount)
+                .OrderByDescending(x => x.ExperienceCount)
                 .ToList()
                 .IndexOf(botUser) + 1;
             using var stream = await _profile

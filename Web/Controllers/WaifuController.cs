@@ -25,6 +25,9 @@ using static Sanakan.Web.ResponseExtensions;
 using Sanakan.ShindenApi.Utilities;
 using Microsoft.Extensions.Options;
 using Sanakan.Configuration;
+using Sanakan.Common.Cache;
+using System.Collections.Concurrent;
+using Sanakan.TaskQueue.Messages;
 
 namespace Sanakan.Web.Controllers
 {
@@ -34,9 +37,9 @@ namespace Sanakan.Web.Controllers
     public class WaifuController : ControllerBase
     {
         private readonly IShindenClient _shindenClient;
+        private readonly IProducerConsumerCollection<BaseMessage> _blockingPriorityQueue;
         private readonly IOptionsMonitor<SanakanConfiguration> _config;
         private readonly IWaifuService _waifuService;
-        private readonly IExecutor _executor;
         private readonly IFileSystem _fileSystem;
         private readonly IUserRepository _userRepository;
         private readonly ICardRepository _cardRepository;
@@ -48,7 +51,6 @@ namespace Sanakan.Web.Controllers
             IShindenClient shindenClient,
             IOptionsMonitor<SanakanConfiguration> config,
             IWaifuService waifuService,
-            IExecutor executor,
             IFileSystem fileSystem,
             IUserRepository userRepository,
             ICardRepository cardRepository,
@@ -59,7 +61,6 @@ namespace Sanakan.Web.Controllers
             _shindenClient = shindenClient;
             _config = config;
             _waifuService = waifuService;
-            _executor = executor;
             _fileSystem = fileSystem;
             _userRepository = userRepository;
             _cardRepository = cardRepository;
@@ -248,7 +249,7 @@ namespace Sanakan.Web.Controllers
             var wallet = new Dictionary<string, long>
                 {
                     {"PC", user.GameDeck.PVPCoins},
-                    {"CT", user.GameDeck.CTCnt},
+                    {"CT", user.GameDeck.CTCount},
                     {"AC", user.AcCount},
                     {"TC", user.TcCount},
                     {"SC", user.ScCount},
@@ -276,16 +277,16 @@ namespace Sanakan.Web.Controllers
         }
 
         /// <summary>
-        /// Zastępuje id postaci w kartach
+        /// Replaces character ids in cards.
         /// </summary>
-        /// <param name="oldId">id postaci z bazy shindena, która została usunięta</param>
-        /// <param name="newId">id nowej postaci z bazy shindena</param>
-        [HttpPost("character/repair/{oldId}/{newId}"), Authorize(Policy = AuthorizePolicies.Site)]
+        /// <param name="oldId">The character id from Shinden database which was deleted.</param>
+        /// <param name="newId">The new character id from Shinden database.</param>
+        [HttpPost("character/repair/{oldCharacterId}/{newCharacterId}"), Authorize(Policy = AuthorizePolicies.Site)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> RepairCardsAsync(ulong oldId, ulong newId)
+        public async Task<IActionResult> RepairCardsAsync(ulong oldCharacterId, ulong newCharacterId)
         {
-            var characterResult = await _shindenClient.GetCharacterInfoAsync(newId);
+            var characterResult = await _shindenClient.GetCharacterInfoAsync(newCharacterId);
 
             if (characterResult.Value == null)
             {
@@ -295,85 +296,95 @@ namespace Sanakan.Web.Controllers
                 };
             }
 
-            var exe = new Executable($"api-repair oc{oldId} c{newId}", new Task<Task>(async () =>
+            var message = new ReplaceCharacterIdsInCardMessage
             {
-                var userRelease = new List<string>() { "users" };
-                var cards = await _cardRepository.GetByCharacterIdAsync(oldId);
+                OldCharacterId = oldCharacterId,
+                NewCharacterId = newCharacterId
+            };
 
-                foreach (var card in cards)
-                {
-                    card.CharacterId = newId;
-                    userRelease.Add($"user-{card.GameDeckId}");
-                }
+            _blockingPriorityQueue.TryAdd(message);
 
-                await _cardRepository.SaveChangesAsync();
+            //var exe = new Executable($"api-repair oc{oldId} c{newId}", new Task<Task>(async () =>
+            //{
+              
+            //}), Priority.High);
 
-                _cacheManager.ExpireTag(userRelease.ToArray());
-            }), Priority.High);
-
-            await _executor.TryAdd(exe, TimeSpan.FromSeconds(1));
+            //await _executor.TryAdd(exe, TimeSpan.FromSeconds(1));
 
             return ShindenOk("Success");
         }
 
         /// <summary>
-        /// Podmienia dane na karcie danej postaci
+        /// Updates card information for given character.
         /// </summary>
-        /// <param name="id">id postaci z bazy shindena</param>
+        /// <param name="characterId">The character identifier in Shinden.</param>
         /// <param name="newData">nowe dane karty</param>
-        [HttpPost("cards/character/{id}/update"), Authorize(Policy = AuthorizePolicies.Site)]
+        [HttpPost("cards/character/{characterId}/update"), Authorize(Policy = AuthorizePolicies.Site)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status200OK)]
         public async Task<IActionResult> UpdateCardInfoAsync(
-            ulong id,
-            [FromBody]CharacterCardInfoUpdate newData)
+            ulong characterId,
+            [FromBody]CharacterCardInfoUpdate model)
         {
-            var exe = new Executable($"update cards-{id} img", new Task<Task>(async () =>
+
+            _blockingPriorityQueue.TryAdd(new UpdateCardMessage
             {
-                var userRelease = new List<string>() { "users" };
-                var cards = await _cardRepository.GetCardsByCharacterIdAsync(id);
+                CharacterId = characterId,
+                ImageUrl = model.ImageUrl,
+                CharacterName = model.CharacterName,
+                CardSeriesTitle = model.CardSeriesTitle,
+            });
 
-                foreach (var card in cards)
-                {
-                    if (newData?.ImageUrl != null)
-                        card.Image = newData.ImageUrl;
+            //var exe = new Executable($"update cards-{id} img", new Task<Task>(async () =>
+            //{
+            //    var userRelease = new List<string>() { "users" };
+            //    var cards = await _cardRepository.GetCardsByCharacterIdAsync(id);
 
-                    if (newData?.CharacterName != null)
-                        card.Name = newData.CharacterName;
+            //    foreach (var card in cards)
+            //    {
+            //        if (newData?.ImageUrl != null)
+            //        {
+            //            card.Image = newData.ImageUrl;
+            //        }
 
-                    if (newData?.CardSeriesTitle != null)
-                        card.Title = newData.CardSeriesTitle;
+            //        if (newData?.CharacterName != null)
+            //        {
+            //            card.Name = newData.CharacterName;
+            //        }
 
-                    try
-                    {
-                        _waifuService.DeleteCardImageIfExist(card);
-                        _ = _waifuService.GenerateAndSaveCardAsync(card).Result;
-                    }
-                    catch (Exception) { }
+            //        if (newData?.CardSeriesTitle != null)
+            //            card.Title = newData.CardSeriesTitle;
 
-                    userRelease.Add($"user-{card.GameDeckId}");
-                }
+            //        try
+            //        {
+            //            _waifuService.DeleteCardImageIfExist(card);
+            //            _ = _waifuService.GenerateAndSaveCardAsync(card).Result;
+            //        }
+            //        catch (Exception) { }
 
-                await _cardRepository.SaveChangesAsync();
+            //        userRelease.Add($"user-{card.GameDeckId}");
+            //    }
 
-                _cacheManager.ExpireTag(userRelease.ToArray());
-            }), Priority.High);
+            //    await _cardRepository.SaveChangesAsync();
 
-            await _executor.TryAdd(exe, TimeSpan.FromSeconds(1));
+            //    _cacheManager.ExpireTag(userRelease.ToArray());
+            //}), Priority.High);
+
+            //await _executor.TryAdd(exe, TimeSpan.FromSeconds(1));
 
             return ShindenOk("Started!");
         }
 
         /// <summary>
-        /// Generuje na nowo karty danej postaci
+        /// Generates the renewed card of given character.
         /// </summary>
-        /// <param name="id">id postaci z bazy shindena</param>
-        [HttpPost("users/make/character/{id}"), Authorize(Policy = AuthorizePolicies.Site)]
+        /// <param name="characterId">The character identifier from Shinden database.</param>
+        [HttpPost("users/make/character/{characterId}"), Authorize(Policy = AuthorizePolicies.Site)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status405MethodNotAllowed)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GenerateCharacterCardAsync(ulong id)
+        public async Task<IActionResult> GenerateCharacterCardAsync(ulong characterId)
         {
-            var characterResult = await _shindenClient.GetCharacterInfoAsync(id);
+            var characterResult = await _shindenClient.GetCharacterInfoAsync(characterId);
 
             if (characterResult.Value == null)
             {
@@ -389,32 +400,37 @@ namespace Sanakan.Web.Controllers
                 return ShindenMethodNotAllowed("There is no character image!");
             }
 
-            var exe = new Executable($"update cards-{id}", new Task<Task>(async () =>
-                {
-                    var userRelease = new List<string>() { "users" };
-                    var cards = await _cardRepository.GetByCharacterIdAsync(id);
+            _blockingPriorityQueue.TryAdd(new UpdateCardMessage
+            {
+                CharacterId = characterId,
+            });
 
-                    foreach (var card in cards)
-                    {
-                        var pictureUrl = UrlHelpers.GetPersonPictureURL(characterInfo.PictureId);
-                        card.Image = pictureUrl;
+            //var exe = new Executable($"update cards-{id}", new Task<Task>(async () =>
+            //    {
+            //        var userRelease = new List<string>() { "users" };
+            //        var cards = await _cardRepository.GetByCharacterIdAsync(id);
 
-                        try
-                        {
-                            _waifuService.DeleteCardImageIfExist(card);
-                            _ = _waifuService.GenerateAndSaveCardAsync(card).Result;
-                        }
-                        catch (Exception) { }
+            //        foreach (var card in cards)
+            //        {
+            //            var pictureUrl = UrlHelpers.GetPersonPictureURL(characterInfo.PictureId);
+            //            card.Image = pictureUrl;
 
-                        userRelease.Add($"user-{card.GameDeckId}");
-                    }
+            //            try
+            //            {
+            //                _waifuService.DeleteCardImageIfExist(card);
+            //                _ = _waifuService.GenerateAndSaveCardAsync(card).Result;
+            //            }
+            //            catch (Exception) { }
 
-                    await _cardRepository.SaveChangesAsync();
+            //            userRelease.Add($"user-{card.GameDeckId}");
+            //        }
 
-                    _cacheManager.ExpireTag(userRelease.ToArray());
-                }));
+            //        await _cardRepository.SaveChangesAsync();
 
-                await _executor.TryAdd(exe, TimeSpan.FromSeconds(1));
+            //        _cacheManager.ExpireTag(userRelease.ToArray());
+            //    }));
+
+            //    await _executor.TryAdd(exe, TimeSpan.FromSeconds(1));
 
             return ShindenOk("Started!");
         }
@@ -562,18 +578,18 @@ namespace Sanakan.Web.Controllers
         }
 
         /// <summary>
-        /// Daje użytkownikowi pakiety kart
+        /// Gives bundle of cards for given Discord user.
         /// </summary>
-        /// <param name="id">id użytkownika discorda</param>
-        /// <param name="boosterPacks">model pakietu</param>
+        /// <param name="discordUserId">The user identifier in Discord.</param>
+        /// <param name="boosterPacks">The bundle model.</param>
         /// <returns>użytkownik bota</returns>
         [HttpPost("discord/{id}/boosterpack"), Authorize(Policy = AuthorizePolicies.Site)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status200OK)]
         public async Task<IActionResult> GiveUserAPacksAsync(
-            ulong id,
-            [FromBody]List<CardBoosterPack> boosterPacks)
+            ulong discordUserId,
+            [FromBody] List<CardBoosterPack> boosterPacks)
         {
             if (boosterPacks?.Count < 1)
             {
@@ -585,7 +601,10 @@ namespace Sanakan.Web.Controllers
             foreach (var pack in boosterPacks)
             {
                 var rPack = pack.ToRealPack();
-                if (rPack != null) packs.Add(rPack);
+                if (rPack != null)
+                {
+                    packs.Add(rPack);
+                }
             }
 
             if (packs.Count < 1)
@@ -593,29 +612,34 @@ namespace Sanakan.Web.Controllers
                 return ShindenInternalServerError("Data is Invalid");
             }
 
-            var user = await _userRepository.GetCachedFullUserAsync(id);
+            var user = await _userRepository.GetCachedFullUserAsync(discordUserId);
 
             if (user == null)
             {
                 return ShindenNotFound(Strings.UserNotFound);
             }
 
-            var exe = new Executable($"api-packet u{id}", new Task<Task>(async () =>
+            _blockingPriorityQueue.TryAdd(new GivesCardsMessage
             {
-                var botUser = await _userRepository.GetUserOrCreateAsync(id);
 
-                foreach (var pack in packs)
-                {
-                    botUser.GameDeck.BoosterPacks.Add(pack);
-                }
+            });
 
-                await _userRepository.SaveChangesAsync();
+            //var exe = new Executable($"api-packet u{id}", new Task<Task>(async () =>
+            //{
+            //    var botUser = await _userRepository.GetUserOrCreateAsync(id);
 
-                _cacheManager.ExpireTag(new string[] { $"user-{botUser.Id}", "users" });
-            }));
+            //    foreach (var pack in packs)
+            //    {
+            //        botUser.GameDeck.BoosterPacks.Add(pack);
+            //    }
 
-            await _executor.TryAdd(exe, TimeSpan.FromSeconds(1));
-            return ShindenOk("Boosterpack added!");
+            //    await _userRepository.SaveChangesAsync();
+
+            //    _cacheManager.ExpireTag(new string[] { $"user-{botUser.Id}", "users" });
+            //}));
+
+            //await _executor.TryAdd(exe, TimeSpan.FromSeconds(1));
+            //return ShindenOk("Boosterpack added!");
         }
 
         /// <summary>

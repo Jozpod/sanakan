@@ -30,7 +30,7 @@ namespace Sanakan.Web.Controllers
         }
 
         /// <summary>
-        /// Returns json web token.
+        /// Creates json web token with website claim
         /// </summary>
         /// <param name="apikey">API key</param>
         [HttpPost, AllowAnonymous]
@@ -44,12 +44,12 @@ namespace Sanakan.Web.Controllers
                 return ShindenUnauthorized(Strings.ApiKeyNotProvided);
             }
 
-            var user = _config.CurrentValue.ApiKeys
+            var bearer = _config.CurrentValue.ApiKeys
                 .FirstOrDefault(x => x.Key.Equals(apikey))?.Bearer;
 
             var claims = new[]
             {
-                new Claim(JwtRegisteredClaimNames.Website, user),
+                new Claim(JwtRegisteredClaimNames.Website, bearer),
                 new Claim(RegisteredClaimNames.Player, "waifu_player"),
             };
 

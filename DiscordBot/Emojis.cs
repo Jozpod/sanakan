@@ -19,6 +19,7 @@ namespace Sanakan.DiscordBot
         public static Emoji Eight = new Emoji("8⃣");
         public static Emoji Nine = new Emoji("9⃣");
         public static Emoji HandSign = new Emoji("👌");
+        public static Emoji RaisedHand = new Emoji("🖐");
         public static Emoji LeftwardsArrow = new Emoji("⬅");
         public static Emoji RightwardsArrow = new Emoji("➡");
 

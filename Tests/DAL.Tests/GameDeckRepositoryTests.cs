@@ -20,7 +20,7 @@ namespace Sanakan.DAL.Tests
                 Id = 1,
                 UserId = 1,
                 BackgroundPosition = 10,
-                CTCnt = 1,
+                CTCount = 1,
                 DeckPower = 100,
                 ForegroundColor = "",
             };

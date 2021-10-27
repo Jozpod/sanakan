@@ -36,7 +36,6 @@ namespace Sanakan.Modules
     {
         private readonly IShindenClient _shindenClient;
         private readonly SessionManager _sessionManager;
-        private readonly IExecutor _executor;
         private readonly ILogger _logger;
         private readonly IWaifuService _waifu;
         private readonly ICacheManager _cacheManager;
@@ -52,7 +51,6 @@ namespace Sanakan.Modules
             IShindenClient client,
             ILogger<PocketWaifuModule> logger,
             SessionManager session,
-            IExecutor executor,
             ICacheManager cacheManager,
             IRandomNumberGenerator randomNumberGenerator,
             IGuildConfigRepository guildConfigRepository,
@@ -1241,11 +1239,15 @@ namespace Sanakan.Modules
 
                 var incKarma = 1 * card.MarketValue;
                 if (incKarma > 0.001 && incKarma < 1.5)
+                {
                     bUser.GameDeck.Karma -= incKarma;
+                }
 
                 var incCt = card.GetValue() * card.MarketValue;
                 if (incCt > 0 && incCt < 50)
-                    bUser.GameDeck.CTCnt += (long)incCt;
+                {
+                    bUser.GameDeck.CTCount += (long)incCt;
+                }
 
                 bUser.Stats.DestroyedCards += 1;
 
@@ -1307,22 +1309,22 @@ namespace Sanakan.Modules
                 return;
             }
 
-            if (bUser.GameDeck.ExpContainer.ExpCount < exp)
+            if (bUser.GameDeck.ExpContainer.ExperienceCount < exp)
             {
                 await ReplyAsync("", embed: $"{Context.User.Mention} nie posiadasz wystarczającej ilości doświadczenia.".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
             var cost = bUser.GameDeck.ExpContainer.GetTransferCTCost();
-            if (bUser.GameDeck.CTCnt < cost)
+            if (bUser.GameDeck.CTCount < cost)
             {
                 await ReplyAsync("", embed: $"{Context.User.Mention} nie masz wystarczającej liczby CT. ({cost})".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
             card.ExpCount += exp;
-            bUser.GameDeck.ExpContainer.ExpCount -= exp;
-            bUser.GameDeck.CTCnt -= cost;
+            bUser.GameDeck.ExpContainer.ExperienceCount -= exp;
+            bUser.GameDeck.CTCount -= cost;
 
             await _userRepository.SaveChangesAsync();
 
@@ -1567,7 +1569,7 @@ namespace Sanakan.Modules
 
             if (_randomNumberGenerator.TakeATry(3))
             {
-                botuser.GameDeck.CTCnt += 1;
+                botuser.GameDeck.CTCount += 1;
                 reward += "+1CT";
             }
 
@@ -2324,14 +2326,14 @@ namespace Sanakan.Modules
                 return;
             }
 
-            if (bUser.GameDeck.CTCnt < cost)
+            if (bUser.GameDeck.CTCount < cost)
             {
                 await ReplyAsync("", embed: $"{Context.User.Mention} nie masz wystarczającej liczby CT.".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
             bUser.Stats.UnleashedCards += 1;
-            bUser.GameDeck.CTCnt -= cost;
+            bUser.GameDeck.CTCount -= cost;
             bUser.GameDeck.Karma += 2;
             thisCard.IsTradable = true;
 
@@ -2564,7 +2566,7 @@ namespace Sanakan.Modules
                 return;
             }
 
-            if (bUser.GameDeck.CTCnt < cost)
+            if (bUser.GameDeck.CTCount < cost)
             {
                 await ReplyAsync("", embed: $"{Context.User.Mention} nie masz wystarczającej liczby CT.".ToEmbedMessage(EMType.Error).Build());
                 return;
@@ -2590,7 +2592,7 @@ namespace Sanakan.Modules
             }
             else item3.Count++;
 
-            bUser.GameDeck.CTCnt -= cost;
+            bUser.GameDeck.CTCount -= cost;
 
             await _userRepository.SaveChangesAsync();
 
@@ -3605,9 +3607,9 @@ namespace Sanakan.Modules
                 Color = EMType.Bot.Color(),
                 Author = new EmbedAuthorBuilder().WithUser(user),
                 Description = $"*{bUser.GameDeck.GetUserNameStatus()}*\n\n"
-                            + $"**Skrzynia({(int)bUser.GameDeck.ExpContainer.Level})**: {bUser.GameDeck.ExpContainer.ExpCount.ToString("F")}\n"
+                            + $"**Skrzynia({(int)bUser.GameDeck.ExpContainer.Level})**: {bUser.GameDeck.ExpContainer.ExperienceCount.ToString("F")}\n"
                             + $"**Uwolnione**: {bUser.Stats.ReleasedCards}\n**Zniszczone**: {bUser.Stats.DestroyedCards}\n**Poświęcone**: {bUser.Stats.SacraficeCards}\n**Ulepszone**: {bUser.Stats.UpgaredCards}\n**Wyzwolone**: {bUser.Stats.UnleashedCards}\n\n"
-                            + $"**CT**: {bUser.GameDeck.CTCnt}\n**Karma**: {bUser.GameDeck.Karma.ToString("F")}\n\n**Posiadane karty**: {bUser.GameDeck.Cards.Count}\n"
+                            + $"**CT**: {bUser.GameDeck.CTCount}\n**Karma**: {bUser.GameDeck.Karma.ToString("F")}\n\n**Posiadane karty**: {bUser.GameDeck.Cards.Count}\n"
                             + $"{sssString}**SS**: {ssCnt} **S**: {sCnt} **A**: {aCnt} **B**: {bCnt} **C**: {cCnt} **D**: {dCnt} **E**:{eCnt}\n\n"
                             + $"**PVP** Rozegrane: {aPvp} Wygrane: {wPvp}\n**GR**: {globalString}\n**SR**: {seasonString}"
             };

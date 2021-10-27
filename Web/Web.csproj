@@ -4,7 +4,7 @@
     <TargetFramework>net5.0</TargetFramework>
     <LangVersion>9.0</LangVersion>
     <Nullable>enable</Nullable>
-    <AssemblyName>Sanakan</AssemblyName>
+    <AssemblyName>Sanakan.Web</AssemblyName>
     <Copyright>Jotpe</Copyright>
     <Product>Sanakan</Product>
     <Authors>Jotpe</Authors>
@@ -47,6 +47,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Common\Common.csproj" />
     <ProjectReference Include="..\DiscordBot\DiscordBot.csproj" />
+    <ProjectReference Include="..\TaskQueue\TaskQueue.csproj" />
   </ItemGroup>
 
   <ItemGroup>

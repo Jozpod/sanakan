@@ -65,7 +65,7 @@ namespace Sanakan.Services
 #endif
         }
 
-        public static long CalculateExpForLevel(ulong level, double levelMultiplier = DefaultLevelMultiplier) 
+        public static ulong CalculateExpForLevel(ulong level, double levelMultiplier = DefaultLevelMultiplier) 
             => (level <= 0) ? 0 : Convert.ToInt64(Math.Floor(Math.Pow(level / levelMultiplier, 2)) + 1);
         public static ulong CalculateLevel(
             long experience,
@@ -316,11 +316,11 @@ namespace Sanakan.Services
                 exp = CheckFloodAndReturnExp(exp, user);
                 if (exp < 1) exp = 1;
 
-                user.ExpCount += exp;
+                user.ExperienceCount += exp;
                 user.MessagesCount += messages;
                 user.CommandsCount += commands;
 
-                var newLevel = CalculateLevel(user.ExpCount);
+                var newLevel = CalculateLevel(user.ExperienceCount);
                 if (newLevel != user.Level && calculateExp)
                 {
                     user.Level = newLevel;

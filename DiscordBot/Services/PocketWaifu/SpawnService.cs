@@ -12,6 +12,7 @@ using Sanakan.Common;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Models.Analytics;
 using Sanakan.DAL.Repositories.Abstractions;
+using Sanakan.DiscordBot;
 using Sanakan.DiscordBot.Configuration;
 using Sanakan.Extensions;
 using Sanakan.Services.Executor;
@@ -36,8 +37,6 @@ namespace Sanakan.Services.PocketWaifu
 
         private Dictionary<ulong, long> ServerCounter;
         private Dictionary<ulong, long> UserCounter;
-
-        private Emoji ClaimEmote = new Emoji("🖐");
 
         public SpawnService(
             DiscordSocketClient client,
@@ -127,7 +126,7 @@ namespace Sanakan.Services.PocketWaifu
                 {
                     await Task.Delay(TimeSpan.FromMinutes(5));
 
-                    var usersReacted = await msg.GetReactionUsersAsync(ClaimEmote, 300).FlattenAsync();
+                    var usersReacted = await msg.GetReactionUsersAsync(Emojis.RaisedHand, 300).FlattenAsync();
                     var users = usersReacted.ToList();
 
                     IUser winner = null;
@@ -265,7 +264,7 @@ namespace Sanakan.Services.PocketWaifu
 
             var msg = await spawnChannel.SendMessageAsync(mention, embed: embed.Build());
             RunSafari(embed, msg, newCard, pokeImage, character, trashChannel, muteRole);
-            await msg.AddReactionAsync(ClaimEmote);
+            await msg.AddReactionAsync(Emojis.RaisedHand);
         }
 
         private void HandleUserAsync(SocketUserMessage message)

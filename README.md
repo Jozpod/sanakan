@@ -28,10 +28,22 @@ dotnet run
 2. Run `make full-build`
 
 ## Options
+### Locale
+|                   Name                    |         Type         |                 Default                 | Description                                                       |
+| :---------------------------------------: | :------------------: | :-------------------------------------: | :---------------------------------------------------------------- |
+|  **[`TimeZone`](#TimeZone)**  |  `{String}`  |                 `Central European Standard Time`                  | Timezone which bot will use when displaying datetime information.                                 |
+|     **[`Language`](#Language)**     | `{String}` | `pl-PL` | Language.                                                 |
+
+
+### Database
+|                   Name                    |         Type         |                 Default                 | Description                                                       |
+| :---------------------------------------: | :------------------: | :-------------------------------------: | :---------------------------------------------------------------- |
+|  **[`Provider`](#Provider)**  |  `{String}`  |                 `MySql`                  | The database engine to use. string.                                 |
+|     **[`Version`](#Version)**     | `{String}` | `pl-PL` | Language.                                                 |
+|  **[`ConnectionString`](#ConnectionString)**  |  `{String}`  |                 `Server=localhost;Database=database;Uid=root;Pwd=password;`                  | connection string.                                 |
 
 |                   Name                    |         Type         |                 Default                 | Description                                                       |
 | :---------------------------------------: | :------------------: | :-------------------------------------: | :---------------------------------------------------------------- |
-|  **[`ConnectionString`](#ConnectionString)**  |  `{String}`  |                 `Server=localhost;Database=database;Uid=root;Pwd=password;`                  | MySql connection string.                                 |
 |     **[`Prefix`](#Prefix)**     | `{String}` | . | Options for Sass.                                                 |
 |       **[`BotToken`](#BotToken)**       |     `{String}`      |                       | The discord bot token.                       |
 |  **[`Supervision`](#Supervision)**  | `{Boolean}` |               `true`               | Prepends/Appends `Sass`/`SCSS` code before the actual entry file. |
@@ -39,7 +51,7 @@ dotnet run
 | **[`SafariEnabled`](#SafariEnabled)** |     `{Boolean}`      |                 `true`                  | Enables/Disables the default Webpack importer.                    |
 | **[`Shinden`](#Shinden)** |     `{Object}`      |                 `true`                  | Enables/Disables the default Webpack importer.                    |
 | **[`CharPerPacket`](#CharPerPacket)** |     `{Number}`      |                 `true`                  | Enables/Disables the default Webpack importer.                    |
-| **[`Experience`](#Experience)** |     `{Boolean}`      |                 `true`                  | Enables/Disables the default Webpack importer.                    |
+| **[`Experience`](#Experience)** |     `{Object}`      |                 `true`                  | Enables/Disables the default Webpack importer.                    |
 | **[`Demonization`](#webpackimporter)** |     `{Boolean}`      |                 `true`                  | Enables/Disables the default Webpack importer.                    |
 | **[`Demonization`](#webpackimporter)** |     `{Boolean}`      |                 `true`                  | Enables/Disables the default Webpack importer.                    |
 

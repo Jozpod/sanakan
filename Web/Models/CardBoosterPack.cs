@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace Sanakan.Api.Models
 {
     /// <summary>
-    /// Pakiet kart
+    /// Describes the bundle of cards.
     /// </summary>
     public class CardBoosterPack
     {
@@ -56,7 +56,9 @@ namespace Sanakan.Api.Models
                 if (RarityExcluded.Count > 0)
                 {
                     foreach (var exc in RarityExcluded)
+                    {
                         pack.RarityExcludedFromPack.Add(new RarityExcluded() { Rarity = exc });
+                    }
                 }
             }
 

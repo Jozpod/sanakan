@@ -8,7 +8,11 @@ namespace Sanakan.DAL.Models
     public class GameDeck
     {
         public ulong Id { get; set; }
-        public long CTCnt { get; set; }
+
+        /// <summary>
+        /// The amount of Cruelty Token points.
+        /// </summary>
+        public long CTCount { get; set; }
         public ulong Waifu { get; set; }
         public double Karma { get; set; }
         public ulong ItemsDropped { get; set; }

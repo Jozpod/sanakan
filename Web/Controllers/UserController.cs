@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.IdentityModel.Tokens.Jwt;
@@ -7,7 +8,6 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using Discord.WebSocket;
-using DiscordBot.Services.Executor;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -27,6 +27,7 @@ using Sanakan.DiscordBot;
 using Sanakan.Extensions;
 using Sanakan.Services.Executor;
 using Sanakan.ShindenApi;
+using Sanakan.TaskQueue.Messages;
 using Sanakan.Web.Configuration;
 using Sanakan.Web.Resources;
 using Shinden;
@@ -43,8 +44,8 @@ namespace Sanakan.Web.Controllers
         private readonly ILogger _logger;
         private readonly IOptionsMonitor<SanakanConfiguration> _config;
         private readonly IUserRepository _userRepository;
+        private readonly IProducerConsumerCollection<BaseMessage> _blockingPriorityQueue;
         private readonly ITransferAnalyticsRepository _transferAnalyticsRepository;
-        private readonly IExecutor _executor;
         private readonly IShindenClient _shindenClient;
         private readonly IDiscordSocketClientAccessor _discordSocketClientAccessor;
         private readonly ISystemClock _systemClock;
@@ -60,7 +61,6 @@ namespace Sanakan.Web.Controllers
             ITransferAnalyticsRepository transferAnalyticsRepository,
             IShindenClient shClient,
             ILogger<UserController> logger,
-            IExecutor executor,
             ISystemClock systemClock,
             ICacheManager cacheManager,
             IUserContext userContext,
@@ -72,7 +72,6 @@ namespace Sanakan.Web.Controllers
             _userRepository = userRepository;
             _transferAnalyticsRepository = transferAnalyticsRepository;
             _logger = logger;
-            _executor = executor;
             _shindenClient = shClient;
             _systemClock = systemClock;
             _cacheManager = cacheManager;
@@ -350,102 +349,122 @@ namespace Sanakan.Web.Controllers
                 return ShindenUnauthorized("This account is already linked!");
             }
 
-            var exe = new Executable($"api-register u{model.DiscordUserId}", new Task<Task>(async () =>
+            _blockingPriorityQueue.TryAdd(new ConnectUserMessage
             {
-                botUser = await _userRepository.GetUserOrCreateAsync(model.DiscordUserId);
-                botUser.ShindenId = shindenUser.Id.Value;
+                DiscordUserId = model.DiscordUserId,
+                ShindenUserId = shindenUser.Id.Value,
+            });
 
-                await _userRepository.SaveChangesAsync();
+            //var exe = new Executable($"api-register u{model.DiscordUserId}", new Task<Task>(async () =>
+            //{
+            //    botUser = await _userRepository.GetUserOrCreateAsync(model.DiscordUserId);
+            //    botUser.ShindenId = shindenUser.Id.Value;
 
-                _cacheManager.ExpireTag(new string[] { $"user-{discordUser.Id}", "users" });
-            }), Priority.High);
+            //    await _userRepository.SaveChangesAsync();
 
-            await _executor.TryAdd(exe, TimeSpan.FromSeconds(1));
+            //    _cacheManager.ExpireTag(new string[] { $"user-{discordUser.Id}", "users" });
+            //}), Priority.High);
+
+            //await _executor.TryAdd(exe, TimeSpan.FromSeconds(1));
             return ShindenOk("User connected!");
         }
 
         /// <summary>
-        /// Changes the amount of TC points for given user.
+        /// Changes the amount of TC points for given discord user.
         /// </summary>
-        /// <param name="id">The user identifier in Discord.</param>
-        /// <param name="value">The number of TC</param>
-        [HttpPut("discord/{id}/tc"), Authorize(Policy = AuthorizePolicies.Site)]
+        /// <param name="discordUserId">The user identifier in Discord.</param>
+        /// <param name="amount">The number of TC</param>
+        [HttpPut("discord/{discordUserId}/tc"), Authorize(Policy = AuthorizePolicies.Site)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> ModifyPointsTCDiscordAsync(ulong id, [FromBody, Required]long value)
+        public async Task<IActionResult> ModifyPointsTCDiscordAsync(
+            ulong discordUserId, [FromBody, Required]ulong amount)
         {
-            var user = await _userRepository.GetByDiscordIdAsync(id);
+            var user = await _userRepository.GetByDiscordIdAsync(discordUserId);
 
             if (user == null)
             {
                 return ShindenNotFound(Strings.UserNotFound);
             }
 
-            var exe = new Executable($"api-tc u{id} ({value})", new Task<Task>(async () =>
+            _blockingPriorityQueue.TryAdd(new TransferTCMessage
             {
-                var record = new TransferAnalytics()
-                {
-                    Value = value,
-                    DiscordId = user.Id,
-                    Date = _systemClock.UtcNow,
-                    ShindenId = user.ShindenId,
-                    Source = TransferSource.ByDiscordId,
-                };
+                DiscordUserId = discordUserId,
+                Amount = amount
+            });
 
-                _transferAnalyticsRepository.Add(record);
+            //var exe = new Executable($"api-tc u{id} ({value})", new Task<Task>(async () =>
+            //{
+            //    var record = new TransferAnalytics()
+            //    {
+            //        Value = value,
+            //        DiscordId = user.Id,
+            //        Date = _systemClock.UtcNow,
+            //        ShindenId = user.ShindenId.Value,
+            //        Source = TransferSource.ByDiscordId,
+            //    };
 
-                user = await _userRepository.GetUserOrCreateAsync(id);
-                user.TcCount += value;
+            //    _transferAnalyticsRepository.Add(record);
 
-                await _userRepository.SaveChangesAsync();
+            //    user = await _userRepository.GetUserOrCreateAsync(id);
+            //    user.TcCount += value;
 
-                _cacheManager.ExpireTag(new string[] { $"user-{user.Id}", "users" });
-            }), Priority.High);
+            //    await _userRepository.SaveChangesAsync();
 
-            await _executor.TryAdd(exe, TimeSpan.FromSeconds(1));
+            //    _cacheManager.ExpireTag(new string[] { $"user-{user.Id}", "users" });
+            //}), Priority.High);
+
+            //await _executor.TryAdd(exe, TimeSpan.FromSeconds(1));
             return ShindenOk("TC added!");
         }
 
         /// <summary>
-        /// Changes TC points for given user.
+        /// Changes TC points for given Shinden user.
         /// </summary>
-        /// <param name="id">id użytkownika shindena</param>
+        /// <param name="shindenUserId">The user identifier in Shinden.</param>
         /// <param name="value">liczba TC</param>
-        [HttpPut("shinden/{id}/tc"), Authorize(Policy = AuthorizePolicies.Site)]
+        [HttpPut("shinden/{shindenUserId}/tc"), Authorize(Policy = AuthorizePolicies.Site)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status200OK)]
-        public async Task<IActionResult> ModifyPointsTCAsync(ulong id, [FromBody, Required]long value)
+        public async Task<IActionResult> ModifyPointsTCAsync(
+            ulong shindenUserId, [FromBody, Required]ulong amount)
         {
-            var user = await _userRepository.GetByShindenIdAsync(id);
+            var user = await _userRepository.GetByShindenIdAsync(shindenUserId);
 
             if (user == null)
             {
                 return ShindenNotFound(Strings.UserNotFound);
             }
 
-            var exe = new Executable($"api-tc su{id} ({value})", new Task<Task>(async () =>
+            _blockingPriorityQueue.TryAdd(new TransferTCMessage
             {
-            user = await _userRepository.GetByShindenIdAsync(id);
-            user.TcCount += value;
+                ShindenUserId = shindenUserId,
+                Amount = amount
+            });
 
-            await _userRepository.SaveChangesAsync();
+            //var exe = new Executable($"api-tc su{id} ({value})", new Task<Task>(async () =>
+            //{
+            //user = await _userRepository.GetByShindenIdAsync(id);
+            //user.TcCount += value;
 
-            _cacheManager.ExpireTag(new string[] { $"user-{user.Id}", "users" });
+            //await _userRepository.SaveChangesAsync();
 
-            var record = new TransferAnalytics()
-            {
-                Value = value,
-                DiscordId = user.Id,
-                Date = _systemClock.UtcNow,
-                ShindenId = user.ShindenId,
-                Source = TransferSource.ByShindenId,
-            };
+            //_cacheManager.ExpireTag(new string[] { $"user-{user.Id}", "users" });
 
-            _transferAnalyticsRepository.Add(record);
-            await _transferAnalyticsRepository.SaveChangesAsync();
-            }), Priority.High);
+            //var record = new TransferAnalytics()
+            //{
+            //    Value = value,
+            //    DiscordId = user.Id,
+            //    Date = _systemClock.UtcNow,
+            //    ShindenId = user.ShindenId.Value,
+            //    Source = TransferSource.ByShindenId,
+            //};
 
-            await _executor.TryAdd(exe, TimeSpan.FromSeconds(1));
+            //_transferAnalyticsRepository.Add(record);
+            //await _transferAnalyticsRepository.SaveChangesAsync();
+            //}), Priority.High);
+
+            //await _executor.TryAdd(exe, TimeSpan.FromSeconds(1));
             return ShindenOk("TC added!");
         }
     }

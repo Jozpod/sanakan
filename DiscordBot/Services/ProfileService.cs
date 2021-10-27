@@ -183,7 +183,7 @@ namespace Sanakan.Services
             {
                 default:
                 case TopType.Level:
-                    return list.OrderByDescending(x => x.ExpCount).ToList();
+                    return list.OrderByDescending(x => x.ExperienceCount).ToList();
 
                 case TopType.ScCnt:
                     return list.OrderByDescending(x => x.ScCount).ToList();

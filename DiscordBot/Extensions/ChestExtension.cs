@@ -46,9 +46,9 @@ namespace Sanakan.Extensions
             }
         }
 
-        public static int GetTransferCTCost(this ExpContainer c)
+        public static int GetTransferCTCost(this ExpContainer container)
         {
-            switch (c.Level)
+            switch (container.Level)
             {
                 case ExpContainerLevel.Level1:
                     return 8;

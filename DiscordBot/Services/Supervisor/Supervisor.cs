@@ -11,6 +11,7 @@ using Microsoft.Extensions.Options;
 using Sanakan.Common;
 using Sanakan.Configuration;
 using Sanakan.DAL.Repositories.Abstractions;
+using Sanakan.DiscordBot.Configuration;
 using Sanakan.DiscordBot.Services.Abstractions;
 using Sanakan.Extensions;
 
@@ -40,13 +41,13 @@ namespace Sanakan.Services.Supervisor
         private readonly ILogger _logger;
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly ISystemClock _systemClock;
-        private readonly IOptionsMonitor<SanakanConfiguration> _config;
+        private readonly IOptionsMonitor<BotConfiguration> _config;
 
         private Timer _timer;
 
         public Supervisor(
             DiscordSocketClient client,
-            IOptionsMonitor<SanakanConfiguration> config,
+            IOptionsMonitor<BotConfiguration> config,
             ILogger<Supervisor> logger,
             IModeratorService moderatorService,
             IServiceScopeFactory serviceScopeFactory,
@@ -240,7 +241,7 @@ namespace Sanakan.Services.Supervisor
             int mSpecified = MAX_SPECIFIED;
             int mTotal = MAX_TOTAL;
 
-            if (content.IsCommand())
+            if (_config.CurrentValue.IsCommand(content))
             {
                 mTotal += COMMAND_MOD;
                 mSpecified += COMMAND_MOD;

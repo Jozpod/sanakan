@@ -8,9 +8,9 @@ namespace Sanakan.Common.Models
 {
     public enum ProfileType
     {
-        Stats,
-        Img,
-        StatsWithImg,
-        Cards
+        Stats = 0,
+        Img = 1,
+        StatsWithImg = 2,
+        Cards = 3
     }
 }

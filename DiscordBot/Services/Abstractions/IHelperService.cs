@@ -4,11 +4,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Discord.Commands;
 
 namespace Sanakan.DiscordBot.Services.Abstractions
 {
     public interface IHelperService
     {
+        IEnumerable<ModuleInfo> PublicModulesInfo { get; }
         string GivePrivateHelp(string moduleName);
         string GivePublicHelp();
         string GiveHelpAboutPrivateCmd(string moduleName, string command, string prefix, bool throwEx = true);

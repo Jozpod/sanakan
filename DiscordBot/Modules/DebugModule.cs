@@ -540,7 +540,7 @@ namespace Sanakan.Modules
             var bUser = await _userRepository.GetUserOrCreateAsync(user.Id);
 
             bUser.Level = level;
-            bUser.ExpCount = Services.ExperienceManager.CalculateExpForLevel(level);
+            bUser.ExperienceCount = Services.ExperienceManager.CalculateExpForLevel(level);
 
             await _userRepository.SaveChangesAsync();
 
@@ -745,10 +745,10 @@ namespace Sanakan.Modules
                         user.GameDeck.Karma = 0;
                 }
 
-                user.GameDeck.CTCnt -= kct;
-                if (user.GameDeck.CTCnt < 0)
+                user.GameDeck.CTCount -= kct;
+                if (user.GameDeck.CTCount < 0)
                 {
-                    user.GameDeck.CTCnt = 0;
+                    user.GameDeck.CTCount = 0;
                     kct = 0;
                 }
 
@@ -1186,13 +1186,13 @@ namespace Sanakan.Modules
             [Summary("liczba CT")]long amount)
         {
             var botuser = await _userRepository.GetUserOrCreateAsync(user.Id);
-            botuser.GameDeck.CTCnt += amount;
+            botuser.GameDeck.CTCount += amount;
 
             await _userRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(new string[] { $"user-{botuser.Id}", "users" });
 
-            await ReplyAsync("", embed: $"{user.Mention} ma teraz {botuser.GameDeck.CTCnt} CT".ToEmbedMessage(EMType.Success).Build());
+            await ReplyAsync("", embed: $"{user.Mention} ma teraz {botuser.GameDeck.CTCount} CT".ToEmbedMessage(EMType.Success).Build());
         }
 
         [Command("exp"), Priority(1)]
@@ -1203,13 +1203,13 @@ namespace Sanakan.Modules
             [Summary("liczba punktów doświadczenia")]long amount)
         {
             var botuser = await _userRepository.GetUserOrCreateAsync(user.Id);
-            botuser.ExpCount += amount;
+            botuser.ExperienceCount += amount;
 
             await _userRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(new string[] { $"user-{botuser.Id}", "users" });
 
-            await ReplyAsync("", embed: $"{user.Mention} ma teraz {botuser.ExpCount} punktów doświadczenia.".ToEmbedMessage(EMType.Success).Build());
+            await ReplyAsync("", embed: $"{user.Mention} ma teraz {botuser.ExperienceCount} punktów doświadczenia.".ToEmbedMessage(EMType.Success).Build());
         }
 
         [Command("ost"), Priority(1)]

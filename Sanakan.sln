@@ -25,7 +25,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Web.Tests", "Tests\Web.Test
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common.Tests", "Tests\Common.Tests\Common.Tests.csproj", "{D7F38FE4-96C1-42F0-B124-E0B5BA26C8CF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DAL.MySql.Schema", "DAL.MySql.Schema\DAL.MySql.Schema.csproj", "{4548E0B4-B99C-478F-9968-1B92FCE8D53D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DAL.MySql.Schema", "DAL.MySql.Schema\DAL.MySql.Schema.csproj", "{4548E0B4-B99C-478F-9968-1B92FCE8D53D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaskQueue", "TaskQueue\TaskQueue.csproj", "{E5FF1BAB-EEBC-440D-B632-ADAD45AB60F9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -77,6 +79,10 @@ Global
 		{4548E0B4-B99C-478F-9968-1B92FCE8D53D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4548E0B4-B99C-478F-9968-1B92FCE8D53D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4548E0B4-B99C-478F-9968-1B92FCE8D53D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E5FF1BAB-EEBC-440D-B632-ADAD45AB60F9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E5FF1BAB-EEBC-440D-B632-ADAD45AB60F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E5FF1BAB-EEBC-440D-B632-ADAD45AB60F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E5FF1BAB-EEBC-440D-B632-ADAD45AB60F9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

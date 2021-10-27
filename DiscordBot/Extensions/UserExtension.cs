@@ -372,7 +372,7 @@ namespace Sanakan.Extensions
         public static long GetRemainingExp(this User u)
         {
             var nextLvlExp = ExperienceManager.CalculateExpForLevel(u.Level + 1);
-            var exp = nextLvlExp - u.ExpCount;
+            var exp = nextLvlExp - u.ExperienceCount;
             if (exp < 1) exp = 1;
 
             return exp;
@@ -384,7 +384,7 @@ namespace Sanakan.Extensions
             {
                 default:
                 case TopType.Level:
-                    return $"{u.Level} **LVL** ({u.ExpCount} **EXP**)";
+                    return $"{u.Level} **LVL** ({u.ExperienceCount} **EXP**)";
 
                 case TopType.ScCnt:
                     return $"{u.ScCount} **SC**";
@@ -481,11 +481,11 @@ namespace Sanakan.Extensions
             if (maxToTransfer != -1)
             {
                 exp = Math.Floor(exp);
-                var diff = maxToTransfer - user.GameDeck.ExpContainer.ExpCount;
+                var diff = maxToTransfer - user.GameDeck.ExpContainer.ExperienceCount;
                 if (diff <= exp) exp = Math.Floor(diff);
                 if (exp < 0) exp = 0;
             }
-            user.GameDeck.ExpContainer.ExpCount += exp;
+            user.GameDeck.ExpContainer.ExperienceCount += exp;
         }
     }
 }

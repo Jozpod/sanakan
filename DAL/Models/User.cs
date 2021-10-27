@@ -17,7 +17,7 @@ namespace Sanakan.DAL.Models
             AcCount = 0;
             TcCount = 0;
             ScCount = Constants.ScCount;
-            ExpCount = 10;
+            ExperienceCount = 10;
             ShindenId = 0;
             WarningsCount = 0;
             MessagesCount = 0;
@@ -35,7 +35,7 @@ namespace Sanakan.DAL.Models
             {
                 Id = discordUserId,
                 Waifu = 0,
-                CTCnt = 0,
+                CTCount = 0,
                 Karma = 0,
                 PVPCoins = 0,
                 DeckPower = 0,
@@ -64,7 +64,7 @@ namespace Sanakan.DAL.Models
                 ExpContainer = new ExpContainer
                 {
                     Id = discordUserId,
-                    ExpCount = 0,
+                    ExperienceCount = 0,
                     Level = ExpContainerLevel.Disabled
                 }
             };
@@ -127,15 +127,39 @@ namespace Sanakan.DAL.Models
         /// Specifies whether the user is blacklisted in Discord.
         /// </summary>
         public bool IsBlacklisted { get; set; }
+        
+        /// <summary>
+        /// 
+        /// </summary>
         public long AcCount { get; set; }
+        
+        /// <summary>
+        /// 
+        /// </summary>
         public long TcCount { get; set; }
+        
+        /// <summary>
+        /// 
+        /// </summary>
         public long ScCount { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
         public ulong Level { get; set; }
-        public long ExpCount { get; set; }
+
+        /// <summary>
+        /// The amount of experience accumulated by user.
+        /// </summary>
+        public ulong ExperienceCount { get; set; }
+
+        /// <summary>
+        /// Describes the type of profile.
+        /// </summary>
         public ProfileType ProfileType { get; set; }
 
         [StringLength(50)]
-        public string BackgroundProfileUri { get; set; }
+        public string BackgroundProfileUri { get; set; } = string.Empty;
 
         [StringLength(50)]
         public string StatsReplacementProfileUri { get; set; }

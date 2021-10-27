@@ -2357,6 +2357,21 @@
           "bin/placeholder/Sanakan.DAL.dll": {}
         }
       },
+      "Sanakan.TaskQueue/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v5.0",
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection": "5.0.2",
+          "Sanakan.Common": "1.0.0",
+          "Sanakan.DAL": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/Sanakan.TaskQueue.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Sanakan.TaskQueue.dll": {}
+        }
+      },
       "Shinden.NET/0.0.1": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v5.0",
@@ -7563,6 +7578,11 @@
       "path": "../DAL/DAL.csproj",
       "msbuildProject": "../DAL/DAL.csproj"
     },
+    "Sanakan.TaskQueue/1.0.0": {
+      "type": "project",
+      "path": "../TaskQueue/TaskQueue.csproj",
+      "msbuildProject": "../TaskQueue/TaskQueue.csproj"
+    },
     "Shinden.NET/0.0.1": {
       "type": "project",
       "path": "../ShindenApi/ShindenApi.csproj",
@@ -7581,6 +7601,7 @@
       "Microsoft.VisualStudio.Web.CodeGeneration.Design >= 3.1.4",
       "Newtonsoft.Json >= 13.0.1",
       "Sanakan.Common >= 1.0.0",
+      "Sanakan.TaskQueue >= 1.0.0",
       "Swashbuckle.AspNetCore.SwaggerGen >= 5.6.3",
       "System.IdentityModel.Tokens.Jwt >= 6.8.0",
       "Z.EntityFramework.Plus.EFCore >= 5.1.15"
@@ -7594,7 +7615,7 @@
     "version": "0.0.1",
     "restore": {
       "projectUniqueName": "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\Web\\Web.csproj",
-      "projectName": "Sanakan",
+      "projectName": "Sanakan.Web",
       "projectPath": "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\Web\\Web.csproj",
       "packagesPath": "C:\\Users\\jozefpodlecki\\.nuget\\packages\\",
       "outputPath": "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\Web\\obj\\",
@@ -7622,6 +7643,9 @@
             },
             "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\DiscordBot\\DiscordBot.csproj": {
               "projectPath": "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\DiscordBot\\DiscordBot.csproj"
+            },
+            "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\TaskQueue\\TaskQueue.csproj": {
+              "projectPath": "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\TaskQueue\\TaskQueue.csproj"
             }
           }
         }

@@ -232,7 +232,7 @@ namespace Sanakan.DiscordBot.Services
 
             var prevLvlExp = ExperienceManager.CalculateExpForLevel(botUser.Level);
             var nextLvlExp = ExperienceManager.CalculateExpForLevel(botUser.Level + 1);
-            var expOnLvl = botUser.ExpCount - prevLvlExp;
+            var expOnLvl = botUser.ExperienceCount - prevLvlExp;
             var lvlExp = nextLvlExp - prevLvlExp;
 
             if (expOnLvl < 0) expOnLvl = 0;
@@ -262,8 +262,11 @@ namespace Sanakan.DiscordBot.Services
 
             if (!_fileSystem.Exists(botUser.StatsReplacementProfileUri))
             {
-                if ((botUser.ProfileType == ProfileType.Img || botUser.ProfileType == ProfileType.StatsWithImg))
+                if ((botUser.ProfileType == ProfileType.Img 
+                    || botUser.ProfileType == ProfileType.StatsWithImg))
+                {
                     botUser.ProfileType = ProfileType.Stats;
+                }
             }
 
             switch (botUser.ProfileType)
@@ -389,7 +392,7 @@ namespace Sanakan.DiscordBot.Services
             startY += jumpY * 4;
 
             profilePic.Mutate(x => x.DrawText("CT", font1, Rgba32.FromHex(Dawn), new Point(startX, startY)));
-            profilePic.Mutate(x => x.DrawText($"{botUser.GameDeck.CTCnt}", font2, Rgba32.FromHex(Dawn), new Point(startX + row2X, startY)));
+            profilePic.Mutate(x => x.DrawText($"{botUser.GameDeck.CTCount}", font2, Rgba32.FromHex(Dawn), new Point(startX + row2X, startY)));
             startY += jumpY;
 
             profilePic.Mutate(x => x.DrawText("K", font1, Rgba32.FromHex(Dawn), new Point(startX, startY)));

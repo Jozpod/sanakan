@@ -1,4 +1,4 @@
-﻿namespace DiscordBot.Services.Executor
+﻿namespace Sanakan.TaskQueue
 {
     public enum Priority
     {
