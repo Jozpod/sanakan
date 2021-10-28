@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Sanakan.TaskQueue.Messages
 {
-    public class BaseMessage : IComparable<BaseMessage>
+    public abstract class BaseMessage : IComparable<BaseMessage>
     {
         public Priority Priority { get; }
 
@@ -13,6 +13,7 @@ namespace Sanakan.TaskQueue.Messages
         {
             Priority = priority;
         }
+
         public int CompareTo(BaseMessage other)
         {
             if(Priority < other.Priority)

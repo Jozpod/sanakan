@@ -20,6 +20,7 @@ using Sanakan.DiscordBot.Resources;
 using Sanakan.DiscordBot;
 using Microsoft.Extensions.DependencyInjection;
 using Sanakan.DiscordBot.Services.Abstractions;
+using Sanakan.DiscordBot.Models;
 
 namespace Sanakan.Modules
 {
@@ -27,7 +28,7 @@ namespace Sanakan.Modules
     public class FunModule : ModuleBase<SocketCommandContext>
     {
         public const string PsyduckEmoji = "<:klasycznypsaj:482136878120828938>";
-        private readonly DiscordBot.Services.Abstractions.IModeratorService _moderatorService;
+        private readonly IModeratorService _moderatorService;
         private readonly SessionManager _session;
         private readonly ICacheManager _cacheManager;
         private readonly IUserRepository _userRepository;
@@ -38,7 +39,7 @@ namespace Sanakan.Modules
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly SlotMachine _slotMachine;
         public FunModule(
-            DiscordBot.Services.Abstractions.IModeratorService moderatorService,
+            IModeratorService moderatorService,
             SessionManager session,
             ICacheManager cacheManager,
             ISystemClock systemClock,
@@ -67,9 +68,9 @@ namespace Sanakan.Modules
                 botuser.TimeStatuses.Add(daily);
             }
 
-            if (daily.IsActive())
+            if (daily.IsActive(_systemClock.UtcNow))
             {
-                var timeTo = (int)daily.RemainingMinutes();
+                var timeTo = (int)daily.RemainingMinutes(_systemClock.UtcNow);
                 var content = $"{Context.User.Mention} następne drobne możesz otrzymać dopiero za {timeTo / 60}h {timeTo % 60}m!"
                     .ToEmbedMessage(EMType.Error).Build();
                 await ReplyAsync("", embed: content);
@@ -117,9 +118,9 @@ namespace Sanakan.Modules
                 return;
             }
 
-            var notifChannel = Context.Guild.GetTextChannel(config.NotificationChannel);
-            var userRole = Context.Guild.GetRole(config.UserRole);
-            var muteRole = Context.Guild.GetRole(config.MuteRole);
+            var notifChannel = Context.Guild.GetTextChannel(config.NotificationChannelId);
+            var userRole = Context.Guild.GetRole(config.UserRoleId);
+            var muteRole = Context.Guild.GetRole(config.MuteRoleId);
 
             if (muteRole == null)
             {
@@ -169,9 +170,9 @@ namespace Sanakan.Modules
                 botuser.TimeStatuses.Add(hourly);
             }
 
-            if (hourly.IsActive())
+            if (hourly.IsActive(_systemClock.UtcNow))
             {
-                var timeTo = (int)hourly.RemainingSeconds();
+                var timeTo = (int)hourly.RemainingSeconds(_systemClock.UtcNow);
                 await ReplyAsync("", embed: $"{Context.User.Mention} następne zaskórniaki możesz otrzymać dopiero za {timeTo / 60}m {timeTo % 60}s!".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
@@ -185,7 +186,7 @@ namespace Sanakan.Modules
                 mission = StatusType.DHourly.NewTimeStatus();
                 botuser.TimeStatuses.Add(mission);
             }
-            mission.Count();
+            mission.Count(_systemClock.UtcNow);
 
             await _userRepository.SaveChangesAsync();
 

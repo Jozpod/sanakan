@@ -97,6 +97,15 @@ namespace Sanakan.Web.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to User has no space left in deck.
+        /// </summary>
+        internal static string NoSpaceInDeck {
+            get {
+                return ResourceManager.GetString("NoSpaceInDeck", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to User not found.
         /// </summary>
         internal static string UserNotFound {

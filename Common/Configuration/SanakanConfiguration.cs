@@ -5,28 +5,9 @@ namespace Sanakan.Configuration
 {
     public class SanakanConfiguration
     {
-        /// <summary>
-        /// The MySql version.
-        /// </summary>
-        public Version MySqlVersion { get; set; } = new Version();
+     
 
-        /// <summary>
-        /// The MySql connection string.
-        /// </summary>
-        public string ConnectionString { get; set; } = string.Empty;
-
-        public TimeSpan CaptureMemoryUsageDueTime { get; set; }
-        public TimeSpan CaptureMemoryUsagePeriod { get; set; }
-
-        /// <summary>
-        /// Runs commands on Discord only when they start with given prefix.
-        /// </summary>
-        public string Prefix { get; set; } = string.Empty;
-
-        /// <summary>
-        /// The Discord bot token.
-        /// </summary>
-        public string BotToken { get; set; } = string.Empty;
+       
 
         /// <summary>
         /// Enables flood/spam supervision

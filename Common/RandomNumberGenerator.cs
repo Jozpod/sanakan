@@ -46,7 +46,6 @@ namespace Sanakan.Common
         public T GetOneRandomFrom<T>(IEnumerable<T> enumerable)
         {
             var randomIndex = GetRandomValue(enumerable.Count());
-
             return enumerable.ElementAt(randomIndex);
         }
 

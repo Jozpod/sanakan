@@ -613,6 +613,21 @@
           "bin/placeholder/Sanakan.DAL.dll": {}
         }
       },
+      "Sanakan.TaskQueue/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v5.0",
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection": "5.0.2",
+          "Sanakan.Common": "1.0.0",
+          "Sanakan.DAL": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/Sanakan.TaskQueue.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Sanakan.TaskQueue.dll": {}
+        }
+      },
       "Shinden.NET/0.0.1": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v5.0",
@@ -1621,6 +1636,11 @@
       "path": "../DAL/DAL.csproj",
       "msbuildProject": "../DAL/DAL.csproj"
     },
+    "Sanakan.TaskQueue/1.0.0": {
+      "type": "project",
+      "path": "../TaskQueue/TaskQueue.csproj",
+      "msbuildProject": "../TaskQueue/TaskQueue.csproj"
+    },
     "Shinden.NET/0.0.1": {
       "type": "project",
       "path": "../ShindenApi/ShindenApi.csproj",
@@ -1635,6 +1655,7 @@
       "Microsoft.Extensions.Options >= 5.0.0",
       "Sanakan.Common >= 1.0.0",
       "Sanakan.DAL >= 1.0.0",
+      "Sanakan.TaskQueue >= 1.0.0",
       "Shinden.NET >= 0.0.1",
       "SixLabors.ImageSharp.Drawing >= 1.0.0-beta0006"
     ]
@@ -1678,6 +1699,9 @@
             },
             "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\ShindenApi\\ShindenApi.csproj": {
               "projectPath": "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\ShindenApi\\ShindenApi.csproj"
+            },
+            "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\TaskQueue\\TaskQueue.csproj": {
+              "projectPath": "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\TaskQueue\\TaskQueue.csproj"
             }
           }
         }

@@ -59,31 +59,31 @@ namespace Sanakan.Services
 
         private async Task HandleMessageAsync(SocketMessage message)
         {
-            var msg = message as SocketUserMessage;
+            var userMessage = message as SocketUserMessage;
             
-            if (msg == null)
+            if (userMessage == null)
             {
                 return;
             }
 
-            if (msg.Author.IsBot || msg.Author.IsWebhook)
+            if (userMessage.Author.IsBot || userMessage.Author.IsWebhook)
             {
                 return;
             }
 
-            var user = msg.Author as SocketGuildUser;
+            var sourceUser = userMessage.Author as SocketGuildUser;
             
-            if (user == null)
+            if (sourceUser == null)
             {
                 return;
             }
 
-            if (_config.CurrentValue.BlacklistedGuilds.Any(x => x == user.Guild.Id))
+            if (_config.CurrentValue.BlacklistedGuilds.Any(x => x == sourceUser.Guild.Id))
             {
                 return;
             }
 
-            var gConfig = await _guildConfigRepository.GetCachedGuildFullConfigAsync(user.Guild.Id);
+            var gConfig = await _guildConfigRepository.GetCachedGuildFullConfigAsync(sourceUser.Guild.Id);
 
             if (gConfig == null)
             {
@@ -95,37 +95,37 @@ namespace Sanakan.Services
                 return;
             }
 
-            if (_randomNumberGenerator.TakeATry(3))
+            if (!_randomNumberGenerator.TakeATry(3))
             {
-                var notChangedUsers = user.Guild
-                    .Users
-                    .Where(x => !x.IsBot
-                        && x.Id != user.Id
-                        && !_changed.Any(c => c == x.Id))
-                    .ToList();
-
-                if (notChangedUsers.Count < 2)
-                {
-                    return;
-                }
-
-                if (_changed.Any(x => x == user.Id))
-                {
-                    user = _randomNumberGenerator.GetOneRandomFrom(notChangedUsers);
-                    notChangedUsers.Remove(user);
-                }
-
-                var user2 = _randomNumberGenerator.GetOneRandomFrom(notChangedUsers);
-
-                var user1Nickname = user.Nickname ?? user.Username;
-                var user2Nickname = user2.Nickname ?? user2.Username;
-
-                await user.ModifyAsync(x => x.Nickname = user2Nickname);
-                _changed.Add(user.Id);
-
-                await user2.ModifyAsync(x => x.Nickname = user1Nickname);
-                _changed.Add(user2.Id);
+                return;
             }
+
+            var notChangedUsers = sourceUser.Guild
+                .Users
+                .Where(x => !x.IsBot
+                    && x.Id != sourceUser.Id
+                    && !_changed.Any(c => c == x.Id))
+                .ToList();
+
+            if (notChangedUsers.Count < 2)
+            {
+                return;
+            }
+
+            if (_changed.Any(x => x == sourceUser.Id))
+            {
+                sourceUser = _randomNumberGenerator.GetOneRandomFrom(notChangedUsers);
+                notChangedUsers.Remove(sourceUser);
+            }
+
+            var targetUser = _randomNumberGenerator.GetOneRandomFrom(notChangedUsers);
+
+            var sourceNickname = sourceUser.Nickname ?? sourceUser.Username;
+            var targetNickname = targetUser.Nickname ?? targetUser.Username;
+
+            await sourceUser.ModifyAsync(x => x.Nickname = targetNickname);
+            await targetUser.ModifyAsync(x => x.Nickname = sourceNickname);
+            _changed.AddRange(new[] { sourceUser.Id, targetUser.Id });
         }
     }
 }

@@ -9,6 +9,7 @@ using Sanakan.DAL.Models.Configuration;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot;
 using Sanakan.DiscordBot.Configuration;
+using Sanakan.DiscordBot.Models;
 using Sanakan.DiscordBot.Services.Abstractions;
 using Sanakan.Extensions;
 using Sanakan.Preconditions;
@@ -154,7 +155,7 @@ namespace Sanakan.Modules
                 return;
             }
 
-            var notifChannel = Context.Guild.GetTextChannel(config.NotificationChannel);
+            var notifChannel = Context.Guild.GetTextChannel(config.NotificationChannelId);
 
             var user = Context.User as SocketGuildUser;
             var info = await _moderatorService.BanUserAysnc(userToBan, duration, reason);
@@ -193,9 +194,9 @@ namespace Sanakan.Modules
             }
 
             var guild = Context.Guild;
-            var notifChannel = guild.GetTextChannel(config.NotificationChannel);
-            var userRole = guild.GetRole(config.UserRole);
-            var muteRole = guild.GetRole(config.MuteRole);
+            var notifChannel = guild.GetTextChannel(config.NotificationChannelId);
+            var userRole = guild.GetRole(config.UserRoleId);
+            var muteRole = guild.GetRole(config.MuteRoleId);
 
             if (muteRole == null)
             {
@@ -253,10 +254,10 @@ namespace Sanakan.Modules
             }
 
             
-            var notifChannel = guild.GetTextChannel(config.NotificationChannel);
-            var muteModRole = guild.GetRole(config.ModMuteRole);
-            var userRole = guild.GetRole(config.UserRole);
-            var muteRole = guild.GetRole(config.MuteRole);
+            var notifChannel = guild.GetTextChannel(config.NotificationChannelId);
+            var muteModRole = guild.GetRole(config.ModMuteRoleId);
+            var userRole = guild.GetRole(config.UserRoleId);
+            var muteRole = guild.GetRole(config.MuteRoleId);
 
             if (muteRole == null)
             {
@@ -303,8 +304,8 @@ namespace Sanakan.Modules
                 return;
             }
 
-            var muteRole = Context.Guild.GetRole(config.MuteRole);
-            var muteModRole = Context.Guild.GetRole(config.ModMuteRole);
+            var muteRole = Context.Guild.GetRole(config.MuteRoleId);
+            var muteModRole = Context.Guild.GetRole(config.ModMuteRoleId);
             if (muteRole == null)
             {
                 await ReplyAsync("", embed: "Rola wyciszająca nie jest ustawiona.".ToEmbedMessage(EMType.Bot).Build());
@@ -506,13 +507,13 @@ namespace Sanakan.Modules
             }
 
             var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(Context.Guild.Id);
-            if (config.AdminRole == role.Id)
+            if (config.AdminRoleId == role.Id)
             {
                 await ReplyAsync("", embed: $"Rola {role.Mention} już jest ustawiona jako rola administratora.".ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
 
-            config.AdminRole = role.Id;
+            config.AdminRoleId = role.Id;
             await _guildConfigRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });
@@ -532,13 +533,13 @@ namespace Sanakan.Modules
             }
 
             var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(Context.Guild.Id);
-            if (config.UserRole == role.Id)
+            if (config.UserRoleId == role.Id)
             {
                 await ReplyAsync("", embed: $"Rola {role.Mention} już jest ustawiona jako rola użytkownika.".ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
 
-            config.UserRole = role.Id;
+            config.UserRoleId = role.Id;
             await _guildConfigRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });
@@ -558,13 +559,13 @@ namespace Sanakan.Modules
             }
 
             var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(Context.Guild.Id);
-            if (config.MuteRole == role.Id)
+            if (config.MuteRoleId == role.Id)
             {
                 await ReplyAsync("", embed: $"Rola {role.Mention} już jest ustawiona jako rola wyciszająca użytkownika.".ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
 
-            config.MuteRole = role.Id;
+            config.MuteRoleId = role.Id;
             await _guildConfigRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });
@@ -584,13 +585,13 @@ namespace Sanakan.Modules
             }
 
             var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(Context.Guild.Id);
-            if (config.ModMuteRole == role.Id)
+            if (config.ModMuteRoleId == role.Id)
             {
                 await ReplyAsync("", embed: $"Rola {role.Mention} już jest ustawiona jako rola wyciszająca moderatora.".ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
 
-            config.ModMuteRole = role.Id;
+            config.ModMuteRoleId = role.Id;
             await _guildConfigRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });
@@ -610,13 +611,13 @@ namespace Sanakan.Modules
             }
 
             var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(Context.Guild.Id);
-            if (config.GlobalEmotesRole == role.Id)
+            if (config.GlobalEmotesRoleId == role.Id)
             {
                 await ReplyAsync("", embed: $"Rola {role.Mention} już jest ustawiona jako rola globalnych emotek.".ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
 
-            config.GlobalEmotesRole = role.Id;
+            config.GlobalEmotesRoleId = role.Id;
             await _guildConfigRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });
@@ -636,13 +637,13 @@ namespace Sanakan.Modules
             }
 
             var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(Context.Guild.Id);
-            if (config.WaifuRole == role.Id)
+            if (config.WaifuRoleId == role.Id)
             {
                 await ReplyAsync("", embed: $"Rola {role.Mention} już jest ustawiona jako rola waifu.".ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
 
-            config.WaifuRole = role.Id;
+            config.WaifuRoleId = role.Id;
             await _guildConfigRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });
@@ -829,13 +830,13 @@ namespace Sanakan.Modules
         public async Task SetLogChannelAsync()
         {
             var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(Context.Guild.Id);
-            if (config.LogChannel == Context.Channel.Id)
+            if (config.LogChannelId == Context.Channel.Id)
             {
                 await ReplyAsync("", embed: $"Kanał `{Context.Channel.Name}` już jest ustawiony jako kanał logowania usuniętych wiadomości.".ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
 
-            config.LogChannel = Context.Channel.Id;
+            config.LogChannelId = Context.Channel.Id;
             await _guildConfigRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });
@@ -849,13 +850,13 @@ namespace Sanakan.Modules
         public async Task SetGreetingChannelAsync()
         {
             var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(Context.Guild.Id);
-            if (config.GreetingChannel == Context.Channel.Id)
+            if (config.GreetingChannelId == Context.Channel.Id)
             {
                 await ReplyAsync("", embed: $"Kanał `{Context.Channel.Name}` już jest ustawiony jako kanał witania nowych użytkowników.".ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
 
-            config.GreetingChannel = Context.Channel.Id;
+            config.GreetingChannelId = Context.Channel.Id;
             await _guildConfigRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });
@@ -869,13 +870,13 @@ namespace Sanakan.Modules
         public async Task SetNotifChannelAsync()
         {
             var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(Context.Guild.Id);
-            if (config.NotificationChannel == Context.Channel.Id)
+            if (config.NotificationChannelId == Context.Channel.Id)
             {
                 await ReplyAsync("", embed: $"Kanał `{Context.Channel.Name}` już jest ustawiony jako kanał powiadomień o karach.".ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
             
-            config.NotificationChannel = Context.Channel.Id;
+            config.NotificationChannelId = Context.Channel.Id;
             await _guildConfigRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });
@@ -889,13 +890,13 @@ namespace Sanakan.Modules
         public async Task SetRaportChannelAsync()
         {
             var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(Context.Guild.Id);
-            if (config.RaportChannel == Context.Channel.Id)
+            if (config.RaportChannelId == Context.Channel.Id)
             {
                 await ReplyAsync("", embed: $"Kanał `{Context.Channel.Name}` już jest ustawiony jako kanał raportów.".ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
 
-            config.RaportChannel = Context.Channel.Id;
+            config.RaportChannelId = Context.Channel.Id;
             await _guildConfigRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });
@@ -910,13 +911,13 @@ namespace Sanakan.Modules
         {
             var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(Context.Guild.Id);
 
-            if (config.QuizChannel == Context.Channel.Id)
+            if (config.QuizChannelId == Context.Channel.Id)
             {
                 await ReplyAsync("", embed: $"Kanał `{Context.Channel.Name}` już jest ustawiony jako kanał quizów.".ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
 
-            config.QuizChannel = Context.Channel.Id;
+            config.QuizChannelId = Context.Channel.Id;
             await _guildConfigRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });
@@ -930,13 +931,13 @@ namespace Sanakan.Modules
         public async Task SetTodoChannelAsync()
         {
             var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(Context.Guild.Id);
-            if (config.ToDoChannel == Context.Channel.Id)
+            if (config.ToDoChannelId == Context.Channel.Id)
             {
                 await ReplyAsync("", embed: $"Kanał `{Context.Channel.Name}` już jest ustawiony jako kanał todo.".ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
 
-            config.ToDoChannel = Context.Channel.Id;
+            config.ToDoChannelId = Context.Channel.Id;
             await _guildConfigRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });
@@ -950,13 +951,13 @@ namespace Sanakan.Modules
         public async Task SetNsfwChannelAsync()
         {
             var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(Context.Guild.Id);
-            if (config.NsfwChannel == Context.Channel.Id)
+            if (config.NsfwChannelId == Context.Channel.Id)
             {
                 await ReplyAsync("", embed: $"Kanał `{Context.Channel.Name}` już jest ustawiony jako kanał nsfw.".ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
 
-            config.NsfwChannel = Context.Channel.Id;
+            config.NsfwChannelId = Context.Channel.Id;
             await _guildConfigRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });
@@ -1354,7 +1355,7 @@ namespace Sanakan.Modules
                 return;
             }
 
-            var todoChannel = guild.GetTextChannel(config.ToDoChannel);
+            var todoChannel = guild.GetTextChannel(config.ToDoChannelId);
             if (todoChannel == null)
             {
                 await ReplyAsync("", embed: "Kanał todo nie jest ustawiony.".ToEmbedMessage(EMType.Bot).Build());
@@ -1436,7 +1437,7 @@ namespace Sanakan.Modules
             var report = "**Globalki:** ✅\n\n";
             var guildConfig = await _guildConfigRepository.GetCachedGuildFullConfigAsync(user.Guild.Id);
             var duser = await _userRepository.GetUserOrCreateAsync(user.Id);
-            var globalRole = user.Guild.GetRole(guildConfig.GlobalEmotesRole);
+            var globalRole = user.Guild.GetRole(guildConfig.GlobalEmotesRoleId);
 
             if (globalRole != null)
             {
@@ -1448,7 +1449,7 @@ namespace Sanakan.Modules
                         report = $"**Globalki:** ❗\n\n";
                         await user.RemoveRoleAsync(globalRole);
                     }
-                    else if (!sub.IsActive())
+                    else if (!sub.IsActive(_systemClock.UtcNow))
                     {
                         report = $"**Globalki:** ⚠\n\n";
                         await user.RemoveRoleAsync(globalRole);
@@ -1469,7 +1470,7 @@ namespace Sanakan.Modules
                     kolorRep = $"**Kolor:** ❗\n\n";
                     await _profileService.RomoveUserColorAsync(user);
                 }
-                else if (!sub.IsActive())
+                else if (!sub.IsActive(_systemClock.UtcNow))
                 {
                     kolorRep = $"**Kolor:** ⚠\n\n";
                     await _profileService.RomoveUserColorAsync(user);
@@ -1478,9 +1479,9 @@ namespace Sanakan.Modules
             report += kolorRep;
 
             var nickRep = $"**Nick:** ✅";
-            if (guildConfig.UserRole != 0)
+            if (guildConfig.UserRoleId != 0)
             {
-                var userRole = user.Guild.GetRole(guildConfig.UserRole);
+                var userRole = user.Guild.GetRole(guildConfig.UserRoleId);
                 if (userRole != null && user.Roles.Contains(userRole))
                 {
                     var realNick = user.Nickname ?? user.Username;
@@ -1620,10 +1621,10 @@ namespace Sanakan.Modules
             var invokingUser = Context.User as SocketGuildUser;
             var byWho = invokingUser.Nickname ?? invokingUser.Username;
             var user = Context.Guild.GetUser(raport.User);
-            var notifChannel = guild.GetTextChannel(config.NotificationChannel);
-            var reportChannel = guild.GetTextChannel(config.RaportChannel);
-            var userRole = guild.GetRole(config.UserRole);
-            var muteRole = guild.GetRole(config.MuteRole);
+            var notifChannel = guild.GetTextChannel(config.NotificationChannelId);
+            var reportChannel = guild.GetTextChannel(config.RaportChannelId);
+            var userRole = guild.GetRole(config.UserRoleId);
+            var muteRole = guild.GetRole(config.MuteRoleId);
 
             if (muteRole == null)
             {

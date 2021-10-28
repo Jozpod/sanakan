@@ -126,7 +126,7 @@ namespace Sanakan.Services
                 return;
             }
 
-            var textChannel = channel.Guild.GetTextChannel(config.LogChannel);
+            var textChannel = channel.Guild.GetTextChannel(config.LogChannelId);
             
             if (textChannel == null)
             {

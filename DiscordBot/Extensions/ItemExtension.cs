@@ -486,7 +486,7 @@ namespace Sanakan.Extensions
             }
         }
 
-        public static Figure ToFigure(this Item item, Card card)
+        public static Figure? ToFigure(this Item item, Card card, DateTime date)
         {
             if (item.Type != ItemType.FigureSkeleton || card.Rarity != Rarity.SSS)
             {
@@ -515,7 +515,7 @@ namespace Sanakan.Extensions
                 RestartCount = card.RestartCount,
                 HeadQuality = Quality.Broken,
                 PAS = PreAssembledFigure.None,
-                CompletionDate = DateTime.Now,
+                CompletionDate = date,
                 FocusedPart = FigurePart.Head,
                 SkeletonQuality = item.Quality,
                 ClothesQuality = Quality.Broken,
@@ -526,10 +526,12 @@ namespace Sanakan.Extensions
             };
         }
 
-        public static Figure ToPAFigure(this ItemType type)
+        public static Figure? ToPAFigure(this ItemType type, DateTime date)
         {
             if (!type.IsPreAssembledFigure())
+            {
                 return null;
+            }
 
             var pas = type.ToPASType();
 
@@ -547,7 +549,7 @@ namespace Sanakan.Extensions
                 BodyQuality = Quality.Alpha,
                 HeadQuality = Quality.Alpha,
                 Name = pas.GetCharacterName(),
-                CompletionDate = DateTime.Now,
+                CompletionDate = date,
                 FocusedPart = FigurePart.Head,
                 ClothesQuality = Quality.Alpha,
                 LeftArmQuality = Quality.Alpha,

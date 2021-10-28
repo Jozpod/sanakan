@@ -86,7 +86,7 @@ namespace Sanakan.Modules
                         prefix = gConfig.Prefix;
                     }
 
-                    admin = (gUser.Roles.Any(x => x.Id == gConfig?.AdminRole) || gUser.GuildPermissions.Administrator);
+                    admin = (gUser.Roles.Any(x => x.Id == gConfig?.AdminRoleId) || gUser.GuildPermissions.Administrator);
                     dev = _config.CurrentValue.Dev.Any(x => x == gUser.Id);
                 }
 
@@ -188,7 +188,7 @@ namespace Sanakan.Modules
                 return;
             }
 
-            var raportCh = Context.Guild.GetTextChannel(config.RaportChannel);
+            var raportCh = Context.Guild.GetTextChannel(config.RaportChannelId);
             if (raportCh == null)
             {
                 await ReplyAsync("", embed: "Serwer nie ma skonfigurowanych raportów.".ToEmbedMessage(EMType.Bot).Build());
@@ -224,9 +224,9 @@ namespace Sanakan.Modules
                     return;
                 }
 
-                var notifChannel = Context.Guild.GetTextChannel(config.NotificationChannel);
-                var userRole = Context.Guild.GetRole(config.UserRole);
-                var muteRole = Context.Guild.GetRole(config.MuteRole);
+                var notifChannel = Context.Guild.GetTextChannel(config.NotificationChannelId);
+                var userRole = Context.Guild.GetRole(config.UserRoleId);
+                var muteRole = Context.Guild.GetRole(config.MuteRoleId);
 
                 if (muteRole == null)
                 {

@@ -12,6 +12,7 @@ using Sanakan.Common;
 using Sanakan.Configuration;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot.Configuration;
+using Sanakan.DiscordBot.Models;
 using Sanakan.DiscordBot.Services.Abstractions;
 using Sanakan.Extensions;
 
@@ -178,18 +179,18 @@ namespace Sanakan.Services.Supervisor
                 thisMessage = new SupervisorMessage(utcNow, messageContent);
             }
 
-            if (gConfig.AdminRole != 0)
-                if (user.Roles.Any(x => x.Id == gConfig.AdminRole))
+            if (gConfig.AdminRoleId != 0)
+                if (user.Roles.Any(x => x.Id == gConfig.AdminRoleId))
                     return;
 
             if (gConfig.ChannelsWithoutSupervision.Any(x => x.Channel == message.Channel.Id))
                 return;
 
-            var muteRole = user.Guild.GetRole(gConfig.MuteRole);
-            var userRole = user.Guild.GetRole(gConfig.UserRole);
-            var notifChannel = user.Guild.GetTextChannel(gConfig.NotificationChannel);
+            var muteRole = user.Guild.GetRole(gConfig.MuteRoleId);
+            var userRole = user.Guild.GetRole(gConfig.UserRoleId);
+            var notifChannel = user.Guild.GetTextChannel(gConfig.NotificationChannelId);
 
-            bool hasRole = user.Roles.Any(x => x.Id == gConfig.UserRole || x.Id == gConfig.MuteRole) || gConfig.UserRole == 0;
+            bool hasRole = user.Roles.Any(x => x.Id == gConfig.UserRoleId || x.Id == gConfig.MuteRoleId) || gConfig.UserRoleId == 0;
             var action = MakeDecision(messageContent, susspect.Inc(_systemClock.UtcNow), thisMessage.Inc(), hasRole);
             await MakeActionAsync(action, user, message, userRole, muteRole, notifChannel);
         }

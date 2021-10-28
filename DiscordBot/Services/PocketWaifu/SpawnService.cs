@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -16,6 +17,7 @@ using Sanakan.DiscordBot;
 using Sanakan.DiscordBot.Configuration;
 using Sanakan.Extensions;
 using Sanakan.Services.Executor;
+using Sanakan.TaskQueue.Messages;
 using Shinden.API;
 using Shinden.Models;
 
@@ -24,7 +26,7 @@ namespace Sanakan.Services.PocketWaifu
     public class SpawnService
     {
         private readonly DiscordSocketClient _client;
-        private readonly IExecutor _executor;
+        private readonly IProducerConsumerCollection<BaseMessage> _blockingPriorityQueue;
         private readonly ILogger _logger;
         private readonly IOptionsMonitor<BotConfiguration> _config;
         private readonly IWaifuService _waifu;
@@ -40,7 +42,7 @@ namespace Sanakan.Services.PocketWaifu
 
         public SpawnService(
             DiscordSocketClient client,
-            IExecutor executor,
+            IProducerConsumerCollection<BaseMessage> blockingPriorityQueue,
             IWaifuService waifu,
             IOptionsMonitor<BotConfiguration> config,
             ILogger<SpawnService> logger,
@@ -48,8 +50,8 @@ namespace Sanakan.Services.PocketWaifu
             ISystemClock systemClock,
             IRandomNumberGenerator randomNumberGenerator)
         {
-            _executor = executor;
             _client = client;
+            _blockingPriorityQueue = blockingPriorityQueue;
             _logger = logger;
             _config = config;
             _waifu = waifu;
@@ -165,8 +167,9 @@ namespace Sanakan.Services.PocketWaifu
                         users.Remove(selected);
                     }
 
-                    var exe = GetSafariExe(embed, msg, newCard, pokeImage, character, trashChannel, winner);
-                    await _executor.TryAdd(exe, TimeSpan.FromSeconds(1));
+                    //var exe = GetSafariExe(embed, msg, newCard, pokeImage, character, trashChannel, winner);
+                    //await _executor.TryAdd(exe, TimeSpan.FromSeconds(1));
+
                     await msg.RemoveAllReactionsAsync();
                 }
                 catch (Exception ex)
@@ -178,65 +181,65 @@ namespace Sanakan.Services.PocketWaifu
             });
         }
 
-        private Executable GetSafariExe(
-            EmbedBuilder embed,
-            IUserMessage msg,
-            Card newCard,
-            SafariImage pokeImage,
-            CharacterInfo character,
-            ITextChannel trashChannel,
-            IUser winner)
-        {
-            return new Executable("safari", new Task<Task>(async () =>
-            {
-                var botUser = await _userRepository.GetUserOrCreateAsync(winner.Id);
+        //private Executable GetSafariExe(
+        //    EmbedBuilder embed,
+        //    IUserMessage msg,
+        //    Card newCard,
+        //    SafariImage pokeImage,
+        //    CharacterInfo character,
+        //    ITextChannel trashChannel,
+        //    IUser winner)
+        //{
+        //    return new Executable("safari", new Task<Task>(async () =>
+        //    {
+        //        var botUser = await _userRepository.GetUserOrCreateAsync(winner.Id);
 
-                newCard.FirstIdOwner = winner.Id;
-                newCard.Affection += botUser.GameDeck.AffectionFromKarma();
-                botUser.GameDeck.RemoveCharacterFromWishList(newCard.CharacterId);
+        //        newCard.FirstIdOwner = winner.Id;
+        //        newCard.Affection += botUser.GameDeck.AffectionFromKarma();
+        //        botUser.GameDeck.RemoveCharacterFromWishList(newCard.CharacterId);
 
-                botUser.GameDeck.Cards.Add(newCard);
-                await _userRepository.SaveChangesAsync();
+        //        botUser.GameDeck.Cards.Add(newCard);
+        //        await _userRepository.SaveChangesAsync();
 
-                _cacheManager.ExpireTag(new string[] { $"user-{botUser.Id}", "users" });
+        //        _cacheManager.ExpireTag(new string[] { $"user-{botUser.Id}", "users" });
 
-                var record = new UserAnalytics
-                {
-                    Value = 1,
-                    UserId = winner.Id,
-                    MeasureDate = _systemClock.UtcNow,
-                    GuildId = trashChannel?.Guild?.Id ?? 0,
-                    Type = UserAnalyticsEventType.Card
-                };
+        //        var record = new UserAnalytics
+        //        {
+        //            Value = 1,
+        //            UserId = winner.Id,
+        //            MeasureDate = _systemClock.UtcNow,
+        //            GuildId = trashChannel?.Guild?.Id ?? 0,
+        //            Type = UserAnalyticsEventType.Card
+        //        };
 
-                _userAnalyticsRepository.Add(record);
-                await _userAnalyticsRepository.SaveChangesAsync();
+        //        _userAnalyticsRepository.Add(record);
+        //        await _userAnalyticsRepository.SaveChangesAsync();
 
-                _ = Task.Run(async () =>
-                {
-                    try
-                    {
-                        embed.ImageUrl = await _waifu.GetSafariViewAsync(pokeImage, newCard, trashChannel);
-                        embed.Description = $"{winner.Mention} zdobył na polowaniu i wsadził do klatki:\n"
-                                        + $"{newCard.GetString(false, false, true)}\n({newCard.Title})";
-                        await msg.ModifyAsync(x => x.Embed = embed.Build());
+        //        _ = Task.Run(async () =>
+        //        {
+        //            try
+        //            {
+        //                embed.ImageUrl = await _waifu.GetSafariViewAsync(pokeImage, newCard, trashChannel);
+        //                embed.Description = $"{winner.Mention} zdobył na polowaniu i wsadził do klatki:\n"
+        //                                + $"{newCard.GetString(false, false, true)}\n({newCard.Title})";
+        //                await msg.ModifyAsync(x => x.Embed = embed.Build());
 
-                        var privEmb = new EmbedBuilder()
-                        {
-                            Color = EMType.Info.Color(),
-                            Description = $"Na [polowaniu]({msg.GetJumpUrl()}) zdobyłeś: {newCard.GetString(false, false, true)}"
-                        };
+        //                var privEmb = new EmbedBuilder()
+        //                {
+        //                    Color = EMType.Info.Color(),
+        //                    Description = $"Na [polowaniu]({msg.GetJumpUrl()}) zdobyłeś: {newCard.GetString(false, false, true)}"
+        //                };
 
-                        var priv = await winner.GetOrCreateDMChannelAsync();
-                        if (priv != null) await priv.SendMessageAsync("", false, privEmb.Build());
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogInformation($"In Safari: {ex}");
-                    }
-                });
-            }));
-        }
+        //                var priv = await winner.GetOrCreateDMChannelAsync();
+        //                if (priv != null) await priv.SendMessageAsync("", false, privEmb.Build());
+        //            }
+        //            catch (Exception ex)
+        //            {
+        //                _logger.LogInformation($"In Safari: {ex}");
+        //            }
+        //        });
+        //    }));
+        //}
 
         private async Task SpawnCardAsync(ITextChannel spawnChannel, ITextChannel trashChannel, string mention, SocketRole muteRole)
         {
@@ -286,73 +289,23 @@ namespace Sanakan.Services.PocketWaifu
             if (UserCounter[author.Id] > charNeeded)
             {
                 UserCounter[author.Id] = 0;
-                SpawnUserPacket(author, message.Channel);
+                _blockingPriorityQueue.TryAdd(new SpawnCardBundleMessage
+                {
+                    DiscordUserId = author.Id,
+                    MessageChannel = message.Channel,
+                });
             }
         }
 
-        private void SpawnUserPacket(SocketUser user, ISocketMessageChannel channel)
-        {
-            var exe = new Executable($"packet u{user.Id}", new Task<Task>(async () =>
-            {
-                var botUser = await _userRepository.GetUserOrCreateAsync(user.Id);
-                
-                if (botUser.IsBlacklisted)
-                {
-                    return;
-                }
+        //private void SpawnUserPacket(SocketUser user, ISocketMessageChannel channel)
+        //{
+        //    var exe = new Executable($"packet u{user.Id}", new Task<Task>(async () =>
+        //    {
+        //       
+        //    }));
 
-                var pCnt = botUser.TimeStatuses.FirstOrDefault(x => x.Type == StatusType.Packet);
-                if (pCnt == null)
-                {
-                    pCnt = StatusType.Packet.NewTimeStatus();
-                    botUser.TimeStatuses.Add(pCnt);
-                }
-
-                if (!pCnt.IsActive())
-                {
-                    pCnt.EndsAt = _systemClock.UtcNow.Date.AddDays(1);
-                    pCnt.IValue = 0;
-                }
-
-                if (++pCnt.IValue > 3)
-                {
-                    return;
-                }
-
-                var record = new BoosterPack
-                {
-                    CardCount = 2,
-                    MinRarity = Rarity.E,
-                    IsCardFromPackTradable = true,
-                    Name = "Pakiet kart za aktywność",
-                    CardSourceFromPack = CardSource.Activity
-                };
-
-                botUser.GameDeck.BoosterPacks.Add(record);
-                await _userRepository.SaveChangesAsync();
-
-                _ = Task.Run(async () =>
-                {
-                    await channel.SendMessageAsync("", embed: $"{user.Mention} otrzymał pakiet losowych kart.".ToEmbedMessage(EMType.Bot).Build());
-
-                    var gUser = user as SocketGuildUser;
-
-                    var record = new UserAnalytics
-                    {
-                        Value = 1,
-                        UserId = user.Id,
-                        MeasureDate = _systemClock.UtcNow,
-                        GuildId = gUser?.Guild?.Id ?? 0,
-                        Type = UserAnalyticsEventType.Pack
-                    };
-
-                    _userAnalyticsRepository.Add(record);
-                    await _userAnalyticsRepository.SaveChangesAsync();
-                });
-            }));
-
-            _executor.TryAdd(exe, TimeSpan.FromSeconds(1));
-        }
+        //    _executor.TryAdd(exe, TimeSpan.FromSeconds(1));
+        //}
 
         private long GetMessageRealLength(SocketUserMessage message)
         {
@@ -416,10 +369,10 @@ namespace Sanakan.Services.PocketWaifu
             if (sch != null && tch != null)
             {
                 string mention = "";
-                var wRole = user.Guild.GetRole(config.WaifuRole);
+                var wRole = user.Guild.GetRole(config.WaifuRoleId);
                 if (wRole != null) mention = wRole.Mention;
 
-                var muteRole = user.Guild.GetRole(config.MuteRole);
+                var muteRole = user.Guild.GetRole(config.MuteRoleId);
 
                 HandleGuildAsync(sch, tch, config.SafariLimit, mention, noExp, muteRole);
             }

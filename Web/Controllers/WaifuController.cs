@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using DiscordBot.Services.Executor;
 using DiscordBot.Services.PocketWaifu.Abstractions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -28,6 +27,7 @@ using Sanakan.Configuration;
 using Sanakan.Common.Cache;
 using System.Collections.Concurrent;
 using Sanakan.TaskQueue.Messages;
+using Sanakan.Game.Models;
 
 namespace Sanakan.Web.Controllers
 {
@@ -583,7 +583,7 @@ namespace Sanakan.Web.Controllers
         /// <param name="discordUserId">The user identifier in Discord.</param>
         /// <param name="boosterPacks">The bundle model.</param>
         /// <returns>użytkownik bota</returns>
-        [HttpPost("discord/{id}/boosterpack"), Authorize(Policy = AuthorizePolicies.Site)]
+        [HttpPost("discord/{discordUserId}/boosterpack"), Authorize(Policy = AuthorizePolicies.Site)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status200OK)]
@@ -621,7 +621,8 @@ namespace Sanakan.Web.Controllers
 
             _blockingPriorityQueue.TryAdd(new GivesCardsMessage
             {
-
+                DiscordUserId = discordUserId,
+                BoosterPacks = boosterPacks,
             });
 
             //var exe = new Executable($"api-packet u{id}", new Task<Task>(async () =>
@@ -639,15 +640,14 @@ namespace Sanakan.Web.Controllers
             //}));
 
             //await _executor.TryAdd(exe, TimeSpan.FromSeconds(1));
-            //return ShindenOk("Boosterpack added!");
+            return ShindenOk("Boosterpack added!");
         }
 
         /// <summary>
-        /// Daje użytkownikowi pakiety kart
+        /// Gives bundle of cards to given user.
         /// </summary>
-        /// <param name="id">id użytkownika shindena</param>
-        /// <param name="boosterPacks">model pakietu</param>
-        /// <returns>użytkownik bota</returns>
+        /// <param name="shindenUserId">The user identifier in Shinden.</param>
+        /// <param name="boosterPacks">The bundle of cards model.</param>
         /// <response code="404">User not found</response>
         /// <response code="500">Model is Invalid</response>
         [HttpPost("shinden/{id}/boosterpack"), Authorize(Policy = AuthorizePolicies.Site)]
@@ -655,7 +655,7 @@ namespace Sanakan.Web.Controllers
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GiveShindenUserAPacksAsync(
-            ulong id, [FromBody]List<CardBoosterPack> boosterPacks)
+            ulong shindenUserId, [FromBody]List<CardBoosterPack> boosterPacks)
         {
             if (boosterPacks?.Count < 1)
             {
@@ -678,29 +678,35 @@ namespace Sanakan.Web.Controllers
                 return ShindenInternalServerError("Data is Invalid");
             }
 
-            var user = await _userRepository.GetCachedFullUserByShindenIdAsync(id);
+            var user = await _userRepository.GetCachedFullUserByShindenIdAsync(shindenUserId);
             
             if (user == null)
             {
                 return ShindenNotFound(Strings.UserNotFound);
             }
 
-            var discordId = user.Id;
-            var exe = new Executable($"api-packet u{discordId}", new Task<Task>(async () =>
+            var discordUserId = user.Id;
+
+            _blockingPriorityQueue.TryAdd(new OpenCardsMessage
             {
-                var botUser = await _userRepository.GetUserOrCreateAsync(discordId);
+                DiscordUserId = discordUserId,
+            });
 
-                foreach (var pack in packs)
-                {
-                    botUser.GameDeck.BoosterPacks.Add(pack);
-                }
+            //var exe = new Executable($"api-packet u{discordId}", new Task<Task>(async () =>
+            //{
+            //    var botUser = await _userRepository.GetUserOrCreateAsync(discordId);
 
-                await _userRepository.SaveChangesAsync();
+            //    foreach (var pack in packs)
+            //    {
+            //        botUser.GameDeck.BoosterPacks.Add(pack);
+            //    }
 
-                _cacheManager.ExpireTag(new string[] { $"user-{botUser.Id}", "users" });
-            }));
+            //    await _userRepository.SaveChangesAsync();
 
-            await _executor.TryAdd(exe, TimeSpan.FromSeconds(1));
+            //    _cacheManager.ExpireTag(new string[] { $"user-{botUser.Id}", "users" });
+            //}));
+
+            //await _executor.TryAdd(exe, TimeSpan.FromSeconds(1));
 
             TokenData tokenData = null;
             
@@ -722,7 +728,7 @@ namespace Sanakan.Web.Controllers
         /// <summary>
         /// Opens packet and add cards to user collection.
         /// </summary>
-        /// <param name="id">The Shinden user identifier</param>
+        /// <param name="shindenUserId">The Shinden user identifier</param>
         /// <param name="boosterPacks">Packet model</param>
         [HttpPost("shinden/{id}/boosterpack/open"), Authorize(Policy = AuthorizePolicies.Site)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status500InternalServerError)]
@@ -732,7 +738,7 @@ namespace Sanakan.Web.Controllers
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status200OK)]
         public async Task<IActionResult> GiveShindenUserAPacksAndOpenAsync(
-            ulong id, [FromBody]List<CardBoosterPack> boosterPacks)
+            ulong shindenUserId, [FromBody]List<CardBoosterPack> boosterPacks)
         {
             if (boosterPacks?.Count < 1)
             {
@@ -755,9 +761,7 @@ namespace Sanakan.Web.Controllers
                 return ShindenInternalServerError("Data is Invalid");
             }
 
-            ulong discordId = 0;
-
-            var user = await _userRepository.GetByShindenIdAsync(id, new UserQueryOptions
+            var user = await _userRepository.GetByShindenIdAsync(shindenUserId, new UserQueryOptions
             {
                 IncludeGameDeck = true,
                 IncludeCards = true,
@@ -767,13 +771,14 @@ namespace Sanakan.Web.Controllers
 
             if (user == null)
             {
-                return ShindenNotFound("User not found");
+                return ShindenNotFound(Strings.UserNotFound);
             }
             if (gameDeck.Cards.Count + packs.Sum(x => x.CardCount) > gameDeck.MaxNumberOfCards)
             {
-                return ShindenNotAcceptable("User has no space left in deck");
+                return ShindenNotAcceptable(Strings.NoSpaceInDeck);
             }
-            discordId = user.Id;
+
+            var discordUserId = user.Id;
 
             var cards = new List<Card>();
             foreach (var pack in packs)
@@ -781,32 +786,38 @@ namespace Sanakan.Web.Controllers
                 cards.AddRange(await _waifuService.OpenBoosterPackAsync(null, pack));
             }
 
-            var exe = new Executable($"api-packet-open u{discordId}", new Task<Task>(async () =>
+            _blockingPriorityQueue.TryAdd(new OpenCardsMessage
             {
-                var botUser = await _userRepository.GetUserOrCreateAsync(discordId);
+                DiscordUserId = discordUserId,
+                Cards = cards,
+            });
 
-                botUser.Stats.OpenedBoosterPacks += packs.Count;
+            //var exe = new Executable($"api-packet-open u{discordId}", new Task<Task>(async () =>
+            //{
+            //    var botUser = await _userRepository.GetUserOrCreateAsync(discordId);
 
-                foreach (var card in cards)
-                {
-                    card.Affection += botUser.GameDeck.AffectionFromKarma();
-                    card.FirstIdOwner = botUser.Id;
+            //    botUser.Stats.OpenedBoosterPacks += packs.Count;
 
-                    botUser.GameDeck.Cards.Add(card);
-                    botUser.GameDeck.RemoveCharacterFromWishList(card.CharacterId);
-                }
+            //    foreach (var card in cards)
+            //    {
+            //        card.Affection += botUser.GameDeck.AffectionFromKarma();
+            //        card.FirstIdOwner = botUser.Id;
 
-                await _userRepository.SaveChangesAsync();
+            //        botUser.GameDeck.Cards.Add(card);
+            //        botUser.GameDeck.RemoveCharacterFromWishList(card.CharacterId);
+            //    }
 
-                _cacheManager.ExpireTag(new string[] { $"user-{botUser.Id}", "users" });
-            }));
+            //    await _userRepository.SaveChangesAsync();
 
-            if (!await _executor.TryAdd(exe, TimeSpan.FromSeconds(1)))
-            {
-                return ShindenServiceUnavailable("Command queue is full");
-            }
+            //    _cacheManager.ExpireTag(new string[] { $"user-{botUser.Id}", "users" });
+            //}));
 
-            await exe.WaitAsync();
+            //if (!await _executor.TryAdd(exe, TimeSpan.FromSeconds(1)))
+            //{
+            //    return ShindenServiceUnavailable("Command queue is full");
+            //}
+
+            //await exe.WaitAsync();
 
             return Ok(cards);
         }

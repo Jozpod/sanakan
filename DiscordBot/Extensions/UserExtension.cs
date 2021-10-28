@@ -3,6 +3,7 @@ using DiscordBot.Services;
 using Sanakan.Common.Models;
 using Sanakan.DAL.Models;
 using Sanakan.DiscordBot.Extensions;
+using Sanakan.DiscordBot.Models;
 using Sanakan.DiscordBot.Services;
 using Sanakan.Services;
 using System;
@@ -20,11 +21,13 @@ namespace Sanakan.Extensions
         public static bool SendAnyMsgInMonth(this User u)
             => (u.MessagesCount - u.MessagesCntAtDate) > 0;
 
-        public static bool IsCharCounterActive(this User u)
-            => DateTime.Now.Month == u.MeasureDate.Month && DateTime.Now.Year == u.MeasureDate.Year;
+        public static bool IsCharCounterActive(this User user, DateTime date)
+            => date.Month == user.MeasureDate.Month
+                && date.Year == user.MeasureDate.Year;
 
-        public static bool IsPVPSeasonalRankActive(this GameDeck d)
-            => DateTime.Now.Month == d.PVPSeasonBeginDate.Month && DateTime.Now.Year == d.PVPSeasonBeginDate.Year;
+        public static bool IsPVPSeasonalRankActive(this GameDeck gameDeck, DateTime date)
+            => date.Month == gameDeck.PVPSeasonBeginDate.Month
+                && date.Year == gameDeck.PVPSeasonBeginDate.Year;
 
         public static bool IsPVPSeasonalRankActive(this User u)
             => u.GameDeck.IsPVPSeasonalRankActive();
@@ -373,7 +376,10 @@ namespace Sanakan.Extensions
         {
             var nextLvlExp = ExperienceManager.CalculateExpForLevel(u.Level + 1);
             var exp = nextLvlExp - u.ExperienceCount;
-            if (exp < 1) exp = 1;
+            if (exp < 1)
+            {
+                exp = 1;
+            }
 
             return exp;
         }

@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using Discord;
 using Sanakan.Configuration;
 using Sanakan.DiscordBot.Configuration;
+using Sanakan.DiscordBot.Models;
 
 namespace Sanakan.Extensions
 {

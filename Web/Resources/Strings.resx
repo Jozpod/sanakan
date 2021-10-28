@@ -129,6 +129,9 @@
   <data name="ModelIsInvalid" xml:space="preserve">
     <value>Model is Invalid</value>
   </data>
+  <data name="NoSpaceInDeck" xml:space="preserve">
+    <value>User has no space left in deck</value>
+  </data>
   <data name="UserNotFound" xml:space="preserve">
     <value>User not found</value>
   </data>

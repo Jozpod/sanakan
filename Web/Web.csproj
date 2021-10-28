@@ -47,6 +47,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Common\Common.csproj" />
     <ProjectReference Include="..\DiscordBot\DiscordBot.csproj" />
+    <ProjectReference Include="..\Game\Game.csproj" />
     <ProjectReference Include="..\TaskQueue\TaskQueue.csproj" />
   </ItemGroup>
 

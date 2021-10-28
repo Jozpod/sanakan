@@ -37,10 +37,7 @@
     <ProjectReference Include="..\Common\Common.csproj" />
     <ProjectReference Include="..\DAL\DAL.csproj" />
     <ProjectReference Include="..\ShindenApi\ShindenApi.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Models\" />
+    <ProjectReference Include="..\TaskQueue\TaskQueue.csproj" />
   </ItemGroup>
 
   <ItemGroup>

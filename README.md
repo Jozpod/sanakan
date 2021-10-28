@@ -32,16 +32,17 @@ dotnet run
 |                   Name                    |         Type         |                 Default                 | Description                                                       |
 | :---------------------------------------: | :------------------: | :-------------------------------------: | :---------------------------------------------------------------- |
 |  **[`TimeZone`](#TimeZone)**  |  `{String}`  |                 `Central European Standard Time`                  | Timezone which bot will use when displaying datetime information.                                 |
-|     **[`Language`](#Language)**     | `{String}` | `pl-PL` | Language.                                                 |
+|     **[`Language`](#Language)**     | `{String}` | `pl-PL` | Language which bot will use when displaying .                                                 |
 
 
 ### Database
 |                   Name                    |         Type         |                 Default                 | Description                                                       |
 | :---------------------------------------: | :------------------: | :-------------------------------------: | :---------------------------------------------------------------- |
-|  **[`Provider`](#Provider)**  |  `{String}`  |                 `MySql`                  | The database engine to use. string.                                 |
-|     **[`Version`](#Version)**     | `{String}` | `pl-PL` | Language.                                                 |
+|  **[`Provider`](#Provider)**  |  `{String}`  |                 `MySql`                  | The database engine to use. Currently supported MySql, Sqlite and SqlServer                              |
+|     **[`Version`](#Version)**     | `{String}` | `pl-PL` | The database engine version if supported.                                                 |
 |  **[`ConnectionString`](#ConnectionString)**  |  `{String}`  |                 `Server=localhost;Database=database;Uid=root;Pwd=password;`                  | connection string.                                 |
 
+### Cache
 |                   Name                    |         Type         |                 Default                 | Description                                                       |
 | :---------------------------------------: | :------------------: | :-------------------------------------: | :---------------------------------------------------------------- |
 |     **[`Prefix`](#Prefix)**     | `{String}` | . | Options for Sass.                                                 |
@@ -52,7 +53,47 @@ dotnet run
 | **[`Shinden`](#Shinden)** |     `{Object}`      |                 `true`                  | Enables/Disables the default Webpack importer.                    |
 | **[`CharPerPacket`](#CharPerPacket)** |     `{Number}`      |                 `true`                  | Enables/Disables the default Webpack importer.                    |
 | **[`Experience`](#Experience)** |     `{Object}`      |                 `true`                  | Enables/Disables the default Webpack importer.                    |
+| **[`Demonization`](#Demonization)** |     `{Boolean}`      |                 `true`                  | Enables/Disables the default Webpack importer.                    |
 | **[`Demonization`](#webpackimporter)** |     `{Boolean}`      |                 `true`                  | Enables/Disables the default Webpack importer.                    |
+### Daemon
+|                   Name                    |         Type         |                 Default                 | Description                                                       |
+| :---------------------------------------: | :------------------: | :-------------------------------------: | :---------------------------------------------------------------- |
+|     **[`Prefix`](#Prefix)**     | `{String}` | . | Options for Sass.                                                 |
+|       **[`BotToken`](#BotToken)**       |     `{String}`      |                       | The discord bot token.                       |
+|  **[`Supervision`](#Supervision)**  | `{Boolean}` |               `true`               | Prepends/Appends `Sass`/`SCSS` code before the actual entry file. |
+| **[`Demonization`](#Demonization)** |     `{Boolean}`      |                 `true`                  | Enables/Disables the default Webpack importer.                    |
+| **[`SafariEnabled`](#SafariEnabled)** |     `{Boolean}`      |                 `true`                  | Enables/Disables the default Webpack importer.                    |
+| **[`Shinden`](#Shinden)** |     `{Object}`      |                 `true`                  | Enables/Disables the default Webpack importer.                    |
+| **[`CharPerPacket`](#CharPerPacket)** |     `{Number}`      |                 `true`                  | Enables/Disables the default Webpack importer.                    |
+| **[`Experience`](#Experience)** |     `{Object}`      |                 `true`                  | Enables/Disables the default Webpack importer.                    |
+| **[`Demonization`](#Demonization)** |     `{Boolean}`      |                 `true`                  | Enables/Disables the default Webpack importer.                    |
+| **[`Demonization`](#webpackimporter)** |     `{Boolean}`      |                 `true`                  | Enables/Disables the default Webpack importer.                    |
+### Discord
+|                   Name                    |         Type         |                 Default                 | Description                                                       |
+| :---------------------------------------: | :------------------: | :-------------------------------------: | :---------------------------------------------------------------- |
+|     **[`Prefix`](#Prefix)**     | `{String}` | . | Options for Sass.                                                 |
+|       **[`BotToken`](#BotToken)**       |     `{String}`      |                       | The discord bot token.                       |
+|  **[`Supervision`](#Supervision)**  | `{Boolean}` |               `true`               | Prepends/Appends `Sass`/`SCSS` code before the actual entry file. |
+| **[`Demonization`](#Demonization)** |     `{Boolean}`      |                 `true`                  | Enables/Disables the default Webpack importer.                    |
+| **[`SafariEnabled`](#SafariEnabled)** |     `{Boolean}`      |                 `true`                  | Enables/Disables the default Webpack importer.                    |
+| **[`Shinden`](#Shinden)** |     `{Object}`      |                 `true`                  | Enables/Disables the default Webpack importer.                    |
+| **[`CharPerPacket`](#CharPerPacket)** |     `{Number}`      |                 `true`                  | Enables/Disables the default Webpack importer.                    |
+| **[`Experience`](#Experience)** |     `{Object}`      |                 `true`                  | Enables/Disables the default Webpack importer.                    |
+| **[`Demonization`](#Demonization)** |     `{Boolean}`      |                 `true`                  | Enables/Disables the default Webpack importer.                    |
+| **[`Demonization`](#webpackimporter)** |     `{Boolean}`      |                 `true`                  | Enables/Disables the default Webpack importer.                    |
+
+### Experience
+|                   Name                    |         Type         |                 Default                 | Description                                                       |
+| :---------------------------------------: | :------------------: | :-------------------------------------: | :---------------------------------------------------------------- |
+|     **[`Prefix`](#Prefix)**     | `{String}` | . | Options for Sass.                                                 |
+|       **[`BotToken`](#BotToken)**       |     `{String}`      |                       | The discord bot token.                       |
+|  **[`Supervision`](#Supervision)**  | `{Boolean}` |               `true`               | Prepends/Appends `Sass`/`SCSS` code before the actual entry file. |
+| **[`Demonization`](#Demonization)** |     `{Boolean}`      |                 `true`                  | Enables/Disables the default Webpack importer.                    |
+| **[`SafariEnabled`](#SafariEnabled)** |     `{Boolean}`      |                 `true`                  | Enables/Disables the default Webpack importer.                    |
+| **[`Shinden`](#Shinden)** |     `{Object}`      |                 `true`                  | Enables/Disables the default Webpack importer.                    |
+| **[`CharPerPacket`](#CharPerPacket)** |     `{Number}`      |                 `true`                  | Enables/Disables the default Webpack importer.                    |
+| **[`Experience`](#Experience)** |     `{Object}`      |                 `true`                  | Enables/Disables the default Webpack importer.                    |
+| **[`Demonization`](#Demonization)** |     `{Boolean}`      |                 `true`                  | Enables/Disables the default Webpack importer.                    |
 | **[`Demonization`](#webpackimporter)** |     `{Boolean}`      |                 `true`                  | Enables/Disables the default Webpack importer.                    |
 
 ### Running ###

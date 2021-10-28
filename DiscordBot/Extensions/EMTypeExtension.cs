@@ -1,17 +1,18 @@
 ﻿using Discord;
+using Sanakan.DiscordBot.Models;
 
 namespace Sanakan.Extensions
 {
-    public enum EMType
-    {
-        Neutral, Warning, Success, Error, Info, Bot
-    }
+    
 
     public static class EMTypeExtension
     {
         public static string Emoji(this EMType type, bool hide = false)
         {
-            if (hide) return "";
+            if (hide)
+            {
+                return "";
+            }
 
             switch (type)
             {

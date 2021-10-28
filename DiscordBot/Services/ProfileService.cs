@@ -62,54 +62,16 @@ namespace Sanakan.Services
             TimeSpan.FromMinutes(1));
         }
 
-        private async Task CyclicCheckAsync()
-        {
-            using var serviceScope = _serviceScopeFactory.CreateScope();
-            var serviceProvider = serviceScope.ServiceProvider;
-            var guildConfigRepository = serviceProvider.GetRequiredService<IGuildConfigRepository>();
-            var timeStatusRepository = serviceProvider.GetRequiredService<ITimeStatusRepository>();
+       
 
-            var subs = await timeStatusRepository.GetBySubTypeAsync();
-
-            foreach (var sub in subs)
-            {
-                if (sub.IsActive())
-                {
-                    continue;
-                }
-
-                var guild = _client.GetGuild(sub.Guild);
-                switch (sub.Type)
-                {
-                    case StatusType.Globals:
-                        var guildConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(sub.Guild);
-                        await RemoveRoleAsync(guild, guildConfig?.GlobalEmotesRole ?? 0, sub.UserId);
-                        break;
-
-                    case StatusType.Color:
-                        await RomoveUserColorAsync(guild.GetUser(sub.UserId));
-                        break;
-
-                    default:
-                        break;
-                }
-            }
-        }
-
-        private async Task RemoveRoleAsync(SocketGuild guild, ulong roleId, ulong userId)
-        {
-            var role = guild.GetRole(roleId);
-            if (role == null) return;
-
-            var user = guild.GetUser(userId);
-            if (user == null) return;
-
-            await user.RemoveRoleAsync(role);
-        }
+       
 
         public bool HasSameColor(SocketGuildUser user, FColor color)
         {
-            if (user == null) return false;
+            if (user == null)
+            {
+                return false;
+            }
 
             var colorNumeric = (uint)color;
             return user.Roles.Any(x => x.Name == colorNumeric.ToString());
@@ -149,27 +111,7 @@ namespace Sanakan.Services
             return true;
         }
 
-        public async Task RomoveUserColorAsync(SocketGuildUser user)
-        {
-            if (user == null)
-            {
-                return;
-            }
-
-            foreach(uint color in Enum.GetValues(typeof(FColor)))
-            {
-                var cR = user.Roles.FirstOrDefault(x => x.Name == color.ToString());
-                if (cR != null)
-                {
-                    if (cR.Members.Count() == 1)
-                    {
-                        await cR.DeleteAsync();
-                        return;
-                    }
-                    await user.RemoveRoleAsync(cR);
-                }
-            }
-        }
+      
 
         public List<User> GetTopUsers(List<User> list, TopType type)
             => GetRangeMax(OrderUsersByTop(list, type), 50);

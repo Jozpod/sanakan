@@ -311,10 +311,10 @@ namespace Sanakan.Modules
 
             if (config != null)
             {
-                var wRole = Context.Guild.GetRole(config.WaifuRole);
+                var wRole = Context.Guild.GetRole(config.WaifuRoleId);
                 if (wRole != null) mention = wRole.Mention;
 
-                mutedRole = guild.GetRole(config.MuteRole);
+                mutedRole = guild.GetRole(config.MuteRoleId);
             }
 
             var userMessage = await ReplyAsync(mention, embed: $"Loteria kart. Zareaguj {emote}, aby wziąć udział.\n\nKoniec `{time.ToShortTimeString()}:{time.Second.ToString("00")}`".ToEmbedMessage(EMType.Bot).Build());
@@ -1200,7 +1200,7 @@ namespace Sanakan.Modules
         [Remarks("User 10000")]
         public async Task ChangeUserExpAsync(
             [Summary("użytkownik")]SocketGuildUser user,
-            [Summary("liczba punktów doświadczenia")]long amount)
+            [Summary("liczba punktów doświadczenia")]ulong amount)
         {
             var botuser = await _userRepository.GetUserOrCreateAsync(user.Id);
             botuser.ExperienceCount += amount;

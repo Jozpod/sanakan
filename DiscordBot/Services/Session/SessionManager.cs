@@ -3,7 +3,6 @@ using Discord.Commands;
 using Discord.WebSocket;
 using DiscordBot.Services.Session;
 using Microsoft.Extensions.Logging;
-using Sanakan.Services.Executor;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,12 +15,11 @@ namespace Sanakan.Services.Session
     {
         private readonly DiscordSocketClient _client;
         private IServiceProvider _provider;
-        private readonly IExecutor _executor;
         private readonly ILogger _logger;
         private Timer _timer;
 
         private SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
-        private List<ISession> _sessions = new List<ISession>();
+        
 
         public SessionManager(
             DiscordSocketClient client,
@@ -262,24 +260,7 @@ namespace Sanakan.Services.Session
 
         private async Task AutoValidate()
         {
-            if (_sessions.Count < 1)
-            {
-                ToggleAutoValidation(false);
-                return;
-            }
-
-            try
-            {
-                for (int i = _sessions.Count; i > 0; i--)
-                {
-                    if (!_sessions[i - 1].IsValid())
-                        await DisposeAsync(_sessions[i - 1]);
-                }
-            }
-            catch(Exception ex)
-            {
-                _logger.LogInformation($"Session: autovalidate error {ex}");
-            }
+           
         }
     }
 }

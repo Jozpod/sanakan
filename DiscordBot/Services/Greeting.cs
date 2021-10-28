@@ -89,7 +89,7 @@ namespace Sanakan.Services
             }
 
             var content = ReplaceTags(user, guildConfig.WelcomeMessage);
-            var textChannel = user.Guild.GetTextChannel(guildConfig.GreetingChannel);
+            var textChannel = user.Guild.GetTextChannel(guildConfig.GreetingChannelId);
             await SendMessageAsync(content, textChannel);
 
             if (guildConfig?.WelcomeMessagePW == null)
@@ -138,7 +138,7 @@ namespace Sanakan.Services
                 }
 
                 var content = ReplaceTags(user, guildConfig.GoodbyeMessage);
-                var textChannel = user.Guild.GetTextChannel(guildConfig.GreetingChannel);
+                var textChannel = user.Guild.GetTextChannel(guildConfig.GreetingChannelId);
                 await SendMessageAsync(content, textChannel);
             }
 

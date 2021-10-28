@@ -2,11 +2,7 @@
 
 namespace Sanakan.Api.Models
 {
-    public enum CardsPoolType
-    {
-        Random, Title, List
-    }
-
+    
     public class BoosterPackPool
     {
         /// <summary>

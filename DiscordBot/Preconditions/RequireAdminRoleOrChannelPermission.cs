@@ -43,7 +43,7 @@ namespace Sanakan.Preconditions
                 return CheckUser(user, channel);
             }
 
-            var role = context.Guild.GetRole(gConfig.AdminRole);
+            var role = context.Guild.GetRole(gConfig.AdminRoleId);
             
             if (role == null)
             {

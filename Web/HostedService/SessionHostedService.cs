@@ -8,52 +8,49 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.Configuration;
+using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.Common.Configuration;
+using System.Collections.Generic;
 
 namespace Sanakan.Web.HostedService
 {
-    public class MemoryUsageHostedService : BackgroundService
+    public class SessionHostedService : BackgroundService
     {
         private readonly ILogger _logger;
         private readonly ISystemClock _systemClock;
         private readonly IOptionsMonitor<DaemonsConfiguration> _options;
         private readonly IServiceScopeFactory _serviceScopeFactory;
-        private readonly Process _process;
-        private readonly IOperatingSystem _operatingSystem;
         private readonly ITimer _timer;
-        private const int MB = 1048576;
+        private List<ISession> _sessions = new List<ISession>();
 
-        public MemoryUsageHostedService(
+        public SessionHostedService(
             ILogger<MemoryUsageHostedService> logger,
-            ISystemClock systemClock,
             IOptionsMonitor<DaemonsConfiguration> options,
+            ISystemClock systemClock,
             IServiceScopeFactory serviceScopeFactory,
             IOperatingSystem operatingSystem,
             ITimer timer)
         {
             _logger = logger;
             _systemClock = systemClock;
-            _options = options;
             _serviceScopeFactory = serviceScopeFactory;
-            _operatingSystem = operatingSystem;
+            _options = options;
             _timer = timer;
-            _process = _operatingSystem.GetCurrentProcess();
         }
 
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken = default)
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             try
             {
                 stoppingToken.ThrowIfCancellationRequested();
                 _timer.Tick += OnTick;
                 _timer.Start(
-                    _options.CurrentValue.CaptureMemoryUsageDueTime,
-                    _options.CurrentValue.CaptureMemoryUsagePeriod);
-                
+                    _options.CurrentValue.SessionDueTime,
+                    _options.CurrentValue.SessionPeriod);
+
                 await Task.Delay(Timeout.Infinite, stoppingToken);
-            } 
+            }
             catch (OperationCanceledException)
             {
                 _timer.Stop();
@@ -62,29 +59,23 @@ namespace Sanakan.Web.HostedService
 
         private async void OnTick(object sender, TimerEventArgs e)
         {
+            if (_sessions.Count < 1)
+            {
+                ToggleAutoValidation(false);
+                return;
+            }
+
             try
             {
-                _operatingSystem.Refresh(_process);
-                var memoryUsage = _process.WorkingSet64 / MB;
-
-                _logger.LogInformation($"Memory Usage: {memoryUsage} MiB");
-                using var serviceScope = _serviceScopeFactory.CreateScope();
-                var serviceProvider = serviceScope.ServiceProvider;
-                var repository = serviceProvider.GetRequiredService<ISystemAnalyticsRepository>();
-
-                var record = new SystemAnalytics
+                for (int i = _sessions.Count; i > 0; i--)
                 {
-                    MeasureDate = _systemClock.UtcNow,
-                    Value = memoryUsage,
-                    Type = SystemAnalyticsEventType.Ram,
-                };
-
-                repository.Add(record);
-                await repository.SaveChangesAsync();
+                    if (!_sessions[i - 1].IsValid())
+                        await DisposeAsync(_sessions[i - 1]);
+                }
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Could not get memory usage", ex);
+                _logger.LogInformation($"Session: autovalidate error {ex}");
             }
         }
     }

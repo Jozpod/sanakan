@@ -7,7 +7,7 @@ namespace Sanakan.TaskQueue.Messages
 {
     public class ReplaceCharacterIdsInCardMessage : BaseMessage
     {
-        public ulong OldCharacterId { get; internal set; }
-        public ulong NewCharacterId { get; internal set; }
+        public ulong OldCharacterId { get; set; }
+        public ulong NewCharacterId { get; set; }
     }
 }

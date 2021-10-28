@@ -1222,7 +1222,7 @@ namespace Sanakan.Services.PocketWaifu
                         id = _randomNumberGenerator.GetOneRandomFrom(pack.Characters);
                     }
 
-                    var result = await _shindenClient.GetCharacterInfoAsync(id.Character);
+                    var result = await _shindenClient.GetCharacterInfoAsync(id.CharacterId);
 
                     if (result.Value != null)
                     {

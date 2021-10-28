@@ -40,7 +40,7 @@ namespace Sanakan.Preconditions
 
             if (gConfig != null)
             {
-                var role = context.Guild.GetRole(gConfig.AdminRole);
+                var role = context.Guild.GetRole(gConfig.AdminRoleId);
                 if (role != null)
                 {
                     if (user.Roles.Any(x => x.Id == role.Id))

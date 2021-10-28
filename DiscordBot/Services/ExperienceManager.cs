@@ -9,7 +9,9 @@ using Sanakan.DiscordBot.Configuration;
 using Sanakan.DiscordBot.Services;
 using Sanakan.Extensions;
 using Sanakan.Services.Executor;
+using Sanakan.TaskQueue.Messages;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -22,15 +24,15 @@ namespace Sanakan.Services
         private const double SAVE_AT = 5;
         private const double DefaultLevelMultiplier = 0.35;
 
-        private Dictionary<ulong, double> _exp;
+        private Dictionary<ulong, double> _userExperienceMap;
         private Dictionary<ulong, ulong> _messages;
         private Dictionary<ulong, ulong> _commands;
         private Dictionary<ulong, DateTime> _saved;
         private Dictionary<ulong, ulong> _characters;
 
-        private DiscordSocketClient _client;
+        private readonly DiscordSocketClient _client;
+        private readonly IProducerConsumerCollection<BaseMessage> _blockingPriorityQueue;
         private readonly IImageProcessor _imageProcessor;
-        private IExecutor _executor;
         private readonly IOptionsMonitor<BotConfiguration> _config;
         private readonly IUserRepository _userRepository;
         private readonly IGuildConfigRepository _guildConfigRepository;
@@ -39,22 +41,22 @@ namespace Sanakan.Services
 
         public ExperienceManager(
             DiscordSocketClient client,
-            IExecutor executor,
+            IProducerConsumerCollection<BaseMessage> blockingPriorityQueue,
             IOptionsMonitor<BotConfiguration> config,
             IImageProcessor imageProcessor,
             IUserRepository userRepository,
             IUserAnalyticsRepository userAnalyticsRepository,
             ISystemClock systemClock)
         {
-            _executor = executor;
             _client = client;
+            _blockingPriorityQueue = blockingPriorityQueue;
             _config = config;
             _imageProcessor = imageProcessor;
             _userRepository = userRepository;
             _userAnalyticsRepository = userAnalyticsRepository;
             _systemClock = systemClock;
 
-            _exp = new Dictionary<ulong, double>();
+            _userExperienceMap = new Dictionary<ulong, double>();
             _saved = new Dictionary<ulong, DateTime>();
             _messages = new Dictionary<ulong, ulong>();
             _commands = new Dictionary<ulong, ulong>();
@@ -66,7 +68,7 @@ namespace Sanakan.Services
         }
 
         public static ulong CalculateExpForLevel(ulong level, double levelMultiplier = DefaultLevelMultiplier) 
-            => (level <= 0) ? 0 : Convert.ToInt64(Math.Floor(Math.Pow(level / levelMultiplier, 2)) + 1);
+            => (level <= 0) ? 0ul : (ulong)Convert.ToInt64(Math.Floor(Math.Pow(level / levelMultiplier, 2)) + 1);
         public static ulong CalculateLevel(
             long experience,
             double levelMultiplier = DefaultLevelMultiplier) 
@@ -77,25 +79,7 @@ namespace Sanakan.Services
             ISocketMessageChannel channel,
             ulong level)
         {
-            using var badge = await _imageProcessor.GetLevelUpBadgeAsync(
-                user.Nickname ?? user.Username,
-                level,
-                user.GetUserOrDefaultAvatarUrl(),
-                user.Roles.OrderByDescending(x => x.Position).First().Color);
-            using var badgeStream = badge.ToPngStream();
-            await channel.SendFileAsync(badgeStream, $"{user.Id}.png");
-
-            var record = new UserAnalytics
-            {
-                Value = level,
-                UserId = user.Id,
-                GuildId = user.Guild.Id,
-                MeasureDate = _systemClock.UtcNow,
-                Type = UserAnalyticsEventType.Level
-            };
-
-            _userAnalyticsRepository.Add(record);
-            await _userAnalyticsRepository.SaveChangesAsync();
+           
         }
 
         private async Task HandleMessageAsync(SocketMessage message)
@@ -124,7 +108,7 @@ namespace Sanakan.Services
             var config = await _guildConfigRepository.GetCachedGuildFullConfigAsync(user.Guild.Id);
             if (config != null)
             {
-                var role = user.Guild.GetRole(config.UserRole);
+                var role = user.Guild.GetRole(config.UserRoleId);
                 if (role != null)
                 {
                     if (!user.Roles.Contains(role))
@@ -177,15 +161,22 @@ namespace Sanakan.Services
         private void CountMessage(ulong userId, bool isCommand)
         {
             if (!_messages.Any(x => x.Key == userId))
+            {
                 _messages.Add(userId, 1);
+            }
             else
+            {
                 _messages[userId]++;
+            }
 
             if (!_commands.Any(x => x.Key == userId))
+            {
                 _commands.Add(userId, isCommand ? 1u : 0u);
-            else
-                if (isCommand)
+            }
+            else if (isCommand)
+            {
                 _commands[userId]++;
+            }
         }
 
         private void CountCharacters(ulong userId, ulong characters)
@@ -201,27 +192,37 @@ namespace Sanakan.Services
             var exp = GetPointsFromMsg(message);
             if (!calculateExp) exp = 0;
 
-            if (!_exp.Any(x => x.Key == user.Id))
+            if (!_userExperienceMap.Any(x => x.Key == user.Id))
             {
-                _exp.Add(message.Author.Id, exp);
+                _userExperienceMap.Add(message.Author.Id, exp);
                 return;
             }
 
-            _exp[user.Id] += exp;
+            _userExperienceMap[user.Id] += exp;
 
-            var saved = _exp[user.Id];
-            if (saved < SAVE_AT && !CheckLastSave(user.Id)) return;
+            var saved = _userExperienceMap[user.Id];
+            if (saved < SAVE_AT && !CheckLastSave(user.Id)) {
+                return;
+            }
 
             var fullP = (long) Math.Floor(saved);
-            if (fullP < 1) return;
+            if (fullP < 1)
+            {
+                return;
+            }
 
-            _exp[message.Author.Id] -= fullP;
+            _userExperienceMap[message.Author.Id] -= fullP;
             _saved[user.Id] = _systemClock.UtcNow;
 
             var task = CreateTask(user, message.Channel, fullP, _messages[user.Id], _commands[user.Id], _characters[user.Id], calculateExp);
             _characters[user.Id] = 0;
             _messages[user.Id] = 0;
             _commands[user.Id] = 0;
+
+            _blockingPriorityQueue.TryAdd(new AddExperienceMessage
+            {
+
+            })
 
             _executor.TryAdd(new Executable("add exp", task), TimeSpan.FromSeconds(1));
         }
@@ -259,112 +260,20 @@ namespace Sanakan.Services
             return experience;
         }
 
-        private long CheckFloodAndReturnExp(long exp, User botUser)
-        {
-            var fMn = botUser
-                .TimeStatuses
-                .FirstOrDefault(x => x.Type == StatusType.Flood);
-
-            if (fMn == null)
-            {
-                fMn = StatusType.Flood.NewTimeStatus();
-                botUser.TimeStatuses.Add(fMn);
-            }
-
-            if (!fMn.IsActive())
-                fMn.IValue = 101;
-
-            fMn.EndsAt = _systemClock.UtcNow.AddMinutes(10);
-            if (--fMn.IValue < 20)
-            {
-                fMn.IValue = 20;
-            }
-
-            double ratio = fMn.IValue / 100d;
-
-            return (long) (exp * ratio);
-        }
-
-        private Task<Task> CreateTask(
-            SocketGuildUser discordUser,
-            ISocketMessageChannel channel,
-            long exp,
-            ulong messages,
-            ulong commands,
-            ulong characters,
-            bool calculateExp)
-        {
-            return new Task<Task>(async () =>
-            {
-                var user = await _userRepository.GetUserOrCreateAsync(discordUser.Id);
-                if (user == null)
-                {
-                    return;
-                }
-
-                var totalSeconds = (_systemClock.UtcNow - user.MeasureDate.AddMonths(1)).TotalSeconds;
-
-                if (totalSeconds > 1)
-                {
-                    user.MeasureDate = _systemClock.StartOfMonth;
-                    user.MessagesCntAtDate = user.MessagesCount;
-                    user.CharacterCntFromDate = characters;
-                }
-                else
-                    user.CharacterCntFromDate += characters;
-
-                exp = CheckFloodAndReturnExp(exp, user);
-                if (exp < 1) exp = 1;
-
-                user.ExperienceCount += exp;
-                user.MessagesCount += messages;
-                user.CommandsCount += commands;
-
-                var newLevel = CalculateLevel(user.ExperienceCount);
-                if (newLevel != user.Level && calculateExp)
-                {
-                    user.Level = newLevel;
-                    _ = Task.Run(async () => { await NotifyAboutLevelAsync(discordUser, channel, newLevel); });
-                }
-
-                _ = Task.Run(async () =>
-                {
-                    var config = await _guildConfigRepository.GetCachedGuildFullConfigAsync(discordUser.Guild.Id);
-
-                    if (config == null)
-                    {
-                        return;
-                    }
-
-                    if (!calculateExp)
-                    {
-                        return;
-                    }
-
-                    foreach (var lvlRole in config.RolesPerLevel)
-                    {
-                        var role = discordUser.Guild.GetRole(lvlRole.Role);
-                        if (role == null)
-                        {
-                            continue;
-                        }
-
-                        bool hasRole = discordUser.Roles.Any(x => x.Id == role.Id);
-
-                        if (newLevel >= lvlRole.Level)
-                        {
-                            if (!hasRole)
-                                await discordUser.AddRoleAsync(role);
-                        }
-                        else if (hasRole)
-                        {
-                            await discordUser.RemoveRoleAsync(role);
-                        }
-                    }
-                });
-
-                await _userRepository.SaveChangesAsync();
-            });
-        }
+      
+        //private Task<Task> CreateTask(
+        //    SocketGuildUser discordUser,
+        //    ISocketMessageChannel channel,
+        //    ulong experience,
+        //    ulong messages,
+        //    ulong commands,
+        //    ulong characters,
+        //    bool calculateExp)
+        //{
+        //    return new Task<Task>(async () =>
+        //    {
+               
+        //    });
+        //}
     }
 }

@@ -17,19 +17,71 @@ namespace Sanakan.DAL.Models.Configuration
         /// The Discord guild (server) identifier.
         /// </summary>
         public ulong Id { get; set; }
-        public ulong MuteRole { get; set; }
-        public ulong ModMuteRole { get; set; }
-        public ulong UserRole { get; set; }
-        public ulong AdminRole { get; set; }
-        public ulong GlobalEmotesRole { get; set; }
-        public ulong WaifuRole { get; set; }
-        public ulong NotificationChannel { get; set; }
-        public ulong RaportChannel { get; set; }
-        public ulong QuizChannel { get; set; }
-        public ulong ToDoChannel { get; set; }
-        public ulong NsfwChannel { get; set; }
-        public ulong LogChannel { get; set; }
-        public ulong GreetingChannel { get; set; }
+
+        /// <summary>
+        /// The Discord role identifier.
+        /// </summary>
+        public ulong MuteRoleId { get; set; }
+
+        /// <summary>
+        /// The Discord role identifier.
+        /// </summary>
+        public ulong ModMuteRoleId { get; set; }
+
+        /// <summary>
+        /// The Discord role identifier.
+        /// </summary>
+        public ulong UserRoleId { get; set; }
+
+        /// <summary>
+        /// The Discord role identifier.
+        /// </summary>
+        public ulong AdminRoleId { get; set; }
+
+        /// <summary>
+        /// The Discord role identifier.
+        /// </summary>
+        public ulong GlobalEmotesRoleId { get; set; }
+
+        /// <summary>
+        /// The Discord role identifier.
+        /// </summary>
+        public ulong WaifuRoleId { get; set; }
+
+        /// <summary>
+        /// The Discord channel identifier.
+        /// </summary>
+        public ulong NotificationChannelId { get; set; }
+
+        /// <summary>
+        /// The Discord channel identifier.
+        /// </summary>
+        public ulong RaportChannelId { get; set; }
+
+        /// <summary>
+        /// The Discord channel identifier.
+        /// </summary>
+        public ulong QuizChannelId { get; set; }
+
+        /// <summary>
+        /// The Discord channel identifier.
+        /// </summary>
+        public ulong ToDoChannelId { get; set; }
+
+        /// <summary>
+        /// The Discord channel identifier.
+        /// </summary>
+        public ulong NsfwChannelId { get; set; }
+
+        /// <summary>
+        /// The Discord channel identifier.
+        /// </summary>
+        public ulong LogChannelId { get; set; }
+
+        /// <summary>
+        /// The Discord channel identifier.
+        /// </summary>
+        public ulong GreetingChannelId { get; set; }
 
         [StringLength(50)]
         public string WelcomeMessage { get; set; }

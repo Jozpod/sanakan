@@ -1,122 +1,122 @@
-﻿using DiscordBot.Services.Executor;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Concurrent;
-using System.Diagnostics;
-using System.Threading;
-using System.Threading.Tasks;
+﻿//using DiscordBot.Services.Executor;
+//using Microsoft.Extensions.Logging;
+//using System;
+//using System.Collections.Concurrent;
+//using System.Diagnostics;
+//using System.Threading;
+//using System.Threading.Tasks;
 
-namespace Sanakan.Services.Executor
-{
-    public class SynchronizedExecutor : IExecutor
-    {
-        private const int QueueLength = 100;
+//namespace Sanakan.Services.Executor
+//{
+//    public class SynchronizedExecutor : IExecutor
+//    {
+//        private const int QueueLength = 100;
 
-        private IServiceProvider _provider;
-        private readonly ILogger _logger;
+//        private IServiceProvider _provider;
+//        private readonly ILogger _logger;
 
-        private SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
-        private BlockingCollection<IExecutable> _queue = new BlockingCollection<IExecutable>(QueueLength);
-        private BlockingCollection<IExecutable> _hiQueue = new BlockingCollection<IExecutable>(QueueLength);
+//        private SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
+//        private BlockingCollection<IExecutable> _queue = new BlockingCollection<IExecutable>(QueueLength);
+//        private BlockingCollection<IExecutable> _hiQueue = new BlockingCollection<IExecutable>(QueueLength);
 
-        private Timer _timer;
-        private CancellationTokenSource _cts { get; set; }
+//        private Timer _timer;
+//        private CancellationTokenSource _cts { get; set; }
 
-        public SynchronizedExecutor(ILogger<SynchronizedExecutor> logger)
-        {
-            _logger = logger;
-            _cts = new CancellationTokenSource();
+//        public SynchronizedExecutor(ILogger<SynchronizedExecutor> logger)
+//        {
+//            _logger = logger;
+//            _cts = new CancellationTokenSource();
 
-            _timer = new Timer(async _ =>
-            {
-                await RunWorker();
-            },
-            null,
-            TimeSpan.FromSeconds(10),
-            TimeSpan.FromSeconds(1));
-        }
+//            _timer = new Timer(async _ =>
+//            {
+//                await RunWorker();
+//            },
+//            null,
+//            TimeSpan.FromSeconds(10),
+//            TimeSpan.FromSeconds(1));
+//        }
 
-        public void Initialize(IServiceProvider provider)
-        {
-            _provider = provider;
-        }
+//        public void Initialize(IServiceProvider provider)
+//        {
+//            _provider = provider;
+//        }
 
-        public Task<bool> TryAdd(IExecutable task, TimeSpan timeout)
-        {
-            _logger.LogInformation($"Executor: adding new task, on pool: {_queue.Count} /hi: {_hiQueue.Count}");
-            if (AddToQueue(task, timeout))
-            {
-                return Task.FromResult(true);
-            }
-            return Task.FromResult(false);
-        }
+//        public Task<bool> TryAdd(IExecutable task, TimeSpan timeout)
+//        {
+//            _logger.LogInformation($"Executor: adding new task, on pool: {_queue.Count} /hi: {_hiQueue.Count}");
+//            if (AddToQueue(task, timeout))
+//            {
+//                return Task.FromResult(true);
+//            }
+//            return Task.FromResult(false);
+//        }
 
-        public async Task RunWorker()
-        {
-            if (_queue.Count < 1 && _hiQueue.Count < 1)
-                return;
+//        public async Task RunWorker()
+//        {
+//            if (_queue.Count < 1 && _hiQueue.Count < 1)
+//                return;
 
-            if (!await _semaphore.WaitAsync(0))
-                return;
+//            if (!await _semaphore.WaitAsync(0))
+//                return;
 
-            try
-            {
-                _ = Task.Run(async () => await ProcessCommandsAsync()).ContinueWith(_ =>
-                {
-                    _cts.Cancel();
-                    _cts = new CancellationTokenSource();
-                });
+//            try
+//            {
+//                _ = Task.Run(async () => await ProcessCommandsAsync()).ContinueWith(_ =>
+//                {
+//                    _cts.Cancel();
+//                    _cts = new CancellationTokenSource();
+//                });
 
-                try
-                {
-                    await Task.Delay(TimeSpan.FromSeconds(90), _cts.Token);
-                }
-                catch (Exception) { }
-            }
-            finally
-            {
-                _semaphore.Release();
-            }
-        }
+//                try
+//                {
+//                    await Task.Delay(TimeSpan.FromSeconds(90), _cts.Token);
+//                }
+//                catch (Exception) { }
+//            }
+//            finally
+//            {
+//                _semaphore.Release();
+//            }
+//        }
 
-        private bool AddToQueue(IExecutable task, TimeSpan timeout)
-        {
-            if (task.GetPriority() == Priority.High)
-            {
-                return _hiQueue.TryAdd(task, timeout);
-            }
-            return _queue.TryAdd(task, timeout);
-        }
+//        private bool AddToQueue(IExecutable task, TimeSpan timeout)
+//        {
+//            if (task.GetPriority() == Priority.High)
+//            {
+//                return _hiQueue.TryAdd(task, timeout);
+//            }
+//            return _queue.TryAdd(task, timeout);
+//        }
 
-        private BlockingCollection<IExecutable> SelectQueue()
-        {
-            if (_hiQueue.Count > 0)
-                return _hiQueue;
+//        private BlockingCollection<IExecutable> SelectQueue()
+//        {
+//            if (_hiQueue.Count > 0)
+//                return _hiQueue;
 
-            return _queue;
-        }
+//            return _queue;
+//        }
 
-        private async Task ProcessCommandsAsync()
-        {
-            if (SelectQueue().TryTake(out var cmd, 100))
-            {
-                var taskName = cmd.GetName();
-                try
-                {
-                    _logger.LogInformation($"Executor: running {taskName}");
+//        private async Task ProcessCommandsAsync()
+//        {
+//            if (SelectQueue().TryTake(out var cmd, 100))
+//            {
+//                var taskName = cmd.GetName();
+//                try
+//                {
+//                    _logger.LogInformation($"Executor: running {taskName}");
 
-                    var watch = Stopwatch.StartNew();
-                    await cmd.ExecuteAsync(_provider);
-                    _logger.LogInformation($"Executor: completed {taskName} in {watch.ElapsedMilliseconds}ms");
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogInformation($"Executor: {taskName} - {ex}");
-                }
+//                    var watch = Stopwatch.StartNew();
+//                    await cmd.ExecuteAsync(_provider);
+//                    _logger.LogInformation($"Executor: completed {taskName} in {watch.ElapsedMilliseconds}ms");
+//                }
+//                catch (Exception ex)
+//                {
+//                    _logger.LogInformation($"Executor: {taskName} - {ex}");
+//                }
 
-                using var proc = Process.GetCurrentProcess();
-                _logger.LogInformation($"mem usage: {proc.WorkingSet64 / 1048576} MiB");
-            }
-        }
-    }
-}
+//                using var proc = Process.GetCurrentProcess();
+//                _logger.LogInformation($"mem usage: {proc.WorkingSet64 / 1048576} MiB");
+//            }
+//        }
+//    }
+//}

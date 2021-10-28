@@ -1,7 +1,6 @@
-﻿using Sanakan.DAL.Models;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
-namespace Sanakan.Api.Models
+namespace Sanakan.Game.Models
 {
     /// <summary>
     /// Describes the bundle of cards.

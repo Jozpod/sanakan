@@ -15,6 +15,7 @@ using Sanakan.Common;
 using Sanakan.DAL.Models.Configuration;
 using Sanakan.DAL.Models.Management;
 using Sanakan.DAL.Repositories.Abstractions;
+using Sanakan.DiscordBot.Models;
 using Sanakan.DiscordBot.Services.Abstractions;
 using Sanakan.Extensions;
 
@@ -59,62 +60,7 @@ namespace Sanakan.Services
 
         private async Task CyclicCheckPenalties()
         {
-            using var serviceScope = _serviceScopeFactory.CreateScope();
-            var serviceProvider = serviceScope.ServiceProvider;
-            var penaltyInfoRepository = serviceProvider.GetRequiredService<IPenaltyInfoRepository>();
-            var guildConfigRepository = serviceProvider.GetRequiredService<IGuildConfigRepository>();
-
-            foreach (var penalty in await penaltyInfoRepository.GetCachedFullPenalties())
-            {
-                var guild = _client.GetGuild(penalty.GuildId);
-
-                if (guild == null)
-                {
-                    continue;
-                }
-
-                var user = guild.GetUser(penalty.UserId);
-
-                if (user == null)
-                {
-                    if ((_systemClock.UtcNow - penalty.StartDate) > penalty.Duration)
-                    {
-                        if (penalty.Type == PenaltyType.Ban)
-                        {
-                            var ban = await guild.GetBanAsync(penalty.UserId);
-                            if (ban != null)
-                            {
-                                await guild.RemoveBanAsync(penalty.UserId);
-                            }
-                        }
-                        await RemovePenaltyFromDb(penalty);
-                    }
-                    continue;
-                }
-
-                var gconfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
-                var muteModRole = guild.GetRole(gconfig.ModMuteRole);
-                var muteRole = guild.GetRole(gconfig.MuteRole);
-
-                if ((_systemClock.UtcNow - penalty.StartDate) < penalty.Duration)
-                {
-                    var muteMod = penalty
-                        .Roles
-                        .Any(x => gconfig.ModeratorRoles.Any(z =>
-                            z.Role == x.Role)) ? muteModRole : null;
-
-                    _ = Task.Run(async () => {
-                        await MuteUserGuildAsync(user, muteRole, penalty.Roles, muteMod);
-                    });
-                    continue;
-                }
-
-                if (penalty.Type == PenaltyType.Mute)
-                {
-                    await UnmuteUserGuildAsync(user, muteRole, muteModRole, penalty.Roles);
-                    await RemovePenaltyFromDb(penalty);
-                }
-            }
+            
         }
 
         private EmbedBuilder GetFullConfiguration(GuildOptions config, SocketCommandContext context)
@@ -155,12 +101,12 @@ namespace Sanakan.Services
                 Description = $"**Prefix:** {config.Prefix ?? "--"}\n"
                             + $"**Nadzór:** {config.Supervision.GetYesNo()}\n"
                             + $"**Chaos:** {config.ChaosMode.GetYesNo()}\n"
-                            + $"**Admin:** {context.Guild.GetRole(config.AdminRole)?.Mention ?? "--"}\n"
-                            + $"**User:** {context.Guild.GetRole(config.UserRole)?.Mention ?? "--"}\n"
-                            + $"**Mute:** {context.Guild.GetRole(config.MuteRole)?.Mention ?? "--"}\n"
-                            + $"**ModMute:** {context.Guild.GetRole(config.ModMuteRole)?.Mention ?? "--"}\n"
-                            + $"**Emote:** {context.Guild.GetRole(config.GlobalEmotesRole)?.Mention ?? "--"}\n"
-                            + $"**Waifu:** {context.Guild.GetRole(config.WaifuRole)?.Mention ?? "--"}\n\n"
+                            + $"**Admin:** {context.Guild.GetRole(config.AdminRoleId)?.Mention ?? "--"}\n"
+                            + $"**User:** {context.Guild.GetRole(config.UserRoleId)?.Mention ?? "--"}\n"
+                            + $"**Mute:** {context.Guild.GetRole(config.MuteRoleId)?.Mention ?? "--"}\n"
+                            + $"**ModMute:** {context.Guild.GetRole(config.ModMuteRoleId)?.Mention ?? "--"}\n"
+                            + $"**Emote:** {context.Guild.GetRole(config.GlobalEmotesRoleId)?.Mention ?? "--"}\n"
+                            + $"**Waifu:** {context.Guild.GetRole(config.WaifuRoleId)?.Mention ?? "--"}\n\n"
 
                             + $"**W Market:** {context.Guild.GetTextChannel(config.WaifuConfig?.MarketChannel ?? 0)?.Mention ?? "--"}\n"
                             + $"**W Spawn:** {context.Guild.GetTextChannel(config.WaifuConfig?.SpawnChannel ?? 0)?.Mention ?? "--"}\n"
@@ -168,13 +114,13 @@ namespace Sanakan.Services
                             + $"**W Trash Fight:** {context.Guild.GetTextChannel(config.WaifuConfig?.TrashFightChannel ?? 0)?.Mention ?? "--"}\n"
                             + $"**W Trash Spawn:** {context.Guild.GetTextChannel(config.WaifuConfig?.TrashSpawnChannel ?? 0)?.Mention ?? "--"}\n"
                             + $"**W Trash Cmd:** {context.Guild.GetTextChannel(config.WaifuConfig?.TrashCommandsChannel ?? 0)?.Mention ?? "--"}\n"
-                            + $"**Powiadomienia:** {context.Guild.GetTextChannel(config.NotificationChannel)?.Mention ?? "--"}\n"
-                            + $"**Przywitalnia:** {context.Guild.GetTextChannel(config.GreetingChannel)?.Mention ?? "--"}\n"
-                            + $"**Raport:** {context.Guild.GetTextChannel(config.RaportChannel)?.Mention ?? "--"}\n"
-                            + $"**Todos:** {context.Guild.GetTextChannel(config.ToDoChannel)?.Mention ?? "--"}\n"
-                            + $"**Quiz:** {context.Guild.GetTextChannel(config.QuizChannel)?.Mention ?? "--"}\n"
-                            + $"**Nsfw:** {context.Guild.GetTextChannel(config.NsfwChannel)?.Mention ?? "--"}\n"
-                            + $"**Log:** {context.Guild.GetTextChannel(config.LogChannel)?.Mention ?? "--"}\n\n"
+                            + $"**Powiadomienia:** {context.Guild.GetTextChannel(config.NotificationChannelId)?.Mention ?? "--"}\n"
+                            + $"**Przywitalnia:** {context.Guild.GetTextChannel(config.GreetingChannelId)?.Mention ?? "--"}\n"
+                            + $"**Raport:** {context.Guild.GetTextChannel(config.RaportChannelId)?.Mention ?? "--"}\n"
+                            + $"**Todos:** {context.Guild.GetTextChannel(config.ToDoChannelId)?.Mention ?? "--"}\n"
+                            + $"**Quiz:** {context.Guild.GetTextChannel(config.QuizChannelId)?.Mention ?? "--"}\n"
+                            + $"**Nsfw:** {context.Guild.GetTextChannel(config.NsfwChannelId)?.Mention ?? "--"}\n"
+                            + $"**Log:** {context.Guild.GetTextChannel(config.LogChannelId)?.Mention ?? "--"}\n\n"
 
                             + $"**W Cmd**: {wcmd}\n"
                             + $"**W Fight**: {wfCh}\n"
@@ -531,36 +477,6 @@ namespace Sanakan.Services
             await penaltyInfoRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(new string[] { $"mute" });
-        }
-
-        private async Task MuteUserGuildAsync(
-            SocketGuildUser user,
-            SocketRole muteRole,
-            IEnumerable<OwnedRole> roles, SocketRole modMuteRole = null)
-        {
-            if (muteRole != null)
-            {
-                if (!user.Roles.Contains(muteRole))
-                    await user.AddRoleAsync(muteRole);
-            }
-
-            if (modMuteRole != null)
-            {
-                if (!user.Roles.Contains(modMuteRole))
-                    await user.AddRoleAsync(modMuteRole);
-            }
-
-            if (roles != null)
-            {
-                foreach (var role in roles)
-                {
-                    var r = user.Guild.GetRole(role.Role);
-
-                    if (r != null)
-                        if (user.Roles.Contains(r))
-                            await user.RemoveRoleAsync(r);
-                }
-            }
         }
 
         private async Task UnmuteUserGuildAsync(SocketGuildUser user, SocketRole muteRole, SocketRole muteModRole, IEnumerable<OwnedRole> roles)

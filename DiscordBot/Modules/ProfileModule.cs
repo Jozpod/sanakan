@@ -531,7 +531,7 @@ namespace Sanakan.Modules
             }
 
             var gConfig = await _guildConfigRepository.GetCachedGuildFullConfigAsync(Context.Guild.Id);
-            var gRole = Context.Guild.GetRole(gConfig.GlobalEmotesRole);
+            var gRole = Context.Guild.GetRole(gConfig.GlobalEmotesRoleId);
             if (gRole == null)
             {
                 await ReplyAsync("", embed: "Serwer nie ma ustawionej roli globalnych emotek.".ToEmbedMessage(EMType.Bot).Build());
@@ -621,7 +621,7 @@ namespace Sanakan.Modules
                 }
 
                 var gConfig = await _guildConfigRepository.GetCachedGuildFullConfigAsync(Context.Guild.Id);
-                if (!await _profile.SetUserColorAsync(user, gConfig.AdminRole, color))
+                if (!await _profile.SetUserColorAsync(user, gConfig.AdminRoleId, color))
                 {
                     await ReplyAsync("", embed: $"Coś poszło nie tak!".ToEmbedMessage(EMType.Error).Build());
                     return;

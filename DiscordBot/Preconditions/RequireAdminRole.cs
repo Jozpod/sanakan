@@ -32,7 +32,7 @@ namespace Sanakan.Preconditions
                 return CheckPermissions(user.GuildPermissions);
             }
 
-            var role = context.Guild.GetRole(gConfig.AdminRole);
+            var role = context.Guild.GetRole(gConfig.AdminRoleId);
 
             if (role == null)
             {

@@ -20,6 +20,7 @@ namespace Sanakan.DAL.Models
         public virtual ICollection<RarityExcluded> RarityExcludedFromPack { get; set; }
 
         public ulong GameDeckId { get; set; }
+
         [JsonIgnore]
         public virtual GameDeck GameDeck { get; set; }
     }
