@@ -26,7 +26,7 @@ namespace Sanakan.DAL.Repositories
             return _dbContext.TimeStatuses
                 .AsQueryable()
                 .AsSplitQuery()
-                .Where(x => x.Guild == discordGuildId)
+                .Where(x => x.GuildId == discordGuildId)
                 .ToListAsync();
         }
 

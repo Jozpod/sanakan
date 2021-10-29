@@ -395,7 +395,7 @@ namespace Sanakan.Modules
 
             if (messsage == null)
             {
-                var content = $"**Wiadomość przywitalna pw:**\n\n{config?.WelcomeMessagePW ?? "off"}".ToEmbedMessage(EMType.Bot).Build();
+                var content = $"**Wiadomość przywitalna pw:**\n\n{config?.WelcomeMessagePM ?? "off"}".ToEmbedMessage(EMType.Bot).Build();
                 await ReplyAsync("", embed: content);
                 return;
             }
@@ -406,7 +406,7 @@ namespace Sanakan.Modules
                 return;
             }
 
-            config.WelcomeMessagePW = messsage;
+            config.WelcomeMessagePM = messsage;
             await _guildConfigRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });
@@ -1443,7 +1443,7 @@ namespace Sanakan.Modules
             {
                 if (user.Roles.Contains(globalRole))
                 {
-                    var sub = duser.TimeStatuses.FirstOrDefault(x => x.Type == StatusType.Globals && x.Guild == user.Guild.Id);
+                    var sub = duser.TimeStatuses.FirstOrDefault(x => x.Type == StatusType.Globals && x.GuildId == user.Guild.Id);
                     if (sub == null)
                     {
                         report = $"**Globalki:** ❗\n\n";
@@ -1463,7 +1463,7 @@ namespace Sanakan.Modules
             {
                 var sub = duser.TimeStatuses
                     .FirstOrDefault(x => x.Type == StatusType.Color
-                        && x.Guild == user.Guild.Id);
+                        && x.GuildId == user.Guild.Id);
 
                 if (sub == null)
                 {

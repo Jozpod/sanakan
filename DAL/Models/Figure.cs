@@ -7,6 +7,42 @@ namespace Sanakan.DAL.Models
 
     public class Figure
     {
+        public Figure()
+        {
+
+        }
+
+        public Figure(
+            Card card,
+            DateTime completionDate,
+            Quality skeletonQuality,
+            double experienceCount)
+        {
+            PartExp = 0;
+            IsFocus = false;
+            Dere = card.Dere;
+            Name = card.Name;
+            IsComplete = false;
+            ExperienceCount = experienceCount;
+            Title = card.Title;
+            Health = card.Health;
+            Attack = card.Attack;
+            Defence = card.Defence;
+            Character = card.CharacterId;
+            BodyQuality = Quality.Broken;
+            RestartCount = card.RestartCount;
+            HeadQuality = Quality.Broken;
+            PAS = PreAssembledFigure.None;
+            CompletionDate = completionDate;
+            FocusedPart = FigurePart.Head;
+            SkeletonQuality = skeletonQuality;
+            ClothesQuality = Quality.Broken;
+            LeftArmQuality = Quality.Broken;
+            LeftLegQuality = Quality.Broken;
+            RightArmQuality = Quality.Broken;
+            RightLegQuality = Quality.Broken;
+        }
+
         public ulong Id { get; set; }
         public Dere Dere { get; set; }
         public int Attack { get; set; }
@@ -21,7 +57,7 @@ namespace Sanakan.DAL.Models
         [Required]
         public string Title { get; set; }
         public bool IsFocus { get; set; }
-        public double ExpCount { get; set; }
+        public double ExperienceCount { get; set; }
         public int RestartCount { get; set; }
         public ulong Character { get; set; }
         public bool IsComplete { get; set; }

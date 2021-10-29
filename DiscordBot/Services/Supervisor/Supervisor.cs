@@ -34,9 +34,6 @@ namespace Sanakan.Services.Supervisor
         private const int COMMAND_MOD = 2;
         private const int UNCONNECTED_MOD = -2;
 
-        private SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
-        private Dictionary<ulong, Dictionary<ulong, SupervisorEntity>> _guilds;
-
         private readonly DiscordSocketClient _client;
         private readonly IModeratorService _moderatorService;
         private readonly ILogger _logger;
@@ -61,20 +58,11 @@ namespace Sanakan.Services.Supervisor
             _serviceScopeFactory = serviceScopeFactory;
             _systemClock = systemClock;
 
-            _guilds = new Dictionary<ulong, Dictionary<ulong, SupervisorEntity>>();
+         
 
             _timer = new Timer(async _ =>
             {
-                await _semaphore.WaitAsync();
-
-                try
-                {
-                    AutoValidate();
-                }
-                finally
-                {
-                    _semaphore.Release();
-                }
+                
             },
             null,
             TimeSpan.FromMinutes(5),
@@ -181,10 +169,14 @@ namespace Sanakan.Services.Supervisor
 
             if (gConfig.AdminRoleId != 0)
                 if (user.Roles.Any(x => x.Id == gConfig.AdminRoleId))
+                {
                     return;
+                }
 
             if (gConfig.ChannelsWithoutSupervision.Any(x => x.Channel == message.Channel.Id))
+            {
                 return;
+            }
 
             var muteRole = user.Guild.GetRole(gConfig.MuteRoleId);
             var userRole = user.Guild.GetRole(gConfig.UserRoleId);
@@ -276,36 +268,6 @@ namespace Sanakan.Services.Supervisor
                 content = message?.Attachments?.FirstOrDefault()?.Filename ?? "embed";
 
             return content;
-        }
-
-        private void AutoValidate()
-        {
-            try
-            {
-                var toClean = new Dictionary<ulong, List<ulong>>();
-                foreach (var guild in _guilds)
-                {
-                    var users = new List<ulong>();
-                    foreach (var susspect in guild.Value)
-                    {
-                        if (!susspect.Value.IsValid(_systemClock.UtcNow))
-                        {
-                            users.Add(susspect.Key);
-                        }
-                    }
-                    toClean.Add(guild.Key, users);
-                }
-
-                foreach (var guild in toClean)
-                {
-                    foreach (var uId in guild.Value)
-                        _guilds[guild.Key][uId] = new SupervisorEntity(null, _systemClock.UtcNow);
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogInformation($"Supervisor: autovalidate error {ex}");
-            }
         }
     }
 }

@@ -172,22 +172,6 @@ namespace Sanakan.Extensions
             }
         }
 
-        public static TimeStatus NewTimeStatus(this StatusType type, ulong guildId = 0) => new TimeStatus()
-        {
-            IValue = 0,
-            Type = type,
-            BValue = false,
-            Guild = guildId,
-            EndsAt = DateTime.MinValue,
-        };
-
-        public static void Reset(this TimeStatus status)
-        {
-            status.IValue = 0;
-            status.BValue = false;
-            status.EndsAt = DateTime.MinValue;
-        }
-
         public static void Count(this TimeStatus status, DateTime currentDate, int times = 1)
         {
             if (status.Type.IsQuest())
@@ -266,19 +250,10 @@ namespace Sanakan.Extensions
             && status.Type.IsQuest() && status.IValue >= status.Type.ToComplete();
 
         public static double RemainingMinutes(this TimeStatus status, DateTime dateTime)
-            => (status.EndsAt - dateTime).TotalMinutes;
+            => (status.EndsAt.Value - dateTime).TotalMinutes;
 
         public static double RemainingSeconds(this TimeStatus status, DateTime dateTime)
-            => (status.EndsAt - dateTime).TotalSeconds;
-
-        public static bool IsSet(this TimeStatus status)
-            => status.EndsAt !=  DateTime.MinValue;
-
-        public static bool HasEnded(this TimeStatus status, DateTime dateTime)
-            => status.EndsAt < dateTime;
-
-        public static bool IsActive(this TimeStatus status, DateTime dateTime)
-            => status.IsSet() && !status.HasEnded(dateTime);
+            => (status.EndsAt.Value - dateTime).TotalSeconds;
 
         public static string ToView(this TimeStatus status, DateTime dateTime)
         {

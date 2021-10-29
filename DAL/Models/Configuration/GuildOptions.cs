@@ -3,6 +3,9 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Sanakan.DAL.Models.Configuration
 {
+    /// <summary>
+    /// Describes the Discord guild (server) options.
+    /// </summary>
     public class GuildOptions
     {
         private GuildOptions() { }
@@ -87,7 +90,7 @@ namespace Sanakan.DAL.Models.Configuration
         public string WelcomeMessage { get; set; }
         
         [StringLength(50)]
-        public string WelcomeMessagePW { get; set; }
+        public string WelcomeMessagePM { get; set; }
 
         [StringLength(50)]
         public string GoodbyeMessage { get; set; }
@@ -95,7 +98,7 @@ namespace Sanakan.DAL.Models.Configuration
         public bool Supervision { get; set; }
         public bool ChaosMode { get; set; }
 
-        [StringLength(50)]
+        [StringLength(10)]
         public string Prefix { get; set; }
 
         public virtual WaifuConfiguration WaifuConfig { get; set; }

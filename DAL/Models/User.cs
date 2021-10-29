@@ -24,7 +24,7 @@ namespace Sanakan.DAL.Models
             CommandsCount = 0;
             MessagesCntAtDate = 0;
             IsBlacklisted = false;
-            CharacterCntFromDate = 0;
+            CharacterCountFromDate = 0;
             ShowWaifuInProfile = false;
             ProfileType = ProfileType.Stats;
             StatsReplacementProfileUri = "none";
@@ -167,7 +167,7 @@ namespace Sanakan.DAL.Models
         public ulong CommandsCount { get; set; }
         public DateTime MeasureDate { get; set; }
         public ulong MessagesCntAtDate { get; set; }
-        public ulong CharacterCntFromDate { get; set; }
+        public ulong CharacterCountFromDate { get; set; }
         public bool ShowWaifuInProfile { get; set; }
         
         /// <summary>

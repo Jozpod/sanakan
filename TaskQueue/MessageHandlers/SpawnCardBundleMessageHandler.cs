@@ -39,21 +39,23 @@ namespace Sanakan.Web.MessageHandlers
                 return;
             }
 
-            var pCnt = botUser.TimeStatuses.FirstOrDefault(x => x.Type == StatusType.Packet);
+            var timeStatus = botUser.TimeStatuses.FirstOrDefault(x => x.Type == StatusType.Packet);
 
-            if (pCnt == null)
+            if (timeStatus == null)
             {
-                pCnt = StatusType.Packet.NewTimeStatus();
-                botUser.TimeStatuses.Add(pCnt);
+                timeStatus = new TimeStatus(StatusType.Packet);
+                botUser.TimeStatuses.Add(timeStatus);
             }
 
-            if (!pCnt.IsActive())
+            var utcNow = _systemClock.UtcNow;
+
+            if (!timeStatus.IsActive(utcNow))
             {
-                pCnt.EndsAt = _systemClock.UtcNow.Date.AddDays(1);
-                pCnt.IValue = 0;
+                timeStatus.EndsAt = utcNow.Date.AddDays(1);
+                timeStatus.IValue = 0;
             }
 
-            if (++pCnt.IValue > 3)
+            if (++timeStatus.IValue > 3)
             {
                 return;
             }
@@ -71,16 +73,14 @@ namespace Sanakan.Web.MessageHandlers
             await _userRepository.SaveChangesAsync();
 
             await message.MessageChannel
-                .SendMessageAsync("", embed: $"{user.Mention} otrzymał pakiet losowych kart.".ToEmbedMessage(EMType.Bot).Build());
-
-            var gUser = user as SocketGuildUser;
+                .SendMessageAsync("", embed: $"{message.Mention} otrzymał pakiet losowych kart.".ToEmbedMessage(EMType.Bot).Build());
 
             var record = new UserAnalytics
             {
                 Value = 1,
                 UserId = message.DiscordUserId,
                 MeasureDate = _systemClock.UtcNow,
-                GuildId = gUser?.Guild?.Id ?? 0,
+                GuildId = message.GuildId ?? 0,
                 Type = UserAnalyticsEventType.Pack
             };
 

@@ -92,12 +92,12 @@ namespace Sanakan.Services
             var textChannel = user.Guild.GetTextChannel(guildConfig.GreetingChannelId);
             await SendMessageAsync(content, textChannel);
 
-            if (guildConfig?.WelcomeMessagePW == null)
+            if (guildConfig?.WelcomeMessagePM == null)
             {
                 return;
             }
 
-            if (guildConfig.WelcomeMessagePW == "off")
+            if (guildConfig.WelcomeMessagePM == "off")
             {
                 return;
             }
@@ -105,7 +105,7 @@ namespace Sanakan.Services
             try
             {
                 var pw = await user.GetOrCreateDMChannelAsync();
-                await pw.SendMessageAsync(ReplaceTags(user, guildConfig.WelcomeMessagePW));
+                await pw.SendMessageAsync(ReplaceTags(user, guildConfig.WelcomeMessagePM));
                 await pw.CloseAsync();
             }
             catch (Exception ex)

@@ -130,6 +130,14 @@
               "target": "Package",
               "version": "[5.0.11, )"
             },
+            "Microsoft.EntityFrameworkCore.SqlServer": {
+              "target": "Package",
+              "version": "[5.0.11, )"
+            },
+            "Microsoft.EntityFrameworkCore.Sqlite": {
+              "target": "Package",
+              "version": "[5.0.11, )"
+            },
             "Newtonsoft.Json": {
               "target": "Package",
               "version": "[13.0.1, )"
@@ -437,6 +445,10 @@
         "net5.0": {
           "targetAlias": "net5.0",
           "dependencies": {
+            "Discord.Net": {
+              "target": "Package",
+              "version": "[2.4.0, )"
+            },
             "Microsoft.Extensions.DependencyInjection": {
               "target": "Package",
               "version": "[5.0.2, )"

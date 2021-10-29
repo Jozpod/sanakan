@@ -9,6 +9,7 @@ using Sanakan.Common.Models;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot;
+using Sanakan.DiscordBot.Models;
 using Sanakan.Extensions;
 using Sanakan.Preconditions;
 using Sanakan.Services;
@@ -538,13 +539,15 @@ namespace Sanakan.Modules
                 return;
             }
 
+            var guildid = Context.Guild.Id;
+
             var global = botuser.TimeStatuses
                 .FirstOrDefault(x => x.Type == StatusType.Globals 
-                    && x.Guild == Context.Guild.Id);
+                    && x.GuildId == guildid);
 
             if (global == null)
             {
-                global = StatusType.Globals.NewTimeStatus(Context.Guild.Id);
+                global = new TimeStatus(StatusType.Globals, guildid);
                 botuser.TimeStatuses.Add(global);
             }
 
@@ -567,7 +570,9 @@ namespace Sanakan.Modules
         [Alias("color", "colour")]
         [Summary("zmienia kolor użytkownika (koszt TC/SC na liście)")]
         [Remarks("pink"), RequireCommandChannel]
-        public async Task ToggleColorRoleAsync([Summary("kolor z listy (none - lista)")]FColor color = FColor.None, [Summary("waluta (SC/TC)")]SCurrency currency = SCurrency.Tc)
+        public async Task ToggleColorRoleAsync(
+            [Summary("kolor z listy (none - lista)")]FColor color = FColor.None,
+            [Summary("waluta (SC/TC)")]SCurrency currency = SCurrency.Tc)
         {
             var user = Context.User as SocketGuildUser;
             
@@ -575,7 +580,6 @@ namespace Sanakan.Modules
             {
                 return;
             }
-            
 
             if (color == FColor.None)
             {
@@ -593,13 +597,15 @@ namespace Sanakan.Modules
                 return;
             }
 
+            var guildId = Context.Guild.Id;
+
             var colort = botuser.TimeStatuses
                 .FirstOrDefault(x => x.Type == StatusType.Color
-                    && x.Guild == Context.Guild.Id);
+                    && x.GuildId == guildId);
 
             if (colort == null)
             {
-                colort = StatusType.Color.NewTimeStatus(Context.Guild.Id);
+                colort = new TimeStatus(StatusType.Color, guildId);
                 botuser.TimeStatuses.Add(colort);
             }
 

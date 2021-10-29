@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
+using Sanakan.Common.Configuration;
 using Sanakan.Configuration;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Models.Analytics;
@@ -13,10 +14,10 @@ namespace Sanakan.DAL
 {
     public class SanakanDbContext : DbContext
     {
-        private IOptionsMonitor<SanakanConfiguration> _config;
+        private IOptionsMonitor<DatabaseConfiguration> _config;
 
         public SanakanDbContext(
-            IOptionsMonitor<SanakanConfiguration> config) : base()
+            IOptionsMonitor<DatabaseConfiguration> config) : base()
         {
             _config = config;
         }
@@ -70,9 +71,21 @@ namespace Sanakan.DAL
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseMySql(
-                _config.CurrentValue.ConnectionString,
-                new MySqlServerVersion(_config.CurrentValue.MySqlVersion));
+            if(_config.CurrentValue.Provider == "MySql")
+            {
+                optionsBuilder.UseMySql(
+                    _config.CurrentValue.ConnectionString,
+                    new MySqlServerVersion(_config.CurrentValue.Version));
+            }
+            if (_config.CurrentValue.Provider == "Sqlite")
+            {
+                optionsBuilder.UseSqlite(_config.CurrentValue.ConnectionString);
+            }
+            if (_config.CurrentValue.Provider == "SqlServer")
+            {
+                optionsBuilder.UseSqlServer(_config.CurrentValue.ConnectionString);
+            }
+
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

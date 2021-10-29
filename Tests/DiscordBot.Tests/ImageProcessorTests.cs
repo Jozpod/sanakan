@@ -7,6 +7,7 @@ using Sanakan.ShindenApi;
 using Sanakan.ShindenApi.API.Common;
 using Shinden.API;
 using System;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace Sanakan.DiscordBot.Tests
@@ -19,9 +20,12 @@ namespace Sanakan.DiscordBot.Tests
         private readonly Mock<IFileSystem> _fileSystemMock = new(MockBehavior.Strict);
         public ImageProcessorTests()
         {
+            var httpClient = new HttpClient();
+
             _imageProcessor = new ImageProcessor(
                 _shindenClientMock.Object,
-                _fileSystemMock.Object);
+                _fileSystemMock.Object,
+                httpClient);
         }
 
         [TestMethod]

@@ -1,4 +1,5 @@
-﻿using Discord.WebSocket;
+﻿using Discord;
+using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Sanakan.Common;
@@ -22,7 +23,6 @@ namespace Sanakan.Services
     {
 
         private const double SAVE_AT = 5;
-        private const double DefaultLevelMultiplier = 0.35;
 
         private Dictionary<ulong, double> _userExperienceMap;
         private Dictionary<ulong, ulong> _messages;
@@ -69,18 +69,7 @@ namespace Sanakan.Services
 
         public static ulong CalculateExpForLevel(ulong level, double levelMultiplier = DefaultLevelMultiplier) 
             => (level <= 0) ? 0ul : (ulong)Convert.ToInt64(Math.Floor(Math.Pow(level / levelMultiplier, 2)) + 1);
-        public static ulong CalculateLevel(
-            long experience,
-            double levelMultiplier = DefaultLevelMultiplier) 
-            => (ulong)Convert.ToInt64(Math.Floor(levelMultiplier * Math.Sqrt(experience)));
 
-        public async Task NotifyAboutLevelAsync(
-            SocketGuildUser user,
-            ISocketMessageChannel channel,
-            ulong level)
-        {
-           
-        }
 
         private async Task HandleMessageAsync(SocketMessage message)
         {
@@ -182,52 +171,75 @@ namespace Sanakan.Services
         private void CountCharacters(ulong userId, ulong characters)
         {
             if (!_characters.Any(x => x.Key == userId))
+            {
                 _characters.Add(userId, characters);
+            }
             else
+            {
                 _characters[userId] += characters;
+            }
         }
 
-        private void CalculateExpAndCreateTask(SocketGuildUser user, SocketMessage message, bool calculateExp)
+        private void CalculateExpAndCreateTask(SocketGuildUser user, SocketMessage message, bool calculateExperience)
         {
-            var exp = GetPointsFromMsg(message);
-            if (!calculateExp) exp = 0;
+            var experience = GetPointsFromMessage(message);
+            
+            if (!calculateExperience) {
+                experience = 0;
+            }
 
             if (!_userExperienceMap.Any(x => x.Key == user.Id))
             {
-                _userExperienceMap.Add(message.Author.Id, exp);
+                _userExperienceMap.Add(message.Author.Id, experience);
                 return;
             }
 
-            _userExperienceMap[user.Id] += exp;
+            _userExperienceMap[user.Id] += experience;
 
             var saved = _userExperienceMap[user.Id];
             if (saved < SAVE_AT && !CheckLastSave(user.Id)) {
                 return;
             }
 
-            var fullP = (long) Math.Floor(saved);
-            if (fullP < 1)
+            var effectiveExperience = (long) Math.Floor(saved);
+            if (effectiveExperience < 1)
             {
                 return;
             }
 
-            _userExperienceMap[message.Author.Id] -= fullP;
+            _userExperienceMap[message.Author.Id] -= effectiveExperience;
             _saved[user.Id] = _systemClock.UtcNow;
 
-            var task = CreateTask(user, message.Channel, fullP, _messages[user.Id], _commands[user.Id], _characters[user.Id], calculateExp);
+            var messageCount = _messages[user.Id];
+
+            //var task = CreateTask(user, message.Channel, effectiveExperience, , , , calculateExperience);
             _characters[user.Id] = 0;
             _messages[user.Id] = 0;
             _commands[user.Id] = 0;
 
+            //    SocketGuildUser discordUser,
+            //    ISocketMessageChannel channel,
+            //    ulong experience,
+            //    ulong messages,
+            //    ulong commands,
+            //    ulong characters,
+            //    bool calculateExp)
+
             _blockingPriorityQueue.TryAdd(new AddExperienceMessage
             {
-
-            })
-
-            _executor.TryAdd(new Executable("add exp", task), TimeSpan.FromSeconds(1));
+                Experience = effectiveExperience,
+                DiscordUserId = user.Id,
+                CommandCount = _commands[user.Id],
+                CharacterCount = _characters[user.Id],
+                MessageCount = messageCount,
+                CalculateExperience = calculateExperience,
+                GuildId = user.Guild.Id,
+                User = user,
+                Channel = message.Channel,
+            });;
         }
 
-        private double GetPointsFromMsg(SocketMessage message)
+        private double GetPointsFromMessage(SocketMessage message)
         {
             int emoteChars = message.Tags.CountEmotesTextLenght();
             int linkChars = message.Content.CountLinkTextLength();
@@ -259,21 +271,5 @@ namespace Sanakan.Services
 
             return experience;
         }
-
-      
-        //private Task<Task> CreateTask(
-        //    SocketGuildUser discordUser,
-        //    ISocketMessageChannel channel,
-        //    ulong experience,
-        //    ulong messages,
-        //    ulong commands,
-        //    ulong characters,
-        //    bool calculateExp)
-        //{
-        //    return new Task<Task>(async () =>
-        //    {
-               
-        //    });
-        //}
     }
 }

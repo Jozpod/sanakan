@@ -81,11 +81,11 @@ namespace Sanakan.Web.HostedService
                     continue;
                 }
 
-                var guild = client.GetGuild(sub.Guild);
+                var guild = client.GetGuild(sub.GuildId);
                 switch (sub.Type)
                 {
                     case StatusType.Globals:
-                        var guildConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(sub.Guild);
+                        var guildConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(sub.GuildId);
                         await RemoveRoleAsync(guild, guildConfig?.GlobalEmotesRoleId ?? 0, sub.UserId);
                         break;
 

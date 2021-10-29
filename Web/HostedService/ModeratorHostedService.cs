@@ -56,8 +56,8 @@ namespace Sanakan.Web.HostedService
                 stoppingToken.ThrowIfCancellationRequested();
                 _timer.Tick += OnTick;
                 _timer.Start(
-                    _options.CurrentValue.CaptureMemoryUsageDueTime,
-                    _options.CurrentValue.CaptureMemoryUsagePeriod);
+                    _options.CurrentValue.ModeratorDueTime,
+                    _options.CurrentValue.ModeratorPeriod);
 
                 await Task.Delay(Timeout.Infinite, stoppingToken);
             }

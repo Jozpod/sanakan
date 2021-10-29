@@ -36,43 +36,48 @@ namespace Sanakan.DiscordBot.Services
         private FontFamily _latoRegular = new FontCollection().Install("Fonts/Lato-Regular.ttf");
         private readonly IFileSystem _fileSystem;
         private readonly IShindenClient _shindenClient;
+        private readonly HttpClient _httpClient;
 
         public ImageProcessor(
             IShindenClient shinden,
-             IFileSystem fileSystem)
+            IFileSystem fileSystem,
+            HttpClient httpClient)
         {
             _shindenClient = shinden;
             _fileSystem = fileSystem;
+            _httpClient = httpClient;
         }
 
-        private async Task<Stream> GetImageFromUrlAsync(string url, bool fixExt = false)
+        private async Task<Stream?> GetImageFromUrlAsync(string url, bool fixExt = false)
         {
-            using var client = new HttpClient();
-            
             try
             {
-                var res = await client.GetAsync(url);
+                var response = await _httpClient.GetAsync(url);
                 
-                if (res.IsSuccessStatusCode)
+                if (response.IsSuccessStatusCode)
                 {
-                    return await res.Content.ReadAsStreamAsync();
+                    return await response.Content.ReadAsStreamAsync();
                 }
-                    
-                if (fixExt)
+
+                if (!fixExt)
                 {
-                    var splited = url.Split(".");
-                    var exts = new[] { "png", "jpeg", "gif", "jpg" };
+                    return null;
+                }
 
-                    foreach (var ext in exts)
+                var splited = url.Split(".");
+                var exts = new[] { "png", "jpeg", "gif", "jpg" };
+
+                foreach (var ext in exts)
+                {
+                    splited[splited.Length - 1] = ext;
+                    response = await _httpClient.GetAsync(string.Join(".", splited));
+
+                    if (!response.IsSuccessStatusCode)
                     {
-                        splited[splited.Length - 1] = ext;
-                        res = await client.GetAsync(string.Join(".", splited));
-
-                        if (res.IsSuccessStatusCode)
-                        {
-                            return await res.Content.ReadAsStreamAsync();
-                        }
+                        return null;
                     }
+
+                    return await response.Content.ReadAsStreamAsync();
                 }
             }
             catch (Exception)
@@ -578,9 +583,12 @@ namespace Sanakan.DiscordBot.Services
             return bar;
         }
 
-        private Image<Rgba32> GetLastRWListCover(Stream imageStream)
+        private Image<Rgba32>? GetLastRWListCover(Stream imageStream)
         {
-            if (imageStream == null) return null;
+            if (imageStream == null)
+            {
+                return null;
+            }
 
             var cover = Image.Load(imageStream);
             cover.Mutate(x => x.Resize(new ResizeOptions
@@ -607,14 +615,16 @@ namespace Sanakan.DiscordBot.Services
                 int max = -1;
                 foreach (var last in lastWatch)
                 {
-                    if (++max >= 3) break;
-                    using (var stream = await GetImageFromUrlAsync(last.AnimeCoverUrl, true))
+                    if (++max >= 3)
                     {
-                        using (var cover = GetLastRWListCover(stream))
-                        {
-                            if (cover != null)
-                                image.Mutate(x => x.DrawImage(cover, new Point(0, startY + (35 * max)), 1));
-                        }
+                        break;
+                    }
+
+                    using var stream = await GetImageFromUrlAsync(last.AnimeCoverUrl, true);
+                    using var cover = GetLastRWListCover(stream);
+                    if (cover != null)
+                    {
+                        image.Mutate(x => x.DrawImage(cover, new Point(0, startY + (35 * max)), 1));
                     }
 
                     image.Mutate(x => x.DrawText($"{last.AnimeTitle.TrimToLength(29)}", titleFont, fColor, new Point(25, startY + (35 * max))));
@@ -629,7 +639,10 @@ namespace Sanakan.DiscordBot.Services
                 int max = -1;
                 foreach (var last in lastRead)
                 {
-                    if (++max >= 3) break;
+                    if (++max >= 3)
+                    {
+                        break;
+                    }
                     using (var stream = await GetImageFromUrlAsync(last.MangaCoverUrl, true))
                     {
                         using (var cover = GetLastRWListCover(stream))
@@ -896,7 +909,9 @@ namespace Sanakan.DiscordBot.Services
 
             using var stream = await GetImageFromUrlAsync(card.CustomBorder);
             if (stream == null)
+            {
                 return GenerateBorder(card);
+            }
 
             return  Image.Load(stream);
         }
@@ -1232,7 +1247,9 @@ namespace Sanakan.DiscordBot.Services
             }));
 
             if (info.Side != WinnerSide.Draw)
+            {
                 los.Mutate(x => x.Grayscale());
+            }
 
             img.Mutate(x => x.DrawImage(win, new Point(Xiw, Yi), 1));
             img.Mutate(x => x.DrawImage(los, new Point(Xil, Yi), 1));

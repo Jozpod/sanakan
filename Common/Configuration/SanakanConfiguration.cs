@@ -60,5 +60,7 @@ namespace Sanakan.Configuration
         /// The time span after JWT with user expires.
         /// </summary>
         public TimeSpan UserWithTokenExpiry { get; set; }
+        public TimeSpan SupervisorPeriod { get; set; }
+        public TimeSpan SupervisorDueTime { get; set; }
     }
 }

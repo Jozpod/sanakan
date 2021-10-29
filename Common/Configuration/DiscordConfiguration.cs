@@ -3,7 +3,7 @@
     public class DiscordConfiguration
     {
         /// <summary>
-        /// Runs commands on Discord only when they start with given prefix.
+        /// Run commands on Discord only when they start with given prefix.
         /// </summary>
         public string Prefix { get; set; } = string.Empty;
 

@@ -18,7 +18,10 @@ namespace Sanakan.Extensions
 
         public static EmbedAuthorBuilder WithUser(this EmbedAuthorBuilder builder, IUser user, bool includeId = false)
         {
-            if (user == null) return builder.WithName("????");
+            if (user == null)
+            {
+                return builder.WithName("????");
+            }
 
             var id = includeId ? $" ({user.Id})" : "";
 

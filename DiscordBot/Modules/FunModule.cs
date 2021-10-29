@@ -60,17 +60,17 @@ namespace Sanakan.Modules
         {
             var botuser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
             
-            var daily = botuser.TimeStatuses.FirstOrDefault(x => x.Type == StatusType.Daily);
+            var timeStatus = botuser.TimeStatuses.FirstOrDefault(x => x.Type == StatusType.Daily);
             
-            if (daily == null)
+            if (timeStatus == null)
             {
-                daily = StatusType.Daily.NewTimeStatus();
-                botuser.TimeStatuses.Add(daily);
+                timeStatus = new TimeStatus(StatusType.Daily);
+                botuser.TimeStatuses.Add(timeStatus);
             }
 
-            if (daily.IsActive(_systemClock.UtcNow))
+            if (timeStatus.IsActive(_systemClock.UtcNow))
             {
-                var timeTo = (int)daily.RemainingMinutes(_systemClock.UtcNow);
+                var timeTo = (int)timeStatus.RemainingMinutes(_systemClock.UtcNow);
                 var content = $"{Context.User.Mention} następne drobne możesz otrzymać dopiero za {timeTo / 60}h {timeTo % 60}m!"
                     .ToEmbedMessage(EMType.Error).Build();
                 await ReplyAsync("", embed: content);
@@ -82,12 +82,12 @@ namespace Sanakan.Modules
             
             if (mission == null)
             {
-                mission = StatusType.WDaily.NewTimeStatus();
+                mission = new TimeStatus(StatusType.WDaily);
                 botuser.TimeStatuses.Add(mission);
             }
 
 
-            daily.EndsAt = _systemClock.UtcNow.AddHours(20);
+            timeStatus.EndsAt = _systemClock.UtcNow.AddHours(20);
             botuser.ScCount += 100;
 
             await _userRepository.SaveChangesAsync();
@@ -166,7 +166,7 @@ namespace Sanakan.Modules
             
             if (hourly == null)
             {
-                hourly = StatusType.Hourly.NewTimeStatus();
+                hourly = new TimeStatus(StatusType.Hourly);
                 botuser.TimeStatuses.Add(hourly);
             }
 
@@ -181,9 +181,10 @@ namespace Sanakan.Modules
             botuser.ScCount += 5;
 
             var mission = botuser.TimeStatuses.FirstOrDefault(x => x.Type == StatusType.DHourly);
+
             if (mission == null)
             {
-                mission = StatusType.DHourly.NewTimeStatus();
+                mission = new TimeStatus(StatusType.DHourly);
                 botuser.TimeStatuses.Add(mission);
             }
             mission.Count(_systemClock.UtcNow);

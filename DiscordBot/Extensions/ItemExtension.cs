@@ -494,36 +494,13 @@ namespace Sanakan.Extensions
             }
 
             var maxExp = card.ExpToUpgrade();
-            var expToMove = card.ExpCount;
-            if (expToMove > maxExp)
-                expToMove = maxExp;
-
-            return new Figure
+            var experienceCount = card.ExpCount;
+            if (experienceCount > maxExp)
             {
-                PartExp = 0,
-                IsFocus = false,
-                Dere = card.Dere,
-                Name = card.Name,
-                IsComplete = false,
-                ExpCount = expToMove,
-                Title = card.Title,
-                Health = card.Health,
-                Attack = card.Attack,
-                Defence = card.Defence,
-                Character = card.CharacterId,
-                BodyQuality = Quality.Broken,
-                RestartCount = card.RestartCount,
-                HeadQuality = Quality.Broken,
-                PAS = PreAssembledFigure.None,
-                CompletionDate = date,
-                FocusedPart = FigurePart.Head,
-                SkeletonQuality = item.Quality,
-                ClothesQuality = Quality.Broken,
-                LeftArmQuality = Quality.Broken,
-                LeftLegQuality = Quality.Broken,
-                RightArmQuality = Quality.Broken,
-                RightLegQuality = Quality.Broken,
-            };
+                experienceCount = maxExp;
+            }
+
+            return new Figure(card, date, item.Quality, experienceCount);
         }
 
         public static Figure? ToPAFigure(this ItemType type, DateTime date)
@@ -538,7 +515,7 @@ namespace Sanakan.Extensions
             return new Figure
             {
                 PAS = pas,
-                ExpCount = 0,
+                ExperienceCount = 0,
                 PartExp = 0,
                 Health = 300,
                 RestartCount = 0,

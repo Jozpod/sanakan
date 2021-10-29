@@ -411,7 +411,7 @@ namespace Sanakan.Extensions
                     return $"{u.MessagesCount - u.MessagesCntAtDate}";
 
                 case TopType.PostsMonthlyCharacter:
-                    return $"{u.CharacterCntFromDate / (u.MessagesCount - u.MessagesCntAtDate)}";
+                    return $"{u.CharacterCountFromDate / (u.MessagesCount - u.MessagesCntAtDate)}";
 
                 case TopType.Commands:
                     return $"{u.CommandsCount}";

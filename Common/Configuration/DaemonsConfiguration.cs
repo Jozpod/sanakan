@@ -23,5 +23,7 @@ namespace Sanakan.Common.Configuration
         public TimeSpan ChaosPeriod { get; set; }
         public TimeSpan SessionDueTime { get; set; }
         public TimeSpan SessionPeriod { get; set; }
+        public TimeSpan ModeratorPeriod { get; set; }
+        public TimeSpan ModeratorDueTime { get; set; }
     }
 }

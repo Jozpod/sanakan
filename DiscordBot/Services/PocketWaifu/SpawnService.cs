@@ -15,6 +15,7 @@ using Sanakan.DAL.Models.Analytics;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot;
 using Sanakan.DiscordBot.Configuration;
+using Sanakan.DiscordBot.Models;
 using Sanakan.Extensions;
 using Sanakan.Services.Executor;
 using Sanakan.TaskQueue.Messages;
@@ -289,8 +290,11 @@ namespace Sanakan.Services.PocketWaifu
             if (UserCounter[author.Id] > charNeeded)
             {
                 UserCounter[author.Id] = 0;
+                var guildUser = author as SocketGuildUser;
                 _blockingPriorityQueue.TryAdd(new SpawnCardBundleMessage
                 {
+                    GuildId = guildUser?.Id,
+                    Mention = author.Mention,
                     DiscordUserId = author.Id,
                     MessageChannel = message.Channel,
                 });

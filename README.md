@@ -6,16 +6,6 @@ Discord bot which allows
 
 built with [Discord.NET](https://github.com/RogueException/Discord.Net).
 
-## Requirements ##
-
-- .NET 5.0
-
-- MySql Database Version 8.0.27
-
-- Shinden API Key
-
-- Discord Bot token
-
 ## Getting Started ##
 
 ```console
@@ -31,74 +21,69 @@ dotnet run
 ### Locale
 |                   Name                    |         Type         |                 Default                 | Description                                                       |
 | :---------------------------------------: | :------------------: | :-------------------------------------: | :---------------------------------------------------------------- |
-|  **[`TimeZone`](#TimeZone)**  |  `{String}`  |                 `Central European Standard Time`                  | Timezone which bot will use when displaying datetime information.                                 |
-|     **[`Language`](#Language)**     | `{String}` | `pl-PL` | Language which bot will use when displaying .                                                 |
+| **[`TimeZone`](#TimeZone)** | `{String\|TimeZoneInfo}` | `Central European Standard Time` | Timezone which bot will use when displaying datetime information. |
+| **[`Language`](#Language)** | `{String\|CultureInfo}` | `pl-PL` | Language which bot will use when displaying. |
 
 
 ### Database
 |                   Name                    |         Type         |                 Default                 | Description                                                       |
 | :---------------------------------------: | :------------------: | :-------------------------------------: | :---------------------------------------------------------------- |
-|  **[`Provider`](#Provider)**  |  `{String}`  |                 `MySql`                  | The database engine to use. Currently supported MySql, Sqlite and SqlServer                              |
-|     **[`Version`](#Version)**     | `{String}` | `pl-PL` | The database engine version if supported.                                                 |
-|  **[`ConnectionString`](#ConnectionString)**  |  `{String}`  |                 `Server=localhost;Database=database;Uid=root;Pwd=password;`                  | connection string.                                 |
+| **[`Provider`](#Provider)**  | `{String}`  | `MySql` | The database engine to use. Currently supported MySql, Sqlite and SqlServer                              |
+|  **[`Version`](#Version)** | `{String}` | `8.0.27` | The database engine version if supported.                                                 |
+| **[`ConnectionString`](#ConnectionString)**  | `{String}` | `Server=localhost;Database=database;Uid=root;Pwd=password;` | connection string. |
 
 ### Cache
 |                   Name                    |         Type         |                 Default                 | Description                                                       |
 | :---------------------------------------: | :------------------: | :-------------------------------------: | :---------------------------------------------------------------- |
-|     **[`Prefix`](#Prefix)**     | `{String}` | . | Options for Sass.                                                 |
-|       **[`BotToken`](#BotToken)**       |     `{String}`      |                       | The discord bot token.                       |
-|  **[`Supervision`](#Supervision)**  | `{Boolean}` |               `true`               | Prepends/Appends `Sass`/`SCSS` code before the actual entry file. |
-| **[`Demonization`](#Demonization)** |     `{Boolean}`      |                 `true`                  | Enables/Disables the default Webpack importer.                    |
-| **[`SafariEnabled`](#SafariEnabled)** |     `{Boolean}`      |                 `true`                  | Enables/Disables the default Webpack importer.                    |
-| **[`Shinden`](#Shinden)** |     `{Object}`      |                 `true`                  | Enables/Disables the default Webpack importer.                    |
-| **[`CharPerPacket`](#CharPerPacket)** |     `{Number}`      |                 `true`                  | Enables/Disables the default Webpack importer.                    |
-| **[`Experience`](#Experience)** |     `{Object}`      |                 `true`                  | Enables/Disables the default Webpack importer.                    |
-| **[`Demonization`](#Demonization)** |     `{Boolean}`      |                 `true`                  | Enables/Disables the default Webpack importer.                    |
-| **[`Demonization`](#webpackimporter)** |     `{Boolean}`      |                 `true`                  | Enables/Disables the default Webpack importer.                    |
+|     **[`SlidingExpiration`](#SlidingExpiration)**     | `{String\|TimeSpan}` | `04:00:00` | how long a cache entry can be inactive (e.g. not accessed) before it will be removed. Default 4 hours.                                                 |
+|       **[`AbsoluteExpirationRelativeToNow`](#AbsoluteExpirationRelativeToNow)** | `{String\|TimeSpan}` | `1.00:00:00` | an absolute expiration time, relative to now. Default one day. |
+
+
 ### Daemon
 |                   Name                    |         Type         |                 Default                 | Description                                                       |
 | :---------------------------------------: | :------------------: | :-------------------------------------: | :---------------------------------------------------------------- |
-|     **[`Prefix`](#Prefix)**     | `{String}` | . | Options for Sass.                                                 |
-|       **[`BotToken`](#BotToken)**       |     `{String}`      |                       | The discord bot token.                       |
-|  **[`Supervision`](#Supervision)**  | `{Boolean}` |               `true`               | Prepends/Appends `Sass`/`SCSS` code before the actual entry file. |
-| **[`Demonization`](#Demonization)** |     `{Boolean}`      |                 `true`                  | Enables/Disables the default Webpack importer.                    |
-| **[`SafariEnabled`](#SafariEnabled)** |     `{Boolean}`      |                 `true`                  | Enables/Disables the default Webpack importer.                    |
-| **[`Shinden`](#Shinden)** |     `{Object}`      |                 `true`                  | Enables/Disables the default Webpack importer.                    |
-| **[`CharPerPacket`](#CharPerPacket)** |     `{Number}`      |                 `true`                  | Enables/Disables the default Webpack importer.                    |
-| **[`Experience`](#Experience)** |     `{Object}`      |                 `true`                  | Enables/Disables the default Webpack importer.                    |
-| **[`Demonization`](#Demonization)** |     `{Boolean}`      |                 `true`                  | Enables/Disables the default Webpack importer.                    |
-| **[`Demonization`](#webpackimporter)** |     `{Boolean}`      |                 `true`                  | Enables/Disables the default Webpack importer.                    |
+|  **[`CaptureMemoryUsageDueTime`](#CaptureMemoryUsageDueTime)** | `{String\|TimeSpan}` | `00:01:00` | The inital amount of time to delay before capturing memory usage. |
+| **[`CaptureMemoryUsagePeriod`](#CaptureMemoryUsagePeriod)** | `{String\|TimeSpan}` | `00:01:00` | The time interval between invocations of memory usage. |
+|  **[`ProfilePeriod`](#ProfilePeriod)**  | `{String\|TimeSpan}` | `00:00:05` | The inital amount of time to delay before <>. |
+| **[`ProfileDueTime`](#ProfileDueTime)** | `{String\|TimeSpan}` | `00:00:30` | The time interval between invocations of <>. |
+| **[`ChaosDueTime`](#ChaosDueTime)** | `{String\|TimeSpan}` | `01:00:00`  | The inital amount of time to delay before <>. |
+| **[`ChaosPeriod`](#ChaosPeriod)** | `{String\|TimeSpan}` | `01:00:00`  | The time interval between invocations of <>. |
+| **[`SessionDueTime`](#SessionDueTime)** | `{String\|TimeSpan}` | `00:00:05` | The inital amount of time to delay before <>. |
+| **[`SessionPeriod`](#SessionPeriod)** | `{String\|TimeSpan}`  |  `00:00:05` | The time interval between invocations of <>. |
+| **[`ModeratorDueTime`](#ModeratorDueTime)** | `{String\|TimeSpan}` | `00:01:00` | The inital amount of time to delay before <>. |
+| **[`ModeratorPeriod`](#ModeratorPeriod)** | `{String\|TimeSpan}` | `00:30:00` | The time interval between invocations of <>. |
+| **[`SupervisorDueTime`](#SupervisorDueTime)** | `{String\|TimeSpan}` | `00:05:00` | The inital amount of time to delay before <>. |
+| **[`SupervisorPeriod`](#SupervisorPeriod)** | `{String\|TimeSpan}` | `00:05:00` | The time interval between invocations of <>. |
 ### Discord
 |                   Name                    |         Type         |                 Default                 | Description                                                       |
 | :---------------------------------------: | :------------------: | :-------------------------------------: | :---------------------------------------------------------------- |
-|     **[`Prefix`](#Prefix)**     | `{String}` | . | Options for Sass.                                                 |
-|       **[`BotToken`](#BotToken)**       |     `{String}`      |                       | The discord bot token.                       |
-|  **[`Supervision`](#Supervision)**  | `{Boolean}` |               `true`               | Prepends/Appends `Sass`/`SCSS` code before the actual entry file. |
-| **[`Demonization`](#Demonization)** |     `{Boolean}`      |                 `true`                  | Enables/Disables the default Webpack importer.                    |
-| **[`SafariEnabled`](#SafariEnabled)** |     `{Boolean}`      |                 `true`                  | Enables/Disables the default Webpack importer.                    |
-| **[`Shinden`](#Shinden)** |     `{Object}`      |                 `true`                  | Enables/Disables the default Webpack importer.                    |
-| **[`CharPerPacket`](#CharPerPacket)** |     `{Number}`      |                 `true`                  | Enables/Disables the default Webpack importer.                    |
-| **[`Experience`](#Experience)** |     `{Object}`      |                 `true`                  | Enables/Disables the default Webpack importer.                    |
-| **[`Demonization`](#Demonization)** |     `{Boolean}`      |                 `true`                  | Enables/Disables the default Webpack importer.                    |
-| **[`Demonization`](#webpackimporter)** |     `{Boolean}`      |                 `true`                  | Enables/Disables the default Webpack importer.                    |
+| **[`Prefix`](#Prefix)** | `{String}` | `s` | Run commands on Discord only when they start with given prefix. |
+| **[`BotToken`](#BotToken)**  |  `{String}` | `` | The discord bot token. |
+|  **[`FloodSpamSupervisionEnabled`](#SupervisorEnabled)**  | `{Boolean}` | `true` | Enables flood/spam supervision |
+| **[`RestartWhenDisconnected - Demonization`](#RestartWhenDisconnected)** | `{Boolean}` | `true` | Restarts the Discord socket client when it is disconnected. |
+| **[`SafariEnabled`](#SafariEnabled)** | `{Boolean}`  | `true` | If enabled it allows generating cards from user messages. |
+| **[`AllowedToDebug`](#AllowedToDebug)** | `{Array}` | `[]` | The list of Discord user identifiers which can access diagnostics. |
 
 ### Experience
 |                   Name                    |         Type         |                 Default                 | Description                                                       |
 | :---------------------------------------: | :------------------: | :-------------------------------------: | :---------------------------------------------------------------- |
-|     **[`Prefix`](#Prefix)**     | `{String}` | . | Options for Sass.                                                 |
-|       **[`BotToken`](#BotToken)**       |     `{String}`      |                       | The discord bot token.                       |
-|  **[`Supervision`](#Supervision)**  | `{Boolean}` |               `true`               | Prepends/Appends `Sass`/`SCSS` code before the actual entry file. |
-| **[`Demonization`](#Demonization)** |     `{Boolean}`      |                 `true`                  | Enables/Disables the default Webpack importer.                    |
-| **[`SafariEnabled`](#SafariEnabled)** |     `{Boolean}`      |                 `true`                  | Enables/Disables the default Webpack importer.                    |
-| **[`Shinden`](#Shinden)** |     `{Object}`      |                 `true`                  | Enables/Disables the default Webpack importer.                    |
-| **[`CharPerPacket`](#CharPerPacket)** |     `{Number}`      |                 `true`                  | Enables/Disables the default Webpack importer.                    |
-| **[`Experience`](#Experience)** |     `{Object}`      |                 `true`                  | Enables/Disables the default Webpack importer.                    |
-| **[`Demonization`](#Demonization)** |     `{Boolean}`      |                 `true`                  | Enables/Disables the default Webpack importer.                    |
-| **[`Demonization`](#webpackimporter)** |     `{Boolean}`      |                 `true`                  | Enables/Disables the default Webpack importer.                    |
+| **[`CharPerPacket`](#CharPerPacket)** | `{Number}` | 20000 | The amount of characters user has to type in Discord past which bundle of cards are received. |
+| **[`CharPerPoint`](#CharPerPoint)**  | `{Number}` | 60 | The amount of characters per experience point ratio. |
+| **[`MinPerMessage`](#MinPerMessage)**  | `{Number}` | 0.00005 | The minimum amount of experience points user receives per message. |
+| **[`MaxPerMessage`](#MaxPerMessage)** | `{Number}` | 5 | The maximum amount of experience points user receives per message. |
 
-### Running ###
+### Shinden API
+|                   Name                    |         Type         |                 Default                 | Description                                                       |
+| :---------------------------------------: | :------------------: | :-------------------------------------: | :---------------------------------------------------------------- |
+| **[`Token`](#Token)** | `{String}` | `` | The API token which is supplied in certain requests sent to Shinden API. |
+| **[`UserAgent`](#UserAgent)**  | `{String}` | `` |  Lets servers and network peers identify the application, operating system, vendor, and/or version of the request. |
+| **[`Marmolade`](#Marmolade)**  | `{Boolean}` | `` | Mysterious HTTP header used for Shinden API |
 
-Run `Run.sh` script from `src` directory.
+### Sanakan API
+|                   Name                    |         Type         |                 Default                 | Description                                                       |
+| :---------------------------------------: | :------------------: | :-------------------------------------: | :---------------------------------------------------------------- |
+| **[`Jwt`](#Jwt)** | `{Object}` | `` | The JWT token configuration. |
+| **[`ApiKeys`](#ApiKeys)**  | `{Array}` | `` |  The list of 3rd party API Keys which will be provided with JWT. |
 
 ### Runtime configuration ###
 

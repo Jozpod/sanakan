@@ -12,6 +12,7 @@ using Sanakan.DAL.Repositories;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot;
 using Sanakan.DiscordBot.Extensions;
+using Sanakan.DiscordBot.Models;
 using Sanakan.Extensions;
 using Sanakan.Preconditions;
 using Sanakan.Services.Commands;
@@ -63,7 +64,6 @@ namespace Sanakan.Modules
             _logger = logger;
             _shindenClient = client;
             _sessionManager = session;
-            _executor = executor;
             _cacheManager = cacheManager;
             _gameDeckRepository = gameDeckRepository;
             _userRepository = userRepository;
@@ -441,6 +441,8 @@ namespace Sanakan.Modules
                 Description = $"Użyto _{item.Name}_ {cnt}{cardString}\n\n"
             };
 
+            var invokingUserMention = Context.User.Mention;
+
             switch (item.Type)
             {
                 case ItemType.AffectionRecoveryGreat:
@@ -596,12 +598,12 @@ namespace Sanakan.Modules
                 case ItemType.BetterIncreaseUpgradeCnt:
                     if (card.Curse == CardCurse.BloodBlockade)
                     {
-                        await ReplyAsync("", embed: $"{Context.User.Mention} na tej karcie ciąży klątwa!".ToEmbedMessage(EMType.Error).Build());
+                        await ReplyAsync("", embed: $"{invokingUserMention} na tej karcie ciąży klątwa!".ToEmbedMessage(EMType.Error).Build());
                         return;
                     }
                     if (card.Rarity == Rarity.SSS)
                     {
-                        await ReplyAsync("", embed: $"{Context.User.Mention} karty **SSS** nie można już ulepszyć!".ToEmbedMessage(EMType.Error).Build());
+                        await ReplyAsync("", embed: $"{invokingUserMention} karty **SSS** nie można już ulepszyć!".ToEmbedMessage(EMType.Error).Build());
                         return;
                     }
                     if (!card.CanGiveBloodOrUpgradeToSSS())
@@ -642,17 +644,17 @@ namespace Sanakan.Modules
                 case ItemType.IncreaseUpgradeCnt:
                     if (!card.CanGiveRing())
                     {
-                        await ReplyAsync("", embed: $"{Context.User.Mention} karta musi mieć min. poziom relacji: *Miłość*.".ToEmbedMessage(EMType.Error).Build());
+                        await ReplyAsync("", embed: $"{invokingUserMention} karta musi mieć min. poziom relacji: *Miłość*.".ToEmbedMessage(EMType.Error).Build());
                         return;
                     }
                     if (card.Rarity == Rarity.SSS)
                     {
-                        await ReplyAsync("", embed: $"{Context.User.Mention} karty **SSS** nie można już ulepszyć!".ToEmbedMessage(EMType.Error).Build());
+                        await ReplyAsync("", embed: $"{invokingUserMention} karty **SSS** nie można już ulepszyć!".ToEmbedMessage(EMType.Error).Build());
                         return;
                     }
                     if (card.UpgradesCount + itemCnt > 5)
                     {
-                        await ReplyAsync("", embed: $"{Context.User.Mention} nie można mieć więcej jak pięć ulepszeń dostępnych na karcie.".ToEmbedMessage(EMType.Error).Build());
+                        await ReplyAsync("", embed: $"{invokingUserMention} nie można mieć więcej jak pięć ulepszeń dostępnych na karcie.".ToEmbedMessage(EMType.Error).Build());
                         return;
                     }
                     karmaChange += itemCnt;
@@ -663,7 +665,7 @@ namespace Sanakan.Modules
                 case ItemType.DereReRoll:
                     if (card.Curse == CardCurse.DereBlockade)
                     {
-                        await ReplyAsync("", embed: $"{Context.User.Mention} na tej karcie ciąży klątwa!".ToEmbedMessage(EMType.Error).Build());
+                        await ReplyAsync("", embed: $"{invokingUserMention} na tej karcie ciąży klątwa!".ToEmbedMessage(EMType.Error).Build());
                         return;
                     }
                     karmaChange += 0.02 * itemCnt;
@@ -688,7 +690,7 @@ namespace Sanakan.Modules
                 case ItemType.FigureSkeleton:
                     if (card.Rarity != Rarity.SSS)
                     {
-                        await ReplyAsync("", embed: $"{Context.User.Mention} karta musi być rangi **SSS**.".ToEmbedMessage(EMType.Error).Build());
+                        await ReplyAsync("", embed: $"{invokingUserMention} karta musi być rangi **SSS**.".ToEmbedMessage(EMType.Error).Build());
                         return;
                     }
                     karmaChange -= 1;
@@ -760,7 +762,7 @@ namespace Sanakan.Modules
 
             if (mission == null)
             {
-                mission = StatusType.DUsedItems.NewTimeStatus();
+                mission = new TimeStatus(StatusType.DUsedItems);
                 bUser.TimeStatuses.Add(mission);
             }
             mission.Count(itemCnt);
@@ -857,7 +859,7 @@ namespace Sanakan.Modules
 
             if (mission == null)
             {
-                mission = StatusType.DPacket.NewTimeStatus();
+                mission = new TimeStatus(StatusType.DPacket);
                 bUser.TimeStatuses.Add(mission);
             }
 
@@ -1412,11 +1414,11 @@ namespace Sanakan.Modules
             var freeCard = botuser.TimeStatuses.FirstOrDefault(x => x.Type == StatusType.Card);
             if (freeCard == null)
             {
-                freeCard = StatusType.Card.NewTimeStatus();
+                freeCard = new TimeStatus(StatusType.Card);
                 botuser.TimeStatuses.Add(freeCard);
             }
 
-            if (freeCard.IsActive())
+            if (freeCard.IsActive(_systemClock.UtcNow))
             {
                 var timeTo = (int)freeCard.RemainingMinutes();
                 await ReplyAsync("", embed: $"{Context.User.Mention} możesz otrzymać następną darmową kartę dopiero za {timeTo / 60}h {timeTo % 60}m!".ToEmbedMessage(EMType.Error).Build());
@@ -1432,7 +1434,7 @@ namespace Sanakan.Modules
             var mission = botuser.TimeStatuses.FirstOrDefault(x => x.Type == StatusType.WCardPlus);
             if (mission == null)
             {
-                mission = StatusType.WCardPlus.NewTimeStatus();
+                mission = new TimeStatus(StatusType.WCardPlus);
                 botuser.TimeStatuses.Add(mission);
             }
             mission.Count();
@@ -1500,13 +1502,15 @@ namespace Sanakan.Modules
             var market = botuser.TimeStatuses.FirstOrDefault(x => x.Type == StatusType.Market);
             if (market == null)
             {
-                market = StatusType.Market.NewTimeStatus();
+                market = new TimeStatus(StatusType.Market);
                 botuser.TimeStatuses.Add(market);
             }
 
-            if (market.IsActive())
+            var utcNow = _systemClock.UtcNow;
+
+            if (market.IsActive(utcNow))
             {
-                var timeTo = (int)market.RemainingMinutes();
+                var timeTo = (int)market.RemainingMinutes(utcNow);
                 await ReplyAsync("", embed: $"{Context.User.Mention} możesz udać się ponownie na rynek za {timeTo / 60}h {timeTo % 60}m!".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
@@ -1514,7 +1518,7 @@ namespace Sanakan.Modules
             var mission = botuser.TimeStatuses.FirstOrDefault(x => x.Type == StatusType.DMarket);
             if (mission == null)
             {
-                mission = StatusType.DMarket.NewTimeStatus();
+                mission = new TimeStatus(StatusType.DMarket);
                 botuser.TimeStatuses.Add(mission);
             }
             mission.Count();
@@ -1615,13 +1619,15 @@ namespace Sanakan.Modules
             var market = botuser.TimeStatuses.FirstOrDefault(x => x.Type == StatusType.Market);
             if (market == null)
             {
-                market = StatusType.Market.NewTimeStatus();
+                market = new TimeStatus(StatusType.Market);
                 botuser.TimeStatuses.Add(market);
             }
 
-            if (market.IsActive())
+            var utcNow = _systemClock.UtcNow;
+
+            if (market.IsActive(utcNow))
             {
-                var timeTo = (int)market.RemainingMinutes();
+                var timeTo = (int)market.RemainingMinutes(utcNow);
                 await ReplyAsync("", embed: $"{Context.User.Mention} możesz udać się ponownie na czarny rynek za {timeTo / 60}h {timeTo % 60}m!".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
@@ -1631,7 +1637,7 @@ namespace Sanakan.Modules
 
             if (mission == null)
             {
-                mission = StatusType.DMarket.NewTimeStatus();
+                mission = new TimeStatus(StatusType.DMarket);
                 botuser.TimeStatuses.Add(mission);
             }
             mission.Count();
@@ -3262,7 +3268,7 @@ namespace Sanakan.Modules
 
             if (mission == null)
             {
-                mission = StatusType.DExpeditions.NewTimeStatus();
+                mission = new TimeStatus(StatusType.DExpeditions);
                 botUser.TimeStatuses.Add(mission);
             }
             mission.Count();
@@ -3298,7 +3304,8 @@ namespace Sanakan.Modules
             if (canFight != DeckPowerStatus.Ok)
             {
                 var err = (canFight == DeckPowerStatus.TooLow) ? "słabą" : "silną";
-                await ReplyAsync("", embed: $"{Context.User.Mention} masz zbyt {err} talie ({duser.GameDeck.GetDeckPower().ToString("F")}).".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync("", embed: $"{Context.User.Mention} masz zbyt {err} talie ({duser.GameDeck.GetDeckPower().ToString("F")})."
+                    .ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
@@ -3307,13 +3314,15 @@ namespace Sanakan.Modules
 
             if (pvpDailyMax == null)
             {
-                pvpDailyMax = StatusType.Pvp.NewTimeStatus();
+                pvpDailyMax = new TimeStatus(StatusType.Pvp);
                 duser.TimeStatuses.Add(pvpDailyMax);
             }
 
-            if (!pvpDailyMax.IsActive())
+            var utcNow = _systemClock.UtcNow;
+
+            if (!pvpDailyMax.IsActive(utcNow))
             {
-                pvpDailyMax.EndsAt = _systemClock.UtcNow.Date.AddHours(3).AddDays(1);
+                pvpDailyMax.EndsAt = utcNow.Date.AddHours(3).AddDays(1);
                 duser.GameDeck.PVPDailyGamesPlayed = 0;
             }
 
@@ -3323,7 +3332,7 @@ namespace Sanakan.Modules
                 return;
             }
 
-            if ((_systemClock.UtcNow - duser.GameDeck.PVPSeasonBeginDate.AddMonths(1)).TotalSeconds > 1)
+            if ((utcNow - duser.GameDeck.PVPSeasonBeginDate.AddMonths(1)).TotalSeconds > 1)
             {
                 duser.GameDeck.PVPSeasonBeginDate = new DateTime(
                     _systemClock.UtcNow.Year,
@@ -3392,7 +3401,7 @@ namespace Sanakan.Modules
             var mission = duser.TimeStatuses.FirstOrDefault(x => x.Type == StatusType.DPvp);
             if (mission == null)
             {
-                mission = StatusType.DPvp.NewTimeStatus();
+                mission = new TimeStatus(StatusType.DPvp);
                 duser.TimeStatuses.Add(mission);
             }
             mission.Count();
@@ -3477,7 +3486,8 @@ namespace Sanakan.Modules
 
             if (!bUser.GameDeck.CanCreateDemon() && !bUser.GameDeck.CanCreateAngel())
             {
-                await ReplyAsync("", embed: $"{Context.User.Mention} nie jesteś zły, ani dobry - po prostu nijaki.".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync("", embed: $"{Context.User.Mention} nie jesteś zły, ani dobry - po prostu nijaki."
+                    .ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
