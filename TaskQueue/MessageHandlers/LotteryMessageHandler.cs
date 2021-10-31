@@ -2,6 +2,10 @@
 using Sanakan.Common;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Repositories.Abstractions;
+using Sanakan.DiscordBot.Abstractions.Extensions;
+using Sanakan.DiscordBot.Abstractions.Models;
+using Sanakan.Extensions;
+using Sanakan.Game.Extensions;
 using Sanakan.TaskQueue.Messages;
 using System;
 using System.Collections.Generic;
@@ -47,7 +51,7 @@ namespace Sanakan.TaskQueue.MessageHandlers
                 return;
             }
 
-            var winnerUser = await _userRepository.GetUserOrCreateAsync(winner.Id);
+            var winnerUser = await _userRepository.GetUserOrCreateAsync(message.WinnerUserId);
 
             if (winnerUser == null)
             {
@@ -58,7 +62,7 @@ namespace Sanakan.TaskQueue.MessageHandlers
             var cardsIds = new List<string>();
             var idsToSelect = loteryCards.Select(x => x.Id).ToList();
 
-            for (int i = 0; i < count; i++)
+            for (int i = 0; i < message.CardCount; i++)
             {
                 if (idsToSelect.Count < 1)
                     break;
@@ -84,11 +88,13 @@ namespace Sanakan.TaskQueue.MessageHandlers
             await _guildConfigRepository.SaveChangesAsync();
             await userMessage.DeleteAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"user-{Context.User.Id}", "users", $"user-{id}" });
+            _cacheManager.ExpireTag(new string[] { $"user-{message.InvokingUserId}", "users", $"user-{message.DiscordUserId}" });
 
-            userMessage = await ReplyAsync(embed: $"Loterie wygrywa {winner.Mention}.\nOtrzymuje: {string.Join("\n", cardsIds)}"
-                .TrimToLength(2000)
-                .ToEmbedMessage(EMType.Success).Build());
+            var content = $"Loterie wygrywa {message.WinnerUser.Mention}.\nOtrzymuje: {string.Join("\n", cardsIds)}"
+                .ElipseTrimToLength(2000)
+                .ToEmbedMessage(EMType.Success).Build();
+
+            userMessage = await message.Channel.SendMessageAsync(embed: content);
 
             var jumpUrl = userMessage.GetJumpUrl();
 
@@ -100,7 +106,7 @@ namespace Sanakan.TaskQueue.MessageHandlers
                     Description = $"Na [loterii]({jumpUrl}) zdobyłeś {cardsIds.Count} kart."
                 };
 
-                var dmChannel = await winner.GetOrCreateDMChannelAsync();
+                var dmChannel = await message.WinnerUser.GetOrCreateDMChannelAsync();
 
                 if (dmChannel != null)
                 {

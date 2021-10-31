@@ -26,11 +26,9 @@ namespace Sanakan.Web.HostedService
         private readonly IDiscordSocketClientAccessor _discordSocketClientAccessor;
         private readonly IOptionsMonitor<DaemonsConfiguration> _options;
         private readonly IServiceScopeFactory _serviceScopeFactory;
-        private readonly Process _process;
         private readonly IOperatingSystem _operatingSystem;
         private readonly ITimer _timer;
         private readonly ICacheManager _cacheManager;
-        private const int MB = 1048576;
 
         public ModeratorHostedService(
             ILogger<MemoryUsageHostedService> logger,
@@ -46,7 +44,6 @@ namespace Sanakan.Web.HostedService
             _options = options;
             _operatingSystem = operatingSystem;
             _timer = timer;
-            _process = _operatingSystem.GetCurrentProcess();
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -73,6 +70,7 @@ namespace Sanakan.Web.HostedService
             var serviceProvider = serviceScope.ServiceProvider;
             var penaltyInfoRepository = serviceProvider.GetRequiredService<IPenaltyInfoRepository>();
             var guildConfigRepository = serviceProvider.GetRequiredService<IGuildConfigRepository>();
+            var utcNow = _systemClock.UtcNow;
 
             foreach (var penalty in await penaltyInfoRepository.GetCachedFullPenalties())
             {
@@ -87,7 +85,7 @@ namespace Sanakan.Web.HostedService
 
                 if (user == null)
                 {
-                    if ((_systemClock.UtcNow - penalty.StartDate) > penalty.Duration)
+                    if ((utcNow - penalty.StartDate) > penalty.Duration)
                     {
                         if (penalty.Type == PenaltyType.Ban)
                         {
@@ -106,16 +104,14 @@ namespace Sanakan.Web.HostedService
                 var muteModRole = guild.GetRole(gconfig.ModMuteRoleId);
                 var muteRole = guild.GetRole(gconfig.MuteRoleId);
 
-                if ((_systemClock.UtcNow - penalty.StartDate) < penalty.Duration)
+                if ((utcNow - penalty.StartDate) < penalty.Duration)
                 {
                     var muteMod = penalty
                         .Roles
                         .Any(x => gconfig.ModeratorRoles.Any(z =>
                             z.Role == x.Role)) ? muteModRole : null;
 
-                    _ = Task.Run(async () => {
-                        await MuteUserGuildAsync(user, muteRole, penalty.Roles, muteMod);
-                    });
+                    await MuteUserGuildAsync(user, muteRole, penalty.Roles, muteMod);
                     continue;
                 }
 
@@ -155,9 +151,10 @@ namespace Sanakan.Web.HostedService
         }
 
         private async Task MuteUserGuildAsync(
-         SocketGuildUser user,
-         SocketRole muteRole,
-         IEnumerable<OwnedRole> roles, SocketRole modMuteRole = null)
+            SocketGuildUser user,
+            SocketRole muteRole,
+            IEnumerable<OwnedRole> roles,
+            SocketRole? modMuteRole = null)
         {
             if (muteRole != null)
             {

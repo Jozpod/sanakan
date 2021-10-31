@@ -1,10 +1,31 @@
-﻿using Discord;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Discord;
 using Discord.WebSocket;
+using Sanakan.DiscordBot.Abstractions.Models;
 
-namespace Sanakan.Extensions
+namespace Sanakan.DiscordBot.Abstractions.Extensions
 {
-    public static class EmbedAuthorBuilderExtension
+    public static class DiscordExtensions
     {
+        public static EmbedBuilder ToEmbedMessage(
+            this string message,
+            EMType type = EMType.Neutral,
+            bool icon = false)
+        {
+            return new EmbedBuilder().WithColor(type.Color())
+                .WithDescription($"{type.Emoji(!icon)}{message}");
+        }
+
+        public static string GetLocalCreatedAtShortDateTime(this IMessage message)
+           => message.CreatedAt.DateTime.ToLocalTime().ToString("dd/MM/yyyy HH:mm");
+
+        public static int CountEmotesTextLength(this IReadOnlyCollection<Discord.ITag> tags)
+        {
+            return tags.Where(tag => tag.Type == TagType.Emoji).Sum(x => x.Value.ToString().Length);
+        }
+
         public static string GetUserOrDefaultAvatarUrl(this IUser user)
         {
             var avatar = user.GetAvatarUrl() ?? user.GetDefaultAvatarUrl();

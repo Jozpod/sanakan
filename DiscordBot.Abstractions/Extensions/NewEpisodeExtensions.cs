@@ -1,36 +1,23 @@
 ﻿using System.Collections.Generic;
 using Discord;
+using Sanakan.DiscordBot.Abstractions.Models;
 using Shinden.API;
 using Shinden.Models;
 
 namespace Sanakan.Extensions
 {
-    public static class INewEpisodeExtension
+    public static class NewEpisodeExtensions
     {
         public static Embed ToEmbed(this NewEpisode episode)
         {
             return new EmbedBuilder()
             {
-                Title = episode.Title.TrimToLength(EmbedBuilder.MaxTitleLength),
+                Title = episode.Title.ElipseTrimToLength(EmbedBuilder.MaxTitleLength),
                 ThumbnailUrl = episode.AnimeCoverUrl,
                 Color = EMType.Info.Color(),
                 Fields = episode.GetFields(),
                 Url = episode.AnimeUrl,
             }.Build();
-        }
-
-        public static string ToName(this Language lang)
-        {
-            switch (lang)
-            {
-                case Language.English: return "Angielski";
-                case Language.Korean: return "Koreański";
-                case Language.Chinese: return "Chiński";
-                case Language.Polish: return "Polski";
-
-                case Language.NotSpecified:
-                default: return "--";
-            }
         }
 
         public static List<EmbedFieldBuilder> GetFields(this NewEpisode ep)

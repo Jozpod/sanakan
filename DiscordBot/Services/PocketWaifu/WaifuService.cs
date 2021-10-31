@@ -1103,7 +1103,7 @@ namespace Sanakan.Services.PocketWaifu
                     list.Add(new EmbedBuilder()
                     {
                         Color = EMType.Info.Color(),
-                        Description = contentString.TrimToLength(2000)
+                        Description = contentString.ElipseTrimToLength(2000)
                     }.Build());
 
                     contentString = tempContentString;
@@ -1114,7 +1114,7 @@ namespace Sanakan.Services.PocketWaifu
             list.Add(new EmbedBuilder()
             {
                 Color = EMType.Info.Color(),
-                Description = contentString.TrimToLength(2000)
+                Description = contentString.ElipseTrimToLength(2000)
             }.Build());
 
             return list;
@@ -1149,7 +1149,7 @@ namespace Sanakan.Services.PocketWaifu
                     list.Add(new EmbedBuilder()
                     {
                         Color = EMType.Info.Color(),
-                        Description = contentString.TrimToLength(2000)
+                        Description = contentString.ElipseTrimToLength(2000)
                     }.Build());
 
                     contentString = tempContentString;
@@ -1160,7 +1160,7 @@ namespace Sanakan.Services.PocketWaifu
             list.Add(new EmbedBuilder()
             {
                 Color = EMType.Info.Color(),
-                Description = contentString.TrimToLength(2000)
+                Description = contentString.ElipseTrimToLength(2000)
             }.Build());
 
             return list;
@@ -1194,7 +1194,7 @@ namespace Sanakan.Services.PocketWaifu
             return new EmbedBuilder
             {
                 Color = EMType.Info.Color(),
-                Description = $"{user.Mention} twoje pakiety:\n\n{packString.TrimToLength(1900)}"
+                Description = $"{user.Mention} twoje pakiety:\n\n{packString.ElipseTrimToLength(1900)}"
             }.Build();
         }
 
@@ -1203,7 +1203,7 @@ namespace Sanakan.Services.PocketWaifu
             return new EmbedBuilder
             {
                 Color = EMType.Info.Color(),
-                Description = $"{user.Mention} twoje przedmioty:\n\n{items.ToItemList().TrimToLength(1900)}"
+                Description = $"{user.Mention} twoje przedmioty:\n\n{items.ToItemList().ElipseTrimToLength(1900)}"
             }.Build();
         }
 
@@ -1476,7 +1476,7 @@ namespace Sanakan.Services.PocketWaifu
                 {
                     Text = $"Należy do: {ownerString}"
                 },
-                Description = $"{card.GetDesc()}{imgUrls}".TrimToLength(1800)
+                Description = $"{card.GetDesc()}{imgUrls}".ElipseTrimToLength(1800)
             }.Build();
         }
 
@@ -1489,7 +1489,7 @@ namespace Sanakan.Services.PocketWaifu
             return new EmbedBuilder
             {
                 Color = EMType.Info.Color(),
-                Description = $"**{name}**:\n\n{embedString}".TrimToLength(2000)
+                Description = $"**{name}**:\n\n{embedString}".ElipseTrimToLength(2000)
             }.Build();
         }
 

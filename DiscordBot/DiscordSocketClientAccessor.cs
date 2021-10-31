@@ -6,7 +6,19 @@ namespace Sanakan.DiscordBot
 {
     internal class DiscordSocketClientAccessor : IDiscordSocketClientAccessor
     {
-        public DiscordSocketClient? Client { get; set; }
+        private DiscordSocketClient? _client;
+        public DiscordSocketClient? Client
+        {
+            get
+            {
+                return _client;
+            }
+            set
+            {
+                _client = value;
+                Initialized.Invoke();
+            }
+        }
 
         public event Func<Task> Initialized;
     }

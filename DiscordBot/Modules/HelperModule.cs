@@ -5,16 +5,15 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Sanakan.Common;
+using Sanakan.Common.Configuration;
 using Sanakan.DAL.Models.Configuration;
 using Sanakan.DAL.Repositories.Abstractions;
-using Sanakan.DiscordBot.Configuration;
+using Sanakan.DiscordBot.Abstractions.Extensions;
+using Sanakan.DiscordBot.Abstractions.Models;
 using Sanakan.DiscordBot.Services.Abstractions;
-using Sanakan.Extensions;
 using Sanakan.Preconditions;
-using Sanakan.Services;
-using Sanakan.Services.Commands;
-using Sanakan.Services.Session;
 using Sanakan.Services.Session.Models;
+using Sanakan.TaskQueue;
 using System;
 using System.Diagnostics;
 using System.Linq;
@@ -25,10 +24,10 @@ namespace Sanakan.Modules
     [Name("Ogólne")]
     public class HelperModule : ModuleBase<SocketCommandContext>
     {
-        private SessionManager _session;
+        private ISessionManager _session;
         private IHelperService _helperService;
         private ILogger _logger;
-        private IOptionsMonitor<BotConfiguration> _config;
+        private IOptionsMonitor<DiscordConfiguration> _config;
         private readonly IGuildConfigRepository _guildConfigRepository;
         private readonly ISystemClock _systemClock;
         private readonly IOperatingSystem _operatingSystem;
@@ -36,9 +35,9 @@ namespace Sanakan.Modules
 
         public HelperModule(
             IHelperService helper,
-            SessionManager session,
+            ISessionManager session,
             ILogger<HelperModule> logger,
-            IOptionsMonitor<BotConfiguration> config,
+            IOptionsMonitor<DiscordConfiguration> config,
             IGuildConfigRepository guildConfigRepository,
             IOperatingSystem operatingSystem,
             IServiceProvider serviceProvider)
@@ -86,8 +85,10 @@ namespace Sanakan.Modules
                         prefix = gConfig.Prefix;
                     }
 
-                    admin = (gUser.Roles.Any(x => x.Id == gConfig?.AdminRoleId) || gUser.GuildPermissions.Administrator);
-                    dev = _config.CurrentValue.Dev.Any(x => x == gUser.Id);
+                    admin = gUser.Roles.Any(x => x.Id == gConfig?.AdminRoleId)
+                            || gUser.GuildPermissions.Administrator;
+
+                    dev = _config.CurrentValue.AllowedToDebug.Any(x => x == gUser.Id);
                 }
 
                 await ReplyAsync(_helperService.GiveHelpAboutPublicCmd(command, prefix, admin, dev));

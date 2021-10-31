@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DAL\DAL.csproj" />
+    <ProjectReference Include="..\Game\Game.csproj" />
     <ProjectReference Include="..\ShindenApi\ShindenApi.csproj" />
   </ItemGroup>
 

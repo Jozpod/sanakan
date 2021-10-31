@@ -80,5 +80,89 @@ namespace Sanakan.DAL.Models
 
         [JsonIgnore]
         public virtual GameDeck GameDeck { get; set; }
+
+
+        public int ConstructionPointsToInstall( Item part)
+        {
+            return (80 * (int)part.Quality) + (20 * (int)SkeletonQuality);
+        }
+
+        public Quality GetQualityOfFocusedPart()
+        {
+            switch (FocusedPart)
+            {
+                case FigurePart.Body:
+                    return BodyQuality;
+                case FigurePart.Clothes:
+                    return ClothesQuality;
+                case FigurePart.Head:
+                    return HeadQuality;
+                case FigurePart.LeftArm:
+                    return LeftArmQuality;
+                case FigurePart.LeftLeg:
+                    return LeftLegQuality;
+                case FigurePart.RightArm:
+                    return RightArmQuality;
+                case FigurePart.RightLeg:
+                    return RightLegQuality;
+
+                default:
+                    return Quality.Broken;
+            }
+        }
+
+        public bool CanAddPart( Item part)
+        {
+            return part.Quality >= SkeletonQuality 
+                && GetQualityOfFocusedPart() == Quality.Broken;
+        }
+
+        public bool HasEnoughPointsToAddPart(Item part)
+        {
+            return PartExp >= ConstructionPointsToInstall(part);
+        }
+
+        public bool AddPart(Item part)
+        {
+            if (!CanAddPart(part) || !HasEnoughPointsToAddPart(part))
+            {
+                return false;
+            }
+
+            var partType = part.Type.GetPartType();
+            if (partType != FocusedPart && partType != FigurePart.All)
+                return false;
+
+            switch (FocusedPart)
+            {
+                case FigurePart.Body:
+                    BodyQuality = part.Quality;
+                    break;
+                case FigurePart.Clothes:
+                    ClothesQuality = part.Quality;
+                    break;
+                case FigurePart.Head:
+                    HeadQuality = part.Quality;
+                    break;
+                case FigurePart.LeftArm:
+                    LeftArmQuality = part.Quality;
+                    break;
+                case FigurePart.LeftLeg:
+                    LeftLegQuality = part.Quality;
+                    break;
+                case FigurePart.RightArm:
+                    RightArmQuality = part.Quality;
+                    break;
+                case FigurePart.RightLeg:
+                    RightLegQuality = part.Quality;
+                    break;
+
+                default:
+                    return false;
+            }
+
+            PartExp = 0;
+            return true;
+        }
     }
 }

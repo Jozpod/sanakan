@@ -7,9 +7,13 @@ using Microsoft.Extensions.Logging;
 using Sanakan.Common;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Repositories.Abstractions;
+using Sanakan.DiscordBot.Abstractions.Extensions;
 using Sanakan.DiscordBot.Services;
 using Sanakan.DiscordBot.Services.Abstractions;
 using Sanakan.Extensions;
+using Sanakan.Game.Extensions;
+using Sanakan.Game.Models;
+using Sanakan.Game.Services;
 using Sanakan.ShindenApi;
 using SixLabors.Primitives;
 using System;
@@ -29,12 +33,11 @@ namespace Sanakan.Services
         private readonly IFileSystem _fileSystem;
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private ILogger _logger;
-        private Timer _timer;
 
         public ProfileService(
             DiscordSocketClient client,
             IShindenClient shindenClient,
-            IImageProcessor img,
+            IImageProcessor imageProcessor,
             IFileSystem fileSystem,
             IServiceScopeFactory serviceScopeFactory,
             ILogger<ProfileService> logger)
@@ -44,27 +47,33 @@ namespace Sanakan.Services
             _logger = logger;
             _fileSystem = fileSystem;
             _serviceScopeFactory = serviceScopeFactory;
-            _imageProcessor = img;
-
-            _timer = new Timer(async _ =>
-            {
-                try
-                {
-                    await CyclicCheckAsync();
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError($"in profile check: {ex}", ex);
-                }
-            },
-            null,
-            TimeSpan.FromMinutes(1),
-            TimeSpan.FromMinutes(1));
+            _imageProcessor = imageProcessor;
         }
 
-       
+        public async Task RomoveUserColorAsync(SocketGuildUser user)
+        {
+            if (user == null)
+            {
+                return;
+            }
 
-       
+            var colors = FColorExtensions.FColors;
+            foreach (uint color in colors)
+            {
+                var socketRole = user.Roles.FirstOrDefault(x => x.Name == color.ToString());
+                if (socketRole == null)
+                {
+                    continue;
+                }
+
+                if (socketRole.Members.Count() == 1)
+                {
+                    await socketRole.DeleteAsync();
+                    return;
+                }
+                await user.RemoveRoleAsync(socketRole);
+            }
+        }
 
         public bool HasSameColor(SocketGuildUser user, FColor color)
         {
@@ -113,13 +122,13 @@ namespace Sanakan.Services
 
       
 
-        public List<User> GetTopUsers(List<User> list, TopType type)
-            => GetRangeMax(OrderUsersByTop(list, type), 50);
+        public List<User> GetTopUsers(List<User> list, TopType type, DateTime date)
+            => GetRangeMax(OrderUsersByTop(list, type, date), 50);
 
         private List<T> GetRangeMax<T>(List<T> list, int range)
             => list.GetRange(0, list.Count > range ? range : list.Count);
 
-        private List<User> OrderUsersByTop(List<User> list, TopType type)
+        private List<User> OrderUsersByTop(List<User> list, TopType type, DateTime date)
         {
             switch (type)
             {
@@ -143,10 +152,12 @@ namespace Sanakan.Services
                     return list.OrderByDescending(x => x.MessagesCount).ToList();
 
                 case TopType.PostsMonthly:
-                    return list.Where(x => x.IsCharCounterActive()).OrderByDescending(x => x.MessagesCount - x.MessagesCntAtDate).ToList();
+                    return list.Where(x => x.IsCharCounterActive(date))
+                        .OrderByDescending(x => x.MessagesCount - x.MessagesCountAtDate).ToList();
 
                 case TopType.PostsMonthlyCharacter:
-                    return list.Where(x => x.IsCharCounterActive() && x.SendAnyMsgInMonth()).OrderByDescending(x => x.CharacterCntFromDate / (x.MessagesCount - x.MessagesCntAtDate)).ToList();
+                    return list.Where(x => x.IsCharCounterActive(date) && x.SendAnyMsgInMonth())
+                        .OrderByDescending(x => x.CharacterCountFromDate / (x.MessagesCount - x.MessagesCountAtDate)).ToList();
 
                 case TopType.Commands:
                     return list.OrderByDescending(x => x.CommandsCount).ToList();
@@ -167,10 +178,13 @@ namespace Sanakan.Services
                     return list.OrderBy(x => x.GameDeck.Karma).ToList();
 
                 case TopType.Pvp:
-                    return list.Where(x => x.GameDeck.GlobalPVPRank > 0).OrderByDescending(x => x.GameDeck.GlobalPVPRank).ToList();
+                    return list.Where(x => x.GameDeck.GlobalPVPRank > 0)
+                        .OrderByDescending(x => x.GameDeck.GlobalPVPRank).ToList();
 
                 case TopType.PvpSeason:
-                    return list.Where(x => x.IsPVPSeasonalRankActive() && x.GameDeck.SeasonalPVPRank > 0).OrderByDescending(x => x.GameDeck.SeasonalPVPRank).ToList();
+                    return list.Where(x => x.IsPVPSeasonalRankActive(date)
+                        && x.GameDeck.SeasonalPVPRank > 0)
+                        .OrderByDescending(x => x.GameDeck.SeasonalPVPRank).ToList();
             }
         }
 
@@ -180,10 +194,13 @@ namespace Sanakan.Services
 
             foreach (var user in list)
             {
-                var bUsr = guild.GetUser(user.Id);
-                if (bUsr == null) continue;
+                var socketGuildUser = guild.GetUser(user.Id);
+                if (socketGuildUser == null)
+                {
+                    continue;
+                }
 
-                view.Add($"{bUsr.Mention}: {user.GetViewValueForTop(type)}");
+                view.Add($"{socketGuildUser.Mention}: {user.GetViewValueForTop(type)}");
             }
 
             return view;
@@ -191,10 +208,12 @@ namespace Sanakan.Services
 
         public Stream GetColorList(SCurrency currency)
         {
-            using (var image = _imageProcessor.GetFColorsView(currency))
-            {
-                return image.ToPngStream();
-            }
+            var colours = FColorExtensions.FColors;
+            var coloursSummary = colours
+                .Select(colour => ($"{colour} ({colour.Price(currency)} {currency.ToString().ToUpper()})", (uint)colour));
+
+            using var image = _imageProcessor.GetFColorsView(coloursSummary);
+            return image.ToPngStream();
         }
 
         public async Task<Stream> GetProfileImageAsync(SocketGuildUser discordUser, User botUser, long topPosition)

@@ -183,7 +183,7 @@ namespace Sanakan.Api.Models
                 return null;
             }
 
-            return new CardFinalView(card)
+            return new CardFinalView(card);
         }
     }
 }

@@ -21,6 +21,8 @@ using Sanakan.DiscordBot;
 using Microsoft.Extensions.DependencyInjection;
 using Sanakan.DiscordBot.Services.Abstractions;
 using Sanakan.DiscordBot.Models;
+using Sanakan.DiscordBot.Abstractions.Extensions;
+using Sanakan.TaskQueue;
 
 namespace Sanakan.Modules
 {
@@ -40,7 +42,7 @@ namespace Sanakan.Modules
         private readonly SlotMachine _slotMachine;
         public FunModule(
             IModeratorService moderatorService,
-            SessionManager session,
+            ISessionManager session,
             ICacheManager cacheManager,
             ISystemClock systemClock,
             IServiceScopeFactory serviceScopeFactory)
@@ -305,10 +307,10 @@ namespace Sanakan.Modules
         {
             var info = string.Format(Strings.GameInfo, PsyduckEmoji);
 
-            foreach (SlotMachineSlots slotMachineSlot in Enum.GetValues(typeof(SlotMachineSlots)))
+            foreach (var slotMachineSlot in SlotMachineSlotsExtensions.SlotMachineSlots)
             {
-                if (slotMachineSlot != SlotMachineSlots.max
-                        && slotMachineSlot != SlotMachineSlots.q)
+                if (slotMachineSlot != SlotMachineSlot.max
+                        && slotMachineSlot != SlotMachineSlot.q)
                 {
                     for (int i = 3; i < 6; i++)
                     {

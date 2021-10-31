@@ -1,4 +1,7 @@
-﻿namespace DiscordBot.Services
+﻿using Sanakan.DAL.Models;
+using System;
+
+namespace DiscordBot.Services
 {
     public enum FColor : uint
     {
@@ -57,5 +60,41 @@
 
         Ejzur = 0x007FFF,
         BlueBlueBlue = 0x1F75FE,
+    }
+
+    public static class FColorExtensions
+    {
+        public static FColor[] FColors = (FColor[])Enum.GetValues(typeof(FColor));
+
+        public static bool IsOption(this FColor color)
+        {
+            switch (color)
+            {
+                case FColor.None:
+                case FColor.CleanColor:
+                    return true;
+
+                default:
+                    return false;
+            }
+        }
+
+        public static int Price(this FColor color, SCurrency currency)
+        {
+            if (color == FColor.CleanColor)
+                return 0;
+
+            if (currency == SCurrency.Sc)
+                return 39999;
+
+            switch (color)
+            {
+                case FColor.DefinitelyNotWhite:
+                    return 799;
+
+                default:
+                    return 800;
+            }
+        }
     }
 }

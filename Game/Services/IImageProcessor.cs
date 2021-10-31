@@ -36,7 +36,7 @@ namespace Sanakan.Game.Services
             ulong userLevel,
             string avatarUrl,
             Discord.Color color);
-        Image<Rgba32> GetFColorsView(SCurrency currency);
+        Image<Rgba32> GetFColorsView(IEnumerable<(string, uint)> colours);
         Task<Image<Rgba32>> GetWaifuInProfileCardAsync(Card card);
         Image<Rgba32> GetDuelCardImage(DuelInfo info, DuelImage image, Image<Rgba32> win, Image<Rgba32> los);
         Image<Rgba32> GetCatchThatWaifuImage(Image<Rgba32> card, string pokeImg, int xPos, int yPos);

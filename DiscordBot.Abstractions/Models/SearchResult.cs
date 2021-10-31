@@ -1,17 +1,17 @@
 ﻿using Discord.Commands;
 
-namespace Sanakan.Services.Commands
+namespace Sanakan.DiscordBot.Abstractions
 {
     public class SearchResult
     {
-        public SearchResult(IResult result = null, Command command = null)
+        public SearchResult(IResult? result = null, Command? command = null)
         {
             Result = result;
             Command = command;
         }
 
-        public IResult Result { get; private set; }
-        public Command Command { get; private set; }
+        public IResult Result { get; }
+        public Command Command { get; }
 
         public bool IsSuccess()
         {

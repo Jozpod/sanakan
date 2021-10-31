@@ -2,8 +2,8 @@
 {
     public enum CardImageType
     {
-        Normal,
-        Small,
-        Profile
+        Normal = 0,
+        Small = 1,
+        Profile = 2
     }
 }

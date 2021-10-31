@@ -3,70 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Sanakan.DAL.Models;
+using Sanakan.Game.Extensions;
 using Sanakan.ShindenApi.Utilities;
 
 namespace Sanakan.Extensions
 {
     public static class CardExtension
     {
-        
-        public static int GetValue(this Card card)
-        {
-            switch (card.Rarity)
-            {
-                case Rarity.SSS: return 50;
-                case Rarity.SS: return 25;
-                case Rarity.S: return 15;
-                case Rarity.A: return 10;
-                case Rarity.B: return 7;
-                case Rarity.C: return 5;
-                case Rarity.D: return 3;
-
-                default:
-                case Rarity.E: return 1;
-            }
-        }
-        public static double ExpToUpgrade(this Card card)
-        {
-            switch (card.Rarity)
-            {
-                case Rarity.SSS:
-                    if (card.FromFigure)
-                    {
-                        return 120 * (int)card.Quality;
-                    }
-                    return 1000;
-                case Rarity.SS:
-                    return 100;
-
-                default:
-                    return 30 + (4 * (7 - (int)card.Rarity));
-            }
-        }
-        public static string GetAffectionString(this Card card)
-        {
-            if (card.Affection <= -400) return "Pogarda (γ)";
-            if (card.Affection <= -200) return "Pogarda (β)";
-            if (card.Affection <= -100) return "Pogarda (α)";
-            if (card.Affection <= -50) return "Pogarda";
-            if (card.Affection <= -5) return "Nienawiść";
-            if (card.Affection <= -4) return "Zawiść";
-            if (card.Affection <= -3) return "Wrogość";
-            if (card.Affection <= -2) return "Złośliwość";
-            if (card.Affection <= -1) return "Chłodność";
-            if (card.Affection >= 400) return "Obsesyjna miłość (γ)";
-            if (card.Affection >= 200) return "Obsesyjna miłość (β)";
-            if (card.Affection >= 100) return "Obsesyjna miłość (α)";
-            if (card.Affection >= 50) return "Obsesyjna miłość";
-            if (card.Affection >= 5) return "Miłość";
-            if (card.Affection >= 4) return "Zauroczenie";
-            if (card.Affection >= 3) return "Przyjaźń";
-            if (card.Affection >= 2) return "Fascynacja";
-            if (card.Affection >= 1) return "Zaciekawienie";
-            return "Obojętność";
-        }
-
-        public static bool HasNoNegativeEffectAfterBloodUsage(this Card card) => card.Affection >= 4;
         public static double GetMaxExpToChest(this Card card, ExpContainerLevel lvl)
         {
             double exp = 0;
@@ -215,7 +158,7 @@ namespace Sanakan.Extensions
                 case CardSource.Other: return "Inne";
             }
         }
-        public static string GetNameWithUrl(this Card card) => $"[{card.Name}]({card.GetCharacterUrl()})";
+
         public static string GetDesc(this Card card)
         {
             var tags = string.Join(" ", card.TagList.Select(x => x.Name));
@@ -249,12 +192,6 @@ namespace Sanakan.Extensions
                 + $"{card.ExpCount.ToString("F")}/{card.ExpToUpgrade().ToString("F")} exp\n\n"
                 + $"{tags}\n"
                 + $"{card.GetStatusIcons()}";
-        }
-        public static MarketValue GetThreeStateMarketValue(this Card card)
-        {
-            if (card.MarketValue < 0.3) return MarketValue.Low;
-            if (card.MarketValue > 2.8) return MarketValue.High;
-            return MarketValue.Normal;
         }
         public static bool ValidExpedition(this Card card, ExpeditionCardType expedition, double karma)
         {
@@ -343,38 +280,7 @@ namespace Sanakan.Extensions
                     throw new Exception("Could't parse input!");
             }
         }
-        public static string GetCardParams(
-          this Card card,
-          bool showBaseHp = false,
-          bool allowZero = false,
-          bool inNewLine = false)
-        {
-            string hp = showBaseHp ? $"**({card.Health})**{card.GetHealthWithPenalty(allowZero)}" : $"{card.GetHealthWithPenalty(allowZero)}";
-            var param = new string[] { $"❤{hp}", $"🔥{card.GetAttackWithBonus()}", $"🛡{card.GetDefenceWithBonus()}" };
 
-            return string.Join(inNewLine ? "\n" : " ", param);
-        }
-        public static string GetCardRealRarity(this Card card)
-        {
-            if (card.FromFigure)
-                return card.Quality.ToName();
-
-            return card.Rarity.ToString();
-        }
-        public static string GetString(
-            this Card card,
-            bool withoutId = false,
-            bool withUpgrades = false,
-            bool nameAsUrl = false,
-            bool allowZero = false,
-            bool showBaseHp = false)
-        {
-            string idStr = withoutId ? "" : $"**[{card.Id}]** ";
-            string name = nameAsUrl ? card.GetNameWithUrl() : card.Name;
-            string upgCnt = (withUpgrades && !card.FromFigure) ? $"_(U:{card.UpgradesCount})_" : "";
-
-            return $"{idStr} {name} **{card.GetCardRealRarity()}** {card.GetCardParams(showBaseHp, allowZero)} {upgCnt}";
-        }
         public static double CalculateMaxTimeOnExpeditionInMinutes(this Card card, double karma, ExpeditionCardType expedition = ExpeditionCardType.None)
         {
             expedition = (expedition == ExpeditionCardType.None) ? card.Expedition : expedition;
@@ -524,140 +430,9 @@ namespace Sanakan.Extensions
                     return 0;
             }
         }
-        public static string GetCharacterUrl(this Card card) => UrlHelpers.GetCharacterURL(card.CharacterId);
+   
         public static string GetYesNo(this bool b) => b ? "Tak" : "Nie";
         public static bool CanGiveRing(this Card card) => card.Affection >= 5;
         public static bool CanGiveBloodOrUpgradeToSSS(this Card card) => card.Affection >= 50;
-        public static double CalculateCardPower(this Card card)
-        {
-            var cardPower = card.GetHealthWithPenalty() * 0.018;
-            cardPower += card.GetAttackWithBonus() * 0.019;
-
-            var normalizedDef = card.GetDefenceWithBonus();
-            if (normalizedDef > 99)
-            {
-                normalizedDef = 99;
-                if (card.FromFigure)
-                {
-                    cardPower += (card.GetDefenceWithBonus() - normalizedDef) * 0.019;
-                }
-            }
-
-            cardPower += normalizedDef * 2.76;
-
-            switch (card.Dere)
-            {
-                case Dere.Yami:
-                case Dere.Raito:
-                    cardPower += 20;
-                    break;
-
-                case Dere.Yato:
-                    cardPower += 30;
-                    break;
-
-                case Dere.Tsundere:
-                    cardPower -= 20;
-                    break;
-
-                default:
-                    break;
-            }
-
-            if (cardPower < 1)
-                cardPower = 1;
-
-            card.CardPower = cardPower;
-
-            return cardPower;
-        }
-
-        public static bool HasImage(this Card card) => card.GetImage() != null;
-        public static string GetImage(this Card card) => card.CustomImage ?? card.Image;
-
-        public static int GetAttackMin(this Rarity rarity)
-        {
-            switch (rarity)
-            {
-                case Rarity.SSS: return 100;
-                case Rarity.SS: return 90;
-                case Rarity.S: return 80;
-                case Rarity.A: return 65;
-                case Rarity.B: return 50;
-                case Rarity.C: return 32;
-                case Rarity.D: return 20;
-
-                case Rarity.E:
-                default: return 1;
-            }
-        }
-
-        public static int GetDefenceMin(this Rarity rarity)
-        {
-            switch (rarity)
-            {
-                case Rarity.SSS: return 88;
-                case Rarity.SS: return 77;
-                case Rarity.S: return 68;
-                case Rarity.A: return 60;
-                case Rarity.B: return 50;
-                case Rarity.C: return 32;
-                case Rarity.D: return 15;
-
-                case Rarity.E:
-                default: return 1;
-            }
-        }
-
-        public static int GetHealthMin(this Rarity rarity)
-        {
-            switch (rarity)
-            {
-                case Rarity.SSS: return 100;
-                case Rarity.SS: return 90;
-                case Rarity.S: return 80;
-                case Rarity.A: return 70;
-                case Rarity.B: return 60;
-                case Rarity.C: return 50;
-                case Rarity.D: return 40;
-
-                case Rarity.E:
-                default: return 30;
-            }
-        }
-
-        public static int GetAttackMax(this Rarity rarity)
-        {
-            switch (rarity)
-            {
-                case Rarity.SSS: return 130;
-                case Rarity.SS: return 100;
-                case Rarity.S: return 96;
-                case Rarity.A: return 87;
-                case Rarity.B: return 84;
-                case Rarity.C: return 68;
-                case Rarity.D: return 50;
-
-                case Rarity.E:
-                default: return 35;
-            }
-        }
-
-        public static int GetDefenceMax(this Rarity rarity)
-        {
-            switch (rarity)
-            {
-                case Rarity.SSS: return 96;
-                case Rarity.SS: return 91;
-                case Rarity.S: return 79;
-                case Rarity.A: return 75;
-                case Rarity.B: return 70;
-                case Rarity.C: return 65;
-                case Rarity.D: return 53;
-
-                case Rarity.E:
-                default: return 38;
-            }
-        }
     }
 }

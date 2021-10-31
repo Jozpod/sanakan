@@ -4,15 +4,13 @@ using System.Linq;
 using Sanakan.Common;
 using Sanakan.DAL.Models;
 using Sanakan.DiscordBot;
+using Sanakan.DiscordBot.Abstractions;
 
 namespace Sanakan.Extensions
 {
     public static class QuestionExtension
     {
-        public static bool CheckAnswer(this Question q, int ans) => q.Answer == ans;
-
-        public static string GetRightAnswer(this Question q)
-            =>  $"Prawidłowa odpowiedź to: **{q.Answer}** - {q.Answers.First(x => x.Number == q.Answer).Content}";
+      
 
         private static Discord.IEmote GetEmote(int i)
         {
@@ -41,23 +39,7 @@ namespace Sanakan.Extensions
             };
         }
 
-        public static void RandomizeAnswers(this Question q, IRandomNumberGenerator randomNumberGenerator)
-        {
-            var numbersColeration = new List<Tuple<int, int>>();
-            var possibleAnswers = q.Answers.Select(x => x.Number).ToList();
-
-            foreach (var answer in q.Answers)
-            {
-                var num = randomNumberGenerator.GetOneRandomFrom(possibleAnswers);
-                possibleAnswers.Remove(num);
-
-                numbersColeration.Add(new Tuple<int, int>(num, answer.Number));
-                answer.Number = num;
-            }
-
-            q.Answer = numbersColeration.First(x => x.Item2 == q.Answer).Item1;
-            q.Answers = q.Answers.OrderBy(x => x.Number).ToList();
-        }
+     
 
         public static string Get(this Question q)
         {

@@ -4,12 +4,14 @@ using Discord.WebSocket;
 using DiscordBot.Services;
 using Microsoft.Extensions.Options;
 using Sanakan.Common;
+using Sanakan.Common.Configuration;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Models.Configuration;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot;
-using Sanakan.DiscordBot.Configuration;
-using Sanakan.DiscordBot.Models;
+using Sanakan.DiscordBot.Abstractions;
+using Sanakan.DiscordBot.Abstractions.Extensions;
+using Sanakan.DiscordBot.Abstractions.Models;
 using Sanakan.DiscordBot.Services.Abstractions;
 using Sanakan.Extensions;
 using Sanakan.Preconditions;
@@ -27,7 +29,7 @@ namespace Sanakan.Modules
     [Name("Moderacja"), Group("mod"), DontAutoLoad]
     public class ModerationModule : ModuleBase<SocketCommandContext>
     {
-        private readonly IOptionsMonitor<BotConfiguration> _config;
+        private readonly IOptionsMonitor<DiscordConfiguration> _config;
         private readonly IHelperService _helperService;
         private readonly IShindenClient _shindenClient;
         private readonly IProfileService _profileService;
@@ -42,7 +44,7 @@ namespace Sanakan.Modules
             IModeratorService moderatorService,
             Services.ProfileService prof,
             IShindenClient sh,
-            IOptionsMonitor<BotConfiguration> config,
+            IOptionsMonitor<DiscordConfiguration> config,
             ICacheManager _cacheManager,
             ISystemClock systemClock,
             IUserRepository userRepository,
@@ -1384,7 +1386,8 @@ namespace Sanakan.Modules
             var channel2Send = Context.Guild.GetTextChannel(channelId);
             if (channel2Send == null)
             {
-                await ReplyAsync("", embed: "Nie odnaleziono kanału.\nPamiętaj, że kanał musi znajdować się na tym samym serwerze.".ToEmbedMessage(EMType.Bot).Build());
+                await ReplyAsync("", embed: "Nie odnaleziono kanału.\nPamiętaj, że kanał musi znajdować się na tym samym serwerze."
+                    .ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
 
@@ -1458,7 +1461,7 @@ namespace Sanakan.Modules
             }
 
             var kolorRep = $"**Kolor:** ✅\n\n";
-            var colorRoles = (IEnumerable<uint>)Enum.GetValues(typeof(FColor));
+            var colorRoles = FColorExtensions.FColors.Cast<uint>();
             if (user.Roles.Any(x => colorRoles.Any(c => c.ToString() == x.Name)))
             {
                 var sub = duser.TimeStatuses
@@ -1565,7 +1568,7 @@ namespace Sanakan.Modules
             }
 
             var content = $"**Pary**:\n\n{string.Join("\n", pairs.Select(x => $"{x.Item1} - {x.Item2}"))}"
-                .TrimToLength(2000).ToEmbedMessage(EMType.Success).Build();
+                .ElipseTrimToLength(2000).ToEmbedMessage(EMType.Success).Build();
             await ReplyAsync("", embed: content);
         }
 
@@ -1591,7 +1594,7 @@ namespace Sanakan.Modules
             }
 
             var content = $"**Numerki**:\n\n{string.Join("\n", pairs.Select(x => $"{x.Item1} - {x.Item2}"))}"
-                .TrimToLength(2000)
+                .ElipseTrimToLength(2000)
                 .ToEmbedMessage(EMType.Success)
                 .Build();
 

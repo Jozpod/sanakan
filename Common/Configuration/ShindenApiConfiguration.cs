@@ -1,6 +1,6 @@
-﻿namespace Sanakan.ShindenApi
+﻿namespace Sanakan.Common.Configuration
 {
-    public class ShindenClientOptions
+    public class ShindenApiConfiguration
     {
         /// <summary>
         /// The Shinden API key.

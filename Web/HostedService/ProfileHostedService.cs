@@ -16,6 +16,8 @@ using Sanakan.Common.Configuration;
 using Sanakan.DAL.Models;
 using Discord.WebSocket;
 using Discord;
+using System.Linq;
+using DiscordBot.Services;
 
 namespace Sanakan.Web.HostedService
 {
@@ -81,11 +83,11 @@ namespace Sanakan.Web.HostedService
                     continue;
                 }
 
-                var guild = client.GetGuild(sub.GuildId);
+                var guild = client.GetGuild(sub.GuildId.Value);
                 switch (sub.Type)
                 {
                     case StatusType.Globals:
-                        var guildConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(sub.GuildId);
+                        var guildConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(sub.GuildId.Value);
                         await RemoveRoleAsync(guild, guildConfig?.GlobalEmotesRoleId ?? 0, sub.UserId);
                         break;
 
@@ -106,18 +108,21 @@ namespace Sanakan.Web.HostedService
                 return;
             }
 
-            foreach (uint color in Enum.GetValues(typeof(FColor)))
+            var colors = FColorExtensions.FColors;
+            foreach (uint color in colors)
             {
-                var cR = user.Roles.FirstOrDefault(x => x.Name == color.ToString());
-                if (cR != null)
+                var socketRole = user.Roles.FirstOrDefault(x => x.Name == color.ToString());
+                if (socketRole == null)
                 {
-                    if (cR.Members.Count() == 1)
-                    {
-                        await cR.DeleteAsync();
-                        return;
-                    }
-                    await user.RemoveRoleAsync(cR);
+                    continue;
                 }
+
+                if (socketRole.Members.Count() == 1)
+                {
+                    await socketRole.DeleteAsync();
+                    return;
+                }
+                await user.RemoveRoleAsync(socketRole);
             }
         }
 

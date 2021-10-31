@@ -2949,6 +2949,7 @@
           "Microsoft.Extensions.Options": "5.0.0",
           "Sanakan.Common": "1.0.0",
           "Sanakan.DAL": "1.0.0",
+          "Sanakan.DiscordBot.Abstractions": "1.0.0",
           "Sanakan.TaskQueue": "1.0.0",
           "Shinden.NET": "0.0.1",
           "SixLabors.ImageSharp.Drawing": "1.0.0-beta0006"
@@ -2995,6 +2996,23 @@
           "bin/placeholder/Sanakan.DAL.dll": {}
         }
       },
+      "Sanakan.DiscordBot.Abstractions/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v5.0",
+        "dependencies": {
+          "Discord.Net": "2.4.0",
+          "Microsoft.Extensions.DependencyInjection": "5.0.2",
+          "Sanakan.DAL": "1.0.0",
+          "Sanakan.Game": "1.0.0",
+          "Shinden.NET": "0.0.1"
+        },
+        "compile": {
+          "bin/placeholder/Sanakan.DiscordBot.Abstractions.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Sanakan.DiscordBot.Abstractions.dll": {}
+        }
+      },
       "Sanakan.Game/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v5.0",
@@ -3021,6 +3039,7 @@
           "Microsoft.Extensions.DependencyInjection": "5.0.2",
           "Sanakan.Common": "1.0.0",
           "Sanakan.DAL": "1.0.0",
+          "Sanakan.DiscordBot.Abstractions": "1.0.0",
           "Sanakan.Game": "1.0.0"
         },
         "compile": {
@@ -9371,6 +9390,11 @@
       "type": "project",
       "path": "../DAL/DAL.csproj",
       "msbuildProject": "../DAL/DAL.csproj"
+    },
+    "Sanakan.DiscordBot.Abstractions/1.0.0": {
+      "type": "project",
+      "path": "../DiscordBot.Abstractions/DiscordBot.Abstractions.csproj",
+      "msbuildProject": "../DiscordBot.Abstractions/DiscordBot.Abstractions.csproj"
     },
     "Sanakan.Game/1.0.0": {
       "type": "project",

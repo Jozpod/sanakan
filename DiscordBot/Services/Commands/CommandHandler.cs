@@ -7,15 +7,17 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Sanakan.Common;
+using Sanakan.Common.Configuration;
 using Sanakan.Common.Models;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Models.Analytics;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot;
-using Sanakan.DiscordBot.Configuration;
+using Sanakan.DiscordBot.Abstractions.Extensions;
+using Sanakan.DiscordBot.Abstractions.Models;
 using Sanakan.DiscordBot.Services;
 using Sanakan.Extensions;
-using Sanakan.Services.Executor;
+using Sanakan.Game.Models;
 using System;
 using System.Linq;
 using System.Reflection;
@@ -28,20 +30,18 @@ namespace Sanakan.Services.Commands
     {
         private readonly IDiscordSocketClientAccessor _discordSocketClientAccessor;
         private readonly CommandService _commandService;
-        private readonly IExecutor _executor;
         private readonly ILogger _logger;
         
         private readonly ISystemClock _systemClock;
-        private readonly IOptionsMonitor<BotConfiguration> _config;
+        private readonly IOptionsMonitor<DiscordConfiguration> _config;
         private readonly HelperService _helper;
         private readonly IServiceProvider _serviceProvider;
         private readonly IServiceScopeFactory _scopeFactory;
 
         public CommandHandler(
             IDiscordSocketClientAccessor discordSocketClientAccessor,
-            IOptionsMonitor<BotConfiguration> config,
+            IOptionsMonitor<DiscordConfiguration> config,
             ILogger<CommandHandler> logger,
-            IExecutor executor,
             CommandService commandService,
             ISystemClock systemClock,
             IServiceProvider serviceProvider,
@@ -50,7 +50,6 @@ namespace Sanakan.Services.Commands
             _discordSocketClientAccessor = discordSocketClientAccessor;
             _config = config;
             _logger = logger;
-            _executor = executor;
             _commandService = commandService;
             _systemClock = systemClock;
             _serviceProvider = serviceProvider;
@@ -66,15 +65,7 @@ namespace Sanakan.Services.Commands
 
             var client = _discordSocketClientAccessor.Client;
 
-            _commandService.AddTypeReader<SlotMachineSetting>(new TypeReaders.SlotMachineSettingTypeReader());
-            _commandService.AddTypeReader<WishlistObjectType>(new TypeReaders.WishlistObjectTypeReader());
-            _commandService.AddTypeReader<ExpeditionCardType>(new TypeReaders.ExpeditionTypeReader());
-            _commandService.AddTypeReader<ProfileType>(new TypeReaders.ProfileTypeReader());
-            _commandService.AddTypeReader<ConfigType>(new TypeReaders.ConfigTypeReader());
-            _commandService.AddTypeReader<CoinSide>(new TypeReaders.CoinSideTypeReader());
-            _commandService.AddTypeReader<HaremType>(new TypeReaders.HaremTypeReader());
-            _commandService.AddTypeReader<TopType>(new TypeReaders.TopTypeReader());
-            _commandService.AddTypeReader<bool>(new TypeReaders.BoolTypeReader());
+          
 
             _helper.PublicModulesInfo = await _commandService
                 .AddModulesAsync(Assembly.GetEntryAssembly(), _serviceProvider);
@@ -130,7 +121,7 @@ namespace Sanakan.Services.Commands
                 return;
             }
 
-            var isDev = config.Dev.Any(x => x == context.User.Id);
+            var isDev = config.AllowedToDebug.Any(x => x == context.User.Id);
             var isOnBlacklist = config.BlacklistedGuilds.Any(x => x == (context.Guild?.Id ?? 0));
 
             if (isOnBlacklist && !isDev)
@@ -184,10 +175,7 @@ namespace Sanakan.Services.Commands
 
                 default:
                 case RunMode.Sync:
-                    if (!await _executor.TryAdd(command, TimeSpan.FromSeconds(1)))
-                    {
-                        await context.Channel.SendMessageAsync("", embed: "Odrzucono polecenie!".ToEmbedMessage(EMType.Error).Build());
-                    }
+                    await context.Channel.SendMessageAsync("", embed: "Odrzucono polecenie!".ToEmbedMessage(EMType.Error).Build());
                     break;
             }
         }
@@ -226,7 +214,7 @@ namespace Sanakan.Services.Commands
                     {
                         var emb = new EmbedBuilder().WithColor(EMType.Error.Color());
                         var splited = result.ErrorReason.Split("|");
-                        
+
                         if (splited.Length > 3)
                         {
                             emb.WithDescription(splited[3]).WithImageUrl(splited[2]);
@@ -235,7 +223,10 @@ namespace Sanakan.Services.Commands
 
                         await context.Channel.SendMessageAsync("", embed: emb.Build());
                     }
-                    else await context.Channel.SendMessageAsync("", embed: result.ErrorReason.ToEmbedMessage(EMType.Error).Build());
+                    else
+                    {
+                        await context.Channel.SendMessageAsync("", embed: result.ErrorReason.ToEmbedMessage(EMType.Error).Build());
+                    }
                     break;
 
                 default:

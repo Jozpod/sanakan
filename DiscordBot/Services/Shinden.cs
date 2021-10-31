@@ -5,29 +5,35 @@ using System.Net;
 using System.Threading.Tasks;
 using Discord.Commands;
 using Discord.WebSocket;
+using Sanakan.DiscordBot.Abstractions.Extensions;
+using Sanakan.DiscordBot.Abstractions.Models;
 using Sanakan.DiscordBot.Services;
 using Sanakan.Extensions;
+using Sanakan.Game.Services;
 using Sanakan.Services.Session;
 using Sanakan.Services.Session.Models;
 using Sanakan.ShindenApi;
+using Sanakan.TaskQueue;
 using Shinden;
 
 namespace Sanakan.Services
 {
     public enum UrlParsingError
     {
-        None, InvalidUrl, InvalidUrlForum
+        None,
+        InvalidUrl,
+        InvalidUrlForum
     }
 
     public class Shinden
     {
         private readonly IShindenClient _shindenClient;
-        private readonly SessionManager _session;
+        private readonly ISessionManager _session;
         private readonly IImageProcessor _imageProcessor;
 
         public Shinden(
             IShindenClient client,
-            SessionManager session,
+            ISessionManager session,
             IImageProcessor imageProcessor)
         {
             _shindenClient = client;
@@ -43,7 +49,9 @@ namespace Sanakan.Services
             int toChek = http ? 2 : 0;
 
             if (splited.Length < (toChek == 2 ? 5 : 3))
+            {
                 return UrlParsingError.InvalidUrl;
+            }
 
             if (splited[toChek].Equals("shinden.pl") || splited[toChek].Equals("www.shinden.pl"))
             {
@@ -51,7 +59,9 @@ namespace Sanakan.Services
                 {
                     var data = splited[++toChek].Split('-');
                     if (ulong.TryParse(data[0], out shindenId))
+                    {
                         return UrlParsingError.None;
+                    }
                 }
             }
 
@@ -158,14 +168,13 @@ namespace Sanakan.Services
             var color = user.Roles.OrderByDescending(x => x.Position)
                 .FirstOrDefault()?.Color ?? Discord.Color.DarkerGrey;
 
-            return null;
-            //using var image = await _img.GetSiteStatisticAsync(
-            //    shindenUser,
-            //    color,
-            //    resLR.Value != null ? resLR.Value : null,
-            //    resLW.Value != null ? resLW.Value : null);
-            
-            //return image.ToPngStream();
+            using var image = await _imageProcessor.GetSiteStatisticAsync(
+                shindenUser,
+                color,
+                null, //resLR.Value != null ? resLR.Value : null,
+                null); //resLW.Value != null ? resLW.Value : null);
+
+            return image.ToPngStream();
         }
     }
 }

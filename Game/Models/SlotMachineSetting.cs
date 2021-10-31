@@ -2,9 +2,9 @@
 {
     public enum SlotMachineSetting
     {
-        Info,
-        Multiplier,
-        Beat,
-        Rows
+        Info = 0,
+        Multiplier = 1,
+        Beat = 2,
+        Rows = 3
     }
 }

@@ -235,8 +235,8 @@ namespace Sanakan.Game.Services
                 }
             }
 
-            var prevLvlExp = ExperienceManager.CalculateExpForLevel(botUser.Level);
-            var nextLvlExp = ExperienceManager.CalculateExpForLevel(botUser.Level + 1);
+            var prevLvlExp = ExperienceUtils.CalculateExpForLevel(botUser.Level);
+            var nextLvlExp = ExperienceUtils.CalculateExpForLevel(botUser.Level + 1);
             var expOnLvl = botUser.ExperienceCount - prevLvlExp;
             var lvlExp = nextLvlExp - prevLvlExp;
 
@@ -627,7 +627,7 @@ namespace Sanakan.Game.Services
                         image.Mutate(x => x.DrawImage(cover, new Point(0, startY + (35 * max)), 1));
                     }
 
-                    image.Mutate(x => x.DrawText($"{last.AnimeTitle.TrimToLength(29)}", titleFont, fColor, new Point(25, startY + (35 * max))));
+                    image.Mutate(x => x.DrawText($"{last.AnimeTitle.ElipseTrimToLength(29)}", titleFont, fColor, new Point(25, startY + (35 * max))));
                     image.Mutate(x => x.DrawText($"{last.EpisodeNo} / {last.EpisodesCnt}", titleFont, fColor, new Point(25, startY + 11 + (35 * max))));
                 }
             }
@@ -652,7 +652,7 @@ namespace Sanakan.Game.Services
                         }
                     }
 
-                    image.Mutate(x => x.DrawText($"{last.MangaTitle.TrimToLength(29)}", titleFont, fColor, new Point(25, startY + (35 * max))));
+                    image.Mutate(x => x.DrawText($"{last.MangaTitle.ElipseTrimToLength(29)}", titleFont, fColor, new Point(25, startY + (35 * max))));
                     image.Mutate(x => x.DrawText($"{last.ChapterNo} / {last.ChaptersCnt}", titleFont, fColor, new Point(25, startY + 11 + (35 * max))));
                 }
             }
@@ -687,34 +687,30 @@ namespace Sanakan.Game.Services
                 color.RawValue.ToString("X6"));
             baseImg.Mutate(x => x.DrawImage(avatar, new Point(0, 0), 1));
 
-            using (var image = new Image<Rgba32>(325, 248))
+            using var image = new Image<Rgba32>(325, 248);
+            if (shindenInfo?.MeanAnimeScore != null)
             {
-                if (shindenInfo?.MeanAnimeScore != null)
-                {
-                    using var stats = GetRWStats(
-                        shindenInfo,
-                        Paths.StatsAnimePicture,
-                        false);
+                using var stats = GetRWStats(
+                    shindenInfo,
+                    Paths.StatsAnimePicture,
+                    false);
                     
-                    image.Mutate(x => x.DrawImage(stats, new Point(0, 0), 1));
-                }
-                if (shindenInfo?.MeanMangaScore != null)
-                {
-                    using var stats = GetRWStats(
-                        shindenInfo,
-                        Paths.StatsMangaPicture,
-                        true);
+                image.Mutate(x => x.DrawImage(stats, new Point(0, 0), 1));
+            }
+            if (shindenInfo?.MeanMangaScore != null)
+            {
+                using var stats = GetRWStats(
+                    shindenInfo,
+                    Paths.StatsMangaPicture,
+                    true);
                     
-                    image.Mutate(x => x.DrawImage(stats, new Point(0, 128), 1));
+                image.Mutate(x => x.DrawImage(stats, new Point(0, 128), 1));
                     
-                }
-                baseImg.Mutate(x => x.DrawImage(image, new Point(5, 71), 1));
             }
 
-            using (var image = await GetLastRWList(lastRead, lastWatch))
-            {
-                baseImg.Mutate(x => x.DrawImage(image, new Point(330, 69), 1));
-            }
+            baseImg.Mutate(x => x.DrawImage(image, new Point(5, 71), 1));
+            using var rwListImage = await GetLastRWList(lastRead, lastWatch);
+            baseImg.Mutate(x => x.DrawImage(rwListImage, new Point(330, 69), 1));
 
             return baseImg;
         }
@@ -778,31 +774,20 @@ namespace Sanakan.Game.Services
             return baseImg;
         }
 
-        public Image<Rgba32> GetFColorsView(SCurrency currency)
+        public Image<Rgba32> GetFColorsView(IEnumerable<(string, uint)> colours)
         {
             var message = new Font(_latoRegular, 16);
             var firstColumnMaxLength = TextMeasurer.Measure("A", new RendererOptions(message));
             var secondColumnMaxLength = TextMeasurer.Measure("A", new RendererOptions(message));
 
-            var arrayOfColours = Enum.GetValues(typeof(FColor));
-            var inFirstColumn = arrayOfColours.Length / 2;
+            var inFirstColumn = (colours.Count() + 1) / 2;
 
-            for (int i = 0; i < arrayOfColours.Length; i++)
+            var index = 1;
+            foreach (var colour in colours)
             {
-                var val = (uint)arrayOfColours.GetValue(i);
+                var nLen = TextMeasurer.Measure(colour.Item1, new RendererOptions(message));
 
-                var thisColor = (FColor)val;
-                
-                if (thisColor == FColor.None)
-                {
-                    continue;
-                }
-                
-
-                var name = $"{thisColor.ToString()} ({thisColor.Price(currency)} {currency.ToString().ToUpper()})";
-                var nLen = TextMeasurer.Measure(name, new RendererOptions(message));
-
-                if (i < inFirstColumn + 1)
+                if (index < inFirstColumn + 1)
                 {
                     if (firstColumnMaxLength.Width < nLen.Width)
                         firstColumnMaxLength = nLen;
@@ -812,6 +797,7 @@ namespace Sanakan.Game.Services
                     if (secondColumnMaxLength.Width < nLen.Width)
                         secondColumnMaxLength = nLen;
                 }
+                index++;
             }
 
             int posY = 5;
@@ -823,25 +809,18 @@ namespace Sanakan.Game.Services
             imgBase.Mutate(x => x.BackgroundColor(Rgba32.FromHex(Onyx)));
             imgBase.Mutate(x => x.DrawText("Lista:", message, Rgba32.FromHex(White), new Point(0, 0)));
 
-            for (int i = 0; i < arrayOfColours.Length; i++)
+            index = 1;
+            foreach(var colour in colours)
             {
-                if (inFirstColumn + 1 == i)
+                if (inFirstColumn + 1 == index)
                 {
                     posY = 5;
                     posX = (int)firstColumnMaxLength.Width + 10;
                 }
 
-                var val = (uint)arrayOfColours.GetValue(i);
-
-                var thisColor = (FColor)val;
-                if (thisColor == FColor.None)
-                {
-                    continue;
-                }
-
                 posY += (int)firstColumnMaxLength.Height + 2;
-                var tname = $"{thisColor.ToString()} ({thisColor.Price(currency)} {currency.ToString().ToUpper()})";
-                imgBase.Mutate(x => x.DrawText(tname, message, Rgba32.FromHex(val.ToString("X6")), new Point(posX, posY)));
+                imgBase.Mutate(x => x.DrawText(colour.Item1, message, Rgba32.FromHex(colour.Item2.ToString("X6")), new Point(posX, posY)));
+                index++;
             }
 
             return imgBase;

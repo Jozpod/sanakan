@@ -11,10 +11,14 @@ using Sanakan.DAL.Models;
 using Sanakan.DAL.Repositories;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot;
-using Sanakan.DiscordBot.Models;
+using Sanakan.DiscordBot.Abstractions.Extensions;
+using Sanakan.DiscordBot.Abstractions.Models;
 using Sanakan.DiscordBot.Services;
 using Sanakan.DiscordBot.Services.Abstractions;
 using Sanakan.Extensions;
+using Sanakan.Game;
+using Sanakan.Game.Extensions;
+using Sanakan.Game.Services;
 using Sanakan.Preconditions;
 using Sanakan.Services;
 using Sanakan.Services.Commands;
@@ -33,6 +37,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sanakan.Modules
@@ -299,7 +304,7 @@ namespace Sanakan.Modules
         [Remarks("1 10 5")]
         public async Task GiveawayCardsAsync(
             [Summary("id użytkownika")]ulong discordUserId,
-            [Summary("liczba kart")]uint count,
+            [Summary("liczba kart")]uint cardCount,
             [Summary("czas w minutach")]uint duration = 5)
         {
             var emote = Emotes.GreenChecked;
@@ -329,45 +334,54 @@ namespace Sanakan.Modules
             var users = _randomNumberGenerator.Shuffle(reactions).ToList();
 
             IUser? winner = null;
-            var watch = Stopwatch.StartNew();
-            while (winner == null)
+
+            var cancellationTokenSource = new CancellationTokenSource();
+            cancellationTokenSource.CancelAfter(TimeSpan.FromMinutes(1));
+            var cancellationToken = cancellationTokenSource.Token;
+
+            await Task.Run(async () =>
             {
-                if (watch.ElapsedMilliseconds > 60000)
+                while (winner == null)
                 {
-                    throw new Exception("Timeout");
-                }
+                    cancellationToken.ThrowIfCancellationRequested();
 
-                if (!users.Any())
-                {
-                    await userMessage.ModifyAsync(x => x.Embed = "Na loterie nie stawił się żaden użytkownik!"
-                        .ToEmbedMessage(EMType.Error)
-                        .Build());
-                    return;
-                }
-
-                bool muted = false;
-                var selected = _randomNumberGenerator.GetOneRandomFrom(users);
-                if (mutedRole != null && selected is SocketGuildUser su)
-                {
-                    if (su.Roles.Any(x => x.Id == mutedRole.Id))
+                    if (!users.Any())
                     {
-                        muted = true;
+                        await userMessage.ModifyAsync(x => x.Embed = "Na loterie nie stawił się żaden użytkownik!"
+                            .ToEmbedMessage(EMType.Error)
+                            .Build());
+                        return;
                     }
-                }
 
-                var dUser = await _userRepository.GetCachedFullUserAsync(selected.Id);
-                if (dUser != null && !muted)
-                {
-                    if (!dUser.IsBlacklisted)
+                    bool muted = false;
+                    var selected = _randomNumberGenerator.GetOneRandomFrom(users);
+                    if (mutedRole != null && selected is SocketGuildUser su)
                     {
-                        winner = selected;
+                        if (su.Roles.Any(x => x.Id == mutedRole.Id))
+                        {
+                            muted = true;
+                        }
                     }
+
+                    var dUser = await _userRepository.GetCachedFullUserAsync(selected.Id);
+                    if (dUser != null && !muted)
+                    {
+                        if (!dUser.IsBlacklisted)
+                        {
+                            winner = selected;
+                        }
+                    }
+                    users.Remove(selected);
                 }
-                users.Remove(selected);
-            }
+            }, cancellationToken);
 
             _blockingPriorityQueue.TryAdd(new LotteryMessage
             {
+                CardCount = cardCount,
+                WinnerUserId = winner.Id,
+                WinnerUser = winner,
+                Channel = Context.Channel,
+                InvokingUserId = Context.User.Id,
                 DiscordUserId = discordUserId,
                 UserMessage = userMessage,
             });
@@ -477,7 +491,7 @@ namespace Sanakan.Modules
             var bUser = await _userRepository.GetUserOrCreateAsync(user.Id);
 
             bUser.Level = level;
-            bUser.ExperienceCount = Services.ExperienceManager.CalculateExpForLevel(level);
+            bUser.ExperienceCount = ExperienceUtils.CalculateExpForLevel(level);
 
             await _userRepository.SaveChangesAsync();
 
@@ -591,9 +605,9 @@ namespace Sanakan.Modules
         {
             var stringBuilder = new StringBuilder(100);
             var stats = new long[(int)Rarity.E + 1];
-            var enums = (Rarity[])Enum.GetValues(typeof(Rarity));
+            var rarities = RarityExtensions.Rarities;
 
-            foreach (var rarity in enums)
+            foreach (var rarity in rarities)
             {
                 var count = await _cardRepository.CountByRarityAndSucceedingIdAsync(rarity, wid);
                 stringBuilder.AppendFormat("{0}: `{1}`\n", rarity, count);
@@ -1237,7 +1251,7 @@ namespace Sanakan.Modules
 
             if (serverConfig.Any())
             {
-                await ReplyAsync("", embed: $"**RMC:**\n{string.Join("\n\n", serverConfig)}".TrimToLength(1900).ToEmbedMessage(EMType.Bot).Build());
+                await ReplyAsync("", embed: $"**RMC:**\n{string.Join("\n\n", serverConfig)}".ElipseTrimToLength(1900).ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
             await ReplyAsync("", embed: $"**RMC:**\n\nBrak.".ToEmbedMessage(EMType.Bot).Build());

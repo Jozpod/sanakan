@@ -36,6 +36,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Common\Common.csproj" />
     <ProjectReference Include="..\DAL\DAL.csproj" />
+    <ProjectReference Include="..\DiscordBot.Abstractions\DiscordBot.Abstractions.csproj" />
     <ProjectReference Include="..\ShindenApi\ShindenApi.csproj" />
     <ProjectReference Include="..\TaskQueue\TaskQueue.csproj" />
   </ItemGroup>
@@ -62,6 +63,10 @@
       <LastGenOutput>Strings.Designer.cs</LastGenOutput>
       <Generator>ResXFileCodeGenerator</Generator>
     </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Configuration\" />
   </ItemGroup>
 
 </Project>

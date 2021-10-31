@@ -16,12 +16,7 @@ namespace Sanakan.DAL.Tests
         public async Task Should_CRUD_Entity()
         {
             var repository = ServiceProvider.GetRequiredService<ITimeStatusRepository>();
-            var entity = new TimeStatus
-            {
-                Id = 1,
-                UserId = 1,
-                BValue = true,
-            };
+            var entity = new TimeStatus(StatusType.Card);
 
             DbContext.TimeStatuses.Add(entity);
             await DbContext.SaveChangesAsync();

@@ -11,17 +11,20 @@ using Sanakan.DAL.Models;
 using Sanakan.DAL.Repositories;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot;
-using Sanakan.DiscordBot.Extensions;
-using Sanakan.DiscordBot.Models;
+using Sanakan.DiscordBot.Abstractions.Extensions;
+using Sanakan.DiscordBot.Abstractions.Models;
+using Sanakan.DiscordBot.Resources;
 using Sanakan.Extensions;
+using Sanakan.Game;
+using Sanakan.Game.Extensions;
 using Sanakan.Preconditions;
 using Sanakan.Services.Commands;
-using Sanakan.Services.Executor;
 using Sanakan.Services.PocketWaifu;
 using Sanakan.Services.Session;
 using Sanakan.Services.Session.Models;
 using Sanakan.ShindenApi;
 using Sanakan.ShindenApi.Utilities;
+using Sanakan.TaskQueue;
 using Shinden.API;
 using System;
 using System.Collections.Generic;
@@ -36,7 +39,7 @@ namespace Sanakan.Modules
     public class PocketWaifuModule : ModuleBase<SocketCommandContext>
     {
         private readonly IShindenClient _shindenClient;
-        private readonly SessionManager _sessionManager;
+        private readonly ISessionManager _sessionManager;
         private readonly ILogger _logger;
         private readonly IWaifuService _waifu;
         private readonly ICacheManager _cacheManager;
@@ -82,19 +85,20 @@ namespace Sanakan.Modules
             HaremType type = HaremType.Rarity,
             [Summary("tag)")][Remainder]string tag = null)
         {
+            var userMention = Context.User.Mention;
             var session = new ListSession<Card>(Context.User, Context.Client.CurrentUser);
             await _sessionManager.KillSessionIfExistAsync(session);
 
             if (type == HaremType.Tag && tag == null)
             {
-                await ReplyAsync("", embed: $"{Context.User.Mention} musisz sprecyzować tag!".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync("", embed: $"{userMention} musisz sprecyzować tag!".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
             var user = await _userRepository.GetCachedFullUserAsync(Context.User.Id);
             if (user?.GameDeck?.Cards?.Count() < 1)
             {
-                await ReplyAsync("", embed: $"{Context.User.Mention} nie masz żadnych kart.".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync("", embed: $"{userMention} nie masz żadnych kart.".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
@@ -118,11 +122,11 @@ namespace Sanakan.Modules
                 session.Message = msg;
                 await _sessionManager.TryAddSession(session);
 
-                await ReplyAsync("", embed: $"{Context.User.Mention} lista poszła na PW!".ToEmbedMessage(EMType.Success).Build());
+                await ReplyAsync("", embed: $"{userMention} lista poszła na PW!".ToEmbedMessage(EMType.Success).Build());
             }
             catch (Exception)
             {
-                await ReplyAsync("", embed: $"{Context.User.Mention} nie można wysłać do Ciebie PW!".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync("", embed: $"{userMention} nie można wysłać do Ciebie PW!".ToEmbedMessage(EMType.Error).Build());
             }
         }
 
@@ -132,12 +136,13 @@ namespace Sanakan.Modules
         [Remarks("1"), RequireWaifuCommandChannel]
         public async Task ShowItemsAsync([Summary("nr przedmiotu")]int numberOfItem = 0)
         {
+            var userMention = Context.User.Mention;
             var bUser = await _userRepository.GetCachedFullUserAsync(Context.User.Id);
             var itemList = bUser.GameDeck.Items.OrderBy(x => x.Type).ToList();
 
             if (itemList.Count < 1)
             {
-                await ReplyAsync("", embed: $"{Context.User.Mention} nie masz żadnych przemiotów.".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync("", embed: $"{userMention} nie masz żadnych przemiotów.".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
@@ -149,7 +154,7 @@ namespace Sanakan.Modules
 
             if (bUser.GameDeck.Items.Count < numberOfItem)
             {
-                await ReplyAsync("", embed: $"{Context.User.Mention} nie masz aż tylu przedmiotów.".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync("", embed: $"{userMention} nie masz aż tylu przedmiotów.".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
@@ -158,7 +163,7 @@ namespace Sanakan.Modules
             {
                 Color = EMType.Info.Color(),
                 Author = new EmbedAuthorBuilder().WithUser(Context.User),
-                Description = $"**{item.Name}**\n_{item.Type.Desc()}_\n\nLiczba: **{item.Count}**".TrimToLength(1900)
+                Description = $"**{item.Name}**\n_{item.Type.Desc()}_\n\nLiczba: **{item.Count}**".ElipseTrimToLength(1900)
             };
 
             await ReplyAsync("", embed: embed.Build());
@@ -226,7 +231,7 @@ namespace Sanakan.Modules
                 user = Context.Client.GetUser(card.GameDeck.UserId);
             }
 
-            await ReplyAsync("", embed: card.GetDescSmall().TrimToLength(2000).ToEmbedMessage(EMType.Info).WithAuthor(new EmbedAuthorBuilder().WithUser(user)).Build());
+            await ReplyAsync("", embed: card.GetDescSmall().ElipseTrimToLength(2000).ToEmbedMessage(EMType.Info).WithAuthor(new EmbedAuthorBuilder().WithUser(user)).Build());
         }
 
         [Command("karta", RunMode = RunMode.Async)]
@@ -694,7 +699,7 @@ namespace Sanakan.Modules
                         return;
                     }
                     karmaChange -= 1;
-                    var figure = item.ToFigure(card);
+                    var figure = item.ToFigure(card, _systemClock.UtcNow);
                     if (figure != null)
                     {
                         bUser.GameDeck.Figures.Add(figure);
@@ -765,7 +770,7 @@ namespace Sanakan.Modules
                 mission = new TimeStatus(StatusType.DUsedItems);
                 bUser.TimeStatuses.Add(mission);
             }
-            mission.Count(_systemClock.UtcNow, itemCount);
+            mission.Count(_systemClock.UtcNow, (uint)itemCount);
 
             if (!noCardOperation && card.Dere == Dere.Tsundere)
                 affectionInc *= 1.2;
@@ -919,7 +924,7 @@ namespace Sanakan.Modules
                 openString += $"{card.GetString(false, false, true)}\n";
             }
 
-            await ReplyAsync("", embed: $"{Context.User.Mention} z {packString} wypadło:\n\n{openString.TrimToLength(1950)}".ToEmbedMessage(EMType.Success).Build());
+            await ReplyAsync("", embed: $"{Context.User.Mention} z {packString} wypadło:\n\n{openString.ElipseTrimToLength(1950)}".ToEmbedMessage(EMType.Success).Build());
         }
 
         [Command("reset")]
@@ -2254,7 +2259,7 @@ namespace Sanakan.Modules
             }
 
             var content = $"**{thisCards.GetNameWithUrl()} chcą:**\n\n {usersStr}"
-                .TrimToLength(2000)
+                .ElipseTrimToLength(2000)
                 .ToEmbedMessage(EMType.Info)
                 .Build();
 
@@ -2302,7 +2307,7 @@ namespace Sanakan.Modules
             }
 
             var title = HttpUtility.HtmlDecode(animeMangaInfoResult.Value.Title.Title);
-            var content = $"**Karty z {title} chcą:**\n\n {usersStr}".TrimToLength(2000).ToEmbedMessage(EMType.Info).Build();
+            var content = $"**Karty z {title} chcą:**\n\n {usersStr}".ElipseTrimToLength(2000).ToEmbedMessage(EMType.Info).Build();
             await ReplyAsync("", embed: content);
         }
 
@@ -3178,16 +3183,30 @@ namespace Sanakan.Modules
                 .Where(x => x.Expedition != ExpeditionCardType.None)
                 .ToList();
 
-            if (cardsOnExpedition.Count < 1)
+            if (!cardsOnExpedition.Any())
             {
                 await ReplyAsync("", embed: $"{Context.User.Mention} nie posiadasz kart znajdujących się na wyprawie."
                     .ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
+            
+
             var expStrs = cardsOnExpedition
-                .Select(x => $"{x.GetShortString(true)}:\n Od {x.ExpeditionDate.ToShortDateTime()} na {x.Expedition.GetName("ej")} wyprawie.\nTraci siły po {x.CalculateMaxTimeOnExpeditionInMinutes(botUser.GameDeck.Karma).ToString("F")} min.");
-            var content = $"**Wyprawy[**{cardsOnExpedition.Count}/{botUser.GameDeck.LimitOfCardsOnExpedition()}**]** {Context.User.Mention}:\n\n{string.Join("\n\n", expStrs)}".ToEmbedMessage(EMType.Bot).WithUser(Context.User).Build();
+                .Select(card => {
+
+                    var parameters = new object[]
+                    {
+                        card.GetShortString(true),
+                        card.ExpeditionDate.ToString("dd/MM/yyyy HH:mm"),
+                        card.Expedition.GetName("ej"),
+                        card.CalculateMaxTimeOnExpeditionInMinutes(botUser.GameDeck.Karma).ToString("F"),
+                    };
+
+                    return string.Format(Strings.OnJourney, parameters);
+                });
+            var content = $"**Wyprawy[**{cardsOnExpedition.Count}/{botUser.GameDeck.LimitOfCardsOnExpedition()}**]** {Context.User.Mention}:\n\n{string.Join("\n\n", expStrs)}"
+                .ToEmbedMessage(EMType.Bot).WithUser(Context.User).Build();
             await ReplyAsync("", embed: content);
         }
 
@@ -3357,10 +3376,10 @@ namespace Sanakan.Modules
             }
 
             double toLong = 1;
-            var pvpPlayersInRange = allPvpPlayers.Where(x => x.IsNearMMR(duser.GameDeck)).ToList();
+            var pvpPlayersInRange = allPvpPlayers.Where(x => x.IsNearMatchMakingRatio(duser.GameDeck)).ToList();
             for (double mrr = 0.5; pvpPlayersInRange.Count < 10; mrr += (0.5 * toLong))
             {
-                pvpPlayersInRange = allPvpPlayers.Where(x => x.IsNearMMR(duser.GameDeck, mrr)).ToList();
+                pvpPlayersInRange = allPvpPlayers.Where(x => x.IsNearMatchMakingRatio(duser.GameDeck, mrr)).ToList();
                 toLong += 0.5;
             }
 
@@ -3419,7 +3438,7 @@ namespace Sanakan.Modules
             _ = Task.Run(async () =>
             {
                 var wStr = fight.Winner == null ? "Remis!" : $"Zwycięża {fight.Winner.User.Mention}!";
-                var content = $"⚔️ **Pojedynek**:\n{Context.User.Mention} vs. {euser.Mention}\n\n{deathLog.TrimToLength(2000)}\n{wStr}\n{info}"
+                var content = $"⚔️ **Pojedynek**:\n{Context.User.Mention} vs. {euser.Mention}\n\n{deathLog.ElipseTrimToLength(2000)}\n{wStr}\n{info}"
                     .ToEmbedMessage(EMType.Bot).Build();
                 await ReplyAsync("", embed: content);
             });
@@ -3578,6 +3597,8 @@ namespace Sanakan.Modules
             await ReplyAsync("", embed: $"{Context.User.Mention} nowy charakter to {thisCard.Dere}".ToEmbedMessage(EMType.Success).Build());
         }
 
+        private const double PVPRankMultiplier = 0.45;
+
         [Command("karcianka", RunMode = RunMode.Async)]
         [Alias("cpf")]
         [Summary("wyświetla profil PocketWaifu")]
@@ -3607,34 +3628,73 @@ namespace Sanakan.Modules
             var dCnt = cards.Count(x => x.Rarity == Rarity.D);
             var eCnt = cards.Count(x => x.Rarity == Rarity.E);
 
-            var aPvp = databaseUser.GameDeck?.PvPStats?.Count(x => x.Type == FightType.NewVersus);
-            var wPvp = databaseUser.GameDeck?.PvPStats?.Count(x => x.Result == FightResult.Win && x.Type == FightType.NewVersus);
+            var gameDeck = databaseUser.GameDeck;
+
+            var aPvp = gameDeck?.PvPStats?.Count(x => x.Type == FightType.NewVersus);
+            var wPvp = gameDeck?.PvPStats?.Count(x => x.Result == FightResult.Win && x.Type == FightType.NewVersus);
 
             var seasonString = "----";
-            if (databaseUser.GameDeck.IsPVPSeasonalRankActive())
-                seasonString = $"{databaseUser.GameDeck.GetRankName()} ({databaseUser.GameDeck.SeasonalPVPRank})";
+            long experienceRank;
+            ulong experience;
+            string rankName;
+            if (databaseUser.GameDeck.IsPVPSeasonalRankActive(_systemClock.UtcNow))
+            {
+                experienceRank = gameDeck.SeasonalPVPRank;
+                experience = ExperienceUtils.CalculateLevel((ulong)experienceRank, PVPRankMultiplier) / 10;
+                rankName = gameDeck.GetRankName(experience);
+                seasonString = $"{rankName} ({gameDeck.SeasonalPVPRank})";
+            }
 
-            var globalString = $"{databaseUser.GameDeck.GetRankName(databaseUser.GameDeck.GlobalPVPRank)} ({databaseUser.GameDeck.GlobalPVPRank})";
+            experienceRank = gameDeck.GlobalPVPRank;
+            experience = ExperienceUtils.CalculateLevel((ulong)experienceRank, PVPRankMultiplier) / 10;
+            rankName = databaseUser.GameDeck.GetRankName(experience);
+            var globalString = $"{rankName} ({gameDeck.GlobalPVPRank})";
 
             var sssString = "";
             if (sssCnt > 0)
+            {
                 sssString = $"**SSS**: {sssCnt} ";
+            }
+
+            var userStats = databaseUser.Stats;
+
+            var parameters = new object[]
+            {
+                gameDeck.GetUserNameStatus(),
+                (int)gameDeck.ExpContainer.Level,
+                gameDeck.ExpContainer.ExperienceCount.ToString("F"),
+                userStats.ReleasedCards,
+                userStats.DestroyedCards, 
+                userStats.SacraficeCards,
+                userStats.UpgaredCards,
+                userStats.UnleashedCards,
+                gameDeck.CTCount,
+                gameDeck.Karma.ToString("F"),
+                gameDeck.Cards.Count,
+                sssString,
+                ssCnt,
+                sCnt,
+                aCnt,
+                bCnt,
+                cCnt,
+                dCnt,
+                eCnt,
+                aPvp,
+                wPvp,
+                globalString,
+                seasonString,
+            };
 
             var embed = new EmbedBuilder()
             {
                 Color = EMType.Bot.Color(),
                 Author = new EmbedAuthorBuilder().WithUser(user),
-                Description = $"*{databaseUser.GameDeck.GetUserNameStatus()}*\n\n"
-                            + $"**Skrzynia({(int)databaseUser.GameDeck.ExpContainer.Level})**: {databaseUser.GameDeck.ExpContainer.ExperienceCount.ToString("F")}\n"
-                            + $"**Uwolnione**: {databaseUser.Stats.ReleasedCards}\n**Zniszczone**: {databaseUser.Stats.DestroyedCards}\n**Poświęcone**: {databaseUser.Stats.SacraficeCards}\n**Ulepszone**: {databaseUser.Stats.UpgaredCards}\n**Wyzwolone**: {databaseUser.Stats.UnleashedCards}\n\n"
-                            + $"**CT**: {databaseUser.GameDeck.CTCount}\n**Karma**: {databaseUser.GameDeck.Karma.ToString("F")}\n\n**Posiadane karty**: {databaseUser.GameDeck.Cards.Count}\n"
-                            + $"{sssString}**SS**: {ssCnt} **S**: {sCnt} **A**: {aCnt} **B**: {bCnt} **C**: {cCnt} **D**: {dCnt} **E**:{eCnt}\n\n"
-                            + $"**PVP** Rozegrane: {aPvp} Wygrane: {wPvp}\n**GR**: {globalString}\n**SR**: {seasonString}"
+                Description = string.Format(Strings.PocketWaifuUserStats, parameters),
             };
 
-            if (databaseUser.GameDeck?.Waifu != 0)
+            if (gameDeck?.Waifu != 0)
             {
-                var tChar = databaseUser.GameDeck
+                var tChar = gameDeck
                     .Cards
                     .OrderBy(x => x.Rarity)
                     .FirstOrDefault(x => x.CharacterId == databaseUser.GameDeck.Waifu);

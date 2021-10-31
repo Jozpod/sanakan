@@ -147,7 +147,7 @@ namespace Sanakan.Services
                 Color = (newMessage == null) ? EMType.Warning.Color() : EMType.Info.Color(),
                 Author = new EmbedAuthorBuilder().WithUser(oldMessage.Author, true),
                 Fields = GetFields(oldMessage, newMessage == null),
-                Description = content.TrimToLength(1800),
+                Description = content.ElipseTrimToLength(1800),
             }.Build();
         }
 

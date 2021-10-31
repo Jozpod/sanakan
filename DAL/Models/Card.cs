@@ -128,6 +128,42 @@ namespace Sanakan.DAL.Models
 
         public bool IsUnusable => Affection <= -5;
 
+        public int GetValue()
+        {
+            switch (Rarity)
+            {
+                case Rarity.SSS: return 50;
+                case Rarity.SS: return 25;
+                case Rarity.S: return 15;
+                case Rarity.A: return 10;
+                case Rarity.B: return 7;
+                case Rarity.C: return 5;
+                case Rarity.D: return 3;
+
+                default:
+                case Rarity.E: return 1;
+            }
+        }
+        public double ExpToUpgrade()
+        {
+            switch (Rarity)
+            {
+                case Rarity.SSS:
+                    if (FromFigure)
+                    {
+                        return 120 * (int)Quality;
+                    }
+                    return 1000;
+                case Rarity.SS:
+                    return 100;
+
+                default:
+                    return 30 + (4 * (7 - (int)Rarity));
+            }
+        }
+
+        public bool HasNoNegativeEffectAfterBloodUsage() => Affection >= 4;
+
         public bool HasTag(string tag)
         {
             return TagList
@@ -169,7 +205,49 @@ namespace Sanakan.DAL.Models
             if (type > max) type = max;
             return type;
         }
+        public double CalculateCardPower()
+        {
+            var cardPower = GetHealthWithPenalty() * 0.018;
+            cardPower += GetAttackWithBonus() * 0.019;
 
+            var normalizedDef = GetDefenceWithBonus();
+            if (normalizedDef > 99)
+            {
+                normalizedDef = 99;
+                if (FromFigure)
+                {
+                    cardPower += (GetDefenceWithBonus() - normalizedDef) * 0.019;
+                }
+            }
+
+            cardPower += normalizedDef * 2.76;
+
+            switch (Dere)
+            {
+                case Dere.Yami:
+                case Dere.Raito:
+                    cardPower += 20;
+                    break;
+
+                case Dere.Yato:
+                    cardPower += 30;
+                    break;
+
+                case Dere.Tsundere:
+                    cardPower -= 20;
+                    break;
+
+                default:
+                    break;
+            }
+
+            if (cardPower < 1)
+                cardPower = 1;
+
+            CardPower = cardPower;
+
+            return cardPower;
+        }
         public int MaxStarType() => 9;
         public int GetRestartCntPerStar() => 2;
         public int GetMaxStarsPerType() => 5;
@@ -180,6 +258,40 @@ namespace Sanakan.DAL.Models
             if (stars > max) stars = max;
             return stars;
         }
+
+        public string GetAffectionString()
+        {
+            if (Affection <= -400) return "Pogarda (γ)";
+            if (Affection <= -200) return "Pogarda (β)";
+            if (Affection <= -100) return "Pogarda (α)";
+            if (Affection <= -50) return "Pogarda";
+            if (Affection <= -5) return "Nienawiść";
+            if (Affection <= -4) return "Zawiść";
+            if (Affection <= -3) return "Wrogość";
+            if (Affection <= -2) return "Złośliwość";
+            if (Affection <= -1) return "Chłodność";
+            if (Affection >= 400) return "Obsesyjna miłość (γ)";
+            if (Affection >= 200) return "Obsesyjna miłość (β)";
+            if (Affection >= 100) return "Obsesyjna miłość (α)";
+            if (Affection >= 50) return "Obsesyjna miłość";
+            if (Affection >= 5) return "Miłość";
+            if (Affection >= 4) return "Zauroczenie";
+            if (Affection >= 3) return "Przyjaźń";
+            if (Affection >= 2) return "Fascynacja";
+            if (Affection >= 1) return "Zaciekawienie";
+            return "Obojętność";
+        }
+        public MarketValue GetThreeStateMarketValue()
+        {
+            if (MarketValue < 0.3)
+                return Models.MarketValue.Low;
+            if (MarketValue > 2.8)
+                return Models.MarketValue.High;
+            return Models.MarketValue.Normal;
+        }
+
+        public bool HasImage() => GetImage() != null;
+        public string GetImage() => CustomImage ?? Image;
 
         public int GetAttackWithBonus()
         {
@@ -229,6 +341,27 @@ namespace Sanakan.DAL.Models
                 newDefence = maxDefence;
 
             return newDefence;
+        }
+
+        public string GetCardRealRarity()
+        {
+            if (FromFigure)
+            {
+                return Quality.ToName();
+            }
+
+            return Rarity.ToString();
+        }
+
+        public string GetCardParams(
+            bool showBaseHp = false,
+            bool allowZero = false,
+            bool inNewLine = false)
+        {
+            var hp = showBaseHp ? $"**({Health})**{GetHealthWithPenalty(allowZero)}" : $"{GetHealthWithPenalty(allowZero)}";
+            var param = new string[] { $"❤{hp}", $"🔥{GetAttackWithBonus()}", $"🛡{GetDefenceWithBonus()}" };
+
+            return string.Join(inNewLine ? "\n" : " ", param);
         }
 
 

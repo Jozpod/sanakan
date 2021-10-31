@@ -1,47 +1,9 @@
 ﻿using Newtonsoft.Json;
+using System;
 
 namespace Sanakan.DAL.Models
 {
-    public enum ItemType
-    {
-        AffectionRecoverySmall,
-        AffectionRecoveryNormal,
-        AffectionRecoveryBig,
-        IncreaseUpgradeCnt,
-        CardParamsReRoll,
-        DereReRoll,
-        RandomBoosterPackSingleE,
-        RandomNormalBoosterPackB,
-        RandomTitleBoosterPackSingleE,
-        RandomNormalBoosterPackA,
-        RandomNormalBoosterPackS,
-        RandomNormalBoosterPackSS,
-        AffectionRecoveryGreat,
-        BetterIncreaseUpgradeCnt,
-        CheckAffection,
-        SetCustomImage,
-        IncreaseExpSmall,
-        IncreaseExpBig,
-        ChangeStarType,
-        SetCustomBorder,
-        ChangeCardImage,
-
-        PreAssembledMegumin,
-        PreAssembledGintoki,
-        PreAssembledAsuna,
-
-        FigureSkeleton,
-        FigureUniversalPart,
-        FigureHeadPart,
-        FigureBodyPart,
-        FigureLeftArmPart,
-        FigureRightArmPart,
-        FigureLeftLegPart,
-        FigureRightLegPart,
-        FigureClothesPart,
-
-        BigRandomBoosterPackE,
-    }
+    
 
     public class Item
     {
@@ -54,5 +16,34 @@ namespace Sanakan.DAL.Models
         public ulong GameDeckId { get; set; }
         [JsonIgnore]
         public virtual GameDeck GameDeck { get; set; }
+
+        public double BaseAffection()
+        {
+            var affection = Type.BaseAffection();
+            
+            if (Type.HasDifferentQualities())
+            {
+                affection += affection * Quality.GetQualityModifier();
+            }
+
+            return affection;
+        }
+
+        public Figure? ToFigure(Card card, DateTime date)
+        {
+            if (Type != ItemType.FigureSkeleton || card.Rarity != Rarity.SSS)
+            {
+                return null;
+            }
+
+            var maxExp = card.ExpToUpgrade();
+            var experienceCount = card.ExpCount;
+            if (experienceCount > maxExp)
+            {
+                experienceCount = maxExp;
+            }
+
+            return new Figure(card, date, Quality, experienceCount);
+        }
     }
 }

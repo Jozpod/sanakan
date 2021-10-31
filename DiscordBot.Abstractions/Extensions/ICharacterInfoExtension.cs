@@ -2,6 +2,7 @@
 using Shinden.Models;
 using Discord;
 using Shinden.API;
+using Sanakan.DiscordBot.Abstractions.Models;
 
 namespace Sanakan.Extensions
 {
@@ -11,8 +12,8 @@ namespace Sanakan.Extensions
         {
             return new EmbedBuilder()
             {
-                Title = $"{info} ({info.CharacterId})".TrimToLength(EmbedBuilder.MaxTitleLength),
-                Description = info?.Biography?.Biography?.TrimToLength(1000),
+                Title = $"{info} ({info.CharacterId})".ElipseTrimToLength(EmbedBuilder.MaxTitleLength),
+                Description = info?.Biography?.Biography?.ElipseTrimToLength(1000),
                 Color = EMType.Info.Color(),
                 ImageUrl = info.PictureUrl,
                 Fields = info.GetFields(),

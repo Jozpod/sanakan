@@ -17,6 +17,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Sanakan.Api.Models;
 using Sanakan.Common;
+using Sanakan.Common.Configuration;
 using Sanakan.Config;
 using Sanakan.Configuration;
 using Sanakan.DAL.Models;
@@ -24,8 +25,9 @@ using Sanakan.DAL.Models.Analytics;
 using Sanakan.DAL.Repositories;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot;
+using Sanakan.DiscordBot.Abstractions.Extensions;
+using Sanakan.DiscordBot.Abstractions.Models;
 using Sanakan.Extensions;
-using Sanakan.Services.Executor;
 using Sanakan.ShindenApi;
 using Sanakan.TaskQueue.Messages;
 using Sanakan.Web.Configuration;
@@ -152,7 +154,7 @@ namespace Sanakan.Web.Controllers
             
             if (_userContext.HasWebpageClaim())
             {
-                tokenData = _jwtBuilder.Build(_config.CurrentValue.UserWithTokenExpiry);
+                tokenData = _jwtBuilder.Build(_config.CurrentValue.SanakanApi.UserWithTokenExpiry);
             }
 
             var result = new UserWithToken()
@@ -188,7 +190,7 @@ namespace Sanakan.Web.Controllers
             
             if (_userContext.HasWebpageClaim())
             {
-                tokenData = _jwtBuilder.Build(_config.CurrentValue.UserWithTokenExpiry);
+                tokenData = _jwtBuilder.Build(_config.CurrentValue.SanakanApi.UserWithTokenExpiry);
             }
 
             var result = new UserWithToken()
@@ -339,7 +341,7 @@ namespace Sanakan.Web.Controllers
                         var users = string.Join(",", oldUsers.Select(x => x.Id));
 
                         var content = ($"Potencjalne multikonto:\nDID: {model.DiscordUserId}\nSID: {shindenUser.Id.Value}\n"
-                            + $"SN: {shindenUser.Name}\n\noDID: {users}").TrimToLength(2000)
+                            + $"SN: {shindenUser.Name}\n\noDID: {users}").ElipseTrimToLength(2000)
                             .ToEmbedMessage(EMType.Error).Build();
 
                         await channel.SendMessageAsync("", embed: content);

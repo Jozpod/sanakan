@@ -22,7 +22,7 @@ namespace Sanakan.DAL.Models
             WarningsCount = 0;
             MessagesCount = 0;
             CommandsCount = 0;
-            MessagesCntAtDate = 0;
+            MessagesCountAtDate = 0;
             IsBlacklisted = false;
             CharacterCountFromDate = 0;
             ShowWaifuInProfile = false;
@@ -144,7 +144,7 @@ namespace Sanakan.DAL.Models
         public long ScCount { get; set; }
 
         /// <summary>
-        /// 
+        /// The level of user.
         /// </summary>
         public ulong Level { get; set; }
 
@@ -166,7 +166,7 @@ namespace Sanakan.DAL.Models
         public ulong MessagesCount { get; set; }
         public ulong CommandsCount { get; set; }
         public DateTime MeasureDate { get; set; }
-        public ulong MessagesCntAtDate { get; set; }
+        public ulong MessagesCountAtDate { get; set; }
         public ulong CharacterCountFromDate { get; set; }
         public bool ShowWaifuInProfile { get; set; }
         
@@ -180,5 +180,28 @@ namespace Sanakan.DAL.Models
         public virtual SlotMachineConfig SMConfig { get; set; }
 
         public virtual ICollection<TimeStatus> TimeStatuses { get; set; }
+
+        public bool IsCharCounterActive(DateTime date)
+            => date.Month == MeasureDate.Month
+           && date.Year == MeasureDate.Year;
+
+        public bool IsPVPSeasonalRankActive(DateTime date)
+            => GameDeck.IsPVPSeasonalRankActive(date);
+
+        public bool SendAnyMsgInMonth()
+            => (MessagesCount - MessagesCountAtDate) > 0;
+
+        public ulong GetRemainingExp(ulong nextLevelExperience)
+        {
+            var experienceLeft = nextLevelExperience - ExperienceCount;
+
+            if (experienceLeft < 1)
+            {
+                experienceLeft = 1;
+            }
+
+            return experienceLeft;
+        }
+
     }
 }

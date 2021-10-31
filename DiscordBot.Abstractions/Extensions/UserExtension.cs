@@ -2,9 +2,8 @@
 using DiscordBot.Services;
 using Sanakan.Common.Models;
 using Sanakan.DAL.Models;
-using Sanakan.DiscordBot.Extensions;
-using Sanakan.DiscordBot.Models;
 using Sanakan.DiscordBot.Services;
+using Sanakan.Game;
 using Sanakan.Services;
 using System;
 using System.Collections.Generic;
@@ -18,29 +17,15 @@ namespace Sanakan.Extensions
         public const double MAX_DECK_POWER = 800;
         public const double MIN_DECK_POWER = 200;
 
-        public static bool SendAnyMsgInMonth(this User u)
-            => (u.MessagesCount - u.MessagesCntAtDate) > 0;
-
-        public static bool IsCharCounterActive(this User user, DateTime date)
-            => date.Month == user.MeasureDate.Month
-                && date.Year == user.MeasureDate.Year;
-
-        public static bool IsPVPSeasonalRankActive(this GameDeck gameDeck, DateTime date)
-            => date.Month == gameDeck.PVPSeasonBeginDate.Month
-                && date.Year == gameDeck.PVPSeasonBeginDate.Year;
-
-        public static bool IsPVPSeasonalRankActive(this User u)
-            => u.GameDeck.IsPVPSeasonalRankActive();
-
         public static List<TimeStatus> CreateOrGetAllDailyQuests(this User user)
         {
             var quests = new List<TimeStatus>();
-            foreach (var type in new TimeStatus().GetDailyQuestTypes())
+            foreach (var type in StatusTypeExtensions.DailyQuestTypes)
             {
                 var mission = user.TimeStatuses.FirstOrDefault(x => x.Type == type);
                 if (mission == null)
                 {
-                    mission = type.NewTimeStatus();
+                    mission = new TimeStatus(type);
                     user.TimeStatuses.Add(mission);
                 }
                 quests.Add(mission);
@@ -51,12 +36,12 @@ namespace Sanakan.Extensions
         public static List<TimeStatus> CreateOrGetAllWeeklyQuests(this User user)
         {
             var quests = new List<TimeStatus>();
-            foreach (var type in new TimeStatus().GetWeeklyQuestTypes())
+            foreach (var type in StatusTypeExtensions.WeeklyQuestTypes)
             {
                 var mission = user.TimeStatuses.FirstOrDefault(x => x.Type == type);
                 if (mission == null)
                 {
-                    mission = type.NewTimeStatus();
+                    mission = new TimeStatus(type);
                     user.TimeStatuses.Add(mission);
                 }
                 quests.Add(mission);
@@ -100,50 +85,7 @@ namespace Sanakan.Extensions
 
         private const double PVPRankMultiplier = 0.45;
 
-        public static string GetRankName(this GameDeck deck, long? rank = null)
-        {
-            switch ((ExperienceManager.CalculateLevel(rank ?? deck.SeasonalPVPRank, PVPRankMultiplier) / 10))
-            {
-                case var n when (n >= 17):
-                    return "Konsul";
-
-                case 16: return "Praetor";
-                case 15: return "Legatus";
-                case 14: return "Preafectus classis";
-                case 13: return "Praefectus praetoria";
-                case 12: return "Tribunus laticavius";
-                case 11: return "Prefectus";
-                case 10: return "Tribunus angusticlavius";
-                case 9: return "Praefectus castorium";
-                case 8: return "Primus pilus";
-                case 7: return "Primi ordines";
-                case 6: return "Centurio";
-                case 5: return "Decurio";
-                case 4: return "Tesserarius";
-                case 3: return "Optio";
-                case 2: return "Aquilifier";
-                case 1: return "Signifer";
-
-                default:
-                    return "Miles gregarius";
-            }
-        }
-
-        public static bool ReachedDailyMaxPVPCount(this GameDeck deck)
-            => deck.PVPDailyGamesPlayed >= 10;
-
-        public static DeckPowerStatus CanFightPvP(this GameDeck deck)
-        {
-            deck.DeckPower = deck.CalculateDeckPower();
-            if (deck.DeckPower > deck.GetMaxDeckPower()) return DeckPowerStatus.TooHigh;
-            if (deck.DeckPower < deck.GetMinDeckPower()) return DeckPowerStatus.TooLow;
-            return DeckPowerStatus.Ok;
-        }
-
-        public static bool CanFightPvPs(this GameDeck deck)
-            => CanFightPvP(deck) == 0;
-
-        public static bool IsNearMMR(this GameDeck d1, GameDeck d2, double margin = 0.3)
+        public static bool IsNearMatchMakingRatio(this GameDeck d1, GameDeck d2, double margin = 0.3)
         {
             var d1MMR = d1.MatchMakingRatio;
             var mDown = d2.MatchMakingRatio - margin;
@@ -154,7 +96,7 @@ namespace Sanakan.Extensions
 
         public static ulong GetPVPCoinsFromDuel(this GameDeck deck, FightResult fightResult)
         {
-            var step = (ExperienceManager.CalculateLevel(deck.SeasonalPVPRank, PVPRankMultiplier) / 10);
+            var step = (ExperienceUtils.CalculateLevel((ulong)deck.SeasonalPVPRank, PVPRankMultiplier) / 10);
             if (step > 5)
             {
                 step = 5;
@@ -242,213 +184,7 @@ namespace Sanakan.Extensions
             return $"**{coins.ToString("+0;-#")}** PC **{gRank.ToString("+0;-#")}** GR  **{sRank.ToString("+0;-#")}** SR";
         }
 
-        public static double GetDeckPower(this GameDeck deck) => deck.DeckPower;
-
-        public static bool NeedToSetDeckAgain(this GameDeck deck) => deck.DeckPower == -1;
-
-        public static double CalculateDeckPower(this GameDeck deck)
-            => deck.Cards.Where(x => x.Active).Sum(x => x.CalculateCardPower());
-
-        public static double GetMaxDeckPower(this GameDeck _) => MAX_DECK_POWER;
-
-        public static double GetMinDeckPower(this GameDeck _) => MIN_DECK_POWER;
-
-        public static int LimitOfCardsOnExpedition(this GameDeck _) => 10;
-
-        public static string GetUserNameStatus(this GameDeck deck)
-        {
-            if (deck.Karma >= 2000) return $"Papaj";
-            if (deck.Karma >= 1600) return $"Miłościwy kumpel";
-            if (deck.Karma >= 1200) return $"Oślepiony bugiem";
-            if (deck.Karma >= 800) return $"Pan pokoiku";
-            if (deck.Karma >= 400) return $"Błogosławiony rycerz";
-            if (deck.Karma >= 200) return $"Pionek buga";
-            if (deck.Karma >= 100) return $"Sługa buga";
-            if (deck.Karma >= 50) return $"Biały koleś";
-            if (deck.Karma >= 10) return $"Pantofel";
-            if (deck.Karma >= 5) return $"Lizus";
-            if (deck.Karma <= -2000) return $"Mroczny panocek";
-            if (deck.Karma <= -1600) return $"Nienawistny koleżka";
-            if (deck.Karma <= -1200) return $"Mściwy ślepiec";
-            if (deck.Karma <= -800) return $"Pan wojenki";
-            if (deck.Karma <= -400) return $"Przeklęty rycerz";
-            if (deck.Karma <= -200) return $"Ciemny pionek";
-            if (deck.Karma <= -100) return $"Sługa mroku";
-            if (deck.Karma <= -50) return $"Murzynek";
-            if (deck.Karma <= -10) return $"Rzezimieszek";
-            if (deck.Karma <= -5) return $"Buntownik";
-            return "Wieśniak";
-        }
-
-        public static bool CanCreateDemon(this GameDeck deck) => deck.Karma <= -2000;
-
-        public static bool CanCreateAngel(this GameDeck deck) => deck.Karma >= 2000;
-
-        public static bool IsMarketDisabled(this GameDeck deck) => deck.Karma <= -400;
-
-        public static bool IsBlackMarketDisabled(this GameDeck deck) => deck.Karma > -400;
-
-        public static bool IsEvil(this GameDeck deck) => deck.Karma <= -10;
-
-        public static bool IsGood(this GameDeck deck) => deck.Karma >= 10;
-
-        public static bool IsNeutral(this GameDeck deck) => IsKarmaNeutral(deck.Karma);
-
         public static bool IsKarmaNeutral(this double karma) => karma > -10 && karma < 10;
-
-        public static double AffectionFromKarma(this GameDeck deck)
-        {
-            var karmaDif = deck.Karma / 150d;
-            if (karmaDif < -6) karmaDif = -6;
-            if (karmaDif > 6) karmaDif = 6;
-            return karmaDif;
-        }
-
-        public static double GetStrongestCardPower(this GameDeck deck)
-        {
-            return deck.Cards
-                .OrderByDescending(x => x.CardPower)
-                .FirstOrDefault()?.CardPower ?? 0;
-        }
-
-        public static List<ulong> GetTitlesWishList(this GameDeck deck)
-        {
-            return deck.Wishes
-                .Where(x => x.Type == WishlistObjectType.Title)
-                .Select(x => x.ObjectId)
-                .ToList();
-        }
-
-        public static List<ulong> GetCardsWishList(this GameDeck deck)
-        {
-            return deck.Wishes
-                .Where(x => x.Type == WishlistObjectType.Card)
-                .Select(x => x.ObjectId)
-                .ToList();
-        }
-
-        public static List<ulong> GetCharactersWishList(this GameDeck deck)
-        {
-            return deck.Wishes
-                .Where(x => x.Type == WishlistObjectType.Character)
-                .Select(x => x.ObjectId)
-                .ToList();
-        }
-
-        public static bool RemoveCharacterFromWishList(this GameDeck deck, ulong id)
-        {
-            var en = deck.Wishes.FirstOrDefault(x => x.Type == WishlistObjectType.Character && x.ObjectId == id);
-            if (en != null)
-            {
-                deck.Wishes.Remove(en);
-                return true;
-            }
-            return false;
-        }
-
-        public static void RemoveFromWaifu(this GameDeck deck, Card card)
-        {
-            if (deck.Waifu == card.CharacterId)
-            {
-                card.Affection -= 25;
-                deck.Waifu = 0;
-            }
-        }
-
-        public static void RemoveCardFromWishList(this GameDeck deck, ulong id)
-        {
-            var en = deck.Wishes.FirstOrDefault(x => x.Type == WishlistObjectType.Card && x.ObjectId == id);
-            if (en != null) deck.Wishes.Remove(en);
-        }
-
-        public static EmbedBuilder GetStatsView(this User u, IUser user)
-        {
-            string stats = $"**Wiadomości**: {u.MessagesCount}\n**Polecenia:** {u.CommandsCount}";
-
-            return new EmbedBuilder
-            {
-                Color = EMType.Info.Color(),
-                Description = $"**Statystyki** {user.Mention}:\n\n{stats}\n{u.Stats.ToView()}".TrimToLength(1950)
-            };
-        }
-
-        public static long GetRemainingExp(this User u)
-        {
-            var nextLvlExp = ExperienceManager.CalculateExpForLevel(u.Level + 1);
-            var exp = nextLvlExp - u.ExperienceCount;
-            if (exp < 1)
-            {
-                exp = 1;
-            }
-
-            return exp;
-        }
-
-        public static string GetViewValueForTop(this User u, TopType type)
-        {
-            switch (type)
-            {
-                default:
-                case TopType.Level:
-                    return $"{u.Level} **LVL** ({u.ExperienceCount} **EXP**)";
-
-                case TopType.ScCnt:
-                    return $"{u.ScCount} **SC**";
-
-                case TopType.TcCnt:
-                    return $"{u.TcCount} **TC**";
-
-                case TopType.AcCnt:
-                    return $"{u.AcCount} **AC**";
-
-                case TopType.PcCnt:
-                    return $"{u.GameDeck.PVPCoins} **PC**";
-
-                case TopType.Posts:
-                    return $"{u.MessagesCount}";
-
-                case TopType.PostsMonthly:
-                    return $"{u.MessagesCount - u.MessagesCntAtDate}";
-
-                case TopType.PostsMonthlyCharacter:
-                    return $"{u.CharacterCountFromDate / (u.MessagesCount - u.MessagesCntAtDate)}";
-
-                case TopType.Commands:
-                    return $"{u.CommandsCount}";
-
-                case TopType.Card:
-                    return u.GameDeck.Cards.OrderByDescending(x => x.CardPower)?.FirstOrDefault()?.GetString(false, false, true) ?? "---";
-
-                case TopType.Cards:
-                    return $"{u.GameDeck.Cards.Count}";
-
-                case TopType.CardsPower:
-                    return u.GameDeck.GetCardCountStats();
-
-                case TopType.Karma:
-                case TopType.KarmaNegative:
-                    return $"{u.GameDeck.Karma.ToString("F")}";
-
-                case TopType.Pvp:
-                    return $"{u.GameDeck.GlobalPVPRank}";
-
-                case TopType.PvpSeason:
-                    return $"{u.GameDeck.SeasonalPVPRank}";
-            }
-        }
-
-        public static string GetCardCountStats(this GameDeck deck)
-        {
-            string stats = "";
-
-            foreach (Rarity rarity in (Rarity[])Enum.GetValues(typeof(Rarity)))
-            {
-                var count = deck.Cards.Count(x => x.Rarity == rarity);
-                if (count > 0) stats += $"**{rarity.ToString().ToUpper()}**: {count} ";
-            }
-
-            return stats;
-        }
 
         public static bool ApplySlotMachineSetting(this User user, SlotMachineSetting type, string value)
         {

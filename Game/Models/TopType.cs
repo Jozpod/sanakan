@@ -1,9 +1,26 @@
-﻿using DiscordBot.Services;
-using Sanakan.Services;
-
-namespace Sanakan.Extensions
+﻿namespace Sanakan.Game.Models
 {
-    public static class TopTypeExtension
+    public enum TopType
+    {
+        Level = 0,
+        ScCnt = 1,
+        TcCnt = 2,
+        Posts = 3,
+        PostsMonthly = 4,
+        PostsMonthlyCharacter = 5,
+        Commands = 6,
+        Cards = 7,
+        CardsPower = 8,
+        Card = 9,
+        Karma = 10,
+        KarmaNegative = 11,
+        Pvp = 12,
+        PvpSeason = 13,
+        PcCnt = 14,
+        AcCnt = 15
+    }
+
+    public static class TopTypeExtensions
     {
         public static string Name(this TopType type)
         {

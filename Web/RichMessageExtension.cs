@@ -16,11 +16,11 @@ namespace Sanakan.Web
             var embed = new EmbedBuilder
             {
                 Url = msg.Url ?? "",
-                Title = (msg.Title ?? "").TrimToLength(EmbedBuilder.MaxTitleLength),
+                Title = (msg.Title ?? "").ElipseTrimToLength(EmbedBuilder.MaxTitleLength),
                 Timestamp = msg.Timestamp,
                 ImageUrl = msg.ImageUrl ?? "",
                 Color = msg.MessageType.ToColor(),
-                Description = (msg.Description ?? "").ConvertBBCodeToMarkdown().TrimToLength(1800),
+                Description = (msg.Description ?? "").ConvertBBCodeToMarkdown().ElipseTrimToLength(1800),
                 ThumbnailUrl = msg.ThumbnailUrl ?? "",
             };
 
@@ -35,7 +35,7 @@ namespace Sanakan.Web
                 {
                     IconUrl = msg.Author.ImageUrl ?? "",
                     Url = msg.Author.NameUrl ?? "",
-                    Name = (msg.Author.Name ?? "").TrimToLength(EmbedAuthorBuilder.MaxAuthorNameLength),
+                    Name = (msg.Author.Name ?? "").ElipseTrimToLength(EmbedAuthorBuilder.MaxAuthorNameLength),
                 };
             }
 
@@ -44,7 +44,7 @@ namespace Sanakan.Web
                 embed.Footer = new EmbedFooterBuilder
                 {
                     IconUrl = msg.Footer.ImageUrl ?? "",
-                    Text = (msg.Footer.Text ?? "").TrimToLength(EmbedFooterBuilder.MaxFooterTextLength),
+                    Text = (msg.Footer.Text ?? "").ElipseTrimToLength(EmbedFooterBuilder.MaxFooterTextLength),
                 };
             }
 
@@ -58,8 +58,8 @@ namespace Sanakan.Web
                     embed.AddField(new EmbedFieldBuilder
                     {
                         IsInline = field.IsInline,
-                        Value = (field.Value ?? "").TrimToLength(EmbedFieldBuilder.MaxFieldValueLength),
-                        Name = (field.Name ?? "").TrimToLength(EmbedFieldBuilder.MaxFieldNameLength),
+                        Value = (field.Value ?? "").ElipseTrimToLength(EmbedFieldBuilder.MaxFieldValueLength),
+                        Name = (field.Name ?? "").ElipseTrimToLength(EmbedFieldBuilder.MaxFieldNameLength),
                     });
                 }
             }

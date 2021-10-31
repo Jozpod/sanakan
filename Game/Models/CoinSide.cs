@@ -2,7 +2,7 @@
 {
     public enum CoinSide
     {
-        Head,
-        Tail
+        Head = 0,
+        Tail = 1
     }
 }

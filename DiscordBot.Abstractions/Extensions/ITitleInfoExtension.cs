@@ -5,6 +5,7 @@ using System;
 using Shinden.Models.Entities;
 using Shinden.API;
 using System.Linq;
+using Sanakan.DiscordBot.Abstractions.Models;
 
 namespace Sanakan.Extensions
 {
@@ -37,8 +38,8 @@ namespace Sanakan.Extensions
         {
             return new EmbedBuilder()
             {
-                Title = info.Title.Title.TrimToLength(EmbedBuilder.MaxTitleLength),
-                Description = info.Title.Description.OtherDescription.TrimToLength(1000),
+                Title = info.Title.Title.ElipseTrimToLength(EmbedBuilder.MaxTitleLength),
+                Description = info.Title.Description.OtherDescription.ElipseTrimToLength(1000),
                 ThumbnailUrl = info.Title.CoverUrl,
                 Color = EMType.Info.Color(),
                 Fields = info.GetFields(),
@@ -139,7 +140,7 @@ namespace Sanakan.Extensions
                 fields.Add(new EmbedFieldBuilder()
                 {
                     Name = "Tytuły alternatywne",
-                    Value = string.Join(", ", info.Title.TitleOther).TrimToLength(EmbedFieldBuilder.MaxFieldValueLength),
+                    Value = string.Join(", ", info.Title.TitleOther).ElipseTrimToLength(EmbedFieldBuilder.MaxFieldValueLength),
                     IsInline = false
                 });
             }
@@ -148,9 +149,9 @@ namespace Sanakan.Extensions
             {
                 fields.Add(new EmbedFieldBuilder()
                 {
-                    Name = tagType.Name.TrimToLength(EmbedFieldBuilder.MaxFieldNameLength),
+                    Name = tagType.Name.ElipseTrimToLength(EmbedFieldBuilder.MaxFieldNameLength),
                     Value = string.Join(", ", tagType.Items.Select(pr => pr.TagName))
-                        .TrimToLength(EmbedFieldBuilder.MaxFieldValueLength),
+                        .ElipseTrimToLength(EmbedFieldBuilder.MaxFieldValueLength),
                     IsInline = false
                 });
             }

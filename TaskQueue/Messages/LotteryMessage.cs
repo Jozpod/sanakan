@@ -1,4 +1,5 @@
 ﻿using Discord;
+using Discord.WebSocket;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,5 +14,10 @@ namespace Sanakan.TaskQueue.Messages
 
         public ulong DiscordUserId { get; set; }
         public IUserMessage UserMessage { get; set; }
+        public ulong WinnerUserId { get; set; }
+        public uint CardCount { get; set; }
+        public IUser WinnerUser { get; set; }
+        public ISocketMessageChannel Channel { get; set; }
+        public ulong InvokingUserId { get; set; }
     }
 }

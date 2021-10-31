@@ -3,17 +3,22 @@
     public class ExperienceConfiguration
     {
         /// <summary>
-        /// character count for one experience point.
+        /// The amount of characters needed for one card packet.
+        /// </summary>
+        public long CharPerPacket { get; set; }
+
+        /// <summary>
+        /// The character count per one experience point ratio.
         /// </summary>
         public double CharPerPoint { get; set; }
 
         /// <summary>
-        /// The minimum amount of experience from one discord message.
+        /// The minimum amount of experience from one Discord message.
         /// </summary>
         public double MinPerMessage { get; set; }
 
         /// <summary>
-        /// The maximum amount of experience from one discord message.
+        /// The maximum amount of experience from one Discord message.
         /// </summary>
         public double MaxPerMessage { get; set; }
     }

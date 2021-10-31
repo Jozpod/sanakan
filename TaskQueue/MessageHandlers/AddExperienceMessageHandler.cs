@@ -3,6 +3,9 @@ using Sanakan.Common.Cache;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Models.Analytics;
 using Sanakan.DAL.Repositories.Abstractions;
+using Sanakan.Extensions;
+using Sanakan.Game;
+using Sanakan.Game.Services;
 using Sanakan.TaskQueue.Messages;
 using System;
 using System.Collections.Generic;
@@ -15,7 +18,7 @@ namespace Sanakan.TaskQueue.MessageHandlers
     {
         private const double DefaultLevelMultiplier = 0.35;
         private readonly ISystemClock _systemClock;
-        private readonly ImageProcessor _imageProcessor;
+        private readonly IImageProcessor _imageProcessor;
         private readonly IUserRepository _userRepository;
         private readonly IGuildConfigRepository _guildConfigRepository;
         private readonly IUserAnalyticsRepository _userAnalyticsRepository;
@@ -49,7 +52,7 @@ namespace Sanakan.TaskQueue.MessageHandlers
             if (totalSeconds > 1)
             {
                 user.MeasureDate = _systemClock.StartOfMonth;
-                user.MessagesCntAtDate = user.MessagesCount;
+                user.MessagesCountAtDate = user.MessagesCount;
                 user.CharacterCountFromDate = characterCount;
             }
             else
@@ -67,7 +70,7 @@ namespace Sanakan.TaskQueue.MessageHandlers
             user.MessagesCount += message.MessageCount;
             user.CommandsCount += message.CharacterCount;
 
-            var level = CalculateLevel(user.ExperienceCount);
+            var level = ExperienceUtils.CalculateLevel(user.ExperienceCount);
             var username = discordUser.Nickname ?? discordUser.Username;
             var color = discordUser.Roles.OrderByDescending(x => x.Position).First().Color;
             var avatarUrl = discordUser.GetUserOrDefaultAvatarUrl();
@@ -162,10 +165,5 @@ namespace Sanakan.TaskQueue.MessageHandlers
 
             return (ulong)(experience * ratio);
         }
-
-        public ulong CalculateLevel(
-            ulong experience,
-            double levelMultiplier = DefaultLevelMultiplier)
-                => (ulong)Convert.ToInt64(Math.Floor(levelMultiplier * Math.Sqrt(experience)));
     }
 }

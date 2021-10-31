@@ -359,7 +359,7 @@ namespace Sanakan.Services
                 new EmbedFieldBuilder
                 {
                     Name = $"Role[{guild.Roles.Count}]",
-                    Value = roles.TrimToLength(EmbedFieldBuilder.MaxFieldValueLength),
+                    Value = roles.ElipseTrimToLength(EmbedFieldBuilder.MaxFieldValueLength),
                     IsInline = false
                 }
             };
@@ -391,8 +391,8 @@ namespace Sanakan.Services
 
             return new EmbedBuilder
             {
-                Footer = new EmbedFooterBuilder().WithText($"Zgłasza: {reportAuthor}".TrimToLength(EmbedFooterBuilder.MaxFooterTextLength)),
-                Description = message.Content?.TrimToLength(1500) ?? "sam załącznik",
+                Footer = new EmbedFooterBuilder().WithText($"Zgłasza: {reportAuthor}".ElipseTrimToLength(EmbedFooterBuilder.MaxFooterTextLength)),
+                Description = message.Content?.ElipseTrimToLength(1500) ?? "sam załącznik",
                 Author = new EmbedAuthorBuilder().WithUser(message.Author),
                 Color = EMType.Error.Color(),
                 Fields = new List<EmbedFieldBuilder>
@@ -419,13 +419,13 @@ namespace Sanakan.Services
                     {
                         IsInline = false,
                         Name = "Powód:",
-                        Value = reason.TrimToLength(EmbedFieldBuilder.MaxFieldValueLength)
+                        Value = reason.ElipseTrimToLength(EmbedFieldBuilder.MaxFieldValueLength)
                     },
                     new EmbedFieldBuilder
                     {
                         IsInline = false,
                         Name = "Załączniki:",
-                        Value = attach.TrimToLength(EmbedFieldBuilder.MaxFieldValueLength)
+                        Value = attach.ElipseTrimToLength(EmbedFieldBuilder.MaxFieldValueLength)
                     }
                 }
             }.Build();

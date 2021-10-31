@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Sanakan.DAL.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,5 +9,8 @@ namespace Sanakan.TaskQueue
 {
     public interface ISessionManager
     {
+        Task KillSessionIfExistAsync(object session);
+        bool SessionExist(object session);
+        Task TryAddSession(object session);
     }
 }

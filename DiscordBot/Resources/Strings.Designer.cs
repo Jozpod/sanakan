@@ -78,6 +78,76 @@ namespace Sanakan.DiscordBot.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0}:
+        ///Od {1} na {2} wyprawie.
+        ///Traci siły po {3} min..
+        /// </summary>
+        internal static string OnJourney {
+            get {
+                return ResourceManager.GetString("OnJourney", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to *{0}*
+        ///
+        ///
+        ///**Skrzynia({1})**: {2}
+        ///
+        ///**Uwolnione**: {3}
+        ///**Zniszczone**: {4}
+        ///**Poświęcone**: {5}
+        ///**Ulepszone**: {6}
+        ///**Wyzwolone**: {7}
+        ///
+        ///
+        ///**CT**: {8}
+        ///**Karma**: {9}
+        ///
+        ///**Posiadane karty**: {10}
+        ///
+        ///{11}**SS**: {12} **S**: {13} **A**: {14} **B**: {15} **C**: {16} **D**: {17} **E**:{18}
+        ///
+        ///
+        ///**PVP** Rozegrane: {19} Wygrane: {20}
+        ///**GR**: {21}
+        ///**SR**: {22}&quot;.
+        /// </summary>
+        internal static string PocketWaifuUserStats {
+            get {
+                return ResourceManager.GetString("PocketWaifuUserStats", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to **Statystyki** {0}:
+        ///
+        ///**Wiadomości**: {1}
+        ///**Polecenia:** {2}
+        ///**Wydane TC**:
+        ///**-Na pakiety**: {3}
+        ///**-Na przedmioty**: {4}
+        ///
+        ///**Stracone SC**: {5}
+        ///**Dochód SC**: {6}
+        ///
+        ///**Gier na automacie**: {7}
+        ///**Rzutów monetą**: {8}
+        ///**-Trafień**: {9}
+        ///**-Pudeł**: {10}
+        ///
+        ///
+        ///**Pakiety otwarte**:
+        ///**-Aktywność**: {11}
+        ///**-Inne**: {12}.
+        /// </summary>
+        internal static string ProfileUserStats {
+            get {
+                return ResourceManager.GetString("ProfileUserStats", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to **Nastawa** / **Wartośći** 
         ///Info `(wypisywanie informacji)`
         ///Mnożnik / `1`, `2`, `3`
@@ -104,6 +174,26 @@ namespace Sanakan.DiscordBot.Resources {
         internal static string SlotMachineResult {
             get {
                 return ResourceManager.GetString("SlotMachineResult", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to **Dzienne misje:**
+        ///
+        ///{0}
+        ///
+        ///Za wykonanie wszystkich dziennych misji można otrzymać 10 AC.
+        ///
+        ///
+        ///Tygodniowe misje:**
+        ///
+        ///{1}
+        ///
+        ///Dzienne misje odświeżają się o północy, a tygodniowe co niedzielę..
+        /// </summary>
+        internal static string UserQuestsProgress {
+            get {
+                return ResourceManager.GetString("UserQuestsProgress", resourceCulture);
             }
         }
     }

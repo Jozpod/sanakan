@@ -1,35 +1,44 @@
 ﻿using Discord.Commands;
-using DiscordBot.Services.Executor;
+using Sanakan.DiscordBot.Abstractions;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
+using SearchResult = Sanakan.DiscordBot.Abstractions.SearchResult;
 
 namespace Sanakan.Extensions
 {
     public static class CommandServiceExtensions
     {
-        public static async Task<Services.Commands.SearchResult> GetExecutableCommandAsync(this CommandService cmd, ICommandContext context, int argPos, IServiceProvider services)
-            => await GetExecutableCommandAsync(cmd, context, context.Message.Content.Substring(argPos), services).ConfigureAwait(false);
+        public static async Task<SearchResult> GetExecutableCommandAsync(
+            this CommandService commandService,
+            ICommandContext context,
+            int argPos,
+            IServiceProvider services)
+            => await GetExecutableCommandAsync(commandService, context, context.Message.Content.Substring(argPos), services).ConfigureAwait(false);
 
-        public static async Task<Services.Commands.SearchResult> GetExecutableCommandAsync(
-            this CommandService cmd,
+        public static async Task<SearchResult> GetExecutableCommandAsync(
+            this CommandService commandService,
             ICommandContext context,
             string input,
             IServiceProvider services)
         {
-            var searchResult = cmd.Search(input);
+            var searchResult = commandService.Search(input);
 
             if (!searchResult.IsSuccess)
-                return new Services.Commands.SearchResult(searchResult);
+            {
+                return new SearchResult(searchResult);
+            }
 
             var commands = searchResult.Commands;
             var preconditionResults = new Dictionary<CommandMatch, PreconditionResult>();
 
             foreach (var match in commands)
             {
-                preconditionResults[match] = await match.Command.CheckPreconditionsAsync(context, services).ConfigureAwait(false);
+                preconditionResults[match] = await match.Command
+                    .CheckPreconditionsAsync(context, services)
+                    .ConfigureAwait(false);
             }
 
             var successfulPreconditions = preconditionResults
@@ -42,7 +51,7 @@ namespace Sanakan.Extensions
                     .OrderByDescending(x => x.Key.Command.Priority)
                     .FirstOrDefault(x => !x.Value.IsSuccess);
 
-                return new Services.Commands.SearchResult(bestCandidate.Value);
+                return new SearchResult(bestCandidate.Value);
             }
 
             var parseResultsDict = new Dictionary<CommandMatch, ParseResult>();
@@ -90,14 +99,15 @@ namespace Sanakan.Extensions
                 var bestMatch = parseResults
                     .FirstOrDefault(x => !x.Value.IsSuccess);
 
-                return new Services.Commands.SearchResult(bestMatch.Value);
+                return new SearchResult(bestMatch.Value);
             }
 
             var chosenOverload = successfulParses[0];
-            return new Services.Commands.SearchResult(
-                command: new Services.Commands.Command(chosenOverload.Key,
-                chosenOverload.Value, context,
-                (Priority) chosenOverload.Key.Command.Priority));
+            return new SearchResult(
+                command: new Command(chosenOverload.Key,
+                chosenOverload.Value,
+                context,
+                chosenOverload.Key.Command.Priority));
         }
     }
 }

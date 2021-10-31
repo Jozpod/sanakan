@@ -1,3 +1,5 @@
+<h1><img width="200px" alt="Sanakan" src="logo.webp" /></h1>
+
 # Sanakan #
 
 Discord bot which allows 
@@ -63,6 +65,7 @@ dotnet run
 | **[`RestartWhenDisconnected - Demonization`](#RestartWhenDisconnected)** | `{Boolean}` | `true` | Restarts the Discord socket client when it is disconnected. |
 | **[`SafariEnabled`](#SafariEnabled)** | `{Boolean}`  | `true` | If enabled it allows generating cards from user messages. |
 | **[`AllowedToDebug`](#AllowedToDebug)** | `{Array}` | `[]` | The list of Discord user identifiers which can access diagnostics. |
+| **[`BlacklistedGuilds`](#BlacklistedGuilds)** | `{Array}` | `[]` | The list of Discord guild ( servers ) identifiers to blacklist. |
 
 ### Experience
 |                   Name                    |         Type         |                 Default                 | Description                                                       |
@@ -84,6 +87,16 @@ dotnet run
 | :---------------------------------------: | :------------------: | :-------------------------------------: | :---------------------------------------------------------------- |
 | **[`Jwt`](#Jwt)** | `{Object}` | `` | The JWT token configuration. |
 | **[`ApiKeys`](#ApiKeys)**  | `{Array}` | `` |  The list of 3rd party API Keys which will be provided with JWT. |
+| **[`TokenExpiry`](#TokenExpiry)**  | `{String\|TimeSpan}` | `1.00:00:00` |  The time span after JWT expires. |
+| **[`UserWithTokenExpiry`](#UserWithTokenExpiry)**  | `{String\|TimeSpan}` | `00:30:00` |  The time span after JWT with user expires. |
+
+### Rich Message
+|                   Name                    |         Type         |                 Default                 | Description                                                       |
+| :---------------------------------------: | :------------------: | :-------------------------------------: | :---------------------------------------------------------------- |
+| **[`RoleId`](#RoleId)** | `{Number}` | `` | The JWT token configuration. |
+| **[`GuildId`](#GuildId)**  | `{Number}` | `` |  The list of 3rd party API Keys which will be provided with JWT. |
+| **[`ChannelId`](#ChannelId)**  | `{Number}` | `` |  The list of 3rd party API Keys which will be provided with JWT. |
+| **[`Type`](#Type)**  | `{String}` | `` |  The list of 3rd party API Keys which will be provided with JWT. |
 
 ### Runtime configuration ###
 

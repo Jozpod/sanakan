@@ -55,7 +55,7 @@ namespace Sanakan.Services.Session.Models
                 pageString += $"{enumerable}{itemsOnPage[i].ToString()}\n";
             }
 
-            Embed.Description = pageString.TrimToLength(1800);
+            Embed.Description = pageString.ElipseTrimToLength(1800);
 
             return Embed.Build();
         }

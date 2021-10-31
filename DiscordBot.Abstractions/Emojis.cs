@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Sanakan.DiscordBot
+namespace Sanakan.DiscordBot.Abstractions
 {
     public static class Emojis
     {

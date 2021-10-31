@@ -131,7 +131,7 @@ namespace Sanakan.Services
                             + $"**Polecenia**: {cmdCh}\n"
                             + $"**Role na lvl**: {roles}\n"
                             + $"**AutoRole**: {selfRoles}\n"
-                            + $"**Krainy**: {lands}".TrimToLength(1950)
+                            + $"**Krainy**: {lands}".ElipseTrimToLength(1950)
             };
         }
 
@@ -145,7 +145,7 @@ namespace Sanakan.Services
             }
             else value += "*brak*";
 
-            return new EmbedBuilder().WithColor(EMType.Bot.Color()).WithDescription(value.TrimToLength(1950));
+            return new EmbedBuilder().WithColor(EMType.Bot.Color()).WithDescription(value.ElipseTrimToLength(1950));
         }
 
         private EmbedBuilder GetModRolesConfig(GuildOptions config, SocketCommandContext context)
@@ -158,7 +158,7 @@ namespace Sanakan.Services
             }
             else value += "*brak*";
 
-            return new EmbedBuilder().WithColor(EMType.Bot.Color()).WithDescription(value.TrimToLength(1950));
+            return new EmbedBuilder().WithColor(EMType.Bot.Color()).WithDescription(value.ElipseTrimToLength(1950));
         }
 
         private EmbedBuilder GetLandsConfig(GuildOptions config, SocketCommandContext context)
@@ -173,7 +173,7 @@ namespace Sanakan.Services
             }
             else value += "*brak*";
 
-            return new EmbedBuilder().WithColor(EMType.Bot.Color()).WithDescription(value.TrimToLength(1950));
+            return new EmbedBuilder().WithColor(EMType.Bot.Color()).WithDescription(value.ElipseTrimToLength(1950));
         }
 
         private EmbedBuilder GetLevelRolesConfig(GuildOptions config, SocketCommandContext context)
@@ -186,7 +186,7 @@ namespace Sanakan.Services
             }
             else value += "*brak*";
 
-            return new EmbedBuilder().WithColor(EMType.Bot.Color()).WithDescription(value.TrimToLength(1950));
+            return new EmbedBuilder().WithColor(EMType.Bot.Color()).WithDescription(value.ElipseTrimToLength(1950));
         }
 
         private EmbedBuilder GetCmdChannelsConfig(GuildOptions config, SocketCommandContext context)
@@ -199,7 +199,7 @@ namespace Sanakan.Services
             }
             else value += "*brak*";
 
-            return new EmbedBuilder().WithColor(EMType.Bot.Color()).WithDescription(value.TrimToLength(1950));
+            return new EmbedBuilder().WithColor(EMType.Bot.Color()).WithDescription(value.ElipseTrimToLength(1950));
         }
 
         private EmbedBuilder GetWaifuCmdChannelsConfig(GuildOptions config, SocketCommandContext context)
@@ -212,7 +212,7 @@ namespace Sanakan.Services
             }
             else value += "*brak*";
 
-            return new EmbedBuilder().WithColor(EMType.Bot.Color()).WithDescription(value.TrimToLength(1950));
+            return new EmbedBuilder().WithColor(EMType.Bot.Color()).WithDescription(value.ElipseTrimToLength(1950));
         }
 
         private EmbedBuilder GetWaifuFightChannelsConfig(GuildOptions config, SocketCommandContext context)
@@ -225,7 +225,7 @@ namespace Sanakan.Services
             }
             else value += "*brak*";
 
-            return new EmbedBuilder().WithColor(EMType.Bot.Color()).WithDescription(value.TrimToLength(1950));
+            return new EmbedBuilder().WithColor(EMType.Bot.Color()).WithDescription(value.ElipseTrimToLength(1950));
         }
 
         private EmbedBuilder GetIgnoredChannelsConfig(GuildOptions config, SocketCommandContext context)
@@ -238,7 +238,7 @@ namespace Sanakan.Services
             }
             else value += "*brak*";
 
-            return new EmbedBuilder().WithColor(EMType.Bot.Color()).WithDescription(value.TrimToLength(1950));
+            return new EmbedBuilder().WithColor(EMType.Bot.Color()).WithDescription(value.ElipseTrimToLength(1950));
         }
 
         private EmbedBuilder GetNonExpChannelsConfig(GuildOptions config, SocketCommandContext context)
@@ -251,7 +251,7 @@ namespace Sanakan.Services
             }
             else value += "*brak*";
 
-            return new EmbedBuilder().WithColor(EMType.Bot.Color()).WithDescription(value.TrimToLength(1950));
+            return new EmbedBuilder().WithColor(EMType.Bot.Color()).WithDescription(value.ElipseTrimToLength(1950));
         }
 
         private EmbedBuilder GetNonSupChannelsConfig(GuildOptions config, SocketCommandContext context)
@@ -264,7 +264,7 @@ namespace Sanakan.Services
             }
             else value += "*brak*";
 
-            return new EmbedBuilder().WithColor(EMType.Bot.Color()).WithDescription(value.TrimToLength(1950));
+            return new EmbedBuilder().WithColor(EMType.Bot.Color()).WithDescription(value.ElipseTrimToLength(1950));
         }
 
         public EmbedBuilder GetConfiguration(GuildOptions config, SocketCommandContext context, ConfigType type)
@@ -314,7 +314,7 @@ namespace Sanakan.Services
                 var dm = await user.GetOrCreateDMChannelAsync();
                 if (dm != null)
                 {
-                    await dm.SendMessageAsync($"Elo! Otrzymałeś ostrzeżenie o treści:\n {reason}\n\nPozdrawiam serdecznie!".TrimToLength(2000));
+                    await dm.SendMessageAsync($"Elo! Otrzymałeś ostrzeżenie o treści:\n {reason}\n\nPozdrawiam serdecznie!".ElipseTrimToLength(2000));
                     await dm.CloseAsync();
                 }
             }
@@ -336,7 +336,7 @@ namespace Sanakan.Services
             {
                 Color = (penaltyInfo.Type == PenaltyType.Mute) ? EMType.Warning.Color() : EMType.Error.Color(),
                 Footer = new EmbedFooterBuilder().WithText($"Przez: {byWho}"),
-                Description = $"Powód: {penaltyInfo.Reason}".TrimToLength(1800),
+                Description = $"Powód: {penaltyInfo.Reason}".ElipseTrimToLength(1800),
                 Author = new EmbedAuthorBuilder().WithUser(user),
                 Fields = new List<EmbedFieldBuilder>
                 {
@@ -375,7 +375,7 @@ namespace Sanakan.Services
                 var directMessageChannel = await user.GetOrCreateDMChannelAsync();
                 if (directMessageChannel != null)
                 {
-                    var content = $"Elo! Zostałeś ukarany mutem na {durationFriendly}.\n\nPodany powód: {penaltyInfo.Reason}\n\nPozdrawiam serdecznie!".TrimToLength(2000);
+                    var content = $"Elo! Zostałeś ukarany mutem na {durationFriendly}.\n\nPodany powód: {penaltyInfo.Reason}\n\nPozdrawiam serdecznie!".ElipseTrimToLength(2000);
                     await directMessageChannel.SendMessageAsync(content);
                     await directMessageChannel.CloseAsync();
                 }
@@ -414,7 +414,7 @@ namespace Sanakan.Services
 
             return new EmbedBuilder
             {
-                Description = $"**Wyciszeni**:\n\n{mutedList.TrimToLength(1900)}",
+                Description = $"**Wyciszeni**:\n\n{mutedList.ElipseTrimToLength(1900)}",
                 Color = EMType.Bot.Color(),
             }.Build();
         }
@@ -433,7 +433,7 @@ namespace Sanakan.Services
             return new EmbedBuilder
             {
                 Author = new EmbedAuthorBuilder().WithUser(message.Author),
-                Description = message.Content.TrimToLength(1800),
+                Description = message.Content.ElipseTrimToLength(1800),
                 Color = EMType.Bot.Color(),
                 ImageUrl = image,
                 Footer = new EmbedFooterBuilder

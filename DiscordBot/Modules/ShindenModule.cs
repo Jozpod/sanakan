@@ -15,6 +15,8 @@ using Sanakan.DAL.Repositories.Abstractions;
 using Shinden.API;
 using Discord;
 using Sanakan.ShindenApi.Utilities;
+using Sanakan.DiscordBot.Abstractions.Models;
+using Sanakan.DiscordBot.Abstractions.Extensions;
 
 namespace Sanakan.Modules
 {
@@ -137,8 +139,8 @@ namespace Sanakan.Modules
 
                 var embed = new EmbedBuilder()
                 {
-                    Title = $"{info} ({info.CharacterId})".TrimToLength(EmbedBuilder.MaxTitleLength),
-                    Description = info?.Biography?.Biography?.TrimToLength(1000),
+                    Title = $"{info} ({info.CharacterId})".ElipseTrimToLength(EmbedBuilder.MaxTitleLength),
+                    Description = info?.Biography?.Biography?.ElipseTrimToLength(1000),
                     Color = EMType.Info.Color(),
                     ImageUrl = info.PictureUrl,
                     Fields = info.GetFields(),
@@ -208,7 +210,7 @@ namespace Sanakan.Modules
                     return;
 
                 case Services.UrlParsingError.InvalidUrlForum:
-                await ReplyAsync("", embed: "Wygląda na to, że podałeś link do forum zamiast strony.".ToEmbedMessage(EMType.Error).Build());
+                    await ReplyAsync("", embed: "Wygląda na to, że podałeś link do forum zamiast strony.".ToEmbedMessage(EMType.Error).Build());
                     return;
 
                 default:

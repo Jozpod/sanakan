@@ -11,17 +11,6 @@ namespace Sanakan.Extensions
     public static class CardExtension
     {
 
-       
-
-       
-
-       
-
-      
-       
-      
-        
-
         public static Api.Models.CardFinalView ToView(this Card c)
             => Api.Models.CardFinalView.ConvertFromRaw(c);
 
