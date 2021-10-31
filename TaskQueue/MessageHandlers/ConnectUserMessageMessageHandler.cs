@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Sanakan.Web.MessageHandlers
+namespace Sanakan.TaskQueue.MessageHandlers
 {
     public class ConnectUserMessageMessageHandler : IMessageHandler<ConnectUserMessage>
     {
@@ -17,7 +17,7 @@ namespace Sanakan.Web.MessageHandlers
 
         public ConnectUserMessageMessageHandler(
             ICardRepository cardRepository,
-            ICacheManager cacheManager) : base(Priority.High)
+            ICacheManager cacheManager)
         {
             _cardRepository = cardRepository;
         }

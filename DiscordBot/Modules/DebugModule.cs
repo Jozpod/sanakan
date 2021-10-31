@@ -1,7 +1,6 @@
 ﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using DiscordBot.Services.Executor;
 using DiscordBot.Services.PocketWaifu.Abstractions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -12,20 +11,22 @@ using Sanakan.DAL.Models;
 using Sanakan.DAL.Repositories;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot;
+using Sanakan.DiscordBot.Models;
 using Sanakan.DiscordBot.Services;
 using Sanakan.DiscordBot.Services.Abstractions;
 using Sanakan.Extensions;
 using Sanakan.Preconditions;
 using Sanakan.Services;
 using Sanakan.Services.Commands;
-using Sanakan.Services.Executor;
 using Sanakan.Services.PocketWaifu;
 using Sanakan.ShindenApi;
 using Sanakan.ShindenApi.Utilities;
+using Sanakan.TaskQueue.Messages;
 using Shinden;
 using Shinden.API;
 using Shinden.Models;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -41,7 +42,7 @@ namespace Sanakan.Modules
     {
         private readonly IWaifuService _waifuService;
         private readonly WritableOptions<SanakanConfiguration> _config;
-        private readonly IExecutor _executor;
+        private readonly IProducerConsumerCollection<BaseMessage> _blockingPriorityQueue;
         private readonly IHelperService _helperService;
         private readonly IShindenClient _shindenClient;
         private readonly IImageProcessor _imageProcessor;
@@ -55,8 +56,9 @@ namespace Sanakan.Modules
         private readonly IRandomNumberGenerator _randomNumberGenerator;
 
         public DebugModule(
-            IWaifuService waifuService,
             IShindenClient shindenClient,
+            IProducerConsumerCollection<BaseMessage> blockingPriorityQueue,
+            IWaifuService waifuService,
             IHelperService helperService,
             IImageProcessor imageProcessor,
             WritableOptions<SanakanConfiguration> config,
@@ -65,11 +67,10 @@ namespace Sanakan.Modules
             IGuildConfigRepository guildConfigRepository,
             ISystemClock systemClock,
             IResourceManager resourceManager,
-            IRandomNumberGenerator randomNumberGenerator,
-            IExecutor executor)
+            IRandomNumberGenerator randomNumberGenerator)
         {
             _shindenClient = shindenClient;
-            _executor = executor;
+            _blockingPriorityQueue = blockingPriorityQueue;
             _helperService = helperService;
             _config = config;
             _waifuService = waifuService;
@@ -297,7 +298,7 @@ namespace Sanakan.Modules
         [Summary("rozdaje karty")]
         [Remarks("1 10 5")]
         public async Task GiveawayCardsAsync(
-            [Summary("id użytkownika")]ulong id,
+            [Summary("id użytkownika")]ulong discordUserId,
             [Summary("liczba kart")]uint count,
             [Summary("czas w minutach")]uint duration = 5)
         {
@@ -317,7 +318,8 @@ namespace Sanakan.Modules
                 mutedRole = guild.GetRole(config.MuteRoleId);
             }
 
-            var userMessage = await ReplyAsync(mention, embed: $"Loteria kart. Zareaguj {emote}, aby wziąć udział.\n\nKoniec `{time.ToShortTimeString()}:{time.Second.ToString("00")}`".ToEmbedMessage(EMType.Bot).Build());
+            var userMessage = await ReplyAsync(mention, embed: $"Loteria kart. Zareaguj {emote}, aby wziąć udział.\n\nKoniec `{time.ToShortTimeString()}:{time.Second.ToString("00")}`"
+                .ToEmbedMessage(EMType.Bot).Build());
             await userMessage.AddReactionAsync(emote);
 
             await Task.Delay(TimeSpan.FromMinutes(duration));
@@ -331,11 +333,15 @@ namespace Sanakan.Modules
             while (winner == null)
             {
                 if (watch.ElapsedMilliseconds > 60000)
-                    throw new Exception("Timeout");
-
-                if (users.Count < 1)
                 {
-                    await userMessage.ModifyAsync(x => x.Embed = "Na loterie nie stawił się żaden użytkownik!".ToEmbedMessage(EMType.Error).Build());
+                    throw new Exception("Timeout");
+                }
+
+                if (!users.Any())
+                {
+                    await userMessage.ModifyAsync(x => x.Embed = "Na loterie nie stawił się żaden użytkownik!"
+                        .ToEmbedMessage(EMType.Error)
+                        .Build());
                     return;
                 }
 
@@ -344,98 +350,29 @@ namespace Sanakan.Modules
                 if (mutedRole != null && selected is SocketGuildUser su)
                 {
                     if (su.Roles.Any(x => x.Id == mutedRole.Id))
+                    {
                         muted = true;
+                    }
                 }
 
                 var dUser = await _userRepository.GetCachedFullUserAsync(selected.Id);
                 if (dUser != null && !muted)
                 {
                     if (!dUser.IsBlacklisted)
+                    {
                         winner = selected;
+                    }
                 }
                 users.Remove(selected);
             }
 
-            var exe = new Executable("lotery", new Task<Task>(async () =>
+            _blockingPriorityQueue.TryAdd(new LotteryMessage
             {
-                var user = await _userRepository.GetUserOrCreateAsync(id);
-                if (user == null)
-                {
-                    await userMessage.ModifyAsync(x => x.Embed = "Nie odnaleziono kart do rozdania!".ToEmbedMessage(EMType.Error).Build());
-                    return;
-                }
+                DiscordUserId = discordUserId,
+                UserMessage = userMessage,
+            });
 
-                var loteryCards = user.GameDeck.Cards.ToList();
-                if (loteryCards.Count < 1)
-                {
-                    await userMessage.ModifyAsync(x => x.Embed = "Nie odnaleziono kart do rozdania!".ToEmbedMessage(EMType.Error).Build());
-                    return;
-                }
-
-                var winnerUser = await _userRepository.GetUserOrCreateAsync(winner.Id);
-
-                if (winnerUser == null)
-                {
-                    await userMessage.ModifyAsync(x => x.Embed = "Nie odnaleziono docelowego użytkownika!".ToEmbedMessage(EMType.Error).Build());
-                    return;
-                }
-
-                var cardsIds = new List<string>();
-                var idsToSelect = loteryCards.Select(x => x.Id).ToList();
-
-                for (int i = 0; i < count; i++)
-                {
-                    if (idsToSelect.Count < 1)
-                        break;
-
-                    var wid = _randomNumberGenerator.GetOneRandomFrom(idsToSelect);
-                    var thisCard = loteryCards.FirstOrDefault(x => x.Id == wid);
-
-                    cardsIds.Add(thisCard.GetString(false, false, true));
-
-                    thisCard.Active = false;
-                    thisCard.InCage = false;
-                    thisCard.TagList.Clear();
-                    thisCard.Expedition = CardExpedition.None;
-
-                    thisCard.GameDeckId = winnerUser.GameDeck.Id;
-
-                    winnerUser.GameDeck.RemoveCharacterFromWishList(thisCard.CharacterId);
-                    winnerUser.GameDeck.RemoveCardFromWishList(thisCard.Id);
-
-                    idsToSelect.Remove(wid);
-                }
-
-                await _guildConfigRepository.SaveChangesAsync();
-                await userMessage.DeleteAsync();
-
-                _cacheManager.ExpireTag(new string[] { $"user-{Context.User.Id}", "users", $"user-{id}" });
-
-                userMessage = await ReplyAsync(embed: $"Loterie wygrywa {winner.Mention}.\nOtrzymuje: {string.Join("\n", cardsIds)}"
-                    .TrimToLength(2000)
-                    .ToEmbedMessage(EMType.Success).Build());
-
-                var jumpUrl = userMessage.GetJumpUrl();
-
-                try
-                {
-                    var privEmb = new EmbedBuilder()
-                    {
-                        Color = EMType.Info.Color(),
-                        Description = $"Na [loterii]({jumpUrl}) zdobyłeś {cardsIds.Count} kart."
-                    };
-
-                    var dmChannel = await winner.GetOrCreateDMChannelAsync();
-                    
-                    if (dmChannel != null)
-                    {
-                        await dmChannel.SendMessageAsync("", embed: privEmb.Build());
-                    }
-                }
-                catch(Exception){}
-            }), Priority.High);
-
-            await _executor.TryAdd(exe, TimeSpan.FromSeconds(1));
+           
             await userMessage.RemoveAllReactionsAsync();
         }
 
@@ -482,7 +419,7 @@ namespace Sanakan.Modules
                 thisCard.InCage = false;
                 thisCard.TagList.Clear();
                 thisCard.GameDeckId = userId;
-                thisCard.Expedition = CardExpedition.None;
+                thisCard.Expedition = ExpeditionCardType.None;
             }
 
             await _cardRepository.SaveChangesAsync();
@@ -1235,10 +1172,10 @@ namespace Sanakan.Modules
         [Remarks("12312 n")]
         public async Task SimulateExpeditionAsync(
             [Summary("WID")]ulong wid,
-            [Summary("typ wyprawy")]CardExpedition expedition = CardExpedition.None,
+            [Summary("typ wyprawy")]ExpeditionCardType expedition = ExpeditionCardType.None,
             [Summary("czas w minutach")]int time = -1)
         {
-            if (expedition == CardExpedition.None)
+            if (expedition == ExpeditionCardType.None)
             {
                 return;
             }

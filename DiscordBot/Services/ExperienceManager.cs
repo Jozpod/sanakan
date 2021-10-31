@@ -9,7 +9,6 @@ using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot.Configuration;
 using Sanakan.DiscordBot.Services;
 using Sanakan.Extensions;
-using Sanakan.Services.Executor;
 using Sanakan.TaskQueue.Messages;
 using System;
 using System.Collections.Concurrent;

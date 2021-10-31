@@ -12,32 +12,32 @@ namespace Sanakan.TypeReaders
             switch (input.ToLower())
             {
                 case "-":
-                    return Task.FromResult(TypeReaderResult.FromSuccess(CardExpedition.None));
+                    return Task.FromResult(TypeReaderResult.FromSuccess(ExpeditionCardType.None));
 
                 case "normalna":
                 case "normal":
                 case "n":
-                    return Task.FromResult(TypeReaderResult.FromSuccess(CardExpedition.NormalItemWithExp));
+                    return Task.FromResult(TypeReaderResult.FromSuccess(ExpeditionCardType.NormalItemWithExp));
 
                 case "trudna":
                 case "hard":
                 case "h":
-                    return Task.FromResult(TypeReaderResult.FromSuccess(CardExpedition.ExtremeItemWithExp));
+                    return Task.FromResult(TypeReaderResult.FromSuccess(ExpeditionCardType.ExtremeItemWithExp));
 
                 case "mrok":
                 case "dark":
                 case "d":
-                    return Task.FromResult(TypeReaderResult.FromSuccess(CardExpedition.DarkItemWithExp));
+                    return Task.FromResult(TypeReaderResult.FromSuccess(ExpeditionCardType.DarkItemWithExp));
 
                 case "mrok 1":
                 case "dark 1":
                 case "d1":
-                    return Task.FromResult(TypeReaderResult.FromSuccess(CardExpedition.DarkExp));
+                    return Task.FromResult(TypeReaderResult.FromSuccess(ExpeditionCardType.DarkExp));
 
                 case "mrok 2":
                 case "dark 2":
                 case "d2":
-                    return Task.FromResult(TypeReaderResult.FromSuccess(CardExpedition.DarkItems));
+                    return Task.FromResult(TypeReaderResult.FromSuccess(ExpeditionCardType.DarkItems));
 
                 case "światło":
                 case "światlo":
@@ -45,7 +45,7 @@ namespace Sanakan.TypeReaders
                 case "swiatlo":
                 case "light":
                 case "l":
-                    return Task.FromResult(TypeReaderResult.FromSuccess(CardExpedition.LightItemWithExp));
+                    return Task.FromResult(TypeReaderResult.FromSuccess(ExpeditionCardType.LightItemWithExp));
 
                 case "światło 1":
                 case "światlo 1":
@@ -53,7 +53,7 @@ namespace Sanakan.TypeReaders
                 case "swiatlo 1":
                 case "light 1":
                 case "l1":
-                    return Task.FromResult(TypeReaderResult.FromSuccess(CardExpedition.LightExp));
+                    return Task.FromResult(TypeReaderResult.FromSuccess(ExpeditionCardType.LightExp));
 
                 case "światło 2":
                 case "światlo 2":
@@ -61,16 +61,16 @@ namespace Sanakan.TypeReaders
                 case "swiatlo 2":
                 case "light 2":
                 case "l2":
-                    return Task.FromResult(TypeReaderResult.FromSuccess(CardExpedition.LightItems));
+                    return Task.FromResult(TypeReaderResult.FromSuccess(ExpeditionCardType.LightItems));
 
                 case "ue":
-                    return Task.FromResult(TypeReaderResult.FromSuccess(CardExpedition.UltimateEasy));
+                    return Task.FromResult(TypeReaderResult.FromSuccess(ExpeditionCardType.UltimateEasy));
                 case "um":
-                    return Task.FromResult(TypeReaderResult.FromSuccess(CardExpedition.UltimateMedium));
+                    return Task.FromResult(TypeReaderResult.FromSuccess(ExpeditionCardType.UltimateMedium));
                 case "uh":
-                    return Task.FromResult(TypeReaderResult.FromSuccess(CardExpedition.UltimateHard));
+                    return Task.FromResult(TypeReaderResult.FromSuccess(ExpeditionCardType.UltimateHard));
                 case "uhh":
-                    return Task.FromResult(TypeReaderResult.FromSuccess(CardExpedition.UltimateHardcore));
+                    return Task.FromResult(TypeReaderResult.FromSuccess(ExpeditionCardType.UltimateHardcore));
 
                 default:
                     return Task.FromResult(TypeReaderResult.FromError(CommandError.ParseFailed, "Nie rozpoznano typu wyprawy!"));

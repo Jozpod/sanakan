@@ -161,7 +161,7 @@ namespace Sanakan.Services.Session.Models
                     continue;
                 }
 
-                if (card.Expedition != CardExpedition.None)
+                if (card.Expedition != ExpeditionCardType.None)
                 {
                     error = true;
                     continue;

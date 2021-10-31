@@ -258,6 +258,88 @@
         }
       }
     },
+    "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\Game\\Game.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\Game\\Game.csproj",
+        "projectName": "Sanakan.Game",
+        "projectPath": "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\Game\\Game.csproj",
+        "packagesPath": "C:\\Users\\jozefpodlecki\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\Game\\obj\\",
+        "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\jozefpodlecki\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net5.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net5.0": {
+            "targetAlias": "net5.0",
+            "projectReferences": {
+              "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\DAL\\DAL.csproj": {
+                "projectPath": "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\DAL\\DAL.csproj"
+              },
+              "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\ShindenApi\\ShindenApi.csproj": {
+                "projectPath": "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\ShindenApi\\ShindenApi.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "net5.0": {
+          "targetAlias": "net5.0",
+          "dependencies": {
+            "Discord.Net": {
+              "target": "Package",
+              "version": "[2.4.0, )"
+            },
+            "Microsoft.Extensions.DependencyInjection": {
+              "target": "Package",
+              "version": "[5.0.2, )"
+            },
+            "Microsoft.Extensions.Options": {
+              "target": "Package",
+              "version": "[5.0.0, )"
+            },
+            "SixLabors.ImageSharp.Drawing": {
+              "target": "Package",
+              "version": "[1.0.0-beta0006, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.402\\RuntimeIdentifierGraph.json"
+        }
+      }
+    },
     "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\ShindenApi\\ShindenApi.csproj": {
       "version": "0.0.1",
       "restore": {
@@ -374,6 +456,9 @@
               },
               "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\DAL\\DAL.csproj": {
                 "projectPath": "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\DAL\\DAL.csproj"
+              },
+              "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\Game\\Game.csproj": {
+                "projectPath": "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\Game\\Game.csproj"
               }
             }
           }

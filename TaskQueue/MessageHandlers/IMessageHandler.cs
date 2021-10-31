@@ -1,7 +1,7 @@
 ﻿using Sanakan.TaskQueue.Messages;
 using System.Threading.Tasks;
 
-namespace Sanakan.Web.MessageHandlers
+namespace Sanakan.TaskQueue.MessageHandlers
 {
     public interface IMessageHandler<T>
         where T: BaseMessage

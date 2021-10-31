@@ -172,7 +172,7 @@ namespace Sanakan.Extensions
             }
         }
 
-        public static void Count(this TimeStatus status, DateTime currentDate, int times = 1)
+        public static void Count(this TimeStatus status, DateTime currentDate, uint times = 1)
         {
             if (status.Type.IsQuest())
             {
@@ -197,14 +197,19 @@ namespace Sanakan.Extensions
                 }
             }
 
-            var max = status.Type.ToComplete();
+            var max = (ulong)status.Type.ToComplete();
             if (max > 0 && status.IValue > max)
+            {
                 status.IValue = max;
+            }
         }
 
         public static void Claim(this TimeStatus status, User user)
         {
-            if (status.BValue) return;
+            if (status.BValue)
+            {
+                return;
+            }
 
             status.BValue = true;
 
@@ -247,7 +252,7 @@ namespace Sanakan.Extensions
 
         public static bool CanClaim(this TimeStatus status, DateTime dateTime)
             => status.IsActive(dateTime) && !status.BValue
-            && status.Type.IsQuest() && status.IValue >= status.Type.ToComplete();
+            && status.Type.IsQuest() && status.IValue >= (uint)status.Type.ToComplete();
 
         public static double RemainingMinutes(this TimeStatus status, DateTime dateTime)
             => (status.EndsAt.Value - dateTime).TotalMinutes;
@@ -259,8 +264,8 @@ namespace Sanakan.Extensions
         {
             if (status.Type.IsQuest())
             {
-                long max = status.Type.ToComplete();
-                long actualProgress = status.IsActive(dateTime) ? status.IValue : 0;
+                var max = (uint)status.Type.ToComplete();
+                var actualProgress = status.IsActive(dateTime) ? status.IValue : 0;
 
                 var progress = (actualProgress >= max) ? (status.BValue ? _claimed.ToString() : _toClaim.ToString())
                     : $"[{actualProgress}/{status.Type.ToComplete()}]";
@@ -271,7 +276,7 @@ namespace Sanakan.Extensions
                 return $"{status.Type.Icon()} **{status.Type.Name()}** {progress}{reward}";
             }
 
-            var dateValue = status.EndsAt.ToShortDateTime();
+            var dateValue = status.EndsAt.Value.ToShortDateTime();
 
             if (status.HasEnded(dateTime))
             {

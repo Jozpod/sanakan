@@ -321,7 +321,7 @@ namespace Sanakan.Modules
             }
 
             var imageCount = 0;
-            var itemCnt = 1;
+            var itemCount = 1;
             var bUser = await _userRepository.GetUserOrCreateAsync(discordUser.Id);
             var itemList = bUser.GameDeck.Items.OrderBy(x => x.Type).ToList();
 
@@ -337,11 +337,11 @@ namespace Sanakan.Modules
                 return;
             }
 
-            var dis = int.TryParse(detail, out itemCnt);
-            if (itemCnt < 1)
+            var dis = int.TryParse(detail, out itemCount);
+            if (itemCount < 1)
             {
                 dis = false;
-                itemCnt = 1;
+                itemCount = 1;
             }
 
             var item = itemList[itemNumber - 1];
@@ -362,18 +362,18 @@ namespace Sanakan.Modules
                 case ItemType.ChangeCardImage:
                     if (dis)
                     {
-                        imageCount = itemCnt;
+                        imageCount = itemCount;
                     }
 
                     if (imageCount < 0)
                     {
                         imageCount = 0;
                     }
-                    itemCnt = 1;
+                    itemCount = 1;
                     break;
 
                 default:
-                    if (itemCnt != 1)
+                    if (itemCount != 1)
                     {
                         await ReplyAsync("", embed: $"{discordUser.Mention} możesz użyć tylko jeden przedmiot tego typu na raz!".ToEmbedMessage(EMType.Error).Build());
                         return;
@@ -381,7 +381,7 @@ namespace Sanakan.Modules
                     break;
             }
 
-            if (item.Count < itemCnt)
+            if (item.Count < itemCount)
             {
                 await ReplyAsync("", embed: $"{discordUser.Mention} nie posiadasz tylu sztuk tego przedmiotu.".ToEmbedMessage(EMType.Error).Build());
                 return;
@@ -396,7 +396,7 @@ namespace Sanakan.Modules
                 return;
             }
 
-            if (card.Expedition != CardExpedition.None && !noCardOperation)
+            if (card.Expedition != ExpeditionCardType.None && !noCardOperation)
             {
                 await ReplyAsync("", embed: $"{discordUser.Mention} ta karta jest na wyprawie!".ToEmbedMessage(EMType.Error).Build());
                 return;
@@ -429,9 +429,9 @@ namespace Sanakan.Modules
 
             double karmaChange = 0;
             var consumeItem = true;
-            var cnt = (itemCnt > 1) ? $"x{itemCnt}" : "";
+            var cnt = (itemCount > 1) ? $"x{itemCount}" : "";
             var bonusFromQ = item.Quality.GetQualityModifier();
-            var affectionInc = item.Type.BaseAffection() * itemCnt;
+            var affectionInc = item.Type.BaseAffection() * itemCount;
             var textRelation = noCardOperation ? "" : card.GetAffectionString();
             var cardString = noCardOperation ? "" : " na " + card.GetString(false, false, true);
             var embed = new EmbedBuilder
@@ -446,40 +446,40 @@ namespace Sanakan.Modules
             switch (item.Type)
             {
                 case ItemType.AffectionRecoveryGreat:
-                    karmaChange += 0.3 * itemCnt;
+                    karmaChange += 0.3 * itemCount;
                     embed.Description += "Bardzo powiększyła się relacja z kartą!";
                     break;
 
                 case ItemType.AffectionRecoveryBig:
-                    karmaChange += 0.1 * itemCnt;
+                    karmaChange += 0.1 * itemCount;
                     embed.Description += "Znacznie powiększyła się relacja z kartą!";
                     break;
 
                 case ItemType.AffectionRecoveryNormal:
-                    karmaChange += 0.01 * itemCnt;
+                    karmaChange += 0.01 * itemCount;
                     embed.Description += "Powiększyła się relacja z kartą!";
                     break;
 
                 case ItemType.AffectionRecoverySmall:
-                    karmaChange += 0.001 * itemCnt;
+                    karmaChange += 0.001 * itemCount;
                     embed.Description += "Powiększyła się trochę relacja z kartą!";
                     break;
 
                 case ItemType.IncreaseExpSmall:
-                    var exS = 1.5 * itemCnt;
+                    var exS = 1.5 * itemCount;
                     exS += exS * bonusFromQ;
 
                     card.ExpCount += exS;
-                    karmaChange += 0.1 * itemCnt;
+                    karmaChange += 0.1 * itemCount;
                     embed.Description += "Twoja karta otrzymała odrobinę punktów doświadczenia!";
                     break;
 
                 case ItemType.IncreaseExpBig:
-                    var exB = 5d * itemCnt;
+                    var exB = 5d * itemCount;
                     exB += exB * bonusFromQ;
 
                     card.ExpCount += exB;
-                    karmaChange += 0.3 * itemCnt;
+                    karmaChange += 0.3 * itemCount;
                     embed.Description += "Twoja karta otrzymała punkty doświadczenia!";
                     break;
 
@@ -493,7 +493,7 @@ namespace Sanakan.Modules
                         await ReplyAsync("", embed: "Nie rozpoznano typu gwiazdki!".ToEmbedMessage(EMType.Error).Build());
                         return;
                     }
-                    karmaChange += 0.001 * itemCnt;
+                    karmaChange += 0.001 * itemCount;
                     embed.Description += "Zmieniono typ gwiazdki!";
                     _waifu.DeleteCardImageIfExist(card);
                     break;
@@ -555,7 +555,7 @@ namespace Sanakan.Modules
 
                         card.CustomImage = string.Empty;
                     }
-                    karmaChange += 0.001 * itemCnt;
+                    karmaChange += 0.001 * itemCount;
                     embed.Description += "Ustawiono nowy obrazek.";
                     _waifu.DeleteCardImageIfExist(card);
                     break;
@@ -573,7 +573,7 @@ namespace Sanakan.Modules
                     }
                     card.CustomImage = detail;
                     consumeItem = !card.FromFigure;
-                    karmaChange += 0.001 * itemCnt;
+                    karmaChange += 0.001 * itemCount;
                     embed.Description += "Ustawiono nowy obrazek. Pamiętaj jednak, że dodanie nieodpowiedniego obrazka może skutkować skasowaniem karty!";
                     _waifu.DeleteCardImageIfExist(card);
                     break;
@@ -590,7 +590,7 @@ namespace Sanakan.Modules
                         return;
                     }
                     card.CustomBorder = detail;
-                    karmaChange += 0.001 * itemCnt;
+                    karmaChange += 0.001 * itemCount;
                     embed.Description += "Ustawiono nowy obrazek jako ramkę. Pamiętaj jednak, że dodanie nieodpowiedniego obrazka może skutkować skasowaniem karty!";
                     _waifu.DeleteCardImageIfExist(card);
                     break;
@@ -652,13 +652,13 @@ namespace Sanakan.Modules
                         await ReplyAsync("", embed: $"{invokingUserMention} karty **SSS** nie można już ulepszyć!".ToEmbedMessage(EMType.Error).Build());
                         return;
                     }
-                    if (card.UpgradesCount + itemCnt > 5)
+                    if (card.UpgradesCount + itemCount > 5)
                     {
                         await ReplyAsync("", embed: $"{invokingUserMention} nie można mieć więcej jak pięć ulepszeń dostępnych na karcie.".ToEmbedMessage(EMType.Error).Build());
                         return;
                     }
-                    karmaChange += itemCnt;
-                    card.UpgradesCount += itemCnt;
+                    karmaChange += itemCount;
+                    card.UpgradesCount += itemCount;
                     embed.Description += $"Zwiększono liczbę ulepszeń do {card.UpgradesCount}!";
                     break;
 
@@ -668,14 +668,14 @@ namespace Sanakan.Modules
                         await ReplyAsync("", embed: $"{invokingUserMention} na tej karcie ciąży klątwa!".ToEmbedMessage(EMType.Error).Build());
                         return;
                     }
-                    karmaChange += 0.02 * itemCnt;
+                    karmaChange += 0.02 * itemCount;
                     card.Dere = WaifuService.RandomizeDere(_randomNumberGenerator);
                     embed.Description += $"Nowy charakter to: {card.Dere}!";
                     _waifu.DeleteCardImageIfExist(card);
                     break;
 
                 case ItemType.CardParamsReRoll:
-                    karmaChange += 0.03 * itemCnt;
+                    karmaChange += 0.03 * itemCount;
                     card.Attack = WaifuService.RandomizeAttack(_randomNumberGenerator, card.Rarity);
                     card.Defence = WaifuService.RandomizeDefence(_randomNumberGenerator, card.Rarity);
                     embed.Description += $"Nowa moc karty to: 🔥{card.GetAttackWithBonus()} 🛡{card.GetDefenceWithBonus()}!";
@@ -765,7 +765,7 @@ namespace Sanakan.Modules
                 mission = new TimeStatus(StatusType.DUsedItems);
                 bUser.TimeStatuses.Add(mission);
             }
-            mission.Count(itemCnt);
+            mission.Count(_systemClock.UtcNow, itemCount);
 
             if (!noCardOperation && card.Dere == Dere.Tsundere)
                 affectionInc *= 1.2;
@@ -774,7 +774,7 @@ namespace Sanakan.Modules
                 affectionInc += affectionInc * bonusFromQ;
 
             if (consumeItem)
-                item.Count -= itemCnt;
+                item.Count -= itemCount;
 
             if (!noCardOperation)
             {
@@ -875,7 +875,7 @@ namespace Sanakan.Modules
                     return;
                 }
 
-                mission.Count();
+                mission.Count(_systemClock.UtcNow);
 
                 if (pack.CardSourceFromPack == CardSource.Activity || pack.CardSourceFromPack == CardSource.Migration)
                 {
@@ -949,7 +949,7 @@ namespace Sanakan.Modules
                 return;
             }
 
-            if (card.Expedition != CardExpedition.None)
+            if (card.Expedition != ExpeditionCardType.None)
             {
                 await ReplyAsync("", embed: $"{Context.User.Mention} ta karta jest na wyprawie!".ToEmbedMessage(EMType.Error).Build());
                 return;
@@ -1081,7 +1081,7 @@ namespace Sanakan.Modules
                 return;
             }
 
-            if (card.Expedition != CardExpedition.None)
+            if (card.Expedition != ExpeditionCardType.None)
             {
                 await ReplyAsync("", embed: $"{Context.User.Mention} ta karta jest na wyprawie!".ToEmbedMessage(EMType.Error).Build());
                 return;
@@ -1167,7 +1167,7 @@ namespace Sanakan.Modules
             var broken = new List<Card>();
             foreach (var card in cardsToSac)
             {
-                if (card.InCage || card.HasTag("ulubione") || card.FromFigure || card.Expedition != CardExpedition.None)
+                if (card.InCage || card.HasTag("ulubione") || card.FromFigure || card.Expedition != ExpeditionCardType.None)
                 {
                     broken.Add(card);
                     continue;
@@ -1229,7 +1229,7 @@ namespace Sanakan.Modules
             var broken = new List<Card>();
             foreach (var card in cardsToSac)
             {
-                if (card.InCage || card.HasTag("ulubione") || card.FromFigure || card.Expedition != CardExpedition.None)
+                if (card.InCage || card.HasTag("ulubione") || card.FromFigure || card.Expedition != ExpeditionCardType.None)
                 {
                     broken.Add(card);
                     continue;
@@ -1418,9 +1418,11 @@ namespace Sanakan.Modules
                 botuser.TimeStatuses.Add(freeCard);
             }
 
-            if (freeCard.IsActive(_systemClock.UtcNow))
+            var utcNow = _systemClock.UtcNow;
+
+            if (freeCard.IsActive(utcNow))
             {
-                var timeTo = (int)freeCard.RemainingMinutes();
+                var timeTo = (int)freeCard.RemainingMinutes(utcNow);
                 await ReplyAsync("", embed: $"{Context.User.Mention} możesz otrzymać następną darmową kartę dopiero za {timeTo / 60}h {timeTo % 60}m!".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
@@ -1437,7 +1439,7 @@ namespace Sanakan.Modules
                 mission = new TimeStatus(StatusType.WCardPlus);
                 botuser.TimeStatuses.Add(mission);
             }
-            mission.Count();
+            mission.Count(utcNow);
 
             freeCard.EndsAt = _systemClock.UtcNow.AddHours(22);
 
@@ -1487,7 +1489,7 @@ namespace Sanakan.Modules
                 return;
             }
 
-            if (card.Expedition != CardExpedition.None)
+            if (card.Expedition != ExpeditionCardType.None)
             {
                 await ReplyAsync("", embed: $"{Context.User.Mention} ta karta jest na wyprawie!".ToEmbedMessage(EMType.Error).Build());
                 return;
@@ -1521,7 +1523,7 @@ namespace Sanakan.Modules
                 mission = new TimeStatus(StatusType.DMarket);
                 botuser.TimeStatuses.Add(mission);
             }
-            mission.Count();
+            mission.Count(utcNow);
 
             int nextMarket = 20 - (int)(botuser.GameDeck.Karma / 100);
             if (nextMarket > 22) nextMarket = 22;
@@ -1610,7 +1612,7 @@ namespace Sanakan.Modules
                 return;
             }
 
-            if (card.Expedition != CardExpedition.None)
+            if (card.Expedition != ExpeditionCardType.None)
             {
                 await ReplyAsync("", embed: $"{Context.User.Mention} ta karta jest na wyprawie!".ToEmbedMessage(EMType.Error).Build());
                 return;
@@ -1640,7 +1642,7 @@ namespace Sanakan.Modules
                 mission = new TimeStatus(StatusType.DMarket);
                 botuser.TimeStatuses.Add(mission);
             }
-            mission.Count();
+            mission.Count(utcNow);
 
             int nextMarket = 20 + (int)(botuser.GameDeck.Karma / 100);
             if (nextMarket > 22) nextMarket = 22;
@@ -1734,7 +1736,7 @@ namespace Sanakan.Modules
                 return;
             }
 
-            if (cardToUp.Expedition != CardExpedition.None)
+            if (cardToUp.Expedition != ExpeditionCardType.None)
             {
                 await ReplyAsync("", embed: $"{Context.User.Mention} ta karta jest na wyprawie!".ToEmbedMessage(EMType.Error).Build());
                 return;
@@ -1748,7 +1750,7 @@ namespace Sanakan.Modules
                     || card.InCage 
                     || card.HasTag("ulubione") 
                     || card.FromFigure 
-                    || card.Expedition != CardExpedition.None)
+                    || card.Expedition != ExpeditionCardType.None)
                 {
                     broken.Add(card);
                     continue;
@@ -2326,7 +2328,7 @@ namespace Sanakan.Modules
                 return;
             }
 
-            if (thisCard.Expedition != CardExpedition.None)
+            if (thisCard.Expedition != ExpeditionCardType.None)
             {
                 await ReplyAsync("", embed: $"{Context.User.Mention} ta karta jest na wyprawie!".ToEmbedMessage(EMType.Error).Build());
                 return;
@@ -3173,7 +3175,7 @@ namespace Sanakan.Modules
             var cardsOnExpedition = botUser
                 .GameDeck
                 .Cards
-                .Where(x => x.Expedition != CardExpedition.None)
+                .Where(x => x.Expedition != ExpeditionCardType.None)
                 .ToList();
 
             if (cardsOnExpedition.Count < 1)
@@ -3204,7 +3206,7 @@ namespace Sanakan.Modules
                 return;
             }
 
-            if (thisCard.Expedition == CardExpedition.None)
+            if (thisCard.Expedition == ExpeditionCardType.None)
             {
                 await ReplyAsync("", embed: $"{Context.User.Mention} ta karta nie jest na wyprawie.".ToEmbedMessage(EMType.Error).Build());
                 return;
@@ -3232,9 +3234,9 @@ namespace Sanakan.Modules
         [Remarks("11321 n"), RequireWaifuFightChannel]
         public async Task SendCardToExpeditionAsync(
             [Summary("WID")]ulong wid,
-            [Summary("typ wyprawy")]CardExpedition expedition = CardExpedition.None)
+            [Summary("typ wyprawy")]ExpeditionCardType expedition = ExpeditionCardType.None)
         {
-            if (expedition == CardExpedition.None)
+            if (expedition == ExpeditionCardType.None)
             {
                 await ReplyAsync("", embed: $"{Context.User.Mention} nie podałeś poprawnej nazwy wyprawy.".ToEmbedMessage(EMType.Error).Build());
                 return;
@@ -3250,7 +3252,7 @@ namespace Sanakan.Modules
                 return;
             }
 
-            var cardsOnExp = botUser.GameDeck.Cards.Count(x => x.Expedition != CardExpedition.None);
+            var cardsOnExp = botUser.GameDeck.Cards.Count(x => x.Expedition != ExpeditionCardType.None);
             if (cardsOnExp >= botUser.GameDeck.LimitOfCardsOnExpedition())
             {
                 await ReplyAsync("", embed: $"{Context.User.Mention} nie możesz wysłać więcej kart na wyprawę.".ToEmbedMessage(EMType.Error).Build());
@@ -3271,10 +3273,13 @@ namespace Sanakan.Modules
                 mission = new TimeStatus(StatusType.DExpeditions);
                 botUser.TimeStatuses.Add(mission);
             }
-            mission.Count();
+
+            var utcNow = _systemClock.UtcNow;
+
+            mission.Count(utcNow);
 
             thisCard.Expedition = expedition;
-            thisCard.ExpeditionDate = _systemClock.UtcNow;
+            thisCard.ExpeditionDate = utcNow;
 
             await _userRepository.SaveChangesAsync();
 
@@ -3283,7 +3288,9 @@ namespace Sanakan.Modules
             _ = Task.Run(async () =>
             {
                 var max = thisCard.CalculateMaxTimeOnExpeditionInMinutes(botUser.GameDeck.Karma, expedition).ToString("F");
-                await ReplyAsync("", embed: $"{thisCard.GetString(false, false, true)} udała się na {expedition.GetName("ą")} wyprawę!\nZmęczy się za {max} min.".ToEmbedMessage(EMType.Success).WithUser(Context.User).Build());
+                await ReplyAsync("", embed: $"{thisCard.GetString(false, false, true)} udała się na {expedition.GetName("ą")} wyprawę!\nZmęczy się za {max} min."
+                    .ToEmbedMessage(EMType.Success)
+                    .WithUser(Context.User).Build());
             });
         }
 
@@ -3404,7 +3411,7 @@ namespace Sanakan.Modules
                 mission = new TimeStatus(StatusType.DPvp);
                 duser.TimeStatuses.Add(mission);
             }
-            mission.Count();
+            mission.Count(utcNow);
 
             var info = duser.GameDeck.CalculatePVPParams(denemy.GameDeck, res);
             await _userRepository.SaveChangesAsync();
@@ -3583,30 +3590,31 @@ namespace Sanakan.Modules
                 return;
             }
 
-            var bUser = await _userRepository.GetCachedFullUserAsync(user.Id);
-            if (bUser == null)
+            var databaseUser = await _userRepository.GetCachedFullUserAsync(user.Id);
+            if (databaseUser == null)
             {
                 await ReplyAsync("", embed: "Ta osoba nie ma profilu bota.".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
-            var sssCnt = bUser.GameDeck.Cards.Count(x => x.Rarity == Rarity.SSS);
-            var ssCnt = bUser.GameDeck.Cards.Count(x => x.Rarity == Rarity.SS);
-            var sCnt = bUser.GameDeck.Cards.Count(x => x.Rarity == Rarity.S);
-            var aCnt = bUser.GameDeck.Cards.Count(x => x.Rarity == Rarity.A);
-            var bCnt = bUser.GameDeck.Cards.Count(x => x.Rarity == Rarity.B);
-            var cCnt = bUser.GameDeck.Cards.Count(x => x.Rarity == Rarity.C);
-            var dCnt = bUser.GameDeck.Cards.Count(x => x.Rarity == Rarity.D);
-            var eCnt = bUser.GameDeck.Cards.Count(x => x.Rarity == Rarity.E);
+            var cards = databaseUser.GameDeck.Cards;
+            var sssCnt = cards.Count(x => x.Rarity == Rarity.SSS);
+            var ssCnt = cards.Count(x => x.Rarity == Rarity.SS);
+            var sCnt = cards.Count(x => x.Rarity == Rarity.S);
+            var aCnt = cards.Count(x => x.Rarity == Rarity.A);
+            var bCnt = cards.Count(x => x.Rarity == Rarity.B);
+            var cCnt = cards.Count(x => x.Rarity == Rarity.C);
+            var dCnt = cards.Count(x => x.Rarity == Rarity.D);
+            var eCnt = cards.Count(x => x.Rarity == Rarity.E);
 
-            var aPvp = bUser.GameDeck?.PvPStats?.Count(x => x.Type == FightType.NewVersus);
-            var wPvp = bUser.GameDeck?.PvPStats?.Count(x => x.Result == FightResult.Win && x.Type == FightType.NewVersus);
+            var aPvp = databaseUser.GameDeck?.PvPStats?.Count(x => x.Type == FightType.NewVersus);
+            var wPvp = databaseUser.GameDeck?.PvPStats?.Count(x => x.Result == FightResult.Win && x.Type == FightType.NewVersus);
 
             var seasonString = "----";
-            if (bUser.GameDeck.IsPVPSeasonalRankActive())
-                seasonString = $"{bUser.GameDeck.GetRankName()} ({bUser.GameDeck.SeasonalPVPRank})";
+            if (databaseUser.GameDeck.IsPVPSeasonalRankActive())
+                seasonString = $"{databaseUser.GameDeck.GetRankName()} ({databaseUser.GameDeck.SeasonalPVPRank})";
 
-            var globalString = $"{bUser.GameDeck.GetRankName(bUser.GameDeck.GlobalPVPRank)} ({bUser.GameDeck.GlobalPVPRank})";
+            var globalString = $"{databaseUser.GameDeck.GetRankName(databaseUser.GameDeck.GlobalPVPRank)} ({databaseUser.GameDeck.GlobalPVPRank})";
 
             var sssString = "";
             if (sssCnt > 0)
@@ -3616,20 +3624,20 @@ namespace Sanakan.Modules
             {
                 Color = EMType.Bot.Color(),
                 Author = new EmbedAuthorBuilder().WithUser(user),
-                Description = $"*{bUser.GameDeck.GetUserNameStatus()}*\n\n"
-                            + $"**Skrzynia({(int)bUser.GameDeck.ExpContainer.Level})**: {bUser.GameDeck.ExpContainer.ExperienceCount.ToString("F")}\n"
-                            + $"**Uwolnione**: {bUser.Stats.ReleasedCards}\n**Zniszczone**: {bUser.Stats.DestroyedCards}\n**Poświęcone**: {bUser.Stats.SacraficeCards}\n**Ulepszone**: {bUser.Stats.UpgaredCards}\n**Wyzwolone**: {bUser.Stats.UnleashedCards}\n\n"
-                            + $"**CT**: {bUser.GameDeck.CTCount}\n**Karma**: {bUser.GameDeck.Karma.ToString("F")}\n\n**Posiadane karty**: {bUser.GameDeck.Cards.Count}\n"
+                Description = $"*{databaseUser.GameDeck.GetUserNameStatus()}*\n\n"
+                            + $"**Skrzynia({(int)databaseUser.GameDeck.ExpContainer.Level})**: {databaseUser.GameDeck.ExpContainer.ExperienceCount.ToString("F")}\n"
+                            + $"**Uwolnione**: {databaseUser.Stats.ReleasedCards}\n**Zniszczone**: {databaseUser.Stats.DestroyedCards}\n**Poświęcone**: {databaseUser.Stats.SacraficeCards}\n**Ulepszone**: {databaseUser.Stats.UpgaredCards}\n**Wyzwolone**: {databaseUser.Stats.UnleashedCards}\n\n"
+                            + $"**CT**: {databaseUser.GameDeck.CTCount}\n**Karma**: {databaseUser.GameDeck.Karma.ToString("F")}\n\n**Posiadane karty**: {databaseUser.GameDeck.Cards.Count}\n"
                             + $"{sssString}**SS**: {ssCnt} **S**: {sCnt} **A**: {aCnt} **B**: {bCnt} **C**: {cCnt} **D**: {dCnt} **E**:{eCnt}\n\n"
                             + $"**PVP** Rozegrane: {aPvp} Wygrane: {wPvp}\n**GR**: {globalString}\n**SR**: {seasonString}"
             };
 
-            if (bUser.GameDeck?.Waifu != 0)
+            if (databaseUser.GameDeck?.Waifu != 0)
             {
-                var tChar = bUser.GameDeck
+                var tChar = databaseUser.GameDeck
                     .Cards
                     .OrderBy(x => x.Rarity)
-                    .FirstOrDefault(x => x.CharacterId == bUser.GameDeck.Waifu);
+                    .FirstOrDefault(x => x.CharacterId == databaseUser.GameDeck.Waifu);
 
                 if (tChar != null)
                 {

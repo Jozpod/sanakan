@@ -88,9 +88,9 @@ namespace Sanakan.Services.PocketWaifu
             { 0.5,      0.5,      0.5,      0.5,     0.5,     0.5,     0.5,      0.5,    1,    0.5,   1     }, //Yato
         };
 
-        private static Dictionary<CardExpedition, Dictionary<ItemType, Tuple<int, int>>> _chanceOfItemsInExpedition = new Dictionary<CardExpedition, Dictionary<ItemType, Tuple<int, int>>>
+        private static Dictionary<ExpeditionCardType, Dictionary<ItemType, Tuple<int, int>>> _chanceOfItemsInExpedition = new Dictionary<ExpeditionCardType, Dictionary<ItemType, Tuple<int, int>>>
         {
-            {CardExpedition.NormalItemWithExp, new Dictionary<ItemType, Tuple<int, int>>
+            {ExpeditionCardType.NormalItemWithExp, new Dictionary<ItemType, Tuple<int, int>>
                 {
                     {ItemType.AffectionRecoverySmall,   new Tuple<int, int>(0,    4049)},
                     {ItemType.AffectionRecoveryNormal,  new Tuple<int, int>(4049, 6949)},
@@ -104,7 +104,7 @@ namespace Sanakan.Services.PocketWaifu
                     {ItemType.BetterIncreaseUpgradeCnt, new Tuple<int, int>(-3,   -4)},
                 }
             },
-            {CardExpedition.ExtremeItemWithExp, new Dictionary<ItemType, Tuple<int, int>>
+            {ExpeditionCardType.ExtremeItemWithExp, new Dictionary<ItemType, Tuple<int, int>>
                 {
                     {ItemType.AffectionRecoverySmall,   new Tuple<int, int>(-1,   -2)},
                     {ItemType.AffectionRecoveryNormal,  new Tuple<int, int>(0,    3499)},
@@ -118,7 +118,7 @@ namespace Sanakan.Services.PocketWaifu
                     {ItemType.BetterIncreaseUpgradeCnt, new Tuple<int, int>(9799, 10000)},
                 }
             },
-            {CardExpedition.DarkItems, new Dictionary<ItemType, Tuple<int, int>>
+            {ExpeditionCardType.DarkItems, new Dictionary<ItemType, Tuple<int, int>>
                 {
                     {ItemType.AffectionRecoverySmall,   new Tuple<int, int>(0,    1999)},
                     {ItemType.AffectionRecoveryNormal,  new Tuple<int, int>(1999, 5999)},
@@ -132,7 +132,7 @@ namespace Sanakan.Services.PocketWaifu
                     {ItemType.BetterIncreaseUpgradeCnt, new Tuple<int, int>(9849, 10000)},
                 }
             },
-            {CardExpedition.DarkItemWithExp, new Dictionary<ItemType, Tuple<int, int>>
+            {ExpeditionCardType.DarkItemWithExp, new Dictionary<ItemType, Tuple<int, int>>
                 {
                     {ItemType.AffectionRecoverySmall,   new Tuple<int, int>(0,    2499)},
                     {ItemType.AffectionRecoveryNormal,  new Tuple<int, int>(2499, 5999)},
@@ -146,7 +146,7 @@ namespace Sanakan.Services.PocketWaifu
                     {ItemType.BetterIncreaseUpgradeCnt, new Tuple<int, int>(-3,   -4)},
                 }
             },
-            {CardExpedition.LightItems, new Dictionary<ItemType, Tuple<int, int>>
+            {ExpeditionCardType.LightItems, new Dictionary<ItemType, Tuple<int, int>>
                 {
                     {ItemType.AffectionRecoverySmall,   new Tuple<int, int>(0,    3799)},
                     {ItemType.AffectionRecoveryNormal,  new Tuple<int, int>(3799, 6699)},
@@ -160,7 +160,7 @@ namespace Sanakan.Services.PocketWaifu
                     {ItemType.BetterIncreaseUpgradeCnt, new Tuple<int, int>(9899, 10000)},
                 }
             },
-            {CardExpedition.LightItemWithExp, new Dictionary<ItemType, Tuple<int, int>>
+            {ExpeditionCardType.LightItemWithExp, new Dictionary<ItemType, Tuple<int, int>>
                 {
                     {ItemType.AffectionRecoverySmall,   new Tuple<int, int>(0,    3799)},
                     {ItemType.AffectionRecoveryNormal,  new Tuple<int, int>(3799, 6399)},
@@ -652,7 +652,7 @@ namespace Sanakan.Services.PocketWaifu
                     var booster = thisItem.Item.Type.ToBoosterPack();
                     if (boosterPackTitleId != 0)
                     {
-                        booster.Title = boosterPackTitleId;
+                        booster.TitleId = boosterPackTitleId;
                         booster.Name += boosterPackTitleName;
                     }
                     if (booster != null)
@@ -1229,9 +1229,9 @@ namespace Sanakan.Services.PocketWaifu
                         characterInfo = result.Value;
                     }
                 }
-                else if (pack.Title != 0)
+                else if (pack.TitleId != 0)
                 {
-                    var charactersResult = await _shindenClient.GetCharactersAsync(pack.Title);
+                    var charactersResult = await _shindenClient.GetCharactersAsync(pack.TitleId);
                     
                     if (charactersResult != null)
                     {
@@ -1648,39 +1648,39 @@ namespace Sanakan.Services.PocketWaifu
             return new Tuple<double, double>(durationMin, realMin);
         }
 
-        public double GetBaseItemsPerMinuteFromExpedition(CardExpedition expedition, Rarity rarity)
+        public double GetBaseItemsPerMinuteFromExpedition(ExpeditionCardType expedition, Rarity rarity)
         {
             var cnt = 0d;
 
             switch (expedition)
             {
-                case CardExpedition.NormalItemWithExp:
+                case ExpeditionCardType.NormalItemWithExp:
                     cnt = 1.9;
                     break;
 
-                case CardExpedition.ExtremeItemWithExp:
+                case ExpeditionCardType.ExtremeItemWithExp:
                     cnt = 10.1;
                     break;
 
-                case CardExpedition.LightItemWithExp:
-                case CardExpedition.DarkItemWithExp:
+                case ExpeditionCardType.LightItemWithExp:
+                case ExpeditionCardType.DarkItemWithExp:
                     cnt = 4.2;
                     break;
 
-                case CardExpedition.DarkItems:
-                case CardExpedition.LightItems:
+                case ExpeditionCardType.DarkItems:
+                case ExpeditionCardType.LightItems:
                     cnt = 7.2;
                     break;
 
-                case CardExpedition.LightExp:
-                case CardExpedition.DarkExp:
+                case ExpeditionCardType.LightExp:
+                case ExpeditionCardType.DarkExp:
                     return 0;
 
                 default:
-                case CardExpedition.UltimateEasy:
-                case CardExpedition.UltimateMedium:
-                case CardExpedition.UltimateHard:
-                case CardExpedition.UltimateHardcore:
+                case ExpeditionCardType.UltimateEasy:
+                case ExpeditionCardType.UltimateMedium:
+                case ExpeditionCardType.UltimateHard:
+                case ExpeditionCardType.UltimateHardcore:
                     return 0;
             }
 
@@ -1689,39 +1689,39 @@ namespace Sanakan.Services.PocketWaifu
             return cnt / 60d;
         }
 
-        public double GetBaseExpPerMinuteFromExpedition(CardExpedition expedition, Rarity rarity)
+        public double GetBaseExpPerMinuteFromExpedition(ExpeditionCardType expedition, Rarity rarity)
         {
             var baseExp = 0d;
 
             switch (expedition)
             {
-                case CardExpedition.NormalItemWithExp:
+                case ExpeditionCardType.NormalItemWithExp:
                     baseExp = 1.6;
                     break;
 
-                case CardExpedition.ExtremeItemWithExp:
+                case ExpeditionCardType.ExtremeItemWithExp:
                     baseExp = 5.8;
                     break;
 
-                case CardExpedition.LightItemWithExp:
-                case CardExpedition.DarkItemWithExp:
+                case ExpeditionCardType.LightItemWithExp:
+                case ExpeditionCardType.DarkItemWithExp:
                     baseExp = 3.1;
                     break;
 
-                case CardExpedition.LightExp:
-                case CardExpedition.DarkExp:
+                case ExpeditionCardType.LightExp:
+                case ExpeditionCardType.DarkExp:
                     baseExp = 11.6;
                     break;
 
-                case CardExpedition.DarkItems:
-                case CardExpedition.LightItems:
+                case ExpeditionCardType.DarkItems:
+                case ExpeditionCardType.LightItems:
                     return 0.0001;
 
                 default:
-                case CardExpedition.UltimateEasy:
-                case CardExpedition.UltimateMedium:
-                case CardExpedition.UltimateHard:
-                case CardExpedition.UltimateHardcore:
+                case ExpeditionCardType.UltimateEasy:
+                case ExpeditionCardType.UltimateMedium:
+                case ExpeditionCardType.UltimateHard:
+                case ExpeditionCardType.UltimateHardcore:
                     return 0;
             }
 
@@ -1831,39 +1831,39 @@ namespace Sanakan.Services.PocketWaifu
                 reward += $"\n\nRT: {duration.Item1.ToString("F")} E: {totalExp.ToString("F")} AI: {minAff.ToString("F")} A: {affectionCost.ToString("F")} K: {karmaCost.ToString("F")} MI: {totalItemsCnt}";
             }
 
-            card.Expedition = CardExpedition.None;
+            card.Expedition = ExpeditionCardType.None;
             user.GameDeck.Karma -= karmaCost;
 
             return reward;
         }
 
-        private bool CheckEventInExpedition(CardExpedition expedition, Tuple<double, double> duration)
+        private bool CheckEventInExpedition(ExpeditionCardType expedition, Tuple<double, double> duration)
         {
             switch (expedition)
             {
-                case CardExpedition.NormalItemWithExp:
+                case ExpeditionCardType.NormalItemWithExp:
                     return _randomNumberGenerator.TakeATry(10);
 
-                case CardExpedition.ExtremeItemWithExp:
+                case ExpeditionCardType.ExtremeItemWithExp:
                     if (duration.Item1 > 60 || duration.Item2 > 600)
                         return true;
                     return !_randomNumberGenerator.TakeATry(5);
 
-                case CardExpedition.LightItemWithExp:
-                case CardExpedition.DarkItemWithExp:
+                case ExpeditionCardType.LightItemWithExp:
+                case ExpeditionCardType.DarkItemWithExp:
                     return _randomNumberGenerator.TakeATry(10);
 
-                case CardExpedition.DarkItems:
-                case CardExpedition.LightItems:
-                case CardExpedition.LightExp:
-                case CardExpedition.DarkExp:
+                case ExpeditionCardType.DarkItems:
+                case ExpeditionCardType.LightItems:
+                case ExpeditionCardType.LightExp:
+                case ExpeditionCardType.DarkExp:
                     return _randomNumberGenerator.TakeATry(5);
 
                 default:
-                case CardExpedition.UltimateEasy:
-                case CardExpedition.UltimateMedium:
-                case CardExpedition.UltimateHard:
-                case CardExpedition.UltimateHardcore:
+                case ExpeditionCardType.UltimateEasy:
+                case ExpeditionCardType.UltimateMedium:
+                case ExpeditionCardType.UltimateHard:
+                case ExpeditionCardType.UltimateHardcore:
                     return false;
             }
         }
@@ -1891,7 +1891,7 @@ namespace Sanakan.Services.PocketWaifu
             return value + (duration * baseValue);
         }
 
-        private Item RandomizeItemForExpedition(CardExpedition expedition)
+        private Item RandomizeItemForExpedition(ExpeditionCardType expedition)
         {
             var c = _chanceOfItemsInExpedition[expedition];
 
@@ -1947,31 +1947,31 @@ namespace Sanakan.Services.PocketWaifu
             }
         }
 
-        private bool CheckChanceForItemInExpedition(int currItem, int maxItem, CardExpedition expedition)
+        private bool CheckChanceForItemInExpedition(int currItem, int maxItem, ExpeditionCardType expedition)
         {
             switch (expedition)
             {
-                case CardExpedition.NormalItemWithExp:
+                case ExpeditionCardType.NormalItemWithExp:
                     return !_randomNumberGenerator.TakeATry(10);
 
-                case CardExpedition.LightItemWithExp:
-                case CardExpedition.DarkItemWithExp:
+                case ExpeditionCardType.LightItemWithExp:
+                case ExpeditionCardType.DarkItemWithExp:
                     return !_randomNumberGenerator.TakeATry(15);
 
-                case CardExpedition.DarkItems:
-                case CardExpedition.LightItems:
-                case CardExpedition.ExtremeItemWithExp:
+                case ExpeditionCardType.DarkItems:
+                case ExpeditionCardType.LightItems:
+                case ExpeditionCardType.ExtremeItemWithExp:
                     return true;
 
-                case CardExpedition.LightExp:
-                case CardExpedition.DarkExp:
+                case ExpeditionCardType.LightExp:
+                case ExpeditionCardType.DarkExp:
                     return false;
 
                 default:
-                case CardExpedition.UltimateEasy:
-                case CardExpedition.UltimateMedium:
-                case CardExpedition.UltimateHard:
-                case CardExpedition.UltimateHardcore:
+                case ExpeditionCardType.UltimateEasy:
+                case ExpeditionCardType.UltimateMedium:
+                case ExpeditionCardType.UltimateHard:
+                case ExpeditionCardType.UltimateHardcore:
                     return false;
             }
         }

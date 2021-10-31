@@ -286,7 +286,7 @@ namespace Sanakan.Services
                 case ConfigType.WaifuFightChannels:
                     return GetWaifuFightChannelsConfig(config, context);
 
-                case ConfigType.CmdChannels:
+                case ConfigType.CommandChannels:
                     return GetCmdChannelsConfig(config, context);
 
                 case ConfigType.LevelRoles:

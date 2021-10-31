@@ -16,7 +16,6 @@ using Sanakan.DAL.Models;
 using Sanakan.DAL.Repositories;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.Extensions;
-using Sanakan.Services.Executor;
 using Sanakan.ShindenApi;
 using Sanakan.Web.Models;
 using Sanakan.Web.Resources;
@@ -268,7 +267,7 @@ namespace Sanakan.Web.Controllers
                 ExchangeConditions = user.GameDeck.ExchangeConditions,
                 BackgroundImageUrl = user.GameDeck.BackgroundImageUrl,
                 ForegroundImageUrl = user.GameDeck.ForegroundImageUrl,
-                Expeditions = user.GameDeck.Cards.Where(x => x.Expedition != CardExpedition.None).ToExpeditionView(user.GameDeck.Karma),
+                Expeditions = user.GameDeck.Cards.Where(x => x.Expedition != ExpeditionCardType.None).ToExpeditionView(user.GameDeck.Karma),
                 Waifu = user.GameDeck.Cards.Where(x => x.CharacterId == user.GameDeck.Waifu).OrderBy(x => x.Rarity).ThenByDescending(x => x.Quality).FirstOrDefault().ToView(),
                 Gallery = user.GameDeck.Cards.Where(x => x.HasTag("galeria")).Take(user.GameDeck.CardsInGallery).OrderBy(x => x.Rarity).ThenByDescending(x => x.Quality).ToView()
             };
@@ -867,6 +866,12 @@ namespace Sanakan.Web.Controllers
             cards = await _waifuService.OpenBoosterPackAsync(null, pack);
             bPackName = pack.Name;
 
+            _blockingPriorityQueue.TryAdd(new OpenCardsMessage
+            {
+                DiscordUserId = discordId.Value,
+                Cards = cards,
+            });
+
             //var exe = new Executable($"api-packet-open u{discordId}", new Task<Task>(async () =>
             //{
             //    var botUser = await _userRepository.GetUserOrCreateAsync(discordId.Value);
@@ -945,18 +950,12 @@ namespace Sanakan.Web.Controllers
                 return ShindenForbidden("Card is in cage!");
             }
 
-            //var exe = new Executable($"api-deck u{discordId}", new Task<Task>(async () =>
-            //{
-            //    var botUser = await _userRepository.GetUserOrCreateAsync(discordId.Value);
-            //    var thisCard = botUser.GameDeck.Cards.FirstOrDefault(x => x.Id == wid);
-            //    thisCard.Active = !thisCard.Active;
+            _blockingPriorityQueue.TryAdd(new ToggleCardMessage
+            {
+                DiscordUserId = discordId.Value,
+                WId = wid,
+            });
 
-            //    await db.SaveChangesAsync();
-
-            //    _cacheManager.ExpireTag(new string[] { $"user-{botUser.Id}", "users" });
-            //}));
-
-            //await _executor.TryAdd(exe, TimeSpan.FromSeconds(1));
             return ShindenOk("Card status toggled");
         }
     }

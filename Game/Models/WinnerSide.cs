@@ -2,8 +2,8 @@
 {
     public enum WinnerSide 
     {
-        Left,
-        Right,
-        Draw
+        Left = 0,
+        Right = 1,
+        Draw = 2
     }
 }

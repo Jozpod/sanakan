@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Sanakan.Web.MessageHandlers
+namespace Sanakan.TaskQueue.MessageHandlers
 {
     public class UpdateCardMessageHandler : IMessageHandler<UpdateCardMessage>
     {

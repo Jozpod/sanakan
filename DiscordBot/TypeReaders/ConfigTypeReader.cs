@@ -47,7 +47,7 @@ namespace Sanakan.TypeReaders
                 case "cmd":
                 case "cmdchannel":
                 case "cmdchannels":
-                    return Task.FromResult(TypeReaderResult.FromSuccess(ConfigType.CmdChannels));
+                    return Task.FromResult(TypeReaderResult.FromSuccess(ConfigType.CommandChannels));
 
                 case "role":
                 case "roles":

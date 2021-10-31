@@ -7,10 +7,46 @@ using Sanakan.Extensions;
 namespace Sanakan.Api.Models
 {
     /// <summary>
-    /// Informacje o karcie
+    /// Describes the card.
     /// </summary>
     public class CardFinalView
     {
+        public CardFinalView(Card card)
+        {
+            Id = card.Id;
+            IsActive = card.Active;
+            IsInCage = card.InCage;
+            IsTradable = card.IsTradable;
+            IsUnique = card.Unique;
+            IsUltimate = card.FromFigure;
+            ExpCnt = card.ExpCount;
+            Affection = card.GetAffectionString();
+            UpgradesCnt = card.UpgradesCount;
+            RestartCnt = card.RestartCount;
+            Rarity = card.Rarity;
+            Dere = card.Dere;
+            Defence = card.GetDefenceWithBonus();
+            Attack = card.GetAttackWithBonus();
+            BaseHealth = card.Health;
+            FinalHealth = card.GetHealthWithPenalty();
+            Name = card.Name;
+            CharacterUrl = card.GetCharacterUrl();
+            Source = card.Source.GetString();
+            AnimeTitle = card.Title ?? "????";
+            UltimateQuality = card.Quality;
+            CreatedAt = card.CreationDate;
+            CardPower = card.CardPower;
+            Value = card.GetThreeStateMarketValue();
+            ExpCntForNextLevel = card.ExpToUpgrade();
+            HasCustomImage = card.CustomImage != null;
+            HasCustomBorder = card.CustomBorder != null;
+            ImageUrl = $"https://cdn2.shinden.eu/{card.Id}.png";
+            IsOnExpedition = card.Expedition != ExpeditionCardType.None;
+            SmallImageUrl = $"https://cdn2.shinden.eu/small/{card.Id}.png";
+            ProfileImageUrl = $"https://cdn2.shinden.eu/profile/{card.Id}.png";
+            Tags = card.TagList.Select(x => x.Name).ToList();
+        }
+
         /// <summary>
         /// Id karty
         /// </summary>
@@ -147,41 +183,7 @@ namespace Sanakan.Api.Models
                 return null;
             }
 
-            return new CardFinalView
-            {
-                Id = card.Id,
-                IsActive = card.Active,
-                IsInCage = card.InCage,
-                IsTradable = card.IsTradable,
-                IsUnique = card.Unique,
-                IsUltimate = card.FromFigure,
-                ExpCnt = card.ExpCount,
-                Affection = card.GetAffectionString(),
-                UpgradesCnt = card.UpgradesCount,
-                RestartCnt = card.RestartCount,
-                Rarity = card.Rarity,
-                Dere = card.Dere,
-                Defence = card.GetDefenceWithBonus(),
-                Attack = card.GetAttackWithBonus(),
-                BaseHealth = card.Health,
-                FinalHealth = card.GetHealthWithPenalty(),
-                Name = card.Name,
-                CharacterUrl = card.GetCharacterUrl(),
-                Source = card.Source.GetString(),
-                AnimeTitle = card.Title ?? "????",
-                UltimateQuality = card.Quality,
-                CreatedAt = card.CreationDate,
-                CardPower = card.CardPower,
-                Value = card.GetThreeStateMarketValue(),
-                ExpCntForNextLevel = card.ExpToUpgrade(),
-                HasCustomImage = card.CustomImage != null,
-                HasCustomBorder = card.CustomBorder != null,
-                ImageUrl = $"https://cdn2.shinden.eu/{card.Id}.png",
-                IsOnExpedition = card.Expedition != CardExpedition.None,
-                SmallImageUrl = $"https://cdn2.shinden.eu/small/{card.Id}.png",
-                ProfileImageUrl = $"https://cdn2.shinden.eu/profile/{card.Id}.png",
-                Tags = card.TagList.Select(x => x.Name).ToList()
-            };
+            return new CardFinalView(card)
         }
     }
 }

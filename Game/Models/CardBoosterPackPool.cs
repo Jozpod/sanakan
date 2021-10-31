@@ -1,16 +1,10 @@
 ﻿using System.Collections.Generic;
 
-namespace Sanakan.Api.Models
+namespace Sanakan.Game.Models
 {
     
-    public class BoosterPackPool
+    public class CardBoosterPackPool
     {
-        /// <summary>
-        /// Typ wybierania postaci:
-        /// Radnom - losowo, 
-        /// Title - postacie z tytułu (wymagane TitleId),
-        /// List - postacie z listy id (wymagane Character)
-        /// </summary>
         public CardsPoolType Type { get; set; }
         /// <summary>
         /// Id tytułu z którego będą losowane postacie

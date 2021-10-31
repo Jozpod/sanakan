@@ -4,8 +4,8 @@
     <TargetFramework>net5.0</TargetFramework>
     <LangVersion>9.0</LangVersion>
     <Nullable>enable</Nullable>
-    <AssemblyName>Sanakan.TaskQueue</AssemblyName>
-    <RootNamespace>Sanakan.TaskQueue</RootNamespace>
+    <AssemblyName>Sanakan.DiscordBot.Abstractions</AssemblyName>
+    <RootNamespace>Sanakan.DiscordBot.Abstractions</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,9 +14,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Common\Common.csproj" />
     <ProjectReference Include="..\DAL\DAL.csproj" />
-    <ProjectReference Include="..\Game\Game.csproj" />
+    <ProjectReference Include="..\ShindenApi\ShindenApi.csproj" />
   </ItemGroup>
 
 </Project>

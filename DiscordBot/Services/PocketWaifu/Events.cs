@@ -49,9 +49,9 @@ namespace Sanakan.Services.PocketWaifu
             45085
         };
 
-        private static Dictionary<CardExpedition, Dictionary<EventType, Tuple<int, int>>> _chanceOfEvent = new Dictionary<CardExpedition, Dictionary<EventType, Tuple<int, int>>>
+        private static Dictionary<ExpeditionCardType, Dictionary<EventType, Tuple<int, int>>> _chanceOfEvent = new Dictionary<ExpeditionCardType, Dictionary<EventType, Tuple<int, int>>>
         {
-            {CardExpedition.NormalItemWithExp, new Dictionary<EventType, Tuple<int, int>>
+            {ExpeditionCardType.NormalItemWithExp, new Dictionary<EventType, Tuple<int, int>>
                 {
                     {EventType.MoreItems,   new Tuple<int, int>(0,    1500)},
                     {EventType.MoreExp,     new Tuple<int, int>(1500, 3900)},
@@ -67,7 +67,7 @@ namespace Sanakan.Services.PocketWaifu
                     {EventType.Fight,       new Tuple<int, int>(-15,  -16)},
                 }
             },
-            {CardExpedition.ExtremeItemWithExp, new Dictionary<EventType, Tuple<int, int>>
+            {ExpeditionCardType.ExtremeItemWithExp, new Dictionary<EventType, Tuple<int, int>>
                 {
                     {EventType.MoreItems,   new Tuple<int, int>(0,    900)},
                     {EventType.MoreExp,     new Tuple<int, int>(900,  1900)},
@@ -83,7 +83,7 @@ namespace Sanakan.Services.PocketWaifu
                     {EventType.Fight,       new Tuple<int, int>(-1,  -2)},
                 }
             },
-            {CardExpedition.DarkItemWithExp, new Dictionary<EventType, Tuple<int, int>>
+            {ExpeditionCardType.DarkItemWithExp, new Dictionary<EventType, Tuple<int, int>>
                 {
                     {EventType.MoreItems,   new Tuple<int, int>(0,    1000)},
                     {EventType.MoreExp,     new Tuple<int, int>(1000, 2500)},
@@ -99,7 +99,7 @@ namespace Sanakan.Services.PocketWaifu
                     {EventType.NewCard,     new Tuple<int, int>(-5,   -6)},
                 }
             },
-            {CardExpedition.LightItemWithExp, new Dictionary<EventType, Tuple<int, int>>
+            {ExpeditionCardType.LightItemWithExp, new Dictionary<EventType, Tuple<int, int>>
                 {
                     {EventType.MoreItems,   new Tuple<int, int>(0,    1000)},
                     {EventType.MoreExp,     new Tuple<int, int>(1000, 2500)},
@@ -115,7 +115,7 @@ namespace Sanakan.Services.PocketWaifu
                     {EventType.NewCard,     new Tuple<int, int>(-5,   -6)},
                 }
             },
-            {CardExpedition.DarkItems, new Dictionary<EventType, Tuple<int, int>>
+            {ExpeditionCardType.DarkItems, new Dictionary<EventType, Tuple<int, int>>
                 {
                     {EventType.MoreItems,   new Tuple<int, int>(-1,   -2)},
                     {EventType.MoreExp,     new Tuple<int, int>(-3,   -4)},
@@ -131,7 +131,7 @@ namespace Sanakan.Services.PocketWaifu
                     {EventType.NewCard,     new Tuple<int, int>(-9,   -10)},
                 }
             },
-            {CardExpedition.LightItems, new Dictionary<EventType, Tuple<int, int>>
+            {ExpeditionCardType.LightItems, new Dictionary<EventType, Tuple<int, int>>
                 {
                     {EventType.MoreItems,   new Tuple<int, int>(-1,   -2)},
                     {EventType.MoreExp,     new Tuple<int, int>(-3,   -4)},
@@ -147,7 +147,7 @@ namespace Sanakan.Services.PocketWaifu
                     {EventType.NewCard,     new Tuple<int, int>(-9,   -10)},
                 }
             },
-            {CardExpedition.DarkExp, new Dictionary<EventType, Tuple<int, int>>
+            {ExpeditionCardType.DarkExp, new Dictionary<EventType, Tuple<int, int>>
                 {
                     {EventType.MoreItems,   new Tuple<int, int>(-1,   -2)},
                     {EventType.MoreExp,     new Tuple<int, int>(-3,   -4)},
@@ -163,7 +163,7 @@ namespace Sanakan.Services.PocketWaifu
                     {EventType.NewCard,     new Tuple<int, int>(-9,   -10)},
                 }
             },
-            {CardExpedition.LightExp, new Dictionary<EventType, Tuple<int, int>>
+            {ExpeditionCardType.LightExp, new Dictionary<EventType, Tuple<int, int>>
                 {
                     {EventType.MoreItems,   new Tuple<int, int>(-1,   -2)},
                     {EventType.MoreExp,     new Tuple<int, int>(-3,   -4)},
@@ -181,11 +181,11 @@ namespace Sanakan.Services.PocketWaifu
             }
         };
 
-        private EventType CheckChanceBasedOnTime(CardExpedition expedition, Tuple<double, double> duration)
+        private EventType CheckChanceBasedOnTime(ExpeditionCardType expedition, Tuple<double, double> duration)
         {
             switch (expedition)
             {
-                case CardExpedition.ExtremeItemWithExp:
+                case ExpeditionCardType.ExtremeItemWithExp:
                     if (duration.Item1 > 45 || duration.Item2 > 240)
                     {
                         if (_randomNumberGenerator.TakeATry(2))
@@ -200,7 +200,7 @@ namespace Sanakan.Services.PocketWaifu
             }
         }
 
-        public EventType RandomizeEvent(CardExpedition expedition, Tuple<double, double> duration)
+        public EventType RandomizeEvent(ExpeditionCardType expedition, Tuple<double, double> duration)
         {
             var timeBased = CheckChanceBasedOnTime(expedition, duration);
             if (timeBased != EventType.None)
@@ -275,7 +275,7 @@ namespace Sanakan.Services.PocketWaifu
                     var boosterPack = new BoosterPack
                     {
                         RarityExcludedFromPack = new List<RarityExcluded>(),
-                        Title = _randomNumberGenerator.GetOneRandomFrom(_titles),
+                        TitleId = _randomNumberGenerator.GetOneRandomFrom(_titles),
                         Characters = new List<BoosterPackCharacter>(),
                         CardSourceFromPack = CardSource.Expedition,
                         Name = "Losowa karta z wyprawy",

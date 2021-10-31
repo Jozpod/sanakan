@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Sanakan.Game.Models;
+using System.Collections.Generic;
 
 namespace Sanakan.TaskQueue.Messages
 {

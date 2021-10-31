@@ -9,6 +9,14 @@ namespace Sanakan.Api.Models
     /// </summary>
     public class ExpeditionCard
     {
+        public ExpeditionCard(Card card, double karma)
+        {
+            Card = card.ToView();
+            StartTime = card.ExpeditionDate;
+            Expedition = card.Expedition.GetName();
+            MaxTime = card.CalculateMaxTimeOnExpeditionInMinutes(karma);
+        }
+
         /// <summary>
         /// Moment wyruszenia na ekspedycję
         /// </summary>
@@ -30,13 +38,9 @@ namespace Sanakan.Api.Models
 
         public static ExpeditionCard ConvertFromRaw(Card card, double karma)
         {
-            return new ExpeditionCard
-            {
-                Card = card.ToView(),
-                StartTime = card.ExpeditionDate,
-                Expedition = card.Expedition.GetName(),
-                MaxTime = card.CalculateMaxTimeOnExpeditionInMinutes(karma)
-            };
+            return new ExpeditionCard(card, karma);
         }
+
+
     }
 }

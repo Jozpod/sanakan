@@ -29,7 +29,7 @@ namespace Sanakan.Modules
     {
         public const string PsyduckEmoji = "<:klasycznypsaj:482136878120828938>";
         private readonly IModeratorService _moderatorService;
-        private readonly SessionManager _session;
+        private readonly ISessionManager _sessionManager;
         private readonly ICacheManager _cacheManager;
         private readonly IUserRepository _userRepository;
         private readonly IGuildConfigRepository _guildConfigRepository;
@@ -45,7 +45,7 @@ namespace Sanakan.Modules
             ISystemClock systemClock,
             IServiceScopeFactory serviceScopeFactory)
         {
-            _session = session;
+            _sessionManager = session;
             _moderatorService = moderatorService;
             _cacheManager = cacheManager;
             _systemClock = systemClock;
@@ -135,7 +135,7 @@ namespace Sanakan.Modules
             }
 
             var session = new AcceptSession(user, null, Context.Client.CurrentUser);
-            await _session.KillSessionIfExistAsync(session);
+            await _sessionManager.KillSessionIfExistAsync(session);
 
             var content = $"{user.Mention} na pewno chcesz muta?".ToEmbedMessage(EMType.Error).Build();
             var msg = await ReplyAsync("", embed: content);
@@ -152,7 +152,7 @@ namespace Sanakan.Modules
             };
             session.Message = msg;
 
-            await _session.TryAddSession(session);
+            await _sessionManager.TryAddSession(session);
         }
 
         [Command("zaskórniaki")]

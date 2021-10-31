@@ -13,7 +13,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Sanakan.DiscordBot.Services
+namespace Sanakan.Game.Services
 {
     public interface IImageProcessor
     {

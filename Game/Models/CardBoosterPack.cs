@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Sanakan.DAL.Models;
+using System.Collections.Generic;
 
 namespace Sanakan.Game.Models
 {
@@ -35,7 +36,7 @@ namespace Sanakan.Game.Models
         /// <summary>
         /// Definuje jak będą losowane postacie do kart
         /// </summary>
-        public BoosterPackPool Pool { get; set; }
+        public CardBoosterPackPool Pool { get; set; }
 
         public BoosterPack ToRealPack()
         {
@@ -54,9 +55,9 @@ namespace Sanakan.Game.Models
             {
                 if (RarityExcluded.Count > 0)
                 {
-                    foreach (var exc in RarityExcluded)
+                    foreach (var rarityExcluded in RarityExcluded)
                     {
-                        pack.RarityExcludedFromPack.Add(new RarityExcluded() { Rarity = exc });
+                        pack.RarityExcludedFromPack.Add(new RarityExcluded(rarityExcluded));
                     }
                 }
             }
@@ -64,18 +65,20 @@ namespace Sanakan.Game.Models
             switch (Pool.Type)
             {
                 case CardsPoolType.Title:
-                    pack.Title = Pool.TitleId;
+                    pack.TitleId = Pool.TitleId;
                 break;
 
                 case CardsPoolType.List:
-                    pack.Title = 0;
-                    foreach (var id in Pool.Character)
-                        pack.Characters.Add(new BoosterPackCharacter() { Character = id });
+                    pack.TitleId = 0;
+                    foreach (var characterId in Pool.Character)
+                    {
+                        pack.Characters.Add(new BoosterPackCharacter(characterId));
+                    }
                 break;
 
                 default:
                 case CardsPoolType.Random:
-                    pack.Title = 0;
+                    pack.TitleId = 0;
                 break;
             }
 

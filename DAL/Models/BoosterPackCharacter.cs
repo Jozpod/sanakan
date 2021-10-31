@@ -4,6 +4,11 @@ namespace Sanakan.DAL.Models
 {
     public class BoosterPackCharacter
     {
+        public BoosterPackCharacter(ulong characterId)
+        {
+
+        }
+
         public ulong Id { get; set; }
         public ulong CharacterId { get; set; }
 

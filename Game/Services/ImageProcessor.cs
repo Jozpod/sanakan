@@ -23,9 +23,9 @@ using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.Primitives;
 
-namespace Sanakan.DiscordBot.Services
+namespace Sanakan.Game.Services
 {
-    public class ImageProcessor : IImageProcessor
+    internal class ImageProcessor : IImageProcessor
     {
         private const string White = "#000000";
         private const string Onyx = "#36393E";
@@ -904,8 +904,10 @@ namespace Sanakan.DiscordBot.Services
 
         private async Task<Image<Rgba32>> LoadCustomBorderAsync(Card card)
         {
-            if (!card.HasCustomBorder())
+            if (card.CustomBorder == null)
+            {
                 return GenerateBorder(card);
+            }
 
             using var stream = await GetImageFromUrlAsync(card.CustomBorder);
             if (stream == null)
@@ -1097,7 +1099,7 @@ namespace Sanakan.DiscordBot.Services
             switch (card.Quality)
             {
                 case Quality.Zeta:
-                    if (card.HasCustomBorder())
+                    if (card.CustomBorder != null)
                         return false;
                     return true;
 
@@ -1163,7 +1165,7 @@ namespace Sanakan.DiscordBot.Services
 
         private void ApplyBorderBack(Image<Rgba32> image, Card card)
         {
-            var isFromFigureOriginalBorder = !card.HasCustomBorder() && card.FromFigure;
+            var isFromFigureOriginalBorder = card.CustomBorder == null && card.FromFigure;
             var backBorderStr = $"./Pictures/PW/CG/{card.Quality}/BorderBack.png";
 
             if (isFromFigureOriginalBorder && _fileSystem.Exists(backBorderStr))
@@ -1217,7 +1219,11 @@ namespace Sanakan.DiscordBot.Services
             return image;
         }
 
-        public Image<Rgba32> GetDuelCardImage(DuelInfo info, DuelImage image, Image<Rgba32> win, Image<Rgba32> los)
+        public Image<Rgba32> GetDuelCardImage(
+            DuelInfo info,
+            DuelImage image,
+            Image<Rgba32> win,
+            Image<Rgba32> los)
         {
             int Xiw = 76;
             int Yt = 780;

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Discord;
 using Sanakan.DAL.Models;
 using Sanakan.ShindenApi.Utilities;
 
@@ -10,31 +9,7 @@ namespace Sanakan.Extensions
 {
     public static class CardExtension
     {
-        public static int GetMaxCardsRestartsOnStarType(this Card card)
-        {
-            return card.GetMaxStarsPerType() * card.GetRestartCntPerStar() * card.GetCardStarType();
-        }
-        public static int GetCardStarCount(this Card card)
-        {
-            var max = card.GetMaxStarsPerType();
-            var starCnt = (card.RestartCount - card.GetMaxCardsRestartsOnStarType()) / card.GetRestartCntPerStar();
-            if (starCnt > max) starCnt = max;
-            return starCnt;
-        }
-        public static int GetCardStarType(this Card card)
-        {
-            var max = card.MaxStarType();
-            var maxRestartsPerType = card.GetMaxStarsPerType() * card.GetRestartCntPerStar();
-            var type = (card.RestartCount - 1) / maxRestartsPerType;
-            if (type > 0)
-            {
-                var ths = card.RestartCount - (maxRestartsPerType + ((type - 1) * maxRestartsPerType));
-                if (ths < card.GetRestartCntPerStar()) --type;
-            }
-
-            if (type > max) type = max;
-            return type;
-        }
+        
         public static int GetValue(this Card card)
         {
             switch (card.Rarity)
@@ -51,7 +26,6 @@ namespace Sanakan.Extensions
                 case Rarity.E: return 1;
             }
         }
-        public static bool HasCustomBorder(this Card card) => card.CustomBorder != null;
         public static double ExpToUpgrade(this Card card)
         {
             switch (card.Rarity)
@@ -154,34 +128,34 @@ namespace Sanakan.Extensions
             return $"**[{card.Id}]** {name} **{card.GetCardRealRarity()}**";
         }
 
-        public static string GetName(this CardExpedition expedition, string end = "a")
+        public static string GetName(this ExpeditionCardType expedition, string end = "a")
         {
             switch (expedition)
             {
-                case CardExpedition.NormalItemWithExp:
+                case ExpeditionCardType.NormalItemWithExp:
                     return $"normaln{end}";
 
-                case CardExpedition.ExtremeItemWithExp:
+                case ExpeditionCardType.ExtremeItemWithExp:
                     return $"niemożliw{end}";
 
-                case CardExpedition.DarkExp:
-                case CardExpedition.DarkItems:
-                case CardExpedition.DarkItemWithExp:
+                case ExpeditionCardType.DarkExp:
+                case ExpeditionCardType.DarkItems:
+                case ExpeditionCardType.DarkItemWithExp:
                     return $"nikczemn{end}";
 
-                case CardExpedition.LightExp:
-                case CardExpedition.LightItems:
-                case CardExpedition.LightItemWithExp:
+                case ExpeditionCardType.LightExp:
+                case ExpeditionCardType.LightItems:
+                case ExpeditionCardType.LightItemWithExp:
                     return $"heroiczn{end}";
 
-                case CardExpedition.UltimateEasy:
-                case CardExpedition.UltimateMedium:
-                case CardExpedition.UltimateHard:
-                case CardExpedition.UltimateHardcore:
+                case ExpeditionCardType.UltimateEasy:
+                case ExpeditionCardType.UltimateMedium:
+                case ExpeditionCardType.UltimateHard:
+                case ExpeditionCardType.UltimateHardcore:
                     return $"niezwykł{end}";
 
                 default:
-                case CardExpedition.None:
+                case ExpeditionCardType.None:
                     return "-";
             }
         }
@@ -195,7 +169,7 @@ namespace Sanakan.Extensions
             if (!card.IsTradable) icons.Add("⛔");
             if (card.IsBroken) icons.Add("💔");
             if (card.InCage) icons.Add("🔒");
-            if (card.Expedition != CardExpedition.None) icons.Add("✈️");
+            if (card.Expedition != ExpeditionCardType.None) icons.Add("✈️");
             if (!string.IsNullOrEmpty(card.CustomImage)) icons.Add("🖼️");
             if (!string.IsNullOrEmpty(card.CustomBorder)) icons.Add("✂️");
 
@@ -282,9 +256,9 @@ namespace Sanakan.Extensions
             if (card.MarketValue > 2.8) return MarketValue.High;
             return MarketValue.Normal;
         }
-        public static bool ValidExpedition(this Card card, CardExpedition expedition, double karma)
+        public static bool ValidExpedition(this Card card, ExpeditionCardType expedition, double karma)
         {
-            if (card.Expedition != CardExpedition.None)
+            if (card.Expedition != ExpeditionCardType.None)
                 return false;
 
             if (card.Curse == CardCurse.ExpeditionBlockade)
@@ -298,32 +272,32 @@ namespace Sanakan.Extensions
 
             switch (expedition)
             {
-                case CardExpedition.ExtremeItemWithExp:
+                case ExpeditionCardType.ExtremeItemWithExp:
                     return !card.FromFigure && !card.HasTag("ulubione");
 
-                case CardExpedition.NormalItemWithExp:
+                case ExpeditionCardType.NormalItemWithExp:
                     return !card.FromFigure;
 
-                case CardExpedition.UltimateEasy:
-                case CardExpedition.UltimateHard:
-                case CardExpedition.UltimateMedium:
-                case CardExpedition.UltimateHardcore:
+                case ExpeditionCardType.UltimateEasy:
+                case ExpeditionCardType.UltimateHard:
+                case ExpeditionCardType.UltimateMedium:
+                case ExpeditionCardType.UltimateHardcore:
                     return card.FromFigure;
 
-                case CardExpedition.LightExp:
-                case CardExpedition.LightItems:
+                case ExpeditionCardType.LightExp:
+                case ExpeditionCardType.LightItems:
                     return (karma > 1000) && !card.FromFigure;
-                case CardExpedition.LightItemWithExp:
+                case ExpeditionCardType.LightItemWithExp:
                     return (karma > 400) && !card.FromFigure;
 
-                case CardExpedition.DarkExp:
-                case CardExpedition.DarkItems:
+                case ExpeditionCardType.DarkExp:
+                case ExpeditionCardType.DarkItems:
                     return (karma < -1000) && !card.FromFigure;
-                case CardExpedition.DarkItemWithExp:
+                case ExpeditionCardType.DarkItemWithExp:
                     return (karma < -400) && !card.FromFigure;
 
                 default:
-                case CardExpedition.None:
+                case ExpeditionCardType.None:
                     return false;
             }
         }
@@ -401,9 +375,9 @@ namespace Sanakan.Extensions
 
             return $"{idStr} {name} **{card.GetCardRealRarity()}** {card.GetCardParams(showBaseHp, allowZero)} {upgCnt}";
         }
-        public static double CalculateMaxTimeOnExpeditionInMinutes(this Card card, double karma, CardExpedition expedition = CardExpedition.None)
+        public static double CalculateMaxTimeOnExpeditionInMinutes(this Card card, double karma, ExpeditionCardType expedition = ExpeditionCardType.None)
         {
-            expedition = (expedition == CardExpedition.None) ? card.Expedition : expedition;
+            expedition = (expedition == ExpeditionCardType.None) ? card.Expedition : expedition;
             double perMinute = card.GetCostOfExpeditionPerMinute(expedition);
             double param = card.Affection;
             double addOFK = karma / 200;
@@ -416,29 +390,29 @@ namespace Sanakan.Extensions
 
             switch (expedition)
             {
-                case CardExpedition.NormalItemWithExp:
-                case CardExpedition.ExtremeItemWithExp:
+                case ExpeditionCardType.NormalItemWithExp:
+                case ExpeditionCardType.ExtremeItemWithExp:
                     addOFK = 0;
                     break;
 
-                case CardExpedition.LightExp:
-                case CardExpedition.LightItems:
-                case CardExpedition.LightItemWithExp:
+                case ExpeditionCardType.LightExp:
+                case ExpeditionCardType.LightItems:
+                case ExpeditionCardType.LightItemWithExp:
                     if (addOFK > 5) addOFK = 5;
                     break;
 
-                case CardExpedition.DarkItems:
-                case CardExpedition.DarkExp:
-                case CardExpedition.DarkItemWithExp:
+                case ExpeditionCardType.DarkItems:
+                case ExpeditionCardType.DarkExp:
+                case ExpeditionCardType.DarkItemWithExp:
                     addOFK = -addOFK;
                     if (addOFK > 10) addOFK = 10;
                     break;
 
                 default:
-                case CardExpedition.UltimateEasy:
-                case CardExpedition.UltimateMedium:
-                case CardExpedition.UltimateHard:
-                case CardExpedition.UltimateHardcore:
+                case ExpeditionCardType.UltimateEasy:
+                case ExpeditionCardType.UltimateMedium:
+                case ExpeditionCardType.UltimateHard:
+                case ExpeditionCardType.UltimateHardcore:
                     return 0;
             }
 
@@ -487,38 +461,38 @@ namespace Sanakan.Extensions
         {
             return 2d - rarity.ValueModifier();
         }
-        public static double GetCostOfExpeditionPerMinute(this Card card, CardExpedition expedition = CardExpedition.None)
+        public static double GetCostOfExpeditionPerMinute(this Card card, ExpeditionCardType expedition = ExpeditionCardType.None)
         {
             return GetCostOfExpeditionPerMinuteRaw(card, expedition) * card.Rarity.ValueModifierReverse() * card.Dere.ValueModifierReverse();
         }
 
-        public static double GetCostOfExpeditionPerMinuteRaw(this Card card, CardExpedition expedition = CardExpedition.None)
+        public static double GetCostOfExpeditionPerMinuteRaw(this Card card, ExpeditionCardType expedition = ExpeditionCardType.None)
         {
-            expedition = (expedition == CardExpedition.None) ? card.Expedition : expedition;
+            expedition = (expedition == ExpeditionCardType.None) ? card.Expedition : expedition;
 
             switch (expedition)
             {
-                case CardExpedition.NormalItemWithExp:
+                case ExpeditionCardType.NormalItemWithExp:
                     return 0.015;
 
-                case CardExpedition.ExtremeItemWithExp:
+                case ExpeditionCardType.ExtremeItemWithExp:
                     return 0.17;
 
-                case CardExpedition.DarkExp:
-                case CardExpedition.LightExp:
-                case CardExpedition.LightItems:
-                case CardExpedition.DarkItems:
+                case ExpeditionCardType.DarkExp:
+                case ExpeditionCardType.LightExp:
+                case ExpeditionCardType.LightItems:
+                case ExpeditionCardType.DarkItems:
                     return 0.12;
 
-                case CardExpedition.DarkItemWithExp:
-                case CardExpedition.LightItemWithExp:
+                case ExpeditionCardType.DarkItemWithExp:
+                case ExpeditionCardType.LightItemWithExp:
                     return 0.07;
 
                 default:
-                case CardExpedition.UltimateEasy:
-                case CardExpedition.UltimateMedium:
-                case CardExpedition.UltimateHard:
-                case CardExpedition.UltimateHardcore:
+                case ExpeditionCardType.UltimateEasy:
+                case ExpeditionCardType.UltimateMedium:
+                case ExpeditionCardType.UltimateHard:
+                case ExpeditionCardType.UltimateHardcore:
                     return 0;
             }
         }
@@ -526,27 +500,27 @@ namespace Sanakan.Extensions
         {
             switch (card.Expedition)
             {
-                case CardExpedition.NormalItemWithExp:
+                case ExpeditionCardType.NormalItemWithExp:
                     return 0.0009;
 
-                case CardExpedition.ExtremeItemWithExp:
+                case ExpeditionCardType.ExtremeItemWithExp:
                     return 0.028;
 
-                case CardExpedition.DarkItemWithExp:
-                case CardExpedition.DarkItems:
-                case CardExpedition.DarkExp:
+                case ExpeditionCardType.DarkItemWithExp:
+                case ExpeditionCardType.DarkItems:
+                case ExpeditionCardType.DarkExp:
                     return 0.0018;
 
-                case CardExpedition.LightItemWithExp:
-                case CardExpedition.LightExp:
-                case CardExpedition.LightItems:
+                case ExpeditionCardType.LightItemWithExp:
+                case ExpeditionCardType.LightExp:
+                case ExpeditionCardType.LightItems:
                     return 0.0042;
 
                 default:
-                case CardExpedition.UltimateEasy:
-                case CardExpedition.UltimateMedium:
-                case CardExpedition.UltimateHard:
-                case CardExpedition.UltimateHardcore:
+                case ExpeditionCardType.UltimateEasy:
+                case ExpeditionCardType.UltimateMedium:
+                case ExpeditionCardType.UltimateHard:
+                case ExpeditionCardType.UltimateHardcore:
                     return 0;
             }
         }
@@ -596,63 +570,6 @@ namespace Sanakan.Extensions
             card.CardPower = cardPower;
 
             return cardPower;
-        }
-
-        public static int MaxStarType(this Card _) => 9;
-        public static int GetRestartCntPerStar(this Card _) => 2;
-        public static int GetMaxStarsPerType(this Card _) => 5;
-        public static int GetTotalCardStarCount(this Card card)
-        {
-            var max = card.GetMaxStarsPerType() * card.MaxStarType();
-            var stars = card.RestartCount / card.GetRestartCntPerStar();
-            if (stars > max) stars = max;
-            return stars;
-        }
-
-        public static int GetAttackWithBonus(this Card card)
-        {
-            var maxAttack = 999;
-            if (card.FromFigure)
-                maxAttack = 9999;
-
-            var newAttack = card.Attack + (card.RestartCount * 2) + (card.GetTotalCardStarCount() * 8);
-            if (card.FromFigure)
-            {
-                newAttack += card.AttackBonus;
-            }
-
-            if (card.Curse == CardCurse.LoweredStats)
-            {
-                newAttack -= newAttack * 5 / 10;
-            }
-
-            if (newAttack > maxAttack)
-                newAttack = maxAttack;
-
-            return newAttack;
-        }
-
-        public static int GetDefenceWithBonus(this Card card)
-        {
-            var maxDefence = 99;
-            if (card.FromFigure)
-                maxDefence = 9999;
-
-            var newDefence = card.Defence + card.RestartCount;
-            if (card.FromFigure)
-            {
-                newDefence += card.DefenceBonus;
-            }
-
-            if (card.Curse == CardCurse.LoweredStats)
-            {
-                newDefence -= newDefence * 5 / 10;
-            }
-
-            if (newDefence > maxDefence)
-                newDefence = maxDefence;
-
-            return newDefence;
         }
 
         public static bool HasImage(this Card card) => card.GetImage() != null;
@@ -709,11 +626,6 @@ namespace Sanakan.Extensions
             }
         }
 
-        public static int GetHealthMax(this Card card)
-        {
-            return 300 - (card.Attack + card.Defence);
-        }
-
         public static int GetAttackMax(this Rarity rarity)
         {
             switch (rarity)
@@ -746,36 +658,6 @@ namespace Sanakan.Extensions
                 case Rarity.E:
                 default: return 38;
             }
-        }
-
-        public static int GetHealthWithPenalty(this Card card, bool allowZero = false)
-        {
-            var maxHealth = 999;
-            if (card.FromFigure)
-                maxHealth = 99999;
-
-            var percent = card.Affection * 5d / 100d;
-            var newHealth = (int)(card.Health + (card.Health * percent));
-            if (card.FromFigure)
-            {
-                newHealth += card.HealthBonus;
-            }
-
-            if (newHealth > maxHealth)
-                newHealth = maxHealth;
-
-            if (allowZero)
-            {
-                if (newHealth < 0)
-                    newHealth = 0;
-            }
-            else
-            {
-                if (newHealth < 10)
-                    newHealth = 10;
-            }
-
-            return newHealth;
         }
     }
 }

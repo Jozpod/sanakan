@@ -24,7 +24,7 @@ namespace Sanakan.DAL.Models
             Defence = defence;
             ArenaStats = new CardArenaStats();
             Attack = attack;
-            Expedition = CardExpedition.None;
+            Expedition = ExpeditionCardType.None;
             QualityOnStart = Quality.Broken;
             ExpeditionDate = date;
             PAS = PreAssembledFigure.None;
@@ -109,7 +109,7 @@ namespace Sanakan.DAL.Models
         public Quality QualityOnStart { get; set; }
         public PreAssembledFigure PAS { get; set; }
 
-        public CardExpedition Expedition { get; set; }
+        public ExpeditionCardType Expedition { get; set; }
         public DateTime ExpeditionDate { get; set; }
 
         public virtual ICollection<CardTag> TagList { get; set; }
@@ -138,6 +138,128 @@ namespace Sanakan.DAL.Models
         {
             return TagList
                 .Any(x => tags.Any(t => t.Equals(x.Name, StringComparison.CurrentCultureIgnoreCase)));
+        }
+        public int GetHealthMax()
+        {
+            return 300 - (Attack + Defence);
+        }
+
+        public int GetMaxCardsRestartsOnStarType()
+        {
+            return GetMaxStarsPerType() * GetRestartCntPerStar() * GetCardStarType();
+        }
+        public int GetCardStarCount()
+        {
+            var max = GetMaxStarsPerType();
+            var starCnt = (RestartCount - GetMaxCardsRestartsOnStarType()) / GetRestartCntPerStar();
+            if (starCnt > max) starCnt = max;
+            return starCnt;
+        }
+        public int GetCardStarType()
+        {
+            var max = MaxStarType();
+            var maxRestartsPerType = GetMaxStarsPerType() * GetRestartCntPerStar();
+            var type = (RestartCount - 1) / maxRestartsPerType;
+            if (type > 0)
+            {
+                var ths = RestartCount - (maxRestartsPerType + ((type - 1) * maxRestartsPerType));
+                if (ths < GetRestartCntPerStar()) --type;
+            }
+
+            if (type > max) type = max;
+            return type;
+        }
+
+        public int MaxStarType() => 9;
+        public int GetRestartCntPerStar() => 2;
+        public int GetMaxStarsPerType() => 5;
+        public int GetTotalCardStarCount()
+        {
+            var max = GetMaxStarsPerType() * MaxStarType();
+            var stars = RestartCount / GetRestartCntPerStar();
+            if (stars > max) stars = max;
+            return stars;
+        }
+
+        public int GetAttackWithBonus()
+        {
+            var maxAttack = 999;
+            if (FromFigure)
+            {
+                maxAttack = 9999;
+            }
+
+            var newAttack = Attack + (RestartCount * 2) + (GetTotalCardStarCount() * 8);
+            if (FromFigure)
+            {
+                newAttack += AttackBonus;
+            }
+
+            if (Curse == CardCurse.LoweredStats)
+            {
+                newAttack -= newAttack * 5 / 10;
+            }
+
+            if (newAttack > maxAttack)
+                newAttack = maxAttack;
+
+            return newAttack;
+        }
+
+        public int GetDefenceWithBonus()
+        {
+            var maxDefence = 99;
+            if (FromFigure)
+            {
+                maxDefence = 9999;
+            }
+
+            var newDefence = Defence + RestartCount;
+            if (FromFigure)
+            {
+                newDefence += DefenceBonus;
+            }
+
+            if (Curse == CardCurse.LoweredStats)
+            {
+                newDefence -= newDefence * 5 / 10;
+            }
+
+            if (newDefence > maxDefence)
+                newDefence = maxDefence;
+
+            return newDefence;
+        }
+
+
+        public int GetHealthWithPenalty(bool allowZero = false)
+        {
+            var maxHealth = 999;
+            if (FromFigure)
+                maxHealth = 99999;
+
+            var percent = Affection * 5d / 100d;
+            var newHealth = (int)(Health + (Health * percent));
+            if (FromFigure)
+            {
+                newHealth += HealthBonus;
+            }
+
+            if (newHealth > maxHealth)
+                newHealth = maxHealth;
+
+            if (allowZero)
+            {
+                if (newHealth < 0)
+                    newHealth = 0;
+            }
+            else
+            {
+                if (newHealth < 10)
+                    newHealth = 10;
+            }
+
+            return newHealth;
         }
     }
 }

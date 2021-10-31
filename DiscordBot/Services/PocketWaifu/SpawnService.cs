@@ -17,7 +17,6 @@ using Sanakan.DiscordBot;
 using Sanakan.DiscordBot.Configuration;
 using Sanakan.DiscordBot.Models;
 using Sanakan.Extensions;
-using Sanakan.Services.Executor;
 using Sanakan.TaskQueue.Messages;
 using Shinden.API;
 using Shinden.Models;

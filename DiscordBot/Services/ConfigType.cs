@@ -6,7 +6,7 @@
         SelfRoles = 1,
         Lands = 2,
         LevelRoles = 3,
-        CmdChannels = 4,
+        CommandChannels = 4,
         NonExpChannels = 5,
         NonSupChannels = 6,
         WaifuCmdChannels = 7,

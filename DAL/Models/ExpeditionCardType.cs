@@ -1,6 +1,6 @@
 ﻿namespace Sanakan.DAL.Models
 {
-    public enum CardExpedition
+    public enum ExpeditionCardType
     {
         None,
         NormalItemWithExp,

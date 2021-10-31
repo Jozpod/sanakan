@@ -68,7 +68,7 @@ namespace Sanakan.Services.Commands
 
             _commandService.AddTypeReader<SlotMachineSetting>(new TypeReaders.SlotMachineSettingTypeReader());
             _commandService.AddTypeReader<WishlistObjectType>(new TypeReaders.WishlistObjectTypeReader());
-            _commandService.AddTypeReader<CardExpedition>(new TypeReaders.ExpeditionTypeReader());
+            _commandService.AddTypeReader<ExpeditionCardType>(new TypeReaders.ExpeditionTypeReader());
             _commandService.AddTypeReader<ProfileType>(new TypeReaders.ProfileTypeReader());
             _commandService.AddTypeReader<ConfigType>(new TypeReaders.ConfigTypeReader());
             _commandService.AddTypeReader<CoinSide>(new TypeReaders.CoinSideTypeReader());
