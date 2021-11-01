@@ -5,6 +5,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.Common;
+using Sanakan.Common.Configuration;
 using Sanakan.Configuration;
 using Sanakan.DAL.Models.Analytics;
 using Sanakan.DAL.Repositories.Abstractions;
@@ -25,7 +26,7 @@ namespace Web.Test.HostedServices
     {
         private readonly MemoryUsageHostedService _service;
         private readonly Mock<ISystemClock> _systemClockMock = new(MockBehavior.Strict);
-        private readonly Mock<IOptionsMonitor<SanakanConfiguration>> _optionsMock = new(MockBehavior.Strict);
+        private readonly Mock<IOptionsMonitor<DaemonsConfiguration>> _optionsMock = new(MockBehavior.Strict);
         private readonly IServiceProvider _serviceProvider;
         private readonly Mock<IOperatingSystem> _operatingSystemMock = new(MockBehavior.Strict);
         private readonly Mock<ISystemAnalyticsRepository> _systemAnalyticsRepositoryMock = new(MockBehavior.Strict);
@@ -57,7 +58,7 @@ namespace Web.Test.HostedServices
         {
             _optionsMock
                 .Setup(pr => pr.CurrentValue)
-                .Returns(new SanakanConfiguration
+                .Returns(new DaemonsConfiguration
                 {
                     CaptureMemoryUsageDueTime = TimeSpan.FromMinutes(1),
                     CaptureMemoryUsagePeriod = TimeSpan.FromMinutes(1),
@@ -76,7 +77,7 @@ namespace Web.Test.HostedServices
         {
             _optionsMock
                 .Setup(pr => pr.CurrentValue)
-                .Returns(new SanakanConfiguration
+                .Returns(new DaemonsConfiguration
                 {
                     CaptureMemoryUsageDueTime = TimeSpan.FromMinutes(1),
                     CaptureMemoryUsagePeriod = TimeSpan.FromMinutes(1),

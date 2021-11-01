@@ -3,6 +3,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Moq.Protected;
+using Sanakan.Common.Configuration;
 using Sanakan.ShindenApi;
 using System;
 using System.Net;
@@ -18,7 +19,7 @@ namespace ShindenApi.Tests
     {
         protected readonly ShindenClient _shindenClient;
         private readonly CookieContainer _cookieContainer = new();
-        private readonly Mock<IOptionsMonitor<ShindenClientOptions>> _options = new();
+        private readonly Mock<IOptionsMonitor<ShindenApiConfiguration>> _options = new();
         private readonly Mock<HttpClientHandler> _httpClientHandlerMock = new();
 
         public ShindenClientTests()
@@ -40,7 +41,7 @@ namespace ShindenApi.Tests
         {
             _options
                 .Setup(pr => pr.CurrentValue)
-                .Returns(new ShindenClientOptions
+                .Returns(new ShindenApiConfiguration
                 {
                     Token = "test_token"
                 });

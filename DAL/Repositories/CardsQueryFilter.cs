@@ -85,9 +85,9 @@ namespace Sanakan.DAL.Repositories
                 case OrderType.NameDes:
                     return query.OrderByDescending(x => x.Name);
                 case OrderType.Picture:
-                    return query.OrderBy(x => (x.CustomImage == null ? (x.Image == null ? 0 : 1) : 2));
+                    return query.OrderBy(x => (x.CustomImage == null ? (x.ImageUrl == null ? 0 : 1) : 2));
                 case OrderType.PictureDes:
-                    return query.OrderByDescending(x => (x.CustomImage == null ? (x.Image == null ? 0 : 1) : 2));
+                    return query.OrderByDescending(x => (x.CustomImage == null ? (x.ImageUrl == null ? 0 : 1) : 2));
                 case OrderType.IdDes:
                     return query.OrderByDescending(x => x.Id);
 

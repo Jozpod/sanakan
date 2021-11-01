@@ -4,6 +4,7 @@ using System.Text;
 using Discord.Commands;
 using DiscordBot.Services;
 using DiscordBot.Services.PocketWaifu;
+using DiscordBot.Services.PocketWaifu.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Sanakan.Common.Models;
@@ -13,6 +14,7 @@ using Sanakan.DiscordBot.Services;
 using Sanakan.DiscordBot.Services.Abstractions;
 using Sanakan.Game.Models;
 using Sanakan.Services;
+using Sanakan.Services.PocketWaifu;
 
 namespace Sanakan.DiscordBot.Builder
 {
@@ -23,6 +25,7 @@ namespace Sanakan.DiscordBot.Builder
             services.AddSingleton<ILandManager, LandManager>();
             services.AddSingleton<IModeratorService, ModeratorService>();
             services.AddSingleton<IDiscordSocketClientAccessor, DiscordSocketClientAccessor>();
+            services.AddSingleton<IWaifuService, WaifuService>();
             return services;
         }
 

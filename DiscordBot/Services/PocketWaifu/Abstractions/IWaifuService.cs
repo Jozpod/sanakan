@@ -15,6 +15,8 @@ namespace DiscordBot.Services.PocketWaifu.Abstractions
     public interface IWaifuService
     {
         Card GenerateNewCard(IUser user, CharacterInfo character, Rarity rarity);
+        Card GenerateNewCard(IUser user, CharacterInfo character);
+        Card GenerateNewCard(IUser user, CharacterInfo character, List<Rarity> rarityExcluded);
         Embed GetBoosterPackList(SocketUser user, List<BoosterPack> packs);
         double GetExpToUpgrade(Card toUp, Card toSac);
         ItemType RandomizeItemFromMarket();
@@ -37,8 +39,6 @@ namespace DiscordBot.Services.PocketWaifu.Abstractions
         Task<Embed> BuildCardViewAsync(Card card, ITextChannel trashChannel, SocketUser owner);
         FightHistory MakeFightAsync(List<PlayerInfo> players, bool oneCard = false);
         string GetDeathLog(FightHistory fight, List<PlayerInfo> players);
-        Card GenerateNewCard(IUser user, CharacterInfo character);
-        Card GenerateNewCard(IUser user, CharacterInfo character, List<Rarity> rarityExcluded);
         Embed GetShopView(ItemWithCost[] items, string name = "Sklepik", string currency = "TC");
         Embed GetItemShopInfo(ItemWithCost item);
         List<Embed> GetWaifuFromCharacterSearchResult(

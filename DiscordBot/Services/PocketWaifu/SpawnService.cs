@@ -10,12 +10,15 @@ using DiscordBot.Services.PocketWaifu.Abstractions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Sanakan.Common;
+using Sanakan.Common.Configuration;
+using Sanakan.Configuration;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Models.Analytics;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot;
-using Sanakan.DiscordBot.Configuration;
-using Sanakan.DiscordBot.Models;
+using Sanakan.DiscordBot.Abstractions;
+using Sanakan.DiscordBot.Abstractions.Extensions;
+using Sanakan.DiscordBot.Abstractions.Models;
 using Sanakan.Extensions;
 using Sanakan.TaskQueue.Messages;
 using Shinden.API;
@@ -28,7 +31,8 @@ namespace Sanakan.Services.PocketWaifu
         private readonly DiscordSocketClient _client;
         private readonly IProducerConsumerCollection<BaseMessage> _blockingPriorityQueue;
         private readonly ILogger _logger;
-        private readonly IOptionsMonitor<BotConfiguration> _config;
+        private readonly IOptionsMonitor<DiscordConfiguration> _discordConfiguration;
+        private readonly IOptionsMonitor<ExperienceConfiguration> _experienceConfiguration;
         private readonly IWaifuService _waifu;
         private readonly ICacheManager _cacheManager;
         private readonly IUserRepository _userRepository;
@@ -44,7 +48,8 @@ namespace Sanakan.Services.PocketWaifu
             DiscordSocketClient client,
             IProducerConsumerCollection<BaseMessage> blockingPriorityQueue,
             IWaifuService waifu,
-            IOptionsMonitor<BotConfiguration> config,
+            IOptionsMonitor<DiscordConfiguration> discordConfiguration,
+            IOptionsMonitor<ExperienceConfiguration> experienceConfiguration,
             ILogger<SpawnService> logger,
             ICacheManager cacheManager,
             ISystemClock systemClock,
@@ -53,7 +58,8 @@ namespace Sanakan.Services.PocketWaifu
             _client = client;
             _blockingPriorityQueue = blockingPriorityQueue;
             _logger = logger;
-            _config = config;
+            _discordConfiguration = discordConfiguration;
+            _experienceConfiguration = experienceConfiguration;
             _waifu = waifu;
             _cacheManager = cacheManager;
             _systemClock = systemClock;
@@ -96,7 +102,7 @@ namespace Sanakan.Services.PocketWaifu
                 return;
             }
 
-            if (!_config.CurrentValue.SafariEnabled)
+            if (!_discordConfiguration.CurrentValue.SafariEnabled)
             {
                 return;
             }
@@ -279,7 +285,7 @@ namespace Sanakan.Services.PocketWaifu
                 return;
             }
 
-            var charNeeded = _config.CurrentValue.CharPerPacket;
+            var charNeeded = _experienceConfiguration.CurrentValue.CharPerPacket;
             if (charNeeded <= 0)
             {
                 charNeeded = 3250;
@@ -317,7 +323,7 @@ namespace Sanakan.Services.PocketWaifu
                 return 1;
             }
 
-            int emoteChars = message.Tags.CountEmotesTextLenght();
+            int emoteChars = message.Tags.CountEmotesTextLength();
             int linkChars = message.Content.CountLinkTextLength();
             int nonWhiteSpaceChars = message.Content.Count(c => c != ' ');
             int quotedChars = message.Content.CountQuotedTextLength();
@@ -349,7 +355,7 @@ namespace Sanakan.Services.PocketWaifu
 
             var guildId = user.Guild.Id;
 
-            if (_config.CurrentValue.BlacklistedGuilds.Any(x => x == guildId))
+            if (_discordConfiguration.CurrentValue.BlacklistedGuilds.Any(x => x == guildId))
             {
                 return;
             }

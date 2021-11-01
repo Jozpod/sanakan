@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Sanakan.TaskQueue.MessageHandlers
 {
-    public class ConnectUserMessageMessageHandler : IMessageHandler<ConnectUserMessage>
+    internal class ConnectUserMessageMessageHandler : IMessageHandler<ConnectUserMessage>
     {
         private readonly ICardRepository _cardRepository;
         private readonly ICacheManager _cacheManager;

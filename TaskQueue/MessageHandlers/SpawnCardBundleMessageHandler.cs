@@ -3,6 +3,8 @@ using Sanakan.Common.Cache;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Models.Analytics;
 using Sanakan.DAL.Repositories.Abstractions;
+using Sanakan.DiscordBot.Abstractions.Extensions;
+using Sanakan.DiscordBot.Abstractions.Models;
 using Sanakan.TaskQueue.Messages;
 using System;
 using System.Collections.Generic;
@@ -11,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace Sanakan.TaskQueue.MessageHandlers
 {
-    public class SpawnCardBundleMessageHandler : IMessageHandler<SpawnCardBundleMessage>
+    internal class SpawnCardBundleMessageHandler : IMessageHandler<SpawnCardBundleMessage>
     {
         private readonly IUserRepository _userRepository;
         private readonly IUserAnalyticsRepository _userAnalyticsRepository;
@@ -72,8 +74,10 @@ namespace Sanakan.TaskQueue.MessageHandlers
             botUser.GameDeck.BoosterPacks.Add(boosterPack);
             await _userRepository.SaveChangesAsync();
 
+            var content = $"{message.Mention} otrzymał pakiet losowych kart.".ToEmbedMessage(EMType.Bot).Build();
+
             await message.MessageChannel
-                .SendMessageAsync("", embed: $"{message.Mention} otrzymał pakiet losowych kart.".ToEmbedMessage(EMType.Bot).Build());
+                .SendMessageAsync("", embed: content);
 
             var record = new UserAnalytics
             {

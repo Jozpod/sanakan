@@ -9,16 +9,16 @@ using System.Threading.Tasks;
 
 namespace Sanakan.TaskQueue.MessageHandlers
 {
-    public class ToggleCardMessageHandler : IMessageHandler<ToggleCardMessage>
+    internal class ToggleCardMessageHandler : IMessageHandler<ToggleCardMessage>
     {
         private readonly IUserRepository _userRepository;
         private readonly ICacheManager _cacheManager;
 
         public ToggleCardMessageHandler(
-            ICardRepository cardRepository,
+            IUserRepository userRepository,
             ICacheManager cacheManager)
         {
-            _cardRepository = cardRepository;
+            _userRepository = userRepository;
         }
 
         public async Task HandleAsync(ToggleCardMessage message)

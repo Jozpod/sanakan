@@ -13,7 +13,7 @@
         public string UserAgent { get; set; }
 
         /// <summary>
-        /// ?
+        /// The mysterious HTTP header used by Shinden API.
         /// </summary>
         public string? Marmolade { get; set; }
     }

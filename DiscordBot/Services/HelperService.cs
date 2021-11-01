@@ -2,7 +2,9 @@
 using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.Extensions.Options;
-using Sanakan.DiscordBot.Configuration;
+using Sanakan.Common.Configuration;
+using Sanakan.DiscordBot.Abstractions.Extensions;
+using Sanakan.DiscordBot.Abstractions.Models;
 using Sanakan.DiscordBot.Services.Abstractions;
 using Sanakan.Extensions;
 using System;
@@ -14,12 +16,12 @@ namespace Sanakan.Services
 {
     public class HelperService : IHelperService
     {
-        private readonly IOptionsMonitor<BotConfiguration> _config;
+        private readonly IOptionsMonitor<DiscordConfiguration> _config;
 
         public IEnumerable<ModuleInfo> PublicModulesInfo { get; set; }
         public Dictionary<string, ModuleInfo> PrivateModulesInfo { get; set; }
 
-        public HelperService(IOptionsMonitor<BotConfiguration> config)
+        public HelperService(IOptionsMonitor<DiscordConfiguration> config)
         {
             _config = config;
             PublicModulesInfo = new List<ModuleInfo>();

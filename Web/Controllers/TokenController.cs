@@ -10,6 +10,7 @@ using Microsoft.Extensions.Options;
 using Sanakan.Web.Configuration;
 using Sanakan.Web.Resources;
 using Sanakan.Configuration;
+using Sanakan.Common.Configuration;
 
 namespace Sanakan.Web.Controllers
 {
@@ -18,11 +19,11 @@ namespace Sanakan.Web.Controllers
     [Produces("application/json")]
     public class TokenController : ControllerBase
     {
-        private readonly IOptionsMonitor<SanakanConfiguration> _config;
+        private readonly IOptionsMonitor<ApiConfiguration> _config;
         private readonly IJwtBuilder _jwtBuilder;
 
         public TokenController(
-            IOptionsMonitor<SanakanConfiguration> config,
+            IOptionsMonitor<ApiConfiguration> config,
             IJwtBuilder jwtBuilder)
         {
             _config = config;
@@ -37,7 +38,7 @@ namespace Sanakan.Web.Controllers
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(TokenData), StatusCodes.Status200OK)]
-        public IActionResult CreateToken([FromBody]string apikey)
+        public IActionResult CreateToken([FromBody]string? apikey = null)
         {
             if (apikey == null)
             {
@@ -47,19 +48,20 @@ namespace Sanakan.Web.Controllers
             var bearer = _config.CurrentValue.ApiKeys
                 .FirstOrDefault(x => x.Key.Equals(apikey))?.Bearer;
 
-            var claims = new[]
+            if (bearer == null)
             {
-                new Claim(JwtRegisteredClaimNames.Website, bearer),
-                new Claim(RegisteredClaimNames.Player, "waifu_player"),
-            };
-
-            if (user != null)
-            {
-                var tokenData = _jwtBuilder.Build(_config.CurrentValue.TokenExpiry, claims);
-                return Ok(tokenData);
+                return ShindenForbidden(Strings.ApiKeyInvalid);
+                
             }
 
-            return ShindenForbidden(Strings.ApiKeyInvalid);
+            var claims = new[]
+                {
+                    new Claim(JwtRegisteredClaimNames.Website, bearer),
+                    new Claim(RegisteredClaimNames.Player, "waifu_player"),
+                };
+
+            var tokenData = _jwtBuilder.Build(_config.CurrentValue.TokenExpiry, claims);
+            return Ok(tokenData);
         }
     }
 }

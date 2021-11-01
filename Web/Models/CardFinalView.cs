@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Sanakan.DAL.Models;
 using Sanakan.Extensions;
+using Sanakan.Game.Extensions;
 
 namespace Sanakan.Api.Models
 {
@@ -34,7 +35,7 @@ namespace Sanakan.Api.Models
             Source = card.Source.GetString();
             AnimeTitle = card.Title ?? "????";
             UltimateQuality = card.Quality;
-            CreatedAt = card.CreationDate;
+            CreatedAt = card.CreatedOn;
             CardPower = card.CardPower;
             Value = card.GetThreeStateMarketValue();
             ExpCntForNextLevel = card.ExpToUpgrade();

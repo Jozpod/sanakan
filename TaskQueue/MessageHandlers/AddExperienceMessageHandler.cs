@@ -3,6 +3,7 @@ using Sanakan.Common.Cache;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Models.Analytics;
 using Sanakan.DAL.Repositories.Abstractions;
+using Sanakan.DiscordBot.Abstractions.Extensions;
 using Sanakan.Extensions;
 using Sanakan.Game;
 using Sanakan.Game.Services;
@@ -14,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace Sanakan.TaskQueue.MessageHandlers
 {
-    public class AddExperienceMessageHandler : IMessageHandler<AddExperienceMessage>
+    internal class AddExperienceMessageHandler : IMessageHandler<AddExperienceMessage>
     {
         private const double DefaultLevelMultiplier = 0.35;
         private readonly ISystemClock _systemClock;

@@ -15,7 +15,8 @@ using Sanakan.Common;
 using Sanakan.DAL.Models.Configuration;
 using Sanakan.DAL.Models.Management;
 using Sanakan.DAL.Repositories.Abstractions;
-using Sanakan.DiscordBot.Models;
+using Sanakan.DiscordBot.Abstractions.Extensions;
+using Sanakan.DiscordBot.Abstractions.Models;
 using Sanakan.DiscordBot.Services.Abstractions;
 using Sanakan.Extensions;
 

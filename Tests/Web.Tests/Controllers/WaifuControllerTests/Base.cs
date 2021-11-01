@@ -4,14 +4,16 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan;
 using Sanakan.Common;
+using Sanakan.Common.Configuration;
 using Sanakan.Configuration;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Repositories.Abstractions;
-using Sanakan.Services.Executor;
 using Sanakan.ShindenApi;
+using Sanakan.TaskQueue.Messages;
 using Sanakan.Web;
 using Sanakan.Web.Controllers;
 using System;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -22,9 +24,9 @@ namespace Sanakan.Web.Tests.Controllers.WaifuControllerTests
     {
         protected readonly WaifuController _controller;
         protected readonly Mock<IShindenClient> _shindenClientMock = new();
-        protected readonly Mock<IOptionsMonitor<SanakanConfiguration>> _optionsMock = new();
+        protected readonly Mock<IOptionsMonitor<ApiConfiguration>> _optionsMock = new();
         protected readonly Mock<IWaifuService> _waifuServiceMock = new();
-        protected readonly Mock<IExecutor> _executorMock = new();
+        protected readonly Mock<IProducerConsumerCollection<BaseMessage>> _blockingPriorityQueueMock = new();
         protected readonly Mock<IFileSystem> _fileSystemMock = new();
         protected readonly Mock<IUserRepository> _userRepositoryMock = new();
         protected readonly Mock<ICardRepository> _cardRepositoryMock = new();
@@ -36,9 +38,9 @@ namespace Sanakan.Web.Tests.Controllers.WaifuControllerTests
         {
             _controller = new WaifuController(
                 _shindenClientMock.Object,
+                _blockingPriorityQueueMock.Object,
                 _optionsMock.Object,
                 _waifuServiceMock.Object,
-                _executorMock.Object,
                 _fileSystemMock.Object,
                 _userRepositoryMock.Object,
                 _cardRepositoryMock.Object,

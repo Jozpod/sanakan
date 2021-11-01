@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Sanakan.Common.Configuration;
 
 namespace Sanakan.ShindenApi.Builder
 {
@@ -12,7 +13,7 @@ namespace Sanakan.ShindenApi.Builder
         {
             services.AddHttpClient<IShindenClient, ShindenClient>((serviceProvider, httpClient) =>
             {
-                var options = serviceProvider.GetRequiredService<IOptionsMonitor<ShindenClientOptions>>();
+                var options = serviceProvider.GetRequiredService<IOptionsMonitor<ShindenApiConfiguration>>();
 
                 httpClient.DefaultRequestHeaders.Add("Accept-Language", "pl");
                 httpClient.DefaultRequestHeaders.Add("Accept", "application/json");

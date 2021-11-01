@@ -20,9 +20,11 @@ using Sanakan.DiscordBot.Resources;
 using Sanakan.DiscordBot;
 using Microsoft.Extensions.DependencyInjection;
 using Sanakan.DiscordBot.Services.Abstractions;
-using Sanakan.DiscordBot.Models;
 using Sanakan.DiscordBot.Abstractions.Extensions;
 using Sanakan.TaskQueue;
+using Sanakan.DiscordBot.Abstractions.Models;
+using Sanakan.Game.Models;
+using Sanakan.DiscordBot.Abstractions;
 
 namespace Sanakan.Modules
 {
@@ -136,25 +138,32 @@ namespace Sanakan.Modules
                 return;
             }
 
-            var session = new AcceptSession(user, null, Context.Client.CurrentUser);
-            await _sessionManager.KillSessionIfExistAsync(session);
+            const int daysInYear = 365;
+            var duration = TimeSpan.FromDays(_randomNumberGenerator.GetRandomValue(daysInYear) + 1);
 
-            var content = $"{user.Mention} na pewno chcesz muta?".ToEmbedMessage(EMType.Error).Build();
-            var msg = await ReplyAsync("", embed: content);
-            await msg.AddReactionsAsync(session.StartReactions);
-
-            // _serviceProvider.GetService();
-            session.Actions = new AcceptMute(_randomNumberGenerator, null)
+            var acceptPayload = new AcceptSession.AcceptSessionPayload
             {
+                Bot = Context.Client.CurrentUser,
                 NotifChannel = notifChannel,
                 MuteRole = muteRole,
                 UserRole = userRole,
-                Message = msg,
                 User = user,
+                Duration = duration,
             };
-            session.Message = msg;
 
-            await _sessionManager.TryAddSession(session);
+            var session = new AcceptSession(user.Id, _systemClock.UtcNow, acceptPayload);
+            _sessionManager.Remove(session);
+
+            var content = $"{user.Mention} na pewno chcesz muta?".ToEmbedMessage(EMType.Error).Build();
+            var msg = await ReplyAsync("", embed: content);
+            await msg.AddReactionsAsync(new IEmote[] {
+                Emojis.Checked,
+                Emojis.DeclineEmote
+            });
+
+            acceptPayload.Message = msg;
+
+            _sessionManager.Add(session);
         }
 
         [Command("zaskórniaki")]

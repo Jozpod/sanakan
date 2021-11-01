@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Sanakan.Common.Configuration;
 using Shinden;
 using Shinden.API;
 using Shinden.Models;
@@ -20,13 +21,13 @@ namespace Sanakan.ShindenApi
     {
         private readonly HttpClient _httpClient;
         private readonly CookieContainer _cookieContainer;
-        private readonly IOptionsMonitor<ShindenClientOptions> _options;
+        private readonly IOptionsMonitor<ShindenApiConfiguration> _options;
         private readonly ILogger _logger;
 
         public ShindenClient(
             HttpClient httpClient,
             CookieContainer cookieContainer,
-            IOptionsMonitor<ShindenClientOptions> options,
+            IOptionsMonitor<ShindenApiConfiguration> options,
             ILogger<ShindenClient> logger)
         {
             //$"{auth.UserAgent} (Shinden.NET/{Assembly.GetAssembly(typeof(ShindenClient)).GetName().Version})"
@@ -563,7 +564,7 @@ namespace Sanakan.ShindenApi
             };
         }
 
-        public async Task<Result<List<FavCharacter>>> GetFavCharactersAsync(ulong userId)
+        public async Task<Result<List<FavCharacter>>> GetFavouriteCharactersAsync(ulong userId)
         {
             var queryData = new Dictionary<string, string>()
             {

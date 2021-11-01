@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Sanakan.Api.Models;
 using Sanakan.Common;
+using Sanakan.Common.Configuration;
 using Sanakan.Configuration;
 using Sanakan.DiscordBot;
 using Sanakan.DiscordBot.Models;
@@ -89,7 +90,7 @@ namespace Sanakan.Web.Controllers
         /// Jeśli chcemy aby link z pola Url zadziałał to należy również sprecyzować tytuł wiadomości.
         /// </remarks>
         /// <param name="id">id wiadomości</param>
-        /// <param name="message">wiadomość</param>
+        /// <param name="message">The message</param>
         [HttpPut("{id}")]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status200OK)]
         public async Task<IActionResult> ModifyeRichMessageAsync(
@@ -97,35 +98,32 @@ namespace Sanakan.Web.Controllers
         {
             var config = _config.CurrentValue;
 
-            _ = Task.Run(async () =>
+            foreach (var rmc in config.RMConfig)
             {
-                foreach (var rmc in config.RMConfig)
+                var guild = _client.Client.GetGuild(rmc.GuildId);
+
+                if (guild == null)
                 {
-                    var guild = _client.Client.GetGuild(rmc.GuildId);
-
-                    if (guild == null)
-                    {
-                        continue;
-                    }
-                    
-                    var channel = guild.GetTextChannel(rmc.ChannelId);
-
-                    if (channel == null)
-                    {
-                        continue;
-                    }
-
-                    var msg = await channel.GetMessageAsync(id);
-
-                    if (msg == null)
-                    {
-                        continue;
-                    }
-
-                        await ((IUserMessage)msg).ModifyAsync(x => x.Embed = message.ToEmbed());
-                    break;
+                    continue;
                 }
-            });
+
+                var channel = guild.GetTextChannel(rmc.ChannelId);
+
+                if (channel == null)
+                {
+                    continue;
+                }
+
+                var msg = await channel.GetMessageAsync(id);
+
+                if (msg == null)
+                {
+                    continue;
+                }
+
+                await ((IUserMessage)msg).ModifyAsync(x => x.Embed = message.ToEmbed());
+                break;
+            }
 
             return Ok("Message modified!");
         }

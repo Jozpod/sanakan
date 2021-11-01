@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Sanakan.TaskQueue.MessageHandlers
 {
-    public class ReplaceCharacterIdsInCardMessageHandler : IMessageHandler<ReplaceCharacterIdsInCardMessage>
+    internal class ReplaceCharacterIdsInCardMessageHandler : IMessageHandler<ReplaceCharacterIdsInCardMessage>
     {
         private readonly ICardRepository _cardRepository;
         private readonly ICacheManager _cacheManager;

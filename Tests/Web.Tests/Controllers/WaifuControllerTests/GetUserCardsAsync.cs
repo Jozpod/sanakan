@@ -6,7 +6,6 @@ using Sanakan.Common;
 using Sanakan.Configuration;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Repositories.Abstractions;
-using Sanakan.Services.Executor;
 using Sanakan.ShindenApi;
 using Sanakan.Web.Controllers;
 using System;

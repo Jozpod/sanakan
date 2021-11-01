@@ -5,81 +5,72 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sanakan.TaskQueue
 {
-    internal class BlockingPriorityQueue : IProducerConsumerCollection<BaseMessage>
+    internal class BlockingPriorityQueue : IBlockingPriorityQueue, IDisposable
     {
-        private readonly BlockingCollection<BaseMessage> _queue;
+        private readonly BaseMessage[] _items;
+        private readonly object _syncRoot = new();
+        private readonly ManualResetEventSlim _manualResetEventSlim;
+        private int _head;
 
         public BlockingPriorityQueue()
         {
-            _queue = new BlockingCollection<BaseMessage>();
+            _items = new BaseMessage[100];
+            _head = -1;
+            _manualResetEventSlim = new ();
         }
 
-        public int Count => _queue.Count;
-
-        public bool IsSynchronized => throw new NotImplementedException();
-
-        public object SyncRoot => throw new NotImplementedException();
-
-        public void CopyTo(BaseMessage[] array, int index)
+        public bool TryEnqueue(BaseMessage message)
         {
-            throw new NotImplementedException();
-        }
+            lock (_syncRoot)
+            {
+                if(_head == _items.Length)
+                {
+                    return false;
+                }
+                _head++;
+                _items[_head] = message;
+            }
 
-        public void CopyTo(Array array, int index)
-        {
-            throw new NotImplementedException();
-        }
+            if(!_manualResetEventSlim.IsSet)
+            {
+                _manualResetEventSlim.Set();
+            }
 
-        public IEnumerator<BaseMessage> GetEnumerator()
-        {
-            throw new NotImplementedException();
-        }
-
-        public BaseMessage[] ToArray()
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool TryAdd(BaseMessage item)
-        {
-            _queue.Add(item);
             return true;
         }
 
-        public bool TryTake([MaybeNullWhen(false)] out BaseMessage item)
+        public IEnumerable<BaseMessage> GetEnumerable(CancellationToken token = default)
         {
-            if(_queue.TryTake(out var baseMessage))
+            while(true)
             {
-                item = baseMessage;
-                return true;
-            }
+                token.ThrowIfCancellationRequested();
 
-            item = null;
-            return false;
+                if(_head == -1)
+                {
+                    _manualResetEventSlim.Reset();
+                    _manualResetEventSlim.Wait();
+                }
+
+                BaseMessage item;
+                lock (_syncRoot)
+                {
+                    item = _items[_head];
+                    _items[_head] = null;
+                    _head--;
+                }
+
+                yield return item;
+            }
         }
 
-        IEnumerator IEnumerable.GetEnumerator()
+        public void Dispose()
         {
-            return _queue.GetConsumingEnumerable().GetEnumerator();
-        }
-
-        public class Test : IEnumerator
-        {
-            public object Current => throw new NotImplementedException();
-
-            public bool MoveNext()
-            {
-                throw new NotImplementedException();
-            }
-
-            public void Reset()
-            {
-                throw new NotImplementedException();
-            }
+            _manualResetEventSlim.Dispose();
         }
     }
 }

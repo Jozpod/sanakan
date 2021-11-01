@@ -2022,6 +2022,7 @@
           "Microsoft.Extensions.Logging.Abstractions": "5.0.0",
           "Microsoft.Extensions.Options": "5.0.0",
           "Newtonsoft.Json": "13.0.1",
+          "Sanakan.Common": "1.0.0",
           "System.Net.Http.Json": "5.0.0"
         },
         "compile": {

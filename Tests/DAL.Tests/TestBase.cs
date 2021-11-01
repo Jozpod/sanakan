@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Sanakan.Common.Builder;
+using Sanakan.Common.Configuration;
 using Sanakan.Configuration;
 using Sanakan.DAL.Builder;
 using Sanakan.DAL.Repositories.Abstractions;

@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "5Nr8awKVZmtvJaFsd46Dt934x6s1wsC+Y/8EHkCrYWLw/Od9A5mSVUZa1mA49LkAagw8vdZCzKFh6FtGFZFqEQ==",
+  "dgSpecHash": "kLxZc+wn76xC7J51rCaS7Fz3M8FxgO11GtqmDWAr0ZkutowmWb0j37HrnuJpqEaKhRm7Y0Pdxc0iV3UX0stOlg==",
   "success": true,
   "projectFilePath": "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\Web\\Web.csproj",
   "expectedPackageFiles": [
@@ -56,6 +56,7 @@
     "C:\\Users\\jozefpodlecki\\.nuget\\packages\\microsoft.entityframeworkcore.sqlserver\\5.0.11\\microsoft.entityframeworkcore.sqlserver.5.0.11.nupkg.sha512",
     "C:\\Users\\jozefpodlecki\\.nuget\\packages\\microsoft.extensions.caching.abstractions\\5.0.0\\microsoft.extensions.caching.abstractions.5.0.0.nupkg.sha512",
     "C:\\Users\\jozefpodlecki\\.nuget\\packages\\microsoft.extensions.caching.memory\\5.0.0\\microsoft.extensions.caching.memory.5.0.0.nupkg.sha512",
+    "C:\\Users\\jozefpodlecki\\.nuget\\packages\\microsoft.extensions.configuration\\5.0.0\\microsoft.extensions.configuration.5.0.0.nupkg.sha512",
     "C:\\Users\\jozefpodlecki\\.nuget\\packages\\microsoft.extensions.configuration.abstractions\\5.0.0\\microsoft.extensions.configuration.abstractions.5.0.0.nupkg.sha512",
     "C:\\Users\\jozefpodlecki\\.nuget\\packages\\microsoft.extensions.configuration.binder\\5.0.0\\microsoft.extensions.configuration.binder.5.0.0.nupkg.sha512",
     "C:\\Users\\jozefpodlecki\\.nuget\\packages\\microsoft.extensions.dependencyinjection\\5.0.2\\microsoft.extensions.dependencyinjection.5.0.2.nupkg.sha512",

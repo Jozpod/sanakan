@@ -29,7 +29,7 @@ namespace Sanakan.DAL.Models
             ExpeditionDate = date;
             PAS = PreAssembledFigure.None;
             TagList = new List<CardTag>();
-            CreationDate = date;
+            CreatedOn = date;
             Name = name;
             StarStyle = StarStyle.Full;
             Source = CardSource.Other;
@@ -56,7 +56,7 @@ namespace Sanakan.DAL.Models
             RestartCount = 0;
             Active = false;
             Affection = 0;
-            Image = null;
+            ImageUrl = null;
             Health = 0;
             ExpCount = 0;
     }
@@ -80,14 +80,14 @@ namespace Sanakan.DAL.Models
         [Required]
         public string Name { get; set; } = string.Empty;
         public ulong CharacterId { get; set; }
-        public DateTime CreationDate { get; set; }
+        public DateTime CreatedOn { get; set; }
         public CardSource Source { get; set; }
 
         [StringLength(50)]
         public string? Title { get; set; }
 
         [StringLength(50)]
-        public string? Image { get; set; }
+        public string? ImageUrl { get; set; }
 
         [StringLength(50)]
         public string? CustomImage { get; set; }
@@ -291,7 +291,7 @@ namespace Sanakan.DAL.Models
         }
 
         public bool HasImage() => GetImage() != null;
-        public string GetImage() => CustomImage ?? Image;
+        public string GetImage() => CustomImage ?? ImageUrl;
 
         public int GetAttackWithBonus()
         {

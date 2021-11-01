@@ -13,15 +13,21 @@ using Microsoft.OpenApi.Models;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
 using Sanakan.Common;
+using Sanakan.Common.Builder;
+using Sanakan.Common.Configuration;
+using Sanakan.Configuration;
 using Sanakan.DAL.Builder;
 using Sanakan.DAL.Repositories;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot;
+using Sanakan.DiscordBot.Builder;
 using Sanakan.DiscordBot.Services;
 using Sanakan.Services;
 using Sanakan.Services.Commands;
 using Sanakan.Services.PocketWaifu;
 using Sanakan.ShindenApi;
+using Sanakan.ShindenApi.Builder;
+using Sanakan.TaskQueue.Builder;
 using Sanakan.Web.HostedService;
 using System;
 using System.Collections.Generic;
@@ -43,9 +49,6 @@ namespace Sanakan
 
         public void ConfigureServices(IServiceCollection services)
         {
-            //var tmpCnf = config.Get();
-            //services.AddSingleton(config);
-
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(opt =>
             {
@@ -120,17 +123,6 @@ namespace Sanakan
                 c.CustomSchemaIds(x => x.FullName);
             });
 
-            //services.AddSingleton<IExecutor>(_executor);
-            //services.AddSingleton(_sessions);
-            //services.AddSingleton(_profile);
-            //services.AddSingleton(_config);
-            //services.AddSingleton(_client);
-            //services.AddSingleton(_helper);
-            //services.AddSingleton(_events);
-            //services.AddSingleton(_chaos);
-            //services.AddSingleton(_waifu);
-            //services.AddSingleton(_spawn);
-            //services.AddSingleton(_mod);
             services.AddSingleton<IShindenClient, ShindenClient>();
             //services.AddSingleton<IShindenClient, ShindenClient>(pr =>
             //{
@@ -143,9 +135,7 @@ namespace Sanakan
             
             services.AddSingleton<HelperService>();
             services.AddSingleton<CommandHandler>();
-            services.AddSingleton<IImageProcessor, ImageProcessor>();
-            services.AddSingleton<IWaifuService, WaifuService>();
-            //_shindenClient =
+            services.AddDiscordBotServices();
 
             services.AddSingleton(pr => {
                 return new DiscordSocketClient(new DiscordSocketConfig()
@@ -155,14 +145,30 @@ namespace Sanakan
                 });
             });
             services.AddSingleton(Encoding.UTF8);
-            services.AddSingleton<Services.Shinden>();
-            services.AddSingleton<Services.LandManager>();
-            services.AddSingleton<IRandomNumberGenerator, RandomNumberGenerator>();
-            services.AddSingleton<IDiscordSocketClientAccessor, DiscordSocketClientAccessor>();
+            services.AddRandomNumberGenerator();
+            services.AddFileSystem();
+            services.AddTaskManager();
             services.AddRepositories();
-            services.AddHostedService<DiscordBotHostedService>();
+            services.AddTaskQueue();
+            services.AddShindenApi();
+            services.AddCache(Configuration.GetSection("Cache"));
+            services.Configure<SanakanConfiguration>(Configuration);
+            services.Configure<DaemonsConfiguration>(Configuration.GetSection("Daemons"));
+            services.Configure<DatabaseConfiguration>(Configuration.GetSection("Database"));
+            services.Configure<LocaleConfiguration>(Configuration.GetSection("Locale"));
+            services.Configure<DiscordConfiguration>(Configuration.GetSection("Discord"));
+            services.Configure<ShindenApiConfiguration>(Configuration.GetSection("ShindenApi"));
+            services.Configure<ApiConfiguration>(Configuration.GetSection("ShindenApi"));
+            services.Configure<ExperienceConfiguration>(Configuration.GetSection("Experience"));
+            services.Configure<ApiConfiguration>(Configuration.GetSection("SanakanApi"));
+            services.Configure<List<RichMessageConfig>>(Configuration.GetSection("RMConfig"));
+            services.AddHostedService<TaskQueueHostedService>();
             services.AddHostedService<MemoryUsageHostedService>();
-            services.AddHostedService<DiscordBotHostedService>();
+            services.AddHostedService<SessionHostedService>();
+            services.AddHostedService<ProfileHostedService>();
+            services.AddHostedService<SupervisorHostedService>();
+            services.AddHostedService<ModeratorHostedService>();
+            services.AddHostedService<ChaosHostedService>();
             services.AddHostedService<DiscordBotHostedService>();
         }
 

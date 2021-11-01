@@ -8,6 +8,7 @@ using Sanakan.Common;
 using Sanakan.Common.Configuration;
 using Sanakan.DAL.Models.Configuration;
 using Sanakan.DAL.Repositories.Abstractions;
+using Sanakan.DiscordBot.Abstractions;
 using Sanakan.DiscordBot.Abstractions.Extensions;
 using Sanakan.DiscordBot.Abstractions.Models;
 using Sanakan.DiscordBot.Services.Abstractions;
@@ -24,7 +25,7 @@ namespace Sanakan.Modules
     [Name("Ogólne")]
     public class HelperModule : ModuleBase<SocketCommandContext>
     {
-        private ISessionManager _session;
+        private ISessionManager _sessionManager;
         private IHelperService _helperService;
         private ILogger _logger;
         private IOptionsMonitor<DiscordConfiguration> _config;
@@ -42,7 +43,7 @@ namespace Sanakan.Modules
             IOperatingSystem operatingSystem,
             IServiceProvider serviceProvider)
         {
-            _session = session;
+            _sessionManager = session;
             _helperService = helper;
             _logger = logger;
             _config = config;
@@ -217,6 +218,8 @@ namespace Sanakan.Modules
                 return;
             }
 
+            var discordUserId = repMsg.Author.Id;
+
             if (repMsg.Author.Id == Context.User.Id)
             {
                 var user = Context.User as SocketGuildUser;
@@ -241,25 +244,33 @@ namespace Sanakan.Modules
                     return;
                 }
 
-                var session = new AcceptSession(user, null, Context.Client.CurrentUser);
-                await _session.KillSessionIfExistAsync(session);
-
-                var msg = await ReplyAsync("", embed: $"{user.Mention} raportujesz samego siebie? Może pomogę! Na pewno chcesz muta?"
-                    .ToEmbedMessage(EMType.Error).Build());
-
-                await msg.AddReactionsAsync(session.StartReactions);
-
-                session.Actions = new AcceptMute(null, null)
+                var payload = new AcceptSession.AcceptSessionPayload
                 {
+                    Bot = Context.Client.CurrentUser,
                     NotifChannel = notifChannel,
                     MuteRole = muteRole,
                     UserRole = userRole,
-                    Message = msg,
                     User = user,
                 };
-                session.Message = msg;
 
-                await _session.TryAddSession(session);
+                var session = new AcceptSession(user.Id, _systemClock.UtcNow, payload);
+
+                if(_sessionManager.Exists<AcceptSession>(discordUserId))
+                {
+                    await ReplyAsync("", embed: $"?????????".ToEmbedMessage(EMType.Error).Build());
+                    return;
+                }
+
+                _sessionManager.Remove(session);
+
+                var userMessage = await ReplyAsync("", embed: $"{user.Mention} raportujesz samego siebie? Może pomogę! Na pewno chcesz muta?"
+                    .ToEmbedMessage(EMType.Error).Build());
+
+                await userMessage.AddReactionsAsync(new IEmote[] { Emojis.Checked, Emojis.DeclineEmote });
+
+                payload.Message = userMessage;
+
+                _sessionManager.Add(session);
                 return;
             }
 

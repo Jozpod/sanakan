@@ -447,7 +447,11 @@
         "frameworks": {
           "net5.0": {
             "targetAlias": "net5.0",
-            "projectReferences": {}
+            "projectReferences": {
+              "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\Common\\Common.csproj": {
+                "projectPath": "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\Common\\Common.csproj"
+              }
+            }
           }
         },
         "warningProperties": {
@@ -651,6 +655,10 @@
             "Microsoft.AspNetCore.Mvc.Versioning": {
               "target": "Package",
               "version": "[4.2.0, )"
+            },
+            "Microsoft.Extensions.Configuration": {
+              "target": "Package",
+              "version": "[5.0.0, )"
             },
             "Microsoft.Extensions.DependencyInjection": {
               "target": "Package",

@@ -11,6 +11,7 @@ using Sanakan.DAL.Models;
 using Sanakan.DAL.Repositories;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot;
+using Sanakan.DiscordBot.Abstractions;
 using Sanakan.DiscordBot.Abstractions.Extensions;
 using Sanakan.DiscordBot.Abstractions.Models;
 using Sanakan.DiscordBot.Resources;
@@ -41,7 +42,7 @@ namespace Sanakan.Modules
         private readonly IShindenClient _shindenClient;
         private readonly ISessionManager _sessionManager;
         private readonly ILogger _logger;
-        private readonly IWaifuService _waifu;
+        private readonly IWaifuService _waifuService;
         private readonly ICacheManager _cacheManager;
         private readonly IGameDeckRepository _gameDeckRepository;
         private readonly IUserRepository _userRepository;
@@ -54,7 +55,7 @@ namespace Sanakan.Modules
             IWaifuService waifu,
             IShindenClient client,
             ILogger<PocketWaifuModule> logger,
-            SessionManager session,
+            ISessionManager session,
             ICacheManager cacheManager,
             IRandomNumberGenerator randomNumberGenerator,
             IGuildConfigRepository guildConfigRepository,
@@ -63,7 +64,7 @@ namespace Sanakan.Modules
             ICardRepository cardRepository,
             ISystemClock systemClock)
         {
-            _waifu = waifu;
+            _waifuService = waifu;
             _logger = logger;
             _shindenClient = client;
             _sessionManager = session;
@@ -83,11 +84,17 @@ namespace Sanakan.Modules
         public async Task ShowCardsAsync(
             [Summary("typ sortowania (klatka/jakość/atak/obrona/relacja/życie/tag(-)/uszkodzone/niewymienialne/obrazek(-/c)/unikat)")]
             HaremType type = HaremType.Rarity,
-            [Summary("tag)")][Remainder]string tag = null)
+            [Summary("tag)")][Remainder]string? tag = null)
         {
             var userMention = Context.User.Mention;
-            var session = new ListSession<Card>(Context.User, Context.Client.CurrentUser);
-            await _sessionManager.KillSessionIfExistAsync(session);
+
+            var sessionPayload = new ListSession<Card>.ListSessionPayload
+            {
+                Bot = Context.Client.CurrentUser,
+            };
+
+            var session = new ListSession<Card>(Context.User.Id, _systemClock.UtcNow, sessionPayload);
+            _sessionManager.Remove(session);
 
             if (type == HaremType.Tag && tag == null)
             {
@@ -102,9 +109,9 @@ namespace Sanakan.Modules
                 return;
             }
 
-            session.Enumerable = false;
-            session.ListItems = _waifu.GetListInRightOrder(user.GameDeck.Cards, type, tag);
-            session.Embed = new EmbedBuilder
+            sessionPayload.Enumerable = false;
+            sessionPayload.ListItems = _waifuService.GetListInRightOrder(user.GameDeck.Cards, type, tag);
+            sessionPayload.Embed = new EmbedBuilder
             {
                 Color = EMType.Info.Color(),
                 Title = "Harem"
@@ -112,15 +119,15 @@ namespace Sanakan.Modules
 
             try
             {
-                var dm = await Context.User.GetOrCreateDMChannelAsync();
-                var msg = await dm.SendMessageAsync("", embed: session.BuildPage(0));
-                await msg.AddReactionsAsync( new [] {
+                var dmChannel = await Context.User.GetOrCreateDMChannelAsync();
+                var message = await dmChannel.SendMessageAsync("", embed: session.BuildPage(0));
+                await message.AddReactionsAsync( new [] {
                     Emojis.LeftwardsArrow,
                     Emojis.RightwardsArrow
                 });
 
-                session.Message = msg;
-                await _sessionManager.TryAddSession(session);
+                sessionPayload.Message = message;
+                _sessionManager.Add(session);
 
                 await ReplyAsync("", embed: $"{userMention} lista poszła na PW!".ToEmbedMessage(EMType.Success).Build());
             }
@@ -148,7 +155,7 @@ namespace Sanakan.Modules
 
             if (numberOfItem <= 0)
             {
-                await ReplyAsync("", embed: _waifu.GetItemList(Context.User, itemList));
+                await ReplyAsync("", embed: _waifuService.GetItemList(Context.User, itemList));
                 return;
             }
 
@@ -200,7 +207,7 @@ namespace Sanakan.Modules
             }
 
             var trashChannel = Context.Guild.GetTextChannel(gConfig.WaifuConfig.TrashCommandsChannel);
-            await ReplyAsync("", embed: await _waifu.BuildCardImageAsync(card, trashChannel, user, showStats));
+            await ReplyAsync("", embed: await _waifuService.BuildCardImageAsync(card, trashChannel, user, showStats));
         }
 
         [Command("karta-", RunMode = RunMode.Async)]
@@ -264,7 +271,7 @@ namespace Sanakan.Modules
 
             var gConfig = await _guildConfigRepository.GetCachedGuildFullConfigAsync(Context.Guild.Id);
             var trashChannel = Context.Guild.GetTextChannel(gConfig.WaifuConfig.TrashCommandsChannel);
-            await ReplyAsync("", embed: await _waifu.BuildCardViewAsync(card, trashChannel, user));
+            await ReplyAsync("", embed: await _waifuService.BuildCardViewAsync(card, trashChannel, user));
         }
 
         [Command("koszary")]
@@ -275,7 +282,7 @@ namespace Sanakan.Modules
             [Summary("nr przedmiotu")]int itemNumber = 0,
             [Summary("info/4 (liczba przedmiotów do zakupu/id tytułu)")]string info = "0")
         {
-            var content = await _waifu.ExecuteShopAsync(ShopType.Pvp, Context.User, itemNumber, info);
+            var content = await _waifuService.ExecuteShopAsync(ShopType.Pvp, Context.User, itemNumber, info);
             await ReplyAsync("", embed: content);
         }
 
@@ -287,7 +294,7 @@ namespace Sanakan.Modules
             [Summary("nr przedmiotu")]int itemNumber = 0,
             [Summary("info/4 (liczba przedmiotów do zakupu/id tytułu)")]string info = "0")
         {
-            var content = await _waifu.ExecuteShopAsync(
+            var content = await _waifuService.ExecuteShopAsync(
                 ShopType.Activity,
                 Context.User,
                 itemNumber,
@@ -303,7 +310,7 @@ namespace Sanakan.Modules
             [Summary("nr przedmiotu")]int itemNumber = 0,
             [Summary("info/4 (liczba przedmiotów do zakupu/id tytułu)")]string info = "0")
         {
-            var content = await _waifu.ExecuteShopAsync(ShopType.Normal, Context.User, itemNumber, info);
+            var content = await _waifuService.ExecuteShopAsync(ShopType.Normal, Context.User, itemNumber, info);
             await ReplyAsync("", embed: content);
         }
 
@@ -317,11 +324,18 @@ namespace Sanakan.Modules
             [Summary("liczba przedmiotów/link do obrazka/typ gwiazdki")]string detail = "1")
         {
             var discordUser = Context.User;
-            var session = new CraftingSession(discordUser, _waifu, null);
-            
-            if (_sessionManager.SessionExist(session))
+
+            var sessionPayload = new CraftSession.CraftSessionPayload
             {
-                await ReplyAsync("", embed: $"{discordUser.Mention} nie możesz używać przedmiotów, gdy masz otwarte menu tworzenia kart.".ToEmbedMessage(EMType.Error).Build());
+
+            };
+
+            var session = new CraftSession(discordUser.Id, _systemClock.UtcNow, sessionPayload);
+            
+            if (_sessionManager.Exists<CraftSession>(discordUser.Id))
+            {
+                await ReplyAsync("", embed: $"{discordUser.Mention} nie możesz używać przedmiotów, gdy masz otwarte menu tworzenia kart."
+                    .ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
@@ -500,7 +514,7 @@ namespace Sanakan.Modules
                     }
                     karmaChange += 0.001 * itemCount;
                     embed.Description += "Zmieniono typ gwiazdki!";
-                    _waifu.DeleteCardImageIfExist(card);
+                    _waifuService.DeleteCardImageIfExist(card);
                     break;
 
                 case ItemType.ChangeCardImage:
@@ -562,7 +576,7 @@ namespace Sanakan.Modules
                     }
                     karmaChange += 0.001 * itemCount;
                     embed.Description += "Ustawiono nowy obrazek.";
-                    _waifu.DeleteCardImageIfExist(card);
+                    _waifuService.DeleteCardImageIfExist(card);
                     break;
 
                 case ItemType.SetCustomImage:
@@ -571,7 +585,7 @@ namespace Sanakan.Modules
                         await ReplyAsync("", embed: "Nie wykryto obrazka! Upewnij się, że podałeś poprawny adres!".ToEmbedMessage(EMType.Error).Build());
                         return;
                     }
-                    if (card.Image == null)
+                    if (card.ImageUrl == null)
                     {
                         await ReplyAsync("", embed: "Aby ustawić własny obrazek, karta musi posiadać wcześniej ustawiony główny (na stronie)!".ToEmbedMessage(EMType.Error).Build());
                         return;
@@ -580,7 +594,7 @@ namespace Sanakan.Modules
                     consumeItem = !card.FromFigure;
                     karmaChange += 0.001 * itemCount;
                     embed.Description += "Ustawiono nowy obrazek. Pamiętaj jednak, że dodanie nieodpowiedniego obrazka może skutkować skasowaniem karty!";
-                    _waifu.DeleteCardImageIfExist(card);
+                    _waifuService.DeleteCardImageIfExist(card);
                     break;
 
                 case ItemType.SetCustomBorder:
@@ -589,7 +603,7 @@ namespace Sanakan.Modules
                         await ReplyAsync("", embed: "Nie wykryto obrazka! Upewnij się, że podałeś poprawny adres!".ToEmbedMessage(EMType.Error).Build());
                         return;
                     }
-                    if (card.Image == null)
+                    if (card.ImageUrl == null)
                     {
                         await ReplyAsync("", embed: "Aby ustawić ramkę, karta musi posiadać wcześniej ustawiony obrazek na stronie!".ToEmbedMessage(EMType.Error).Build());
                         return;
@@ -597,7 +611,7 @@ namespace Sanakan.Modules
                     card.CustomBorder = detail;
                     karmaChange += 0.001 * itemCount;
                     embed.Description += "Ustawiono nowy obrazek jako ramkę. Pamiętaj jednak, że dodanie nieodpowiedniego obrazka może skutkować skasowaniem karty!";
-                    _waifu.DeleteCardImageIfExist(card);
+                    _waifuService.DeleteCardImageIfExist(card);
                     break;
 
                 case ItemType.BetterIncreaseUpgradeCnt:
@@ -676,7 +690,7 @@ namespace Sanakan.Modules
                     karmaChange += 0.02 * itemCount;
                     card.Dere = WaifuService.RandomizeDere(_randomNumberGenerator);
                     embed.Description += $"Nowy charakter to: {card.Dere}!";
-                    _waifu.DeleteCardImageIfExist(card);
+                    _waifuService.DeleteCardImageIfExist(card);
                     break;
 
                 case ItemType.CardParamsReRoll:
@@ -684,7 +698,7 @@ namespace Sanakan.Modules
                     card.Attack = WaifuService.RandomizeAttack(_randomNumberGenerator, card.Rarity);
                     card.Defence = WaifuService.RandomizeDefence(_randomNumberGenerator, card.Rarity);
                     embed.Description += $"Nowa moc karty to: 🔥{card.GetAttackWithBonus()} 🛡{card.GetDefenceWithBonus()}!";
-                    _waifu.DeleteCardImageIfExist(card);
+                    _waifuService.DeleteCardImageIfExist(card);
                     break;
 
                 case ItemType.CheckAffection:
@@ -706,7 +720,7 @@ namespace Sanakan.Modules
                         bUser.GameDeck.Cards.Remove(card);
                     }
                     embed.Description += $"Rozpoczęto tworzenie figurki.";
-                    _waifu.DeleteCardImageIfExist(card);
+                    _waifuService.DeleteCardImageIfExist(card);
                     break;
 
                 case ItemType.FigureHeadPart:
@@ -828,7 +842,7 @@ namespace Sanakan.Modules
 
             if (numberOfPack == 0)
             {
-                await ReplyAsync("", embed: _waifu.GetBoosterPackList(Context.User, bUser.GameDeck.BoosterPacks.ToList()));
+                await ReplyAsync("", embed: _waifuService.GetBoosterPackList(Context.User, bUser.GameDeck.BoosterPacks.ToList()));
                 return;
             }
 
@@ -873,7 +887,7 @@ namespace Sanakan.Modules
 
             foreach (var pack in packs)
             {
-                var cards = await _waifu.OpenBoosterPackAsync(Context.User, pack);
+                var cards = await _waifuService.OpenBoosterPackAsync(Context.User, pack);
                 if (cards.Count < pack.CardCount)
                 {
                     await ReplyAsync("", embed: $"{Context.User.Mention} nie udało się otworzyć pakietu.".ToEmbedMessage(EMType.Error).Build());
@@ -992,7 +1006,7 @@ namespace Sanakan.Modules
             }
 
             await _userRepository.SaveChangesAsync();
-            _waifu.DeleteCardImageIfExist(card);
+            _waifuService.DeleteCardImageIfExist(card);
 
             _cacheManager.ExpireTag(new string[] { $"user-{bUser.Id}", "users" });
 
@@ -1020,7 +1034,7 @@ namespace Sanakan.Modules
 
             if (card.FromFigure)
             {
-                _waifu.DeleteCardImageIfExist(card);
+                _waifuService.DeleteCardImageIfExist(card);
                 await ReplyAsync("", embed: $"{discordUser.Mention} tej karty nie można zaktualizować."
                     .ToEmbedMessage(EMType.Error).Build());
                 return;
@@ -1046,13 +1060,13 @@ namespace Sanakan.Modules
 
                 card.Unique = false;
                 card.Name = characterInfo.ToString();
-                card.Image = hasImage ? pictureUrl : null;
+                card.ImageUrl = hasImage ? pictureUrl : null;
                 card.Title = characterInfo?.Relations?
                     .OrderBy(x => x.CharacterId)
                     .FirstOrDefault()?.Title ?? "????";
 
                 await _userRepository.SaveChangesAsync();
-                _waifu.DeleteCardImageIfExist(card);
+                _waifuService.DeleteCardImageIfExist(card);
 
                 _cacheManager.ExpireTag(new string[] { $"user-{bUser.Id}", "users" });
 
@@ -1119,8 +1133,8 @@ namespace Sanakan.Modules
             ++bUser.Stats.UpgaredCards;
             bUser.GameDeck.Karma += 1;
 
-            card.Defence = _waifu.GetDefenceAfterLevelUp(card.Rarity, card.Defence);
-            card.Attack = _waifu.GetAttactAfterLevelUp(card.Rarity, card.Attack);
+            card.Defence = _waifuService.GetDefenceAfterLevelUp(card.Rarity, card.Defence);
+            card.Attack = _waifuService.GetAttactAfterLevelUp(card.Rarity, card.Attack);
             card.UpgradesCount -= (card.Rarity == Rarity.SS ? 5 : 1);
             card.Rarity = --card.Rarity;
             card.Affection += 1;
@@ -1143,7 +1157,7 @@ namespace Sanakan.Modules
             }
 
             await _userRepository.SaveChangesAsync();
-            _waifu.DeleteCardImageIfExist(card);
+            _waifuService.DeleteCardImageIfExist(card);
 
             _cacheManager.ExpireTag(new string[] { $"user-{bUser.Id}", "users" });
 
@@ -1189,7 +1203,7 @@ namespace Sanakan.Modules
                 bUser.Stats.ReleasedCards += 1;
 
                 bUser.GameDeck.Cards.Remove(card);
-                _waifu.DeleteCardImageIfExist(card);
+                _waifuService.DeleteCardImageIfExist(card);
             }
 
             var response = $"kartę: {cardsToSac.First().GetString(false, false, true)}";
@@ -1259,7 +1273,7 @@ namespace Sanakan.Modules
                 bUser.Stats.DestroyedCards += 1;
 
                 bUser.GameDeck.Cards.Remove(card);
-                _waifu.DeleteCardImageIfExist(card);
+                _waifuService.DeleteCardImageIfExist(card);
             }
 
             var response = $"kartę: {cardsToSac.First().GetString(false, false, true)}";
@@ -1448,7 +1462,7 @@ namespace Sanakan.Modules
 
             freeCard.EndsAt = _systemClock.UtcNow.AddHours(22);
 
-            var card = _waifu.GenerateNewCard(Context.User, await _waifu.GetRandomCharacterAsync(),
+            var card = _waifuService.GenerateNewCard(Context.User, await _waifuService.GetRandomCharacterAsync(),
                 new List<Rarity>() { Rarity.SS, Rarity.S, Rarity.A });
 
             bool wasOnWishlist = botuser.GameDeck.RemoveCharacterFromWishList(card.CharacterId);
@@ -1559,11 +1573,11 @@ namespace Sanakan.Modules
             var reward = "";
             for (int i = 0; i < itemCnt; i++)
             {
-                var itmType = _waifu.RandomizeItemFromMarket();
+                var itmType = _waifuService.RandomizeItemFromMarket();
                 var itmQu = Quality.Broken;
                 if (itmType.HasDifferentQualities())
                 {
-                    itmQu = _waifu.RandomizeItemQualityFromMarket();
+                    itmQu = _waifuService.RandomizeItemQualityFromMarket();
                 }
 
                 var item = itmType.ToItem(1, itmQu);
@@ -1685,11 +1699,11 @@ namespace Sanakan.Modules
             string reward = "";
             for (int i = 0; i < itemCnt; i++)
             {
-                var itmType = _waifu.RandomizeItemFromBlackMarket();
+                var itmType = _waifuService.RandomizeItemFromBlackMarket();
                 var itmQu = Quality.Broken;
                 if (itmType.HasDifferentQualities())
                 {
-                    itmQu = _waifu.RandomizeItemQualityFromMarket();
+                    itmQu = _waifuService.RandomizeItemQualityFromMarket();
                 }
 
                 var item = itmType.ToItem(1, itmQu);
@@ -1764,13 +1778,13 @@ namespace Sanakan.Modules
                 ++bUser.Stats.SacraficeCards;
                 bUser.GameDeck.Karma -= 0.28;
 
-                var exp = _waifu.GetExpToUpgrade(cardToUp, card);
+                var exp = _waifuService.GetExpToUpgrade(cardToUp, card);
                 cardToUp.Affection += 0.07;
                 cardToUp.ExpCount += exp;
                 totalExp += exp;
 
                 bUser.GameDeck.Cards.Remove(card);
-                _waifu.DeleteCardImageIfExist(card);
+                _waifuService.DeleteCardImageIfExist(card);
             }
 
             _ = cardToUp.CalculateCardPower();
@@ -1832,7 +1846,7 @@ namespace Sanakan.Modules
                         }
                     }
 
-                    var span = _systemClock.UtcNow - card.CreationDate;
+                    var span = _systemClock.UtcNow - card.CreatedOn;
                     if (span.TotalDays > 5) card.Affection -= (int)span.TotalDays * 0.1;
 
                     _ = card.CalculateCardPower();
@@ -1852,7 +1866,7 @@ namespace Sanakan.Modules
                 thisCard.InCage = false;
                 cntIn = 1;
 
-                var span = _systemClock.UtcNow - thisCard.CreationDate;
+                var span = _systemClock.UtcNow - thisCard.CreatedOn;
                 if (span.TotalDays > 5) thisCard.Affection -= (int)span.TotalDays * 0.1;
 
                 _ = thisCard.CalculateCardPower();
@@ -2040,7 +2054,7 @@ namespace Sanakan.Modules
             try
             {
                 var dm = await Context.User.GetOrCreateDMChannelAsync();
-                foreach (var emb in await _waifu.GetContentOfWishlist(c, p, t))
+                foreach (var emb in await _waifuService.GetContentOfWishlist(c, p, t))
                 {
                     await dm.SendMessageAsync("", embed: emb);
                     await Task.Delay(TimeSpan.FromSeconds(2));
@@ -2097,7 +2111,7 @@ namespace Sanakan.Modules
             var titleIds = bUser.GameDeck.GetTitlesWishList();
             var cardIds = bUser.GameDeck.GetCardsWishList();
 
-            var cards = await _waifu.GetCardsFromWishlist(
+            var cards = await _waifuService.GetCardsFromWishlist(
                 cardIds,
                 characterIds,
                 titleIds,
@@ -2120,7 +2134,7 @@ namespace Sanakan.Modules
             try
             {
                 var dm = await Context.User.GetOrCreateDMChannelAsync();
-                foreach (var emb in _waifu.GetWaifuFromCharacterTitleSearchResult(cards, Context.Client, !showNames))
+                foreach (var emb in _waifuService.GetWaifuFromCharacterTitleSearchResult(cards, Context.Client, !showNames))
                 {
                     await dm.SendMessageAsync("", embed: emb);
                     await Task.Delay(TimeSpan.FromSeconds(2));
@@ -2181,7 +2195,7 @@ namespace Sanakan.Modules
             var titleIds = bUser.GameDeck.GetTitlesWishList();
             var cardIds = bUser.GameDeck.GetCardsWishList();
 
-            var cards = await _waifu.GetCardsFromWishlist(
+            var cards = await _waifuService.GetCardsFromWishlist(
                 cardIds,
                 characterIds,
                 titleIds,
@@ -2204,7 +2218,7 @@ namespace Sanakan.Modules
             try
             {
                 var dm = await Context.User.GetOrCreateDMChannelAsync();
-                foreach (var emb in _waifu.GetWaifuFromCharacterTitleSearchResult(cards, Context.Client, !showNames))
+                foreach (var emb in _waifuService.GetWaifuFromCharacterTitleSearchResult(cards, Context.Client, !showNames))
                 {
                     await dm.SendMessageAsync("", embed: emb);
                     await Task.Delay(TimeSpan.FromSeconds(2));
@@ -2826,7 +2840,7 @@ namespace Sanakan.Modules
                 try
                 {
                     var dm = await Context.User.GetOrCreateDMChannelAsync();
-                    await dm.SendMessageAsync("", embed: _waifu.GetActiveList(active));
+                    await dm.SendMessageAsync("", embed: _waifuService.GetActiveList(active));
                     await dm.CloseAsync();
 
                     await ReplyAsync("", embed: $"{Context.User.Mention} lista poszła na PW!".ToEmbedMessage(EMType.Success).Build());
@@ -2911,7 +2925,7 @@ namespace Sanakan.Modules
 
             var characterUrl = UrlHelpers.GetCharacterURL(character.CharacterId);
 
-            var msgs = _waifu.GetWaifuFromCharacterSearchResult(
+            var msgs = _waifuService.GetWaifuFromCharacterSearchResult(
                 $"[**{character}**]({characterUrl}) posiadają:",
                 cards,
                 Context.Client,
@@ -2955,7 +2969,7 @@ namespace Sanakan.Modules
                 return;
             }
 
-            var charactersResult = await _shindenClient.GetFavCharactersAsync(user.ShindenId.Value);
+            var charactersResult = await _shindenClient.GetFavouriteCharactersAsync(user.ShindenId.Value);
 
             if (charactersResult.Value == null)
             {
@@ -2981,7 +2995,7 @@ namespace Sanakan.Modules
             try
             {
                 var dm = await Context.User.GetOrCreateDMChannelAsync();
-                foreach (var emb in _waifu.GetWaifuFromCharacterTitleSearchResult(cards, Context.Client, !showNames))
+                foreach (var emb in _waifuService.GetWaifuFromCharacterTitleSearchResult(cards, Context.Client, !showNames))
                 {
                     await dm.SendMessageAsync("", embed: emb);
                     await Task.Delay(TimeSpan.FromSeconds(2));
@@ -3034,7 +3048,7 @@ namespace Sanakan.Modules
             try
             {
                 var dm = await Context.User.GetOrCreateDMChannelAsync();
-                foreach (var emb in _waifu.GetWaifuFromCharacterTitleSearchResult(cards, Context.Client, !showNames))
+                foreach (var emb in _waifuService.GetWaifuFromCharacterTitleSearchResult(cards, Context.Client, !showNames))
                 {
                     await dm.SendMessageAsync("", embed: emb);
                     await Task.Delay(TimeSpan.FromSeconds(2));
@@ -3067,9 +3081,14 @@ namespace Sanakan.Modules
                 return;
             }
 
-            var session = new ExchangeSession(sourceUser, destinationUser);
+            var payload = new ExchangeSession.ExchangeSessionPayload
+            {
 
-            if (_sessionManager.SessionExist(session))
+            };
+
+            var session = new ExchangeSession(sourceUser.Id, _systemClock.UtcNow, payload);
+
+            if (_sessionManager.Exists<ExchangeSession>(sourceUser.Id))
             {
                 await ReplyAsync("", embed: $"{sourceUser.Mention} Ty lub twój partner znajdujecie się obecnie w trakcie wymiany.".ToEmbedMessage(EMType.Error).Build());
                 return;
@@ -3084,7 +3103,7 @@ namespace Sanakan.Modules
                 return;
             }
 
-            session.P1 = new PlayerInfo
+            payload.P1 = new PlayerInfo
             {
                 User = sourceUser,
                 Dbuser = duser1,
@@ -3093,7 +3112,7 @@ namespace Sanakan.Modules
                 Cards = new List<Card>()
             };
 
-            session.P2 = new PlayerInfo
+            payload.P2 = new PlayerInfo
             {
                 User = destinationUser,
                 Dbuser = duser2,
@@ -3102,15 +3121,14 @@ namespace Sanakan.Modules
                 Cards = new List<Card>()
             };
 
-            session.Name = "🔄 **Wymiana:**";
-            session.Tips = $"Polecenia: `dodaj [WID]`, `usuń [WID]`.\n\n\u0031\u20E3 "
-                + $"- zakończenie dodawania {sourceUser.Mention}\n\u0032\u20E3 - zakończenie dodawania {destinationUser.Mention}";
+            payload.Name = "🔄 **Wymiana:**";
+            payload.Tips = $"Polecenia: `dodaj [WID]`, `usuń [WID]`.\n\n\u0031\u20E3 - zakończenie dodawania {sourceUser.Mention}\n\u0032\u20E3 - zakończenie dodawania {destinationUser.Mention}";
 
             var msg = await ReplyAsync("", embed: session.BuildEmbed());
             await msg.AddReactionsAsync(session.StartReactions);
-            session.Message = msg;
+            payload.Message = msg;
 
-            await _sessionManager.TryAddSession(session);
+            _sessionManager.Add(session);
         }
 
         [Command("tworzenie")]
@@ -3126,8 +3144,7 @@ namespace Sanakan.Modules
                 return;
             }
 
-            var session = new CraftingSession(discordUser, _waifu, null);
-            if (_sessionManager.SessionExist(session))
+            if (_sessionManager.Exists<CraftSession>(discordUser.Id))
             {
                 await ReplyAsync("", embed: $"{discordUser.Mention} już masz otwarte menu tworzenia kart."
                     .ToEmbedMessage(EMType.Error).Build());
@@ -3150,24 +3167,31 @@ namespace Sanakan.Modules
                 return;
             }
 
-            session.P1 = new PlayerInfo
+            var payload = new CraftSession.CraftSessionPayload
             {
-                User = discordUser,
-                Dbuser = databaseUser,
-                Accepted = false,
-                CustomString = "",
-                Items = new List<Item>()
+                PlayerInfo = new PlayerInfo
+                {
+                    User = discordUser,
+                    Dbuser = databaseUser,
+                    Accepted = false,
+                    CustomString = "",
+                    Items = new List<Item>()
+                },
+                Name = "⚒ **Tworzenie:**",
+                Tips = $"Polecenia: `dodaj/usuń [nr przedmiotu] [liczba]`.",
+                Items = databaseUser.GameDeck.Items.ToList(),
             };
 
-            session.Name = "⚒ **Tworzenie:**";
-            session.Tips = $"Polecenia: `dodaj/usuń [nr przedmiotu] [liczba]`.";
-            session.Items = databaseUser.GameDeck.Items.ToList();
-
+            var session = new CraftSession(
+                discordUser.Id,
+                _systemClock.UtcNow,
+                payload);
             var userMessage = await ReplyAsync("", embed: session.BuildEmbed());
-            await userMessage.AddReactionsAsync(session.StartReactions);
-            session.Message = userMessage;
+            payload.Message = userMessage;
 
-            await _sessionManager.TryAddSession(session);
+            await userMessage.AddReactionsAsync(session.StartReactions);
+
+            _sessionManager.Add(session);
         }
 
         [Command("wyprawa status", RunMode = RunMode.Async)]
@@ -3232,7 +3256,7 @@ namespace Sanakan.Modules
             }
 
             var oldName = thisCard.Expedition;
-            var message = _waifu.EndExpedition(botUser, thisCard);
+            var message = _waifuService.EndExpedition(botUser, thisCard);
             _ = thisCard.CalculateCardPower();
 
             await _userRepository.SaveChangesAsync();
@@ -3409,8 +3433,8 @@ namespace Sanakan.Modules
                     }
                 };
 
-            var fight = _waifu.MakeFightAsync(players);
-            string deathLog = _waifu.GetDeathLog(fight, players);
+            var fight = _waifuService.MakeFightAsync(players);
+            string deathLog = _waifuService.GetDeathLog(fight, players);
 
             var res = FightResult.Lose;
             if (fight.Winner == null)
@@ -3704,7 +3728,7 @@ namespace Sanakan.Modules
                     var config = await _guildConfigRepository.GetCachedGuildFullConfigAsync(Context.Guild.Id);
                     var channel = Context.Guild.GetTextChannel(config.WaifuConfig.TrashCommandsChannel);
 
-                    embed.WithImageUrl(await _waifu.GetWaifuProfileImageAsync(tChar, channel));
+                    embed.WithImageUrl(await _waifuService.GetWaifuProfileImageAsync(tChar, channel));
                     embed.WithFooter(new EmbedFooterBuilder().WithText($"{tChar.Name}"));
                 }
             }

@@ -18,21 +18,45 @@ using Sanakan.Configuration;
 using Sanakan.Common.Configuration;
 using Sanakan.TaskQueue.Messages;
 using System.Collections.Concurrent;
+using Sanakan.DAL.Repositories.Abstractions;
+using Sanakan.Extensions;
+using Sanakan.DiscordBot.Abstractions.Extensions;
+using Sanakan.DAL.Models;
+using Sanakan.DiscordBot.Abstractions.Models;
 
 namespace Sanakan.Web.HostedService
 {
     public class DiscordBotHostedService : BackgroundService
     {
         private DiscordSocketClient _client;
-        private readonly IProducerConsumerCollection<BaseMessage> _taskQueue;
+        private readonly IProducerConsumerCollection<BaseMessage> _blockingPriorityQueue;
         private readonly IDiscordSocketClientAccessor _discordSocketClientAccessor;
         private readonly CommandHandler _commandHandler;
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
-        private readonly IServiceScopeFactory _serviceScopeFactory;
+        private readonly IOptionsMonitor<DiscordConfiguration> _discordConfiguration;
+        private readonly IOptionsMonitor<ExperienceConfiguration> _experienceConfiguration;
         private readonly IOptionsMonitor<DiscordConfiguration> _configuration;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
+        private readonly ISystemClock _systemClock;
         private Dictionary<ulong, ulong> _messages;
         private Dictionary<ulong, ulong> _commands;
+        private const double SAVE_AT = 5;
+
+        private Dictionary<ulong, double> _userExperienceMap;
+
+        private Dictionary<ulong, DateTime> _saved;
+        private Dictionary<ulong, ulong> _characters;
+
+        private Dictionary<ulong, UserExperienceStat> _userExperienceStatsMap;
+
+        private class UserExperienceStat
+        {
+            public DateTime SavedOn { get; set; }
+            public ulong CharacterCount { get; set; }
+            public ulong CommandsCount { get; set; }
+            public ulong MessagesCount { get; set; }
+        }
 
         public DiscordBotHostedService(
             IFileSystem fileSystem,
@@ -76,6 +100,8 @@ namespace Sanakan.Web.HostedService
                 _client.UserJoined += UserJoinedAsync;
                 _client.UserLeft += UserLeftAsync;
                 _client.MessageReceived += HandleMessageAsync;
+                _client.MessageDeleted += HandleDeletedMsgAsync;
+                _client.MessageUpdated += HandleUpdatedMsgAsync;
                 stoppingToken.ThrowIfCancellationRequested();
 
                 var configuration = _configuration.CurrentValue;
@@ -148,7 +174,12 @@ namespace Sanakan.Web.HostedService
             var countMsg = true;
             var calculateExp = true;
 
-            var config = await _guildConfigRepository.GetCachedGuildFullConfigAsync(user.Guild.Id);
+            using var serviceScope = _serviceScopeFactory.CreateScope();
+            var serviceProvider = serviceScope.ServiceProvider;
+            var guildConfigRepository = serviceProvider.GetRequiredService<IGuildConfigRepository>();
+            var userRepository = serviceProvider.GetRequiredService<IUserRepository>();
+
+            var config = await guildConfigRepository.GetCachedGuildFullConfigAsync(user.Guild.Id);
             if (config != null)
             {
                 var role = user.Guild.GetRole(config.UserRoleId);
@@ -175,17 +206,17 @@ namespace Sanakan.Web.HostedService
 
             if (!_messages.Any(x => x.Key == user.Id))
             {
-                if (!await _userRepository.ExistsByDiscordIdAsync(user.Id))
+                if (!await userRepository.ExistsByDiscordIdAsync(user.Id))
                 {
                     var databseUser = new User(user.Id, _systemClock.StartOfMonth);
-                    _userRepository.Add(databseUser);
-                    await _userRepository.SaveChangesAsync();
+                    userRepository.Add(databseUser);
+                    await userRepository.SaveChangesAsync();
                 }
             }
 
             if (countMsg)
             {
-                CountMessage(user.Id, _config.CurrentValue.IsCommand(message.Content));
+                CountMessage(user.Id, _configuration.CurrentValue.IsCommand(message.Content));
             }
             CalculateExpAndCreateTask(user, message, calculateExp);
         }
@@ -216,10 +247,10 @@ namespace Sanakan.Web.HostedService
 
         private double GetExpPointBasedOnCharCount(double charCount)
         {
-            var config = _config.CurrentValue;
-            var cpp = config.Exp.CharPerPoint;
-            var min = config.Exp.MinPerMessage;
-            var max = config.Exp.MaxPerMessage;
+            var experienceConfiguration = _experienceConfiguration.CurrentValue;
+            var cpp = experienceConfiguration.CharPerPoint;
+            var min = experienceConfiguration.MinPerMessage;
+            var max = experienceConfiguration.MaxPerMessage;
 
             double experience = charCount / cpp;
             if (experience < min)
@@ -296,6 +327,17 @@ namespace Sanakan.Web.HostedService
             }); ;
         }
 
+        private bool CheckLastSave(ulong userId)
+        {
+            if (!_saved.Any(x => x.Key == userId))
+            {
+                _saved.Add(userId, _systemClock.UtcNow);
+                return false;
+            }
+
+            return (_systemClock.UtcNow - _saved[userId].AddMinutes(30)).TotalSeconds > 1;
+        }
+
         private async Task DisconnectedAsync(Exception ex)
         {
             _logger.LogError("Discord client disconnected.", ex);
@@ -322,18 +364,23 @@ namespace Sanakan.Web.HostedService
 
         private async Task BotLeftGuildAsync(SocketGuild guild)
         {
-            var gConfig = await _guildConfigRepository.GetGuildConfigOrCreateAsync(guild.Id);
-            _guildConfigRepository.Remove(gConfig);
+            using var serviceScope = _serviceScopeFactory.CreateScope();
+            var guildConfigRepository = serviceScope.ServiceProvider.GetRequiredService<IGuildConfigRepository>();
+            var timeStatusRepository = serviceScope.ServiceProvider.GetRequiredService<ITimeStatusRepository>();
+            var penaltyInfoRepository = serviceScope.ServiceProvider.GetRequiredService<IPenaltyInfoRepository>();
 
-            var stats = await _timeStatusRepository.GetByGuildIdAsync(guild.Id);
-            _timeStatusRepository.RemoveRange(stats);
+            var gConfig = await guildConfigRepository.GetGuildConfigOrCreateAsync(guild.Id);
+            guildConfigRepository.Remove(gConfig);
 
-            await _timeStatusRepository.SaveChangesAsync();
+            var stats = await timeStatusRepository.GetByGuildIdAsync(guild.Id);
+            timeStatusRepository.RemoveRange(stats);
 
-            var mutes = await _penaltyInfoRepository.GetByGuildIdAsync(guild.Id);
-            _penaltyInfoRepository.RemoveRange(mutes);
+            await timeStatusRepository.SaveChangesAsync();
 
-            await _penaltyInfoRepository.SaveChangesAsync();
+            var mutes = await penaltyInfoRepository.GetByGuildIdAsync(guild.Id);
+            penaltyInfoRepository.RemoveRange(mutes);
+
+            await penaltyInfoRepository.SaveChangesAsync();
         }
 
         private async Task UserJoinedAsync(SocketGuildUser user)
@@ -345,13 +392,16 @@ namespace Sanakan.Web.HostedService
 
             var guildId = user.Guild.Id;
 
-            if (_config.CurrentValue
+            if (_discordConfiguration.CurrentValue
                 .BlacklistedGuilds.Any(x => x == guildId))
             {
                 return;
             }
 
-            var guildConfig = await _guildConfigRepository.GetCachedGuildFullConfigAsync(guildId);
+            using var serviceScope = _serviceScopeFactory.CreateScope();
+            var guildConfigRepository = serviceScope.ServiceProvider.GetRequiredService<IGuildConfigRepository>();
+
+            var guildConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(guildId);
 
             if (guildConfig?.WelcomeMessage == null)
             {
@@ -399,9 +449,12 @@ namespace Sanakan.Web.HostedService
             var config = _configuration.CurrentValue;
             var guildId = user.Guild.Id;
 
+            using var serviceScope = _serviceScopeFactory.CreateScope();
+            var guildConfigRepository = serviceScope.ServiceProvider.GetRequiredService<IGuildConfigRepository>();
+
             if (!config.BlacklistedGuilds.Any(x => x == guildId))
             {
-                var guildConfig = await _guildConfigRepository.GetCachedGuildFullConfigAsync(guildId);
+                var guildConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(guildId);
                 if (guildConfig?.GoodbyeMessage == null)
                 {
                     return;
@@ -423,31 +476,160 @@ namespace Sanakan.Web.HostedService
                 return;
             }
 
-            _taskQueue.TryAdd(new DeleteUserMessage
+            _blockingPriorityQueue.TryAdd(new DeleteUserMessage
             {
+                DiscordUserId = user.Id,
             });
 
             //var moveTask = new Task<Task>(async () =>
             //{
-            //    var duser = await _userRepository.GetUserOrCreateAsync(user.Id);
-            //    var fakeu = await _userRepository.GetUserOrCreateAsync(1);
-
-            //    foreach (var card in duser.GameDeck.Cards)
-            //    {
-            //        card.InCage = false;
-            //        card.TagList.Clear();
-            //        card.LastIdOwner = user.Id;
-            //        card.GameDeckId = fakeu.GameDeck.Id;
-            //    }
-
-            //    _userRepository.Remove(duser);
-
-            //    await _userRepository.SaveChangesAsync();
-
-            //    _cacheManager.ExpireTag(new string[] { "users" });
+         
             //});
 
             //await _executor.TryAdd(new Executable("delete user", moveTask, Priority.High), TimeSpan.FromSeconds(1));
+        }
+
+        private async Task HandleUpdatedMsgAsync(
+    Cacheable<IMessage, ulong> oldMessage,
+    SocketMessage newMessage,
+    ISocketMessageChannel channel)
+        {
+            if (!oldMessage.HasValue)
+            {
+                return;
+            }
+
+
+            if (newMessage.Author.IsBot || newMessage.Author.IsWebhook)
+            {
+                return;
+            }
+
+            if (oldMessage.Value.Content.Equals(newMessage.Content, StringComparison.CurrentCultureIgnoreCase))
+            {
+                return;
+            }
+
+            if (newMessage.Channel is SocketGuildChannel gChannel)
+            {
+                if (_discordConfiguration.CurrentValue.BlacklistedGuilds.Any(x => x == gChannel.Guild.Id))
+                {
+                    return;
+                }
+
+                _ = Task.Run(async () =>
+                {
+                    await LogMessageAsync(gChannel, oldMessage.Value, newMessage);
+                });
+            }
+
+            await Task.CompletedTask;
+        }
+
+        private async Task HandleDeletedMsgAsync(Cacheable<IMessage, ulong> message, ISocketMessageChannel channel)
+        {
+            if (!message.HasValue)
+            {
+                return;
+            }
+
+            if (message.Value.Author.IsBot || message.Value.Author.IsWebhook)
+            {
+                return;
+            }
+
+            if (message.Value.Content.Length < 4 && message.Value.Attachments.Count < 1)
+            {
+                return;
+            }
+
+            if (message.Value.Channel is SocketGuildChannel gChannel)
+            {
+                if (_discordConfiguration.CurrentValue.BlacklistedGuilds.Any(x => x == gChannel.Guild.Id))
+                {
+                    return;
+                }
+
+                _ = Task.Run(async () =>
+                {
+                    await LogMessageAsync(gChannel, message.Value);
+                });
+            }
+
+            await Task.CompletedTask;
+        }
+
+        private async Task LogMessageAsync(SocketGuildChannel channel, IMessage oldMessage, IMessage? newMessage = null)
+        {
+            using var serviceScope = _serviceScopeFactory.CreateScope();
+            var guildConfigRepository = serviceScope.ServiceProvider.GetRequiredService<IGuildConfigRepository>();
+
+            if (oldMessage.Content.IsEmotikunEmote() && newMessage == null)
+            {
+                return;
+            }
+
+            var config = await guildConfigRepository.GetCachedGuildFullConfigAsync(channel.Guild.Id);
+
+            if (config == null)
+            {
+                return;
+            }
+
+            var textChannel = channel.Guild.GetTextChannel(config.LogChannelId);
+
+            if (textChannel == null)
+            {
+                return;
+            }
+
+            var jump = (newMessage == null) ? "" : $"{newMessage.GetJumpUrl()}";
+            await textChannel.SendMessageAsync(jump, embed: BuildMessage(oldMessage, newMessage));
+        }
+
+        private Embed BuildMessage(IMessage oldMessage, IMessage newMessage)
+        {
+            string content = (newMessage == null) ? oldMessage.Content
+                : $"**Stara:**\n{oldMessage.Content}\n\n**Nowa:**\n{newMessage.Content}";
+
+            return new EmbedBuilder
+            {
+                Color = (newMessage == null) ? EMType.Warning.Color() : EMType.Info.Color(),
+                Author = new EmbedAuthorBuilder().WithUser(oldMessage.Author, true),
+                Fields = GetFields(oldMessage, newMessage == null),
+                Description = content.ElipseTrimToLength(1800),
+            }.Build();
+        }
+
+        private List<EmbedFieldBuilder> GetFields(IMessage message, bool deleted)
+        {
+            var fields = new List<EmbedFieldBuilder>
+            {
+                new EmbedFieldBuilder
+                {
+                    IsInline = true,
+                    Name = deleted ? "Napisano:" : "Edytowano:",
+                    Value = message.GetLocalCreatedAtShortDateTime()
+                },
+                new EmbedFieldBuilder
+                {
+                    IsInline = true,
+                    Name = "Kanał:",
+                    Value = message.Channel.Name
+                }
+            };
+
+            if (deleted)
+            {
+                fields.Add(new EmbedFieldBuilder
+                {
+                    IsInline = true,
+                    Name = "Załączniki:",
+                    Value = message.Attachments?.Count
+                });
+            }
+
+            return fields;
         }
 
         private async Task SendMessageAsync(string message, ITextChannel channel)

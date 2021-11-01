@@ -2,7 +2,6 @@
 using Discord.Commands;
 using Discord.WebSocket;
 using DiscordBot.Services;
-using DiscordBot.Services.Session;
 using Microsoft.EntityFrameworkCore;
 using Sanakan.Common;
 using Sanakan.Common.Models;
@@ -285,15 +284,21 @@ namespace Sanakan.Modules
         public async Task ShowTopAsync(
             [Summary("rodzaj topki (poziom/sc/tc/pc/ac/posty(m/ms)/kart(a/y/ym)/karma(-))/pvp(s)")]TopType type = TopType.Level)
         {
-            var session = new ListSession<string>(Context.User, Context.Client.CurrentUser);
-            await _sessionManager.KillSessionIfExistAsync(session);
+            var payload = new ListSession<string>.ListSessionPayload
+            {
+                Bot = Context.Client.CurrentUser,
+            };
+
+            var discordUserId = Context.User.Id;
+            var session = new ListSession<string>(discordUserId, _systemClock.UtcNow, payload, SessionExecuteCondition.ReactionAdded);
+            _sessionManager.RemoveIfExists<ListSession<string>>(discordUserId);
 
             var building = await ReplyAsync("", embed: $"🔨 Trwa budowanie topki...".ToEmbedMessage(EMType.Bot).Build());
             var users = await _userRepository.GetCachedAllUsersAsync();
-            session.ListItems = _profileService.BuildListView(_profileService.GetTopUsers(users, type), type, Context.Guild);
+            var topUsers = _profileService.GetTopUsers(users, type, _systemClock.UtcNow);
+            payload.ListItems = _profileService.BuildListView(topUsers, type, Context.Guild);
 
-            session.Event = ExecuteOn.ReactionAdded;
-            session.Embed = new EmbedBuilder
+            payload.Embed = new EmbedBuilder
             {
                 Color = EMType.Info.Color(),
                 Title = $"Topka {type.Name()}"
@@ -306,8 +311,8 @@ namespace Sanakan.Modules
                 Emojis.RightwardsArrow,
             });
 
-            session.Message = msg;
-            await _sessionManager.TryAddSession(session);
+            payload.Message = msg;
+            _sessionManager.Add(session);
         }
 
         [Command("widok waifu")]

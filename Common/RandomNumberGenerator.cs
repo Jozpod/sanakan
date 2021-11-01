@@ -5,7 +5,7 @@ using System.Security.Cryptography;
 
 namespace Sanakan.Common
 {
-    public class RandomNumberGenerator : IRandomNumberGenerator
+    internal class RandomNumberGenerator : IRandomNumberGenerator
     {
         private readonly System.Security.Cryptography.RandomNumberGenerator _randomNumberGenerator;
 

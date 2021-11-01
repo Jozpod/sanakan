@@ -12,9 +12,12 @@ using DiscordBot.Services.PocketWaifu.Abstractions;
 using Sanakan.Common;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Repositories.Abstractions;
-using Sanakan.DiscordBot.Services;
+using Sanakan.DiscordBot.Abstractions.Extensions;
+using Sanakan.DiscordBot.Abstractions.Models;
 using Sanakan.DiscordBot.Services.PocketWaifu;
 using Sanakan.Extensions;
+using Sanakan.Game.Extensions;
+using Sanakan.Game.Services;
 using Sanakan.Services.PocketWaifu.Fight;
 using Sanakan.ShindenApi;
 using Sanakan.ShindenApi.Utilities;
@@ -24,9 +27,9 @@ using Item = Sanakan.DAL.Models.Item;
 
 namespace Sanakan.Services.PocketWaifu
 {
-    public class WaifuService : IWaifuService
+    internal class WaifuService : IWaifuService
     {
-        private readonly Events _events;
+        private readonly EventsService _events;
         private readonly IFileSystem _fileSystem;
         private readonly ISystemClock _systemClock;
         private readonly IImageProcessor _imageProcessor;
@@ -42,7 +45,7 @@ namespace Sanakan.Services.PocketWaifu
             IFileSystem fileSystem,
             ISystemClock systemClock,
             IShindenClient client,
-            Events events,
+            EventsService events,
             ICacheManager cacheManager,
             IRandomNumberGenerator randomNumberGenerator,
             IResourceManager resourceManager,
@@ -244,7 +247,7 @@ namespace Sanakan.Services.PocketWaifu
                     return list.Where(x => x.HasImage()).ToList();
 
                 case HaremType.NoPicture:
-                    return list.Where(x => x.Image == null).ToList();
+                    return list.Where(x => x.ImageUrl == null).ToList();
 
                 case HaremType.CustomPicture:
                     return list.Where(x => x.CustomImage != null).ToList();
@@ -671,7 +674,7 @@ namespace Sanakan.Services.PocketWaifu
                     return $"{discordUser.Mention} masz już taką figurkę.".ToEmbedMessage(EMType.Error).Build();
                 }
 
-                var figure = thisItem.Item.Type.ToPAFigure();
+                var figure = thisItem.Item.Type.ToPAFigure(_systemClock.UtcNow);
                 if (figure != null) bUser.GameDeck.Figures.Add(figure);
 
                 IncreaseMoneySpentOnCards(type, bUser, realCost);
@@ -835,7 +838,7 @@ namespace Sanakan.Services.PocketWaifu
 
             if (hasImage)
             {
-                card.Image = pictureUrl;
+                card.ImageUrl = pictureUrl;
             }
 
             card.Health = RandomizeHealth(_randomNumberGenerator, card);
@@ -1064,7 +1067,9 @@ namespace Sanakan.Services.PocketWaifu
                 await Task.Delay(TimeSpan.FromSeconds(2));
 
                 if (check-- == 0)
+                {
                     return null;
+                }
             }
             return response.Value;
         }

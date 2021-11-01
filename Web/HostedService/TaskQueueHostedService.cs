@@ -11,7 +11,9 @@ using System.Threading.Tasks;
 using Sanakan.Configuration;
 using Sanakan.DAL.Repositories.Abstractions;
 using System.Collections.Concurrent;
-using Sanakan.Web.Messages;
+using Sanakan.TaskQueue.Messages;
+using Sanakan.Common.Configuration;
+using Sanakan.TaskQueue.MessageHandlers;
 
 namespace Sanakan.Web.HostedService
 {
@@ -22,14 +24,12 @@ namespace Sanakan.Web.HostedService
         private readonly IOptionsMonitor<SanakanConfiguration> _options;
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly IProducerConsumerCollection<BaseMessage> _producerConsumerCollection;
-        private const int MB = 1048576;
 
         public TaskQueueHostedService(
             ILogger<MemoryUsageHostedService> logger,
             IOptionsMonitor<SanakanConfiguration> options,
             ISystemClock systemClock,
-            IServiceScopeFactory serviceScopeFactory,
-            IOperatingSystem operatingSystem)
+            IServiceScopeFactory serviceScopeFactory)
         {
             _logger = logger;
             _systemClock = systemClock;
@@ -37,13 +37,17 @@ namespace Sanakan.Web.HostedService
             _options = options;
         }
 
+       
+
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             try
             {
-                foreach (var item in _producerConsumerCollection)
+                foreach (var message in _producerConsumerCollection)
                 {
-                    
+                    using var serviceScope = _serviceScopeFactory.CreateScope();
+                    var serviceProvider = serviceScope.ServiceProvider;
+                    serviceProvider.GetMessageHandler(message);
                 }
             }
             catch (OperationCanceledException)

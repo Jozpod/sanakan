@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace Sanakan.TaskQueue.MessageHandlers
 {
-    public class LotteryMessageHandler : IMessageHandler<LotteryMessage>
+    internal class LotteryMessageHandler : IMessageHandler<LotteryMessage>
     {
         private readonly IRandomNumberGenerator _randomNumberGenerator;
         private readonly IUserRepository _userRepository;

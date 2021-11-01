@@ -51,7 +51,7 @@ dotnet run
 | **[`ChaosDueTime`](#ChaosDueTime)** | `{String\|TimeSpan}` | `01:00:00`  | The inital amount of time to delay before <>. |
 | **[`ChaosPeriod`](#ChaosPeriod)** | `{String\|TimeSpan}` | `01:00:00`  | The time interval between invocations of <>. |
 | **[`SessionDueTime`](#SessionDueTime)** | `{String\|TimeSpan}` | `00:00:05` | The inital amount of time to delay before <>. |
-| **[`SessionPeriod`](#SessionPeriod)** | `{String\|TimeSpan}`  |  `00:00:05` | The time interval between invocations of <>. |
+| **[`SessionPeriod`](#SessionPeriod)** | `{String\|TimeSpan}`  |  `00:00:30` | The time interval between invocations of <>. |
 | **[`ModeratorDueTime`](#ModeratorDueTime)** | `{String\|TimeSpan}` | `00:01:00` | The inital amount of time to delay before <>. |
 | **[`ModeratorPeriod`](#ModeratorPeriod)** | `{String\|TimeSpan}` | `00:30:00` | The time interval between invocations of <>. |
 | **[`SupervisorDueTime`](#SupervisorDueTime)** | `{String\|TimeSpan}` | `00:05:00` | The inital amount of time to delay before <>. |

@@ -17,30 +17,42 @@ using Discord;
 using Sanakan.ShindenApi.Utilities;
 using Sanakan.DiscordBot.Abstractions.Models;
 using Sanakan.DiscordBot.Abstractions.Extensions;
+using Sanakan.TaskQueue;
+using Sanakan.Game.Services;
+using System.Net;
+using System.Collections.Generic;
+using System.IO;
 
 namespace Sanakan.Modules
 {
     [Name("Shinden"), RequireUserRole]
     public class ShindenModule : ModuleBase<SocketCommandContext>
     {
+        public enum UrlParsingError
+        {
+            None,
+            InvalidUrl,
+            InvalidUrlForum
+        }
+
         private readonly IShindenClient _shindenclient;
-        private readonly SessionManager _session;
-        private readonly Services.Shinden _shindenService;
+        private readonly ISessionManager _sessionManager;
         private readonly ICacheManager _cacheManager;
         private readonly IUserRepository _userRepository;
         private readonly ISystemClock _systemClock;
+        private readonly IShindenClient _shindenClient;
+        private readonly IImageProcessor _imageProcessor;
 
         public ShindenModule(
             IShindenClient client,
-            SessionManager session,
-            Services.Shinden shinden,
+            ISessionManager session,
+
             ICacheManager cacheManager,
             IUserRepository userRepository,
             ISystemClock systemClock)
         {
             _shindenclient = client;
-            _session = session;
-            _shindenService = shinden;
+            _sessionManager = session;
             _cacheManager = cacheManager;
             _userRepository = userRepository;
             _systemClock = systemClock;
@@ -94,27 +106,32 @@ namespace Sanakan.Modules
         [Remarks("Soul Eater")]
         public async Task SearchAnimeAsync([Summary("tytuł")][Remainder]string title)
         {
-            await _shindenService.SendSearchInfoAsync(Context, title, QuickSearchType.Anime);
+            await SendSearchInfoAsync(Context, title, QuickSearchType.Anime);
         }
 
         [Command("manga", RunMode = RunMode.Async)]
         [Alias("komiks")]
         [Summary("wyświetla informacje o mandze")]
         [Remarks("Gintama")]
-        public async Task SearchMangaAsync([Summary("tytuł")][Remainder]string title)
+        public async Task SearchMangaAsync(
+            [Summary("tytuł")][Remainder]string title)
         {
-            await _shindenService.SendSearchInfoAsync(Context, title, QuickSearchType.Manga);
+            await SendSearchInfoAsync(Context, title, QuickSearchType.Manga);
         }
 
         [Command("postać", RunMode = RunMode.Async)]
         [Alias("postac", "character")]
         [Summary("wyświetla informacje o postaci")]
         [Remarks("Gintoki")]
-        public async Task SearchCharacterAsync([Summary("imie")][Remainder]string name)
+        public async Task SearchCharacterAsync(
+            [Summary("imie")][Remainder]string name)
         {
-            var session = new SearchSession(Context.User, _shindenclient);
+            var discordUserId = Context.User.Id;
+            var payload = new SearchSession.SearchSessionPayload();
+
+            var session = new SearchSession(discordUserId, _systemClock.UtcNow, payload);
             
-            if (_session.SessionExist(session))
+            if (_sessionManager.Exists<SearchSession>(discordUserId))
             {
                 return;
             }
@@ -123,14 +140,14 @@ namespace Sanakan.Modules
 
             if (searchResult.Value == null)
             {
-                var content = _shindenService.GetResponseFromSearchCode(System.Net.HttpStatusCode.BadRequest)
+                var content = GetResponseFromSearchCode(System.Net.HttpStatusCode.BadRequest)
                     .ToEmbedMessage(EMType.Error).Build();
                 await ReplyAsync("", embed: content);
                 return;
             }
 
             var list = searchResult.Value;
-            var toSend = _shindenService.GetSearchResponse(list, "Wybierz postać, którą chcesz wyświetlić poprzez wpisanie numeru odpowiadającemu jej na liście.");
+            var toSend = GetSearchResponse(list, "Wybierz postać, którą chcesz wyświetlić poprzez wpisanie numeru odpowiadającemu jej na liście.");
 
             if (list.Count == 1)
             {
@@ -151,8 +168,8 @@ namespace Sanakan.Modules
             }
             else
             {
-                session.PList = list;
-                await _shindenService.SendSearchResponseAsync(Context, toSend, session);
+                payload.PList = list;
+                await SendSearchResponseAsync(Context, toSend, session, payload);
             }
         }
 
@@ -184,7 +201,7 @@ namespace Sanakan.Modules
                 return;
             }
 
-            using var stream = await _shindenService.GetSiteStatisticAsync(botUser.ShindenId.Value, user);
+            using var stream = await GetSiteStatisticAsync(botUser.ShindenId.Value, user);
                 
             if (stream == null)
             {
@@ -203,18 +220,18 @@ namespace Sanakan.Modules
         [Remarks("https://shinden.pl/user/136-mo0nisi44")]
         public async Task ConnectAsync([Summary("adres do profilu")]string url)
         {
-            switch (_shindenService.ParseUrlToShindenId(url, out var shindenId))
+            switch (ParseUrlToShindenId(url, out var shindenId))
             {
-                case Services.UrlParsingError.InvalidUrl:
+                case UrlParsingError.InvalidUrl:
                     await ReplyAsync("", embed: "Wygląda na to, że podałeś niepoprawny link.".ToEmbedMessage(EMType.Error).Build());
                     return;
 
-                case Services.UrlParsingError.InvalidUrlForum:
+                case UrlParsingError.InvalidUrlForum:
                     await ReplyAsync("", embed: "Wygląda na to, że podałeś link do forum zamiast strony.".ToEmbedMessage(EMType.Error).Build());
                     return;
 
                 default:
-                case Services.UrlParsingError.None:
+                case UrlParsingError.None:
                     break;
             }
 
@@ -252,6 +269,153 @@ namespace Sanakan.Modules
             await ReplyAsync("", embed: "Konta zostały połączone.".ToEmbedMessage(EMType.Success).Build());
             return;
             
+        }
+
+        public UrlParsingError ParseUrlToShindenId(string url, out ulong shindenId)
+        {
+            shindenId = 0;
+            var splited = url.Split('/');
+            bool http = splited[0].Equals("https:") || splited[0].Equals("http:");
+            int toChek = http ? 2 : 0;
+
+            if (splited.Length < (toChek == 2 ? 5 : 3))
+            {
+                return UrlParsingError.InvalidUrl;
+            }
+
+            if (splited[toChek].Equals("shinden.pl") || splited[toChek].Equals("www.shinden.pl"))
+            {
+                if (splited[++toChek].Equals("user") || splited[toChek].Equals("animelist") || splited[toChek].Equals("mangalist"))
+                {
+                    var data = splited[++toChek].Split('-');
+                    if (ulong.TryParse(data[0], out shindenId))
+                    {
+                        return UrlParsingError.None;
+                    }
+                }
+            }
+
+            if (splited[toChek].Equals("forum.shinden.pl") || splited[toChek].Equals("www.forum.shinden.pl"))
+                return UrlParsingError.InvalidUrlForum;
+
+            return UrlParsingError.InvalidUrl;
+        }
+
+        public string[] GetSearchResponse(IEnumerable<object> list, string title)
+        {
+            string temp = "";
+            int messageNr = 0;
+            var toSend = new string[10];
+            toSend[0] = $"{title}\n```ini\n";
+            int i = 0;
+
+            foreach (var item in list)
+            {
+                temp += $"[{++i}] {item}\n";
+                if (temp.Length > 1800)
+                {
+                    toSend[messageNr] += "\n```";
+                    toSend[++messageNr] += $"```ini\n[{i}] {item}\n";
+                    temp = "";
+                }
+                else toSend[messageNr] += $"[{i}] {item}\n";
+            }
+            toSend[messageNr] += "```\nNapisz `koniec`, aby zamknąć menu.";
+
+            return toSend;
+        }
+
+        public async Task SendSearchInfoAsync(SocketCommandContext context, string title, QuickSearchType type)
+        {
+            if (title.Equals("fate/loli")) {
+                title = "Fate/kaleid Liner Prisma Illya";
+            }
+
+            var discordUser = context.User;
+
+            var payload = new SearchSession.SearchSessionPayload();
+
+            var session = new SearchSession(discordUser.Id, _systemClock.UtcNow, payload);
+
+            if (_sessionManager.Exists<SearchSession>(discordUser.Id))
+            {
+                return;
+            }
+
+            var searchResult = await _shindenClient.QuickSearchAsync(title, type);
+
+            if (searchResult.Value == null)
+            {
+                await context.Channel.SendMessageAsync("", false, GetResponseFromSearchCode(HttpStatusCode.BadRequest)
+                    .ToEmbedMessage(EMType.Error).Build());
+                return;
+            }
+
+            var list = searchResult.Value;
+            var toSend = GetSearchResponse(list, "Wybierz tytuł, który chcesz wyświetlić poprzez wpisanie numeru odpowiadającemu mu na liście.");
+
+            if (list.Count == 1)
+            {
+                var first = list.First();
+                var info = (await _shindenClient.GetAnimeMangaInfoAsync(first.TitleId)).Value;
+                await context.Channel.SendMessageAsync("", false, info.ToEmbed());
+            }
+            else
+            {
+                payload.SList = list;
+                await SendSearchResponseAsync(context, toSend, session, payload);
+            }
+        }
+
+        public async Task SendSearchResponseAsync(SocketCommandContext context, string[] toSend, SearchSession session, SearchSession.SearchSessionPayload payload)
+        {
+            var message = new Discord.Rest.RestUserMessage[10];
+            for (var index = 0; index < toSend.Length; index++)
+            {
+                if (toSend[index] != null)
+                {
+                    message[index] = await context.Channel.SendMessageAsync(toSend[index]);
+                }
+            }
+
+            payload.Messages = message;
+            _sessionManager.Add(session);
+        }
+
+        public string GetResponseFromSearchCode(HttpStatusCode code)
+        {
+            switch (code)
+            {
+                case HttpStatusCode.NotFound:
+                    return "Brak wyników!";
+
+                default:
+                    return $"Brak połączenia z Shindenem! ({code})";
+            }
+        }
+
+        public async Task<Stream> GetSiteStatisticAsync(ulong shindenId, SocketGuildUser user)
+        {
+            var result = await _shindenClient.GetUserInfoAsync(shindenId);
+
+            if (result.Value == null)
+            {
+                return null;
+            }
+
+            var shindenUser = result.Value;
+            var resLR = await _shindenClient.GetLastReadedAsync(shindenId);
+            var resLW = await _shindenClient.GetLastWatchedAsync(shindenId);
+            var color = user.Roles.OrderByDescending(x => x.Position)
+                .FirstOrDefault()?.Color ?? Discord.Color.DarkerGrey;
+
+            using var image = await _imageProcessor.GetSiteStatisticAsync(
+                shindenUser,
+                color,
+                null, //resLR.Value != null ? resLR.Value : null,
+                null); //resLW.Value != null ? resLW.Value : null);
+
+            return image.ToPngStream();
         }
     }
 }

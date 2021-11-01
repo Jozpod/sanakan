@@ -12,6 +12,12 @@ namespace Sanakan.Common.Builder
             return services;
         }
 
+        public static IServiceCollection AddRandomNumberGenerator(this IServiceCollection services)
+        {
+            services.AddSingleton<IRandomNumberGenerator, RandomNumberGenerator>();
+            return services;
+        }
+
         public static IServiceCollection AddTaskManager(this IServiceCollection services)
         {
             services.AddSingleton<ITaskManager, TaskManager>();

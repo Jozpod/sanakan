@@ -25,5 +25,7 @@ namespace Sanakan.Common.Configuration
         public TimeSpan SessionPeriod { get; set; }
         public TimeSpan ModeratorPeriod { get; set; }
         public TimeSpan ModeratorDueTime { get; set; }
+        public TimeSpan SupervisorDueTime { get; set; }
+        public TimeSpan SupervisorPeriod { get; set; }
     }
 }

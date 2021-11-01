@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Sanakan.Common;
+using Sanakan.Common.Configuration;
 using Sanakan.Configuration;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Repositories;
@@ -266,7 +267,7 @@ namespace Sanakan.Modules
 
                     card.Unique = false;
                     card.Name = characterInfo.ToString();
-                    card.Image = hasImage ? pictureUrl : null;
+                    card.ImageUrl = hasImage ? pictureUrl : null;
                     card.Title = characterInfo?.Relations?.OrderBy(x => x.CharacterId)
                         .FirstOrDefault()?
                         .Title ?? "????";
@@ -641,7 +642,7 @@ namespace Sanakan.Modules
             [Summary("id użytkownika")]ulong id,
             [Summary("czy usunąć karty?")]bool cards = false)
         {
-            var fakeu = await _userRepository.GetUserOrCreateAsync(1);
+            var fakeUser = await _userRepository.GetUserOrCreateAsync(1);
             var user = await _userRepository.GetUserOrCreateAsync(id);
 
             if (!cards)
@@ -651,7 +652,7 @@ namespace Sanakan.Modules
                     card.InCage = false;
                     card.TagList.Clear();
                     card.LastIdOwner = id;
-                    card.GameDeckId = fakeu.GameDeck.Id;
+                    card.GameDeckId = fakeUser.GameDeck.Id;
                 }
             }
 
@@ -671,7 +672,9 @@ namespace Sanakan.Modules
             [Summary("wartość tc")]long value)
         {
             var user = await _userRepository.GetUserOrCreateAsync(id);
-            foreach (var card in user.GameDeck.Cards.OrderByDescending(x => x.CreationDate).ToList())
+            var cards = user.GameDeck.Cards.OrderByDescending(x => x.CreatedOn).ToList();
+
+            foreach (var card in cards)
             {
                 value -= 50;
                 user.GameDeck.Cards.Remove(card);
@@ -797,12 +800,14 @@ namespace Sanakan.Modules
         [Command("chpp"), Priority(1)]
         [Summary("ustawia liczbę znaków na pakiet")]
         [Remarks("true")]
-        public async Task SetCharCntPerPacketAsync([Summary("liczba znaków")]long count, [Summary("true/false - czy zapisać")]bool save = false)
+        public async Task SetCharCntPerPacketAsync(
+            [Summary("liczba znaków")]long count,
+            [Summary("true/false - czy zapisać")]bool save = false)
         {
             if (save) {
                 await _config.UpdateAsync(opt =>
                 {
-                    opt.CharPerPacket = count;
+                    opt.Experience.CharPerPacket = count;
                 });
             }
 
@@ -821,7 +826,7 @@ namespace Sanakan.Modules
             {
                 await _config.UpdateAsync(opt =>
                 {
-                    opt.Exp.CharPerPoint = count;
+                    opt.Experience.CharPerPoint = count;
                 });
             }
 
@@ -838,11 +843,11 @@ namespace Sanakan.Modules
             {
                 await _config.UpdateAsync(opt =>
                 {
-                    opt.SafariEnabled = !opt.SafariEnabled;
+                    opt.Discord.SafariEnabled = !opt.Discord.SafariEnabled;
                 });
             }
 
-            await ReplyAsync("", embed: $"Safari: `{_config.Value.SafariEnabled.GetYesNo()}` `Zapisano: {save.GetYesNo()}`".ToEmbedMessage(EMType.Success).Build());
+            await ReplyAsync("", embed: $"Safari: `{_config.Value.Discord.SafariEnabled.GetYesNo()}` `Zapisano: {save.GetYesNo()}`".ToEmbedMessage(EMType.Success).Build());
         }
 
         [Command("twevent"), Priority(1)]
@@ -1303,11 +1308,11 @@ namespace Sanakan.Modules
         {
             var config = _config.Value;
 
-            if (config.BlacklistedGuilds.Contains(Context.Guild.Id))
+            if (config.Discord.BlacklistedGuilds.Contains(Context.Guild.Id))
             {
                 await _config.UpdateAsync(opt =>
                 {
-                    opt.BlacklistedGuilds.Remove(Context.Guild.Id);
+                    opt.Discord.BlacklistedGuilds.Remove(Context.Guild.Id);
                 });
                 await ReplyAsync("", embed: "Serwer został usunięty z czarnej listy.".ToEmbedMessage(EMType.Success).Build());
             }
@@ -1316,7 +1321,7 @@ namespace Sanakan.Modules
                 
                 await _config.UpdateAsync(opt =>
                 {
-                    opt.BlacklistedGuilds.Add(Context.Guild.Id);
+                    opt.Discord.BlacklistedGuilds.Add(Context.Guild.Id);
                 });
                 await ReplyAsync("", embed: "Serwer został dodany do czarnej listy.".ToEmbedMessage(EMType.Success).Build());
             }
@@ -1338,7 +1343,7 @@ namespace Sanakan.Modules
 
             try
             {
-                var prefix = _config.Value.Prefix;
+                var prefix = _config.Value.Discord.Prefix;
                 if (Context.Guild != null)
                 {
                     var gConfig = await _guildConfigRepository.GetCachedGuildFullConfigAsync(Context.Guild.Id);

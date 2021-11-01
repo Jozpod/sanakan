@@ -3,6 +3,7 @@ using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Sanakan.Common.Configuration;
 using Sanakan.Configuration;
 using Sanakan.DAL.Repositories.Abstractions;
 using System;
@@ -15,7 +16,7 @@ namespace Sanakan.Preconditions
     {
         public async override Task<PreconditionResult> CheckPermissionsAsync(ICommandContext context, CommandInfo command, IServiceProvider services)
         {
-            var config = services.GetRequiredService<IOptionsMonitor<SanakanConfiguration>>().CurrentValue;
+            var config = services.GetRequiredService<IOptionsMonitor<DiscordConfiguration>>().CurrentValue;
 
             if (config.AllowedToDebug.Any(x => x == context.User.Id))
             {

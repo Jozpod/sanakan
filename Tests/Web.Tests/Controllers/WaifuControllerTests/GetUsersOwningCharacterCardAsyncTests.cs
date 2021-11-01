@@ -6,10 +6,10 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.Common;
 using Sanakan.DAL.Repositories.Abstractions;
-using Sanakan.Services.Executor;
 using Sanakan.ShindenApi;
 using Sanakan.Web.Controllers;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -23,7 +23,7 @@ namespace Sanakan.Web.Tests.Controllers.WaifuControllerTests
         public async Task Should_Return_NotFound()
         {
             var userId = 0ul;
-            var expected = Enumerable.Empty<ulong>();
+            var expected = new List<ulong>();
 
             _userRepositoryMock
                 .Setup(pr => pr.GetUserShindenIdsByHavingCharacterAsync(userId))
@@ -38,7 +38,7 @@ namespace Sanakan.Web.Tests.Controllers.WaifuControllerTests
         public async Task Should_Return_Ok()
         {
             var userId = 0ul;
-            var expected = new[] { 0ul };
+            var expected = new List<ulong>() { 0ul };
 
             _userRepositoryMock
                 .Setup(pr => pr.GetUserShindenIdsByHavingCharacterAsync(userId))

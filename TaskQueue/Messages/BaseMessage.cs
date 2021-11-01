@@ -16,6 +16,11 @@ namespace Sanakan.TaskQueue.Messages
 
         public int CompareTo(BaseMessage other)
         {
+            if(other == null)
+            {
+                return -1;
+            }
+
             if(Priority < other.Priority)
             {
                 return 1;

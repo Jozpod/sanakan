@@ -27,6 +27,7 @@ using Sanakan.Common.Cache;
 using System.Collections.Concurrent;
 using Sanakan.TaskQueue.Messages;
 using Sanakan.Game.Models;
+using Sanakan.Common.Configuration;
 
 namespace Sanakan.Web.Controllers
 {
@@ -37,7 +38,7 @@ namespace Sanakan.Web.Controllers
     {
         private readonly IShindenClient _shindenClient;
         private readonly IProducerConsumerCollection<BaseMessage> _blockingPriorityQueue;
-        private readonly IOptionsMonitor<SanakanConfiguration> _config;
+        private readonly IOptionsMonitor<ApiConfiguration> _config;
         private readonly IWaifuService _waifuService;
         private readonly IFileSystem _fileSystem;
         private readonly IUserRepository _userRepository;
@@ -48,7 +49,8 @@ namespace Sanakan.Web.Controllers
 
         public WaifuController(
             IShindenClient shindenClient,
-            IOptionsMonitor<SanakanConfiguration> config,
+            IProducerConsumerCollection<BaseMessage> blockingPriorityQueue,
+            IOptionsMonitor<ApiConfiguration> config,
             IWaifuService waifuService,
             IFileSystem fileSystem,
             IUserRepository userRepository,
@@ -58,6 +60,7 @@ namespace Sanakan.Web.Controllers
             IJwtBuilder jwtBuilder)
         {
             _shindenClient = shindenClient;
+            _blockingPriorityQueue = blockingPriorityQueue;
             _config = config;
             _waifuService = waifuService;
             _fileSystem = fileSystem;
@@ -317,7 +320,7 @@ namespace Sanakan.Web.Controllers
         /// Updates card information for given character.
         /// </summary>
         /// <param name="characterId">The character identifier in Shinden.</param>
-        /// <param name="newData">nowe dane karty</param>
+        /// <param name="newData">New card information.</param>
         [HttpPost("cards/character/{characterId}/update"), Authorize(Policy = AuthorizePolicies.Site)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status200OK)]
         public async Task<IActionResult> UpdateCardInfoAsync(
@@ -332,43 +335,6 @@ namespace Sanakan.Web.Controllers
                 CharacterName = model.CharacterName,
                 CardSeriesTitle = model.CardSeriesTitle,
             });
-
-            //var exe = new Executable($"update cards-{id} img", new Task<Task>(async () =>
-            //{
-            //    var userRelease = new List<string>() { "users" };
-            //    var cards = await _cardRepository.GetCardsByCharacterIdAsync(id);
-
-            //    foreach (var card in cards)
-            //    {
-            //        if (newData?.ImageUrl != null)
-            //        {
-            //            card.Image = newData.ImageUrl;
-            //        }
-
-            //        if (newData?.CharacterName != null)
-            //        {
-            //            card.Name = newData.CharacterName;
-            //        }
-
-            //        if (newData?.CardSeriesTitle != null)
-            //            card.Title = newData.CardSeriesTitle;
-
-            //        try
-            //        {
-            //            _waifuService.DeleteCardImageIfExist(card);
-            //            _ = _waifuService.GenerateAndSaveCardAsync(card).Result;
-            //        }
-            //        catch (Exception) { }
-
-            //        userRelease.Add($"user-{card.GameDeckId}");
-            //    }
-
-            //    await _cardRepository.SaveChangesAsync();
-
-            //    _cacheManager.ExpireTag(userRelease.ToArray());
-            //}), Priority.High);
-
-            //await _executor.TryAdd(exe, TimeSpan.FromSeconds(1));
 
             return ShindenOk("Started!");
         }
@@ -399,37 +365,11 @@ namespace Sanakan.Web.Controllers
                 return ShindenMethodNotAllowed("There is no character image!");
             }
 
-            _blockingPriorityQueue.TryAdd(new UpdateCardMessage
+            _blockingPriorityQueue.TryAdd(new UpdateCardPictureMessage
             {
                 CharacterId = characterId,
+                PictureId = characterInfo.PictureId.Value,
             });
-
-            //var exe = new Executable($"update cards-{id}", new Task<Task>(async () =>
-            //    {
-            //        var userRelease = new List<string>() { "users" };
-            //        var cards = await _cardRepository.GetByCharacterIdAsync(id);
-
-            //        foreach (var card in cards)
-            //        {
-            //            var pictureUrl = UrlHelpers.GetPersonPictureURL(characterInfo.PictureId);
-            //            card.Image = pictureUrl;
-
-            //            try
-            //            {
-            //                _waifuService.DeleteCardImageIfExist(card);
-            //                _ = _waifuService.GenerateAndSaveCardAsync(card).Result;
-            //            }
-            //            catch (Exception) { }
-
-            //            userRelease.Add($"user-{card.GameDeckId}");
-            //        }
-
-            //        await _cardRepository.SaveChangesAsync();
-
-            //        _cacheManager.ExpireTag(userRelease.ToArray());
-            //    }));
-
-            //    await _executor.TryAdd(exe, TimeSpan.FromSeconds(1));
 
             return ShindenOk("Started!");
         }
