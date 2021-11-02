@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "kLxZc+wn76xC7J51rCaS7Fz3M8FxgO11GtqmDWAr0ZkutowmWb0j37HrnuJpqEaKhRm7Y0Pdxc0iV3UX0stOlg==",
+  "dgSpecHash": "Ihdu+C49NfuNdSeKNr0cfDLUmAP4GQAFB2X70T8Lnfed4pav8llMP2RXJIjLHO2ok8QGxGOHRVvjoR8PP099jg==",
   "success": true,
   "projectFilePath": "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\Web\\Web.csproj",
   "expectedPackageFiles": [
@@ -68,6 +68,7 @@
     "C:\\Users\\jozefpodlecki\\.nuget\\packages\\microsoft.extensions.identity.core\\2.2.0\\microsoft.extensions.identity.core.2.2.0.nupkg.sha512",
     "C:\\Users\\jozefpodlecki\\.nuget\\packages\\microsoft.extensions.logging\\5.0.0\\microsoft.extensions.logging.5.0.0.nupkg.sha512",
     "C:\\Users\\jozefpodlecki\\.nuget\\packages\\microsoft.extensions.logging.abstractions\\5.0.0\\microsoft.extensions.logging.abstractions.5.0.0.nupkg.sha512",
+    "C:\\Users\\jozefpodlecki\\.nuget\\packages\\microsoft.extensions.logging.configuration\\2.0.0\\microsoft.extensions.logging.configuration.2.0.0.nupkg.sha512",
     "C:\\Users\\jozefpodlecki\\.nuget\\packages\\microsoft.extensions.objectpool\\2.2.0\\microsoft.extensions.objectpool.2.2.0.nupkg.sha512",
     "C:\\Users\\jozefpodlecki\\.nuget\\packages\\microsoft.extensions.options\\5.0.0\\microsoft.extensions.options.5.0.0.nupkg.sha512",
     "C:\\Users\\jozefpodlecki\\.nuget\\packages\\microsoft.extensions.options.configurationextensions\\5.0.0\\microsoft.extensions.options.configurationextensions.5.0.0.nupkg.sha512",
@@ -97,6 +98,7 @@
     "C:\\Users\\jozefpodlecki\\.nuget\\packages\\netstandard.library\\2.0.0\\netstandard.library.2.0.0.nupkg.sha512",
     "C:\\Users\\jozefpodlecki\\.nuget\\packages\\newtonsoft.json\\13.0.1\\newtonsoft.json.13.0.1.nupkg.sha512",
     "C:\\Users\\jozefpodlecki\\.nuget\\packages\\newtonsoft.json.bson\\1.0.2\\newtonsoft.json.bson.1.0.2.nupkg.sha512",
+    "C:\\Users\\jozefpodlecki\\.nuget\\packages\\nreco.logging.file\\1.1.2\\nreco.logging.file.1.1.2.nupkg.sha512",
     "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder\\nuget.frameworks\\4.7.0\\nuget.frameworks.4.7.0.nupkg.sha512",
     "C:\\Users\\jozefpodlecki\\.nuget\\packages\\pomelo.entityframeworkcore.mysql\\5.0.2\\pomelo.entityframeworkcore.mysql.5.0.2.nupkg.sha512",
     "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder\\runtime.native.system\\4.3.0\\runtime.native.system.4.3.0.nupkg.sha512",

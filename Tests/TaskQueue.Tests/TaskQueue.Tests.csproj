@@ -10,7 +10,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="C:\Users\jozefpodlecki\.nuget\packages\microsoft.testplatform.testhost\16.9.4\build\netcoreapp2.1\x64\Microsoft.TestPlatform.PlatformAbstractions.dll" />
+    <Content Remove="C:\Users\jozefpodlecki\.nuget\packages\microsoft.testplatform.testhost\16.9.4\build\netcoreapp2.1\x64\testhost.dll" />
+    <Content Remove="C:\Users\jozefpodlecki\.nuget\packages\microsoft.testplatform.testhost\16.9.4\build\netcoreapp2.1\x64\testhost.exe" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="appsettings.json" />
+    <None Remove="C:\Users\jozefpodlecki\.nuget\packages\mstest.testadapter\2.2.3\build\netcoreapp1.0\..\_common\Microsoft.VisualStudio.TestPlatform.MSTest.TestAdapter.dll" />
+    <None Remove="C:\Users\jozefpodlecki\.nuget\packages\mstest.testadapter\2.2.3\build\netcoreapp1.0\..\_common\Microsoft.VisualStudio.TestPlatform.MSTestAdapter.PlatformServices.Interface.dll" />
+    <None Remove="C:\Users\jozefpodlecki\.nuget\packages\mstest.testadapter\2.2.3\build\netcoreapp1.0\Microsoft.VisualStudio.TestPlatform.MSTestAdapter.PlatformServices.dll" />
+    <None Remove="C:\Users\jozefpodlecki\.nuget\packages\mstest.testadapter\2.2.3\build\netcoreapp1.0\\Microsoft.TestPlatform.AdapterUtilities.dll" />
   </ItemGroup>
 
   <ItemGroup>
@@ -41,7 +51,6 @@
 
   <ItemGroup>
     <Folder Include="MessageHandlersTests\" />
-    <Folder Include="SessionTests\" />
   </ItemGroup>
 
 </Project>

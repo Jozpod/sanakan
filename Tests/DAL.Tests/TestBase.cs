@@ -33,12 +33,21 @@ namespace Sanakan.DAL.Tests
             serviceCollection.AddDbContext<SanakanDbContext>();
             serviceCollection.AddSingleton(configurationRoot);
             serviceCollection.AddCache(configurationRoot.GetSection("Cache"));
+            serviceCollection.Configure<DatabaseConfiguration>(configurationRoot.GetSection("Database"));
             serviceCollection.Configure<SanakanConfiguration>(configurationRoot);
             serviceCollection.AddRepositories();
             ServiceProvider = serviceCollection.BuildServiceProvider();
 
             DbContext = ServiceProvider.GetRequiredService<SanakanDbContext>();
-            await DbContext.Database.EnsureCreatedAsync();
+
+            try
+            {
+                await DbContext.Database.EnsureCreatedAsync();
+            }
+            catch (System.Exception ex)
+            {
+
+            }
         }
 
         [AssemblyCleanup()]

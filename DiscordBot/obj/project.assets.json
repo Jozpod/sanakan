@@ -1967,7 +1967,6 @@
           "Discord.Net": "2.4.0",
           "Microsoft.Extensions.DependencyInjection": "5.0.2",
           "Sanakan.DAL": "1.0.0",
-          "Sanakan.Game": "1.0.0",
           "Shinden.NET": "0.0.1"
         },
         "compile": {

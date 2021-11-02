@@ -373,8 +373,8 @@ namespace Sanakan.Services.PocketWaifu
                 HandleUserAsync(userMessage);
             }
 
-            var sch = user.Guild.GetTextChannel(config.WaifuConfig.SpawnChannel);
-            var tch = user.Guild.GetTextChannel(config.WaifuConfig.TrashSpawnChannel);
+            var sch = user.Guild.GetTextChannel(config.WaifuConfig.SpawnChannelId.Value);
+            var tch = user.Guild.GetTextChannel(config.WaifuConfig.TrashSpawnChannelId.Value);
             if (sch != null && tch != null)
             {
                 string mention = "";

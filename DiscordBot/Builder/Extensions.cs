@@ -22,6 +22,8 @@ namespace Sanakan.DiscordBot.Builder
     {
         public static IServiceCollection AddDiscordBotServices(this IServiceCollection services)
         {
+            services.AddSingleton<CommandService>();
+
             services.AddSingleton<ILandManager, LandManager>();
             services.AddSingleton<IModeratorService, ModeratorService>();
             services.AddSingleton<IDiscordSocketClientAccessor, DiscordSocketClientAccessor>();

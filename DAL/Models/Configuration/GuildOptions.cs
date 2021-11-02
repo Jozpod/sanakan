@@ -101,7 +101,7 @@ namespace Sanakan.DAL.Models.Configuration
         [StringLength(10)]
         public string Prefix { get; set; }
 
-        public virtual WaifuConfiguration WaifuConfig { get; set; }
+        public virtual WaifuConfiguration? WaifuConfig { get; set; }
 
         public virtual ICollection<WithoutSupervisionChannel> ChannelsWithoutSupervision { get; set; }
         public virtual ICollection<WithoutMessageCountChannel> IgnoredChannels { get; set; }

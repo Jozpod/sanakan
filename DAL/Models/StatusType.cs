@@ -45,6 +45,8 @@ namespace Sanakan.DAL.Models
             StatusType.WDaily,
         };
 
+        public static bool IsQuest(this StatusType type) => type.IsWeeklyQuestType() || type.IsDailyQuestType();
+
         public static string Name(this StatusType type)
         {
             switch (type)

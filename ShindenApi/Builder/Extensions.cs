@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -11,6 +12,7 @@ namespace Sanakan.ShindenApi.Builder
     {
         public static IServiceCollection AddShindenApi(this IServiceCollection services)
         {
+            services.AddTransient<CookieContainer>();
             services.AddHttpClient<IShindenClient, ShindenClient>((serviceProvider, httpClient) =>
             {
                 var options = serviceProvider.GetRequiredService<IOptionsMonitor<ShindenApiConfiguration>>();

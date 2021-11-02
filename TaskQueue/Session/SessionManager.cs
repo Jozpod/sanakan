@@ -21,10 +21,12 @@ namespace Sanakan.TaskQueue
 
         public bool Exists<T>(ulong discordUserId) where T : InteractionSession
         {
+            var exists = false;
             lock (_syncRoot)
             {
-                return _sessions.Any(pr => pr.OwnerId == discordUserId && pr.Type == typeof(T));
+                exists = _sessions.Any(pr => pr.OwnerId == discordUserId && pr.Type == typeof(T));
             }
+            return exists;
         }
 
         public void Remove(InteractionSession session)

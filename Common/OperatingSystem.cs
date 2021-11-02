@@ -2,7 +2,7 @@
 
 namespace Sanakan.Common
 {
-    public class OperatingSystem : IOperatingSystem
+    internal class OperatingSystem : IOperatingSystem
     {
         public Process GetCurrentProcess() => Process.GetCurrentProcess();
 

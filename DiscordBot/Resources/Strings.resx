@@ -180,6 +180,75 @@ Traci siły po {3} min.</value>
 **-Aktywność**: {11}
 **-Inne**: {12}</value>
   </data>
+  <data name="ServerConfiguration" xml:space="preserve">
+    <value>Description = **Prefix:** {0}
+
+**Nadzór:** {1}
+
+**Chaos:** {2}
+
+**Admin:** {3}
+
+**User:** {4}
+
+**Mute:** {5}
+
+**ModMute:** {6}
+
+**Emote:** {7}
+
+**Waifu:** {8}
+
+
+
+**W Market:** {9}
+
+**W Spawn:** {10}
+
+**W Duel:** {11}
+
+**W Trash Fight:** {12}
+
+**W Trash Spawn:** {13}
+
+**W Trash Cmd:** {14}
+
+**Powiadomienia:** {15}
+
+**Przywitalnia:** {16}
+
+**Raport:** {17}
+
+**Todos:** {18}
+
+**Quiz:** {19}
+
+**Nsfw:** {20}
+
+**Log:** {21}
+
+
+
+**W Cmd**: {22}
+
+**W Fight**: {23}
+
+**Role modów**: {24}
+
+**Bez zliczania**: {25}
+
+**Bez exp**: {26}
+
+**Bez nadzoru**: {27}
+
+**Polecenia**: {28}
+
+**Role na lvl**: {29}
+
+**AutoRole**: {30}
+
+**Krainy**: {31}</value>
+  </data>
   <data name="SlotMachineInfo" xml:space="preserve">
     <value>**Nastawa** / **Wartośći** 
 Info `(wypisywanie informacji)`

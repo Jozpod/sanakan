@@ -6,12 +6,36 @@ namespace Sanakan.DAL.Models.Configuration
     public class WaifuConfiguration
     {
         public ulong Id { get; set; }
-        public ulong MarketChannel { get; set; }
-        public ulong SpawnChannel { get; set; }
-        public ulong DuelChannel { get; set; }
-        public ulong TrashFightChannel { get; set; }
-        public ulong TrashSpawnChannel { get; set; }
-        public ulong TrashCommandsChannel { get; set; }
+
+        /// <summary>
+        /// The Discord channel identifier.
+        /// </summary>
+        public ulong? MarketChannelId { get; set; }
+
+        /// <summary>
+        /// The Discord channel identifier.
+        /// </summary>
+        public ulong? SpawnChannelId { get; set; }
+
+        /// <summary>
+        /// The Discord channel identifier.
+        /// </summary>
+        public ulong? DuelChannelId { get; set; }
+
+        /// <summary>
+        /// The Discord channel identifier.
+        /// </summary>
+        public ulong? TrashFightChannelId { get; set; }
+
+        /// <summary>
+        /// The Discord channel identifier.
+        /// </summary>
+        public ulong? TrashSpawnChannelId { get; set; }
+
+        /// <summary>
+        /// The Discord channel identifier.
+        /// </summary>
+        public ulong? TrashCommandsChannelId { get; set; }
 
         public ulong GuildOptionsId { get; set; }
         [JsonIgnore]

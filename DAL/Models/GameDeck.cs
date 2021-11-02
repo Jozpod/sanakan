@@ -176,8 +176,7 @@ namespace Sanakan.DAL.Models
 
         public bool IsGood() => Karma >= 10;
 
-        public static bool IsKarmaNeutral(double karma) => karma > -10 && karma < 10;
-        public bool IsNeutral() => IsKarmaNeutral(Karma);
+        public bool IsNeutral() => Karma > -10 && Karma < 10;
 
         public double AffectionFromKarma()
         {

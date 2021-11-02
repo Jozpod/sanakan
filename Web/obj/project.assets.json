@@ -1024,6 +1024,19 @@
           "lib/netstandard2.0/Microsoft.Extensions.Logging.Abstractions.dll": {}
         }
       },
+      "Microsoft.Extensions.Logging.Configuration/2.0.0": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Extensions.Logging": "2.0.0",
+          "Microsoft.Extensions.Options.ConfigurationExtensions": "2.0.0"
+        },
+        "compile": {
+          "lib/netstandard2.0/Microsoft.Extensions.Logging.Configuration.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/Microsoft.Extensions.Logging.Configuration.dll": {}
+        }
+      },
       "Microsoft.Extensions.ObjectPool/2.2.0": {
         "type": "package",
         "compile": {
@@ -1397,6 +1410,20 @@
         },
         "runtime": {
           "lib/netstandard2.0/Newtonsoft.Json.Bson.dll": {}
+        }
+      },
+      "NReco.Logging.File/1.1.2": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Extensions.Logging": "2.0.0",
+          "Microsoft.Extensions.Logging.Configuration": "2.0.0",
+          "Microsoft.Extensions.Options.ConfigurationExtensions": "2.0.0"
+        },
+        "compile": {
+          "lib/netstandard2.0/NReco.Logging.File.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/NReco.Logging.File.dll": {}
         }
       },
       "NuGet.Frameworks/4.7.0": {
@@ -3016,7 +3043,6 @@
           "Discord.Net": "2.4.0",
           "Microsoft.Extensions.DependencyInjection": "5.0.2",
           "Sanakan.DAL": "1.0.0",
-          "Sanakan.Game": "1.0.0",
           "Shinden.NET": "0.0.1"
         },
         "compile": {
@@ -4283,6 +4309,19 @@
         "version.txt"
       ]
     },
+    "Microsoft.Extensions.Logging.Configuration/2.0.0": {
+      "sha512": "jUjA+ROjh1R1TggLh4aw6PZFxHce4UYeTsX3NUjdrOd9RbuDSzJ8bkNhcPgYjLvoTNIRIlHUSByw3PjBTbxExA==",
+      "type": "package",
+      "path": "microsoft.extensions.logging.configuration/2.0.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "lib/netstandard2.0/Microsoft.Extensions.Logging.Configuration.dll",
+        "lib/netstandard2.0/Microsoft.Extensions.Logging.Configuration.xml",
+        "microsoft.extensions.logging.configuration.2.0.0.nupkg.sha512",
+        "microsoft.extensions.logging.configuration.nuspec"
+      ]
+    },
     "Microsoft.Extensions.ObjectPool/2.2.0": {
       "sha512": "gA8H7uQOnM5gb+L0uTNjViHYr+hRDqCdfugheGo/MxQnuHzmhhzCBTIPm19qL1z1Xe0NEMabfcOBGv9QghlZ8g==",
       "type": "package",
@@ -5261,6 +5300,21 @@
         "lib/netstandard2.0/Newtonsoft.Json.Bson.xml",
         "newtonsoft.json.bson.1.0.2.nupkg.sha512",
         "newtonsoft.json.bson.nuspec"
+      ]
+    },
+    "NReco.Logging.File/1.1.2": {
+      "sha512": "1kDKCrJfEx8uuiGaOish5L8uIAgwQORG1ui/UsvrR0hOaWifiPCyhHb64czgDddGY0JXhBIYsMG9xtJhkxUuXA==",
+      "type": "package",
+      "path": "nreco.logging.file/1.1.2",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "lib/netstandard1.3/NReco.Logging.File.dll",
+        "lib/netstandard1.3/NReco.Logging.File.xml",
+        "lib/netstandard2.0/NReco.Logging.File.dll",
+        "lib/netstandard2.0/NReco.Logging.File.xml",
+        "nreco.logging.file.1.1.2.nupkg.sha512",
+        "nreco.logging.file.nuspec"
       ]
     },
     "NuGet.Frameworks/4.7.0": {
@@ -9457,6 +9511,7 @@
       "Microsoft.Extensions.DependencyInjection >= 5.0.2",
       "Microsoft.IdentityModel.Tokens >= 6.8.0",
       "Microsoft.VisualStudio.Web.CodeGeneration.Design >= 3.1.4",
+      "NReco.Logging.File >= 1.1.2",
       "Newtonsoft.Json >= 13.0.1",
       "Sanakan.Common >= 1.0.0",
       "Sanakan.Game >= 1.0.0",
@@ -9553,6 +9608,10 @@
           "Microsoft.VisualStudio.Web.CodeGeneration.Design": {
             "target": "Package",
             "version": "[3.1.4, )"
+          },
+          "NReco.Logging.File": {
+            "target": "Package",
+            "version": "[1.1.2, )"
           },
           "Newtonsoft.Json": {
             "target": "Package",

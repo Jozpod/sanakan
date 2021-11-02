@@ -3,6 +3,7 @@ using Sanakan.Common.Models;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 
 namespace Sanakan.DAL.Models
 {
@@ -180,6 +181,56 @@ namespace Sanakan.DAL.Models
         public virtual SlotMachineConfig SMConfig { get; set; }
 
         public virtual ICollection<TimeStatus> TimeStatuses { get; set; }
+
+        public void StoreExpIfPossible(double experience)
+        {
+            var maxToTransfer = GameDeck.ExpContainer.Level.GetMaxExpTransferToChest();
+            if (maxToTransfer != -1)
+            {
+                experience = Math.Floor(experience);
+                var diff = maxToTransfer - GameDeck.ExpContainer.ExperienceCount;
+                if (diff <= experience)
+                {
+                    experience = Math.Floor(diff);
+                }
+                if (experience < 0)
+                {
+                    experience = 0;
+                }
+            }
+            GameDeck.ExpContainer.ExperienceCount += experience;
+        }
+        public List<TimeStatus> CreateOrGetAllWeeklyQuests()
+        {
+            var quests = new List<TimeStatus>();
+            foreach (var type in StatusTypeExtensions.WeeklyQuestTypes)
+            {
+                var mission = TimeStatuses.FirstOrDefault(x => x.Type == type);
+                if (mission == null)
+                {
+                    mission = new TimeStatus(type);
+                    TimeStatuses.Add(mission);
+                }
+                quests.Add(mission);
+            }
+            return quests;
+        }
+
+        public List<TimeStatus> CreateOrGetAllDailyQuests()
+        {
+            var quests = new List<TimeStatus>();
+            foreach (var type in StatusTypeExtensions.DailyQuestTypes)
+            {
+                var mission = TimeStatuses.FirstOrDefault(x => x.Type == type);
+                if (mission == null)
+                {
+                    mission = new TimeStatus(type);
+                    TimeStatuses.Add(mission);
+                }
+                quests.Add(mission);
+            }
+            return quests;
+        }
 
         public bool IsCharCounterActive(DateTime date)
             => date.Month == MeasureDate.Month

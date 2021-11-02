@@ -124,6 +124,9 @@ namespace Sanakan.DAL.Models
         [JsonIgnore]
         public virtual GameDeck GameDeck { get; set; }
 
+        public bool CanGiveRing() => Affection >= 5;
+        public bool CanGiveBloodOrUpgradeToSSS() => Affection >= 50;
+
         public bool IsBroken => Affection <= -50;
 
         public bool IsUnusable => Affection <= -5;
@@ -144,6 +147,120 @@ namespace Sanakan.DAL.Models
                 case Rarity.E: return 1;
             }
         }
+
+        public bool ValidExpedition(ExpeditionCardType expedition, double karma)
+        {
+            if (Expedition != ExpeditionCardType.None)
+            {
+                return false;
+            }
+
+            if (Curse == CardCurse.ExpeditionBlockade)
+            {
+                return false;
+            }
+
+            if (InCage || !CanFightOnPvEGMwK())
+            {
+                return false;
+            }
+
+            if (CalculateMaxTimeOnExpeditionInMinutes(karma, expedition) < 1)
+            {
+                return false;
+            }
+
+            switch (expedition)
+            {
+                case ExpeditionCardType.ExtremeItemWithExp:
+                    return !FromFigure && !HasTag("ulubione");
+
+                case ExpeditionCardType.NormalItemWithExp:
+                    return !FromFigure;
+
+                case ExpeditionCardType.UltimateEasy:
+                case ExpeditionCardType.UltimateHard:
+                case ExpeditionCardType.UltimateMedium:
+                case ExpeditionCardType.UltimateHardcore:
+                    return FromFigure;
+
+                case ExpeditionCardType.LightExp:
+                case ExpeditionCardType.LightItems:
+                    return (karma > 1000) && !FromFigure;
+                case ExpeditionCardType.LightItemWithExp:
+                    return (karma > 400) && !FromFigure;
+
+                case ExpeditionCardType.DarkExp:
+                case ExpeditionCardType.DarkItems:
+                    return (karma < -1000) && !FromFigure;
+                case ExpeditionCardType.DarkItemWithExp:
+                    return (karma < -400) && !FromFigure;
+
+                default:
+                case ExpeditionCardType.None:
+                    return false;
+            }
+        }
+
+        public static bool IsKarmaNeutral(double karma) => karma > -10 && karma < 10;
+        public double CalculateMaxTimeOnExpeditionInMinutes(double karma, ExpeditionCardType expedition = ExpeditionCardType.None)
+        {
+            expedition = (expedition == ExpeditionCardType.None) ? Expedition : expedition;
+            var perMinute = GetCostOfExpeditionPerMinute(expedition);
+            double param = Affection;
+            double addOFK = karma / 200;
+            double affOffset = 6d;
+
+            if (IsKarmaNeutral(karma))
+            {
+                affOffset += 4d;
+            }
+
+            switch (expedition)
+            {
+                case ExpeditionCardType.NormalItemWithExp:
+                case ExpeditionCardType.ExtremeItemWithExp:
+                    addOFK = 0;
+                    break;
+
+                case ExpeditionCardType.LightExp:
+                case ExpeditionCardType.LightItems:
+                case ExpeditionCardType.LightItemWithExp:
+                    if (addOFK > 5) addOFK = 5;
+                    break;
+
+                case ExpeditionCardType.DarkItems:
+                case ExpeditionCardType.DarkExp:
+                case ExpeditionCardType.DarkItemWithExp:
+                    addOFK = -addOFK;
+                    if (addOFK > 10) addOFK = 10;
+                    break;
+
+                default:
+                case ExpeditionCardType.UltimateEasy:
+                case ExpeditionCardType.UltimateMedium:
+                case ExpeditionCardType.UltimateHard:
+                case ExpeditionCardType.UltimateHardcore:
+                    return 0;
+            }
+
+            if (!HasImage())
+            {
+                perMinute *= 2;
+            }
+            param += affOffset + addOFK;
+            var t = param / perMinute;
+            if (t > 10080) t = 10080;
+
+            return (t < 0.1) ? 0.1 : t;
+        }
+
+        public double GetCostOfExpeditionPerMinute(ExpeditionCardType expeditionCardType = ExpeditionCardType.None)
+        {
+            return (expeditionCardType == ExpeditionCardType.None ? Expedition : expeditionCardType)
+                .GetCostOfExpeditionPerMinuteRaw() * Rarity.ValueModifierReverse() * Dere.ValueModifierReverse();
+        }
+
         public double ExpToUpgrade()
         {
             switch (Rarity)
@@ -162,6 +279,7 @@ namespace Sanakan.DAL.Models
             }
         }
 
+        public bool CanFightOnPvEGMwK() => Affection > -80;
         public bool HasNoNegativeEffectAfterBloodUsage() => Affection >= 4;
 
         public bool HasTag(string tag)

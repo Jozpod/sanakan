@@ -148,6 +148,67 @@ namespace Sanakan.DiscordBot.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Description = **Prefix:** {0}
+        ///
+        ///**Nadzór:** {1}
+        ///
+        ///**Chaos:** {2}
+        ///
+        ///**Admin:** {3}
+        ///
+        ///**User:** {4}
+        ///
+        ///**Mute:** {5}
+        ///
+        ///**ModMute:** {6}
+        ///
+        ///**Emote:** {7}
+        ///
+        ///**Waifu:** {8}
+        ///
+        ///
+        ///
+        ///**W Market:** {9}
+        ///
+        ///**W Spawn:** {10}
+        ///
+        ///**W Duel:** {11}
+        ///
+        ///**W Trash Fight:** {12}
+        ///
+        ///**W Trash Spawn:** {13}
+        ///
+        ///**W Trash Cmd:** {14}
+        ///
+        ///**Powiadomienia:** {15}
+        ///
+        ///**Przywitalnia:** {16}
+        ///
+        ///**Raport:** {17}
+        ///
+        ///**Todos:** {18}
+        ///
+        ///**Quiz:** {19}
+        ///
+        ///**Nsfw:** {20}
+        ///
+        ///**Log:** {21}
+        ///
+        ///
+        ///
+        ///**W Cmd**: {22}
+        ///
+        ///**W Fight**: {23}
+        ///
+        /// [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string ServerConfiguration {
+            get {
+                return ResourceManager.GetString("ServerConfiguration", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to **Nastawa** / **Wartośći** 
         ///Info `(wypisywanie informacji)`
         ///Mnożnik / `1`, `2`, `3`

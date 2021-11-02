@@ -10,7 +10,10 @@ namespace Sanakan.Extensions
 {
     public static class QuestionExtension
     {
-      
+        private static IDictionary<int, Discord.IEmote> NumberEmoteMap = new Dictionary<int, Discord.IEmote>
+        {
+            { 0, Emojis.Zero },
+        };
 
         private static Discord.IEmote GetEmote(int i)
         {
@@ -19,7 +22,7 @@ namespace Sanakan.Extensions
                 case 0:
                     return Emojis.Zero;
                 case 1:
-                    return Emojis.Zero;
+                    return Emojis.One;
                 case 2:
                     return Emojis.Two;
                 case 3:
@@ -37,18 +40,6 @@ namespace Sanakan.Extensions
                 default:
                     return Emojis.Nine;
             };
-        }
-
-     
-
-        public static string Get(this Question q)
-        {
-            string str = $"**{q.Content}**\n\n";
-            foreach(var item in q.Answers)
-            {
-                str += $"**{item.Number}**: {item.Content}\n";
-            }
-            return str;
         }
 
         public static Discord.IEmote[] GetEmotes(this Question q)

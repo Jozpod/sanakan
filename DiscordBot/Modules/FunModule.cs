@@ -25,6 +25,7 @@ using Sanakan.TaskQueue;
 using Sanakan.DiscordBot.Abstractions.Models;
 using Sanakan.Game.Models;
 using Sanakan.DiscordBot.Abstractions;
+using Humanizer;
 
 namespace Sanakan.Modules
 {
@@ -72,10 +73,13 @@ namespace Sanakan.Modules
                 botuser.TimeStatuses.Add(timeStatus);
             }
 
-            if (timeStatus.IsActive(_systemClock.UtcNow))
+            var utcNow = _systemClock.UtcNow;
+
+            if (timeStatus.IsActive(utcNow))
             {
-                var timeTo = (int)timeStatus.RemainingMinutes(_systemClock.UtcNow);
-                var content = $"{Context.User.Mention} następne drobne możesz otrzymać dopiero za {timeTo / 60}h {timeTo % 60}m!"
+                var remainingTime = timeStatus.RemainingTime(utcNow);
+                var remainingTimeFriendly = remainingTime.Humanize(4);
+                var content = $"{Context.User.Mention} następne drobne możesz otrzymać dopiero za {remainingTimeFriendly}!"
                     .ToEmbedMessage(EMType.Error).Build();
                 await ReplyAsync("", embed: content);
                 return;
@@ -181,10 +185,14 @@ namespace Sanakan.Modules
                 botuser.TimeStatuses.Add(hourly);
             }
 
-            if (hourly.IsActive(_systemClock.UtcNow))
+            var utcNow = _systemClock.UtcNow;
+
+            if (hourly.IsActive(utcNow))
             {
-                var timeTo = (int)hourly.RemainingSeconds(_systemClock.UtcNow);
-                await ReplyAsync("", embed: $"{Context.User.Mention} następne zaskórniaki możesz otrzymać dopiero za {timeTo / 60}m {timeTo % 60}s!".ToEmbedMessage(EMType.Error).Build());
+                var remainingTime = hourly.RemainingTime(utcNow);
+                var remainingTimeFriendly = remainingTime.Humanize(4);
+                await ReplyAsync("", embed: $"{Context.User.Mention} następne zaskórniaki możesz otrzymać dopiero za {remainingTime}"
+                    .ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 

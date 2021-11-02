@@ -196,9 +196,6 @@
               "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\DAL\\DAL.csproj": {
                 "projectPath": "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\DAL\\DAL.csproj"
               },
-              "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\Game\\Game.csproj": {
-                "projectPath": "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\Game\\Game.csproj"
-              },
               "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\ShindenApi\\ShindenApi.csproj": {
                 "projectPath": "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\ShindenApi\\ShindenApi.csproj"
               }
@@ -671,6 +668,10 @@
             "Microsoft.VisualStudio.Web.CodeGeneration.Design": {
               "target": "Package",
               "version": "[3.1.4, )"
+            },
+            "NReco.Logging.File": {
+              "target": "Package",
+              "version": "[1.1.2, )"
             },
             "Newtonsoft.Json": {
               "target": "Package",

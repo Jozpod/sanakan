@@ -2,7 +2,7 @@
 
 namespace Sanakan.Common
 {
-    public class DefaultSystemClock : ISystemClock
+    internal class DefaultSystemClock : ISystemClock
     {
         public DateTime StartOfMonth
         {

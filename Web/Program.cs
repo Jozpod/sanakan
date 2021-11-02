@@ -17,12 +17,6 @@ namespace Sanakan.Web
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
-                })
-                .ConfigureLogging(logging =>
-                {
-                    logging.ClearProviders();
-                    //logging.AddConsole(x => x.DisableColors = true);
-                    //logging.SetMinimumLevel(LogLevel.Information);
                 });
     }
 }

@@ -25,6 +25,16 @@ namespace Sanakan.DAL.Models
         public string GetRightAnswer()
             => $"Prawidłowa odpowiedź to: **{Answer}** - {Answers.First(x => x.Number == Answer).Content}";
 
+        public string Get()
+        {
+            var str = $"**{Content}**\n\n";
+            foreach (var answer in Answers)
+            {
+                str += $"**{answer.Number}**: {answer.Content}\n";
+            }
+            return str;
+        }
+
         public void RandomizeAnswers(IRandomNumberGenerator randomNumberGenerator)
         {
             var numbersColeration = new List<Tuple<int, int>>();

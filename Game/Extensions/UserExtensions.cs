@@ -1,5 +1,6 @@
 ﻿using Sanakan.DAL.Models;
 using Sanakan.Game.Models;
+using Sanakan.ShindenApi.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +11,22 @@ namespace Sanakan.Game.Extensions
 {
     public static class UserExtensions
     {
+        private static string GetString(
+            this Card card,
+            bool withoutId = false,
+            bool withUpgrades = false,
+            bool nameAsUrl = false,
+            bool allowZero = false,
+            bool showBaseHp = false)
+        {
+            var idStr = withoutId ? "" : $"**[{card.Id}]** ";
+            var name = nameAsUrl ? card.GetNameWithUrl() : card.Name;
+            var upgradeCount = (withUpgrades && !card.FromFigure) ? $"_(U:{card.UpgradesCount})_" : "";
+
+            return $"{idStr} {name} **{card.GetCardRealRarity()}** {card.GetCardParams(showBaseHp, allowZero)} {upgradeCount}";
+        }
+        private static string GetNameWithUrl(this Card card) => $"[{card.Name}]({card.GetCharacterUrl()})";
+        private static string GetCharacterUrl(this Card card) => UrlHelpers.GetCharacterURL(card.CharacterId);
         public static string GetViewValueForTop(this User user, TopType type)
         {
             switch (type)

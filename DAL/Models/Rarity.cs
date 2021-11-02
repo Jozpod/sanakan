@@ -18,6 +18,11 @@ namespace Sanakan.DAL.Models
     {
         public static Rarity[] Rarities = (Rarity[])Enum.GetValues(typeof(Rarity));
 
+        public static double ValueModifierReverse(this Rarity rarity)
+        {
+            return 2d - rarity.ValueModifier();
+        }
+
         public static int GetAttackMin(this Rarity rarity)
         {
             switch (rarity)

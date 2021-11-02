@@ -5,6 +5,7 @@ using DiscordBot.Services;
 using Microsoft.Extensions.Options;
 using Sanakan.Common;
 using Sanakan.Common.Configuration;
+using Sanakan.Common.Extensions;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Models.Configuration;
 using Sanakan.DAL.Repositories.Abstractions;
@@ -490,7 +491,7 @@ namespace Sanakan.Modules
                 await _guildConfigRepository.SaveChangesAsync();
             }
 
-            var content = _moderatorService.GetConfiguration(config, Context, type)
+            var content = (await _moderatorService.GetConfigurationAsync(config, Context, type))
                 .WithTitle($"Konfiguracja {Context.Guild.Name}:")
                 .Build();
 
@@ -979,13 +980,13 @@ namespace Sanakan.Modules
                 config.WaifuConfig = new WaifuConfiguration();
             }
 
-            if (config.WaifuConfig.TrashFightChannel == Context.Channel.Id)
+            if (config.WaifuConfig.TrashFightChannelId == Context.Channel.Id)
             {
                 await ReplyAsync("", embed: $"Kanał `{Context.Channel.Name}` już jest ustawiony jako kanał śmieciowy walk waifu.".ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
 
-            config.WaifuConfig.TrashFightChannel = Context.Channel.Id;
+            config.WaifuConfig.TrashFightChannelId = Context.Channel.Id;
             await _guildConfigRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });
@@ -1006,13 +1007,13 @@ namespace Sanakan.Modules
                 config.WaifuConfig = new WaifuConfiguration();
             }
 
-            if (config.WaifuConfig.TrashCommandsChannel == Context.Channel.Id)
+            if (config.WaifuConfig.TrashCommandsChannelId == Context.Channel.Id)
             {
                 await ReplyAsync("", embed: $"Kanał `{Context.Channel.Name}` już jest ustawiony jako kanał śmieciowy poleceń waifu.".ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
 
-            config.WaifuConfig.TrashCommandsChannel = Context.Channel.Id;
+            config.WaifuConfig.TrashCommandsChannelId = Context.Channel.Id;
             await _guildConfigRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });
@@ -1032,13 +1033,13 @@ namespace Sanakan.Modules
                 config.WaifuConfig = new WaifuConfiguration();
             }
 
-            if (config.WaifuConfig.TrashSpawnChannel == Context.Channel.Id)
+            if (config.WaifuConfig.TrashSpawnChannelId == Context.Channel.Id)
             {
                 await ReplyAsync("", embed: $"Kanał `{Context.Channel.Name}` już jest ustawiony jako kanał śmieciowy polowań waifu.".ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
 
-            config.WaifuConfig.TrashSpawnChannel = Context.Channel.Id;
+            config.WaifuConfig.TrashSpawnChannelId = Context.Channel.Id;
             await _guildConfigRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });
@@ -1059,13 +1060,13 @@ namespace Sanakan.Modules
             }
 
 
-            if (config.WaifuConfig.MarketChannel == Context.Channel.Id)
+            if (config.WaifuConfig.MarketChannelId == Context.Channel.Id)
             {
                 await ReplyAsync("", embed: $"Kanał `{Context.Channel.Name}` już jest ustawiony jako kanał rynku waifu.".ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
 
-            config.WaifuConfig.MarketChannel = Context.Channel.Id;
+            config.WaifuConfig.MarketChannelId = Context.Channel.Id;
             await _guildConfigRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });
@@ -1084,13 +1085,13 @@ namespace Sanakan.Modules
                 config.WaifuConfig = new WaifuConfiguration();
             }
 
-            if (config.WaifuConfig.DuelChannel == Context.Channel.Id)
+            if (config.WaifuConfig.DuelChannelId == Context.Channel.Id)
             {
                 await ReplyAsync("", embed: $"Kanał `{Context.Channel.Name}` już jest ustawiony jako kanał pojedynków waifu.".ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
 
-            config.WaifuConfig.DuelChannel = Context.Channel.Id;
+            config.WaifuConfig.DuelChannelId = Context.Channel.Id;
             await _guildConfigRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });
@@ -1110,13 +1111,13 @@ namespace Sanakan.Modules
             }
 
 
-            if (config.WaifuConfig.SpawnChannel == Context.Channel.Id)
+            if (config.WaifuConfig.SpawnChannelId == Context.Channel.Id)
             {
                 await ReplyAsync("", embed: $"Kanał `{Context.Channel.Name}` już jest ustawiony jako kanał safari waifu.".ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
 
-            config.WaifuConfig.SpawnChannel = Context.Channel.Id;
+            config.WaifuConfig.SpawnChannelId = Context.Channel.Id;
             await _guildConfigRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });
@@ -1429,7 +1430,8 @@ namespace Sanakan.Modules
 
             _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });
 
-            await ReplyAsync("", embed: $"Tryb nadzoru - włączony?`{config.ChaosMode.GetYesNo()}`.".ToEmbedMessage(EMType.Success).Build());
+            await ReplyAsync("", embed: $"Tryb nadzoru - włączony?`{config.ChaosMode.GetYesNo()}`."
+                .ToEmbedMessage(EMType.Success).Build());
         }
 
         [Command("check")]

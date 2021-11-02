@@ -30,12 +30,14 @@ namespace Sanakan.Preconditions
                 return PreconditionResult.FromSuccess();
             }
 
-            if (gConfig?.WaifuConfig?.DuelChannel == null)
+            var duelChannelId = gConfig?.WaifuConfig?.DuelChannelId;
+
+            if (!duelChannelId.HasValue)
             {
                 return PreconditionResult.FromSuccess();
             }
 
-            if (gConfig.WaifuConfig.DuelChannel == context.Channel.Id)
+            if (duelChannelId == context.Channel.Id)
             {
                 return PreconditionResult.FromSuccess();
             }
@@ -45,7 +47,7 @@ namespace Sanakan.Preconditions
                 return PreconditionResult.FromSuccess();
             }
 
-            var channel = await context.Guild.GetTextChannelAsync(gConfig.WaifuConfig.DuelChannel);
+            var channel = await context.Guild.GetTextChannelAsync(duelChannelId.Value);
             return PreconditionResult.FromError($"To polecenie działa na kanale {channel?.Mention}");
         }
     }

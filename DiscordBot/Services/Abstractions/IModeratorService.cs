@@ -12,7 +12,7 @@ namespace Sanakan.DiscordBot.Services.Abstractions
 {
     public interface IModeratorService
     {
-        EmbedBuilder GetConfiguration(GuildOptions config, SocketCommandContext context, ConfigType type);
+        Task<EmbedBuilder> GetConfigurationAsync(GuildOptions config, SocketCommandContext context, ConfigType type);
         Task NotifyUserAsync(SocketGuildUser user, string reason);
         Embed BuildTodo(IMessage message, SocketGuildUser who);
         Task<Embed> GetMutedListAsync(SocketCommandContext context);

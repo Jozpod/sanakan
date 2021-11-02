@@ -7,6 +7,7 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Sanakan.Common;
 using Sanakan.Common.Configuration;
+using Sanakan.Common.Extensions;
 using Sanakan.Configuration;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Repositories;
@@ -811,7 +812,8 @@ namespace Sanakan.Modules
                 });
             }
 
-            var content = $"Ustawiono próg `{count}` znaków na pakiet. `Zapisano: {save.GetYesNo()}`".ToEmbedMessage(EMType.Success).Build();
+            var content = $"Ustawiono próg `{count}` znaków na pakiet. `Zapisano: {save.GetYesNo()}`"
+                .ToEmbedMessage(EMType.Success).Build();
             await ReplyAsync("", embed: content);
         }
 
@@ -830,7 +832,8 @@ namespace Sanakan.Modules
                 });
             }
 
-            await ReplyAsync("", embed: $"Ustawiono próg `{count}` znaków na punkt doświadczenia. `Zapisano: {save.GetYesNo()}`".ToEmbedMessage(EMType.Success).Build());
+            await ReplyAsync("", embed: $"Ustawiono próg `{count}` znaków na punkt doświadczenia. `Zapisano: {save.GetYesNo()}`"
+                .ToEmbedMessage(EMType.Success).Build());
         }
 
         [Command("tsafari"), Priority(1)]
@@ -945,12 +948,14 @@ namespace Sanakan.Modules
             if (user.Roles.Contains(devr))
             {
                 await user.RemoveRoleAsync(devr);
-                await ReplyAsync("", embed: $"{user.Mention} stracił role deva.".ToEmbedMessage(EMType.Success).Build());
+                await ReplyAsync("", embed: $"{user.Mention} stracił role deva."
+                    .ToEmbedMessage(EMType.Success).Build());
             }
             else
             {
                 await user.AddRoleAsync(devr);
-                await ReplyAsync("", embed: $"{user.Mention} otrzymał role deva.".ToEmbedMessage(EMType.Success).Build());
+                await ReplyAsync("", embed: $"{user.Mention} otrzymał role deva."
+                    .ToEmbedMessage(EMType.Success).Build());
             }
         }
 

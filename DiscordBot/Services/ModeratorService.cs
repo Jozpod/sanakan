@@ -12,11 +12,13 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Sanakan.Common;
+using Sanakan.Common.Extensions;
 using Sanakan.DAL.Models.Configuration;
 using Sanakan.DAL.Models.Management;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot.Abstractions.Extensions;
 using Sanakan.DiscordBot.Abstractions.Models;
+using Sanakan.DiscordBot.Resources;
 using Sanakan.DiscordBot.Services.Abstractions;
 using Sanakan.Extensions;
 
@@ -64,75 +66,83 @@ namespace Sanakan.Services
             
         }
 
-        private EmbedBuilder GetFullConfiguration(GuildOptions config, SocketCommandContext context)
+        private async Task<EmbedBuilder> GetFullConfigurationAsync(GuildOptions config, IGuild guild)
         {
             var modsRolesCnt = config.ModeratorRoles?.Count;
-            string mods = (modsRolesCnt > 0) ? $"({modsRolesCnt}) `config mods`" : "--";
+            var mods = (modsRolesCnt > 0) ? $"({modsRolesCnt}) `config mods`" : "--";
 
             var wExpCnt = config.ChannelsWithoutExp?.Count;
-            string wExp = (wExpCnt > 0) ? $"({wExpCnt}) `config wexp`" : "--";
+            var wExp = (wExpCnt > 0) ? $"({wExpCnt}) `config wexp`" : "--";
 
             var wCntCnt = config.IgnoredChannels?.Count;
-            string wCnt = (wCntCnt > 0) ? $"({wCntCnt}) `config ignch`" : "--";
+            var wCnt = (wCntCnt > 0) ? $"({wCntCnt}) `config ignch`" : "--";
 
             var wSupCnt = config.ChannelsWithoutSupervision?.Count;
-            string wSup = (wSupCnt > 0) ? $"({wSupCnt}) `config wsup`" : "--";
+            var wSup = (wSupCnt > 0) ? $"({wSupCnt}) `config wsup`" : "--";
 
             var cmdChCnt = config.CommandChannels?.Count;
-            string cmdCh = (cmdChCnt > 0) ? $"({cmdChCnt}) `config cmd`" : "--";
+            var cmdCh = (cmdChCnt > 0) ? $"({cmdChCnt}) `config cmd`" : "--";
 
             var rolPerLvlCnt = config.RolesPerLevel?.Count;
-            string roles = (rolPerLvlCnt > 0) ? $"({rolPerLvlCnt}) `config role`" : "--";
+            var roles = (rolPerLvlCnt > 0) ? $"({rolPerLvlCnt}) `config role`" : "--";
 
             var selfRolesCnt = config.SelfRoles?.Count;
-            string selfRoles = (selfRolesCnt > 0) ? $"({selfRolesCnt}) `config selfrole`" : "--";
+            var selfRoles = (selfRolesCnt > 0) ? $"({selfRolesCnt}) `config selfrole`" : "--";
 
             var landsCnt = config.Lands?.Count;
-            string lands = (landsCnt > 0) ? $"({landsCnt}) `config lands`" : "--";
+            var lands = (landsCnt > 0) ? $"({landsCnt}) `config lands`" : "--";
 
             var wCmdCnt = config.WaifuConfig?.CommandChannels?.Count;
-            string wcmd = (wCmdCnt > 0) ? $"({wCmdCnt}) `config wcmd`" : "--";
+            var wcmd = (wCmdCnt > 0) ? $"({wCmdCnt}) `config wcmd`" : "--";
 
             var wFightCnt = config.WaifuConfig?.FightChannels?.Count;
-            string wfCh = (wFightCnt > 0) ? $"({wFightCnt}) `config wfight`" : "--";
+            var wfCh = (wFightCnt > 0) ? $"({wFightCnt}) `config wfight`" : "--";
+
+            var channels = await guild.GetTextChannelsAsync();
+            var waifuConfiguration = config.WaifuConfig;
+
+            var parameters = new object[]
+            {
+                config.Prefix ?? "--",
+                config.Supervision.GetYesNo(),
+                config.ChaosMode.GetYesNo(),
+                guild.GetRole(config.AdminRoleId)?.Mention ?? "--",
+                guild.GetRole(config.UserRoleId)?.Mention ?? "--",
+                guild.GetRole(config.MuteRoleId)?.Mention ?? "--",
+                guild.GetRole(config.ModMuteRoleId)?.Mention ?? "--",
+                guild.GetRole(config.GlobalEmotesRoleId)?.Mention ?? "--",
+                guild.GetRole(config.WaifuRoleId)?.Mention ?? "--",
+                channels.FirstOrDefault(pr => pr.Id == waifuConfiguration?.MarketChannelId)?.Mention ?? "--",
+                channels.FirstOrDefault(pr => pr.Id == waifuConfiguration?.SpawnChannelId)?.Mention ?? "--",
+                channels.FirstOrDefault(pr => pr.Id == waifuConfiguration?.DuelChannelId)?.Mention ?? "--",
+                channels.FirstOrDefault(pr => pr.Id == waifuConfiguration?.TrashFightChannelId)?.Mention ?? "--",
+                channels.FirstOrDefault(pr => pr.Id == waifuConfiguration?.TrashSpawnChannelId)?.Mention ?? "--",
+                channels.FirstOrDefault(pr => pr.Id == waifuConfiguration?.TrashCommandsChannelId)?.Mention ?? "--",
+                channels.FirstOrDefault(pr => pr.Id == config.NotificationChannelId)?.Mention ?? "--",
+                channels.FirstOrDefault(pr => pr.Id == config.GreetingChannelId)?.Mention ?? "--",
+                channels.FirstOrDefault(pr => pr.Id == config.RaportChannelId)?.Mention ?? "--",
+                channels.FirstOrDefault(pr => pr.Id == config.ToDoChannelId)?.Mention ?? "--",
+                channels.FirstOrDefault(pr => pr.Id == config.QuizChannelId)?.Mention ?? "--",
+                channels.FirstOrDefault(pr => pr.Id == config.NsfwChannelId)?.Mention ?? "--",
+                channels.FirstOrDefault(pr => pr.Id == config.LogChannelId)?.Mention ?? "--",
+                wcmd,
+                wfCh,
+                mods,
+                wCnt,
+                wExp,
+                wSup,
+                cmdCh,
+                roles,
+                selfRoles,
+                lands,
+            };
+
+            var configurationSummary = string.Format(Strings.ServerConfiguration, parameters).ElipseTrimToLength(1950);
 
             return new EmbedBuilder
             {
                 Color = EMType.Bot.Color(),
-                Description = $"**Prefix:** {config.Prefix ?? "--"}\n"
-                            + $"**Nadzór:** {config.Supervision.GetYesNo()}\n"
-                            + $"**Chaos:** {config.ChaosMode.GetYesNo()}\n"
-                            + $"**Admin:** {context.Guild.GetRole(config.AdminRoleId)?.Mention ?? "--"}\n"
-                            + $"**User:** {context.Guild.GetRole(config.UserRoleId)?.Mention ?? "--"}\n"
-                            + $"**Mute:** {context.Guild.GetRole(config.MuteRoleId)?.Mention ?? "--"}\n"
-                            + $"**ModMute:** {context.Guild.GetRole(config.ModMuteRoleId)?.Mention ?? "--"}\n"
-                            + $"**Emote:** {context.Guild.GetRole(config.GlobalEmotesRoleId)?.Mention ?? "--"}\n"
-                            + $"**Waifu:** {context.Guild.GetRole(config.WaifuRoleId)?.Mention ?? "--"}\n\n"
-
-                            + $"**W Market:** {context.Guild.GetTextChannel(config.WaifuConfig?.MarketChannel ?? 0)?.Mention ?? "--"}\n"
-                            + $"**W Spawn:** {context.Guild.GetTextChannel(config.WaifuConfig?.SpawnChannel ?? 0)?.Mention ?? "--"}\n"
-                            + $"**W Duel:** {context.Guild.GetTextChannel(config.WaifuConfig?.DuelChannel ?? 0)?.Mention ?? "--"}\n"
-                            + $"**W Trash Fight:** {context.Guild.GetTextChannel(config.WaifuConfig?.TrashFightChannel ?? 0)?.Mention ?? "--"}\n"
-                            + $"**W Trash Spawn:** {context.Guild.GetTextChannel(config.WaifuConfig?.TrashSpawnChannel ?? 0)?.Mention ?? "--"}\n"
-                            + $"**W Trash Cmd:** {context.Guild.GetTextChannel(config.WaifuConfig?.TrashCommandsChannel ?? 0)?.Mention ?? "--"}\n"
-                            + $"**Powiadomienia:** {context.Guild.GetTextChannel(config.NotificationChannelId)?.Mention ?? "--"}\n"
-                            + $"**Przywitalnia:** {context.Guild.GetTextChannel(config.GreetingChannelId)?.Mention ?? "--"}\n"
-                            + $"**Raport:** {context.Guild.GetTextChannel(config.RaportChannelId)?.Mention ?? "--"}\n"
-                            + $"**Todos:** {context.Guild.GetTextChannel(config.ToDoChannelId)?.Mention ?? "--"}\n"
-                            + $"**Quiz:** {context.Guild.GetTextChannel(config.QuizChannelId)?.Mention ?? "--"}\n"
-                            + $"**Nsfw:** {context.Guild.GetTextChannel(config.NsfwChannelId)?.Mention ?? "--"}\n"
-                            + $"**Log:** {context.Guild.GetTextChannel(config.LogChannelId)?.Mention ?? "--"}\n\n"
-
-                            + $"**W Cmd**: {wcmd}\n"
-                            + $"**W Fight**: {wfCh}\n"
-                            + $"**Role modów**: {mods}\n"
-                            + $"**Bez zliczania**: {wCnt}\n"
-                            + $"**Bez exp**: {wExp}\n"
-                            + $"**Bez nadzoru**: {wSup}\n"
-                            + $"**Polecenia**: {cmdCh}\n"
-                            + $"**Role na lvl**: {roles}\n"
-                            + $"**AutoRole**: {selfRoles}\n"
-                            + $"**Krainy**: {lands}".ElipseTrimToLength(1950)
+                Description = configurationSummary,
             };
         }
 
@@ -268,7 +278,7 @@ namespace Sanakan.Services
             return new EmbedBuilder().WithColor(EMType.Bot.Color()).WithDescription(value.ElipseTrimToLength(1950));
         }
 
-        public EmbedBuilder GetConfiguration(GuildOptions config, SocketCommandContext context, ConfigType type)
+        public async Task<EmbedBuilder> GetConfigurationAsync(GuildOptions config, SocketCommandContext context, ConfigType type)
         {
             switch (type)
             {
@@ -304,7 +314,7 @@ namespace Sanakan.Services
 
                 default:
                 case ConfigType.Global:
-                    return GetFullConfiguration(config, context);
+                    return await GetFullConfigurationAsync(config, context.Guild);
             }
         }
 
@@ -312,16 +322,17 @@ namespace Sanakan.Services
         {
             try
             {
-                var dm = await user.GetOrCreateDMChannelAsync();
-                if (dm != null)
+                var dmChannel = await user.GetOrCreateDMChannelAsync();
+                if (dmChannel != null)
                 {
-                    await dm.SendMessageAsync($"Elo! Otrzymałeś ostrzeżenie o treści:\n {reason}\n\nPozdrawiam serdecznie!".ElipseTrimToLength(2000));
-                    await dm.CloseAsync();
+                    await dmChannel.SendMessageAsync($"Elo! Otrzymałeś ostrzeżenie o treści:\n {reason}\n\nPozdrawiam serdecznie!"
+                        .ElipseTrimToLength(2000));
+                    await dmChannel.CloseAsync();
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError($"in notify: {ex}", ex);
+                _logger.LogError($"Error occurred when sending warning notification", ex);
             }
         }
 
