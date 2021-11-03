@@ -706,11 +706,6 @@ namespace Sanakan.ShindenApi
             //return new ResponseFinal<IEmptyResponse>(raw.Code, raw.Body?.ToModel());
         }
 
-        //public async Task<Response<IEmptyResponse>> ChangeTitleStatusAsync(ListType status, IIndexable index)
-        //{
-        //    return await ChangeTitleStatusAsync(status, index.Id).ConfigureAwait(false);
-        //}
-
         public async Task<Result<TitleStatusAfterChange>> RemoveTitleFromListAsync(ulong userId, ulong titleId)
         {
             var queryData = new Dictionary<string, string>()

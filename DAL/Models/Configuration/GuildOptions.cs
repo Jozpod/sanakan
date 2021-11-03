@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 
 namespace Sanakan.DAL.Models.Configuration
@@ -8,12 +9,32 @@ namespace Sanakan.DAL.Models.Configuration
     /// </summary>
     public class GuildOptions
     {
-        private GuildOptions() { }
+        private GuildOptions()
+        {
+            ChannelsWithoutSupervision = new Collection<WithoutSupervisionChannel>();
+            IgnoredChannels = new Collection<WithoutMessageCountChannel>();
+            ChannelsWithoutExp = new Collection<WithoutExpChannel>();
+            CommandChannels = new Collection<CommandChannel>();
+            ModeratorRoles = new Collection<ModeratorRoles>();
+            RolesPerLevel = new Collection<LevelRole>();
+            SelfRoles = new Collection<SelfRole>();
+            Raports = new Collection<Raport>();
+            Lands = new Collection<MyLand>();
+        }
 
         public GuildOptions(ulong id, long safariLimit)
         {
             Id = id;
             SafariLimit = safariLimit;
+            ChannelsWithoutSupervision = new Collection<WithoutSupervisionChannel>();
+            IgnoredChannels = new Collection<WithoutMessageCountChannel>();
+            ChannelsWithoutExp = new Collection<WithoutExpChannel>();
+            CommandChannels = new Collection<CommandChannel>();
+            ModeratorRoles = new Collection<ModeratorRoles>();
+            RolesPerLevel = new Collection<LevelRole>();
+            SelfRoles = new Collection<SelfRole>();
+            Raports = new Collection<Raport>();
+            Lands = new Collection<MyLand>();
         }
 
         /// <summary>
@@ -87,19 +108,19 @@ namespace Sanakan.DAL.Models.Configuration
         public ulong GreetingChannelId { get; set; }
 
         [StringLength(50)]
-        public string WelcomeMessage { get; set; }
+        public string? WelcomeMessage { get; set; }
         
         [StringLength(50)]
-        public string WelcomeMessagePM { get; set; }
+        public string? WelcomeMessagePM { get; set; }
 
         [StringLength(50)]
-        public string GoodbyeMessage { get; set; }
+        public string? GoodbyeMessage { get; set; }
         public long SafariLimit { get; set; }
         public bool Supervision { get; set; }
         public bool ChaosMode { get; set; }
 
         [StringLength(10)]
-        public string Prefix { get; set; }
+        public string? Prefix { get; set; }
 
         public virtual WaifuConfiguration? WaifuConfig { get; set; }
 

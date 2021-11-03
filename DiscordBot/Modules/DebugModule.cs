@@ -652,7 +652,7 @@ namespace Sanakan.Modules
                 {
                     card.InCage = false;
                     card.TagList.Clear();
-                    card.LastIdOwner = id;
+                    card.LastOwnerId = id;
                     card.GameDeckId = fakeUser.GameDeck.Id;
                 }
             }

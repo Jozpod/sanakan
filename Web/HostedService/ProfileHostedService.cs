@@ -74,25 +74,25 @@ namespace Sanakan.Web.HostedService
             var guildConfigRepository = serviceProvider.GetRequiredService<IGuildConfigRepository>();
             var timeStatusRepository = serviceProvider.GetRequiredService<ITimeStatusRepository>();
 
-            var subs = await timeStatusRepository.GetBySubTypeAsync();
+            var timeStatuses = await timeStatusRepository.GetBySubTypeAsync();
 
-            foreach (var sub in subs)
+            foreach (var timeStatus in timeStatuses)
             {
-                if (sub.IsActive(_systemClock.UtcNow))
+                if (timeStatus.IsActive(_systemClock.UtcNow))
                 {
                     continue;
                 }
 
-                var guild = client.GetGuild(sub.GuildId.Value);
-                switch (sub.Type)
+                var guild = client.GetGuild(timeStatus.GuildId.Value);
+                switch (timeStatus.Type)
                 {
                     case StatusType.Globals:
-                        var guildConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(sub.GuildId.Value);
-                        await RemoveRoleAsync(guild, guildConfig?.GlobalEmotesRoleId ?? 0, sub.UserId);
+                        var guildConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(timeStatus.GuildId.Value);
+                        await RemoveRoleAsync(guild, guildConfig?.GlobalEmotesRoleId ?? 0, timeStatus.UserId);
                         break;
 
                     case StatusType.Color:
-                        await RomoveUserColorAsync(guild.GetUser(sub.UserId));
+                        await RomoveUserColorAsync(guild.GetUser(timeStatus.UserId));
                         break;
 
                     default:

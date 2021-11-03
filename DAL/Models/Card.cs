@@ -8,7 +8,10 @@ namespace Sanakan.DAL.Models
 {
     public class Card
     {
-        private Card() { }
+        private Card()
+        {
+            TagList = new List<CardTag>();
+        }
 
         public Card(
             ulong characterId,
@@ -40,14 +43,14 @@ namespace Sanakan.DAL.Models
             RarityOnStart = rarity;
             CustomBorder = null;
             FromFigure = false;
-            CustomImage = null;
+            CustomImageUrl = null;
             IsTradable = true;
-            FirstIdOwner = 1;
+            FirstOwnerId = 1;
             DefenceBonus = 0;
             HealthBonus = 0;
             AttackBonus = 0;
             UpgradesCount = 2;
-            LastIdOwner = 0;
+            LastOwnerId = 0;
             MarketValue = 1;
             Rarity = rarity;
             EnhanceCount = 0;
@@ -58,14 +61,14 @@ namespace Sanakan.DAL.Models
             Affection = 0;
             ImageUrl = null;
             Health = 0;
-            ExpCount = 0;
+            ExperienceCount = 0;
     }
 
         public ulong Id { get; set; }
         public bool Active { get; set; }
         public bool InCage { get; set; }
         public bool IsTradable { get; set; }
-        public double ExpCount { get; set; }
+        public double ExperienceCount { get; set; }
         public double Affection { get; set; }
         public int UpgradesCount { get; set; }
         public int RestartCount { get; set; }
@@ -76,7 +79,7 @@ namespace Sanakan.DAL.Models
         public int Attack { get; set; }
         public int Health { get; set; }
 
-        [StringLength(100)]
+        [StringLength(50)]
         [Required]
         public string Name { get; set; } = string.Empty;
         public ulong CharacterId { get; set; }
@@ -90,9 +93,17 @@ namespace Sanakan.DAL.Models
         public string? ImageUrl { get; set; }
 
         [StringLength(50)]
-        public string? CustomImage { get; set; }
-        public ulong FirstIdOwner { get; set; }
-        public ulong LastIdOwner { get; set; }
+        public string? CustomImageUrl { get; set; }
+        
+        /// <summary>
+        /// The Discord user identifier.
+        /// </summary>
+        public ulong? FirstOwnerId { get; set; }
+
+        /// <summary>
+        /// The Discord user identifier.
+        /// </summary>
+        public ulong? LastOwnerId { get; set; }
         public bool Unique { get; set; }
         public StarStyle StarStyle { get; set; }
         public string? CustomBorder { get; set; }
@@ -117,7 +128,7 @@ namespace Sanakan.DAL.Models
         public virtual CardArenaStats ArenaStats { get; set; }
 
         /// <summary>
-        /// Gets the discord user identifier.
+        /// The Discord user identifier.
         /// </summary>
         public ulong GameDeckId { get; set; }
 
@@ -409,7 +420,7 @@ namespace Sanakan.DAL.Models
         }
 
         public bool HasImage() => GetImage() != null;
-        public string GetImage() => CustomImage ?? ImageUrl;
+        public string GetImage() => CustomImageUrl ?? ImageUrl;
 
         public int GetAttackWithBonus()
         {

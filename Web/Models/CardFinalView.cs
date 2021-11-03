@@ -20,7 +20,7 @@ namespace Sanakan.Api.Models
             IsTradable = card.IsTradable;
             IsUnique = card.Unique;
             IsUltimate = card.FromFigure;
-            ExpCnt = card.ExpCount;
+            ExpCnt = card.ExperienceCount;
             Affection = card.GetAffectionString();
             UpgradesCnt = card.UpgradesCount;
             RestartCnt = card.RestartCount;
@@ -39,7 +39,7 @@ namespace Sanakan.Api.Models
             CardPower = card.CardPower;
             Value = card.GetThreeStateMarketValue();
             ExpCntForNextLevel = card.ExpToUpgrade();
-            HasCustomImage = card.CustomImage != null;
+            HasCustomImage = card.CustomImageUrl != null;
             HasCustomBorder = card.CustomBorder != null;
             ImageUrl = $"https://cdn2.shinden.eu/{card.Id}.png";
             IsOnExpedition = card.Expedition != ExpeditionCardType.None;

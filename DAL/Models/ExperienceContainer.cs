@@ -2,7 +2,7 @@
 
 namespace Sanakan.DAL.Models
 {
-    public class ExpContainer
+    public class ExperienceContainer
     {
         public ulong Id { get; set; }
         public double ExperienceCount { get; set; }

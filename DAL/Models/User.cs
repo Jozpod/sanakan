@@ -35,7 +35,7 @@ namespace Sanakan.DAL.Models
             GameDeck = new GameDeck
             {
                 Id = discordUserId,
-                Waifu = 0,
+                FavouriteWaifuId = 0,
                 CTCount = 0,
                 Karma = 0,
                 PVPCoins = 0,
@@ -62,7 +62,7 @@ namespace Sanakan.DAL.Models
                 PvPStats = new List<CardPvPStats>(),
                 BoosterPacks = new List<BoosterPack>(),
                 PVPSeasonBeginDate = datetime,
-                ExpContainer = new ExpContainer
+                ExperienceContainer = new ExperienceContainer
                 {
                     Id = discordUserId,
                     ExperienceCount = 0,
@@ -184,11 +184,11 @@ namespace Sanakan.DAL.Models
 
         public void StoreExpIfPossible(double experience)
         {
-            var maxToTransfer = GameDeck.ExpContainer.Level.GetMaxExpTransferToChest();
+            var maxToTransfer = GameDeck.ExperienceContainer.Level.GetMaxExpTransferToChest();
             if (maxToTransfer != -1)
             {
                 experience = Math.Floor(experience);
-                var diff = maxToTransfer - GameDeck.ExpContainer.ExperienceCount;
+                var diff = maxToTransfer - GameDeck.ExperienceContainer.ExperienceCount;
                 if (diff <= experience)
                 {
                     experience = Math.Floor(diff);
@@ -198,7 +198,7 @@ namespace Sanakan.DAL.Models
                     experience = 0;
                 }
             }
-            GameDeck.ExpContainer.ExperienceCount += experience;
+            GameDeck.ExperienceContainer.ExperienceCount += experience;
         }
         public List<TimeStatus> CreateOrGetAllWeeklyQuests()
         {

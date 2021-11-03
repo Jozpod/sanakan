@@ -434,8 +434,8 @@ namespace Sanakan.TaskQueue
                                 card.TagList.Clear();
                                 card.Affection -= 1.5;
 
-                                if (card.ExpCount > 1)
-                                    card.ExpCount *= 0.3;
+                                if (card.ExperienceCount > 1)
+                                    card.ExperienceCount *= 0.3;
 
                                 var valueDiff = card.MarketValue - exchangeRateP1;
                                 var changed = card.MarketValue + valueDiff * 0.8;
@@ -443,8 +443,8 @@ namespace Sanakan.TaskQueue
                                 if (changed > 1) changed = 1;
                                 card.MarketValue = changed;
 
-                                if (card.FirstIdOwner == 0)
-                                    card.FirstIdOwner = user1.Id;
+                                if (card.FirstOwnerId == 0)
+                                    card.FirstOwnerId = user1.Id;
 
                                 user1.GameDeck.RemoveFromWaifu(card);
 
@@ -464,8 +464,8 @@ namespace Sanakan.TaskQueue
                                 card.TagList.Clear();
                                 card.Affection -= 1.5;
 
-                                if (card.ExpCount > 1)
-                                    card.ExpCount *= 0.3;
+                                if (card.ExperienceCount > 1)
+                                    card.ExperienceCount *= 0.3;
 
                                 var valueDiff = card.MarketValue - exchangeRateP2;
                                 var changed = card.MarketValue + valueDiff * 0.8;
@@ -473,8 +473,8 @@ namespace Sanakan.TaskQueue
                                 if (changed > 1) changed = 1;
                                 card.MarketValue = changed;
 
-                                if (card.FirstIdOwner == 0)
-                                    card.FirstIdOwner = user2.Id;
+                                if (card.FirstOwnerId == 0)
+                                    card.FirstOwnerId = user2.Id;
 
                                 user2.GameDeck.RemoveFromWaifu(card);
 

@@ -1,6 +1,6 @@
 CREATE TABLE `expcontainers` (
   `Id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `ExpCount` double NOT NULL,
+  `ExperienceCount` double NOT NULL,
   `Level` int NOT NULL,
   `GameDeckId` bigint unsigned NOT NULL,
   PRIMARY KEY (`Id`),

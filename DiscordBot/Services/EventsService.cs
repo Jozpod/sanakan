@@ -316,7 +316,7 @@ namespace Sanakan.Services.PocketWaifu
                 case EventType.MoreExp:
                 {
                     var addExp = _randomNumberGenerator.GetRandomValue(1, 5);
-                    card.ExpCount += addExp;
+                    card.ExperienceCount += addExp;
 
                     msg += $"Wydarzenie: Dodatkowe punkty doświadczenia. (+{addExp} exp)\n";
                 }

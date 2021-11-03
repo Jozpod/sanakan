@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Newtonsoft.Json;
@@ -8,16 +9,28 @@ namespace Sanakan.DAL.Models
 {
     public class GameDeck
     {
+        public GameDeck()
+        {
+            Cards = new Collection<Card>();
+        }
+
         public const double MAX_DECK_POWER = 800;
         public const double MIN_DECK_POWER = 200;
 
+        /// <summary>
+        /// The Discord user identifier and also <see cref="User"/> identifier.
+        /// </summary>
         public ulong Id { get; set; }
 
         /// <summary>
         /// The amount of Cruelty Token points.
         /// </summary>
         public long CTCount { get; set; }
-        public ulong Waifu { get; set; }
+
+        /// <summary>
+        /// The character identifier.
+        /// </summary>
+        public ulong? FavouriteWaifuId { get; set; }
         public double Karma { get; set; }
         public ulong ItemsDropped { get; set; }
         public bool WishlistIsPrivate { get; set; }
@@ -54,10 +67,13 @@ namespace Sanakan.DAL.Models
         public virtual ICollection<CardPvPStats> PvPStats { get; set; }
         public virtual ICollection<WishlistObject> Wishes { get; set; }
 
-        public virtual ExpContainer ExpContainer { get; set; }
+        public virtual ExperienceContainer ExperienceContainer { get; set; }
 
         public virtual ICollection<Figure> Figures { get; set; }
 
+        /// <summary>
+        /// The Discord user identifier.
+        /// </summary>
         public ulong UserId { get; set; }
         [JsonIgnore]
         public virtual User User { get; set; }
@@ -133,10 +149,10 @@ namespace Sanakan.DAL.Models
 
         public void RemoveFromWaifu(Card card)
         {
-            if (Waifu == card.CharacterId)
+            if (FavouriteWaifuId == card.CharacterId)
             {
                 card.Affection -= 25;
-                Waifu = 0;
+                FavouriteWaifuId = 0;
             }
         }
 

@@ -4,8 +4,8 @@ CREATE TABLE `penalties` (
   `GuildId` bigint unsigned NOT NULL,
   `Reason` varchar(100) DEFAULT NULL,
   `Type` int NOT NULL,
-  `StartDate` datetime NOT NULL,
-  `Duration` time NOT NULL,
+  `StartDate` datetime(6) NOT NULL,
+  `Duration` time(6) NOT NULL,
   PRIMARY KEY (`Id`),
   KEY `IX_Penalties_GuildId` (`GuildId`),
   KEY `IX_Penalties_UserId` (`UserId`)

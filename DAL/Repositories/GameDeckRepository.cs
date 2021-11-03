@@ -76,17 +76,17 @@ namespace Sanakan.DAL.Repositories
 
             return result;
         }
-        public Task<List<GameDeck>> GetByAnimeIdAsync(ulong id)
+        public Task<List<GameDeck>> GetByAnimeIdAsync(ulong animeId)
         {
             return _dbContext.GameDecks
                 .Include(x => x.Wishes)
                 .Where(x => !x.WishlistIsPrivate
                     && x.Wishes.Any(c => c.Type == WishlistObjectType.Title
-                    && c.ObjectId == id))
+                    && c.ObjectId == animeId))
                 .ToListAsync();
         }
 
-        public Task<List<GameDeck>> GetByCardIdAndCharacterAsync(ulong cardId, ulong character)
+        public Task<List<GameDeck>> GetByCardIdAndCharacterAsync(ulong cardId, ulong characterId)
         {
             var wishlists = _dbContext.GameDecks
                 .Include(x => x.Wishes)
@@ -95,7 +95,7 @@ namespace Sanakan.DAL.Repositories
                     && (x.Wishes.Any(c => c.Type == WishlistObjectType.Card
                     && c.ObjectId == cardId)
                         || x.Wishes.Any(c => c.Type == WishlistObjectType.Character
-                            && c.ObjectId == character)))
+                            && c.ObjectId == characterId)))
                 .ToListAsync();
 
             return wishlists;

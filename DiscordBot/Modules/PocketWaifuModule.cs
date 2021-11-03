@@ -496,7 +496,7 @@ namespace Sanakan.Modules
                     var exS = 1.5 * itemCount;
                     exS += exS * bonusFromQ;
 
-                    card.ExpCount += exS;
+                    card.ExperienceCount += exS;
                     karmaChange += 0.1 * itemCount;
                     embed.Description += "Twoja karta otrzymała odrobinę punktów doświadczenia!";
                     break;
@@ -505,7 +505,7 @@ namespace Sanakan.Modules
                     var exB = 5d * itemCount;
                     exB += exB * bonusFromQ;
 
-                    card.ExpCount += exB;
+                    card.ExperienceCount += exB;
                     karmaChange += 0.3 * itemCount;
                     embed.Description += "Twoja karta otrzymała punkty doświadczenia!";
                     break;
@@ -580,7 +580,7 @@ namespace Sanakan.Modules
                             return;
                         }
 
-                        card.CustomImage = string.Empty;
+                        card.CustomImageUrl = null;
                     }
                     karmaChange += 0.001 * itemCount;
                     embed.Description += "Ustawiono nowy obrazek.";
@@ -598,7 +598,7 @@ namespace Sanakan.Modules
                         await ReplyAsync("", embed: "Aby ustawić własny obrazek, karta musi posiadać wcześniej ustawiony główny (na stronie)!".ToEmbedMessage(EMType.Error).Build());
                         return;
                     }
-                    card.CustomImage = detail;
+                    card.CustomImageUrl = detail;
                     consumeItem = !card.FromFigure;
                     karmaChange += 0.001 * itemCount;
                     embed.Description += "Ustawiono nowy obrazek. Pamiętaj jednak, że dodanie nieodpowiedniego obrazka może skutkować skasowaniem karty!";
@@ -762,7 +762,7 @@ namespace Sanakan.Modules
                     return;
             }
 
-            if (!noCardOperation && card.CharacterId == bUser.GameDeck.Waifu)
+            if (!noCardOperation && card.CharacterId == bUser.GameDeck.FavouriteWaifuId)
                 affectionInc *= 1.15;
 
             if (!noCardOperation)
@@ -996,7 +996,7 @@ namespace Sanakan.Modules
             card.Rarity = Rarity.E;
             card.UpgradesCount = 2;
             card.RestartCount += 1;
-            card.ExpCount = 0;
+            card.ExperienceCount = 0;
 
             card.Affection = card.RestartCount * -0.2;
 
@@ -1049,7 +1049,7 @@ namespace Sanakan.Modules
             }
 
             if (defaultImage)
-                card.CustomImage = null;
+                card.CustomImageUrl = null;
 
             try
             {
@@ -1120,7 +1120,7 @@ namespace Sanakan.Modules
                 return;
             }
 
-            if (card.ExpCount < card.ExpToUpgrade())
+            if (card.ExperienceCount < card.ExpToUpgrade())
             {
                 await ReplyAsync("", embed: $"{Context.User.Mention} ta karta ma niewystarczającą ilość punktów doświadczenia. Wymagane {card.ExpToUpgrade().ToString("F")}.".ToEmbedMessage(EMType.Bot).Build());
                 return;
@@ -1146,7 +1146,7 @@ namespace Sanakan.Modules
             card.UpgradesCount -= (card.Rarity == Rarity.SS ? 5 : 1);
             card.Rarity = --card.Rarity;
             card.Affection += 1;
-            card.ExpCount = 0;
+            card.ExperienceCount = 0;
 
             _ = card.CalculateCardPower();
 
@@ -1189,7 +1189,7 @@ namespace Sanakan.Modules
                 return;
             }
 
-            var chLvl = bUser.GameDeck.ExpContainer.Level;
+            var chLvl = bUser.GameDeck.ExperienceContainer.Level;
 
             var broken = new List<Card>();
             foreach (var card in cardsToSac)
@@ -1200,9 +1200,9 @@ namespace Sanakan.Modules
                     continue;
                 }
 
-                bUser.StoreExpIfPossible(((card.ExpCount / 2) > card.GetMaxExpToChest(chLvl))
+                bUser.StoreExpIfPossible(((card.ExperienceCount / 2) > card.GetMaxExpToChest(chLvl))
                     ? card.GetMaxExpToChest(chLvl)
-                    : (card.ExpCount / 2));
+                    : (card.ExperienceCount / 2));
 
                 var incKarma = 1 * card.MarketValue;
                 if (incKarma > 0.001 && incKarma < 1.5)
@@ -1251,7 +1251,7 @@ namespace Sanakan.Modules
                 return;
             }
 
-            var chLvl = bUser.GameDeck.ExpContainer.Level;
+            var chLvl = bUser.GameDeck.ExperienceContainer.Level;
 
             var broken = new List<Card>();
             foreach (var card in cardsToSac)
@@ -1262,9 +1262,9 @@ namespace Sanakan.Modules
                     continue;
                 }
 
-                bUser.StoreExpIfPossible((card.ExpCount > card.GetMaxExpToChest(chLvl))
+                bUser.StoreExpIfPossible((card.ExperienceCount > card.GetMaxExpToChest(chLvl))
                     ? card.GetMaxExpToChest(chLvl)
-                    : card.ExpCount);
+                    : card.ExperienceCount);
 
                 var incKarma = 1 * card.MarketValue;
                 if (incKarma > 0.001 && incKarma < 1.5)
@@ -1312,7 +1312,7 @@ namespace Sanakan.Modules
         {
             var bUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
 
-            if (bUser.GameDeck.ExpContainer.Level == ExpContainerLevel.Disabled)
+            if (bUser.GameDeck.ExperienceContainer.Level == ExpContainerLevel.Disabled)
             {
                 await ReplyAsync("", embed: $"{Context.User.Mention} nie posiadasz jeszcze skrzyni doświadczenia.".ToEmbedMessage(EMType.Error).Build());
                 return;
@@ -1331,28 +1331,28 @@ namespace Sanakan.Modules
                 return;
             }
 
-            var maxExpInOneTime = bUser.GameDeck.ExpContainer.Level.GetMaxExpTransferToCard();
+            var maxExpInOneTime = bUser.GameDeck.ExperienceContainer.Level.GetMaxExpTransferToCard();
             if (maxExpInOneTime != -1 && exp > maxExpInOneTime)
             {
                 await ReplyAsync("", embed: $"{Context.User.Mention} na tym poziomie możesz jednorazowo przelać tylko {maxExpInOneTime} doświadczenia.".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
-            if (bUser.GameDeck.ExpContainer.ExperienceCount < exp)
+            if (bUser.GameDeck.ExperienceContainer.ExperienceCount < exp)
             {
                 await ReplyAsync("", embed: $"{Context.User.Mention} nie posiadasz wystarczającej ilości doświadczenia.".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
-            var cost = bUser.GameDeck.ExpContainer.Level.GetTransferCTCost();
+            var cost = bUser.GameDeck.ExperienceContainer.Level.GetTransferCTCost();
             if (bUser.GameDeck.CTCount < cost)
             {
                 await ReplyAsync("", embed: $"{Context.User.Mention} nie masz wystarczającej liczby CT. ({cost})".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
-            card.ExpCount += exp;
-            bUser.GameDeck.ExpContainer.ExperienceCount -= exp;
+            card.ExperienceCount += exp;
+            bUser.GameDeck.ExperienceContainer.ExperienceCount -= exp;
             bUser.GameDeck.CTCount -= cost;
 
             await _userRepository.SaveChangesAsync();
@@ -1389,8 +1389,8 @@ namespace Sanakan.Modules
                 }
             }
 
-            var cardNeeded = bUser.GameDeck.ExpContainer.Level.GetChestUpgradeCostInCards();
-            var bloodNeeded = bUser.GameDeck.ExpContainer.Level.GetChestUpgradeCostInBlood();
+            var cardNeeded = bUser.GameDeck.ExperienceContainer.Level.GetChestUpgradeCostInCards();
+            var bloodNeeded = bUser.GameDeck.ExperienceContainer.Level.GetChestUpgradeCostInBlood();
             if (cardNeeded == -1 || bloodNeeded == -1)
             {
                 await ReplyAsync("", embed: $"{Context.User.Mention} nie można bardziej ulepszyć skrzyni."
@@ -1427,7 +1427,7 @@ namespace Sanakan.Modules
             for (int i = 0; i < cardNeeded; i++)
                 bUser.GameDeck.Cards.Remove(cardsToSac[i]);
 
-            ++bUser.GameDeck.ExpContainer.Level;
+            ++bUser.GameDeck.ExperienceContainer.Level;
             bUser.GameDeck.Karma -= 15;
 
             await _userRepository.SaveChangesAsync();
@@ -1810,7 +1810,7 @@ namespace Sanakan.Modules
 
                 var exp = _waifuService.GetExpToUpgrade(cardToUp, card);
                 cardToUp.Affection += 0.07;
-                cardToUp.ExpCount += exp;
+                cardToUp.ExperienceCount += exp;
                 totalExp += exp;
 
                 bUser.GameDeck.Cards.Remove(card);
@@ -2315,10 +2315,10 @@ namespace Sanakan.Modules
         [Summary("wyszukuje na wishlistach danego anime")]
         [Remarks("21"), RequireWaifuCommandChannel]
         public async Task WhoWantsCardsFromAnimeAsync(
-            [Summary("id anime")]ulong id,
+            [Summary("id anime")]ulong animeId,
             [Summary("czy zamienić oznaczenia na nicki?")]bool showNames = false)
         {
-            var animeMangaInfoResult = await _shindenClient.GetAnimeMangaInfoAsync(id);
+            var animeMangaInfoResult = await _shindenClient.GetAnimeMangaInfoAsync(animeId);
 
             if (animeMangaInfoResult.Value == null)
             {
@@ -2327,12 +2327,13 @@ namespace Sanakan.Modules
             }
 
 
-            var wishlists = await _gameDeckRepository.GetByAnimeIdAsync(id);
+            var wishlists = await _gameDeckRepository.GetByAnimeIdAsync(animeId);
              
 
-            if (wishlists.Count < 1)
+            if (!wishlists.Any())
             {
-                await ReplyAsync("", embed: $"Nikt nie ma tego tytułu wpisanego na listę życzeń.".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync("", embed: $"Nikt nie ma tego tytułu wpisanego na listę życzeń."
+                    .ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
@@ -2342,7 +2343,10 @@ namespace Sanakan.Modules
                 foreach (var deck in wishlists)
                 {
                     var dUser = Context.Client.GetUser(deck.Id);
-                    if (dUser != null) usersStr += $"{dUser.Username}\n";
+                    if (dUser != null)
+                    {
+                        usersStr += $"{dUser.Username}\n";
+                    }
                 }
             }
             else
@@ -3508,10 +3512,10 @@ namespace Sanakan.Modules
 
             if (wid == 0)
             {
-                if (bUser.GameDeck.Waifu != 0)
+                if (bUser.GameDeck.FavouriteWaifuId.HasValue)
                 {
                     var prevWaifus = bUser.GameDeck.Cards
-                        .Where(x => x.CharacterId == bUser.GameDeck.Waifu);
+                        .Where(x => x.CharacterId == bUser.GameDeck.FavouriteWaifuId);
 
                     foreach (var card in prevWaifus)
                     {
@@ -3519,7 +3523,7 @@ namespace Sanakan.Modules
                         _ = card.CalculateCardPower();
                     }
 
-                    bUser.GameDeck.Waifu = 0;
+                    bUser.GameDeck.FavouriteWaifuId = null;
                     await _userRepository.SaveChangesAsync();
                 }
 
@@ -3531,24 +3535,26 @@ namespace Sanakan.Modules
 
             if (thisCard == null)
             {
-                await ReplyAsync("", embed: $"{Context.User.Mention} nie posiadasz takiej karty lub znajduje się ona w klatce!".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync("", embed: $"{Context.User.Mention} nie posiadasz takiej karty lub znajduje się ona w klatce!"
+                    .ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
-            if (bUser.GameDeck.Waifu == thisCard.CharacterId)
+            if (bUser.GameDeck.FavouriteWaifuId == thisCard.CharacterId)
             {
-                await ReplyAsync("", embed: $"{Context.User.Mention} masz już ustawioną tą postać!".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync("", embed: $"{Context.User.Mention} masz już ustawioną tą postać!"
+                    .ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
-            var allPrevWaifus = bUser.GameDeck.Cards.Where(x => x.CharacterId == bUser.GameDeck.Waifu);
+            var allPrevWaifus = bUser.GameDeck.Cards.Where(x => x.CharacterId == bUser.GameDeck.FavouriteWaifuId);
             foreach (var card in allPrevWaifus)
             {
                 card.Affection -= 5;
                 _ = card.CalculateCardPower();
             }
 
-            bUser.GameDeck.Waifu = thisCard.CharacterId;
+            bUser.GameDeck.FavouriteWaifuId = thisCard.CharacterId;
             await _userRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(new string[] { $"user-{bUser.Id}", "users" });
@@ -3715,8 +3721,8 @@ namespace Sanakan.Modules
             var parameters = new object[]
             {
                 gameDeck.GetUserNameStatus(),
-                (int)gameDeck.ExpContainer.Level,
-                gameDeck.ExpContainer.ExperienceCount.ToString("F"),
+                (int)gameDeck.ExperienceContainer.Level,
+                gameDeck.ExperienceContainer.ExperienceCount.ToString("F"),
                 userStats.ReleasedCards,
                 userStats.DestroyedCards, 
                 userStats.SacraficeCards,
@@ -3746,12 +3752,12 @@ namespace Sanakan.Modules
                 Description = string.Format(Strings.PocketWaifuUserStats, parameters),
             };
 
-            if (gameDeck?.Waifu != 0)
+            if (gameDeck?.FavouriteWaifuId != null)
             {
                 var tChar = gameDeck
                     .Cards
                     .OrderBy(x => x.Rarity)
-                    .FirstOrDefault(x => x.CharacterId == databaseUser.GameDeck.Waifu);
+                    .FirstOrDefault(x => x.CharacterId == databaseUser.GameDeck.FavouriteWaifuId);
 
                 if (tChar != null)
                 {

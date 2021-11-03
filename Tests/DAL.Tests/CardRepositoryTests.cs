@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Sanakan.DAL.Models;
@@ -16,16 +17,32 @@ namespace Sanakan.DAL.Tests
         public async Task Should_CRUD_Entity()
         {
             var repository = ServiceProvider.GetRequiredService<ICardRepository>();
-            var entity = new Card(
+
+            var user = new User(1, DateTime.UtcNow);
+
+            DbContext.Users.Add(user);
+            await DbContext.SaveChangesAsync();
+
+            var card = new Card(
                 1, "test card", "test card",
                 10, 20, Rarity.A,
                 Dere.Bodere, DateTime.UtcNow);
+           
 
-            repository.Add(entity);
-            await repository.SaveChangesAsync();
+            try
+            {
+                user.GameDeck.Cards.Add(card);
+                await DbContext.SaveChangesAsync();
+            }
+            catch (DbUpdateException)
+            {
 
-            var actual = await repository.GetByIdAsync(1);
-            actual.Should().BeEquivalentTo(entity);
+                throw;
+            }
+          
+
+            var actual = await repository.GetByIdAsync(card.Id);
+            actual.Should().BeEquivalentTo(card);
         }
     }
 }

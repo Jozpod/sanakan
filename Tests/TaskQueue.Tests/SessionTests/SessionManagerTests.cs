@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using FluentAssertions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,9 +19,13 @@ namespace Sanakan.TaskQueue.Tests.SessionTests
         }
 
         [TestMethod]
-        public async Task Should_Process_Messages()
+        public async Task Should_Add_And_Remove_Session()
         {
-            
+            var session = new CraftSession(1, DateTime.UtcNow, new CraftSession.CraftSessionPayload());
+            _sessionManager.Add(session);
+            _sessionManager.Sessions.Should().HaveCount(1);
+            _sessionManager.Remove(session);
+            _sessionManager.Sessions.Should().HaveCount(0);
         }
     }
 }

@@ -1,7 +1,7 @@
 CREATE TABLE `gamedecks` (
   `Id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `CTCnt` bigint NOT NULL,
-  `Waifu` bigint unsigned NOT NULL,
+  `CTCount` bigint NOT NULL,
+  `FavouriteWaifuId` bigint unsigned DEFAULT NULL,
   `Karma` double NOT NULL,
   `ItemsDropped` bigint unsigned NOT NULL,
   `WishlistIsPrivate` tinyint(1) NOT NULL,
@@ -12,7 +12,7 @@ CREATE TABLE `gamedecks` (
   `SeasonalPVPRank` bigint NOT NULL,
   `MatchMakingRatio` double NOT NULL,
   `PVPDailyGamesPlayed` bigint unsigned NOT NULL,
-  `PVPSeasonBeginDate` datetime NOT NULL,
+  `PVPSeasonBeginDate` datetime(6) NOT NULL,
   `ExchangeConditions` varchar(50) DEFAULT NULL,
   `BackgroundImageUrl` varchar(50) DEFAULT NULL,
   `ForegroundImageUrl` varchar(50) DEFAULT NULL,

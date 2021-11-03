@@ -29,7 +29,7 @@ namespace Sanakan.TaskQueue.MessageHandlers
             {
                 card.InCage = false;
                 card.TagList.Clear();
-                card.LastIdOwner = databaseUser.Id;
+                card.LastOwnerId = databaseUser.Id;
                 card.GameDeckId = fakeUser.GameDeck.Id;
             }
 

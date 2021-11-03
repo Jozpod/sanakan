@@ -37,7 +37,7 @@ namespace Sanakan.DAL.Models
             }
 
             var maxExp = card.ExpToUpgrade();
-            var experienceCount = card.ExpCount;
+            var experienceCount = card.ExperienceCount;
             if (experienceCount > maxExp)
             {
                 experienceCount = maxExp;

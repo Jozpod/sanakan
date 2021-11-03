@@ -27,7 +27,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="API\Queries\Base\" />
     <Folder Include="Configuration\" />
   </ItemGroup>
 

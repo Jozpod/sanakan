@@ -1,7 +1,7 @@
 CREATE TABLE `transferdata` (
   `Id` bigint unsigned NOT NULL AUTO_INCREMENT,
   `Value` bigint NOT NULL,
-  `Date` datetime NOT NULL,
+  `Date` datetime(6) NOT NULL,
   `DiscordId` bigint unsigned NOT NULL,
   `ShindenId` bigint unsigned NOT NULL,
   `Source` int NOT NULL,

@@ -10,7 +10,7 @@ namespace Sanakan.DAL.Configuration
         IEntityTypeConfiguration<SlotMachineConfig>,
         IEntityTypeConfiguration<TimeStatus>,
         IEntityTypeConfiguration<GameDeck>,
-        IEntityTypeConfiguration<ExpContainer>,
+        IEntityTypeConfiguration<ExperienceContainer>,
         IEntityTypeConfiguration<Figure>,
         IEntityTypeConfiguration<Card>,
         IEntityTypeConfiguration<Item>,
@@ -44,10 +44,11 @@ namespace Sanakan.DAL.Configuration
 
         public void Configure(EntityTypeBuilder<TimeStatus> builder)
         {
-            builder.HasKey(e => e.Id);
+            builder.HasKey(pr => pr.Id);
+            builder.HasIndex(pr => pr.Type);
 
-            builder.HasOne(e => e.User)
-                .WithMany(u => u.TimeStatuses);
+            builder.HasOne(pr => pr.User)
+                .WithMany(pr => pr.TimeStatuses);
         }
 
         public void Configure(EntityTypeBuilder<GameDeck> builder)
@@ -59,12 +60,12 @@ namespace Sanakan.DAL.Configuration
                 .WithOne(u => u.GameDeck);
         }
 
-        public void Configure(EntityTypeBuilder<ExpContainer> builder)
+        public void Configure(EntityTypeBuilder<ExperienceContainer> builder)
         {
             builder.HasKey(e => e.Id);
 
             builder.HasOne(e => e.GameDeck)
-                .WithOne(u => u.ExpContainer);
+                .WithOne(u => u.ExperienceContainer);
         }
 
         public void Configure(EntityTypeBuilder<Figure> builder)
@@ -80,7 +81,14 @@ namespace Sanakan.DAL.Configuration
             builder.HasKey(e => e.Id);
             builder.HasIndex(e => e.Active);
 
-            builder.HasOne(e => e.GameDeck)
+            builder.Property(pr => pr.CreatedOn)
+                .HasColumnType("datetime(4)");
+
+            builder.Property(pr => pr.ExpeditionDate)
+               .HasColumnType("datetime(4)");
+
+            builder
+                .HasOne(e => e.GameDeck)
                 .WithMany(d => d.Cards);
 
             builder.HasIndex(b => b.CharacterId);
@@ -102,6 +110,8 @@ namespace Sanakan.DAL.Configuration
 
             builder.HasOne(e => e.GameDeck)
                 .WithMany(d => d.Wishes);
+
+            builder.HasIndex(pr => new { pr.Type, pr.ObjectId });
         }
 
         public void Configure(EntityTypeBuilder<BoosterPack> builder)

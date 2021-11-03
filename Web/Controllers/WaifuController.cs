@@ -271,8 +271,14 @@ namespace Sanakan.Web.Controllers
                 BackgroundImageUrl = user.GameDeck.BackgroundImageUrl,
                 ForegroundImageUrl = user.GameDeck.ForegroundImageUrl,
                 Expeditions = user.GameDeck.Cards.Where(x => x.Expedition != ExpeditionCardType.None).ToExpeditionView(user.GameDeck.Karma),
-                Waifu = user.GameDeck.Cards.Where(x => x.CharacterId == user.GameDeck.Waifu).OrderBy(x => x.Rarity).ThenByDescending(x => x.Quality).FirstOrDefault().ToView(),
-                Gallery = user.GameDeck.Cards.Where(x => x.HasTag("galeria")).Take(user.GameDeck.CardsInGallery).OrderBy(x => x.Rarity).ThenByDescending(x => x.Quality).ToView()
+                Waifu = user.GameDeck.Cards.Where(x => x.CharacterId == user.GameDeck
+                .FavouriteWaifuId)
+                .OrderBy(x => x.Rarity).ThenByDescending(x => x.Quality).FirstOrDefault().ToView(),
+                Gallery = user.GameDeck.
+                Cards.Where(x => x.HasTag("galeria"))
+                .Take(user.GameDeck.CardsInGallery)
+                .OrderBy(x => x.Rarity)
+                .ThenByDescending(x => x.Quality).ToView()
             };
 
             return Ok(result);

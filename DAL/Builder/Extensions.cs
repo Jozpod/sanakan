@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Sanakan.Common.Configuration;
 using Sanakan.DAL.Models.Analytics;
 using Sanakan.DAL.Repositories;
 using Sanakan.DAL.Repositories.Abstractions;
@@ -12,6 +14,13 @@ namespace Sanakan.DAL.Builder
 {
     public static class Extensions
     {
+        public static IServiceCollection AddSanakanDbContext(this IServiceCollection services, IConfiguration configuration)
+        {
+            services.Configure<DatabaseConfiguration>(configuration.GetSection("Database"));
+            services.AddDbContext<SanakanDbContext>();
+            return services;
+        }
+
         public static IServiceCollection AddRepositories(this IServiceCollection services)
         {
             services.AddScoped<ICardRepository, CardRepository>();

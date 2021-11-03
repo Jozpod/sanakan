@@ -283,8 +283,8 @@ namespace Sanakan.DAL.Repositories
         {
             return _dbContext.Cards
                 .Include(x => x.TagList)
-                .Where(x => (x.LastIdOwner == userId || (x.FirstIdOwner == userId
-                    && x.LastIdOwner == 0))
+                .Where(x => (x.LastOwnerId == userId || (x.FirstOwnerId == userId
+                    && x.LastOwnerId == 0))
                     && x.GameDeckId == 1)
                 .ToListAsync();
         }

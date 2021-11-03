@@ -1,6 +1,6 @@
 CREATE TABLE `boosterpackcharacters` (
   `Id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `Character` bigint unsigned NOT NULL,
+  `CharacterId` bigint unsigned NOT NULL,
   `BoosterPackId` bigint unsigned NOT NULL,
   PRIMARY KEY (`Id`),
   KEY `IX_BoosterPackCharacters_BoosterPackId` (`BoosterPackId`),

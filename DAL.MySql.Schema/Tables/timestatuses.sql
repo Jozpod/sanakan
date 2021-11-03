@@ -1,10 +1,10 @@
 CREATE TABLE `timestatuses` (
   `Id` bigint unsigned NOT NULL AUTO_INCREMENT,
   `Type` int NOT NULL,
-  `EndsAt` datetime NOT NULL,
-  `IValue` bigint NOT NULL,
+  `EndsAt` datetime(6) DEFAULT NULL,
+  `IValue` bigint unsigned NOT NULL,
   `BValue` tinyint(1) NOT NULL,
-  `Guild` bigint unsigned NOT NULL,
+  `GuildId` bigint unsigned DEFAULT NULL,
   `UserId` bigint unsigned NOT NULL,
   PRIMARY KEY (`Id`),
   KEY `IX_TimeStatuses_UserId` (`UserId`),

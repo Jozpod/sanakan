@@ -25,7 +25,7 @@ namespace Sanakan.Extensions
             if (card.IsBroken) icons.Add("💔");
             if (card.InCage) icons.Add("🔒");
             if (card.Expedition != ExpeditionCardType.None) icons.Add("✈️");
-            if (!string.IsNullOrEmpty(card.CustomImage)) icons.Add("🖼️");
+            if (!string.IsNullOrEmpty(card.CustomImageUrl)) icons.Add("🖼️");
             if (!string.IsNullOrEmpty(card.CustomBorder)) icons.Add("✂️");
 
             var value = card.GetThreeStateMarketValue();
@@ -73,7 +73,7 @@ namespace Sanakan.Extensions
                 + $"*{card.Title ?? "????"}*\n\n"
                 + $"*{card.GetCardParams(true, false, true)}*\n\n"
                 + $"**Relacja:** {card.GetAffectionString()}\n"
-                + $"**Doświadczenie:** {card.ExpCount.ToString("F")}/{card.ExpToUpgrade().ToString("F")}\n"
+                + $"**Doświadczenie:** {card.ExperienceCount.ToString("F")}/{card.ExpToUpgrade().ToString("F")}\n"
                 + $"**Dostępne ulepszenia:** {card.UpgradesCount}\n\n"
                 + $"**W klatce:** {card.InCage.GetYesNo()}\n"
                 + $"**Aktywna:** {card.Active.GetYesNo()}\n"
@@ -94,7 +94,7 @@ namespace Sanakan.Extensions
                 + $"_{card.Title}_\n\n"
                 + $"{card.Dere}\n"
                 + $"{card.GetAffectionString()}\n"
-                + $"{card.ExpCount.ToString("F")}/{card.ExpToUpgrade().ToString("F")} exp\n\n"
+                + $"{card.ExperienceCount.ToString("F")}/{card.ExpToUpgrade().ToString("F")} exp\n\n"
                 + $"{tags}\n"
                 + $"{card.GetStatusIcons()}";
         }
