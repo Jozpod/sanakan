@@ -1,7 +1,7 @@
 ﻿using Sanakan.Common;
 using System;
 
-namespace Web.Tests.HostedServices
+namespace Sanakan.Web.Tests.HostedServices
 {
     public class FakeTimer : ITimer
     {

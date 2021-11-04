@@ -8,6 +8,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Resources\ManWaggingFinger.gif" />
+    <None Remove="Resources\WomenMagnifyingGlass.gif" />
+    <None Remove="Resources\YouHaveNoPowerHere.gif" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\ManWaggingFinger.gif" />
+    <EmbeddedResource Include="Resources\WomenMagnifyingGlass.gif" />
+    <EmbeddedResource Include="Resources\YouHaveNoPowerHere.gif" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Discord.Net" Version="2.4.0" />
     <PackageReference Include="Humanizer.Core.pl" Version="2.11.10" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="5.0.0" />

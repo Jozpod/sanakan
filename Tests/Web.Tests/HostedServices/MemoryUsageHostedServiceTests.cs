@@ -19,7 +19,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Web.Tests.HostedServices;
 
-namespace Web.Test.HostedServices
+namespace Sanakan.Web.Test.HostedServices
 {
     [TestClass]
     public class MemoryUsageHostedServiceTests

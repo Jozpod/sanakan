@@ -42,10 +42,10 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Sanakan.Modules
+namespace Sanakan.DiscordBot.Modules
 {
     [Name("Debug"), Group("dev"), DontAutoLoad, RequireDev]
-    public class DebugModule : ModuleBase<SocketCommandContext>
+    public class DebugModule : SanakanModuleBase
     {
         private readonly IWaifuService _waifuService;
         private readonly WritableOptions<SanakanConfiguration> _config;
@@ -61,6 +61,7 @@ namespace Sanakan.Modules
         private readonly ICacheManager _cacheManager;
         private readonly IResourceManager _resourceManager;
         private readonly IRandomNumberGenerator _randomNumberGenerator;
+        private readonly ITaskManager _taskManager;
 
         public DebugModule(
             IShindenClient shindenClient,
@@ -297,7 +298,7 @@ namespace Sanakan.Modules
             for (uint i = 0; i < repeat; i++)
             {
                 await GiveawayCardsAsync(id, count, duration);
-                await Task.Delay(TimeSpan.FromSeconds(10));
+                await _taskManager.Delay(TimeSpan.FromSeconds(10));
             }
         }
 
@@ -329,7 +330,7 @@ namespace Sanakan.Modules
                 .ToEmbedMessage(EMType.Bot).Build());
             await userMessage.AddReactionAsync(emote);
 
-            await Task.Delay(TimeSpan.FromMinutes(duration));
+            await _taskManager.Delay(TimeSpan.FromMinutes(duration));
             await userMessage.RemoveReactionAsync(emote, Context.Client.CurrentUser);
 
             var reactions = await userMessage.GetReactionUsersAsync(emote, 300).FlattenAsync();
@@ -1232,7 +1233,7 @@ namespace Sanakan.Modules
         {
             await ReplyAsync("", embed: "To dobry czas by umrzeć.".ToEmbedMessage(EMType.Bot).Build());
             await Context.Client.LogoutAsync();
-            await Task.Delay(1500);
+            await _taskManager.Delay(1500);
             Environment.Exit(0);
         }
 
@@ -1244,7 +1245,7 @@ namespace Sanakan.Modules
             await ReplyAsync("", embed: "To już czas?".ToEmbedMessage(EMType.Bot).Build());
             await Context.Client.LogoutAsync();
             System.IO.File.Create("./updateNow");
-            await Task.Delay(1500);
+            await _taskManager.Delay(1500);
             Environment.Exit(200);
         }
 

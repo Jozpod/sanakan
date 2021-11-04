@@ -19,6 +19,14 @@ namespace Sanakan.TaskQueue.Tests.SessionTests
         }
 
         [TestMethod]
+        public async Task Should_Check_If_Session_Exists()
+        {
+            var session = new CraftSession(1, DateTime.UtcNow, new CraftSession.CraftSessionPayload());
+            _sessionManager.Add(session);
+            _sessionManager.Exists<CraftSession>(session.OwnerId).Should().BeTrue();
+        }
+
+        [TestMethod]
         public async Task Should_Add_And_Remove_Session()
         {
             var session = new CraftSession(1, DateTime.UtcNow, new CraftSession.CraftSessionPayload());

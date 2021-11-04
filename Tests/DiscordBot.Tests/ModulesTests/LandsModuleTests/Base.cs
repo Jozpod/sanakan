@@ -6,8 +6,6 @@ using Moq;
 using Sanakan.DAL.Models.Configuration;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot.Services.Abstractions;
-using Sanakan.Modules;
-using Sanakan.Services;
 using System;
 using System.Linq;
 using System.Collections.Generic;
@@ -15,15 +13,23 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Discord.Rest;
 using System.IO;
+using Sanakan.DiscordBot.Modules;
 
-namespace DiscordBot.Test
+namespace DiscordBot.ModulesTests.LandsModuleTests
 {
     [TestClass]
-    public class LandsModuleTests
+    public abstract class Base
     {
-        private readonly LandsModule _module;
-        private readonly Mock<ILandManager> _landManagerMock = new(MockBehavior.Strict);
-        private readonly Mock<IGuildConfigRepository> _guildConfigRepositoryMock = new(MockBehavior.Strict);
+        protected readonly LandsModule _module;
+        protected readonly Mock<ILandManager> _landManagerMock = new(MockBehavior.Strict);
+        protected readonly Mock<IGuildConfigRepository> _guildConfigRepositoryMock = new(MockBehavior.Strict);
+
+        public Base()
+        {
+            _module = new LandsModule(
+                _landManagerMock.Object,
+                _guildConfigRepositoryMock.Object);
+        }
 
         public class FakeSocketCommandContext : SocketCommandContext
         {
@@ -146,43 +152,37 @@ namespace DiscordBot.Test
             return socketUserMessage;
         }
 
-        public LandsModuleTests()
-        {
-            _module = new LandsModule(
-                _landManagerMock.Object,
-                _guildConfigRepositoryMock.Object);
-        }
+        //[TestMethod]
+        //public async Task Should_Tell_When_User_Does_Not_Own_Land()
+        //{
+        //    var discordSocketClientMock = new Mock<DiscordSocketClient>(MockBehavior.Strict);
+        //    var socketMessageChannelMock = new Mock<ISocketMessageChannel>(MockBehavior.Strict);
+        //    var socketGlobalUser = CreateSocketGlobalUser(discordSocketClientMock.Object, 1);
+        //    var socketGuild = CreateSocketGuild(discordSocketClientMock.Object, 1);
+        //    var socketGuildUser = CreateSocketGuildUser(socketGuild, socketGlobalUser);
+        //    var socketUserMessage = CreateSocketUserMessage(
+        //        discordSocketClientMock.Object,
+        //        1,
+        //        socketMessageChannelMock.Object,
+        //        socketGuildUser);
+        //    var socketCommandContext = new FakeSocketCommandContext(
+        //        discordSocketClientMock.Object,
+        //        socketUserMessage,
+        //        socketGuild);
+        //    _module.Context = socketCommandContext;
 
-        [TestMethod]
-        public async Task Should_Tell_When_User_Does_Not_Own_Land()
-        {
-            var discordSocketClientMock = new Mock<DiscordSocketClient>(MockBehavior.Strict);
-            var socketMessageChannelMock = new Mock<ISocketMessageChannel>(MockBehavior.Strict);
-            var socketGlobalUser = CreateSocketGlobalUser(discordSocketClientMock.Object, 1);
-            var socketGuild = CreateSocketGuild(discordSocketClientMock.Object, 1);
-            var socketGuildUser = CreateSocketGuildUser(socketGuild, socketGlobalUser);
-            var socketUserMessage = CreateSocketUserMessage(
-                discordSocketClientMock.Object,
-                1,
-                socketMessageChannelMock.Object,
-                socketGuildUser);
-            var socketCommandContext = new FakeSocketCommandContext(
-                discordSocketClientMock.Object,
-                socketUserMessage,
-                socketGuild);
-            _module.Context = socketCommandContext;
+        //    _guildConfigRepositoryMock
+        //        .Setup(pr => pr.GetCachedGuildFullConfigAsync(It.IsAny<ulong>()));
 
-            _guildConfigRepositoryMock
-                .Setup(pr => pr.GetCachedGuildFullConfigAsync(It.IsAny<ulong>()));
+        //    _landManagerMock
+        //        .Setup(pr => pr.DetermineLand(
+        //            It.IsAny<IEnumerable<MyLand>>(),
+        //            It.IsAny<IEnumerable<SocketRole>>(),
+        //            It.IsAny<string>()
+        //        ));
 
-            _landManagerMock
-                .Setup(pr => pr.DetermineLand(
-                    It.IsAny<IEnumerable<MyLand>>(),
-                    It.IsAny<IEnumerable<SocketRole>>(),
-                    It.IsAny<string>()
-                ));
-
-            await _module.ShowPeopleAsync();
-        }
+        //    _module.AddPersonAsync
+        //    await _module.ShowPeopleAsync();
+        //}
     }
 }

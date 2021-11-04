@@ -13,20 +13,8 @@ using System.Threading.Tasks;
 namespace Sanakan.Game.Tests
 {
     [TestClass]
-    public class ImageProcessorTests
+    public class GetUserProfileAsyncTests : Base
     {
-        private readonly ImageProcessor _imageProcessor;
-        private readonly Mock<IShindenClient> _shindenClientMock = new(MockBehavior.Strict);
-        private readonly Mock<IFileSystem> _fileSystemMock = new(MockBehavior.Strict);
-        public ImageProcessorTests()
-        {
-            var httpClient = new HttpClient();
-
-            _imageProcessor = new ImageProcessor(
-                _shindenClientMock.Object,
-                _fileSystemMock.Object,
-                httpClient);
-        }
 
         [TestMethod]
         public async Task Should_Generate_Level_Up_Badge()
@@ -36,7 +24,7 @@ namespace Sanakan.Game.Tests
             var avatarUrl = "avatar-url";
             var color = Discord.Color.Blue;
 
-            var badge = await _imageProcessor.GetLevelUpBadgeAsync(name, level, avatarUrl, color);
+            var badge = await _imageProcessor.GetDuelCardImage(name, level, avatarUrl, color);
             //badge.Save();
         }
 

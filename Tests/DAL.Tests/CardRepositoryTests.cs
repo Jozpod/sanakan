@@ -28,21 +28,15 @@ namespace Sanakan.DAL.Tests
                 10, 20, Rarity.A,
                 Dere.Bodere, DateTime.UtcNow);
            
-
-            try
-            {
-                user.GameDeck.Cards.Add(card);
-                await DbContext.SaveChangesAsync();
-            }
-            catch (DbUpdateException)
-            {
-
-                throw;
-            }
-          
+            user.GameDeck.Cards.Add(card);
+            await DbContext.SaveChangesAsync();
 
             var actual = await repository.GetByIdAsync(card.Id);
-            actual.Should().BeEquivalentTo(card);
+            actual.Should().BeEquivalentTo(card, pr => pr
+                .Excluding(npr => npr.ArenaStats)
+                .Excluding(npr => npr.GameDeck)
+                .Excluding(npr => npr.ExpeditionDate)
+                .Excluding(npr => npr.CreatedOn));
         }
     }
 }

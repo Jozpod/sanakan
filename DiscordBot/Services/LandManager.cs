@@ -10,9 +10,9 @@ using Sanakan.Extensions;
 
 namespace Sanakan.Services
 {
-    public class LandManager : ILandManager
+    internal class LandManager : ILandManager
     {
-        public MyLand? DetermineLand(IEnumerable<MyLand> lands, IEnumerable<SocketRole> roles, string name)
+        public MyLand? DetermineLand(IEnumerable<MyLand> lands, IEnumerable<IRole> roles, string? name)
         {            
             if (name != null)
             {
@@ -44,7 +44,7 @@ namespace Sanakan.Services
 
         public async Task<List<Embed>> GetMembersList(MyLand land, IGuild guild)
         {
-            var embs = new List<Embed>();
+            var embedList = new List<Embed>();
             var temp = $"**Członkowie**: *{land.Name}*\n\n";
             var users = await guild.GetUsersAsync(CacheMode.CacheOnly);
 
@@ -54,7 +54,7 @@ namespace Sanakan.Services
             {
                 if (temp.Length + user.Mention.Length > 2000)
                 {
-                    embs.Add(new EmbedBuilder()
+                    embedList.Add(new EmbedBuilder()
                     {
                         Color = EMType.Info.Color(),
                         Description = temp
@@ -64,13 +64,13 @@ namespace Sanakan.Services
                 else temp += $"{user.Mention}\n";
             }
 
-            embs.Add(new EmbedBuilder()
+            embedList.Add(new EmbedBuilder()
             {
                 Color = EMType.Info.Color(),
                 Description = temp
             }.Build());
 
-            return embs;
+            return embedList;
         }
     }
 }

@@ -1,50 +1,50 @@
 ﻿namespace Sanakan.Configuration
 {
     /// <summary>
-    /// Enum z typem wiadomości
+    /// Describes rich message type.
     /// </summary>
     public enum RichMessageType
     {
         /// <summary>
         /// Oznaczenie brakujacego typu
         /// </summary>
-        None,
+        None = 0,
         /// <summary>
         /// Wiadomość do kanału newsów
         /// </summary>
-        News,
+        News = 1,
         /// <summary>
         /// Wiadomość do kanału recenzji
         /// </summary>
-        Review,
+        Review = 2,
         /// <summary>
         /// Wiadomość do kanału nowych epizodów
         /// </summary>
-        NewEpisode,
+        NewEpisode = 3,
         /// <summary>
         /// Wiadomość użytkownika na PW
         /// </summary>
-        UserNotify,
+        UserNotify = 4,
         /// <summary>
         /// Wiadomość do kanału nowych epizodów
         /// </summary>
-        NewEpisodePL,
+        NewEpisodePL = 5,
         /// <summary>
         /// Wiadomość do kanału rekomendacji
         /// </summary>
-        Recommendation,
+        Recommendation = 6,
         /// <summary>
         /// Wiadomość do kanału moderatorów
         /// </summary>
-        ModNotify,
+        ModNotify = 7,
         /// <summary>
         /// Wiadomość do kanału sezonów
         /// </summary>
-        NewSesonalEpisode,
+        NewSesonalEpisode = 8,
         /// <summary>
         /// Wiadomość do kanału raportów
         /// </summary>
-        AdminNotify,
+        AdminNotify = 9,
     }
 
 }

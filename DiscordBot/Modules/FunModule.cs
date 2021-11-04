@@ -26,11 +26,12 @@ using Sanakan.DiscordBot.Abstractions.Models;
 using Sanakan.Game.Models;
 using Sanakan.DiscordBot.Abstractions;
 using Humanizer;
+using Sanakan.DiscordBot.Modules;
 
-namespace Sanakan.Modules
+namespace Sanakan.DiscordBot.Modules
 {
     [Name("Zabawy"), RequireUserRole]
-    public class FunModule : ModuleBase<SocketCommandContext>
+    public class FunModule : SanakanModuleBase
     {
         public const string PsyduckEmoji = "<:klasycznypsaj:482136878120828938>";
         private readonly IModeratorService _moderatorService;
@@ -285,7 +286,7 @@ namespace Sanakan.Modules
             _cacheManager.ExpireTag(new string[] { $"user-{botuser.Id}", "users" });
 
             await ReplyAsync("", embed: embed.Build());
-            await Context.Channel.SendFileAsync($"./Pictures/coin{(int)thrown}.png");
+            await Context.Channel.SendFileAsync(string.Format(Paths.CoinPicture, (int)thrown));
         }
 
         [Command("ustaw automat")]

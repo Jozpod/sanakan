@@ -15,26 +15,8 @@ using System.Threading.Tasks;
 namespace ShindenApi.Tests
 {
     [TestClass]
-    public class ShindenClientTests
+    public class GetRecommendationsAsyncTests : Base
     {
-        protected readonly ShindenClient _shindenClient;
-        private readonly CookieContainer _cookieContainer = new();
-        private readonly Mock<IOptionsMonitor<ShindenApiConfiguration>> _options = new();
-        private readonly Mock<HttpClientHandler> _httpClientHandlerMock = new();
-
-        public ShindenClientTests()
-        {
-            _cookieContainer = new CookieContainer();
-            //_httpClientHandler = new HttpClientHandler() { CookieContainer = _cookieContainer };
-            var httpClient = new HttpClient(_httpClientHandlerMock.Object);
-            httpClient.BaseAddress = new Uri("https://test.com");
-
-            _shindenClient = new ShindenClient(
-                httpClient,
-                _cookieContainer,
-                _options.Object,
-                NullLogger<ShindenClient>.Instance);
-        }
 
         [TestMethod]
         public async Task Should_LogIn_And_Put_Cookies()
@@ -61,7 +43,7 @@ namespace ShindenApi.Tests
                     Content = new StreamContent(stream),
                 });
 
-            var result = await _shindenClient.LoginAsync("test", "test");
+            var result = await _shindenClient.GetRecommendationsAsync("test", "test");
             var test = _cookieContainer.GetCookies(new Uri("test"));
         }
     }

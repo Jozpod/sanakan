@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace Sanakan.Services
 {
-    public class HelperService : IHelperService
+    internal class HelperService : IHelperService
     {
         private readonly IOptionsMonitor<DiscordConfiguration> _config;
 
@@ -188,13 +188,15 @@ namespace Sanakan.Services
                 Commands = new List<string>()
             };
 
-            foreach (var cmd in module.Commands)
+            foreach (var commands in module.Commands)
             {
-                if (!string.IsNullOrEmpty(cmd.Name))
+                if (!string.IsNullOrEmpty(commands.Name))
                 {
-                    var name = "`" + cmd.Name + "`";
+                    var name = "`" + commands.Name + "`";
                     if (!subMInfo.Commands.Contains(name))
+                    {
                         subMInfo.Commands.Add(name);
+                    }
                 }
             }
 
@@ -207,7 +209,10 @@ namespace Sanakan.Services
             var att = mod.Aliases.FirstOrDefault();
             if (!string.IsNullOrEmpty(att))
             {
-                if (space) att += " ";
+                if (space)
+                {
+                    att += " ";
+                }
                 prefix = att;
             }
             return prefix;

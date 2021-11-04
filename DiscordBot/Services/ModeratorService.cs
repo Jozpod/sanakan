@@ -24,7 +24,7 @@ using Sanakan.Extensions;
 
 namespace Sanakan.Services
 {
-    public class ModeratorService : IModeratorService
+    internal class ModeratorService : IModeratorService
     {
         private readonly DiscordSocketClient _client;
         private readonly ILogger _logger;
@@ -44,26 +44,6 @@ namespace Sanakan.Services
             _cacheManager = cacheManager;
             _systemClock = systemClock;
             _serviceScopeFactory = serviceScopeFactory;
-
-            _timer = new Timer(async _ =>
-            {
-                try
-                {
-                    await CyclicCheckPenalties();
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError($"Error occurered while checking penalties.", ex);
-                }
-            },
-            null,
-            TimeSpan.FromMinutes(1),
-            TimeSpan.FromSeconds(30));
-        }
-
-        private async Task CyclicCheckPenalties()
-        {
-            
         }
 
         private async Task<EmbedBuilder> GetFullConfigurationAsync(GuildOptions config, IGuild guild)
@@ -502,18 +482,21 @@ namespace Sanakan.Services
             if (muteModRole != null)
             {
                 if (user.Roles.Contains(muteModRole))
+                {
                     await user.RemoveRoleAsync(muteModRole);
+                }
             }
 
             if (roles != null)
             {
                 foreach (var role in roles)
                 {
-                    var r = user.Guild.GetRole(role.Role);
+                    var socketRoles = user.Guild.GetRole(role.Role);
 
-                    if (r != null)
-                        if (!user.Roles.Contains(r))
-                            await user.AddRoleAsync(r);
+                    if (socketRoles != null && !user.Roles.Contains(socketRoles))
+                    {
+                        await user.AddRoleAsync(socketRoles);
+                    }
                 }
             }
         }

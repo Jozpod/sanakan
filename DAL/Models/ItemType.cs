@@ -8,43 +8,43 @@ namespace Sanakan.DAL.Models
 {
     public enum ItemType
     {
-        AffectionRecoverySmall,
-        AffectionRecoveryNormal,
-        AffectionRecoveryBig,
-        IncreaseUpgradeCnt,
-        CardParamsReRoll,
-        DereReRoll,
-        RandomBoosterPackSingleE,
-        RandomNormalBoosterPackB,
-        RandomTitleBoosterPackSingleE,
-        RandomNormalBoosterPackA,
-        RandomNormalBoosterPackS,
-        RandomNormalBoosterPackSS,
-        AffectionRecoveryGreat,
-        BetterIncreaseUpgradeCnt,
-        CheckAffection,
-        SetCustomImage,
-        IncreaseExpSmall,
-        IncreaseExpBig,
-        ChangeStarType,
-        SetCustomBorder,
-        ChangeCardImage,
+        AffectionRecoverySmall = 0,
+        AffectionRecoveryNormal = 1,
+        AffectionRecoveryBig = 2,
+        IncreaseUpgradeCount = 3,
+        CardParamsReRoll = 4,
+        DereReRoll = 5,
+        RandomBoosterPackSingleE = 6,
+        RandomNormalBoosterPackB = 7,
+        RandomTitleBoosterPackSingleE = 8,
+        RandomNormalBoosterPackA = 9,
+        RandomNormalBoosterPackS = 10,
+        RandomNormalBoosterPackSS = 11,
+        AffectionRecoveryGreat = 12,
+        BetterIncreaseUpgradeCnt = 13,
+        CheckAffection = 14,
+        SetCustomImage = 15,
+        IncreaseExpSmall = 16,
+        IncreaseExpBig = 17,
+        ChangeStarType = 18,
+        SetCustomBorder = 19,
+        ChangeCardImage = 20,
 
-        PreAssembledMegumin,
-        PreAssembledGintoki,
-        PreAssembledAsuna,
+        PreAssembledMegumin = 21,
+        PreAssembledGintoki = 22,
+        PreAssembledAsuna = 23,
 
-        FigureSkeleton,
-        FigureUniversalPart,
-        FigureHeadPart,
-        FigureBodyPart,
-        FigureLeftArmPart,
-        FigureRightArmPart,
-        FigureLeftLegPart,
-        FigureRightLegPart,
-        FigureClothesPart,
+        FigureSkeleton = 24,
+        FigureUniversalPart = 25,
+        FigureHeadPart = 26,
+        FigureBodyPart = 27,
+        FigureLeftArmPart = 28,
+        FigureRightArmPart = 29,
+        FigureLeftLegPart = 30,
+        FigureRightLegPart = 31,
+        FigureClothesPart = 32,
 
-        BigRandomBoosterPackE,
+        BigRandomBoosterPackE = 33,
     }
 
     public static class ItemTypeExtensions
@@ -124,7 +124,7 @@ namespace Sanakan.DAL.Models
                     return 15;
                 case ItemType.BetterIncreaseUpgradeCnt:
                     return 500;
-                case ItemType.IncreaseUpgradeCnt:
+                case ItemType.IncreaseUpgradeCount:
                     return 200;
                 case ItemType.DereReRoll:
                     return 10;
@@ -279,7 +279,7 @@ namespace Sanakan.DAL.Models
                 case ItemType.AffectionRecoveryNormal: return 0.12;
                 case ItemType.AffectionRecoverySmall: return 0.02;
                 case ItemType.BetterIncreaseUpgradeCnt: return 1.7;
-                case ItemType.IncreaseUpgradeCnt: return 0.7;
+                case ItemType.IncreaseUpgradeCount: return 0.7;
                 case ItemType.DereReRoll: return 0.1;
                 case ItemType.CardParamsReRoll: return 0.2;
                 case ItemType.CheckAffection: return 0.2;
@@ -306,7 +306,7 @@ namespace Sanakan.DAL.Models
                     return "Poprawia relacje z kartą.";
                 case ItemType.BetterIncreaseUpgradeCnt:
                     return "Może zwiększyć znacznie liczbę ulepszeń karty, tylko kto by chciał twoją krew?";
-                case ItemType.IncreaseUpgradeCnt:
+                case ItemType.IncreaseUpgradeCount:
                     return "Dodaje dodatkowy punkt ulepszenia do karty.";
                 case ItemType.DereReRoll:
                     return "Pozwala zmienić charakter karty.";
@@ -385,7 +385,7 @@ namespace Sanakan.DAL.Models
                     return $"Ciasto truskawkowe{quality}";
                 case ItemType.BetterIncreaseUpgradeCnt:
                     return "Kropla twojej krwi";
-                case ItemType.IncreaseUpgradeCnt:
+                case ItemType.IncreaseUpgradeCount:
                     return "Pierścionek zaręczynowy";
                 case ItemType.DereReRoll:
                     return "Bukiet kwiatów";

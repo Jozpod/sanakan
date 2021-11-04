@@ -1,15 +1,14 @@
 using Newtonsoft.Json;
+using Sanakan.Common;
 using System.IO;
 
 namespace Sanakan.Services.PocketWaifu
 {
     public class DuelImage
     {
-        private string ThisUri(int side) => $"./Pictures/Duel/{Name}{side}.jpg";
-        public static string DefaultUri(int side) => $"./Pictures/PW/duel{side}.jpg";
-        public static string DefaultColor() => "#aaaaaa";
-
-        public string Uri(int side) => File.Exists(ThisUri(side)) ? ThisUri(side) : DefaultUri(side);
+        private const string SilverChalice = "#aaaaaa";
+        public static string DefaultUri(int side) => string.Format(Paths.PWDuelPicture, side);
+        public static string DefaultColor() => SilverChalice;
 
         [JsonProperty("name")]
         public string Name { get; set; }

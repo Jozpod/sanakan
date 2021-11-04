@@ -2,8 +2,8 @@
 {
     public enum FightType
     {
-        Versus,
-        BattleRoyale,
-        NewVersus
+        Versus = 0,
+        BattleRoyale = 1,
+        NewVersus = 2
     }
 }

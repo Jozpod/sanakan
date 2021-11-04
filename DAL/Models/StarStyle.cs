@@ -4,12 +4,12 @@ namespace Sanakan.DAL.Models
 {
     public enum StarStyle
     {
-        Full,
-        White,
-        Black,
-        Empty,
-        Pig,
-        Snek
+        Full = 0,
+        White = 1,
+        Black = 2,
+        Empty = 3,
+        Pig = 4,
+        Snek = 5
     }
 
     public static class StarStyleExtensions

@@ -61,6 +61,15 @@ namespace Sanakan.DiscordBot.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to To polecenie działa tylko z poziomu serwera..
+        /// </summary>
+        internal static string CanExecuteOnlyOnServer {
+            get {
+                return ResourceManager.GetString("CanExecuteOnlyOnServer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to **Info:**
         ///
         ///✖ - nieaktywny rząd
@@ -144,6 +153,15 @@ namespace Sanakan.DiscordBot.Resources {
         internal static string ProfileUserStats {
             get {
                 return ResourceManager.GetString("ProfileUserStats", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Wymagany poziom do użycia polecenia: {0}!.
+        /// </summary>
+        internal static string RequiredLevelToExecuteCommand {
+            get {
+                return ResourceManager.GetString("RequiredLevelToExecuteCommand", resourceCulture);
             }
         }
         

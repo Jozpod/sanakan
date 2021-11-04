@@ -28,6 +28,10 @@ namespace Sanakan.DiscordBot.Builder
             services.AddSingleton<IModeratorService, ModeratorService>();
             services.AddSingleton<IDiscordSocketClientAccessor, DiscordSocketClientAccessor>();
             services.AddSingleton<IWaifuService, WaifuService>();
+            services.AddSingleton<IProfileService, ProfileService>();
+            services.AddSingleton<IHelperService, HelperService>();
+            services.AddSingleton<EventsService>();
+            services.AddSingleton<SpawnService>();
             return services;
         }
 

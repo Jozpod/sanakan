@@ -18,17 +18,17 @@ namespace Sanakan.TypeReaders
                 case "0":
                 case "stats":
                 case "statystyki":
-                    return Task.FromResult(TypeReaderResult.FromSuccess(ProfileType.Stats));
+                    return Task.FromResult(TypeReaderResult.FromSuccess(ProfileType.Statistics));
 
                 case "1":
                 case "image":
                 case "obrazek":
-                    return Task.FromResult(TypeReaderResult.FromSuccess(ProfileType.Img));
+                    return Task.FromResult(TypeReaderResult.FromSuccess(ProfileType.Image));
 
                 case "2":
                 case "ugly":
                 case "brzydkie":
-                    return Task.FromResult(TypeReaderResult.FromSuccess(ProfileType.StatsWithImg));
+                    return Task.FromResult(TypeReaderResult.FromSuccess(ProfileType.StatisticsWithImage));
 
                 case "3":
                 case "cards":

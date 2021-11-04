@@ -28,6 +28,13 @@ namespace Sanakan.Common
         public const string PWCGStatsPicture = "./Pictures/PW/CG/{0}/Stats.png";
         public const string PWStarPicture = "./Pictures/PW/stars/{0}_{1}.png";
 
+        public const string CoinPicture = "./Pictures/coin{0}.png";
+        public const string PokePicture = "./Pictures/Poke/{0}.jpg";
+        public const string DefaultPokePicture = "./Pictures/PW/poke.jpg";
+        public const string DefaultPokeaPicture = "./Pictures/PW/pokea.jpg";
 
+        public const string DuelPicture = "./Pictures/Duel/{0}{1}.jpg";
+        public const string PWDuelPicture = "./Pictures/PW/duel{0}.jpg";
+        
     }
 }

@@ -12,15 +12,13 @@ using Sanakan.DiscordBot.Services.Abstractions;
 using Sanakan.DiscordBot.Abstractions.Extensions;
 using Sanakan.DiscordBot.Abstractions.Models;
 
-namespace Sanakan.Modules
+namespace Sanakan.DiscordBot.Modules
 {
     [Name("Kraina"), RequireUserRole]
-    public class LandsModule : ModuleBase<ICommandContext>
+    public class LandsModule : SanakanModuleBase
     {
         private readonly ILandManager _landManager;
         private readonly IGuildConfigRepository _guildConfigRepository;
-
-        public ICommandContext Context { get; set; }
 
         public LandsModule(
             ILandManager landManager,

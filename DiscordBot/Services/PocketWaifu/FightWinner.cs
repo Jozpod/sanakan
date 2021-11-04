@@ -2,8 +2,8 @@
 {
     public enum FightWinner
     {
-        Card1,
-        Card2,
-        Draw
+        Card1 = 1,
+        Card2 = 2,
+        Draw = 3
     }
 }

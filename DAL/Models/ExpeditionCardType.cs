@@ -2,19 +2,19 @@
 {
     public enum ExpeditionCardType
     {
-        None,
-        NormalItemWithExp,
-        ExtremeItemWithExp,
-        DarkExp,
-        DarkItems,
-        DarkItemWithExp,
-        LightExp,
-        LightItems,
-        LightItemWithExp,
-        UltimateEasy,
-        UltimateMedium,
-        UltimateHard,
-        UltimateHardcore
+        None = 0,
+        NormalItemWithExp = 1,
+        ExtremeItemWithExp = 2,
+        DarkExp = 3,
+        DarkItems = 4,
+        DarkItemWithExp = 5,
+        LightExp = 6,
+        LightItems = 7,
+        LightItemWithExp = 8,
+        UltimateEasy = 9,
+        UltimateMedium = 10,
+        UltimateHard = 11,
+        UltimateHardcore = 12
     }
 
     public static class ExpeditionCardTypeExtensions

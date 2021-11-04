@@ -27,7 +27,7 @@ namespace Sanakan.DAL.Models
             IsBlacklisted = false;
             CharacterCountFromDate = 0;
             ShowWaifuInProfile = false;
-            ProfileType = ProfileType.Stats;
+            ProfileType = ProfileType.Statistics;
             StatsReplacementProfileUri = "none";
             TimeStatuses = new List<TimeStatus>();
             BackgroundProfileUri = Paths.DefaultBackgroundPicture;

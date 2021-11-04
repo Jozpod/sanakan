@@ -12,11 +12,11 @@ namespace Sanakan.Services.PocketWaifu
             switch (type)
             {
                 case SafariImageType.Mystery:
-                    return $"./Pictures/Poke/{Index}.jpg";
+                    return string.Format(Paths.PokePicture, Index);
 
                 default:
                 case SafariImageType.Truth:
-                    return $"./Pictures/Poke/{Index}a.jpg";
+                    return string.Format(Paths.PokePicture, Index + "a");
             }
         }
 
@@ -25,11 +25,11 @@ namespace Sanakan.Services.PocketWaifu
             switch (type)
             {
                 case SafariImageType.Mystery:
-                    return $"./Pictures/PW/poke.jpg";
+                    return Paths.DefaultPokePicture;
 
                 default:
                 case SafariImageType.Truth:
-                    return $"./Pictures/PW/pokea.jpg";
+                    return Paths.DefaultPokePicture;
             }
         }
 

@@ -35,10 +35,10 @@ using System.Threading.Tasks;
 using System.Web;
 using Item = Sanakan.DAL.Models.Item;
 
-namespace Sanakan.Modules
+namespace Sanakan.DiscordBot.Modules
 {
     [Name("PocketWaifu"), RequireUserRole]
-    public class PocketWaifuModule : ModuleBase<SocketCommandContext>
+    public class PocketWaifuModule : SanakanModuleBase
     {
         private readonly IShindenClient _shindenClient;
         private readonly ISessionManager _sessionManager;
@@ -378,7 +378,7 @@ namespace Sanakan.Modules
                 case ItemType.AffectionRecoverySmall:
                 case ItemType.AffectionRecoveryNormal:
                 case ItemType.AffectionRecoveryGreat:
-                case ItemType.IncreaseUpgradeCnt:
+                case ItemType.IncreaseUpgradeCount:
                 case ItemType.IncreaseExpSmall:
                 case ItemType.IncreaseExpBig:
                 // special case
@@ -444,7 +444,7 @@ namespace Sanakan.Modules
                     case ItemType.IncreaseExpBig:
                     case ItemType.IncreaseExpSmall:
                     case ItemType.CardParamsReRoll:
-                    case ItemType.IncreaseUpgradeCnt:
+                    case ItemType.IncreaseUpgradeCount:
                     case ItemType.BetterIncreaseUpgradeCnt:
                         await ReplyAsync("", embed: $"{Context.User.Mention} tego przedmiotu nie można użyć na tej karcie.".ToEmbedMessage(EMType.Error).Build());
                         return;
@@ -668,7 +668,7 @@ namespace Sanakan.Modules
                     }
                     break;
 
-                case ItemType.IncreaseUpgradeCnt:
+                case ItemType.IncreaseUpgradeCount:
                     if (!card.CanGiveRing())
                     {
                         await ReplyAsync("", embed: $"{invokingUserMention} karta musi mieć min. poziom relacji: *Miłość*.".ToEmbedMessage(EMType.Error).Build());

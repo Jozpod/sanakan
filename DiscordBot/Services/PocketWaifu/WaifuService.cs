@@ -101,7 +101,7 @@ namespace Sanakan.Services.PocketWaifu
                     {ItemType.CardParamsReRoll,         new Tuple<int, int>(7699, 8559)},
                     {ItemType.AffectionRecoveryBig,     new Tuple<int, int>(8559, 9419)},
                     {ItemType.AffectionRecoveryGreat,   new Tuple<int, int>(9419, 9729)},
-                    {ItemType.IncreaseUpgradeCnt,       new Tuple<int, int>(9729, 9769)},
+                    {ItemType.IncreaseUpgradeCount,       new Tuple<int, int>(9729, 9769)},
                     {ItemType.IncreaseExpSmall,         new Tuple<int, int>(9769, 10000)},
                     {ItemType.IncreaseExpBig,           new Tuple<int, int>(-1,   -2)},
                     {ItemType.BetterIncreaseUpgradeCnt, new Tuple<int, int>(-3,   -4)},
@@ -115,7 +115,7 @@ namespace Sanakan.Services.PocketWaifu
                     {ItemType.CardParamsReRoll,         new Tuple<int, int>(-5,   -6)},
                     {ItemType.AffectionRecoveryBig,     new Tuple<int, int>(3499, 6299)},
                     {ItemType.AffectionRecoveryGreat,   new Tuple<int, int>(6299, 7499)},
-                    {ItemType.IncreaseUpgradeCnt,       new Tuple<int, int>(7499, 7799)},
+                    {ItemType.IncreaseUpgradeCount,       new Tuple<int, int>(7499, 7799)},
                     {ItemType.IncreaseExpSmall,         new Tuple<int, int>(7799, 8599)},
                     {ItemType.IncreaseExpBig,           new Tuple<int, int>(8599, 9799)},
                     {ItemType.BetterIncreaseUpgradeCnt, new Tuple<int, int>(9799, 10000)},
@@ -129,7 +129,7 @@ namespace Sanakan.Services.PocketWaifu
                     {ItemType.CardParamsReRoll,         new Tuple<int, int>(5999, 6449)},
                     {ItemType.AffectionRecoveryBig,     new Tuple<int, int>(6449, 8149)},
                     {ItemType.AffectionRecoveryGreat,   new Tuple<int, int>(8149, 8949)},
-                    {ItemType.IncreaseUpgradeCnt,       new Tuple<int, int>(8949, 9049)},
+                    {ItemType.IncreaseUpgradeCount,       new Tuple<int, int>(8949, 9049)},
                     {ItemType.IncreaseExpSmall,         new Tuple<int, int>(9049, 9849)},
                     {ItemType.IncreaseExpBig,           new Tuple<int, int>(-2,   -3)},
                     {ItemType.BetterIncreaseUpgradeCnt, new Tuple<int, int>(9849, 10000)},
@@ -143,7 +143,7 @@ namespace Sanakan.Services.PocketWaifu
                     {ItemType.CardParamsReRoll,         new Tuple<int, int>(6999, 7199)},
                     {ItemType.AffectionRecoveryBig,     new Tuple<int, int>(7199, 8499)},
                     {ItemType.AffectionRecoveryGreat,   new Tuple<int, int>(8499, 9099)},
-                    {ItemType.IncreaseUpgradeCnt,       new Tuple<int, int>(9099, 9199)},
+                    {ItemType.IncreaseUpgradeCount,       new Tuple<int, int>(9099, 9199)},
                     {ItemType.IncreaseExpSmall,         new Tuple<int, int>(-1,   -2)},
                     {ItemType.IncreaseExpBig,           new Tuple<int, int>(9199,  10000)},
                     {ItemType.BetterIncreaseUpgradeCnt, new Tuple<int, int>(-3,   -4)},
@@ -157,7 +157,7 @@ namespace Sanakan.Services.PocketWaifu
                     {ItemType.CardParamsReRoll,         new Tuple<int, int>(6699, 7199)},
                     {ItemType.AffectionRecoveryBig,     new Tuple<int, int>(7199, 8199)},
                     {ItemType.AffectionRecoveryGreat,   new Tuple<int, int>(8199, 8699)},
-                    {ItemType.IncreaseUpgradeCnt,       new Tuple<int, int>(8699, 8799)},
+                    {ItemType.IncreaseUpgradeCount,       new Tuple<int, int>(8699, 8799)},
                     {ItemType.IncreaseExpSmall,         new Tuple<int, int>(8799, 9899)},
                     {ItemType.IncreaseExpBig,           new Tuple<int, int>(-2,   -3)},
                     {ItemType.BetterIncreaseUpgradeCnt, new Tuple<int, int>(9899, 10000)},
@@ -171,7 +171,7 @@ namespace Sanakan.Services.PocketWaifu
                     {ItemType.CardParamsReRoll,         new Tuple<int, int>(7399, 7899)},
                     {ItemType.AffectionRecoveryBig,     new Tuple<int, int>(7899, 8899)},
                     {ItemType.AffectionRecoveryGreat,   new Tuple<int, int>(8899, 9399)},
-                    {ItemType.IncreaseUpgradeCnt,       new Tuple<int, int>(9399, 9499)},
+                    {ItemType.IncreaseUpgradeCount,       new Tuple<int, int>(9399, 9499)},
                     {ItemType.IncreaseExpSmall,         new Tuple<int, int>(-1,   -2)},
                     {ItemType.IncreaseExpBig,           new Tuple<int, int>(9499, 10000)},
                     {ItemType.BetterIncreaseUpgradeCnt, new Tuple<int, int>(-3,   -4)},
@@ -311,7 +311,7 @@ namespace Sanakan.Services.PocketWaifu
             var num = _randomNumberGenerator.GetRandomValue(1000);
             if (num < 2) return ItemType.IncreaseExpSmall;
             if (num < 12) return ItemType.BetterIncreaseUpgradeCnt;
-            if (num < 25) return ItemType.IncreaseUpgradeCnt;
+            if (num < 25) return ItemType.IncreaseUpgradeCount;
             if (num < 70) return ItemType.AffectionRecoveryGreat;
             if (num < 120) return ItemType.AffectionRecoveryBig;
             if (num < 180) return ItemType.CardParamsReRoll;
@@ -324,7 +324,7 @@ namespace Sanakan.Services.PocketWaifu
         {
             var num = _randomNumberGenerator.GetRandomValue(1000);
             if (num < 2) return ItemType.IncreaseExpSmall;
-            if (num < 15) return ItemType.IncreaseUpgradeCnt;
+            if (num < 15) return ItemType.IncreaseUpgradeCount;
             if (num < 80) return ItemType.AffectionRecoveryBig;
             if (num < 145) return ItemType.CardParamsReRoll;
             if (num < 230) return ItemType.DereReRoll;
@@ -368,7 +368,7 @@ namespace Sanakan.Services.PocketWaifu
                 new ItemWithCost(109,   ItemType.AffectionRecoveryBig.ToItem()),
                 new ItemWithCost(29,    ItemType.DereReRoll.ToItem()),
                 new ItemWithCost(79,    ItemType.CardParamsReRoll.ToItem()),
-                new ItemWithCost(1099,  ItemType.IncreaseUpgradeCnt.ToItem()),
+                new ItemWithCost(1099,  ItemType.IncreaseUpgradeCount.ToItem()),
                 new ItemWithCost(69,    ItemType.ChangeCardImage.ToItem()),
                 new ItemWithCost(999,   ItemType.SetCustomImage.ToItem()),
                 new ItemWithCost(659,   ItemType.SetCustomBorder.ToItem()),
@@ -390,7 +390,7 @@ namespace Sanakan.Services.PocketWaifu
                 new ItemWithCost(169,    ItemType.AffectionRecoveryNormal.ToItem()),
                 new ItemWithCost(1699,   ItemType.IncreaseExpBig.ToItem()),
                 new ItemWithCost(1699,   ItemType.CheckAffection.ToItem()),
-                new ItemWithCost(16999,  ItemType.IncreaseUpgradeCnt.ToItem()),
+                new ItemWithCost(16999,  ItemType.IncreaseUpgradeCount.ToItem()),
                 new ItemWithCost(46999,  ItemType.BetterIncreaseUpgradeCnt.ToItem()),
                 new ItemWithCost(4699,   ItemType.ChangeCardImage.ToItem()),
                 new ItemWithCost(269999, ItemType.SetCustomImage.ToItem()),
@@ -403,7 +403,7 @@ namespace Sanakan.Services.PocketWaifu
             {
                 new ItemWithCost(6,     ItemType.AffectionRecoveryBig.ToItem()),
                 new ItemWithCost(65,    ItemType.IncreaseExpBig.ToItem()),
-                new ItemWithCost(500,   ItemType.IncreaseUpgradeCnt.ToItem()),
+                new ItemWithCost(500,   ItemType.IncreaseUpgradeCount.ToItem()),
                 new ItemWithCost(1800,  ItemType.SetCustomImage.ToItem()),
                 new ItemWithCost(150,   ItemType.RandomBoosterPackSingleE.ToItem()),
                 new ItemWithCost(1500,  ItemType.BigRandomBoosterPackE.ToItem()),
@@ -1389,11 +1389,11 @@ namespace Sanakan.Services.PocketWaifu
             switch (type)
             {
                 case SafariImageType.Mystery:
-                    return $"./Pictures/Poke/{safariImage.Index}.jpg";
+                    return string.Format(Paths.PokePicture, safariImage.Index);
 
                 default:
                 case SafariImageType.Truth:
-                    return $"./Pictures/Poke/{safariImage.Index}a.jpg";
+                    return string.Format(Paths.PokePicture, safariImage.Index + "a");
             }
         }
 
@@ -1934,9 +1934,9 @@ namespace Sanakan.Services.PocketWaifu
                                 && n >= c[ItemType.AffectionRecoveryGreat].Item1):
                     return ItemType.AffectionRecoveryGreat.ToItem(1, quality);
 
-                case int n when (n < c[ItemType.IncreaseUpgradeCnt].Item2
-                                && n >= c[ItemType.IncreaseUpgradeCnt].Item1):
-                    return ItemType.IncreaseUpgradeCnt.ToItem(1, quality);
+                case int n when (n < c[ItemType.IncreaseUpgradeCount].Item2
+                                && n >= c[ItemType.IncreaseUpgradeCount].Item1):
+                    return ItemType.IncreaseUpgradeCount.ToItem(1, quality);
 
                 case int n when (n < c[ItemType.IncreaseExpSmall].Item2
                                 && n >= c[ItemType.IncreaseExpSmall].Item1):

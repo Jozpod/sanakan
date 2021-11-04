@@ -5,6 +5,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Sanakan.Configuration;
 using Sanakan.DAL.Repositories.Abstractions;
+using Sanakan.DiscordBot;
+using Sanakan.DiscordBot.Resources;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -28,7 +30,7 @@ namespace Sanakan.Preconditions
             
             if (user == null)
             {
-                return PreconditionResult.FromError($"To polecenie działa tylko z poziomu serwera.");
+                return PreconditionResult.FromError(Strings.CanExecuteOnlyOnServer);
             }
 
             if (user.GuildPermissions.Administrator)
@@ -54,7 +56,7 @@ namespace Sanakan.Preconditions
 
             if (botUser == null)
             {
-                return PreconditionResult.FromError($"|IMAGE|https://i.imgur.com/YEuawi2.gif|Wymagany poziom do użycia polecenia: {_level}!");
+                return PreconditionResult.FromError($"{ImageResources.WomenMagnifyingGlass}|{string.Format(Strings.RequiredLevelToExecuteCommand, _level)}");
             }
 
             if (botUser.Level >= _level)
@@ -62,7 +64,7 @@ namespace Sanakan.Preconditions
                 return PreconditionResult.FromSuccess();
             }
 
-            return PreconditionResult.FromError($"|IMAGE|https://i.imgur.com/YEuawi2.gif|Wymagany poziom do użycia polecenia: {_level}!");
+            return PreconditionResult.FromError($"{ImageResources.WomenMagnifyingGlass}|{string.Format(Strings.RequiredLevelToExecuteCommand, _level)}");
         }
     }
 }

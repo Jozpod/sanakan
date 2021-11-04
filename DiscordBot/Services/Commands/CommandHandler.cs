@@ -70,8 +70,8 @@ namespace Sanakan.Services.Commands
             _helper.PublicModulesInfo = await _commandService
                 .AddModulesAsync(Assembly.GetEntryAssembly(), _serviceProvider);
 
-            _helper.PrivateModulesInfo.Add("Moderacja", await _commandService.AddModuleAsync<Modules.ModerationModule>(_serviceProvider));
-            _helper.PrivateModulesInfo.Add("Debug", await _commandService.AddModuleAsync<Modules.DebugModule>(_serviceProvider));
+            _helper.PrivateModulesInfo.Add("Moderacja", await _commandService.AddModuleAsync<DiscordBot.Modules.ModerationModule>(_serviceProvider));
+            _helper.PrivateModulesInfo.Add("Debug", await _commandService.AddModuleAsync<DiscordBot.Modules.DebugModule>(_serviceProvider));
 
             client.MessageReceived += HandleCommandAsync;
         }
@@ -197,7 +197,8 @@ namespace Sanakan.Services.Commands
                     break;
 
                 case CommandError.MultipleMatches:
-                    await context.Channel.SendMessageAsync("", embed: "Dopasowano wielu użytkowników!".ToEmbedMessage(EMType.Error).Build());
+                    await context.Channel.SendMessageAsync("", embed: "Dopasowano wielu użytkowników!"
+                        .ToEmbedMessage(EMType.Error).Build());
                     break;
 
                 case CommandError.ParseFailed:
@@ -210,23 +211,20 @@ namespace Sanakan.Services.Commands
                     break;
 
                 case CommandError.UnmetPrecondition:
-                    if (result.ErrorReason.StartsWith("|IMAGE|"))
+                    var parts = result.ErrorReason.Split('|');
+                    var embedBuilder = new EmbedBuilder().WithColor(EMType.Error.Color());
+
+                    if (parts.Length > 1)
                     {
-                        var emb = new EmbedBuilder().WithColor(EMType.Error.Color());
-                        var splited = result.ErrorReason.Split("|");
-
-                        if (splited.Length > 3)
-                        {
-                            emb.WithDescription(splited[3]).WithImageUrl(splited[2]);
-                        }
-                        else emb.WithImageUrl(result.ErrorReason.Remove(0, 7));
-
-                        await context.Channel.SendMessageAsync("", embed: emb.Build());
+                        embedBuilder.WithDescription(parts[1])
+                            .WithImageUrl(parts[0]);
                     }
                     else
                     {
-                        await context.Channel.SendMessageAsync("", embed: result.ErrorReason.ToEmbedMessage(EMType.Error).Build());
+                        embedBuilder.WithDescription(parts[0]);
                     }
+
+                    await context.Channel.SendMessageAsync("", embed: embedBuilder.Build());
                     break;
 
                 default:

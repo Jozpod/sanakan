@@ -336,17 +336,17 @@ namespace Sanakan.Game.Services
 
             if (!_fileSystem.Exists(botUser.StatsReplacementProfileUri))
             {
-                if ((botUser.ProfileType == ProfileType.Img 
-                    || botUser.ProfileType == ProfileType.StatsWithImg))
+                if ((botUser.ProfileType == ProfileType.Image 
+                    || botUser.ProfileType == ProfileType.StatisticsWithImage))
                 {
-                    botUser.ProfileType = ProfileType.Stats;
+                    botUser.ProfileType = ProfileType.Statistics;
                 }
             }
 
             switch (botUser.ProfileType)
             {
-                case ProfileType.Stats:
-                case ProfileType.StatsWithImg:
+                case ProfileType.Statistics:
+                case ProfileType.StatisticsWithImage:
                     if (shindenUser != null)
                     {
                         
@@ -367,8 +367,8 @@ namespace Sanakan.Game.Services
                             image.Mutate(x => x.DrawImage(stats, new Point(0, 142), 1));
                         }
 
-                        if (botUser.ProfileType == ProfileType.StatsWithImg)
-                            goto case ProfileType.Img;
+                        if (botUser.ProfileType == ProfileType.StatisticsWithImage)
+                            goto case ProfileType.Image;
                     }
                     break;
 
@@ -379,7 +379,7 @@ namespace Sanakan.Game.Services
                     }
                     break;
 
-                case ProfileType.Img:
+                case ProfileType.Image:
                     {
                         using var userBg = Image.Load(botUser.StatsReplacementProfileUri);
                         image.Mutate(x => x.DrawImage(userBg, _origin, 1));
@@ -1254,8 +1254,8 @@ namespace Sanakan.Game.Services
         }
 
         public Image<Rgba32> GetDuelCardImage(
-            DuelInfo info,
-            DuelImage image,
+            DuelInfo duelInfo,
+            DuelImage? duelImage,
             Image<Rgba32> win,
             Image<Rgba32> los)
         {
@@ -1264,15 +1264,33 @@ namespace Sanakan.Game.Services
             int Yi = 131;
             int Xil = 876;
 
-            if (info.Side == WinnerSide.Right)
+            if (duelInfo.Side == WinnerSide.Right)
             {
                 Xiw = 876;
                 Xil = 76;
             }
 
+            Image<Rgba32> image;
+
+            if(duelImage == null)
+            {
+                image = Image.Load(DuelImage.DefaultUri((int)duelInfo.Side));
+            }
+            else
+            {
+                var imagePath = string.Format(Paths.DuelPicture, duelImage.Name, duelInfo.Side);
+                if (_fileSystem.Exists(imagePath))
+                {
+                    image = Image.Load(imagePath);
+                }
+                else
+                {
+                    imagePath = DuelImage.DefaultUri((int)duelInfo.Side);
+                    image = Image.Load(imagePath);
+                }
+            }
+
             var nameFont = new Font(_latoBold, 34);
-            var img = (image != null) ? Image.Load(image.Uri((int)info.Side)) 
-                : Image.Load((DuelImage.DefaultUri((int)info.Side)));
 
             win.Mutate(x => x.Resize(new ResizeOptions
             {
@@ -1286,22 +1304,22 @@ namespace Sanakan.Game.Services
                 Size = new Size(450, 0)
             }));
 
-            if (info.Side != WinnerSide.Draw)
+            if (duelInfo.Side != WinnerSide.Draw)
             {
                 los.Mutate(x => x.Grayscale());
             }
 
-            img.Mutate(x => x.DrawImage(win, new Point(Xiw, Yi), 1));
-            img.Mutate(x => x.DrawImage(los, new Point(Xil, Yi), 1));
+            image.Mutate(x => x.DrawImage(win, new Point(Xiw, Yi), 1));
+            image.Mutate(x => x.DrawImage(los, new Point(Xil, Yi), 1));
 
-            var winnerColor = Rgba32.FromHex(image != null ? image.Color : DuelImage.DefaultColor());
-            var loserColor = Rgba32.FromHex(image != null ? image.Color : DuelImage.DefaultColor());
+            var winnerColor = Rgba32.FromHex(duelImage != null ? duelImage.Color : DuelImage.DefaultColor());
+            var loserColor = Rgba32.FromHex(duelImage != null ? duelImage.Color : DuelImage.DefaultColor());
 
             var options = new TextGraphicsOptions() { HorizontalAlignment = HorizontalAlignment.Center, WrapTextWidth = win.Width };
-            img.Mutate(x => x.DrawText(options, info.Winner.Name, nameFont, winnerColor, new Point(Xiw, Yt)));
-            img.Mutate(x => x.DrawText(options, info.Loser.Name, nameFont, loserColor, new Point(Xil, Yt)));
+            image.Mutate(x => x.DrawText(options, duelInfo.Winner.Name, nameFont, winnerColor, new Point(Xiw, Yt)));
+            image.Mutate(x => x.DrawText(options, duelInfo.Loser.Name, nameFont, loserColor, new Point(Xil, Yt)));
 
-            return img;
+            return image;
         }
 
         public Image<Rgba32> GetCatchThatWaifuImage(Image<Rgba32> card, string pokeImg, int xPos, int yPos)
@@ -1311,10 +1329,12 @@ namespace Sanakan.Game.Services
             return image;
         }
 
-        public async Task<Image<Rgba32>> GetWaifuCardAsync(string url, Card card)
+        public async Task<Image<Rgba32>> GetWaifuCardAsync(string? url, Card card)
         {
             if (url == null)
+            {
                 return await GetWaifuCardAsync(card);
+            }
 
             return Image.Load(url);
         }

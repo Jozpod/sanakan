@@ -26,10 +26,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Sanakan.Modules
+namespace Sanakan.DiscordBot.Modules
 {
     [Name("Profil"), RequireUserRole]
-    public class ProfileModule : ModuleBase<SocketCommandContext>
+    public class ProfileModule : SanakanModuleBase
     {
         private readonly IProfileService _profileService;
         private readonly ISessionManager _sessionManager;
@@ -462,8 +462,8 @@ namespace Sanakan.Modules
 
             switch (type)
             {
-                case ProfileType.Img:
-                case ProfileType.StatsWithImg:
+                case ProfileType.Image:
+                case ProfileType.StatisticsWithImage:
                     var res = await _profileService.SaveProfileImageAsync(imgUrl, $"{Paths.SavedData}/SR{botuser.Id}.png", 325, 272);
                     if (res == SaveResult.Success)
                     {

@@ -20,7 +20,7 @@ namespace Sanakan.Preconditions
             
             if (user == null)
             {
-                return PreconditionResult.FromError($"To polecenie działa tylko z poziomu serwera.");
+                return PreconditionResult.FromError(Strings.CanExecuteOnlyOnServer);
             }
 
             var gConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(context.Guild.Id);

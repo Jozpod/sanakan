@@ -23,10 +23,10 @@ using System.Net;
 using System.Collections.Generic;
 using System.IO;
 
-namespace Sanakan.Modules
+namespace Sanakan.DiscordBot.Modules
 {
     [Name("Shinden"), RequireUserRole]
-    public class ShindenModule : ModuleBase<SocketCommandContext>
+    public class ShindenModule : SanakanModuleBase
     {
         public enum UrlParsingError
         {

@@ -20,7 +20,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Sanakan.Modules
+namespace Sanakan.DiscordBot.Modules
 {
     [Name("Ogólne")]
     public class HelperModule : ModuleBase<SocketCommandContext>

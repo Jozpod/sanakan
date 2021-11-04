@@ -25,10 +25,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Sanakan.Modules
+namespace Sanakan.DiscordBot.Modules
 {
     [Name("Moderacja"), Group("mod"), DontAutoLoad]
-    public class ModerationModule : ModuleBase<SocketCommandContext>
+    public class ModerationModule : SanakanModuleBase
     {
         private readonly IOptionsMonitor<DiscordConfiguration> _config;
         private readonly IHelperService _helperService;
@@ -41,25 +41,26 @@ namespace Sanakan.Modules
         private readonly ISystemClock _systemClock;
         private readonly IRandomNumberGenerator _randomNumberGenerator;
         public ModerationModule(
-            HelperService helper,
+            IHelperService helperService,
             IModeratorService moderatorService,
-            Services.ProfileService prof,
-            IShindenClient sh,
+            IProfileService profileService,
+            IShindenClient shindenClient,
             IOptionsMonitor<DiscordConfiguration> config,
-            ICacheManager _cacheManager,
+            ICacheManager cacheManager,
             ISystemClock systemClock,
             IUserRepository userRepository,
             IGuildConfigRepository guildConfigRepository,
             IRandomNumberGenerator randomNumberGenerator)
         {
-            _shindenClient = sh;
-            _profileService = prof;
+            _profileService = profileService;
+            _helperService = helperService;
+            _moderatorService = moderatorService;
+            _shindenClient = shindenClient;
             _config = config;
-            _helperService = helper;
+            _cacheManager = cacheManager;
+            _systemClock = systemClock;
             _userRepository = userRepository;
             _guildConfigRepository = guildConfigRepository;
-            _moderatorService = moderatorService;
-            _systemClock = systemClock;
             _randomNumberGenerator = randomNumberGenerator;
         }
 

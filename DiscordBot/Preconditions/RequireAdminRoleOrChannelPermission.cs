@@ -5,6 +5,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Sanakan.Configuration;
 using Sanakan.DAL.Repositories.Abstractions;
+using Sanakan.DiscordBot;
+using Sanakan.DiscordBot.Resources;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -26,14 +28,14 @@ namespace Sanakan.Preconditions
             
             if (user == null)
             {
-                return PreconditionResult.FromError($"To polecenie działa tylko z poziomu serwera.");
+                return PreconditionResult.FromError(Strings.CanExecuteOnlyOnServer);
             }
             
             var channel = context.Channel as IGuildChannel;
 
             if (channel == null)
             {
-                return PreconditionResult.FromError($"To polecenie działa tylko z poziomu serwera.");
+                return PreconditionResult.FromError(Strings.CanExecuteOnlyOnServer);
             }
 
             var gConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(context.Guild.Id);
@@ -70,8 +72,7 @@ namespace Sanakan.Preconditions
                 return PreconditionResult.FromSuccess();
             }
 
-            // YouHaveNoPowerHere.gif
-            return PreconditionResult.FromError($"|IMAGE|https://i.giphy.com/RX3vhj311HKLe.gif");
+            return PreconditionResult.FromError(ImageResources.YouHaveNoPowerHere);
         }
     }
 }

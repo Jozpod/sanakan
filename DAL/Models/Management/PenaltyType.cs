@@ -2,7 +2,7 @@
 {
     public enum PenaltyType
     {
-        Mute,
-        Ban
+        Mute = 0,
+        Ban = 1
     }
 }

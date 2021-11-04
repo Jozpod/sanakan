@@ -22,6 +22,7 @@ namespace Sanakan.Web.HostedService
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly Process _process;
         private readonly IOperatingSystem _operatingSystem;
+        private readonly ITaskManager _taskManager;
         private readonly ITimer _timer;
         private const int MB = 1048576;
 
@@ -52,7 +53,7 @@ namespace Sanakan.Web.HostedService
                     _options.CurrentValue.CaptureMemoryUsageDueTime,
                     _options.CurrentValue.CaptureMemoryUsagePeriod);
                 
-                await Task.Delay(Timeout.Infinite, stoppingToken);
+                await _taskManager.Delay(Timeout.InfiniteTimeSpan, stoppingToken);
             } 
             catch (OperationCanceledException)
             {

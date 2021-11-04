@@ -25,7 +25,7 @@ using System.Threading.Tasks;
 
 namespace Sanakan.Services
 {
-    public class ProfileService : IProfileService
+    internal class ProfileService : IProfileService
     {
         private readonly DiscordSocketClient _client;
         private readonly IShindenClient _shindenClient;

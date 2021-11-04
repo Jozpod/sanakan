@@ -37,8 +37,6 @@ namespace Sanakan.Web.HostedService
             _options = options;
         }
 
-       
-
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             try

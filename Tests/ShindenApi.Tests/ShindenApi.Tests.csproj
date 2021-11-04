@@ -8,10 +8,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="TestData\all-characters-from-anime-result.json" />
+    <None Remove="TestData\all-characters-from-manga-result.json" />
     <None Remove="TestData\login-result.json" />
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="TestData\all-characters-from-anime-result.json" />
+    <EmbeddedResource Include="TestData\all-characters-from-manga-result.json" />
     <EmbeddedResource Include="TestData\login-result.json" />
   </ItemGroup>
 

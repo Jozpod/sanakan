@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Sanakan.Common;
 using Sanakan.DAL.Repositories.Abstractions;
+using Sanakan.DiscordBot.Resources;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -22,7 +23,7 @@ namespace Sanakan.Preconditions
 
             if (user == null)
             {
-                return PreconditionResult.FromError($"To polecenie działa tylko z poziomu serwera.");
+                return PreconditionResult.FromError(Strings.CanExecuteOnlyOnServer);
             }
      
             var gConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(context.Guild.Id);
@@ -62,13 +63,7 @@ namespace Sanakan.Preconditions
                 return PreconditionResult.FromSuccess();
             }
 
-            var resourceManager = services.GetRequiredService<IResourceManager>();
-
-            using var stream = resourceManager.GetResourceStream(Resources.YouHaveNoPowerHere);
-
-            await channel.SendFileAsync(stream, "no.gif");
-
-            return PreconditionResult.FromError("Insufficient permission");
+            return PreconditionResult.FromError(Resources.YouHaveNoPowerHere);
         }
     }
 }

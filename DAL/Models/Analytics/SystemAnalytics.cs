@@ -2,10 +2,6 @@
 
 namespace Sanakan.DAL.Models.Analytics
 {
-    public enum SystemAnalyticsEventType
-    {
-        Ram
-    }
 
     public class SystemAnalytics
     {
