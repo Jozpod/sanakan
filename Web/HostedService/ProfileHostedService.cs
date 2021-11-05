@@ -29,17 +29,20 @@ namespace Sanakan.Web.HostedService
         private readonly IOptionsMonitor<DaemonsConfiguration> _options;
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly ITimer _timer;
+        private readonly ITaskManager _taskManager;
 
         public ProfileHostedService(
             ILogger<MemoryUsageHostedService> logger,
             IOptionsMonitor<DaemonsConfiguration> options,
             ISystemClock systemClock,
-            IServiceScopeFactory serviceScopeFactory)
+            IServiceScopeFactory serviceScopeFactory,
+            ITaskManager taskManager)
         {
             _logger = logger;
             _systemClock = systemClock;
             _serviceScopeFactory = serviceScopeFactory;
             _options = options;
+            _taskManager = taskManager;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -52,7 +55,7 @@ namespace Sanakan.Web.HostedService
                     _options.CurrentValue.ProfileDueTime,
                     _options.CurrentValue.ProfilePeriod);
 
-                await Task.Delay(Timeout.Infinite, stoppingToken);
+                await _taskManager.Delay(Timeout.Infinite, stoppingToken);
             }
             catch (OperationCanceledException)
             {

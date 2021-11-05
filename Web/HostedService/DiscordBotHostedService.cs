@@ -23,13 +23,14 @@ using Sanakan.Extensions;
 using Sanakan.DiscordBot.Abstractions.Extensions;
 using Sanakan.DAL.Models;
 using Sanakan.DiscordBot.Abstractions.Models;
+using Sanakan.TaskQueue;
 
 namespace Sanakan.Web.HostedService
 {
     public class DiscordBotHostedService : BackgroundService
     {
         private DiscordSocketClient _client;
-        private readonly IProducerConsumerCollection<BaseMessage> _blockingPriorityQueue;
+        private readonly IBlockingPriorityQueue _blockingPriorityQueue;
         private readonly IDiscordSocketClientAccessor _discordSocketClientAccessor;
         private readonly CommandHandler _commandHandler;
         private readonly ILogger _logger;
@@ -39,6 +40,8 @@ namespace Sanakan.Web.HostedService
         private readonly IOptionsMonitor<DiscordConfiguration> _configuration;
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly ISystemClock _systemClock;
+        private readonly ITaskManager _taskManager;
+
         private Dictionary<ulong, ulong> _messages;
         private Dictionary<ulong, ulong> _commands;
         private const double SAVE_AT = 5;
@@ -60,18 +63,22 @@ namespace Sanakan.Web.HostedService
 
         public DiscordBotHostedService(
             IFileSystem fileSystem,
+            IBlockingPriorityQueue blockingPriorityQueue,
             ILogger<DiscordBotHostedService> logger,
             IServiceScopeFactory serviceScopeFactory,
             IDiscordSocketClientAccessor discordSocketClientAccessor,
             IOptionsMonitor<DiscordConfiguration> configuration,
-            CommandHandler commandHandler)
+            CommandHandler commandHandler,
+            ITaskManager taskManager)
         {
-            _logger = logger;
             _fileSystem = fileSystem;
+            _blockingPriorityQueue = blockingPriorityQueue;
+            _logger = logger;
             _discordSocketClientAccessor = discordSocketClientAccessor;
             _serviceScopeFactory = serviceScopeFactory;
             _configuration = configuration;
             _commandHandler = commandHandler;
+            _taskManager = taskManager;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -109,16 +116,13 @@ namespace Sanakan.Web.HostedService
                 await _client.SetGameAsync($"{configuration.Prefix}pomoc");
                 await _client.StartAsync();
                 stoppingToken.ThrowIfCancellationRequested();
-
-                //_executor.Initialize(services);
-                //_sessions.Initialize(services);
                 
                 await _commandHandler.InitializeAsync();
                 
                 stoppingToken.ThrowIfCancellationRequested();
                 _discordSocketClientAccessor.Client = _client;
 
-                await Task.Delay(Timeout.Infinite, stoppingToken);
+                await _taskManager.Delay(Timeout.InfiniteTimeSpan, stoppingToken);
             }
             catch (InvalidOperationException)
             {
@@ -349,7 +353,7 @@ namespace Sanakan.Web.HostedService
                 return;
             }
 
-            await Task.Delay(TimeSpan.FromSeconds(40));
+            await _taskManager.Delay(TimeSpan.FromSeconds(40));
 
             if (_client.ConnectionState == ConnectionState.Connected)
             {

@@ -11,6 +11,7 @@ using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot.Services.Abstractions;
 using Sanakan.DiscordBot.Abstractions.Extensions;
 using Sanakan.DiscordBot.Abstractions.Models;
+using Sanakan.Common;
 
 namespace Sanakan.DiscordBot.Modules
 {
@@ -19,13 +20,16 @@ namespace Sanakan.DiscordBot.Modules
     {
         private readonly ILandManager _landManager;
         private readonly IGuildConfigRepository _guildConfigRepository;
+        private readonly ITaskManager _taskManager;
 
         public LandsModule(
             ILandManager landManager,
-            IGuildConfigRepository guildConfigRepository)
+            IGuildConfigRepository guildConfigRepository,
+            ITaskManager taskManager)
         {
             _landManager = landManager;
             _guildConfigRepository = guildConfigRepository;
+            _taskManager = taskManager;
         }
 
         [Command("ludność", RunMode = RunMode.Async)]
@@ -56,7 +60,7 @@ namespace Sanakan.DiscordBot.Modules
             foreach (var embed in await _landManager.GetMembersList(land, Context.Guild))
             {
                 await ReplyAsync("", embed: embed);
-                await Task.Delay(TimeSpan.FromSeconds(2));
+                await _taskManager.Delay(TimeSpan.FromSeconds(2));
             }
         }
 

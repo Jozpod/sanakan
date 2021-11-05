@@ -30,6 +30,7 @@ namespace Sanakan.Web.HostedService
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly ITimer _timer;
         private readonly ISessionManager _sessionManager;
+        private readonly ITaskManager _taskManager;
         private bool _isRunning;
 
         public SessionHostedService(
@@ -249,7 +250,7 @@ namespace Sanakan.Web.HostedService
                     _options.CurrentValue.SessionDueTime,
                     _options.CurrentValue.SessionPeriod);
 
-                await Task.Delay(Timeout.Infinite, stoppingToken);
+                await _taskManager.Delay(Timeout.InfiniteTimeSpan, stoppingToken);
             }
             catch (OperationCanceledException)
             {

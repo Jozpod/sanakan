@@ -29,6 +29,7 @@ using Sanakan.DiscordBot.Abstractions.Extensions;
 using Sanakan.DiscordBot.Abstractions.Models;
 using Sanakan.Extensions;
 using Sanakan.ShindenApi;
+using Sanakan.TaskQueue;
 using Sanakan.TaskQueue.Messages;
 using Sanakan.Web.Configuration;
 using Sanakan.Web.Resources;
@@ -46,7 +47,7 @@ namespace Sanakan.Web.Controllers
         private readonly ILogger _logger;
         private readonly IOptionsMonitor<SanakanConfiguration> _config;
         private readonly IUserRepository _userRepository;
-        private readonly IProducerConsumerCollection<BaseMessage> _blockingPriorityQueue;
+        private readonly IBlockingPriorityQueue _blockingPriorityQueue;
         private readonly ITransferAnalyticsRepository _transferAnalyticsRepository;
         private readonly IShindenClient _shindenClient;
         private readonly IDiscordSocketClientAccessor _discordSocketClientAccessor;

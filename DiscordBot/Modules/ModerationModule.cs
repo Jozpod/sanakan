@@ -40,17 +40,20 @@ namespace Sanakan.DiscordBot.Modules
         private readonly IGuildConfigRepository _guildConfigRepository;
         private readonly ISystemClock _systemClock;
         private readonly IRandomNumberGenerator _randomNumberGenerator;
+        private readonly ITaskManager _taskManager;
+
         public ModerationModule(
-            IHelperService helperService,
-            IModeratorService moderatorService,
-            IProfileService profileService,
-            IShindenClient shindenClient,
             IOptionsMonitor<DiscordConfiguration> config,
+            IHelperService helperService,
+            IProfileService profileService,
+            IModeratorService moderatorService,
+            IShindenClient shindenClient,
             ICacheManager cacheManager,
             ISystemClock systemClock,
             IUserRepository userRepository,
             IGuildConfigRepository guildConfigRepository,
-            IRandomNumberGenerator randomNumberGenerator)
+            IRandomNumberGenerator randomNumberGenerator,
+            ITaskManager taskManager)
         {
             _profileService = profileService;
             _helperService = helperService;
@@ -62,6 +65,7 @@ namespace Sanakan.DiscordBot.Modules
             _userRepository = userRepository;
             _guildConfigRepository = guildConfigRepository;
             _randomNumberGenerator = randomNumberGenerator;
+            _taskManager = taskManager;
         }
 
         [Command("kasuj", RunMode = RunMode.Async)]
@@ -1541,7 +1545,7 @@ namespace Sanakan.DiscordBot.Modules
 
             await msg.AddReactionAsync(emote);
             var delay = TimeSpan.FromMinutes(duration);
-            await Task.Delay(delay);
+            await _taskManager.Delay(delay);
             await msg.RemoveReactionAsync(emote, Context.Client.CurrentUser);
 
             var reactions = await msg.GetReactionUsersAsync(emote, 300).FlattenAsync();

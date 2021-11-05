@@ -44,18 +44,22 @@ namespace Sanakan.DiscordBot.Modules
         private readonly IRandomNumberGenerator _randomNumberGenerator;
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly SlotMachine _slotMachine;
+        private readonly ITaskManager _taskManager;
+
         public FunModule(
             IModeratorService moderatorService,
             ISessionManager session,
             ICacheManager cacheManager,
             ISystemClock systemClock,
-            IServiceScopeFactory serviceScopeFactory)
+            IServiceScopeFactory serviceScopeFactory,
+            ITaskManager taskManager)
         {
             _sessionManager = session;
             _moderatorService = moderatorService;
             _cacheManager = cacheManager;
             _systemClock = systemClock;
             _serviceScopeFactory = serviceScopeFactory;
+            _taskManager = taskManager;
         }
 
         [Command("drobne")]
@@ -232,7 +236,7 @@ namespace Sanakan.DiscordBot.Modules
             var allOptions = _randomNumberGenerator.Shuffle(options).ToList();
 
             var delay = _randomNumberGenerator.GetRandomValue(100, 500);
-            await Task.Delay(delay);
+            await _taskManager.Delay(TimeSpan.FromMilliseconds(delay));
 
             var content = $"{Emotes.PinkArrow} {_randomNumberGenerator.GetOneRandomFrom(allOptions)}".ToEmbedMessage(EMType.Success).WithAuthor(new EmbedAuthorBuilder().WithUser(Context.User)).Build();
             await ReplyAsync("", embed: content);
@@ -447,27 +451,36 @@ namespace Sanakan.DiscordBot.Modules
             var msg = await ReplyAsync(riddle.Get());
             await msg.AddReactionsAsync(riddle.GetEmotes());
 
-            await Task.Delay(15000);
+            await _taskManager.Delay(TimeSpan.FromMilliseconds(15000));
 
             int answers = 0;
             var react = await msg.GetReactionUsersAsync(riddle.GetRightEmote(), 100).FlattenAsync();
             foreach (var addR in riddle.GetEmotes())
             {
                 var re = await msg.GetReactionUsersAsync(addR, 100).FlattenAsync();
-                if (re.Any(x => x.Id == Context.User.Id)) answers++;
+                if (re.Any(x => x.Id == Context.User.Id))
+                {
+                    answers++;
+                }
             }
 
             await msg.RemoveAllReactionsAsync();
 
             if (react.Any(x => x.Id == Context.User.Id) && answers < 2)
             {
-                await ReplyAsync("", false, $"{Context.User.Mention} zgadłeś!".ToEmbedMessage(EMType.Success).Build());
+                await ReplyAsync("", false, $"{Context.User.Mention} zgadłeś!"
+                    .ToEmbedMessage(EMType.Success).Build());
             }
             else if (answers > 1)
             {
-                await ReplyAsync("", false, $"{Context.User.Mention} wybrałeś więcej jak jedną odpowiedź!".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync("", false, $"{Context.User.Mention} wybrałeś więcej jak jedną odpowiedź!"
+                    .ToEmbedMessage(EMType.Error).Build());
             }
-            else await ReplyAsync("", false, $"{Context.User.Mention} pudło!".ToEmbedMessage(EMType.Error).Build());
+            else
+            {
+                await ReplyAsync("", false, $"{Context.User.Mention} pudło!"
+                    .ToEmbedMessage(EMType.Error).Build());
+            }
         }
     }
 }

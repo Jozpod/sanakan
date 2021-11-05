@@ -20,7 +20,7 @@ using Sanakan.DiscordBot.Modules;
 namespace DiscordBot.ModulesTests.LandsModuleTests
 {
     [TestClass]
-    public class AddPersonAsyncTests : Base
+    public class Base : Base
     {
         
         [TestMethod]

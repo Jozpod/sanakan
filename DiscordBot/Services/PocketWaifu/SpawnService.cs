@@ -20,6 +20,7 @@ using Sanakan.DiscordBot.Abstractions;
 using Sanakan.DiscordBot.Abstractions.Extensions;
 using Sanakan.DiscordBot.Abstractions.Models;
 using Sanakan.Extensions;
+using Sanakan.TaskQueue;
 using Sanakan.TaskQueue.Messages;
 using Shinden.API;
 using Shinden.Models;
@@ -29,7 +30,7 @@ namespace Sanakan.Services.PocketWaifu
     public class SpawnService
     {
         private readonly DiscordSocketClient _client;
-        private readonly IProducerConsumerCollection<BaseMessage> _blockingPriorityQueue;
+        private readonly IBlockingPriorityQueue _blockingPriorityQueue;
         private readonly ILogger _logger;
         private readonly IOptionsMonitor<DiscordConfiguration> _discordConfiguration;
         private readonly IOptionsMonitor<ExperienceConfiguration> _experienceConfiguration;
@@ -40,20 +41,22 @@ namespace Sanakan.Services.PocketWaifu
         private readonly ISystemClock _systemClock;
         private readonly IGuildConfigRepository _guildConfigRepository;
         private readonly IRandomNumberGenerator _randomNumberGenerator;
+        private readonly ITaskManager _taskManager;
 
         private Dictionary<ulong, long> ServerCounter;
         private Dictionary<ulong, long> UserCounter;
 
         public SpawnService(
             DiscordSocketClient client,
-            IProducerConsumerCollection<BaseMessage> blockingPriorityQueue,
+            IBlockingPriorityQueue blockingPriorityQueue,
             IWaifuService waifu,
             IOptionsMonitor<DiscordConfiguration> discordConfiguration,
             IOptionsMonitor<ExperienceConfiguration> experienceConfiguration,
             ILogger<SpawnService> logger,
             ICacheManager cacheManager,
             ISystemClock systemClock,
-            IRandomNumberGenerator randomNumberGenerator)
+            IRandomNumberGenerator randomNumberGenerator,
+            ITaskManager taskManager)
         {
             _client = client;
             _blockingPriorityQueue = blockingPriorityQueue;
@@ -64,6 +67,7 @@ namespace Sanakan.Services.PocketWaifu
             _cacheManager = cacheManager;
             _systemClock = systemClock;
             _randomNumberGenerator = randomNumberGenerator;
+            _taskManager = taskManager;
 
             ServerCounter = new Dictionary<ulong, long>();
             UserCounter = new Dictionary<ulong, long>();
@@ -88,11 +92,8 @@ namespace Sanakan.Services.PocketWaifu
 
             if (ServerCounter[spawnChannel.GuildId] == 0)
             {
-                _ = Task.Run(async () =>
-                {
-                    await Task.Delay(TimeSpan.FromDays(1));
-                    ServerCounter[spawnChannel.GuildId] = 0;
-                });
+                await _taskManager.Delay(TimeSpan.FromDays(1));
+                ServerCounter[spawnChannel.GuildId] = 0;
             }
 
             int chance = noExp ? 285 : 85;
@@ -132,7 +133,7 @@ namespace Sanakan.Services.PocketWaifu
             {
                 try
                 {
-                    await Task.Delay(TimeSpan.FromMinutes(5));
+                    await _taskManager.Delay(TimeSpan.FromMinutes(5));
 
                     var usersReacted = await msg.GetReactionUsersAsync(Emojis.RaisedHand, 300).FlattenAsync();
                     var users = usersReacted.ToList();

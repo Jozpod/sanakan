@@ -29,6 +29,7 @@ namespace Sanakan.Web.HostedService
         private readonly IOperatingSystem _operatingSystem;
         private readonly ITimer _timer;
         private readonly ICacheManager _cacheManager;
+        private readonly ITaskManager _taskManager;
 
         public ModeratorHostedService(
             ILogger<MemoryUsageHostedService> logger,
@@ -36,7 +37,8 @@ namespace Sanakan.Web.HostedService
             ISystemClock systemClock,
             IServiceScopeFactory serviceScopeFactory,
             IOperatingSystem operatingSystem,
-            ITimer timer)
+            ITimer timer,
+            ITaskManager taskManager)
         {
             _logger = logger;
             _systemClock = systemClock;
@@ -44,6 +46,7 @@ namespace Sanakan.Web.HostedService
             _options = options;
             _operatingSystem = operatingSystem;
             _timer = timer;
+            _taskManager = taskManager;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -56,7 +59,7 @@ namespace Sanakan.Web.HostedService
                     _options.CurrentValue.ModeratorDueTime,
                     _options.CurrentValue.ModeratorPeriod);
 
-                await Task.Delay(Timeout.Infinite, stoppingToken);
+                await _taskManager.Delay(Timeout.InfiniteTimeSpan, stoppingToken);
             }
             catch (OperationCanceledException)
             {

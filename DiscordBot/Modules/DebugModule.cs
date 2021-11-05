@@ -27,6 +27,7 @@ using Sanakan.Services.Commands;
 using Sanakan.Services.PocketWaifu;
 using Sanakan.ShindenApi;
 using Sanakan.ShindenApi.Utilities;
+using Sanakan.TaskQueue;
 using Sanakan.TaskQueue.Messages;
 using Shinden;
 using Shinden.API;
@@ -49,7 +50,7 @@ namespace Sanakan.DiscordBot.Modules
     {
         private readonly IWaifuService _waifuService;
         private readonly WritableOptions<SanakanConfiguration> _config;
-        private readonly IProducerConsumerCollection<BaseMessage> _blockingPriorityQueue;
+        private readonly IBlockingPriorityQueue _blockingPriorityQueue;
         private readonly IHelperService _helperService;
         private readonly IShindenClient _shindenClient;
         private readonly IImageProcessor _imageProcessor;
@@ -65,7 +66,7 @@ namespace Sanakan.DiscordBot.Modules
 
         public DebugModule(
             IShindenClient shindenClient,
-            IProducerConsumerCollection<BaseMessage> blockingPriorityQueue,
+            IBlockingPriorityQueue blockingPriorityQueue,
             IWaifuService waifuService,
             IHelperService helperService,
             IImageProcessor imageProcessor,
@@ -75,7 +76,8 @@ namespace Sanakan.DiscordBot.Modules
             IGuildConfigRepository guildConfigRepository,
             ISystemClock systemClock,
             IResourceManager resourceManager,
-            IRandomNumberGenerator randomNumberGenerator)
+            IRandomNumberGenerator randomNumberGenerator,
+            ITaskManager taskManager)
         {
             _shindenClient = shindenClient;
             _blockingPriorityQueue = blockingPriorityQueue;
@@ -89,6 +91,7 @@ namespace Sanakan.DiscordBot.Modules
             _resourceManager = resourceManager;
             _randomNumberGenerator = randomNumberGenerator;
             _imageProcessor = imageProcessor;
+            _taskManager = taskManager;
         }
 
         [Command("poke", RunMode = RunMode.Async)]
@@ -378,7 +381,7 @@ namespace Sanakan.DiscordBot.Modules
                 }
             }, cancellationToken);
 
-            _blockingPriorityQueue.TryAdd(new LotteryMessage
+            _blockingPriorityQueue.TryEnqueue(new LotteryMessage
             {
                 CardCount = cardCount,
                 WinnerUserId = winner.Id,
@@ -1233,7 +1236,7 @@ namespace Sanakan.DiscordBot.Modules
         {
             await ReplyAsync("", embed: "To dobry czas by umrzeć.".ToEmbedMessage(EMType.Bot).Build());
             await Context.Client.LogoutAsync();
-            await _taskManager.Delay(1500);
+            await _taskManager.Delay(TimeSpan.FromMilliseconds(1500));
             Environment.Exit(0);
         }
 
@@ -1245,7 +1248,7 @@ namespace Sanakan.DiscordBot.Modules
             await ReplyAsync("", embed: "To już czas?".ToEmbedMessage(EMType.Bot).Build());
             await Context.Client.LogoutAsync();
             System.IO.File.Create("./updateNow");
-            await _taskManager.Delay(1500);
+            await _taskManager.Delay(TimeSpan.FromMilliseconds(1500));
             Environment.Exit(200);
         }
 

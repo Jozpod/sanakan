@@ -14,6 +14,7 @@ using System.Collections.Concurrent;
 using Sanakan.TaskQueue.Messages;
 using Sanakan.Common.Configuration;
 using Sanakan.TaskQueue.MessageHandlers;
+using Sanakan.TaskQueue;
 
 namespace Sanakan.Web.HostedService
 {
@@ -23,25 +24,27 @@ namespace Sanakan.Web.HostedService
         private readonly ISystemClock _systemClock;
         private readonly IOptionsMonitor<SanakanConfiguration> _options;
         private readonly IServiceScopeFactory _serviceScopeFactory;
-        private readonly IProducerConsumerCollection<BaseMessage> _producerConsumerCollection;
+        private readonly IBlockingPriorityQueue _blockingPriorityQueue;
 
         public TaskQueueHostedService(
             ILogger<MemoryUsageHostedService> logger,
             IOptionsMonitor<SanakanConfiguration> options,
             ISystemClock systemClock,
-            IServiceScopeFactory serviceScopeFactory)
+            IServiceScopeFactory serviceScopeFactory,
+            IBlockingPriorityQueue blockingPriorityQueue)
         {
             _logger = logger;
             _systemClock = systemClock;
             _serviceScopeFactory = serviceScopeFactory;
             _options = options;
+            _blockingPriorityQueue = blockingPriorityQueue;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             try
             {
-                foreach (var message in _producerConsumerCollection)
+                foreach (var message in _blockingPriorityQueue.GetEnumerable(stoppingToken))
                 {
                     using var serviceScope = _serviceScopeFactory.CreateScope();
                     var serviceProvider = serviceScope.ServiceProvider;

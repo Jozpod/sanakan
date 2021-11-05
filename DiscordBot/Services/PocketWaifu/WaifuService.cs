@@ -39,6 +39,7 @@ namespace Sanakan.Services.PocketWaifu
         private readonly IResourceManager _resourceManager;
         private readonly ICardRepository _cardRepository;
         private readonly IUserRepository _userRepository;
+        private readonly ITaskManager _taskManager;
 
         public WaifuService(
             IImageProcessor imageProcessor,
@@ -49,7 +50,8 @@ namespace Sanakan.Services.PocketWaifu
             ICacheManager cacheManager,
             IRandomNumberGenerator randomNumberGenerator,
             IResourceManager resourceManager,
-            IUserRepository userRepository)
+            IUserRepository userRepository,
+            ITaskManager taskManager)
         {
             _imageProcessor = imageProcessor;
             _fileSystem = fileSystem;
@@ -60,6 +62,7 @@ namespace Sanakan.Services.PocketWaifu
             _randomNumberGenerator = randomNumberGenerator;
             _resourceManager = resourceManager;
             _userRepository = userRepository;
+            _taskManager = taskManager;
         }
 
         private static List<RarityChance> _rarityChances = new List<RarityChance>()
@@ -1066,7 +1069,7 @@ namespace Sanakan.Services.PocketWaifu
                 id = _randomNumberGenerator.GetOneRandomFrom(Ids);
                 response = await _shindenClient.GetCharacterInfoAsync(id);
 
-                await Task.Delay(TimeSpan.FromSeconds(2));
+                await _taskManager.Delay(TimeSpan.FromSeconds(2));
 
                 if (check-- == 0)
                 {

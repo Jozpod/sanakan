@@ -17,10 +17,10 @@ using Discord.Rest;
 using System.IO;
 using Sanakan.DiscordBot.Modules;
 
-namespace DiscordBot.ModulesTests.LandsModuleTests
+namespace DiscordBot.ModulesTests.FunModuleTests
 {
     [TestClass]
-    public class AddPersonAsyncTests : Base
+    public abstract class Base
     {
         
         [TestMethod]

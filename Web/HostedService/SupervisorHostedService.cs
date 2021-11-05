@@ -46,6 +46,7 @@ namespace Sanakan.Web.HostedService
         private readonly IOptionsMonitor<DaemonsConfiguration> _daemonsConfiguration;
         private readonly IOptionsMonitor<DiscordConfiguration> _discordConfiguration;
         private readonly IServiceScopeFactory _serviceScopeFactory;
+        private readonly ITaskManager _taskManager;
         private readonly SemaphoreSlim _semaphoreSlim = new SemaphoreSlim(1, 1);
         private readonly ITimer _timer;
         private readonly Dictionary<ulong, Dictionary<ulong, SupervisorEntity>> _guilds;
@@ -270,7 +271,7 @@ namespace Sanakan.Web.HostedService
                     _daemonsConfiguration.CurrentValue.SupervisorDueTime,
                     _daemonsConfiguration.CurrentValue.SupervisorPeriod);
 
-                await Task.Delay(Timeout.Infinite, stoppingToken);
+                await _taskManager.Delay(Timeout.InfiniteTimeSpan, stoppingToken);
             }
             catch (OperationCanceledException)
             {

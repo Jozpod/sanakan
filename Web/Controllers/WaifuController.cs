@@ -28,6 +28,7 @@ using System.Collections.Concurrent;
 using Sanakan.TaskQueue.Messages;
 using Sanakan.Game.Models;
 using Sanakan.Common.Configuration;
+using Sanakan.TaskQueue;
 
 namespace Sanakan.Web.Controllers
 {
@@ -37,7 +38,7 @@ namespace Sanakan.Web.Controllers
     public class WaifuController : ControllerBase
     {
         private readonly IShindenClient _shindenClient;
-        private readonly IProducerConsumerCollection<BaseMessage> _blockingPriorityQueue;
+        private readonly IBlockingPriorityQueue _blockingPriorityQueue;
         private readonly IOptionsMonitor<ApiConfiguration> _config;
         private readonly IWaifuService _waifuService;
         private readonly IFileSystem _fileSystem;
@@ -49,7 +50,7 @@ namespace Sanakan.Web.Controllers
 
         public WaifuController(
             IShindenClient shindenClient,
-            IProducerConsumerCollection<BaseMessage> blockingPriorityQueue,
+            IBlockingPriorityQueue blockingPriorityQueue,
             IOptionsMonitor<ApiConfiguration> config,
             IWaifuService waifuService,
             IFileSystem fileSystem,

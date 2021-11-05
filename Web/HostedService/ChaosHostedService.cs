@@ -66,7 +66,7 @@ namespace Sanakan.Web.HostedService
                     _daemonsConfiguration.CurrentValue.ChaosDueTime,
                     _daemonsConfiguration.CurrentValue.ChaosPeriod);
 
-                await Task.Delay(Timeout.Infinite, stoppingToken);
+                await _taskManager.Delay(Timeout.Infinite, stoppingToken);
             }
             catch (OperationCanceledException)
             {

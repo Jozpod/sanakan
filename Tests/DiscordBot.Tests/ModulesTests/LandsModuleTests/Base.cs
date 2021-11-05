@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using Discord.Rest;
 using System.IO;
 using Sanakan.DiscordBot.Modules;
+using Sanakan.Common;
 
 namespace DiscordBot.ModulesTests.LandsModuleTests
 {
@@ -23,12 +24,14 @@ namespace DiscordBot.ModulesTests.LandsModuleTests
         protected readonly LandsModule _module;
         protected readonly Mock<ILandManager> _landManagerMock = new(MockBehavior.Strict);
         protected readonly Mock<IGuildConfigRepository> _guildConfigRepositoryMock = new(MockBehavior.Strict);
+        protected readonly Mock<ITaskManager> _taskManagerMock = new(MockBehavior.Strict);
 
         public Base()
         {
-            _module = new LandsModule(
+            _module = new(
                 _landManagerMock.Object,
-                _guildConfigRepositoryMock.Object);
+                _guildConfigRepositoryMock.Object,
+                _taskManagerMock.Object);
         }
 
         public class FakeSocketCommandContext : SocketCommandContext

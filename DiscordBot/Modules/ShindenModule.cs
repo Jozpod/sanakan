@@ -42,20 +42,22 @@ namespace Sanakan.DiscordBot.Modules
         private readonly ISystemClock _systemClock;
         private readonly IShindenClient _shindenClient;
         private readonly IImageProcessor _imageProcessor;
+        private readonly ITaskManager _taskManager;
 
         public ShindenModule(
-            IShindenClient client,
-            ISessionManager session,
-
+            IShindenClient shindenClient,
+            ISessionManager sessionManager,
             ICacheManager cacheManager,
             IUserRepository userRepository,
-            ISystemClock systemClock)
+            ISystemClock systemClock,
+            ITaskManager taskManager)
         {
-            _shindenclient = client;
-            _sessionManager = session;
+            _shindenclient = shindenClient;
+            _sessionManager = sessionManager;
             _cacheManager = cacheManager;
             _userRepository = userRepository;
             _systemClock = systemClock;
+            _taskManager = taskManager;
         }
 
         [Command("odcinki", RunMode = RunMode.Async)]
@@ -86,7 +88,7 @@ namespace Sanakan.DiscordBot.Modules
                     {
                         var embed = episode.ToEmbed();
                         await dmChannel.SendMessageAsync("", false, embed);
-                        await Task.Delay(500);
+                        await _taskManager.Delay(TimeSpan.FromMilliseconds(500));
                     }
 
                     await dmChannel.CloseAsync();

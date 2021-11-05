@@ -4,17 +4,22 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Sanakan.Common;
 using Sanakan.Common.Builder;
+using Sanakan.Common.Configuration;
+using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace Sanakan.DAL.Tests
 {
     [TestClass]
-    public class MSCacheManagerTests
+    public class WritableOptionsTests
     {
         private ServiceProvider _serviceProvider;
 
-        public MSCacheManagerTests()
+        public WritableOptionsTests()
         {
             var serviceCollection = new ServiceCollection();
 
@@ -25,7 +30,7 @@ namespace Sanakan.DAL.Tests
             var configurationRoot = builder.Build();
             
             serviceCollection.AddOptions();
-            serviceCollection.AddCache(configurationRoot.GetSection("Cache"));
+            serviceCollection.AddWritableOption<SanakanConfiguration>(configurationRoot.GetSection(""));
             serviceCollection.AddSingleton(configurationRoot);
             _serviceProvider = serviceCollection.BuildServiceProvider();
         }
@@ -33,21 +38,7 @@ namespace Sanakan.DAL.Tests
         [TestMethod]
         public async Task Should_Cache()
         {
-            var cacheManager = _serviceProvider.GetRequiredService<ICacheManager>();
-            var result = cacheManager.Get<Entity>("test");
-            result.Should().BeNull();
-            cacheManager.Add("test", new Entity());
-            result = cacheManager.Get<Entity>("test");
-            result.Should().NotBeNull();
-            cacheManager.ExpireTag("test");
-            result = cacheManager.Get<Entity>("test");
-            result.Should().BeNull();
-        }
-
-        public class Entity
-        {
-            public int Id { get; set; }
-            public string Value { get; set; }
+            var sanakanConfiguration = _serviceProvider.GetRequiredService<IWritableOptions<SanakanConfiguration>>();
         }
     }
 }

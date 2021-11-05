@@ -25,29 +25,31 @@ namespace Sanakan.DiscordBot.Modules
     [Name("Ogólne")]
     public class HelperModule : ModuleBase<SocketCommandContext>
     {
-        private ISessionManager _sessionManager;
-        private IHelperService _helperService;
-        private ILogger _logger;
-        private IOptionsMonitor<DiscordConfiguration> _config;
+        private readonly ISessionManager _sessionManager;
+        private readonly IHelperService _helperService;
+        private readonly ILogger _logger;
+        private readonly IOptionsMonitor<DiscordConfiguration> _config;
         private readonly IGuildConfigRepository _guildConfigRepository;
         private readonly ISystemClock _systemClock;
         private readonly IOperatingSystem _operatingSystem;
         private readonly IServiceProvider _serviceProvider;
 
         public HelperModule(
-            IHelperService helper,
-            ISessionManager session,
+            IHelperService helperService,
+            ISessionManager sessionManager,
             ILogger<HelperModule> logger,
             IOptionsMonitor<DiscordConfiguration> config,
             IGuildConfigRepository guildConfigRepository,
+            ISystemClock systemClock,
             IOperatingSystem operatingSystem,
             IServiceProvider serviceProvider)
         {
-            _sessionManager = session;
-            _helperService = helper;
+            _sessionManager = sessionManager;
+            _helperService = helperService;
             _logger = logger;
             _config = config;
             _guildConfigRepository = guildConfigRepository;
+            _systemClock = systemClock;
             _operatingSystem = operatingSystem;
             _serviceProvider = serviceProvider;
         }

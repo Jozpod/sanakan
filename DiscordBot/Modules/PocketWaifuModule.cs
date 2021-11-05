@@ -51,24 +51,26 @@ namespace Sanakan.DiscordBot.Modules
         private readonly IRandomNumberGenerator _randomNumberGenerator;
         private readonly IGuildConfigRepository _guildConfigRepository;
         private readonly ISystemClock _systemClock;
+        private readonly ITaskManager _taskManager;
 
         public PocketWaifuModule(
-            IWaifuService waifu,
-            IShindenClient client,
+            IWaifuService waifuService,
+            IShindenClient shindenClient,
             ILogger<PocketWaifuModule> logger,
-            ISessionManager session,
+            ISessionManager sessionManager,
             ICacheManager cacheManager,
             IRandomNumberGenerator randomNumberGenerator,
             IGuildConfigRepository guildConfigRepository,
             IGameDeckRepository gameDeckRepository,
             IUserRepository userRepository,
             ICardRepository cardRepository,
-            ISystemClock systemClock)
+            ISystemClock systemClock,
+            ITaskManager taskManager)
         {
-            _waifuService = waifu;
+            _waifuService = waifuService;
             _logger = logger;
-            _shindenClient = client;
-            _sessionManager = session;
+            _shindenClient = shindenClient;
+            _sessionManager = sessionManager;
             _cacheManager = cacheManager;
             _gameDeckRepository = gameDeckRepository;
             _userRepository = userRepository;
@@ -76,6 +78,7 @@ namespace Sanakan.DiscordBot.Modules
             _randomNumberGenerator = randomNumberGenerator;
             _guildConfigRepository = guildConfigRepository;
             _systemClock = systemClock;
+            _taskManager = taskManager;
         }
 
         [Command("harem", RunMode = RunMode.Async)]
@@ -2087,7 +2090,7 @@ namespace Sanakan.DiscordBot.Modules
                 foreach (var emb in await _waifuService.GetContentOfWishlist(c, p, t))
                 {
                     await dm.SendMessageAsync("", embed: emb);
-                    await Task.Delay(TimeSpan.FromSeconds(2));
+                    await _taskManager.Delay(TimeSpan.FromSeconds(2));
                 }
                 await ReplyAsync("", embed: $"{Context.User.Mention} lista poszła na PW!".ToEmbedMessage(EMType.Success).Build());
             }
@@ -2167,7 +2170,7 @@ namespace Sanakan.DiscordBot.Modules
                 foreach (var emb in _waifuService.GetWaifuFromCharacterTitleSearchResult(cards, Context.Client, !showNames))
                 {
                     await dm.SendMessageAsync("", embed: emb);
-                    await Task.Delay(TimeSpan.FromSeconds(2));
+                    await _taskManager.Delay(TimeSpan.FromSeconds(2));
                 }
                 await ReplyAsync("", embed: $"{Context.User.Mention} lista poszła na PW!".ToEmbedMessage(EMType.Success).Build());
             }
@@ -2251,7 +2254,7 @@ namespace Sanakan.DiscordBot.Modules
                 foreach (var emb in _waifuService.GetWaifuFromCharacterTitleSearchResult(cards, Context.Client, !showNames))
                 {
                     await dm.SendMessageAsync("", embed: emb);
-                    await Task.Delay(TimeSpan.FromSeconds(2));
+                    await _taskManager.Delay(TimeSpan.FromSeconds(2));
                 }
                 await ReplyAsync("", embed: $"{Context.User.Mention} lista poszła na PW!".ToEmbedMessage(EMType.Success).Build());
             }
@@ -2977,7 +2980,7 @@ namespace Sanakan.DiscordBot.Modules
                 foreach (var emb in msgs)
                 {
                     await dm.SendMessageAsync("", embed: emb);
-                    await Task.Delay(TimeSpan.FromSeconds(2));
+                    await _taskManager.Delay(TimeSpan.FromSeconds(2));
                 }
                 await ReplyAsync("", embed: $"{Context.User.Mention} lista poszła na PW!".ToEmbedMessage(EMType.Success).Build());
             }
@@ -3032,7 +3035,7 @@ namespace Sanakan.DiscordBot.Modules
                 foreach (var emb in _waifuService.GetWaifuFromCharacterTitleSearchResult(cards, Context.Client, !showNames))
                 {
                     await dm.SendMessageAsync("", embed: emb);
-                    await Task.Delay(TimeSpan.FromSeconds(2));
+                    await _taskManager.Delay(TimeSpan.FromSeconds(2));
                 }
                 await ReplyAsync("", embed: $"{Context.User.Mention} lista poszła na PW!".ToEmbedMessage(EMType.Success).Build());
             }
@@ -3085,7 +3088,7 @@ namespace Sanakan.DiscordBot.Modules
                 foreach (var emb in _waifuService.GetWaifuFromCharacterTitleSearchResult(cards, Context.Client, !showNames))
                 {
                     await dm.SendMessageAsync("", embed: emb);
-                    await Task.Delay(TimeSpan.FromSeconds(2));
+                    await _taskManager.Delay(TimeSpan.FromSeconds(2));
                 }
                 await ReplyAsync("", embed: $"{Context.User.Mention} lista poszła na PW!".ToEmbedMessage(EMType.Success).Build());
             }
