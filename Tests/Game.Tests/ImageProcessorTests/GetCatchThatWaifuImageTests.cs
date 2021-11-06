@@ -11,6 +11,8 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using Shinden.Models;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 
 namespace Sanakan.Game.Tests
 {
@@ -18,23 +20,15 @@ namespace Sanakan.Game.Tests
     public class GetCatchThatWaifuImageTests : Base
     {
         [TestMethod]
-        public async Task Should_Generate_Level_Up_Badge()
+        public void Should_Return_Waifu_Image()
         {
-            var shindenInfo = new UserInfo
-            {
+            var card = new Image<Rgba32>(100, 100);
+            var pokeImg = "";
+            var xPos = 0;
+            var yPos = 0;
 
-            };
-            var color = Discord.Color.DarkPurple;
-            var lastRead = new List<ILastReaded>
-            {
 
-            };
-            var lastWatch = new List<ILastWatched>
-            {
-
-            };
-            
-            var siteStatistics = await _imageProcessor.GetCatchThatWaifuImage(shindenInfo, color, lastRead, lastWatch);
+            var siteStatistics = _imageProcessor.GetCatchThatWaifuImage(card, pokeImg, xPos, yPos);
         }
     }
 }

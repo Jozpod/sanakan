@@ -15,7 +15,7 @@ namespace Sanakan.Game.Tests
     [TestClass]
     public abstract class Base
     {
-        protected readonly ImageProcessor _imageProcessor;
+        protected readonly IImageProcessor _imageProcessor;
         protected readonly Mock<IShindenClient> _shindenClientMock = new(MockBehavior.Strict);
         protected readonly Mock<IFileSystem> _fileSystemMock = new(MockBehavior.Strict);
         public Base()

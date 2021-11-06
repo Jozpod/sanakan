@@ -1,5 +1,5 @@
 using System.IO;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 using Sanakan.Common;
 using Sanakan.DiscordBot.Services.PocketWaifu;
 
@@ -39,11 +39,11 @@ namespace Sanakan.Services.PocketWaifu
         public string Uri(IFileSystem fileSystem, SafariImageType type) 
             => fileSystem.Exists(ThisUri(type)) ? ThisUri(type) : DefaultUri(type);
 
-        [JsonProperty("index")]
+        [JsonPropertyName("index")]
         public int Index { get; set; }
-        [JsonProperty("x")]
+        [JsonPropertyName("x")]
         public int X { get; set; }
-        [JsonProperty("y")]
+        [JsonPropertyName("y")]
         public int Y { get; set; }
     }
 }

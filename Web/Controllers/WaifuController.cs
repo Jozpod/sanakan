@@ -311,7 +311,7 @@ namespace Sanakan.Web.Controllers
                 NewCharacterId = newCharacterId
             };
 
-            _blockingPriorityQueue.TryAdd(message);
+            _blockingPriorityQueue.TryEnqueue(message);
 
             //var exe = new Executable($"api-repair oc{oldId} c{newId}", new Task<Task>(async () =>
             //{
@@ -335,7 +335,7 @@ namespace Sanakan.Web.Controllers
             [FromBody]CharacterCardInfoUpdate model)
         {
 
-            _blockingPriorityQueue.TryAdd(new UpdateCardMessage
+            _blockingPriorityQueue.TryEnqueue(new UpdateCardMessage
             {
                 CharacterId = characterId,
                 ImageUrl = model.ImageUrl,
@@ -372,7 +372,7 @@ namespace Sanakan.Web.Controllers
                 return ShindenMethodNotAllowed("There is no character image!");
             }
 
-            _blockingPriorityQueue.TryAdd(new UpdateCardPictureMessage
+            _blockingPriorityQueue.TryEnqueue(new UpdateCardPictureMessage
             {
                 CharacterId = characterId,
                 PictureId = characterInfo.PictureId.Value,
@@ -565,7 +565,7 @@ namespace Sanakan.Web.Controllers
                 return ShindenNotFound(Strings.UserNotFound);
             }
 
-            _blockingPriorityQueue.TryAdd(new GivesCardsMessage
+            _blockingPriorityQueue.TryEnqueue(new GivesCardsMessage
             {
                 DiscordUserId = discordUserId,
                 BoosterPacks = boosterPacks,
@@ -633,7 +633,7 @@ namespace Sanakan.Web.Controllers
 
             var discordUserId = user.Id;
 
-            _blockingPriorityQueue.TryAdd(new OpenCardsMessage
+            _blockingPriorityQueue.TryEnqueue(new OpenCardsMessage
             {
                 DiscordUserId = discordUserId,
             });
@@ -732,7 +732,7 @@ namespace Sanakan.Web.Controllers
                 cards.AddRange(await _waifuService.OpenBoosterPackAsync(null, pack));
             }
 
-            _blockingPriorityQueue.TryAdd(new OpenCardsMessage
+            _blockingPriorityQueue.TryEnqueue(new OpenCardsMessage
             {
                 DiscordUserId = discordUserId,
                 Cards = cards,
@@ -813,7 +813,7 @@ namespace Sanakan.Web.Controllers
             cards = await _waifuService.OpenBoosterPackAsync(null, pack);
             bPackName = pack.Name;
 
-            _blockingPriorityQueue.TryAdd(new OpenCardsMessage
+            _blockingPriorityQueue.TryEnqueue(new OpenCardsMessage
             {
                 DiscordUserId = discordId.Value,
                 Cards = cards,
@@ -897,7 +897,7 @@ namespace Sanakan.Web.Controllers
                 return ShindenForbidden("Card is in cage!");
             }
 
-            _blockingPriorityQueue.TryAdd(new ToggleCardMessage
+            _blockingPriorityQueue.TryEnqueue(new ToggleCardMessage
             {
                 DiscordUserId = discordId.Value,
                 WId = wid,

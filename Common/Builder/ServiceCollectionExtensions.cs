@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 
 namespace Sanakan.Common
@@ -9,14 +9,12 @@ namespace Sanakan.Common
     {
         public static void AddWritableOption<T>(
             this IServiceCollection services,
-            IConfigurationSection section,
             string file = "appsettings.json") where T : class, new()
         {
-            services.Configure<T>(section);
             services.AddTransient<IWritableOptions<T>>(provider =>
             {
                 var configuration = (IConfigurationRoot)provider.GetRequiredService<IConfiguration>();
-                var environment = provider.GetService<IHostingEnvironment>();
+                var environment = provider.GetService<IHostEnvironment>();
                 var options = provider.GetService<IOptionsMonitor<T>>();
                 var fileSystem = provider.GetRequiredService<IFileSystem>();
                 return new WritableOptions<T>(
@@ -24,7 +22,6 @@ namespace Sanakan.Common
                     fileSystem,
                     options,
                     configuration,
-                    section.Key,
                     file);
             });
         }

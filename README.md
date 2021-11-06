@@ -81,6 +81,7 @@ dotnet run
 | **[`Token`](#Token)** | `{String}` | `` | The API token which is supplied in certain requests sent to Shinden API. |
 | **[`UserAgent`](#UserAgent)**  | `{String}` | `` |  Lets servers and network peers identify the application, operating system, vendor, and/or version of the request. |
 | **[`Marmolade`](#Marmolade)**  | `{Boolean}` | `` | Mysterious HTTP header used for Shinden API |
+| **[`SessionExpiry`](#SessionExpiry)**  | `{String\|TimeSpan}` | `01:30:00` | The time interval after which session expires. It is used when authorized as a user. |
 
 ### Sanakan API
 |                   Name                    |         Type         |                 Default                 | Description                                                       |

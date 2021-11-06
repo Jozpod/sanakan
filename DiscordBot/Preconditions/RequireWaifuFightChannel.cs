@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Sanakan.Configuration;
 using Sanakan.DAL.Repositories.Abstractions;
+using Sanakan.DiscordBot.Resources;
 using System;
 using System.Linq;
 using System.Threading.Tasks;

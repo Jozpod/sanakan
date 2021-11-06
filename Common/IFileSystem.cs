@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 namespace Sanakan.Common
 {
     /// <summary>
-    /// Provides an abstractor for file system operations.
+    /// Provides an abstraction for file system operations.
     /// </summary>
     public interface IFileSystem
     {
@@ -22,10 +22,16 @@ namespace Sanakan.Common
 
         /// <inheritdoc cref="File.GetCreationTime(string)"/>
         DateTime GetCreationTime(string path);
+        
         /// <inheritdoc cref="File.ReadAllTextAsync(string, System.Threading.CancellationToken)"/>
         Task<string> ReadAllTextAsync(string path);
+        
         /// <inheritdoc cref="File.OpenRead(string)"/>
         Stream OpenRead(string path);
+
+        /// <inheritdoc cref="File.Open(string, FileMode)"/>
+        Stream Open(string path, FileMode fileMode);
+
         /// <inheritdoc cref="File.WriteAllTextAsync(string, string, System.Threading.CancellationToken)"/>
         public Task WriteAllTextAsync(string physicalPath, string contents);
     }

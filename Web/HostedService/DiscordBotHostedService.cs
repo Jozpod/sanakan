@@ -37,7 +37,6 @@ namespace Sanakan.Web.HostedService
         private readonly IFileSystem _fileSystem;
         private readonly IOptionsMonitor<DiscordConfiguration> _discordConfiguration;
         private readonly IOptionsMonitor<ExperienceConfiguration> _experienceConfiguration;
-        private readonly IOptionsMonitor<DiscordConfiguration> _configuration;
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly ISystemClock _systemClock;
         private readonly ITaskManager _taskManager;
@@ -67,7 +66,9 @@ namespace Sanakan.Web.HostedService
             ILogger<DiscordBotHostedService> logger,
             IServiceScopeFactory serviceScopeFactory,
             IDiscordSocketClientAccessor discordSocketClientAccessor,
-            IOptionsMonitor<DiscordConfiguration> configuration,
+            IOptionsMonitor<DiscordConfiguration> discordConfiguration,
+            IOptionsMonitor<ExperienceConfiguration> experienceConfiguration,
+            ISystemClock systemClock,
             CommandHandler commandHandler,
             ITaskManager taskManager)
         {
@@ -76,7 +77,9 @@ namespace Sanakan.Web.HostedService
             _logger = logger;
             _discordSocketClientAccessor = discordSocketClientAccessor;
             _serviceScopeFactory = serviceScopeFactory;
-            _configuration = configuration;
+            _discordConfiguration = discordConfiguration;
+            _experienceConfiguration = experienceConfiguration;
+            _systemClock = systemClock;
             _commandHandler = commandHandler;
             _taskManager = taskManager;
         }
@@ -111,7 +114,7 @@ namespace Sanakan.Web.HostedService
                 _client.MessageUpdated += HandleUpdatedMsgAsync;
                 stoppingToken.ThrowIfCancellationRequested();
 
-                var configuration = _configuration.CurrentValue;
+                var configuration = _discordConfiguration.CurrentValue;
                 await _client.LoginAsync(TokenType.Bot, configuration.BotToken);
                 await _client.SetGameAsync($"{configuration.Prefix}pomoc");
                 await _client.StartAsync();
@@ -169,7 +172,7 @@ namespace Sanakan.Web.HostedService
                 return;
             }
 
-            if (_configuration.CurrentValue
+            if (_discordConfiguration.CurrentValue
                 .BlacklistedGuilds.Any(x => x == user.Guild.Id))
             {
                 return;
@@ -220,7 +223,7 @@ namespace Sanakan.Web.HostedService
 
             if (countMsg)
             {
-                CountMessage(user.Id, _configuration.CurrentValue.IsCommand(message.Content));
+                CountMessage(user.Id, _discordConfiguration.CurrentValue.IsCommand(message.Content));
             }
             CalculateExpAndCreateTask(user, message, calculateExp);
         }
@@ -317,7 +320,7 @@ namespace Sanakan.Web.HostedService
             //    ulong characters,
             //    bool calculateExp)
 
-            _blockingPriorityQueue.TryAdd(new AddExperienceMessage
+            _blockingPriorityQueue.TryEnqueue(new AddExperienceMessage
             {
                 Experience = effectiveExperience,
                 DiscordUserId = user.Id,
@@ -346,7 +349,7 @@ namespace Sanakan.Web.HostedService
         {
             _logger.LogError("Discord client disconnected.", ex);
 
-            var configuration = _configuration.CurrentValue;
+            var configuration = _discordConfiguration.CurrentValue;
 
             if (!configuration.RestartWhenDisconnected)
             {
@@ -450,7 +453,7 @@ namespace Sanakan.Web.HostedService
                 return;
             }
 
-            var config = _configuration.CurrentValue;
+            var config = _discordConfiguration.CurrentValue;
             var guildId = user.Guild.Id;
 
             using var serviceScope = _serviceScopeFactory.CreateScope();
@@ -480,7 +483,7 @@ namespace Sanakan.Web.HostedService
                 return;
             }
 
-            _blockingPriorityQueue.TryAdd(new DeleteUserMessage
+            _blockingPriorityQueue.TryEnqueue(new DeleteUserMessage
             {
                 DiscordUserId = user.Id,
             });

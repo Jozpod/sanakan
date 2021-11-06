@@ -16,6 +16,8 @@ namespace Sanakan.Common
 
         public DateTime GetCreationTime(string path) => File.GetCreationTime(path);
 
+        public Stream Open(string path, FileMode fileMode) => File.Open(path, fileMode);
+
         public Stream OpenRead(string path) => File.OpenRead(path);
 
         public Task<string> ReadAllTextAsync(string path) => File.ReadAllTextAsync(path);

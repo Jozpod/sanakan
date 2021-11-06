@@ -14,10 +14,10 @@ namespace DiscordBot.ServicesTests.ModeratorServiceTests
     [TestClass]
     public abstract class Base
     {
-        private readonly ModeratorService _moderatorService;
-        private readonly Mock<DiscordSocketClient> _discordSocketClientMock = new(MockBehavior.Strict);
-        private readonly Mock<ICacheManager> _cacheManagerMock = new(MockBehavior.Strict);
-        private readonly Mock<ISystemClock> _ystemClockMock = new(MockBehavior.Strict);
+        protected readonly IModeratorService _moderatorService;
+        protected readonly Mock<DiscordSocketClient> _discordSocketClientMock = new(MockBehavior.Strict);
+        protected readonly Mock<ICacheManager> _cacheManagerMock = new(MockBehavior.Strict);
+        protected readonly Mock<ISystemClock> _systemClockMock = new(MockBehavior.Strict);
 
         public Base()
         {
@@ -25,11 +25,11 @@ namespace DiscordBot.ServicesTests.ModeratorServiceTests
             var serviceProvider = serviceCollection.BuildServiceProvider();
             var serviceScopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
 
-            _moderatorService = new(
+            _moderatorService = new ModeratorService(
                 NullLogger<IModeratorService>.Instance,
                 _discordSocketClientMock.Object,
                 _cacheManagerMock.Object,
-                _ystemClockMock.Object,
+                _systemClockMock.Object,
                 serviceScopeFactory);
         }
     }

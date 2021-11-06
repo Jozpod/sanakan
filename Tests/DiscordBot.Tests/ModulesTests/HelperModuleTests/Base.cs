@@ -6,11 +6,6 @@ using Moq;
 using Sanakan.DAL.Models.Configuration;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot.Services.Abstractions;
-using Sanakan.Modules;
-using Sanakan.Services;
-using System;
-using System.Linq;
-using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
 using Discord.Rest;
@@ -20,6 +15,8 @@ using Sanakan.TaskQueue;
 using Microsoft.Extensions.Options;
 using Sanakan.Common.Configuration;
 using Sanakan.Common;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace DiscordBot.ModulesTests.HelperModuleTests
 {
@@ -36,13 +33,18 @@ namespace DiscordBot.ModulesTests.HelperModuleTests
 
         public Base()
         {
+            var serviceCollection = new ServiceCollection();
+            var serviceProvider = serviceCollection.BuildServiceProvider();
+
             _module = new(
                 _helperServiceMock.Object,
                 _sessionManagerMock.Object,
+                NullLogger<HelperModule>.Instance,
                 _discordConfigurationMock.Object,
                 _guildConfigRepositoryMock.Object,
                 _systemClockMock.Object,
-                _operatingSystemMock.Object);
+                _operatingSystemMock.Object,
+                serviceProvider);
         }
     }
 }

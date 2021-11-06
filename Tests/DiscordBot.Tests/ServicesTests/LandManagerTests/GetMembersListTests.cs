@@ -5,18 +5,12 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.DAL.Models.Configuration;
 using Sanakan.DAL.Repositories.Abstractions;
-using Sanakan.DiscordBot.Services.Abstractions;
-using Sanakan.Modules;
-using Sanakan.Services;
-using System;
-using System.Linq;
-using System.Collections.Generic;
-using System.Reflection;
 using System.Threading.Tasks;
 using Discord.Rest;
 using System.IO;
 using Sanakan.Preconditions;
 using Microsoft.Extensions.DependencyInjection;
+using FluentAssertions;
 
 namespace DiscordBot.ServicesTests.LandManagerTests
 {
@@ -26,10 +20,13 @@ namespace DiscordBot.ServicesTests.LandManagerTests
         [TestMethod]
         public async Task Should_Return_Success()
         {
-            var serviceCollection = new ServiceCollection();
-            var serviceProvider = serviceCollection.BuildServiceProvider();
+            var land = new MyLand{
 
-            var result = await _landManager.GetMembersListTests(_commandContextMock.Object, null, serviceProvider);
+            };
+            var guildMock = new Mock<IGuild>();
+
+            var result = await _landManager.GetMembersList(land, guildMock.Object);
+            result.Should().NotBeEmpty();
         }
     }
 }

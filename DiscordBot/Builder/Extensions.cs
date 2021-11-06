@@ -14,6 +14,7 @@ using Sanakan.DiscordBot.Services;
 using Sanakan.DiscordBot.Services.Abstractions;
 using Sanakan.Game.Models;
 using Sanakan.Services;
+using Sanakan.Services.Commands;
 using Sanakan.Services.PocketWaifu;
 
 namespace Sanakan.DiscordBot.Builder
@@ -32,6 +33,7 @@ namespace Sanakan.DiscordBot.Builder
             services.AddSingleton<IHelperService, HelperService>();
             services.AddSingleton<EventsService>();
             services.AddSingleton<SpawnService>();
+            services.AddSingleton<CommandHandler>();
             return services;
         }
 

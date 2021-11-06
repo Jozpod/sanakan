@@ -5,6 +5,7 @@
     <LangVersion>9.0</LangVersion>
     <Nullable>enable</Nullable>
     <RootNamespace>Sanakan.DiscordBot</RootNamespace>
+    <AssemblyName>Sanakan.DiscordBot</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>

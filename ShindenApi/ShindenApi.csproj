@@ -17,6 +17,21 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Models\Entities\**" />
+    <Compile Remove="Models\Helpers\**" />
+    <Compile Remove="Models\Initializers\**" />
+    <Compile Remove="Models\Interfaces\**" />
+    <EmbeddedResource Remove="Models\Entities\**" />
+    <EmbeddedResource Remove="Models\Helpers\**" />
+    <EmbeddedResource Remove="Models\Initializers\**" />
+    <EmbeddedResource Remove="Models\Interfaces\**" />
+    <None Remove="Models\Entities\**" />
+    <None Remove="Models\Helpers\**" />
+    <None Remove="Models\Initializers\**" />
+    <None Remove="Models\Interfaces\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />

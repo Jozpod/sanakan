@@ -21,6 +21,7 @@ namespace DiscordBot.ServicesTests.WaifuServiceTests
         private readonly Mock<IRandomNumberGenerator> _randomNumberGeneratorMock = new(MockBehavior.Strict);
         private readonly Mock<IResourceManager> _resourceManagerMock = new(MockBehavior.Strict);
         private readonly Mock<IUserRepository> _userRepositoryMock = new(MockBehavior.Strict);
+        private readonly Mock<ITaskManager> _taskManagerMock = new(MockBehavior.Strict);
 
         public Base()
         {
@@ -33,7 +34,8 @@ namespace DiscordBot.ServicesTests.WaifuServiceTests
                 _cacheManagerMock.Object,
                 _randomNumberGeneratorMock.Object,
                 _resourceManagerMock.Object,
-                _userRepositoryMock.Object);
+                _userRepositoryMock.Object,
+                _taskManagerMock.Object);
         }
     }
 }

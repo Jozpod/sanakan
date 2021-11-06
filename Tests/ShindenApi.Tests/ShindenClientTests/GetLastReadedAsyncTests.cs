@@ -30,7 +30,7 @@ namespace ShindenApi.Tests
                 });
 
             var assembly = Assembly.GetExecutingAssembly();
-            var resourceName = "ShindenApi.Tests.TestData.login-result.json";
+            var resourceName = "ShindenApi.Tests.TestData.last-read-result.json";
             var stream = assembly.GetManifestResourceStream(resourceName);
 
             _httpClientHandlerMock
@@ -44,7 +44,8 @@ namespace ShindenApi.Tests
                     Content = new StreamContent(stream),
                 });
 
-            var result = await _shindenClient.GetAllCharactersFromAnimeAsync("test", "test");
+            var userId = 1ul;
+            var result = await _shindenClient.GetLastReadAsync(userId);
             var test = _cookieContainer.GetCookies(new Uri("test"));
         }
     }

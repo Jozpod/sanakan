@@ -1,4 +1,5 @@
-﻿using Shinden.Models;
+﻿using Sanakan.ShindenApi.Models.Enums;
+using Shinden.Models;
 
 namespace Sanakan.ShindenApi
 {

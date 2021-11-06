@@ -1,12 +1,13 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 using System;
 using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
+using System.Text.Json;
 
 namespace Sanakan.Common
 {
-    public class ResourceManager : IResourceManager
+    internal class ResourceManager : IResourceManager
     {
         private readonly Assembly _assembly;
         private readonly IFileSystem _fileSystem;
@@ -17,11 +18,10 @@ namespace Sanakan.Common
             _assembly = Assembly.GetCallingAssembly();
         }
 
-        public async Task<T?> ReadFromJsonAsync<T>(string path)
+        public ValueTask<T?> ReadFromJsonAsync<T>(string path)
         {
-            var json = await _fileSystem.ReadAllTextAsync(path);
-            var result = JsonConvert.DeserializeObject<T>(json);
-            return result;
+            var stream = _fileSystem.OpenRead(path);
+            return JsonSerializer.DeserializeAsync<T>(stream);
         }
 
         public Stream GetResourceStream(string resourcePath)

@@ -6,6 +6,6 @@ namespace Sanakan.Common
     public interface IResourceManager
     {
         Stream GetResourceStream(string resourcePath);
-        Task<T?> ReadFromJsonAsync<T>(string path);
+        ValueTask<T?> ReadFromJsonAsync<T>(string path);
     }
 }

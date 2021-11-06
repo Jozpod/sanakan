@@ -6,6 +6,9 @@ namespace Sanakan.Common.Configuration
 {
     public class SanakanConfiguration
     {
+        /// <summary>
+        /// The locae configuration.
+        /// </summary>
         public LocaleConfiguration Locale { get; set; }
         public DatabaseConfiguration Database { get; set; }
         public MSCacheManagerOptions Cache { get; set; }

@@ -36,6 +36,12 @@ namespace Sanakan.Common.Builder
             return services;
         }
 
+        public static IServiceCollection AddResourcekManager(this IServiceCollection services)
+        {
+            services.AddSingleton<IResourceManager, ResourceManager>();
+            return services;
+        }
+
         public static IServiceCollection AddCache(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddMemoryCache();

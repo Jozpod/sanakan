@@ -29,6 +29,7 @@ namespace Sanakan.Web.HostedService
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly IRandomNumberGenerator _randomNumberGenerator;
         private readonly ITimer _timer;
+        private readonly ITaskManager _taskManager;
         private readonly List<ulong> _usersWithSwappedNicknames;
 
         public ChaosHostedService(
@@ -38,7 +39,8 @@ namespace Sanakan.Web.HostedService
             IOptionsMonitor<DaemonsConfiguration> daemonsConfiguration,
             IDiscordSocketClientAccessor discordSocketClientAccessor,
             ISystemClock systemClock,
-            IServiceScopeFactory serviceScopeFactory)
+            IServiceScopeFactory serviceScopeFactory,
+            ITaskManager taskManager)
         {
             _logger = logger;
             _systemClock = systemClock;
@@ -46,6 +48,7 @@ namespace Sanakan.Web.HostedService
             _discordConfiguration = discordConfiguration;
             _daemonsConfiguration = daemonsConfiguration;
             _discordSocketClientAccessor = discordSocketClientAccessor;
+            _taskManager = taskManager;
             _usersWithSwappedNicknames = new(100);
             _discordSocketClientAccessor.Initialized += OnInitialized;
         }
@@ -66,7 +69,7 @@ namespace Sanakan.Web.HostedService
                     _daemonsConfiguration.CurrentValue.ChaosDueTime,
                     _daemonsConfiguration.CurrentValue.ChaosPeriod);
 
-                await _taskManager.Delay(Timeout.Infinite, stoppingToken);
+                await _taskManager.Delay(Timeout.InfiniteTimeSpan, stoppingToken);
             }
             catch (OperationCanceledException)
             {

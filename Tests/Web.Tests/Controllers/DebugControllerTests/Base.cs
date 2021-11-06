@@ -4,27 +4,27 @@ using Moq;
 using Sanakan.DiscordBot;
 using Sanakan.Web.Controllers;
 using System;
+using System.Threading.Tasks;
 
-namespace Sanakan.Web.Tests
+namespace Sanakan.Web.Tests.Controllers.DebugControllerTests
 {
     [TestClass]
-    public class Base
+    public abstract class Base
     {
         private readonly DebugController _controller;
-        private readonly Mock<IDiscordSocketClientAccessor> _discordSocketClientMock;
+        private readonly Mock<IDiscordSocketClientAccessor> _discordSocketClientMock = new(MockBehavior.Strict);
 
         public Base()
         {
-            _discordSocketClientMock = new();
             _controller = new DebugController(
                 _discordSocketClientMock.Object,
                 NullLogger<DebugController>.Instance);
         }
 
         [TestMethod]
-        public void TestMethod1()
+        public async Task Should_Restart_Bot()
         {
-            _controller.RestartBotAsync();
+            await _controller.RestartBotAsync();
         }
     }
 }

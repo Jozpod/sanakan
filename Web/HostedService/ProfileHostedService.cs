@@ -32,7 +32,7 @@ namespace Sanakan.Web.HostedService
         private readonly ITaskManager _taskManager;
 
         public ProfileHostedService(
-            ILogger<MemoryUsageHostedService> logger,
+            ILogger<ProfileHostedService> logger,
             IOptionsMonitor<DaemonsConfiguration> options,
             ISystemClock systemClock,
             IServiceScopeFactory serviceScopeFactory,
@@ -55,7 +55,7 @@ namespace Sanakan.Web.HostedService
                     _options.CurrentValue.ProfileDueTime,
                     _options.CurrentValue.ProfilePeriod);
 
-                await _taskManager.Delay(Timeout.Infinite, stoppingToken);
+                await _taskManager.Delay(Timeout.InfiniteTimeSpan, stoppingToken);
             }
             catch (OperationCanceledException)
             {

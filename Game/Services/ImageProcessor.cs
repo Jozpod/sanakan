@@ -1256,8 +1256,8 @@ namespace Sanakan.Game.Services
         public Image<Rgba32> GetDuelCardImage(
             DuelInfo duelInfo,
             DuelImage? duelImage,
-            Image<Rgba32> win,
-            Image<Rgba32> los)
+            Image<Rgba32> winImage,
+            Image<Rgba32> lossImage)
         {
             int Xiw = 76;
             int Yt = 780;
@@ -1292,13 +1292,13 @@ namespace Sanakan.Game.Services
 
             var nameFont = new Font(_latoBold, 34);
 
-            win.Mutate(x => x.Resize(new ResizeOptions
+            winImage.Mutate(x => x.Resize(new ResizeOptions
             {
                 Mode = ResizeMode.Max,
                 Size = new Size(450, 0)
             }));
 
-            los.Mutate(x => x.Resize(new ResizeOptions
+            lossImage.Mutate(x => x.Resize(new ResizeOptions
             {
                 Mode = ResizeMode.Max,
                 Size = new Size(450, 0)
@@ -1306,16 +1306,16 @@ namespace Sanakan.Game.Services
 
             if (duelInfo.Side != WinnerSide.Draw)
             {
-                los.Mutate(x => x.Grayscale());
+                lossImage.Mutate(x => x.Grayscale());
             }
 
-            image.Mutate(x => x.DrawImage(win, new Point(Xiw, Yi), 1));
-            image.Mutate(x => x.DrawImage(los, new Point(Xil, Yi), 1));
+            image.Mutate(x => x.DrawImage(winImage, new Point(Xiw, Yi), 1));
+            image.Mutate(x => x.DrawImage(lossImage, new Point(Xil, Yi), 1));
 
             var winnerColor = Rgba32.FromHex(duelImage != null ? duelImage.Color : DuelImage.DefaultColor());
             var loserColor = Rgba32.FromHex(duelImage != null ? duelImage.Color : DuelImage.DefaultColor());
 
-            var options = new TextGraphicsOptions() { HorizontalAlignment = HorizontalAlignment.Center, WrapTextWidth = win.Width };
+            var options = new TextGraphicsOptions() { HorizontalAlignment = HorizontalAlignment.Center, WrapTextWidth = winImage.Width };
             image.Mutate(x => x.DrawText(options, duelInfo.Winner.Name, nameFont, winnerColor, new Point(Xiw, Yt)));
             image.Mutate(x => x.DrawText(options, duelInfo.Loser.Name, nameFont, loserColor, new Point(Xil, Yt)));
 

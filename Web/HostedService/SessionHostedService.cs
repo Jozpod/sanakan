@@ -34,11 +34,10 @@ namespace Sanakan.Web.HostedService
         private bool _isRunning;
 
         public SessionHostedService(
-            ILogger<MemoryUsageHostedService> logger,
+            ILogger<SessionHostedService> logger,
             IOptionsMonitor<DaemonsConfiguration> options,
             ISystemClock systemClock,
             IServiceScopeFactory serviceScopeFactory,
-            IOperatingSystem operatingSystem,
             ITimer timer)
         {
             _logger = logger;

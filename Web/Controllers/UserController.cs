@@ -86,12 +86,12 @@ namespace Sanakan.Web.Controllers
         /// <summary>
         /// Gets the user.
         /// </summary>
-        /// <param name="id">The user identifier in Discord.</param>
+        /// <param name="discordUserId">The user identifier in Discord.</param>
         [HttpGet("discord/{id}"), Authorize(Policy = AuthorizePolicies.Site)]
         [ProducesResponseType(typeof(User), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetUserByDiscordIdAsync(ulong id)
+        public async Task<IActionResult> GetUserByDiscordIdAsync(ulong discordUserId)
         {
-            var result = await _userRepository.GetCachedFullUserAsync(id);
+            var result = await _userRepository.GetCachedFullUserAsync(discordUserId);
             return Ok(result);
         }
 
@@ -352,7 +352,7 @@ namespace Sanakan.Web.Controllers
                 return ShindenUnauthorized("This account is already linked!");
             }
 
-            _blockingPriorityQueue.TryAdd(new ConnectUserMessage
+            _blockingPriorityQueue.TryEnqueue(new ConnectUserMessage
             {
                 DiscordUserId = model.DiscordUserId,
                 ShindenUserId = shindenUser.Id.Value,
@@ -390,7 +390,7 @@ namespace Sanakan.Web.Controllers
                 return ShindenNotFound(Strings.UserNotFound);
             }
 
-            _blockingPriorityQueue.TryAdd(new TransferTCMessage
+            _blockingPriorityQueue.TryEnqueue(new TransferTCMessage
             {
                 DiscordUserId = discordUserId,
                 Amount = amount
@@ -439,7 +439,7 @@ namespace Sanakan.Web.Controllers
                 return ShindenNotFound(Strings.UserNotFound);
             }
 
-            _blockingPriorityQueue.TryAdd(new TransferTCMessage
+            _blockingPriorityQueue.TryEnqueue(new TransferTCMessage
             {
                 ShindenUserId = shindenUserId,
                 Amount = amount

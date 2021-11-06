@@ -4,11 +4,11 @@ using System.Threading.Tasks;
 namespace DiscordBot.ModulesTests.LandsModuleTests
 {
     [TestClass]
-    public class Base1 : Base
+    public class ShowPeopleAsync : Base
     {
        
         [TestMethod]
-        public async Task Should_Tell_When_User_Does_Not_Own_Land()
+        public async Task Should_Return_Users()
         {
             await _module.ShowPeopleAsync();
         }

@@ -1,3 +1,4 @@
+using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -6,6 +7,7 @@ using Moq.Protected;
 using Sanakan.Common.Configuration;
 using Sanakan.ShindenApi;
 using System;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;

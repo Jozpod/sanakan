@@ -1,3 +1,4 @@
+using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -5,6 +6,7 @@ using Moq;
 using Moq.Protected;
 using Sanakan.Common.Configuration;
 using Sanakan.ShindenApi;
+using Shinden.API;
 using System;
 using System.Net;
 using System.Net.Http;
@@ -30,7 +32,7 @@ namespace ShindenApi.Tests
                 });
 
             var assembly = Assembly.GetExecutingAssembly();
-            var resourceName = "ShindenApi.Tests.TestData.login-result.json";
+            var resourceName = "ShindenApi.Tests.TestData.anime-manga-info-result.json";
             var stream = assembly.GetManifestResourceStream(resourceName);
 
             _httpClientHandlerMock
@@ -44,8 +46,14 @@ namespace ShindenApi.Tests
                     Content = new StreamContent(stream),
                 });
 
-            var result = await _shindenClient.Get("test", "test");
-            var test = _cookieContainer.GetCookies(new Uri("test"));
+            var expected = new AnimeMangaInfo
+            {
+
+            };
+
+            var titleId = 1ul;
+            var result = await _shindenClient.GetAnimeMangaInfoAsync(titleId);
+            result.Value.Should().BeEquivalentTo(expected);
         }
     }
 }

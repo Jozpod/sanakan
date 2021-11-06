@@ -13,12 +13,12 @@ CREATE TABLE `guilds` (
   `NsfwChannelId` bigint unsigned NOT NULL,
   `LogChannelId` bigint unsigned NOT NULL,
   `GreetingChannelId` bigint unsigned NOT NULL,
-  `WelcomeMessage` varchar(50) NOT NULL,
-  `WelcomeMessagePM` varchar(50) NOT NULL,
-  `GoodbyeMessage` varchar(50) NOT NULL,
+  `WelcomeMessage` varchar(50) DEFAULT NULL,
+  `WelcomeMessagePM` varchar(50) DEFAULT NULL,
+  `GoodbyeMessage` varchar(50) DEFAULT NULL,
   `SafariLimit` bigint NOT NULL,
   `Supervision` tinyint(1) NOT NULL,
   `ChaosMode` tinyint(1) NOT NULL,
-  `Prefix` varchar(10) NOT NULL,
+  `Prefix` varchar(10) DEFAULT NULL,
   PRIMARY KEY (`Id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci

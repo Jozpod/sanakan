@@ -7,13 +7,14 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Sanakan.ShindenApi;
 using Sanakan.Common;
 using Sanakan.Game.Services;
+using Sanakan.DiscordBot.Services.Abstractions;
 
 namespace DiscordBot.ServicesTests.ProfileServiceTests
 {
     [TestClass]
     public abstract class Base
     {
-        protected readonly ProfileService _profileService;
+        protected readonly IProfileService _profileService;
         protected readonly Mock<DiscordSocketClient> _discordSocketClientMock = new(MockBehavior.Strict);
         protected readonly Mock<IShindenClient> _shindenClientMock = new(MockBehavior.Strict);
         protected readonly Mock<IImageProcessor> _imageProcessorMock = new(MockBehavior.Strict);
@@ -25,7 +26,7 @@ namespace DiscordBot.ServicesTests.ProfileServiceTests
             var serviceProvider = serviceCollection.BuildServiceProvider();
             var serviceScopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
 
-            _profileService = new(
+            _profileService = new ProfileService(
                 _discordSocketClientMock.Object,
                 _shindenClientMock.Object,
                 _imageProcessorMock.Object,

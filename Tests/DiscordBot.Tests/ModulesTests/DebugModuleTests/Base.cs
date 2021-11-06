@@ -32,7 +32,7 @@ namespace DiscordBot.ModulesTests.DebugModuleTests
 
         public Base()
         {
-            _module = new DebugModule(
+            _module = new(
                 _shindenClientMock.Object,
                 _blockingPriorityQueueMock.Object,
                 _waifuServiceMock.Object,

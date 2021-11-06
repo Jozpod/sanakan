@@ -52,7 +52,7 @@ namespace Sanakan.Web.HostedService
         private readonly Dictionary<ulong, Dictionary<ulong, SupervisorEntity>> _guilds;
 
         public SupervisorHostedService(
-            ILogger<MemoryUsageHostedService> logger,
+            ILogger<SupervisorHostedService> logger,
             IOptionsMonitor<DaemonsConfiguration> daemonsConfiguration,
             IOptionsMonitor<DiscordConfiguration> discordConfiguration,
             ISystemClock systemClock,

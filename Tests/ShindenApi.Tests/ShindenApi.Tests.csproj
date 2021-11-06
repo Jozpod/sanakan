@@ -10,10 +10,24 @@
   <ItemGroup>
     <None Remove="TestData\all-characters-from-anime-result.json" />
     <None Remove="TestData\all-characters-from-manga-result.json" />
+    <None Remove="TestData\all-characters-result.json" />
+    <None Remove="TestData\characters-info-result.json" />
+    <None Remove="TestData\characters-result.json" />
+    <None Remove="TestData\last-read-result.json" />
+    <None Remove="TestData\last-watched-result.json" />
     <None Remove="TestData\login-result.json" />
+    <None Remove="TestData\recommendations-result.json" />
+    <None Remove="TestData\reviews-result.json" />
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="TestData\characters-info-result.json" />
+    <EmbeddedResource Include="TestData\last-read-result.json" />
+    <EmbeddedResource Include="TestData\recommendations-result.json" />
+    <EmbeddedResource Include="TestData\characters-result.json" />
+    <EmbeddedResource Include="TestData\reviews-result.json" />
+    <EmbeddedResource Include="TestData\last-watched-result.json" />
+    <EmbeddedResource Include="TestData\all-characters-result.json" />
     <EmbeddedResource Include="TestData\all-characters-from-anime-result.json" />
     <EmbeddedResource Include="TestData\all-characters-from-manga-result.json" />
     <EmbeddedResource Include="TestData\login-result.json" />

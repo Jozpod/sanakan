@@ -1,3 +1,4 @@
+using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -5,7 +6,9 @@ using Moq;
 using Moq.Protected;
 using Sanakan.Common.Configuration;
 using Sanakan.ShindenApi;
+using Shinden.API;
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
@@ -20,7 +23,7 @@ namespace ShindenApi.Tests
     
 
         [TestMethod]
-        public async Task Should_LogIn_And_Put_Cookies()
+        public async Task Should_Return_Characters()
         {
             _options
                 .Setup(pr => pr.CurrentValue)
@@ -44,8 +47,17 @@ namespace ShindenApi.Tests
                     Content = new StreamContent(stream),
                 });
 
-            var result = await _shindenClient.GetRelationsAsync("test", "test");
-            var test = _cookieContainer.GetCookies(new Uri("test"));
+            var expected = new TitleCharacters
+            {
+                Relations = new List<Relation>
+                {
+
+                }
+            };
+
+            var titleId = 1ul;
+            var result = await _shindenClient.GetCharactersAsync(titleId);
+            result.Value.Should().BeEquivalentTo(expected);
         }
     }
 }

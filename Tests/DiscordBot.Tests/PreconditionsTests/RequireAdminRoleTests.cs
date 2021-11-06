@@ -6,9 +6,6 @@ using Moq;
 using Sanakan.DAL.Models.Configuration;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot.Services.Abstractions;
-using Sanakan.Modules;
-using Sanakan.Services;
-using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Reflection;
@@ -21,14 +18,14 @@ using Microsoft.Extensions.DependencyInjection;
 namespace DiscordBot.Test
 {
     [TestClass]
-    public class Base
+    public class RequireAdminRoleTests
     {
         private readonly RequireAdminOrModRole _preconditionAttribute;
         private readonly Mock<ICommandContext> _commandContextMock = new(MockBehavior.Strict);
         private readonly Mock<ICommandContext> _landManagerMock = new(MockBehavior.Strict);
 
 
-        public Base()
+        public RequireAdminRoleTests()
         {
             _preconditionAttribute = new();
         }

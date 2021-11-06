@@ -4,7 +4,7 @@ using Discord.WebSocket;
 using DiscordBot.Services.PocketWaifu.Abstractions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 using Sanakan.Common;
 using Sanakan.Common.Configuration;
 using Sanakan.Common.Extensions;
@@ -42,6 +42,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Text.Json;
 
 namespace Sanakan.DiscordBot.Modules
 {
@@ -789,7 +790,7 @@ namespace Sanakan.DiscordBot.Modules
         {
             try
             {
-                var question = JsonConvert.DeserializeObject<Question>(json);
+                var question = JsonSerializer.Deserialize<Question>(json);
                 _questionRepository.Add(question);
                 await _questionRepository.SaveChangesAsync();
 

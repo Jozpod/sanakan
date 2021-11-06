@@ -1,4 +1,6 @@
-﻿namespace Sanakan.Common.Configuration
+﻿using System;
+
+namespace Sanakan.Common.Configuration
 {
     public class ShindenApiConfiguration
     {
@@ -16,5 +18,10 @@
         /// The mysterious HTTP header used by Shinden API.
         /// </summary>
         public string? Marmolade { get; set; }
+
+        /// <summary>
+        /// The the interval of session once agent has logged in.
+        /// </summary>
+        public TimeSpan SessionExiry { get; set; }
     }
 }

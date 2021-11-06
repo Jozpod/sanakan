@@ -13,40 +13,15 @@ using System.Threading.Tasks;
 namespace Sanakan.Game.Tests
 {
     [TestClass]
-    public class GetDuelCardImageTests : Base
+    public class GetWaifuCardAsyncTests : Base
     {
         [TestMethod]
         public async Task Should_Generate_Level_Up_Badge()
         {
-            var name = "test-user";
-            var level = 20ul;
-            var avatarUrl = "avatar-url";
-            var color = Discord.Color.Blue;
+            var card = new Card(1, "test", "test", 100, 50, Rarity.SSS, Dere.Bodere, DateTime.Now);
 
-            var badge = await _imageProcessor.GetWaifuCardAsync(name, level, avatarUrl, color);
+            var badge = await _imageProcessor.GetWaifuCardAsync(card);
             //badge.Save();
-        }
-
-        [TestMethod]
-        public async Task Should_Generate_User_Profile()
-        {
-            var shindenUser = new UserInfo
-            {
-
-            };
-            var databaseUser = new User(1, DateTime.UtcNow);
-            var avatarUrl = "avatar-url";
-            var color = Discord.Color.Blue;
-            var topPosition = 10;
-            var nickname = "nickname";
-
-            var test = await _imageProcessor.GetUserProfileAsync(
-                shindenUser,
-                databaseUser,
-                avatarUrl,
-                topPosition,
-                nickname,
-                color);
         }
     }
 }

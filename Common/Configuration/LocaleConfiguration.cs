@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Sanakan.Common.Configuration
 {
@@ -12,11 +8,11 @@ namespace Sanakan.Common.Configuration
         /// <summary>
         /// 
         /// </summary>
-        public CultureInfo Language { get; set; }
+        public CultureInfo Language { get; set; } = CultureInfo.CurrentCulture;
 
         /// <summary>
         /// 
         /// </summary>
-        public TimeZone TimeZone { get; set; }
+        public TimeZoneInfo TimeZone { get; set; } = TimeZoneInfo.Utc;
     }
 }

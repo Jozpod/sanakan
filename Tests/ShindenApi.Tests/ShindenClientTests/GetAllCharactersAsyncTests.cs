@@ -1,3 +1,4 @@
+using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -6,6 +7,7 @@ using Moq.Protected;
 using Sanakan.Common.Configuration;
 using Sanakan.ShindenApi;
 using System;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
@@ -17,8 +19,6 @@ namespace ShindenApi.Tests
     [TestClass]
     public class GetAllCharactersAsyncTests : Base
     {
-    
-
         [TestMethod]
         public async Task Should_LogIn_And_Put_Cookies()
         {
@@ -30,7 +30,7 @@ namespace ShindenApi.Tests
                 });
 
             var assembly = Assembly.GetExecutingAssembly();
-            var resourceName = "ShindenApi.Tests.TestData.login-result.json";
+            var resourceName = "ShindenApi.Tests.TestData.all-characters-result.json";
             var stream = assembly.GetManifestResourceStream(resourceName);
 
             _httpClientHandlerMock
@@ -44,8 +44,8 @@ namespace ShindenApi.Tests
                     Content = new StreamContent(stream),
                 });
 
-            var result = await _shindenClient.GetFavouriteCharactersAsync("test", "test");
-            var test = _cookieContainer.GetCookies(new Uri("test"));
+            var result = await _shindenClient.GetAllCharactersAsync();
+            result.Value.First().Should().Be(1);
         }
     }
 }

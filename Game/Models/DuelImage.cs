@@ -1,6 +1,6 @@
-using Newtonsoft.Json;
 using Sanakan.Common;
 using System.IO;
+using System.Text.Json.Serialization;
 
 namespace Sanakan.Services.PocketWaifu
 {
@@ -10,9 +10,10 @@ namespace Sanakan.Services.PocketWaifu
         public static string DefaultUri(int side) => string.Format(Paths.PWDuelPicture, side);
         public static string DefaultColor() => SilverChalice;
 
-        [JsonProperty("name")]
+        [JsonPropertyName("name")]
         public string Name { get; set; }
-        [JsonProperty("text-color")]
+
+        [JsonPropertyName("text-color")]
         public string Color { get; set; }
     }
 }

@@ -43,7 +43,7 @@ namespace ShindenApi.Tests
                     Content = new StreamContent(stream),
                 });
 
-            var result = await _shindenClient.LoginAsync("test", "test");
+            var result = await _shindenClient.LoginAsync("username", "password");
             var test = _cookieContainer.GetCookies(new Uri("test"));
         }
     }

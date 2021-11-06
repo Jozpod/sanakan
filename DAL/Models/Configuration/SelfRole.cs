@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 using System.ComponentModel.DataAnnotations;
 
 namespace Sanakan.DAL.Models.Configuration

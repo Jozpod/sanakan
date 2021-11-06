@@ -9,6 +9,9 @@ using Shinden.API;
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Sanakan.Services.PocketWaifu;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 
 namespace Sanakan.Game.Tests
 {
@@ -16,37 +19,15 @@ namespace Sanakan.Game.Tests
     public class GetDuelCardImageTests : Base
     {
         [TestMethod]
-        public async Task Should_Generate_Level_Up_Badge()
+        public async Task Should_Return_Duel_Card_Image()
         {
-            var name = "test-user";
-            var level = 20ul;
-            var avatarUrl = "avatar-url";
-            var color = Discord.Color.Blue;
+            var duelInfo = new DuelInfo();
+            var duelImage = new DuelImage();
+            var win = new Image<Rgba32>(400, 400);
+            var los = new Image<Rgba32>(400, 400);
 
-            var badge = await _imageProcessor.GetLevelUpBadgeAsync(name, level, avatarUrl, color);
+            var duelCardImage = _imageProcessor.GetDuelCardImage(duelInfo, duelImage, win, los);
             //badge.Save();
-        }
-
-        [TestMethod]
-        public async Task Should_Generate_User_Profile()
-        {
-            var shindenUser = new UserInfo
-            {
-
-            };
-            var databaseUser = new User(1, DateTime.UtcNow);
-            var avatarUrl = "avatar-url";
-            var color = Discord.Color.Blue;
-            var topPosition = 10;
-            var nickname = "nickname";
-
-            var test = await _imageProcessor.GetUserProfileAsync(
-                shindenUser,
-                databaseUser,
-                avatarUrl,
-                topPosition,
-                nickname,
-                color);
         }
     }
 }

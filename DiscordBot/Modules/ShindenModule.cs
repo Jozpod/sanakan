@@ -22,6 +22,7 @@ using Sanakan.Game.Services;
 using System.Net;
 using System.Collections.Generic;
 using System.IO;
+using Sanakan.ShindenApi.Models.Enums;
 
 namespace Sanakan.DiscordBot.Modules
 {
@@ -396,9 +397,9 @@ namespace Sanakan.DiscordBot.Modules
             }
         }
 
-        public async Task<Stream> GetSiteStatisticAsync(ulong shindenId, SocketGuildUser user)
+        public async Task<Stream> GetSiteStatisticAsync(ulong shindenUserId, SocketGuildUser user)
         {
-            var result = await _shindenClient.GetUserInfoAsync(shindenId);
+            var result = await _shindenClient.GetUserInfoAsync(shindenUserId);
 
             if (result.Value == null)
             {
@@ -406,8 +407,8 @@ namespace Sanakan.DiscordBot.Modules
             }
 
             var shindenUser = result.Value;
-            var resLR = await _shindenClient.GetLastReadedAsync(shindenId);
-            var resLW = await _shindenClient.GetLastWatchedAsync(shindenId);
+            var resLR = await _shindenClient.GetLastReadAsync(shindenUserId);
+            var resLW = await _shindenClient.GetLastWatchedAsync(shindenUserId);
             var color = user.Roles.OrderByDescending(x => x.Position)
                 .FirstOrDefault()?.Color ?? Discord.Color.DarkerGrey;
 

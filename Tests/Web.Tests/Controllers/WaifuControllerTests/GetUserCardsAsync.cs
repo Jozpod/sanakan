@@ -34,8 +34,10 @@ namespace Sanakan.Web.Tests.Controllers.WaifuControllerTests
         [TestMethod]
         public async Task Should_Return_Ok()
         {
-            var shindenUserId = 0ul;
-            var expected = new User(shindenUserId, DateTime.UtcNow);
+            var discordUserId = 1ul;
+            var shindenUserId = 1ul;
+            var expected = new User(discordUserId, DateTime.UtcNow);
+            expected.ShindenId = shindenUserId;
 
             _cardRepositoryMock
                 .Setup(pr => pr.GetUserCardsAsync(shindenUserId))

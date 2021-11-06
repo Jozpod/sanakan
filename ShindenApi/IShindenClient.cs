@@ -1,4 +1,5 @@
-﻿using Shinden;
+﻿using Sanakan.ShindenApi.Models.Enums;
+using Shinden;
 using Shinden.API;
 using System.Collections.Generic;
 using System.Text;
@@ -17,7 +18,7 @@ namespace Sanakan.ShindenApi
         Task<Result<List<QuickSearchResult>>> QuickSearchAsync(string search);
         Task<Result<UserInfo>> GetUserInfoAsync(ulong userId);
         Task<Result<List<LastWatchedReaded>>> GetLastWatchedAsync(ulong userId, uint limit = 5);
-        Task<Result<List<LastWatchedReaded>>> GetLastReadedAsync(ulong userId, uint limit = 5);
+        Task<Result<List<LastWatchedReaded>>> GetLastReadAsync(ulong userId, uint limit = 5);
         Task<Result<List<ulong>>> GetAllCharactersFromAnimeAsync();
         Task<Result<List<FavCharacter>>> GetFavouriteCharactersAsync(ulong userId);
         Task<Result<CharacterInfo>> GetCharacterInfoAsync(ulong id);

@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Sanakan.Common;
 using Sanakan.DAL.Repositories.Abstractions;
+using Sanakan.DiscordBot;
 using Sanakan.DiscordBot.Resources;
 using System;
 using System.Linq;
@@ -63,7 +64,7 @@ namespace Sanakan.Preconditions
                 return PreconditionResult.FromSuccess();
             }
 
-            return PreconditionResult.FromError(Resources.YouHaveNoPowerHere);
+            return PreconditionResult.FromError(ImageResources.YouHaveNoPowerHere);
         }
     }
 }

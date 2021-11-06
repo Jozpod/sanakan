@@ -17,37 +17,20 @@ namespace Sanakan.Game.Tests
     {
 
         [TestMethod]
-        public async Task Should_Generate_Level_Up_Badge()
-        {
-            var name = "test-user";
-            var level = 20ul;
-            var avatarUrl = "avatar-url";
-            var color = Discord.Color.Blue;
-
-            var badge = await _imageProcessor.GetDuelCardImage(name, level, avatarUrl, color);
-            //badge.Save();
-        }
-
-        [TestMethod]
-        public async Task Should_Generate_User_Profile()
+        public async Task Should_Return_User_Profile_Image()
         {
             var shindenUser = new UserInfo
             {
 
             };
-            var databaseUser = new User(1, DateTime.UtcNow);
-            var avatarUrl = "avatar-url";
-            var color = Discord.Color.Blue;
-            var topPosition = 10;
+            var botUser = new User(1, DateTime.Now);
+            var avatarUrl = "";
+            var topPos = 0l;
             var nickname = "nickname";
+            var color = Discord.Color.DarkerGrey;
 
-            var test = await _imageProcessor.GetUserProfileAsync(
-                shindenUser,
-                databaseUser,
-                avatarUrl,
-                topPosition,
-                nickname,
-                color);
+            var image = await _imageProcessor.GetUserProfileAsync(shindenUser, botUser, avatarUrl, topPos, nickname, color);
+            
         }
     }
 }

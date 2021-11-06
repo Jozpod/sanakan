@@ -123,19 +123,7 @@ namespace Sanakan
 
                 c.CustomSchemaIds(x => x.FullName);
             });
-
-            services.AddSingleton<IShindenClient, ShindenClient>();
-            //services.AddSingleton<IShindenClient, ShindenClient>(pr =>
-            //{
-            //    return new ShindenClient(
-            //        new Auth(tmpCnf.Shinden.Token,
-            //        tmpCnf.Shinden.UserAgent,
-            //        tmpCnf.Shinden.Marmolade),
-            //    _logger);
-            //});
             
-            services.AddSingleton<HelperService>();
-            services.AddSingleton<CommandHandler>();
             services.AddDiscordBotServices();
 
             services.AddSingleton(pr => {
@@ -146,6 +134,7 @@ namespace Sanakan
                 });
             });
             services.AddSingleton(Encoding.UTF8);
+            services.AddResourcekManager();
             services.AddRandomNumberGenerator();
             services.AddFileSystem();
             services.AddSystemClock();

@@ -76,7 +76,7 @@ namespace Sanakan.Services.PocketWaifu
 #endif
         }
 
-        private void HandleGuildAsync(
+        private async void HandleGuildAsync(
             ITextChannel spawnChannel,
             ITextChannel trashChannel,
             long daily,
@@ -297,7 +297,7 @@ namespace Sanakan.Services.PocketWaifu
             {
                 UserCounter[author.Id] = 0;
                 var guildUser = author as SocketGuildUser;
-                _blockingPriorityQueue.TryAdd(new SpawnCardBundleMessage
+                _blockingPriorityQueue.TryEnqueue(new SpawnCardBundleMessage
                 {
                     GuildId = guildUser?.Id,
                     Mention = author.Mention,

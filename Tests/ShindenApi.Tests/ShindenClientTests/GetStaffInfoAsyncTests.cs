@@ -20,7 +20,7 @@ namespace ShindenApi.Tests
     
 
         [TestMethod]
-        public async Task Should_LogIn_And_Put_Cookies()
+        public async Task Should_Return_Staff_Info()
         {
             _options
                 .Setup(pr => pr.CurrentValue)
@@ -30,7 +30,7 @@ namespace ShindenApi.Tests
                 });
 
             var assembly = Assembly.GetExecutingAssembly();
-            var resourceName = "ShindenApi.Tests.TestData.login-result.json";
+            var resourceName = "ShindenApi.Tests.TestData.staff-info-result.json";
             var stream = assembly.GetManifestResourceStream(resourceName);
 
             _httpClientHandlerMock
@@ -44,7 +44,8 @@ namespace ShindenApi.Tests
                     Content = new StreamContent(stream),
                 });
 
-            var result = await _shindenClient.GetAnimeMangaInfoAsync("test", "test");
+            var staffId = 1ul;
+            var result = await _shindenClient.GetStaffInfoAsync(staffId);
             var test = _cookieContainer.GetCookies(new Uri("test"));
         }
     }

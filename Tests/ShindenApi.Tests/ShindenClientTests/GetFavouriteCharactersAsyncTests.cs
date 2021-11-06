@@ -1,3 +1,4 @@
+using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -5,7 +6,9 @@ using Moq;
 using Moq.Protected;
 using Sanakan.Common.Configuration;
 using Sanakan.ShindenApi;
+using Shinden.API;
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
@@ -29,7 +32,7 @@ namespace ShindenApi.Tests
                 });
 
             var assembly = Assembly.GetExecutingAssembly();
-            var resourceName = "ShindenApi.Tests.TestData.login-result.json";
+            var resourceName = "ShindenApi.Tests.TestData.favourite-character-result.json";
             var stream = assembly.GetManifestResourceStream(resourceName);
 
             _httpClientHandlerMock
@@ -43,8 +46,14 @@ namespace ShindenApi.Tests
                     Content = new StreamContent(stream),
                 });
 
-            var result = await _shindenClient.GetNewEpisodesAsync("test", "test");
-            var test = _cookieContainer.GetCookies(new Uri("test"));
+            var expected = new List<FavCharacter>
+            {
+
+            };
+
+            var userId = 1ul;
+            var result = await _shindenClient.GetFavouriteCharactersAsync(userId);
+            result.Value.Should().BeEquivalentTo(expected);
         }
     }
 }
