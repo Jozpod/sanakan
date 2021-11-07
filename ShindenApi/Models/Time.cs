@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text.Json.Serialization;
 
-namespace Sanakan.ShindenApi.API.Common
+namespace Sanakan.ShindenApi.Models
 {
     public class Time
     {

@@ -10,7 +10,6 @@ using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using Shinden.Models;
 
 namespace Sanakan.Game.Tests
 {

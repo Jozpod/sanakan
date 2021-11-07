@@ -1,12 +1,12 @@
-namespace Shinden.Models
+namespace Sanakan.ShindenApi.Models.Enums
 {
     public enum ListType
     {
-        InProgress,
-        Completed,
-        Dropped,
-        Plan,
-        Hold,
-        Skip
+        InProgress = 0,
+        Completed = 1,
+        Dropped = 2,
+        Plan = 3,
+        Hold = 4,
+        Skip = 5
     }
 }

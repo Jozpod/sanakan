@@ -1,13 +1,13 @@
-﻿namespace Shinden.Models
+﻿namespace Sanakan.ShindenApi.Models.Enums
 {
     public enum MangaType
     {
-        NotSpecified,
-        LightNovel,
-        Doujinshi,
-        OneShot,
-        Manhwa,
-        Manhua,
-        Manga,
+        NotSpecified = 0,
+        LightNovel = 1,
+        Doujinshi = 2,
+        OneShot = 3,
+        Manhwa = 4,
+        Manhua = 5,
+        Manga = 6,
     }
 }

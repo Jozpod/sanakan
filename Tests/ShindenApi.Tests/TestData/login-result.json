@@ -9,18 +9,16 @@
     "portal_lang": "",
     "email": "",
     "status": "",
-    "avatar": "",
+    "avatar": 1,
     "anime_css": "",
     "manga_css": "",
-    "total_points": 1,
     "birthdate": "",
-    "sex": "m",
     "signature": "signature",
-    "about_me": "about_me"
+    "about_me": "about me"
   },
   "hash": "hash",
   "session": {
-      "name": "session_name",
-      "id": "session_id"
+    "name": "name",
+    "id": "id"
   }
 }

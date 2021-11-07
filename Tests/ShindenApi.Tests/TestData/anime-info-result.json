@@ -1,0 +1,63 @@
+{
+  "title": {
+    "mpaa_rating": "g",
+    "rating_story_sum": "",
+    "description": {
+      "description_id": 1,
+      "description": "",
+      "lang_code": "en",
+      "title_id": 1
+    },
+    "anime": {
+      "rating_graphics_cnt": 1,
+      "episode_time": "",
+      "anime_type": "ova",
+      "episodes": 1,
+      "rating_music_cnt": 1,
+      "rating_graphics_sum": 1,
+      "rating_music_sum": 1,
+      "title_id": 1
+    },
+    "add_date": "2021-11-11 12:12:12",
+    "cover_artifact_id": 1,
+    "finish_date": 123456,
+    "dmca": "",
+    "finish_precision": 0,
+    "ranking_rate": "",
+    "premiere_precision": 0,
+    "premiere_date": 12345,
+    "ranking_position": "",
+    "rating_design_sum": "",
+    "rating_design_cnt": "",
+    "rating_story_cnt": "",
+    "rating_total_sum": "",
+    "rating_titlecahracters_sum": "",
+    "rating_titlecahracters_cnt": "",
+    "rating_total_cnt": "",
+    "title": "",
+    "title_other": "",
+    "tags": {
+      "genre": {
+
+      },
+      "source": {
+
+      },
+      "entity": {
+
+      },
+      "place": {
+
+      },
+      "studio": {
+
+      },
+      "tag": {
+
+      }
+    },
+    "title_id": 1,
+    "title_status": "",
+    "type": "anime"
+  }
+}

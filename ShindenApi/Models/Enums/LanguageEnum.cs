@@ -1,4 +1,4 @@
-﻿namespace Shinden.Models
+﻿namespace Sanakan.ShindenApi.Models.Enums
 {
     public enum Language
     {

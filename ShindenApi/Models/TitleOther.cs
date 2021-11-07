@@ -1,25 +1,29 @@
-﻿using System.Text.Json.Serialization;
+﻿using Sanakan.ShindenApi.Converters;
+using Sanakan.ShindenApi.Models.Enums;
+using System.Text.Json.Serialization;
 
-namespace Sanakan.ShindenApi.API.Common
+namespace Sanakan.ShindenApi.Models
 {
     public class TitleOther
     {
         [JsonPropertyName("lang")]
-        public string Lang { get; set; }
+        public Language Lang { get; set; }
 
         [JsonPropertyName("title_id")]
-        public string TitleId { get; set; }
+        public ulong TitleId { get; set; }
 
         [JsonPropertyName("is_accepted")]
-        public string IsAccepted { get; set; }
+        [JsonConverter(typeof(ZeroOneToBoolConverter))]
+        public bool IsAccepted { get; set; }
 
         [JsonPropertyName("title")]
+        [JsonConverter(typeof(HtmlDecodeConverter))]
         public string Title { get; set; }
 
         [JsonPropertyName("title_other_id")]
-        public string TitleOtherId { get; set; }
+        public ulong TitleOtherId { get; set; }
 
         [JsonPropertyName("title_type")]
-        public string TitleType { get; set; }
+        public AlternativeTitleType TitleType { get; set; }
     }
 }

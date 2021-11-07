@@ -5,32 +5,52 @@
     <LangVersion>9.0</LangVersion>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
+    <AssemblyName>Sanakan.ShindenApi.Tests</AssemblyName>
+    <RootNamespace>Sanakan.ShindenApi.Tests</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
     <None Remove="TestData\all-characters-from-anime-result.json" />
     <None Remove="TestData\all-characters-from-manga-result.json" />
     <None Remove="TestData\all-characters-result.json" />
+    <None Remove="TestData\anime-info-result.json" />
+    <None Remove="TestData\character-info-result.json" />
     <None Remove="TestData\characters-info-result.json" />
     <None Remove="TestData\characters-result.json" />
+    <None Remove="TestData\episodes-result.json" />
+    <None Remove="TestData\favourite-character-result.json" />
     <None Remove="TestData\last-read-result.json" />
+    <None Remove="TestData\last-watched-read-result.json" />
     <None Remove="TestData\last-watched-result.json" />
     <None Remove="TestData\login-result.json" />
+    <None Remove="TestData\manga-info-result.json" />
+    <None Remove="TestData\new-epsiodes-result.json" />
     <None Remove="TestData\recommendations-result.json" />
+    <None Remove="TestData\relations-result.json" />
     <None Remove="TestData\reviews-result.json" />
+    <None Remove="TestData\staff-info-result.json" />
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="TestData\anime-info-result.json" />
+    <EmbeddedResource Include="TestData\character-info-result.json" />
     <EmbeddedResource Include="TestData\characters-info-result.json" />
+    <EmbeddedResource Include="TestData\episodes-result.json" />
+    <EmbeddedResource Include="TestData\favourite-character-result.json" />
     <EmbeddedResource Include="TestData\last-read-result.json" />
+    <EmbeddedResource Include="TestData\last-watched-read-result.json" />
+    <EmbeddedResource Include="TestData\manga-info-result.json" />
+    <EmbeddedResource Include="TestData\new-epsiodes-result.json" />
     <EmbeddedResource Include="TestData\recommendations-result.json" />
     <EmbeddedResource Include="TestData\characters-result.json" />
+    <EmbeddedResource Include="TestData\relations-result.json" />
     <EmbeddedResource Include="TestData\reviews-result.json" />
     <EmbeddedResource Include="TestData\last-watched-result.json" />
     <EmbeddedResource Include="TestData\all-characters-result.json" />
     <EmbeddedResource Include="TestData\all-characters-from-anime-result.json" />
     <EmbeddedResource Include="TestData\all-characters-from-manga-result.json" />
     <EmbeddedResource Include="TestData\login-result.json" />
+    <EmbeddedResource Include="TestData\staff-info-result.json" />
   </ItemGroup>
 
   <ItemGroup>

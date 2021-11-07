@@ -13,27 +13,11 @@ namespace Sanakan.DAL.Tests
     public class GameDeckRepositoryTests : TestBase
     {
         [TestMethod]
-        public async Task Should_CRUD_Entity()
+        public async Task Should_Return_GameDeck_By_AnimeId()
         {
             var repository = ServiceProvider.GetRequiredService<IGameDeckRepository>();
-
-            var user = new User(2, DateTime.UtcNow);
-
-            DbContext.Users.Add(user);
-            await DbContext.SaveChangesAsync();
-
-            var wish = new WishlistObject
-            {
-                Id = 1,
-                Type = WishlistObjectType.Title,
-                ObjectId = 1,
-            };
-
-            user.GameDeck.Wishes.Add(wish);
-            await DbContext.SaveChangesAsync();
-
-            var actual = await repository.GetByAnimeIdAsync(wish.ObjectId);
-            actual.First().Should().BeEquivalentTo(user.GameDeck);
+            var actual = await repository.GetByAnimeIdAsync(1);
+            actual.Should().NotBeNull();
         }
     }
 }

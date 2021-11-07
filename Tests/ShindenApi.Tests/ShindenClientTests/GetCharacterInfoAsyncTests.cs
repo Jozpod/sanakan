@@ -6,6 +6,7 @@ using Moq;
 using Moq.Protected;
 using Sanakan.Common.Configuration;
 using Sanakan.ShindenApi;
+using Sanakan.ShindenApi.Models;
 using Shinden.API;
 using System;
 using System.Net;
@@ -14,7 +15,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace ShindenApi.Tests
+namespace Sanakan.ShindenApi.Tests
 {
     [TestClass]
     public class GetCharacterInfoAsyncTests : Base

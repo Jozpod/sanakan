@@ -1,3 +1,4 @@
+using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -5,48 +6,38 @@ using Moq;
 using Moq.Protected;
 using Sanakan.Common.Configuration;
 using Sanakan.ShindenApi;
+using Sanakan.ShindenApi.Models;
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace ShindenApi.Tests
+namespace Sanakan.ShindenApi.Tests
 {
     [TestClass]
     public class GetLastReadedAsyncTests : Base
     {
-       
-
         [TestMethod]
-        public async Task Should_LogIn_And_Put_Cookies()
+        public async Task Should_Return_Last_Read_Details()
         {
-            _options
-                .Setup(pr => pr.CurrentValue)
-                .Returns(new ShindenApiConfiguration
-                {
-                    Token = "test_token"
-                });
+            MockHttpOk("last-read-result.json", HttpMethod.Get);
 
-            var assembly = Assembly.GetExecutingAssembly();
-            var resourceName = "ShindenApi.Tests.TestData.last-read-result.json";
-            var stream = assembly.GetManifestResourceStream(resourceName);
-
-            _httpClientHandlerMock
-                .Protected()
-                .Setup<Task<HttpResponseMessage>>("SendAsync",
-                    ItExpr.IsAny<HttpRequestMessage>(),
-                    ItExpr.IsAny<CancellationToken>())
-                .ReturnsAsync(new HttpResponseMessage
+            var expected = new List<LastWatchedRead>()
+            {
+                new LastWatchedRead
                 {
-                    StatusCode = HttpStatusCode.OK,
-                    Content = new StreamContent(stream),
-                });
+                    TitleCoverId = 1,
+                    IsFiler = true,
+                    ViewCount = 100,
+                }
+            };
 
             var userId = 1ul;
             var result = await _shindenClient.GetLastReadAsync(userId);
-            var test = _cookieContainer.GetCookies(new Uri("test"));
+            result.Value.Should().BeEquivalentTo(expected);
         }
     }
 }

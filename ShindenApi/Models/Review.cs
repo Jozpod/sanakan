@@ -1,38 +1,39 @@
-using System.Text.Json.Serialization;
+using Sanakan.ShindenApi.Converters;
 using System.Text.Json.Serialization;
 
-namespace Shinden.API
+namespace Sanakan.ShindenApi.Models
 {
     public class Review
     {
         [JsonPropertyName("review_id")]
-        public string ReviewId { get; set; }
+        public ulong ReviewId { get; set; }
 
         [JsonPropertyName("rating")]
-        public string Rating { get; set; }
+        public long Rating { get; set; }
 
         [JsonPropertyName("rate_count")]
-        public string RateCount { get; set; }
+        public long RateCount { get; set; }
 
         [JsonPropertyName("is_abstract")]
-        public string IsAbstract { get; set; }
+        public bool IsAbstract { get; set; }
 
         [JsonPropertyName("review")]
+        [JsonConverter(typeof(HtmlDecodeConverter))]
         public string ReviewContent { get; set; }
 
         [JsonPropertyName("name")]
         public string Name { get; set; }
 
         [JsonPropertyName("user_id")]
-        public string UserId { get; set; }
+        public ulong UserId { get; set; }
 
         [JsonPropertyName("avatar")]
-        public string Avatar { get; set; }
+        public ulong Avatar { get; set; }
 
         [JsonPropertyName("enter_cnt")]
-        public string EnterCnt { get; set; }
+        public long EnterCnt { get; set; }
 
         [JsonPropertyName("read_cnt")]
-        public string ReadCnt { get; set; }
+        public long ReadCnt { get; set; }
     }
 }

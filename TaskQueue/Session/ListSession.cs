@@ -52,7 +52,7 @@ namespace Sanakan.Services.Session.Models
             for (int i = 0; i < itemsOnPage.Count; i++)
             {
                 string enumerable = _payload.Enumerable ? $"**{(i + 1) + (page * _payload.ItemsPerPage)}**: " : "";
-                pageString += $"{enumerable}{itemsOnPage[i].ToString()}\n";
+                pageString += $"{enumerable}{itemsOnPage[i]}\n";
             }
 
             _payload.Embed.Description = pageString.ElipseTrimToLength(1800);

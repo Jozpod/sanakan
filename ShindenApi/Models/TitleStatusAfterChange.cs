@@ -1,7 +1,6 @@
-using Sanakan.ShindenApi.API.Common;
 using System.Text.Json.Serialization;
 
-namespace Shinden.API
+namespace Sanakan.ShindenApi.Models
 {
     public class TitleStatusAfterChange
     {

@@ -1,4 +1,5 @@
-﻿using Discord.WebSocket;
+﻿using Discord;
+using Discord.WebSocket;
 using DiscordBot.Services;
 using Sanakan.DAL.Models;
 using Sanakan.Game.Models;
@@ -22,7 +23,7 @@ namespace Sanakan.DiscordBot.Services.Abstractions
             int width = 0,
             int height = 0,
             bool streach = false);
-        List<string> BuildListView(List<User> list, TopType type, SocketGuild guild);
+        Task<List<string>> BuildListViewAsync(List<User> list, TopType type, IGuild guild);
         List<User> GetTopUsers(List<User> list, TopType type, DateTime date);
         Task<Stream> GetProfileImageAsync(SocketGuildUser discordUser, User botUser, long topPosition);
         Stream GetColorList(SCurrency currency);

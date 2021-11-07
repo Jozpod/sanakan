@@ -1,22 +1,22 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace Sanakan.ShindenApi.API.Common
+namespace Sanakan.ShindenApi.Models
 {
     public class MangaInfo
     {
         [JsonPropertyName("rating_lines_cnt")]
-        public string RatingLinesCnt { get; set; }
+        public double RatingLinesCnt { get; set; }
 
         [JsonPropertyName("title_id")]
         public ulong? TitleId { get; set; }
 
         [JsonPropertyName("chapters")]
-        public string Chapters { get; set; }
+        public ulong ChaptersCount { get; set; }
 
         [JsonPropertyName("rating_lines_sum")]
-        public string RatingLinesSum { get; set; }
+        public double RatingLinesSum { get; set; }
 
         [JsonPropertyName("volumes")]
-        public string Volumes { get; set; }
+        public ulong Volumes { get; set; }
     }
 }

@@ -6,47 +6,65 @@ using Moq;
 using Moq.Protected;
 using Sanakan.Common.Configuration;
 using Sanakan.ShindenApi;
+using Sanakan.ShindenApi.Models;
 using Shinden.API;
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace ShindenApi.Tests
+namespace Sanakan.ShindenApi.Tests
 {
     [TestClass]
     public class GetRelationsAsyncTests : Base
     {
         [TestMethod]
-        public async Task Should_LogIn_And_Put_Cookies()
+        public async Task Should_Return_Relations()
         {
-            _options
-                .Setup(pr => pr.CurrentValue)
-                .Returns(new ShindenApiConfiguration
-                {
-                    Token = "test_token"
-                });
-
-            var assembly = Assembly.GetExecutingAssembly();
-            var resourceName = "ShindenApi.Tests.TestData.login-result.json";
-            var stream = assembly.GetManifestResourceStream(resourceName);
-
-            _httpClientHandlerMock
-                .Protected()
-                .Setup<Task<HttpResponseMessage>>("SendAsync",
-                    ItExpr.IsAny<HttpRequestMessage>(),
-                    ItExpr.IsAny<CancellationToken>())
-                .ReturnsAsync(new HttpResponseMessage
-                {
-                    StatusCode = HttpStatusCode.OK,
-                    Content = new StreamContent(stream),
-                });
+            MockHttpOk("relations-result.json", HttpMethod.Get);
 
             var expected = new TitleRelations
             {
-
+                RelatedTitles = new List<TitleRelation>
+                {
+                    new TitleRelation
+                    {
+                        TitleId = string.Empty,
+                        RelatedTitleId = string.Empty,
+                        DictI18NId = string.Empty,
+                        Dmca = true,
+                        Title = "&<>",
+                        RatingTotalSum = string.Empty,
+                        RatingTotalCnt = string.Empty,
+                        RatingStorySum = string.Empty,
+                        RatingStoryCnt = string.Empty,
+                        RatingDesignSum = string.Empty,
+                        RankingPosition = 1,
+                        RatingDesignCnt = string.Empty,
+                        TitleStatus = string.Empty,
+                        Name = string.Empty,
+                        RelationType = string.Empty,
+                        DictId = string.Empty,
+                        RelationOrder = string.Empty,
+                        RatingTitlecahractersSum = string.Empty,
+                        Title2TitleId = string.Empty,
+                        Type = string.Empty,
+                        RatingTitlecahractersCnt = string.Empty,
+                        RankingRate = string.Empty,
+                        AddDate = string.Empty,
+                        PremiereDate = string.Empty,
+                        PremierePrecision = string.Empty,
+                        FinishDate = string.Empty,
+                        FinishPrecision = string.Empty,
+                        MpaaRating = string.Empty,
+                        CoverArtifactId = string.Empty,
+                        Lang = string.Empty,
+                        RTitleId = 1,
+                    }
+                },
             };
 
             var titleId = 1ul;

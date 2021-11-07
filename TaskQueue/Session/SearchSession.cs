@@ -11,16 +11,15 @@ using Sanakan.ShindenApi;
 using Sanakan.TaskQueue;
 using Shinden;
 using Shinden.API;
-using Shinden.Models;
 
-namespace Sanakan.Services.Session.Models
+namespace Sanakan.ShindenApi.Models
 {
     public class SearchSession : InteractionSession
     {
         private readonly SearchSessionPayload _payload;
         public class SearchSessionPayload
         {
-            public IMessage[] Messages { get; set; }
+            public IEnumerable<IMessage> Messages { get; set; }
             public List<QuickSearchResult> SList { get; set; }
             public List<CharacterSearchResult> PList { get; set; }
         }
@@ -98,8 +97,12 @@ namespace Sanakan.Services.Session.Models
 
             foreach (var message in _payload.Messages)
             {
-                var msg = await message.Channel.GetMessageAsync(message.Id);
-                if (msg != null) await msg.DeleteAsync();
+                var discordMessage = await message.Channel.GetMessageAsync(message.Id);
+                
+                if (discordMessage != null)
+                {
+                    await discordMessage.DeleteAsync();
+                }
             }
 
             _payload.Messages = null;

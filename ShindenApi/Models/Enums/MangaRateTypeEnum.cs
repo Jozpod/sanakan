@@ -1,10 +1,10 @@
-namespace Shinden.Models
+namespace Sanakan.ShindenApi.Models.Enums
 {
     public enum MangaRateType
     {
-        Characters,
-        Story,
-        Total,
-        Art
+        Characters = 0,
+        Story = 1,
+        Total = 2,
+        Art = 3
     }
 }

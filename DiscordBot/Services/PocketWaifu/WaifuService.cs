@@ -20,9 +20,9 @@ using Sanakan.Game.Extensions;
 using Sanakan.Game.Services;
 using Sanakan.Services.PocketWaifu.Fight;
 using Sanakan.ShindenApi;
+using Sanakan.ShindenApi.Models;
 using Sanakan.ShindenApi.Utilities;
 using Shinden.API;
-using Shinden.Models;
 using Item = Sanakan.DAL.Models.Item;
 
 namespace Sanakan.Services.PocketWaifu
@@ -1079,18 +1079,18 @@ namespace Sanakan.Services.PocketWaifu
             return response.Value;
         }
 
-        public async Task<string> GetWaifuProfileImageAsync(Card card, ITextChannel trashCh)
+        public async Task<string> GetWaifuProfileImageAsync(Card card, IMessageChannel trashCh)
         {
             var uri = await GenerateAndSaveCardAsync(card, CardImageType.Profile);
-            var fs = await trashCh.SendFileAsync(uri);
-            var im = fs.Attachments.FirstOrDefault();
-            return im.Url;
+            var userMessage = await trashCh.SendFileAsync(uri);
+            var attachment = userMessage.Attachments.FirstOrDefault();
+            return attachment.Url;
         }
 
-        public List<Embed> GetWaifuFromCharacterSearchResult(
+        public async Task<IEnumerable<Embed>> GetWaifuFromCharacterSearchResult(
             string title,
             IEnumerable<Card> cards,
-            DiscordSocketClient client,
+            IDiscordClient client,
             bool mention)
         {
             var list = new List<Embed>();
@@ -1099,9 +1099,9 @@ namespace Sanakan.Services.PocketWaifu
             foreach (var card in cards)
             {
                 var tempContentString = $"";
-                var thU = client.GetUser(card.GameDeck.UserId);
+                var gameDeckUser = await client.GetUserAsync(card.GameDeck.UserId);
 
-                var usrName = (mention ? (thU?.Mention) : (thU?.Username)) ?? "????";
+                var usrName = (mention ? (gameDeckUser?.Mention) : (gameDeckUser?.Username)) ?? "????";
                 tempContentString += $"{usrName} **[{card.Id}]** **{card.GetCardRealRarity()}** {card.GetStatusIcons()}\n";
 
                 if ((contentString.Length + tempContentString.Length) <= 2000)
@@ -1130,9 +1130,9 @@ namespace Sanakan.Services.PocketWaifu
             return list;
         }
 
-        public List<Embed> GetWaifuFromCharacterTitleSearchResult(
+        public async Task<IEnumerable<Embed>> GetWaifuFromCharacterTitleSearchResult(
             IEnumerable<Card> cards,
-            DiscordSocketClient client,
+            IDiscordClient client,
             bool mention)
         {
             var list = new List<Embed>();
@@ -1144,7 +1144,7 @@ namespace Sanakan.Services.PocketWaifu
                 string tempContentString = $"\n**{cardsG.First().GetNameWithUrl()}**\n";
                 foreach (var card in cardsG)
                 {
-                    var user = client.GetUser(card.GameDeckId);
+                    var user = await client.GetUserAsync(card.GameDeckId);
                     var usrName = (mention ? (user?.Mention) : (user?.Username)) ?? "????";
 
                     tempContentString += $"{usrName}: **[{card.Id}]** **{card.GetCardRealRarity()}** {card.GetStatusIcons()}\n";
@@ -1176,12 +1176,13 @@ namespace Sanakan.Services.PocketWaifu
             return list;
         }
 
-        public Embed GetBoosterPackList(SocketUser user, List<BoosterPack> packs)
+        public Embed GetBoosterPackList(IUser user, List<BoosterPack> packs)
         {
             int groupCnt = 0;
             int startGroup = 1;
             string groupName = "";
             string packString = "";
+
             for (int i = 0; i < packs.Count + 1; i++)
             {
                 if (i == packs.Count || groupName != packs[i].Name)
@@ -1208,7 +1209,7 @@ namespace Sanakan.Services.PocketWaifu
             }.Build();
         }
 
-        public Embed GetItemList(SocketUser user, List<Item> items)
+        public Embed GetItemList(IUser user, List<Item> items)
         {
             return new EmbedBuilder
             {
@@ -1433,7 +1434,7 @@ namespace Sanakan.Services.PocketWaifu
         public async Task<Embed> BuildCardImageAsync(
             Card card,
             ITextChannel trashChannel,
-            SocketUser owner,
+            IUser owner,
             bool showStats)
         {
             string? imageUrl = null;
@@ -1466,7 +1467,7 @@ namespace Sanakan.Services.PocketWaifu
             }.Build();
         }
 
-        public async Task<Embed> BuildCardViewAsync(Card card, ITextChannel trashChannel, SocketUser owner)
+        public async Task<Embed> BuildCardViewAsync(Card card, ITextChannel trashChannel, IUser owner)
         {
             string imageUrl = await GetCardUrlIfExistAsync(card, true);
             if (imageUrl != null)
@@ -1549,13 +1550,13 @@ namespace Sanakan.Services.PocketWaifu
                     string animeMangaTitle = string.Empty;
 
                     var url = "https://shinden.pl/";
-                    if (animeMangaInfo.Title.Type == "anime")
+                    if (animeMangaInfo.Title.Type == IllustrationType.Anime)
                     {
                         id = animeMangaInfo.Title.Manga.TitleId.Value;
                         animeMangaTitle = HttpUtility.HtmlDecode(animeMangaInfo.Title.Title);
                         url = UrlHelpers.GetSeriesURL(animeMangaInfo.Title.Anime.TitleId.Value);
                     }
-                    else if (animeMangaInfo.Title.Type == "manga")
+                    else if (animeMangaInfo.Title.Type == IllustrationType.Manga)
                     {
                         id = animeMangaInfo.Title.Manga.TitleId.Value;
                         animeMangaTitle = HttpUtility.HtmlDecode(animeMangaInfo.Title.Title);

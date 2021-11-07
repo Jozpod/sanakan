@@ -10,7 +10,7 @@ using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using Shinden.Models;
+using Sanakan.ShindenApi.Models;
 
 namespace Sanakan.Game.Tests
 {
@@ -25,11 +25,11 @@ namespace Sanakan.Game.Tests
 
             };
             var color = Discord.Color.DarkPurple;
-            var lastRead = new List<ILastReaded>
+            var lastRead = new List<LastWatchedRead>
             {
 
             };
-            var lastWatch = new List<ILastWatched>
+            var lastWatch = new List<LastWatchedRead>
             {
 
             };

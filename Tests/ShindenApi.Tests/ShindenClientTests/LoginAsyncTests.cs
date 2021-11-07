@@ -1,3 +1,4 @@
+using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -5,14 +6,17 @@ using Moq;
 using Moq.Protected;
 using Sanakan.Common.Configuration;
 using Sanakan.ShindenApi;
+using Sanakan.ShindenApi.Models;
+using Sanakan.ShindenApi.Models.Enums;
 using System;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace ShindenApi.Tests
+namespace Sanakan.ShindenApi.Tests
 {
     [TestClass]
     public class LoginAsyncTests : Base
@@ -21,30 +25,42 @@ namespace ShindenApi.Tests
         [TestMethod]
         public async Task Should_LogIn_And_Put_Cookies()
         {
-            _options
-                .Setup(pr => pr.CurrentValue)
-                .Returns(new ShindenApiConfiguration
-                {
-                    Token = "test_token"
-                });
+            MockHttpOk("login-result.json", HttpMethod.Post);
 
-            var assembly = Assembly.GetExecutingAssembly();
-            var resourceName = "ShindenApi.Tests.TestData.login-result.json";
-            var stream = assembly.GetManifestResourceStream(resourceName);
-
-            _httpClientHandlerMock
-                .Protected()
-                .Setup<Task<HttpResponseMessage>>("SendAsync",
-                    ItExpr.IsAny<HttpRequestMessage>(),
-                    ItExpr.IsAny<CancellationToken>())
-                .ReturnsAsync(new HttpResponseMessage
+            var expected = new LogInResult
+            {
+                LoggedUser = new ShindenUser
                 {
-                    StatusCode = HttpStatusCode.OK,
-                    Content = new StreamContent(stream),
-                });
+                    UserId = 1,
+                    Id = 1,
+                    Avatar = 1,
+                    Name = "test",
+                    Email = string.Empty,
+                    Status = UserStatus.NotSpecified,
+                    Sex = Gender.NotSpecified,
+                    Rank = string.Empty,
+                    PortalLang = Language.NotSpecified,
+                    AboutMe = "about me",
+                    Signature = "signature",
+                    AnimeCss = string.Empty,
+                    MangaCss = string.Empty,
+                    
+                },
+                Session = new LogInResultSession
+                {
+                    Id = "id",
+                    Name = "name",
+                },
+                Hash = "hash",
+            };
 
             var result = await _shindenClient.LoginAsync("username", "password");
-            var test = _cookieContainer.GetCookies(new Uri("test"));
+            result.Value.Should().BeEquivalentTo(expected);
+            var cookies = _cookieContainer.GetCookies(_httpClient.BaseAddress);
+            cookies[0].Name.Should().Be("name");
+            cookies[0].Value.Should().Be("name");
+            cookies[1].Name.Should().Be("id");
+            cookies[1].Value.Should().Be("id");
         }
     }
 }

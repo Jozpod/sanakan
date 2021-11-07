@@ -13,7 +13,7 @@ namespace Sanakan.DiscordBot.Services.Abstractions
     public interface IModeratorService
     {
         Task<EmbedBuilder> GetConfigurationAsync(GuildOptions config, SocketCommandContext context, ConfigType type);
-        Task NotifyUserAsync(SocketGuildUser user, string reason);
+        Task NotifyUserAsync(IUser user, string reason);
         Embed BuildTodo(IMessage message, SocketGuildUser who);
         Task<Embed> GetMutedListAsync(SocketCommandContext context);
         Task UnmuteUserAsync(
@@ -33,9 +33,9 @@ namespace Sanakan.DiscordBot.Services.Abstractions
            TimeSpan duration,
            string reason = "nie podano");
         Task NotifyAboutPenaltyAsync(
-           SocketGuildUser user,
-           ITextChannel channel,
-           PenaltyInfo info,
+           IGuildUser user,
+           IMessageChannel channel,
+           PenaltyInfo penaltyInfo,
            string byWho = "automat");
     }
 }

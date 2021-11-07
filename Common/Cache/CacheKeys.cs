@@ -11,7 +11,6 @@ namespace Sanakan.Common.Cache
         public const string GameDeckUser = "gamedeck-user-{0}";
         public const string GameDecks = nameof(GameDecks);
         public const string GuilConfig = "config-{0}";
-
         public const string User = "user-{0}";
     }
 }

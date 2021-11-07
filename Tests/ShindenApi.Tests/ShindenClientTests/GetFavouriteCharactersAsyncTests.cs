@@ -6,6 +6,7 @@ using Moq;
 using Moq.Protected;
 using Sanakan.Common.Configuration;
 using Sanakan.ShindenApi;
+using Sanakan.ShindenApi.Models;
 using Shinden.API;
 using System;
 using System.Collections.Generic;
@@ -15,40 +16,27 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace ShindenApi.Tests
+namespace Sanakan.ShindenApi.Tests
 {
     [TestClass]
     public class GetFavouriteCharactersAsyncTests : Base
     {
 
         [TestMethod]
-        public async Task Should_LogIn_And_Put_Cookies()
+        public async Task Should_Return_Favourite_Character()
         {
-            _options
-                .Setup(pr => pr.CurrentValue)
-                .Returns(new ShindenApiConfiguration
-                {
-                    Token = "test_token"
-                });
-
-            var assembly = Assembly.GetExecutingAssembly();
-            var resourceName = "ShindenApi.Tests.TestData.favourite-character-result.json";
-            var stream = assembly.GetManifestResourceStream(resourceName);
-
-            _httpClientHandlerMock
-                .Protected()
-                .Setup<Task<HttpResponseMessage>>("SendAsync",
-                    ItExpr.IsAny<HttpRequestMessage>(),
-                    ItExpr.IsAny<CancellationToken>())
-                .ReturnsAsync(new HttpResponseMessage
-                {
-                    StatusCode = HttpStatusCode.OK,
-                    Content = new StreamContent(stream),
-                });
+            MockHttpOk("favourite-character-result.json", HttpMethod.Get);
 
             var expected = new List<FavCharacter>
             {
-
+                new FavCharacter
+                {
+                    CharacterId = 1,
+                    FirstName = "john",
+                    LastName = "smith",
+                    PictureArtifactId = 1,
+                    UserId = "1",
+                }
             };
 
             var userId = 1ul;

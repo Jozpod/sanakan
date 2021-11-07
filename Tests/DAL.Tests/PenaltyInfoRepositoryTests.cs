@@ -13,7 +13,7 @@ namespace Sanakan.DAL.Tests
     public class PenaltyInfoRepositoryTests : TestBase
     {
         [TestMethod]
-        public async Task Should_CRUD_Entity()
+        public async Task Should_Return_Penalty_Info_By_Guild_Id()
         {
             var repository = ServiceProvider.GetRequiredService<IPenaltyInfoRepository>();
             var entity = new PenaltyInfo

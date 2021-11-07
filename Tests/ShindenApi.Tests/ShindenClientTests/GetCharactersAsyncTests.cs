@@ -6,6 +6,7 @@ using Moq;
 using Moq.Protected;
 using Sanakan.Common.Configuration;
 using Sanakan.ShindenApi;
+using Sanakan.ShindenApi.Models;
 using Shinden.API;
 using System;
 using System.Collections.Generic;
@@ -15,13 +16,11 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace ShindenApi.Tests
+namespace Sanakan.ShindenApi.Tests
 {
     [TestClass]
     public class GetCharactersAsyncTests : Base
     {
-    
-
         [TestMethod]
         public async Task Should_Return_Characters()
         {
@@ -49,7 +48,7 @@ namespace ShindenApi.Tests
 
             var expected = new TitleCharacters
             {
-                Relations = new List<Relation>
+                Relations = new List<StaffInfoRelation>
                 {
 
                 }

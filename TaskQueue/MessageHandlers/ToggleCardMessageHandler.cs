@@ -1,4 +1,5 @@
 ﻿using Sanakan.Common;
+using Sanakan.Common.Cache;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.TaskQueue.Messages;
 using System;
@@ -23,18 +24,13 @@ namespace Sanakan.TaskQueue.MessageHandlers
 
         public async Task HandleAsync(ToggleCardMessage message)
         {
-            var botUser = await _userRepository.GetUserOrCreateAsync(message.DiscordUserId);
-            var thisCard = botUser.GameDeck.Cards.FirstOrDefault(x => x.Id == message.WId);
-            thisCard.Active = !thisCard.Active;
-
+            var databaseUser = await _userRepository.GetUserOrCreateAsync(message.DiscordUserId);
+            var userCard = databaseUser.GameDeck.Cards.FirstOrDefault(x => x.Id == message.WId);
+            userCard.Active = !userCard.Active;
             await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"user-{botUser.Id}", "users" });
-
-            //var exe = new Executable($"api-deck u{discordId}", new Task<Task>(async () =>
-            //{
-
-            //}));
+            var key = string.Format(CacheKeys.User, databaseUser.Id);
+            _cacheManager.ExpireTag(key, CacheKeys.Users);
         }
     }
 }

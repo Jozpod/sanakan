@@ -8,6 +8,7 @@ using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.Extensions.Options;
 using Sanakan.Common;
+using Sanakan.Common.Cache;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot;
@@ -488,7 +489,10 @@ namespace Sanakan.TaskQueue
                         await _userRepository.SaveChangesAsync();
 
                         _payload.State = ExchangeStatus.End;
-                        _cacheManager.ExpireTag(new string[] { $"user-{_payload.P1.User.Id}", $"user-{_payload.P2.User.Id}", "users" });
+
+                        var discordUser1key = string.Format(CacheKeys.User, _payload.P1.User.Id);
+                        var discordUser2key = string.Format(CacheKeys.User, _payload.P2.User.Id);
+                        _cacheManager.ExpireTag(discordUser1key, discordUser2key,  CacheKeys.Users);
                     }
                 }
                 else if (reaction.Emote.Equals(Emojis.DeclineEmote) && _payload.State != ExchangeStatus.End)

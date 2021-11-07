@@ -16,6 +16,7 @@ using System.Linq;
 using Sanakan.DiscordBot;
 using Discord.WebSocket;
 using System.Collections.Generic;
+using Sanakan.Common.Cache;
 
 namespace Sanakan.Web.HostedService
 {
@@ -198,7 +199,7 @@ namespace Sanakan.Web.HostedService
             penaltyInfoRepository.Remove(penalty);
             await penaltyInfoRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"mute" });
+            _cacheManager.ExpireTag(CacheKeys.Muted);
         }
     }
 }

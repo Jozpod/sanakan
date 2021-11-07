@@ -1,3 +1,4 @@
+using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -5,46 +6,42 @@ using Moq;
 using Moq.Protected;
 using Sanakan.Common.Configuration;
 using Sanakan.ShindenApi;
+using Sanakan.ShindenApi.Models;
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace ShindenApi.Tests
+namespace Sanakan.ShindenApi.Tests
 {
     [TestClass]
     public class GetNewEpisodesAsyncTests : Base
     {
 
         [TestMethod]
-        public async Task Should_LogIn_And_Put_Cookies()
+        public async Task Should_Return_New_Epsiodes()
         {
-            _options
-                .Setup(pr => pr.CurrentValue)
-                .Returns(new ShindenApiConfiguration
+            MockHttpOk("new-epsiodes-result.json", HttpMethod.Get);
+
+            var expected = new List<NewEpisode>
+            {
+                new NewEpisode
                 {
-                    Token = "test_token"
-                });
+                    EpisodeLength = TimeSpan.FromMinutes(20),
+                    Title = string.Empty,
+                    TitleId = 1,
+                    CoverId = 1,
+                    EpisodeNumber = 1,
+                    EpisodeId = 1,
+                    Langs = new string[]{ string.Empty },
+                }
+            };
 
-            var assembly = Assembly.GetExecutingAssembly();
-            var resourceName = "ShindenApi.Tests.TestData.login-result.json";
-            var stream = assembly.GetManifestResourceStream(resourceName);
-
-            _httpClientHandlerMock
-                .Protected()
-                .Setup<Task<HttpResponseMessage>>("SendAsync",
-                    ItExpr.IsAny<HttpRequestMessage>(),
-                    ItExpr.IsAny<CancellationToken>())
-                .ReturnsAsync(new HttpResponseMessage
-                {
-                    StatusCode = HttpStatusCode.OK,
-                    Content = new StreamContent(stream),
-                });
-
-            var result = await _shindenClient.LoginAsync("test", "test");
-            var test = _cookieContainer.GetCookies(new Uri("test"));
+            var result = await _shindenClient.GetNewEpisodesAsync();
+            result.Value.Should().BeEquivalentTo(expected);
         }
     }
 }

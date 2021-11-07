@@ -1,24 +1,24 @@
 ﻿using System.Collections.Generic;
-using Shinden.Models;
 using Discord;
 using System;
-using Shinden.Models.Entities;
 using Shinden.API;
 using System.Linq;
 using Sanakan.DiscordBot.Abstractions.Models;
+using Sanakan.ShindenApi.Models;
+using Sanakan.ShindenApi.Models.Enums;
 
 namespace Sanakan.Extensions
 {
     public static class ITitleInfoExtension
     {
-        public static Embed ToEmbed(this ITitleInfo info)
-        {
-            if (info is IAnimeTitleInfo iam)
-            {
-                return iam.ToEmbed();
-            }
-            return (info as IMangaTitleInfo)?.ToEmbed();
-        }
+        //public static Embed ToEmbed(this ITitleInfo info)
+        //{
+        //    if (info is IAnimeTitleInfo iam)
+        //    {
+        //        return iam.ToEmbed();
+        //    }
+        //    return (info as IMangaTitleInfo)?.ToEmbed();
+        //}
 
         //public static Embed ToEmbed(this MangaTitleInfo info)
         //{
@@ -178,42 +178,42 @@ namespace Sanakan.Extensions
 
             string typeVal = "--";
             string statVal = "--";
-            if (info is IAnimeTitleInfo aif)
-            {
-                typeVal = aif.Type.ToName();
-                statVal = aif.Status.ToName();
+            //if (info is IAnimeTitleInfo aif)
+            //{
+            //    typeVal = aif.Type.ToName();
+            //    statVal = aif.Status.ToName();
 
-                if (aif.EpisodesCount.HasValue)
-                {
-                    if (aif.EpisodesCount > 0)
-                    {
-                        fields.Add(new EmbedFieldBuilder()
-                        {
-                            Name = "Epizody",
-                            Value = aif.EpisodesCount,
-                            IsInline = true
-                        });
-                    }
-                }
-            }
-            else if (info is IMangaTitleInfo mif)
-            {
-                typeVal = mif.Type.ToName();
-                statVal = mif.Status.ToName();
+            //    if (aif.EpisodesCount.HasValue)
+            //    {
+            //        if (aif.EpisodesCount > 0)
+            //        {
+            //            fields.Add(new EmbedFieldBuilder()
+            //            {
+            //                Name = "Epizody",
+            //                Value = aif.EpisodesCount,
+            //                IsInline = true
+            //            });
+            //        }
+            //    }
+            //}
+            //else if (info is IMangaTitleInfo mif)
+            //{
+            //    typeVal = mif.Type.ToName();
+            //    statVal = mif.Status.ToName();
 
-                if (mif.ChaptersCount.HasValue)
-                {
-                    if (mif.ChaptersCount > 0)
-                    {
-                        fields.Add(new EmbedFieldBuilder()
-                        {
-                            Name = "Rozdziały",
-                            Value = mif.ChaptersCount,
-                            IsInline = true
-                        });
-                    }
-                }
-            }
+            //    if (mif.ChaptersCount.HasValue)
+            //    {
+            //        if (mif.ChaptersCount > 0)
+            //        {
+            //            fields.Add(new EmbedFieldBuilder()
+            //            {
+            //                Name = "Rozdziały",
+            //                Value = mif.ChaptersCount,
+            //                IsInline = true
+            //            });
+            //        }
+            //    }
+            //}
 
             fields.Add(new EmbedFieldBuilder()
             {

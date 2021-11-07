@@ -13,7 +13,7 @@ namespace Sanakan.DAL.Tests
     public class TransferAnalyticsRepositoryTests : TestBase
     {
         [TestMethod]
-        public async Task Should_CRUD_Entity()
+        public async Task Should_Add_Entity()
         {
             var repository = ServiceProvider.GetRequiredService<ITransferAnalyticsRepository>();
             var entity = new TransferAnalytics

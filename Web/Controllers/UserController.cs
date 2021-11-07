@@ -29,12 +29,12 @@ using Sanakan.DiscordBot.Abstractions.Extensions;
 using Sanakan.DiscordBot.Abstractions.Models;
 using Sanakan.Extensions;
 using Sanakan.ShindenApi;
+using Sanakan.ShindenApi.Models;
 using Sanakan.TaskQueue;
 using Sanakan.TaskQueue.Messages;
 using Sanakan.Web.Configuration;
 using Sanakan.Web.Resources;
 using Shinden;
-using Shinden.Models;
 using static Sanakan.Web.ResponseExtensions;
 
 namespace Sanakan.Web.Controllers
@@ -100,7 +100,7 @@ namespace Sanakan.Web.Controllers
         /// </summary>
         /// <param name="name">The name of the user</param>
         [HttpPost("find")]
-        [ProducesResponseType(typeof(IEnumerable<IUserSearch>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(IEnumerable<UserSearchResult>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetUserIdByNameAsync([FromBody, Required]string name)
         {

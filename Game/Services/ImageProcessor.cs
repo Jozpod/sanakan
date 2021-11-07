@@ -13,10 +13,8 @@ using Sanakan.Extensions;
 using Sanakan.Services;
 using Sanakan.Services.PocketWaifu;
 using Sanakan.ShindenApi;
+using Sanakan.ShindenApi.Models;
 using Sanakan.ShindenApi.Utilities;
-using Shinden;
-using Shinden.API;
-using Shinden.Models;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -666,7 +664,7 @@ namespace Sanakan.Game.Services
             return cover;
         }
 
-        private async Task<Image<Rgba32>> GetLastRWList(List<ILastReaded> lastRead, List<ILastWatched> lastWatch)
+        private async Task<Image<Rgba32>> GetLastRWList(List<LastWatchedRead>? lastRead, List<LastWatchedRead>? lastWatch)
         {
             var titleFont = new Font(_latoBold, 10);
             var nameFont = new Font(_latoBold, 16);
@@ -693,8 +691,8 @@ namespace Sanakan.Game.Services
                         image.Mutate(x => x.DrawImage(cover, new Point(0, startY + (35 * max)), 1));
                     }
 
-                    image.Mutate(x => x.DrawText($"{last.AnimeTitle.ElipseTrimToLength(29)}", titleFont, fColor, new Point(25, startY + (35 * max))));
-                    image.Mutate(x => x.DrawText($"{last.EpisodeNo} / {last.EpisodesCnt}", titleFont, fColor, new Point(25, startY + 11 + (35 * max))));
+                    image.Mutate(x => x.DrawText($"{last.Title.ElipseTrimToLength(29)}", titleFont, fColor, new Point(25, startY + (35 * max))));
+                    image.Mutate(x => x.DrawText($"{last.EpisodeNo} / {last.EpisodesCount}", titleFont, fColor, new Point(25, startY + 11 + (35 * max))));
                 }
             }
 
@@ -716,8 +714,8 @@ namespace Sanakan.Game.Services
                         image.Mutate(x => x.DrawImage(cover, new Point(0, startY + (35 * max)), 1));
                     }
 
-                    image.Mutate(x => x.DrawText($"{last.MangaTitle.ElipseTrimToLength(29)}", titleFont, fColor, new Point(25, startY + (35 * max))));
-                    image.Mutate(x => x.DrawText($"{last.ChapterNo} / {last.ChaptersCnt}", titleFont, fColor, new Point(25, startY + 11 + (35 * max))));
+                    image.Mutate(x => x.DrawText($"{last.Title.ElipseTrimToLength(29)}", titleFont, fColor, new Point(25, startY + (35 * max))));
+                    image.Mutate(x => x.DrawText($"{last.ChapterNo} / {last.ChaptersCount}", titleFont, fColor, new Point(25, startY + 11 + (35 * max))));
                 }
             }
 
@@ -727,8 +725,8 @@ namespace Sanakan.Game.Services
         public async Task<Image<Rgba32>> GetSiteStatisticAsync(
             UserInfo shindenInfo,
             Discord.Color color,
-            List<ILastReaded>? lastRead = null,
-            List<ILastWatched>? lastWatch = null)
+            List<LastWatchedRead>? lastRead = null,
+            List<LastWatchedRead>? lastWatch = null)
         {
             if (color == Discord.Color.Default)
             {

@@ -61,6 +61,17 @@ namespace Sanakan.DiscordBot.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to **Sanakan ({0})**:
+        ///
+        ///**Czas działania**: `{0}`.
+        /// </summary>
+        internal static string BotInfo {
+            get {
+                return ResourceManager.GetString("BotInfo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to To polecenie działa tylko z poziomu serwera..
         /// </summary>
         internal static string CanExecuteOnlyOnServer {

@@ -71,21 +71,24 @@ namespace Sanakan.DAL
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            if(_config.CurrentValue.Provider == "MySql")
+            var config = _config.CurrentValue;
+
+            if (config.Provider == "MySql")
             {
                 optionsBuilder.UseMySql(
-                    _config.CurrentValue.ConnectionString,
-                    new MySqlServerVersion(_config.CurrentValue.Version));
-            }
-            if (_config.CurrentValue.Provider == "Sqlite")
-            {
-                optionsBuilder.UseSqlite(_config.CurrentValue.ConnectionString);
-            }
-            if (_config.CurrentValue.Provider == "SqlServer")
-            {
-                optionsBuilder.UseSqlServer(_config.CurrentValue.ConnectionString);
+                    config.ConnectionString,
+                    new MySqlServerVersion(config.Version));
             }
 
+            if (config.Provider == "Sqlite")
+            {
+                optionsBuilder.UseSqlite(config.ConnectionString);
+            }
+
+            if (config.Provider == "SqlServer")
+            {
+                optionsBuilder.UseSqlServer(config.ConnectionString);
+            }
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

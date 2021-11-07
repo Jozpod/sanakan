@@ -22,10 +22,10 @@ namespace Sanakan.TaskQueue
             public IMessage Message { get; set; }
             public IUser Bot { get; set; }
             public TimeSpan Duration { get; set; }
-            public SocketRole UserRole { get; set; }
-            public SocketRole MuteRole { get; set; }
-            public SocketGuildUser User { get; set; }
-            public SocketTextChannel NotifChannel { get; set; }
+            public IRole UserRole { get; set; }
+            public IRole MuteRole { get; set; }
+            public IGuildUser User { get; set; }
+            public ITextChannel NotifChannel { get; set; }
         }
 
         public AcceptSession(

@@ -1,3 +1,5 @@
+using Sanakan.ShindenApi.Converters;
+using System;
 using System.Text.Json.Serialization;
 
 namespace Sanakan.ShindenApi.Models
@@ -5,16 +7,16 @@ namespace Sanakan.ShindenApi.Models
     public class Recommendation
     {
         [JsonPropertyName("recommendation_id")]
-        public string RecommendationId { get; set; }
+        public ulong RecommendationId { get; set; }
 
         [JsonPropertyName("related_title_id")]
         public string RelatedTitleId { get; set; }
 
         [JsonPropertyName("rec_title_id")]
-        public string RecTitleId { get; set; }
+        public ulong RecTitleId { get; set; }
 
         [JsonPropertyName("cover_artifact_id")]
-        public string CoverArtifactId { get; set; }
+        public ulong CoverArtifactId { get; set; }
 
         [JsonPropertyName("title_id")]
         public string TitleId { get; set; }
@@ -29,24 +31,26 @@ namespace Sanakan.ShindenApi.Models
         public string Type { get; set; }
 
         [JsonPropertyName("avatar")]
-        public string Avatar { get; set; }
+        public ulong Avatar { get; set; }
 
         [JsonPropertyName("rating")]
-        public string Rating { get; set; }
+        public long Rating { get; set; }
 
         [JsonPropertyName("rate_count")]
-        public string RateCount { get; set; }
+        public long RateCount { get; set; }
 
         [JsonPropertyName("name")]
         public string Name { get; set; }
 
         [JsonPropertyName("user_id")]
-        public string UserId { get; set; }
+        public ulong UserId { get; set; }
 
         [JsonPropertyName("add_date")]
-        public string AddDate { get; set; }
+        [JsonConverter(typeof(DateTimeyyyyMMddHHmmssConverter))]
+        public DateTime? AddDate { get; set; }
 
         [JsonPropertyName("recommendation")]
+        [JsonConverter(typeof(HtmlDecodeConverter))]
         public string RecommendationContent { get; set; }
     }
 }

@@ -32,7 +32,6 @@ namespace Sanakan.DiscordBot.Builder
             services.AddSingleton<IProfileService, ProfileService>();
             services.AddSingleton<IHelperService, HelperService>();
             services.AddSingleton<EventsService>();
-            services.AddSingleton<SpawnService>();
             services.AddSingleton<CommandHandler>();
             return services;
         }

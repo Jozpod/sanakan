@@ -73,7 +73,7 @@ namespace Sanakan.DAL.Models.Configuration
         public ulong WaifuRoleId { get; set; }
 
         /// <summary>
-        /// The Discord channel identifier.
+        /// The Discord channel identifier of text channel which is used for notifications.
         /// </summary>
         public ulong NotificationChannelId { get; set; }
 

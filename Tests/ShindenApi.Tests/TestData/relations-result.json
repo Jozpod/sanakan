@@ -1,0 +1,37 @@
+{
+  "related_titles": [
+    {
+      "title2title_id": "",
+      "title_id": "",
+      "related_title_id": "",
+      "dict_i18n_id": "",
+      "dmca": "1",
+      "title": "&amp;&lt;&gt;",
+      "type": "",
+      "rating_total_sum": "",
+      "rating_total_cnt": "",
+      "rating_story_sum": "",
+      "rating_story_cnt": "",
+      "rating_design_sum": "",
+      "rating_design_cnt": "",
+      "rating_titlecahracters_cnt": "",
+      "rating_titlecahracters_sum": "",
+      "ranking_position": 1,
+      "ranking_rate": "",
+      "title_status": "",
+      "add_date": "",
+      "premiere_date": "",
+      "premiere_precision": "",
+      "finish_date": "",
+      "finish_precision": "",
+      "mpaa_rating": "",
+      "cover_artifact_id": "",
+      "dict_id": "",
+      "lang": "",
+      "name": "",
+      "relation_type": "",
+      "relation_order": "",
+      "r_title_id": 1
+    }
+  ]
+}

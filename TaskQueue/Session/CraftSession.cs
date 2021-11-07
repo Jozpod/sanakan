@@ -3,6 +3,7 @@ using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
 using Sanakan.Common;
+using Sanakan.Common.Cache;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot.Abstractions;
@@ -223,7 +224,8 @@ namespace Sanakan.TaskQueue
                 {
                     await msg.ModifyAsync(x => x.Embed = $"{_payload.Name}\n\nOdrzucono tworzenie karty.".ToEmbedMessage(EMType.Bot).Build());
 
-                    cacheManager.ExpireTag(new string[] { $"user-{_payload.PlayerInfo.User.Id}", "users" });
+                    var key = string.Format(CacheKeys.User, _payload.PlayerInfo.User.Id);
+                    cacheManager.ExpireTag(key, CacheKeys.Users);
 
                     return true;
                 }
@@ -288,7 +290,8 @@ namespace Sanakan.TaskQueue
                         .ToEmbedMessage(EMType.Bot).Build());
                     }
 
-                    cacheManager.ExpireTag(new string[] { $"user-{_payload.PlayerInfo.User.Id}", "users" });
+                    var discordUserkey = string.Format(CacheKeys.User, _payload.PlayerInfo.User.Id);
+                    cacheManager.ExpireTag(discordUserkey, CacheKeys.Users);
 
                     return true;
                 }

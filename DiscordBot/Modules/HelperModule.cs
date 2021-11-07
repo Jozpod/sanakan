@@ -11,6 +11,7 @@ using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot.Abstractions;
 using Sanakan.DiscordBot.Abstractions.Extensions;
 using Sanakan.DiscordBot.Abstractions.Models;
+using Sanakan.DiscordBot.Resources;
 using Sanakan.DiscordBot.Services.Abstractions;
 using Sanakan.Preconditions;
 using Sanakan.Services.Session.Models;
@@ -23,7 +24,7 @@ using System.Threading.Tasks;
 namespace Sanakan.DiscordBot.Modules
 {
     [Name("Ogólne")]
-    public class HelperModule : ModuleBase<SocketCommandContext>
+    public class HelperModule : SanakanModuleBase
     {
         private readonly ISessionManager _sessionManager;
         private readonly IHelperService _helperService;
@@ -112,7 +113,7 @@ namespace Sanakan.DiscordBot.Modules
             var usr = (user ?? Context.User) as SocketGuildUser;
             if (usr == null)
             {
-                await ReplyAsync("", embed: "Polecenie działa tylko z poziomu serwera.".ToEmbedMessage(EMType.Info).Build());
+                await ReplyAsync("", embed: Strings.CanExecuteOnlyOnServer.ToEmbedMessage(EMType.Info).Build());
                 return;
             }
 
@@ -124,7 +125,7 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks(""), RequireCommandChannel]
         public async Task GivePingAsync()
         {
-            int latency = Context.Client.Latency;
+            int latency = (Context.Client as BaseSocketClient).Latency;
 
             EMType type = EMType.Error;
             if (latency < 400) type = EMType.Warning;
@@ -141,11 +142,12 @@ namespace Sanakan.DiscordBot.Modules
         {
             if (Context.Guild == null)
             {
-                await ReplyAsync("", embed: "Polecenie działa tylko z poziomu serwera.".ToEmbedMessage(EMType.Info).Build());
+                await ReplyAsync("", embed: Strings.CanExecuteOnlyOnServer.ToEmbedMessage(EMType.Info).Build());
                 return;
             }
 
-            await ReplyAsync("", embed: (Embed)_helperService.GetInfoAboutServer(Context.Guild));
+            var embed = (Embed)await _helperService.GetInfoAboutServerAsync(Context.Guild);
+            await ReplyAsync("", embed: embed);
         }
 
         [Command("awatar", RunMode = RunMode.Async)]
@@ -171,10 +173,11 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks(""), RequireCommandChannel]
         public async Task GiveBotInfoAsync()
         {
-            using var proc = _operatingSystem.GetCurrentProcess();
-            var time = _systemClock.UtcNow - proc.StartTime;
-            var info = $"**Sanakan ({typeof(HelperModule).Assembly.GetName().Version})**:\n"
-                + $"**Czas działania**: `{time.ToString(@"d'd 'hh\:mm\:ss")}`";
+            using var process = _operatingSystem.GetCurrentProcess();
+            var time = _systemClock.UtcNow - process.StartTime;
+            var version = typeof(HelperModule).Assembly.GetName().Version;
+            var timeHumanized = time.ToString(@"d'd 'hh\:mm\:ss");
+            var info = string.Format(Strings.BotInfo, version, timeHumanized);
 
             await ReplyAsync(info);
         }
@@ -183,17 +186,20 @@ namespace Sanakan.DiscordBot.Modules
         [Alias("raport", "report", "zgłos", "zglos", "zgloś")]
         [Summary("zgłasza wiadomość użytkownika")]
         [Remarks("63312335634561 Tak nie wolno!"), RequireUserRole]
-        public async Task ReportUserAsync([Summary("id wiadomości")]ulong messageId, [Summary("powód")][Remainder]string reason)
+        public async Task ReportUserAsync(
+            [Summary("id wiadomości")]ulong messageId,
+            [Summary("powód")][Remainder]string reason)
         {
-            var config = await _guildConfigRepository.GetCachedGuildFullConfigAsync(Context.Guild.Id);
+            var guild = Context.Guild;
+            var config = await _guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
             if (config == null)
             {
                 await ReplyAsync("", embed: "Serwer nie jest jeszcze skonfigurowany.".ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
 
-            var raportCh = Context.Guild.GetTextChannel(config.RaportChannelId);
-            if (raportCh == null)
+            var raportChannel = (ITextChannel) await guild.GetChannelAsync(config.RaportChannelId);
+            if (raportChannel == null)
             {
                 await ReplyAsync("", embed: "Serwer nie ma skonfigurowanych raportów.".ToEmbedMessage(EMType.Bot).Build());
                 return;
@@ -216,7 +222,8 @@ namespace Sanakan.DiscordBot.Modules
 
             if ((_systemClock.UtcNow - repMsg.CreatedAt.DateTime.ToLocalTime()).TotalHours > 3)
             {
-                await ReplyAsync("", embed: "Można raportować tylko wiadomości, które nie są starsze od 3h.".ToEmbedMessage(EMType.Bot).Build());
+                await ReplyAsync("", embed: "Można raportować tylko wiadomości, które nie są starsze od 3h."
+                    .ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
 
@@ -230,7 +237,7 @@ namespace Sanakan.DiscordBot.Modules
                     return;
                 }
 
-                var notifChannel = Context.Guild.GetTextChannel(config.NotificationChannelId);
+                var notifChannel = await Context.Guild.GetChannelAsync(config.NotificationChannelId);
                 var userRole = Context.Guild.GetRole(config.UserRoleId);
                 var muteRole = Context.Guild.GetRole(config.MuteRoleId);
 
@@ -249,9 +256,9 @@ namespace Sanakan.DiscordBot.Modules
                 var payload = new AcceptSession.AcceptSessionPayload
                 {
                     Bot = Context.Client.CurrentUser,
-                    NotifChannel = notifChannel,
-                    MuteRole = muteRole,
-                    UserRole = userRole,
+                    NotifChannel = notifChannel as ITextChannel,
+                    MuteRole = muteRole as SocketRole,
+                    UserRole = userRole as SocketRole,
                     User = user,
                 };
 
@@ -279,7 +286,7 @@ namespace Sanakan.DiscordBot.Modules
             await ReplyAsync("", embed: "Wysłano zgłoszenie.".ToEmbedMessage(EMType.Success).Build());
 
             var userName = $"{Context.User.Username}({Context.User.Id})";
-            var sendMsg = await raportCh.SendMessageAsync($"{repMsg.GetJumpUrl()}", embed: "prep".ToEmbedMessage().Build());
+            var sendMsg = await raportChannel.SendMessageAsync($"{repMsg.GetJumpUrl()}", embed: "prep".ToEmbedMessage().Build());
 
             try
             {

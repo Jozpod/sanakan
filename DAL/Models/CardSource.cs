@@ -2,20 +2,20 @@
 {
     public enum CardSource
     {
-        Activity,
-        Safari,
-        Shop,
-        GodIntervention,
-        Api,
-        Other,
-        Migration,
-        PvE,
-        Daily,
-        Crafting,
-        PvpShop,
-        Figure,
-        Expedition,
-        ActivityShop
+        Activity = 0,
+        Safari = 1,
+        Shop = 2,
+        GodIntervention = 3,
+        Api = 4,
+        Other = 5,
+        Migration = 6,
+        PvE = 7,
+        Daily = 8,
+        Crafting = 9,
+        PvpShop = 10,
+        Figure = 11,
+        Expedition = 12,
+        ActivityShop = 13
     }
 
     public static class CardSourceExtensions

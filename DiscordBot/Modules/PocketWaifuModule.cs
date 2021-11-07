@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Sanakan.Common;
+using Sanakan.Common.Cache;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Repositories;
 using Sanakan.DAL.Repositories.Abstractions;
@@ -196,11 +197,11 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            SocketUser user = Context.Guild.GetUser(card.GameDeck.UserId);
+            IUser user = await Context.Guild.GetUserAsync(card.GameDeck.UserId);
 
             if (user == null)
             {
-                user = Context.Client.GetUser(card.GameDeck.UserId);
+                user = await Context.Client.GetUserAsync(card.GameDeck.UserId);
             }
 
             var gConfig = await _guildConfigRepository.GetCachedGuildFullConfigAsync(Context.Guild.Id);
@@ -210,8 +211,9 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            var trashChannel = Context.Guild.GetTextChannel(gConfig.WaifuConfig.TrashCommandsChannelId.Value);
-            await ReplyAsync("", embed: await _waifuService.BuildCardImageAsync(card, trashChannel, user, showStats));
+            var trashChannel = (ITextChannel)await Context.Guild.GetChannelAsync(gConfig.WaifuConfig.TrashCommandsChannelId.Value);
+            var cardImage = await _waifuService.BuildCardImageAsync(card, trashChannel, user, showStats);
+            await ReplyAsync("", embed: cardImage);
         }
 
         [Command("karta-", RunMode = RunMode.Async)]
@@ -236,11 +238,11 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            SocketUser user = Context.Guild.GetUser(card.GameDeck.UserId);
+            IUser user = await Context.Guild.GetUserAsync(card.GameDeck.UserId);
             
             if (user == null)
             {
-                user = Context.Client.GetUser(card.GameDeck.UserId);
+                user = await Context.Client.GetUserAsync(card.GameDeck.UserId);
             }
 
             var content = card.GetDescSmall().ElipseTrimToLength(2000)
@@ -273,15 +275,15 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            SocketUser user = Context.Guild.GetUser(card.GameDeck.UserId);
+            IUser user = await Context.Guild.GetUserAsync(card.GameDeck.UserId);
             
             if (user == null)
             {
-                user = Context.Client.GetUser(card.GameDeck.UserId);
+                user = await Context.Client.GetUserAsync(card.GameDeck.UserId);
             }
 
             var gConfig = await _guildConfigRepository.GetCachedGuildFullConfigAsync(Context.Guild.Id);
-            var trashChannel = Context.Guild.GetTextChannel(gConfig.WaifuConfig.TrashCommandsChannelId.Value);
+            var trashChannel = (ITextChannel)await Context.Guild.GetChannelAsync(gConfig.WaifuConfig.TrashCommandsChannelId.Value);
             await ReplyAsync("", embed: await _waifuService.BuildCardViewAsync(card, trashChannel, user));
         }
 
@@ -843,9 +845,9 @@ namespace Sanakan.DiscordBot.Modules
             [Summary("liczba kolejnych pakietów")]int count = 1,
             [Summary("czy sprawdzić listy życzeń?")]bool checkWishlists = false)
         {
-            var bUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
+            var databaseUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
 
-            if (bUser.GameDeck.BoosterPacks.Count < 1)
+            if (databaseUser.GameDeck.BoosterPacks.Count < 1)
             {
                 await ReplyAsync("", embed: $"{Context.User.Mention} nie masz żadnych pakietów.".ToEmbedMessage(EMType.Error).Build());
                 return;
@@ -853,23 +855,23 @@ namespace Sanakan.DiscordBot.Modules
 
             if (numberOfPack == 0)
             {
-                await ReplyAsync("", embed: _waifuService.GetBoosterPackList(Context.User, bUser.GameDeck.BoosterPacks.ToList()));
+                await ReplyAsync("", embed: _waifuService.GetBoosterPackList(Context.User, databaseUser.GameDeck.BoosterPacks.ToList()));
                 return;
             }
 
-            if (bUser.GameDeck.BoosterPacks.Count < numberOfPack || numberOfPack <= 0)
+            if (databaseUser.GameDeck.BoosterPacks.Count < numberOfPack || numberOfPack <= 0)
             {
                 await ReplyAsync("", embed: $"{Context.User.Mention} nie masz aż tylu pakietów.".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
-            if (bUser.GameDeck.BoosterPacks.Count < (count + numberOfPack - 1) || count < 1)
+            if (databaseUser.GameDeck.BoosterPacks.Count < (count + numberOfPack - 1) || count < 1)
             {
                 await ReplyAsync("", embed: $"{Context.User.Mention} nie masz tylu pakietów.".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
-            var packs = bUser.GameDeck.BoosterPacks.ToList().GetRange(numberOfPack - 1, count);
+            var packs = databaseUser.GameDeck.BoosterPacks.ToList().GetRange(numberOfPack - 1, count);
             var cardsCount = packs.Sum(x => x.CardCount);
 
             if (cardsCount > 20)
@@ -878,19 +880,19 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            if (bUser.GameDeck.Cards.Count + cardsCount > bUser.GameDeck.MaxNumberOfCards)
+            if (databaseUser.GameDeck.Cards.Count + cardsCount > databaseUser.GameDeck.MaxNumberOfCards)
             {
                 await ReplyAsync("", embed: $"{Context.User.Mention} nie masz już miejsca na kolejną kartę!".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
-            var mission = bUser.TimeStatuses
+            var mission = databaseUser.TimeStatuses
                 .FirstOrDefault(x => x.Type == StatusType.DPacket);
 
             if (mission == null)
             {
                 mission = new TimeStatus(StatusType.DPacket);
-                bUser.TimeStatuses.Add(mission);
+                databaseUser.TimeStatuses.Add(mission);
             }
 
             var totalCards = new List<Card>();
@@ -909,30 +911,31 @@ namespace Sanakan.DiscordBot.Modules
 
                 if (pack.CardSourceFromPack == CardSource.Activity || pack.CardSourceFromPack == CardSource.Migration)
                 {
-                    bUser.Stats.OpenedBoosterPacksActivity += 1;
+                    databaseUser.Stats.OpenedBoosterPacksActivity += 1;
                 }
                 else
                 {
-                    bUser.Stats.OpenedBoosterPacks += 1;
+                    databaseUser.Stats.OpenedBoosterPacks += 1;
                 }
 
-                bUser.GameDeck.BoosterPacks.Remove(pack);
+                databaseUser.GameDeck.BoosterPacks.Remove(pack);
 
                 foreach (var card in cards)
                 {
-                    if (bUser.GameDeck.RemoveCharacterFromWishList(card.CharacterId))
+                    if (databaseUser.GameDeck.RemoveCharacterFromWishList(card.CharacterId))
                     {
                         charactersOnWishlist.Add(card.Name);
                     }
-                    card.Affection += bUser.GameDeck.AffectionFromKarma();
-                    bUser.GameDeck.Cards.Add(card);
+                    card.Affection += databaseUser.GameDeck.AffectionFromKarma();
+                    databaseUser.GameDeck.Cards.Add(card);
                     totalCards.Add(card);
                 }
             }
 
             await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"user-{bUser.Id}", "users" });
+            var discordUserkey = string.Format(CacheKeys.User, databaseUser.Id);
+            _cacheManager.ExpireTag(discordUserkey, CacheKeys.Users);
 
             string openString = "";
             string packString = $"{count} pakietów";
@@ -2166,12 +2169,15 @@ namespace Sanakan.DiscordBot.Modules
 
             try
             {
-                var dm = await Context.User.GetOrCreateDMChannelAsync();
-                foreach (var emb in _waifuService.GetWaifuFromCharacterTitleSearchResult(cards, Context.Client, !showNames))
+                var dmChannel = await Context.User.GetOrCreateDMChannelAsync();
+                var listOfEmbed = await _waifuService.GetWaifuFromCharacterTitleSearchResult(cards, Context.Client, !showNames);
+
+                foreach (var embed in listOfEmbed)
                 {
-                    await dm.SendMessageAsync("", embed: emb);
+                    await dmChannel.SendMessageAsync("", embed: embed);
                     await _taskManager.Delay(TimeSpan.FromSeconds(2));
                 }
+                
                 await ReplyAsync("", embed: $"{Context.User.Mention} lista poszła na PW!".ToEmbedMessage(EMType.Success).Build());
             }
             catch (Exception)
@@ -2201,26 +2207,30 @@ namespace Sanakan.DiscordBot.Modules
 
             if (user.Id == userf.Id)
             {
-                await ReplyAsync("", embed: $"{Context.User.Mention} podałeś dwa razy tego samego użytkownika.".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync("", embed: $"{Context.User.Mention} podałeś dwa razy tego samego użytkownika."
+                    .ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
             var bUser = await _userRepository.GetCachedFullUserAsync(user.Id);
             if (bUser == null)
             {
-                await ReplyAsync("", embed: "Ta osoba nie ma profilu bota.".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync("", embed: "Ta osoba nie ma profilu bota."
+                    .ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
             if (Context.User.Id != bUser.Id && bUser.GameDeck.WishlistIsPrivate)
             {
-                await ReplyAsync("", embed: "Lista życzeń tej osoby jest prywatna!".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync("", embed: "Lista życzeń tej osoby jest prywatna!"
+                    .ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
             if (bUser.GameDeck.Wishes.Count < 1)
             {
-                await ReplyAsync("", embed: "Ta osoba nie ma nic na liście życzeń.".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync("", embed: "Ta osoba nie ma nic na liście życzeń."
+                    .ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
@@ -2250,10 +2260,11 @@ namespace Sanakan.DiscordBot.Modules
 
             try
             {
-                var dm = await Context.User.GetOrCreateDMChannelAsync();
-                foreach (var emb in _waifuService.GetWaifuFromCharacterTitleSearchResult(cards, Context.Client, !showNames))
+                var dmChannel = await Context.User.GetOrCreateDMChannelAsync();
+                var listOfEmbed = await _waifuService.GetWaifuFromCharacterTitleSearchResult(cards, Context.Client, !showNames);
+                foreach (var embed in listOfEmbed)
                 {
-                    await dm.SendMessageAsync("", embed: emb);
+                    await dmChannel.SendMessageAsync("", embed: embed);
                     await _taskManager.Delay(TimeSpan.FromSeconds(2));
                 }
                 await ReplyAsync("", embed: $"{Context.User.Mention} lista poszła na PW!".ToEmbedMessage(EMType.Success).Build());
@@ -2296,8 +2307,11 @@ namespace Sanakan.DiscordBot.Modules
             {
                 foreach (var deck in wishlists)
                 {
-                    var dUser = Context.Client.GetUser(deck.Id);
-                    if (dUser != null) usersStr += $"{dUser.Username}\n";
+                    var dUser = await Context.Client.GetUserAsync(deck.Id);
+                    if (dUser != null)
+                    {
+                        usersStr += $"{dUser.Username}\n";
+                    }
                 }
             }
             else
@@ -2345,7 +2359,7 @@ namespace Sanakan.DiscordBot.Modules
             {
                 foreach (var deck in wishlists)
                 {
-                    var dUser = Context.Client.GetUser(deck.Id);
+                    var dUser = await Context.Client.GetUserAsync(deck.Id);
                     if (dUser != null)
                     {
                         usersStr += $"{dUser.Username}\n";
@@ -2709,8 +2723,8 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks("22"), RequireWaifuCommandChannel]
         public async Task CleanCardTagAsync([Summary("WID kart")]params ulong[] wids)
         {
-            var bUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
-            var cardsSelected = bUser.GameDeck.Cards.Where(x => wids.Any(c => c == x.Id)).ToList();
+            var databaseUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
+            var cardsSelected = databaseUser.GameDeck.Cards.Where(x => wids.Any(c => c == x.Id)).ToList();
 
             if (cardsSelected.Count < 1)
             {
@@ -2723,7 +2737,8 @@ namespace Sanakan.DiscordBot.Modules
 
             await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"user-{bUser.Id}", "users" });
+            var discordUserkey = string.Format(CacheKeys.User, databaseUser.Id);
+            _cacheManager.ExpireTag(discordUserkey, CacheKeys.Users);
 
             await ReplyAsync("", embed: $"{Context.User.Mention} zdjął tagi z {cardsSelected.Count} kart.".ToEmbedMessage(EMType.Success).Build());
         }
@@ -2962,24 +2977,24 @@ namespace Sanakan.DiscordBot.Modules
 
             var characterUrl = UrlHelpers.GetCharacterURL(character.CharacterId);
 
-            var msgs = _waifuService.GetWaifuFromCharacterSearchResult(
+            var listOfEmbed = await _waifuService.GetWaifuFromCharacterSearchResult(
                 $"[**{character}**]({characterUrl}) posiadają:",
                 cards,
                 Context.Client,
                 !showNames);
 
-            if (msgs.Count == 1)
+            if (listOfEmbed.Count() == 1)
             {
-                await ReplyAsync("", embed: msgs.First());
+                await ReplyAsync("", embed: listOfEmbed.First());
                 return;
             }
 
             try
             {
-                var dm = await Context.User.GetOrCreateDMChannelAsync();
-                foreach (var emb in msgs)
+                var dmChannel = await Context.User.GetOrCreateDMChannelAsync();
+                foreach (var embed in listOfEmbed)
                 {
-                    await dm.SendMessageAsync("", embed: emb);
+                    await dmChannel.SendMessageAsync("", embed: embed);
                     await _taskManager.Delay(TimeSpan.FromSeconds(2));
                 }
                 await ReplyAsync("", embed: $"{Context.User.Mention} lista poszła na PW!".ToEmbedMessage(EMType.Success).Build());
@@ -3031,10 +3046,12 @@ namespace Sanakan.DiscordBot.Modules
 
             try
             {
-                var dm = await Context.User.GetOrCreateDMChannelAsync();
-                foreach (var emb in _waifuService.GetWaifuFromCharacterTitleSearchResult(cards, Context.Client, !showNames))
+                var dmChannel = await Context.User.GetOrCreateDMChannelAsync();
+                var listOfEmbed = await _waifuService.GetWaifuFromCharacterTitleSearchResult(cards, Context.Client, !showNames);
+
+                foreach (var embed in listOfEmbed)
                 {
-                    await dm.SendMessageAsync("", embed: emb);
+                    await dmChannel.SendMessageAsync("", embed: embed);
                     await _taskManager.Delay(TimeSpan.FromSeconds(2));
                 }
                 await ReplyAsync("", embed: $"{Context.User.Mention} lista poszła na PW!".ToEmbedMessage(EMType.Success).Build());
@@ -3085,9 +3102,10 @@ namespace Sanakan.DiscordBot.Modules
             try
             {
                 var dm = await Context.User.GetOrCreateDMChannelAsync();
-                foreach (var emb in _waifuService.GetWaifuFromCharacterTitleSearchResult(cards, Context.Client, !showNames))
+                var listOfEmbed = await _waifuService.GetWaifuFromCharacterTitleSearchResult(cards, Context.Client, !showNames);
+                foreach (var embed in listOfEmbed)
                 {
-                    await dm.SendMessageAsync("", embed: emb);
+                    await dm.SendMessageAsync("", embed: embed);
                     await _taskManager.Delay(TimeSpan.FromSeconds(2));
                 }
                 await ReplyAsync("", embed: $"{Context.User.Mention} lista poszła na PW!".ToEmbedMessage(EMType.Success).Build());
@@ -3446,12 +3464,14 @@ namespace Sanakan.DiscordBot.Modules
 
             var randomEnemyUserId = _randomNumberGenerator.GetOneRandomFrom(pvpPlayersInRange).UserId;
             var userEnemy = await _userRepository.GetUserOrCreateAsync(randomEnemyUserId);
-            var enemySocketUser = Context.Client.GetUser(userEnemy.Id);
+            var discordClient = Context.Client;
+            var enemySocketUser = await discordClient.GetUserAsync(userEnemy.Id);
+            
             while (enemySocketUser == null)
             {
                 randomEnemyUserId = _randomNumberGenerator.GetOneRandomFrom(pvpPlayersInRange).UserId;
                 userEnemy = await _userRepository.GetUserOrCreateAsync(randomEnemyUserId);
-                enemySocketUser = Context.Client.GetUser(userEnemy.Id);
+                enemySocketUser = await discordClient.GetUserAsync(userEnemy.Id);
             }
 
             var players = new List<PlayerInfo>
@@ -3765,7 +3785,7 @@ namespace Sanakan.DiscordBot.Modules
                 if (tChar != null)
                 {
                     var config = await _guildConfigRepository.GetCachedGuildFullConfigAsync(Context.Guild.Id);
-                    var channel = Context.Guild.GetTextChannel(config.WaifuConfig.TrashCommandsChannelId.Value);
+                    var channel = (IMessageChannel)await Context.Guild.GetChannelAsync(config.WaifuConfig.TrashCommandsChannelId.Value);
 
                     embed.WithImageUrl(await _waifuService.GetWaifuProfileImageAsync(tChar, channel));
                     embed.WithFooter(new EmbedFooterBuilder().WithText($"{tChar.Name}"));

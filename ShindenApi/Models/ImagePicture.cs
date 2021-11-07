@@ -1,15 +1,13 @@
 ﻿using Sanakan.ShindenApi.Converters;
-using Shinden.Models;
+using Sanakan.ShindenApi.Models.Enums;
 using System.Text.Json.Serialization;
 
-namespace Sanakan.ShindenApi.API.Common
+namespace Sanakan.ShindenApi.Models
 {
     public class ImagePicture
     {
         [JsonPropertyName("artifact_type")]
-        [JsonConverter(typeof(EnumConverter<PictureType>))]
-        public string ArtifactType { get; set; }
-        //new PictureType().Parse((pic?.ArtifactType ?? "").ToLower()),
+        public PictureType ArtifactType { get; set; }
 
         [JsonPropertyName("character_id")]
         public string CharacterId { get; set; }
@@ -27,6 +25,7 @@ namespace Sanakan.ShindenApi.API.Common
         public string UserId { get; set; }
 
         [JsonPropertyName("title")]
+        [JsonConverter(typeof(HtmlDecodeConverter))]
         public string Title { get; set; }
     }
 }

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace Shinden.API
+namespace Sanakan.ShindenApi.Models
 {
     public class TitleRecommendation
     {

@@ -3,8 +3,8 @@ using Discord.WebSocket;
 using Sanakan.DAL.Models;
 using Sanakan.Services.PocketWaifu;
 using Sanakan.Services.PocketWaifu.Fight;
+using Sanakan.ShindenApi.Models;
 using Shinden.API;
-using Shinden.Models;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -15,9 +15,9 @@ namespace DiscordBot.Services.PocketWaifu.Abstractions
     public interface IWaifuService
     {
         Card GenerateNewCard(IUser user, CharacterInfo character, Rarity rarity);
-        Card GenerateNewCard(IUser user, CharacterInfo character);
+        Card GenerateNewCard(IUser? user, CharacterInfo character);
         Card GenerateNewCard(IUser user, CharacterInfo character, List<Rarity> rarityExcluded);
-        Embed GetBoosterPackList(SocketUser user, List<BoosterPack> packs);
+        Embed GetBoosterPackList(IUser user, List<BoosterPack> packs);
         double GetExpToUpgrade(Card toUp, Card toSac);
         ItemType RandomizeItemFromMarket();
         Quality RandomizeItemQualityFromMarket();
@@ -29,26 +29,26 @@ namespace DiscordBot.Services.PocketWaifu.Abstractions
         bool EventState { get; set; }
         void SetEventIds(List<ulong> ids);
         Task<CharacterInfo> GetRandomCharacterAsync();
-        Embed GetItemList(SocketUser user, List<Item> items);
-        Task<string> GetWaifuProfileImageAsync(Card card, ITextChannel trashCh);
+        Embed GetItemList(IUser user, List<Item> items);
+        Task<string> GetWaifuProfileImageAsync(Card card, IMessageChannel trashCh);
         List<Card> GetListInRightOrder(IEnumerable<Card> list, HaremType type, string tag);
         Task<List<Card>> OpenBoosterPackAsync(IUser user, BoosterPack pack);
         Task<string> GetSafariViewAsync(SafariImage info, Card card, ITextChannel trashChannel);
         Task<string> GetSafariViewAsync(SafariImage info, ITextChannel trashChannel);
-        Task<Embed> BuildCardImageAsync(Card card, ITextChannel trashChannel, SocketUser owner, bool showStats);
-        Task<Embed> BuildCardViewAsync(Card card, ITextChannel trashChannel, SocketUser owner);
+        Task<Embed> BuildCardImageAsync(Card card, ITextChannel trashChannel, IUser owner, bool showStats);
+        Task<Embed> BuildCardViewAsync(Card card, ITextChannel trashChannel, IUser owner);
         FightHistory MakeFightAsync(List<PlayerInfo> players, bool oneCard = false);
         string GetDeathLog(FightHistory fight, List<PlayerInfo> players);
         Embed GetShopView(ItemWithCost[] items, string name = "Sklepik", string currency = "TC");
         Embed GetItemShopInfo(ItemWithCost item);
-        List<Embed> GetWaifuFromCharacterSearchResult(
+        Task<IEnumerable<Embed>> GetWaifuFromCharacterSearchResult(
             string title,
             IEnumerable<Card> cards,
-            DiscordSocketClient client,
+            IDiscordClient client,
             bool mention);
-        List<Embed> GetWaifuFromCharacterTitleSearchResult(
+        Task<IEnumerable<Embed>> GetWaifuFromCharacterTitleSearchResult(
             IEnumerable<Card> cards,
-            DiscordSocketClient client,
+            IDiscordClient client,
             bool mention);
         Task<Embed> ExecuteShopAsync(
             ShopType type,

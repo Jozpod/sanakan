@@ -11,7 +11,7 @@ namespace Sanakan.DAL.Tests
     public class QuestionRepositoryTests : TestBase
     {
         [TestMethod]
-        public async Task Should_CRUD_Entity()
+        public async Task Should_Return_Question_By_Id()
         {
             var repository = ServiceProvider.GetRequiredService<IQuestionRepository>();
             var entity = new Question

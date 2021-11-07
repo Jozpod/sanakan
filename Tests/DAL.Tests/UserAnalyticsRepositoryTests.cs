@@ -12,7 +12,7 @@ namespace Sanakan.DAL.Tests
     public class UserAnalyticsRepositoryTests : TestBase
     {
         [TestMethod]
-        public async Task Should_CRUD_Entity()
+        public async Task Should_Add_Entity()
         {
             var repository = ServiceProvider.GetRequiredService<IUserAnalyticsRepository>();
             var entity = new UserAnalytics

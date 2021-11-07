@@ -131,7 +131,7 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            var notifChannel = Context.Guild.GetTextChannel(config.NotificationChannelId);
+            var notifChannel = await Context.Guild.GetChannelAsync(config.NotificationChannelId);
             var userRole = Context.Guild.GetRole(config.UserRoleId);
             var muteRole = Context.Guild.GetRole(config.MuteRoleId);
 
@@ -153,7 +153,7 @@ namespace Sanakan.DiscordBot.Modules
             var acceptPayload = new AcceptSession.AcceptSessionPayload
             {
                 Bot = Context.Client.CurrentUser,
-                NotifChannel = notifChannel,
+                NotifChannel = (ITextChannel)notifChannel,
                 MuteRole = muteRole,
                 UserRole = userRole,
                 User = user,

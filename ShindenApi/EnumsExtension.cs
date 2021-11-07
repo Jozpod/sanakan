@@ -1,5 +1,4 @@
 ﻿using Sanakan.ShindenApi.Models.Enums;
-using Shinden.Models;
 
 namespace Sanakan.ShindenApi
 {
@@ -80,17 +79,17 @@ namespace Sanakan.ShindenApi
             }
         }
 
-        public static Sex Parse(this Sex gender, string str)
+        public static Gender Parse(this Gender gender, string str)
         {
             switch(str)
             {
-                case "m": return Sex.Male;
-                case "k": return Sex.Female;
-                case "f": return Sex.Female;
-                case "male": return Sex.Male;
-                case "other": return Sex.Other;
-                case "female": return Sex.Female;
-                default: return Sex.NotSpecified;
+                case "m": return Gender.Male;
+                case "k": return Gender.Female;
+                case "f": return Gender.Female;
+                case "male": return Gender.Male;
+                case "other": return Gender.Other;
+                case "female": return Gender.Female;
+                default: return Gender.NotSpecified;
             }
         }
 

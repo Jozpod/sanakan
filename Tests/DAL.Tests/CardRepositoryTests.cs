@@ -14,29 +14,11 @@ namespace Sanakan.DAL.Tests
     public class CardRepositoryTests : TestBase
     {
         [TestMethod]
-        public async Task Should_CRUD_Entity()
+        public async Task Should_Return_Card_By_Id()
         {
             var repository = ServiceProvider.GetRequiredService<ICardRepository>();
-
-            var user = new User(1, DateTime.UtcNow);
-
-            DbContext.Users.Add(user);
-            await DbContext.SaveChangesAsync();
-
-            var card = new Card(
-                1, "test card", "test card",
-                10, 20, Rarity.A,
-                Dere.Bodere, DateTime.UtcNow);
-           
-            user.GameDeck.Cards.Add(card);
-            await DbContext.SaveChangesAsync();
-
-            var actual = await repository.GetByIdAsync(card.Id);
-            actual.Should().BeEquivalentTo(card, pr => pr
-                .Excluding(npr => npr.ArenaStats)
-                .Excluding(npr => npr.GameDeck)
-                .Excluding(npr => npr.ExpeditionDate)
-                .Excluding(npr => npr.CreatedOn));
+            var actual = await repository.GetByIdAsync(1);
+            actual.Should().NotBeNull();
         }
     }
 }

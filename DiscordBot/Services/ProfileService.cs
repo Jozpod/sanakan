@@ -188,13 +188,13 @@ namespace Sanakan.Services
             }
         }
 
-        public List<string> BuildListView(List<User> list, TopType type, SocketGuild guild)
+        public async Task<List<string>> BuildListViewAsync(List<User> list, TopType type, IGuild guild)
         {
             var view = new List<string>();
 
             foreach (var user in list)
             {
-                var socketGuildUser = guild.GetUser(user.Id);
+                var socketGuildUser = await guild.GetUserAsync(user.Id);
                 if (socketGuildUser == null)
                 {
                     continue;

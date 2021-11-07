@@ -2,10 +2,9 @@ using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
-using Moq.Protected;
-using Sanakan.Common.Configuration;
-using Sanakan.ShindenApi;
+
+using Sanakan.ShindenApi.Models;
+using Sanakan.ShindenApi.Models.Enums;
 using Shinden.API;
 using System;
 using System.Net;
@@ -14,42 +13,48 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace ShindenApi.Tests
+namespace Sanakan.ShindenApi.Tests
 {
     [TestClass]
     public class GetAnimeMangaInfoAsyncTests : Base
     {
-      
-
         [TestMethod]
-        public async Task Should_LogIn_And_Put_Cookies()
+        public async Task Should_Return_Manga_Info()
         {
-            _options
-                .Setup(pr => pr.CurrentValue)
-                .Returns(new ShindenApiConfiguration
-                {
-                    Token = "test_token"
-                });
-
-            var assembly = Assembly.GetExecutingAssembly();
-            var resourceName = "ShindenApi.Tests.TestData.anime-manga-info-result.json";
-            var stream = assembly.GetManifestResourceStream(resourceName);
-
-            _httpClientHandlerMock
-                .Protected()
-                .Setup<Task<HttpResponseMessage>>("SendAsync",
-                    ItExpr.IsAny<HttpRequestMessage>(),
-                    ItExpr.IsAny<CancellationToken>())
-                .ReturnsAsync(new HttpResponseMessage
-                {
-                    StatusCode = HttpStatusCode.OK,
-                    Content = new StreamContent(stream),
-                });
-
             var expected = new AnimeMangaInfo
             {
-
+                Title = new TitleEntry
+                {
+                    MpaaRating = Models.Enums.MpaaRating.R,
+                    RatingStorySum = string.Empty,
+                    Description = new AnimeMangaInfoDescription
+                    {
+                        DescriptionId = 1,
+                        TitleId = 1,
+                        LangCode = Language.English,
+                    },
+                }
             };
+
+            MockHttpOk("manga-info-result.json", HttpMethod.Get);
+
+            var titleId = 1ul;
+            var result = await _shindenClient.GetAnimeMangaInfoAsync(titleId);
+            result.Value.Should().BeEquivalentTo(expected);
+        }
+
+        [TestMethod]
+        public async Task Should_Return_Anime_Info()
+        {
+            var expected = new AnimeMangaInfo
+            {
+                Title = new TitleEntry
+                {
+
+                }
+            };
+
+            MockHttpOk("anime-info-result.json", HttpMethod.Get);
 
             var titleId = 1ul;
             var result = await _shindenClient.GetAnimeMangaInfoAsync(titleId);

@@ -1,10 +1,10 @@
-﻿namespace Shinden.Models
+﻿namespace Sanakan.ShindenApi.Models.Enums
 {
     public enum AlternativeTitleType
     {
-        NotSpecified,
-        Alternative,
-        Translated,
-        Official,
+        NotSpecified = 0,
+        Alternative = 1,
+        Translated = 2,
+        Official = 3,
     }
 }

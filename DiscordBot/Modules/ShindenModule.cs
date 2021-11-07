@@ -23,6 +23,7 @@ using System.Net;
 using System.Collections.Generic;
 using System.IO;
 using Sanakan.ShindenApi.Models.Enums;
+using Sanakan.ShindenApi.Models;
 
 namespace Sanakan.DiscordBot.Modules
 {
@@ -328,7 +329,7 @@ namespace Sanakan.DiscordBot.Modules
             return toSend;
         }
 
-        public async Task SendSearchInfoAsync(SocketCommandContext context, string title, QuickSearchType type)
+        public async Task SendSearchInfoAsync(ICommandContext context, string title, QuickSearchType type)
         {
             if (title.Equals("fate/loli")) {
                 title = "Fate/kaleid Liner Prisma Illya";
@@ -370,18 +371,26 @@ namespace Sanakan.DiscordBot.Modules
             }
         }
 
-        public async Task SendSearchResponseAsync(SocketCommandContext context, string[] toSend, SearchSession session, SearchSession.SearchSessionPayload payload)
+        public async Task SendSearchResponseAsync(
+            ICommandContext context,
+            IEnumerable<string?> toSend,
+            SearchSession session,
+            SearchSession.SearchSessionPayload payload)
         {
-            var message = new Discord.Rest.RestUserMessage[10];
-            for (var index = 0; index < toSend.Length; index++)
+            var messages = new List<IUserMessage>(10);
+            foreach (var item in toSend)
             {
-                if (toSend[index] != null)
+                if (item == null)
                 {
-                    message[index] = await context.Channel.SendMessageAsync(toSend[index]);
+                    continue;
+
                 }
+
+                var message = await context.Channel.SendMessageAsync(item);
+                messages.Add(message);
             }
 
-            payload.Messages = message;
+            payload.Messages = messages;
             _sessionManager.Add(session);
         }
 

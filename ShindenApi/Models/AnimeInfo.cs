@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Sanakan.ShindenApi.Converters;
+using Sanakan.ShindenApi.Models.Enums;
+using System;
 using System.Text.Json.Serialization;
 
 namespace Sanakan.ShindenApi.Models
@@ -9,24 +11,23 @@ namespace Sanakan.ShindenApi.Models
         public string RatingGraphicsCnt { get; set; }
 
         [JsonPropertyName("episode_time")]
+        [JsonConverter(typeof(TimeSpanFromMinutesConverter))]
         public TimeSpan EpisodeTime { get; set; }
-        //ulong.TryParse(episode?.EpisodeTime, out var min);
-        //return TimeSpan.FromMinutes(min);
 
         [JsonPropertyName("anime_type")]
-        public string AnimeType { get; set; }
+        public AnimeType AnimeType { get; set; }
 
         [JsonPropertyName("episodes")]
-        public string Episodes { get; set; }
+        public ulong Episodes { get; set; }
 
         [JsonPropertyName("rating_music_cnt")]
-        public string RatingMusicCnt { get; set; }
+        public double RatingMusicCnt { get; set; }
 
         [JsonPropertyName("rating_graphics_sum")]
-        public string RatingGraphicsSum { get; set; }
+        public double RatingGraphicsSum { get; set; }
 
         [JsonPropertyName("rating_music_sum")]
-        public string RatingMusicSum { get; set; }
+        public double RatingMusicSum { get; set; }
 
         [JsonPropertyName("title_id")]
         public ulong? TitleId { get; set; }

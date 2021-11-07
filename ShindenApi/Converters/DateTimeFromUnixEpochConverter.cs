@@ -5,26 +5,23 @@ using System.Text.Json.Serialization;
 
 namespace Sanakan.ShindenApi.Converters
 {
-    public class DateTimeConverter : JsonConverter<DateTime>
+    public class DateTimeFromUnixEpochConverter : JsonConverter<DateTime>
     {
-        public DateTimeConverter()
-        {
-
-        }
-
         public override DateTime Read(ref Utf8JsonReader reader, Type type, JsonSerializerOptions options)
         {
-            if (reader.TokenType != JsonTokenType.String)
+            if (reader.TokenType != JsonTokenType.Number)
             {
-                throw new Exception("");
+                throw new Exception("Invalid value type");
             }
 
-            return TimeSpan.ParseExact(reader.GetString(), "c", CultureInfo.InvariantCulture);
+            var value = reader.GetDouble();
+
+            return DateTime.UnixEpoch.AddSeconds(value);
         }
 
         public override void Write(Utf8JsonWriter writer, DateTime value, JsonSerializerOptions options)
         {
-            writer.WriteStringValue(value.ToString("c", CultureInfo.InvariantCulture));
+            throw new NotImplementedException();
         }
     }
 }

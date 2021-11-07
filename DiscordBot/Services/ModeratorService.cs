@@ -12,6 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Sanakan.Common;
+using Sanakan.Common.Cache;
 using Sanakan.Common.Extensions;
 using Sanakan.DAL.Models.Configuration;
 using Sanakan.DAL.Models.Management;
@@ -28,10 +29,10 @@ namespace Sanakan.Services
     {
         private readonly DiscordSocketClient _client;
         private readonly ILogger _logger;
-        private readonly Timer _timer;
         private readonly ICacheManager _cacheManager;
         private readonly ISystemClock _systemClock;
         private readonly IServiceScopeFactory _serviceScopeFactory;
+        
         public ModeratorService(
             ILogger<IModeratorService> logger,
             DiscordSocketClient client,
@@ -298,7 +299,7 @@ namespace Sanakan.Services
             }
         }
 
-        public async Task NotifyUserAsync(SocketGuildUser user, string reason)
+        public async Task NotifyUserAsync(IUser user, string reason)
         {
             try
             {
@@ -317,8 +318,8 @@ namespace Sanakan.Services
         }
 
         public async Task NotifyAboutPenaltyAsync(
-            SocketGuildUser user,
-            ITextChannel channel,
+            IGuildUser user,
+            IMessageChannel channel,
             PenaltyInfo penaltyInfo,
             string byWho = "automat")
         {
@@ -367,7 +368,8 @@ namespace Sanakan.Services
                 var directMessageChannel = await user.GetOrCreateDMChannelAsync();
                 if (directMessageChannel != null)
                 {
-                    var content = $"Elo! Zostałeś ukarany mutem na {durationFriendly}.\n\nPodany powód: {penaltyInfo.Reason}\n\nPozdrawiam serdecznie!".ElipseTrimToLength(2000);
+                    var content = $"Elo! Zostałeś ukarany mutem na {durationFriendly}.\n\nPodany powód: {penaltyInfo.Reason}\n\nPozdrawiam serdecznie!"
+                        .ElipseTrimToLength(2000);
                     await directMessageChannel.SendMessageAsync(content);
                     await directMessageChannel.CloseAsync();
                 }
@@ -468,7 +470,7 @@ namespace Sanakan.Services
             penaltyInfoRepository.Remove(penalty);
             await penaltyInfoRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"mute" });
+            _cacheManager.ExpireTag(CacheKeys.Muted);
         }
 
         private async Task UnmuteUserGuildAsync(SocketGuildUser user, SocketRole muteRole, SocketRole muteModRole, IEnumerable<OwnedRole> roles)
@@ -524,7 +526,7 @@ namespace Sanakan.Services
             penaltyInfoRepository.Add(penalty);
             await penaltyInfoRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"mute" });
+            _cacheManager.ExpireTag(CacheKeys.Muted);
 
             await user.Guild.AddBanAsync(user, 0, reason);
 
@@ -599,7 +601,7 @@ namespace Sanakan.Services
             penaltyInfoRepository.Add(penaltyInfo);
             await penaltyInfoRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"mute" });
+            _cacheManager.ExpireTag(CacheKeys.Muted);
 
             return penaltyInfo;
         }

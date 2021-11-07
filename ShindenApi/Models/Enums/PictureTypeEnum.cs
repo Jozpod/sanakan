@@ -1,8 +1,8 @@
-namespace Shinden.Models
+namespace Sanakan.ShindenApi.Models.Enums
 {
     public enum PictureType
     {
-        NotSpecified,
-        Image
+        NotSpecified = 0,
+        Image = 1 
     }
 }

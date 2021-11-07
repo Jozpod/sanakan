@@ -17,7 +17,7 @@ namespace Sanakan.TaskQueue.Messages
         public ulong WinnerUserId { get; set; }
         public uint CardCount { get; set; }
         public IUser WinnerUser { get; set; }
-        public ISocketMessageChannel Channel { get; set; }
+        public IMessageChannel Channel { get; set; }
         public ulong InvokingUserId { get; set; }
     }
 }

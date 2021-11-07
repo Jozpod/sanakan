@@ -7,6 +7,7 @@ using Sanakan.Common;
 using Sanakan.DAL.Models;
 using Microsoft.AspNetCore.Http;
 using Sanakan.DAL.Repositories.Abstractions;
+using Sanakan.Common.Cache;
 
 namespace Sanakan.Web.Controllers
 {
@@ -39,22 +40,21 @@ namespace Sanakan.Web.Controllers
         }
 
         /// <summary>
-        /// Pobiera pytanie po id
+        /// Gets question by identifier.
         /// </summary>
-        /// <param name="id">id pytania</param>
-        /// <response code="500">Internal Server Error</response>
-        [HttpGet("question/{id}")]
+        /// <param name="questionId">The question identifier.</param>
+        [HttpGet("question/{questionId}")]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetQuestionAsync(ulong id)
+        public async Task<IActionResult> GetQuestionAsync(ulong questionId)
         {
-            var result = await _questionRepository.GetCachedQuestionAsync(id);
+            var result = await _questionRepository.GetCachedQuestionAsync(questionId);
             return Ok(result);
         }
 
         /// <summary>
         /// Add new question
         /// </summary>
-        /// <param name="question">The question</param>
+        /// <param name="question">The question content.</param>
         [HttpPost("question")]
         [ProducesResponseType(typeof(Question), StatusCodes.Status200OK)]
         public async Task<IActionResult> AddQuestionAsync([FromBody]Question question)
@@ -62,7 +62,7 @@ namespace Sanakan.Web.Controllers
             _questionRepository.Add(question);
             await _questionRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"quiz" });
+            _cacheManager.ExpireTag(CacheKeys.Quiz);
 
             return ShindenOk("Question added!");
         }
@@ -83,7 +83,7 @@ namespace Sanakan.Web.Controllers
                 _questionRepository.Remove(question);
                 await _questionRepository.SaveChangesAsync();
 
-                _cacheManager.ExpireTag(new string[] { $"quiz" });
+                _cacheManager.ExpireTag(CacheKeys.Quiz);
 
                 return ShindenOk("Question removed!");
             }

@@ -30,8 +30,8 @@ namespace Sanakan.Web.Tests.Controllers.WaifuControllerTests
                 .ReturnsAsync(expected);
 
             var result = await _controller.GetUsersOwningCharacterCardAsync(userId);
-            var ojectResult = result.Should().BeOfType<ObjectResult>().Subject;
-            ojectResult.StatusCode.Should().Be(StatusCodes.Status404NotFound);
+            var okObjectResult = result.Should().BeOfType<ObjectResult>().Subject;
+            okObjectResult.StatusCode.Should().Be(StatusCodes.Status404NotFound);
         }
 
         [TestMethod]

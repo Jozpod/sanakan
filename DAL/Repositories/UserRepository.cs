@@ -27,12 +27,12 @@ namespace Sanakan.DAL.Repositories
             _cacheManager = cacheManager;
         }
 
-        public Task<List<ulong>> GetUserShindenIdsByHavingCharacterAsync(ulong id)
+        public Task<List<ulong>> GetUserShindenIdsByHavingCharacterAsync(ulong characterId)
         {
             var result = _dbContext.Cards
                .Include(x => x.GameDeck)
                    .ThenInclude(x => x.User)
-               .Where(x => x.CharacterId == id
+               .Where(x => x.CharacterId == characterId
                    && x.GameDeck.User.ShindenId.HasValue)
                .AsNoTracking()
                .Select(x => x.GameDeck.User.ShindenId.Value)
@@ -116,9 +116,9 @@ namespace Sanakan.DAL.Repositories
             return result;
         }
 
-        public async Task<User?> GetCachedFullUserByShindenIdAsync(ulong userId)
+        public async Task<User?> GetCachedFullUserByShindenIdAsync(ulong shindenUserId)
         {
-            var key = string.Format(CacheKeys.User, userId);
+            var key = string.Format(CacheKeys.User, shindenUserId);
 
             var cached = _cacheManager.Get<User>(key);
 
@@ -129,7 +129,7 @@ namespace Sanakan.DAL.Repositories
 
             var result = await _dbContext.Users
                 .AsQueryable()
-                .Where(x => x.ShindenId == userId)
+                .Where(x => x.ShindenId == shindenUserId)
                 .Include(x => x.Stats)
                 .Include(x => x.SMConfig)
                 .Include(x => x.TimeStatuses)
@@ -186,10 +186,10 @@ namespace Sanakan.DAL.Repositories
             return result;
         }
 
-        public Task<User?> GetByShindenIdAsync(ulong userShindenId)
+        public Task<User?> GetByShindenIdAsync(ulong shindenUserId)
         {
             var user = _dbContext.Users
-                .FirstOrDefaultAsync(x => x.ShindenId == userShindenId);
+                .FirstOrDefaultAsync(x => x.ShindenId == shindenUserId);
 
             return user;
         }
@@ -230,7 +230,7 @@ namespace Sanakan.DAL.Repositories
                 if (user == null)
                 {
                     user = new User(discordUserId, _systemClock.StartOfMonth);
-                    await _dbContext.Users.AddAsync(user);
+                    _dbContext.Users.Add(user);
                 }
 
                 return user;

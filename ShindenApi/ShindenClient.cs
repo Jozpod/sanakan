@@ -2,13 +2,11 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Text.Json.Serialization;
-using Newtonsoft.Json.Linq;
 using Sanakan.Common;
 using Sanakan.Common.Configuration;
 using Sanakan.ShindenApi.Models.Enums;
 using Shinden;
 using Shinden.API;
-using Shinden.Models;
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -18,10 +16,12 @@ using System.Reflection;
 using System.Threading.Tasks;
 using System.Text.Json;
 using Sanakan.ShindenApi.Models;
+using Sanakan.ShindenApi.Converters;
+using System.Net.Http.Headers;
 
 namespace Sanakan.ShindenApi
 {
-    public class ShindenClient : IShindenClient
+    internal class ShindenClient : IShindenClient
     {
         private readonly HttpClient _httpClient;
         private readonly CookieContainer _cookieContainer;
@@ -34,8 +34,8 @@ namespace Sanakan.ShindenApi
 
         private class Credentials
         {
-            public string Username { get; set; }
-            public string Password { get; set; }
+            public string Username { get; set; } = string.Empty;
+            public string Password { get; set; } = string.Empty;
         }
 
         public ShindenClient(
@@ -44,8 +44,7 @@ namespace Sanakan.ShindenApi
             IOptionsMonitor<ShindenApiConfiguration> options,
             ISystemClock systemClock,
             ILogger<ShindenClient> logger)
-        {
-            //$"{auth.UserAgent} (Shinden.NET/{Assembly.GetAssembly(typeof(ShindenClient)).GetName().Version})"
+        {            
             _httpClient = httpClient;
             _cookieContainer = cookieContainer;
             _options = options;
@@ -53,7 +52,17 @@ namespace Sanakan.ShindenApi
             _logger = logger;
             _expiresOn = DateTime.MinValue;
             _jsonSerializerOptions = new JsonSerializerOptions();
-            _jsonSerializerOptions.Converters.Add();
+            _jsonSerializerOptions.Converters.Add(new GenderConverter());
+            _jsonSerializerOptions.Converters.Add(new LanguageConverter());
+            _jsonSerializerOptions.Converters.Add(new MpaaRatingConverter());
+            _jsonSerializerOptions.Converters.Add(new PictureTypeConverter());
+            _jsonSerializerOptions.Converters.Add(new AnimeTypeConverter());
+            _jsonSerializerOptions.Converters.Add(new MangaTypeConverter());
+            _jsonSerializerOptions.Converters.Add(new AlternativeTitleTypeConverter());
+            _jsonSerializerOptions.Converters.Add(new UserStatusConverter());
+            _jsonSerializerOptions.Converters.Add(new StaffTypeConverter());
+            _jsonSerializerOptions.Converters.Add(new EpisodeTypeConverter());
+            _jsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
         }
 
         private async Task TryRenewSessionAsync()
@@ -71,14 +80,15 @@ namespace Sanakan.ShindenApi
         private void SetSession(LogInResultSession session)
         {
             _expiresOn = _systemClock.UtcNow + _options.CurrentValue.SessionExiry;
+            var baseAddress = _httpClient.BaseAddress;
 
-            _cookieContainer.Add(_httpClient.BaseAddress, new Cookie()
+            _cookieContainer.Add(baseAddress, new Cookie()
             {
                 Name = "name",
                 Value = session.Name,
                 Expires = _expiresOn,
             });
-            _cookieContainer.Add(_httpClient.BaseAddress, new Cookie()
+            _cookieContainer.Add(baseAddress, new Cookie()
             {
                 Name = "id",
                 Value = session.Id,
@@ -104,7 +114,7 @@ namespace Sanakan.ShindenApi
                 return new Result<List<NewEpisode>>();
             }
 
-            var result = await response.Content.ReadFromJsonAsync<NewEpisodeRoot>();
+            var result = await response.Content.ReadFromJsonAsync<NewEpisodeRoot>(_jsonSerializerOptions);
 
             return new Result<List<NewEpisode>>()
             {
@@ -114,6 +124,8 @@ namespace Sanakan.ShindenApi
 
         public async Task<Result<StaffInfo>> GetStaffInfoAsync(ulong staffId)
         {
+            await TryRenewSessionAsync();
+
             var queryData = new Dictionary<string, string>()
             {
                 { "api_key", _options.CurrentValue.Token },
@@ -128,7 +140,7 @@ namespace Sanakan.ShindenApi
                 return new Result<StaffInfo>();
             }
 
-            var result = await response.Content.ReadFromJsonAsync<StaffInfo>();
+            var result = await response.Content.ReadFromJsonAsync<StaffInfo>(_jsonSerializerOptions);
 
             return new Result<StaffInfo>()
             {
@@ -138,6 +150,8 @@ namespace Sanakan.ShindenApi
 
         public async Task<Result<CharacterInfo>> GetCharacterInfoAsync(ulong characterId)
         {
+            await TryRenewSessionAsync();
+
             var oneToStr = 1.ToString();
             var queryData = new Dictionary<string, string>()
             {
@@ -158,7 +172,7 @@ namespace Sanakan.ShindenApi
                 return new Result<CharacterInfo>();
             }
 
-            var result = await response.Content.ReadFromJsonAsync<CharacterInfo>();
+            var result = await response.Content.ReadFromJsonAsync<CharacterInfo>(_jsonSerializerOptions);
 
             return new Result<CharacterInfo>()
             {
@@ -169,6 +183,8 @@ namespace Sanakan.ShindenApi
         #region Title
         public async Task<Result<EpisodesRange>> GetEpisodesRangeAsync(ulong episodeId)
         {
+            await TryRenewSessionAsync();
+
             var queryData = new Dictionary<string, string>()
             {
                 { "api_key", _options.CurrentValue.Token },
@@ -183,7 +199,7 @@ namespace Sanakan.ShindenApi
                 return new Result<EpisodesRange>();
             }
 
-            var result = await response.Content.ReadFromJsonAsync<EpisodesRange>();
+            var result = await response.Content.ReadFromJsonAsync<EpisodesRange>(_jsonSerializerOptions);
 
             return new Result<EpisodesRange>()
             {
@@ -191,8 +207,10 @@ namespace Sanakan.ShindenApi
             };
         }
 
-        public async Task<Result<List<TitleEpisodes>>> GetEpisodesAsync(ulong episodeId)
+        public async Task<Result<TitleEpisodes>> GetEpisodesAsync(ulong episodeId)
         {
+            await TryRenewSessionAsync();
+
             var queryData = new Dictionary<string, string>()
             {
                 { "api_key", _options.CurrentValue.Token },
@@ -204,12 +222,12 @@ namespace Sanakan.ShindenApi
 
             if (!response.IsSuccessStatusCode)
             {
-                return new Result<List<TitleEpisodes>>();
+                return new Result<TitleEpisodes>();
             }
 
-            var result = await response.Content.ReadFromJsonAsync<List<TitleEpisodes>>();
+            var result = await response.Content.ReadFromJsonAsync<TitleEpisodes>(_jsonSerializerOptions);
 
-            return new Result<List<TitleEpisodes>>()
+            return new Result<TitleEpisodes>()
             {
                 Value = result
             };
@@ -217,6 +235,8 @@ namespace Sanakan.ShindenApi
 
         public async Task<Result<AnimeMangaInfo>> GetAnimeMangaInfoAsync(ulong titleId)
         {
+            await TryRenewSessionAsync();
+
             var queryData = new Dictionary<string, string>()
             {
                 { "api_key", _options.CurrentValue.Token },
@@ -233,7 +253,7 @@ namespace Sanakan.ShindenApi
                 return new Result<AnimeMangaInfo>();
             }
 
-            var result = await response.Content.ReadFromJsonAsync<AnimeMangaInfo>();
+            var result = await response.Content.ReadFromJsonAsync<AnimeMangaInfo>(_jsonSerializerOptions);
 
             return new Result<AnimeMangaInfo>()
             {
@@ -243,6 +263,8 @@ namespace Sanakan.ShindenApi
 
         public async Task<Result<TitleRecommendation>> GetRecommendationsAsync(ulong titleId)
         {
+            await TryRenewSessionAsync();
+
             var queryData = new Dictionary<string, string>()
             {
                 { "api_key", _options.CurrentValue.Token },
@@ -257,7 +279,7 @@ namespace Sanakan.ShindenApi
                 return new Result<TitleRecommendation>();
             }
 
-            var result = await response.Content.ReadFromJsonAsync<TitleRecommendation>();
+            var result = await response.Content.ReadFromJsonAsync<TitleRecommendation>(_jsonSerializerOptions);
 
             return new Result<TitleRecommendation>()
             {
@@ -267,6 +289,8 @@ namespace Sanakan.ShindenApi
 
         public async Task<Result<TitleReviews>> GetReviewsAsync(ulong reviewId)
         {
+            await TryRenewSessionAsync();
+
             var queryData = new Dictionary<string, string>()
             {
                 { "api_key", _options.CurrentValue.Token },
@@ -281,7 +305,7 @@ namespace Sanakan.ShindenApi
                 return new Result<TitleReviews>();
             }
 
-            var result = await response.Content.ReadFromJsonAsync<TitleReviews>();
+            var result = await response.Content.ReadFromJsonAsync<TitleReviews>(_jsonSerializerOptions);
 
             return new Result<TitleReviews>()
             {
@@ -291,6 +315,8 @@ namespace Sanakan.ShindenApi
 
         public async Task<Result<TitleRelations>> GetRelationsAsync(ulong titleId)
         {
+            await TryRenewSessionAsync();
+
             var queryData = new Dictionary<string, string>()
             {
                 { "api_key", _options.CurrentValue.Token },
@@ -305,7 +331,7 @@ namespace Sanakan.ShindenApi
                 return new Result<TitleRelations>();
             }
 
-            var result = await response.Content.ReadFromJsonAsync<TitleRelations>();
+            var result = await response.Content.ReadFromJsonAsync<TitleRelations>(_jsonSerializerOptions);
 
             return new Result<TitleRelations>()
             {
@@ -315,6 +341,8 @@ namespace Sanakan.ShindenApi
 
         public async Task<Result<TitleCharacters>> GetCharactersAsync(ulong titleId)
         {
+            await TryRenewSessionAsync();
+
             var queryData = new Dictionary<string, string>()
             {
                 { "api_key", _options.CurrentValue.Token },
@@ -329,7 +357,7 @@ namespace Sanakan.ShindenApi
                 return new Result<TitleCharacters>();
             }
 
-            var result = await response.Content.ReadFromJsonAsync<TitleCharacters>();
+            var result = await response.Content.ReadFromJsonAsync<TitleCharacters>(_jsonSerializerOptions);
 
             return new Result<TitleCharacters>()
             {
@@ -341,6 +369,8 @@ namespace Sanakan.ShindenApi
         #region Search
         public async Task<Result<List<UserSearchResult>>> SearchUserAsync(string nick)
         {
+            await TryRenewSessionAsync();
+
             var queryData = new Dictionary<string, string>()
             {
                 { "query", nick },
@@ -355,7 +385,7 @@ namespace Sanakan.ShindenApi
                 return new Result<List<UserSearchResult>>();
             }
 
-            var result = await response.Content.ReadFromJsonAsync<List<UserSearchResult>>();
+            var result = await response.Content.ReadFromJsonAsync<List<UserSearchResult>>(_jsonSerializerOptions);
 
             return new Result<List<UserSearchResult>>()
             {
@@ -365,6 +395,8 @@ namespace Sanakan.ShindenApi
 
         public async Task<Result<List<CharacterSearchResult>>> SearchCharacterAsync(string name)
         {
+            await TryRenewSessionAsync();
+
             var queryData = new Dictionary<string, string>()
             {
                 { "query", name },
@@ -379,7 +411,7 @@ namespace Sanakan.ShindenApi
                 return new Result<List<CharacterSearchResult>>();
             }
 
-            var result = await response.Content.ReadFromJsonAsync<List<CharacterSearchResult>>();
+            var result = await response.Content.ReadFromJsonAsync<List<CharacterSearchResult>>(_jsonSerializerOptions);
 
             return new Result<List<CharacterSearchResult>>()
             {
@@ -389,6 +421,8 @@ namespace Sanakan.ShindenApi
 
         public async Task<Result<List<StaffSearchResult>>> SearchStaffAsync(string name)
         {
+            await TryRenewSessionAsync();
+
             var queryData = new Dictionary<string, string>()
             {
                 { "query", name },
@@ -403,7 +437,7 @@ namespace Sanakan.ShindenApi
                 return new Result<List<StaffSearchResult>>();
             }
 
-            var result = await response.Content.ReadFromJsonAsync<List<StaffSearchResult>>();
+            var result = await response.Content.ReadFromJsonAsync<List<StaffSearchResult>>(_jsonSerializerOptions);
 
             return new Result<List<StaffSearchResult>>()
             {
@@ -413,6 +447,7 @@ namespace Sanakan.ShindenApi
 
         public async Task<Result<List<QuickSearchResult>>> QuickSearchAsync(string search)
         {
+            await TryRenewSessionAsync();
             var anime = await QuickSearchAnimeAsync(search).ConfigureAwait(false);
             var manga = await QuickSearchMangaAsync(search).ConfigureAwait(false);
             var list = new List<QuickSearchResult>();
@@ -445,6 +480,8 @@ namespace Sanakan.ShindenApi
 
         private async Task<Result<List<QuickSearchResult>>> QuickSearchAnimeAsync(string title)
         {
+            await TryRenewSessionAsync();
+
             var queryData = new Dictionary<string, string>()
             {
                 { "accepted_types", "Anime" },
@@ -461,7 +498,7 @@ namespace Sanakan.ShindenApi
                 return new Result<List<QuickSearchResult>>();
             }
 
-            var result = await response.Content.ReadFromJsonAsync<List<QuickSearchResult>>();
+            var result = await response.Content.ReadFromJsonAsync<List<QuickSearchResult>>(_jsonSerializerOptions);
 
             return new Result<List<QuickSearchResult>>()
             {
@@ -471,6 +508,8 @@ namespace Sanakan.ShindenApi
 
         private async Task<Result<List<QuickSearchResult>>> QuickSearchMangaAsync(string title)
         {
+            await TryRenewSessionAsync();
+
             var queryData = new Dictionary<string, string>()
             {
                 { "accepted_types", "Manga;Manhua;Novel;Doujin;Manhwa;OEL;One+Shot" },
@@ -487,7 +526,7 @@ namespace Sanakan.ShindenApi
                 return new Result<List<QuickSearchResult>>();
             }
 
-            var result = await response.Content.ReadFromJsonAsync<List<QuickSearchResult>>();
+            var result = await response.Content.ReadFromJsonAsync<List<QuickSearchResult>>(_jsonSerializerOptions);
 
             return new Result<List<QuickSearchResult>>()
             {
@@ -498,6 +537,8 @@ namespace Sanakan.ShindenApi
         #region Experimental
         public async Task<Result<List<ulong>>> GetAllCharactersFromAnimeAsync()
         {
+            await TryRenewSessionAsync();
+
             var queryData = new Dictionary<string, string>()
             {
                 { "api_key", _options.CurrentValue.Token }
@@ -512,7 +553,7 @@ namespace Sanakan.ShindenApi
                 return new Result<List<ulong>>();
             }
 
-            var result = await response.Content.ReadFromJsonAsync<List<ulong>>();
+            var result = await response.Content.ReadFromJsonAsync<List<ulong>>(_jsonSerializerOptions);
 
             return new Result<List<ulong>>()
             {
@@ -522,6 +563,8 @@ namespace Sanakan.ShindenApi
 
         public async Task<Result<List<ulong>>> GetAllCharactersFromMangaAsync()
         {
+            await TryRenewSessionAsync();
+
             var queryData = new Dictionary<string, string>()
             {
                 { "api_key", _options.CurrentValue.Token }
@@ -536,7 +579,7 @@ namespace Sanakan.ShindenApi
                 return new Result<List<ulong>>();
             }
 
-            var result = await response.Content.ReadFromJsonAsync<List<ulong>>();
+            var result = await response.Content.ReadFromJsonAsync<List<ulong>>(_jsonSerializerOptions);
 
             return new Result<List<ulong>>()
             {
@@ -546,6 +589,8 @@ namespace Sanakan.ShindenApi
 
         public async Task<Result<List<ulong>>> GetAllCharactersAsync()
         {
+            await TryRenewSessionAsync();
+
             var queryData = new Dictionary<string, string>()
             {
                 { "api_key", _options.CurrentValue.Token }
@@ -560,7 +605,7 @@ namespace Sanakan.ShindenApi
                 return new Result<List<ulong>>();
             }
 
-            var result = await response.Content.ReadFromJsonAsync<List<ulong>>();
+            var result = await response.Content.ReadFromJsonAsync<List<ulong>>(_jsonSerializerOptions);
 
             return new Result<List<ulong>>()
             {
@@ -572,6 +617,8 @@ namespace Sanakan.ShindenApi
 
         public async Task<Result<UserInfo>> GetUserInfoAsync(ulong userId)
         {
+            await TryRenewSessionAsync();
+
             var queryData = new Dictionary<string, string>()
             {
                 { "api_key", _options.CurrentValue.Token },
@@ -586,7 +633,7 @@ namespace Sanakan.ShindenApi
                 return new Result<UserInfo>();
             }
 
-            var result = await response.Content.ReadFromJsonAsync<UserInfo>();
+            var result = await response.Content.ReadFromJsonAsync<UserInfo>(_jsonSerializerOptions);
 
             return new Result<UserInfo>
             {
@@ -596,6 +643,8 @@ namespace Sanakan.ShindenApi
 
         public async Task<Result<List<FavCharacter>>> GetFavouriteCharactersAsync(ulong userId)
         {
+            await TryRenewSessionAsync();
+
             var queryData = new Dictionary<string, string>()
             {
                 { "api_key", _options.CurrentValue.Token },
@@ -610,7 +659,7 @@ namespace Sanakan.ShindenApi
                 return new Result<List<FavCharacter>>();
             }
 
-            var result = await response.Content.ReadFromJsonAsync<List<FavCharacter>>();
+            var result = await response.Content.ReadFromJsonAsync<List<FavCharacter>>(_jsonSerializerOptions);
 
             return new Result<List<FavCharacter>>
             {
@@ -618,8 +667,10 @@ namespace Sanakan.ShindenApi
             };
         }
 
-        public async Task<Result<List<LastWatchedReaded>>> GetLastWatchedAsync(ulong userId, uint limit = 5)
+        public async Task<Result<List<LastWatchedRead>>> GetLastWatchedAsync(ulong userId, uint limit = 5)
         {
+            await TryRenewSessionAsync();
+
             var queryData = new Dictionary<string, string>()
             {
                 { "api_key", _options.CurrentValue.Token },
@@ -632,19 +683,21 @@ namespace Sanakan.ShindenApi
 
             if (!response.IsSuccessStatusCode)
             {
-                return new Result<List<LastWatchedReaded>>();
+                return new Result<List<LastWatchedRead>>();
             }
 
-            var result = await response.Content.ReadFromJsonAsync<List<LastWatchedReaded>>();
+            var result = await response.Content.ReadFromJsonAsync<List<LastWatchedRead>>(_jsonSerializerOptions);
 
-            return new Result<List<LastWatchedReaded>>
+            return new Result<List<LastWatchedRead>>
             {
                 Value = result,
             };
         }
 
-        public async Task<Result<List<LastWatchedReaded>>> GetLastReadAsync(ulong userId, uint limit = 5)
+        public async Task<Result<List<LastWatchedRead>>> GetLastReadAsync(ulong userId, uint limit = 5)
         {
+            await TryRenewSessionAsync();
+
             var queryData = new Dictionary<string, string>()
             {
                 { "api_key", _options.CurrentValue.Token },
@@ -657,12 +710,12 @@ namespace Sanakan.ShindenApi
 
             if (!response.IsSuccessStatusCode)
             {
-                return new Result<List<LastWatchedReaded>>();
+                return new Result<List<LastWatchedRead>>();
             }
 
-            var result = await response.Content.ReadFromJsonAsync<List<LastWatchedReaded>>();
+            var result = await response.Content.ReadFromJsonAsync<List<LastWatchedRead>>(_jsonSerializerOptions);
 
-            return new Result<List<LastWatchedReaded>>
+            return new Result<List<LastWatchedRead>>
             {
                 Value = result,
             };
@@ -676,8 +729,10 @@ namespace Sanakan.ShindenApi
                 { nameof(username), username },
                 { nameof(password), password },
             };
-            // "application/x-www-form-urlencoded"
+
             var content = new FormUrlEncodedContent(formData);
+            content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
+            content.Headers.ContentType.CharSet = "UTF-8";
 
             var queryData = new Dictionary<string, string>()
             {
@@ -693,9 +748,12 @@ namespace Sanakan.ShindenApi
                 return new Result<LogInResult>();
             }            
 
-            var result = await response.Content.ReadFromJsonAsync<LogInResult>();
-            _credentials.Username = username;
-            _credentials.Password = username;
+            var result = await response.Content.ReadFromJsonAsync<LogInResult>(_jsonSerializerOptions);
+            _credentials = new Credentials
+            {
+                Username = username,
+                Password = username
+            };
             var session = result.Session;
             SetSession(session);
 
@@ -707,12 +765,16 @@ namespace Sanakan.ShindenApi
         public async Task<Result<TitleStatusAfterChange>> ChangeTitleStatusAsync(
             ulong userId, ListType status, ulong titleId)
         {
+            await TryRenewSessionAsync();
+
             var formData = new Dictionary<string, string>()
             {
                 { nameof(status), status.ToQuery() },
             };
 
             var content = new FormUrlEncodedContent(formData);
+            content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
+            content.Headers.ContentType.CharSet = "UTF-8";
 
             var queryData = new Dictionary<string, string>()
             {
@@ -728,20 +790,18 @@ namespace Sanakan.ShindenApi
                 return new Result<TitleStatusAfterChange>();
             }
 
-            var result = await response.Content.ReadFromJsonAsync<TitleStatusAfterChange>();
+            var result = await response.Content.ReadFromJsonAsync<TitleStatusAfterChange>(_jsonSerializerOptions);
 
             return new Result<TitleStatusAfterChange>
             {
                 Value = result,
             };
-
-            //var config = new ChangeTitleStatusConfig() { TitleId = id, NewListType = status, UserId = Get().Id };
-            //var raw = await QueryAsync(new ChangeTitleStatusQuery(config)).ConfigureAwait(false);
-            //return new ResponseFinal<IEmptyResponse>(raw.Code, raw.Body?.ToModel());
         }
 
         public async Task<Result<TitleStatusAfterChange>> RemoveTitleFromListAsync(ulong userId, ulong titleId)
         {
+            await TryRenewSessionAsync();
+
             var queryData = new Dictionary<string, string>()
             {
                 { "api_key", _options.CurrentValue.Token },
@@ -756,7 +816,7 @@ namespace Sanakan.ShindenApi
                 return new Result<TitleStatusAfterChange>();
             }
 
-            var result = await response.Content.ReadFromJsonAsync<TitleStatusAfterChange>();
+            var result = await response.Content.ReadFromJsonAsync<TitleStatusAfterChange>(_jsonSerializerOptions);
 
             return new Result<TitleStatusAfterChange>
             {
@@ -766,6 +826,8 @@ namespace Sanakan.ShindenApi
 
         public async Task<Result<IncreaseWatched>> IncreaseNumberOfWatchedEpisodesAsync(ulong userId, ulong titleId)
         {
+            await TryRenewSessionAsync();
+
             var queryData = new Dictionary<string, string>()
             {
                 { "api_key", _options.CurrentValue.Token },
@@ -780,7 +842,7 @@ namespace Sanakan.ShindenApi
                 return new Result<IncreaseWatched>();
             }
 
-            var result = await response.Content.ReadFromJsonAsync<IncreaseWatched>();
+            var result = await response.Content.ReadFromJsonAsync<IncreaseWatched>(_jsonSerializerOptions);
 
             return new Result<IncreaseWatched>
             {
@@ -790,6 +852,8 @@ namespace Sanakan.ShindenApi
 
         public async Task<Result<Status>> RateAnimeAsync(ulong titleId, AnimeRateType type, uint value)
         {
+            await TryRenewSessionAsync();
+
             var formData = new Dictionary<string, string>()
             {
                 { nameof(type), type.ToQuery() },
@@ -797,6 +861,8 @@ namespace Sanakan.ShindenApi
             };
 
             var content = new FormUrlEncodedContent(formData);
+            content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
+            content.Headers.ContentType.CharSet = "UTF-8";
 
             var response = await _httpClient.PostAsync($"anime/{titleId}/rate", content);
 
@@ -805,7 +871,7 @@ namespace Sanakan.ShindenApi
                 return new Result<Status>();
             }
 
-            var result = await response.Content.ReadFromJsonAsync<Status>();
+            var result = await response.Content.ReadFromJsonAsync<Status>(_jsonSerializerOptions);
 
             return new Result<Status>()
             {
@@ -827,6 +893,8 @@ namespace Sanakan.ShindenApi
 
         public async Task<Result<Status>> RateMangaAsync(ulong titleId, MangaRateType type, uint value)
         {
+            await TryRenewSessionAsync();
+
             var formData = new Dictionary<string, string>()
             {
                 { "type", ToQuery(type) },
@@ -834,6 +902,8 @@ namespace Sanakan.ShindenApi
             };
 
             var content = new FormUrlEncodedContent(formData);
+            content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
+            content.Headers.ContentType.CharSet = "UTF-8";
 
             var queryData = new Dictionary<string, string>()
             {
@@ -849,7 +919,7 @@ namespace Sanakan.ShindenApi
                 return new Result<Status>();
             }
 
-            var result = await response.Content.ReadFromJsonAsync<Status>();
+            var result = await response.Content.ReadFromJsonAsync<Status>(_jsonSerializerOptions);
 
             return new Result<Status>()
             {
@@ -859,12 +929,16 @@ namespace Sanakan.ShindenApi
 
         public async Task<Result<Modification>> AddToFavouritesAsync(ulong userId, FavouriteType type, ulong id)
         {
+            await TryRenewSessionAsync();
+
             var formData = new Dictionary<string, string>()
             {
                 { "id", $"{type.ToString().ToLower()}-{id}" }
             };
 
             var content = new FormUrlEncodedContent(formData);
+            content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
+            content.Headers.ContentType.CharSet = "UTF-8";
 
             var queryData = new Dictionary<string, string>()
             {
@@ -880,7 +954,7 @@ namespace Sanakan.ShindenApi
                 return new Result<Modification>();
             }
 
-            var result = await response.Content.ReadFromJsonAsync<Modification>();
+            var result = await response.Content.ReadFromJsonAsync<Modification>(_jsonSerializerOptions);
 
             return new Result<Modification>()
             {
@@ -890,12 +964,16 @@ namespace Sanakan.ShindenApi
 
         public async Task<Result<Modification>> RemoveFromFavouritesAsync(ulong userId, FavouriteType type, ulong favouriteId)
         {
+            await TryRenewSessionAsync();
+
             var formData = new Dictionary<string, string>()
             {
-                { "id", $"type.ToQuery(favouriteId)" }
+                { "id", $"{type.ToString().ToLower()}-{favouriteId}" }
             };
 
             var content = new FormUrlEncodedContent(formData);
+            content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
+            content.Headers.ContentType.CharSet = "UTF-8";
 
             var queryData = new Dictionary<string, string>()
             {
@@ -916,7 +994,7 @@ namespace Sanakan.ShindenApi
                 return new Result<Modification>();
             }
 
-            var result = await response.Content.ReadFromJsonAsync<Modification>();
+            var result = await response.Content.ReadFromJsonAsync<Modification>(_jsonSerializerOptions);
 
             return new Result<Modification>()
             {

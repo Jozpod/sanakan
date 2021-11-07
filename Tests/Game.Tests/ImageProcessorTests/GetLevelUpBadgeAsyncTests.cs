@@ -9,6 +9,7 @@ using Shinden.API;
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Sanakan.ShindenApi.Models;
 
 namespace Sanakan.Game.Tests
 {

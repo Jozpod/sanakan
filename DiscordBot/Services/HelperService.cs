@@ -10,6 +10,7 @@ using Sanakan.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace Sanakan.Services
@@ -299,30 +300,47 @@ namespace Sanakan.Services
             };
         }
 
-        public IEmbed GetInfoAboutServer(SocketGuild guild)
+        public async Task<IEmbed> GetInfoAboutServerAsync(IGuild guild)
         {
             var author = new EmbedAuthorBuilder().WithName(guild.Name);
-            if (guild.IconUrl != null) author.WithIconUrl(guild.IconUrl);
+            if (guild.IconUrl != null)
+            {
+                author.WithIconUrl(guild.IconUrl);
+            }
+
+            var fields = await GetInfoGuildFieldsAsync(guild);
 
             var embed = new EmbedBuilder
             {
-                Fields = GetInfoGuildFields(guild),
+                Fields = fields,
                 Color = EMType.Info.Color(),
                 Author = author,
             };
 
-            if (guild.IconUrl != null) embed.WithThumbnailUrl(guild.IconUrl);
+            if (guild.IconUrl != null)
+            {
+                embed.WithThumbnailUrl(guild.IconUrl);
+            }
 
             return embed.Build();
         }
 
-        private List<EmbedFieldBuilder> GetInfoGuildFields(SocketGuild guild)
+        private async Task<List<EmbedFieldBuilder>> GetInfoGuildFieldsAsync(IGuild guild)
         {
-            string roles = "";
+            var roles = new StringBuilder(100);
+            var owner = await guild.GetOwnerAsync();
+            var users = await guild.GetUsersAsync();
+            var channels = await guild.GetChannelsAsync();
+            var textChannelsCount = channels.OfType<ITextChannel>().Count();
+            var voiceChannelsCount = channels.OfType<IVoiceChannel>().Count();
+
             foreach (var item in guild.Roles.OrderByDescending(x => x.Position))
             {
-                if (!item.IsEveryone && !ulong.TryParse(item.Name, out var id))
-                    roles += item.Mention + " ";
+                var isEveryone = item.Id == guild.Id;
+                if (isEveryone && !ulong.TryParse(item.Name, out var id))
+                {
+                    roles.AppendFormat("{0} ", item.Mention);
+                }
             }
 
             return new List<EmbedFieldBuilder>
@@ -336,7 +354,7 @@ namespace Sanakan.Services
                 new EmbedFieldBuilder
                 {
                     Name = "Właściciel",
-                    Value = guild.Owner.Mention,
+                    Value = owner.Mention,
                     IsInline = true
                 },
                 new EmbedFieldBuilder
@@ -348,25 +366,25 @@ namespace Sanakan.Services
                 new EmbedFieldBuilder
                 {
                     Name = "Liczba użytkowników",
-                    Value = guild.Users.Count,
+                    Value = users.Count,
                     IsInline = true
                 },
                 new EmbedFieldBuilder
                 {
                     Name = "Kanały tekstowe",
-                    Value = guild.TextChannels.Count,
+                    Value = textChannelsCount,
                     IsInline = true
                 },
                 new EmbedFieldBuilder
                 {
                     Name = "Kanały głosowe",
-                    Value = guild.VoiceChannels.Count,
+                    Value = voiceChannelsCount,
                     IsInline = true
                 },
                 new EmbedFieldBuilder
                 {
                     Name = $"Role[{guild.Roles.Count}]",
-                    Value = roles.ElipseTrimToLength(EmbedFieldBuilder.MaxFieldValueLength),
+                    Value = roles.ToString().ElipseTrimToLength(EmbedFieldBuilder.MaxFieldValueLength),
                     IsInline = false
                 }
             };

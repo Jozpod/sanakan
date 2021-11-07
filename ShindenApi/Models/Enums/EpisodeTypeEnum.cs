@@ -1,10 +1,10 @@
-﻿namespace Shinden.Models
+﻿namespace Sanakan.ShindenApi.Models.Enums
 {
     public enum EpisodeType
     {
-        NotSpecified,
-        Standard,
-        Special,
-        Ova,
+        NotSpecified = 0,
+        Standard = 1,
+        Special = 2,
+        Ova = 3,
     }
 }

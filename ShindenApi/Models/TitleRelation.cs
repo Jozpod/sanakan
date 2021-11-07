@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Sanakan.ShindenApi.Converters;
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace Sanakan.ShindenApi.Models
@@ -18,9 +19,11 @@ namespace Sanakan.ShindenApi.Models
         public string DictI18NId { get; set; }
 
         [JsonPropertyName("dmca")]
-        public string Dmca { get; set; }
+        [JsonConverter(typeof(ZeroOneToBoolConverter))]
+        public bool Dmca { get; set; }
 
         [JsonPropertyName("title")]
+        [JsonConverter(typeof(HtmlDecodeConverter))]
         public string Title { get; set; }
 
         [JsonPropertyName("type")]
@@ -51,7 +54,7 @@ namespace Sanakan.ShindenApi.Models
         public string RatingTitlecahractersSum { get; set; }
 
         [JsonPropertyName("ranking_position")]
-        public string RankingPosition { get; set; }
+        public ulong RankingPosition { get; set; }
 
         [JsonPropertyName("ranking_rate")]
         public string RankingRate { get; set; }
@@ -96,7 +99,6 @@ namespace Sanakan.ShindenApi.Models
         public string RelationOrder { get; set; }
 
         [JsonPropertyName("r_title_id")]
-        public string RTitleId { get; set; }
-
+        public ulong RTitleId { get; set; }
     }
 }

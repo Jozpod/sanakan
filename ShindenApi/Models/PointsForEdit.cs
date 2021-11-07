@@ -1,10 +1,6 @@
 ﻿using System.Text.Json.Serialization;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Text.Json.Serialization;
 
-namespace Sanakan.ShindenApi.API.Common
+namespace Sanakan.ShindenApi.Models
 {
     public class PointsForEdit
     {

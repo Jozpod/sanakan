@@ -178,9 +178,9 @@ namespace Sanakan.Web.Controllers
         }
 
         /// <summary>
-        /// Pobiera surową listę życzeń użtykownika
+        /// Gets the wishlist for given user.
         /// </summary>
-        /// <param name="id">id użytkownika shindena</param>
+        /// <param name="id">The shinden user identifier.</param>
         /// <returns>lista życzeń</returns>
         [HttpGet("user/shinden/{id}/wishlist/raw")]
         [ProducesResponseType(typeof(IEnumerable<WishlistObject>), StatusCodes.Status200OK)]

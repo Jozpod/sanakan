@@ -1,4 +1,6 @@
-﻿using System.Text.Json.Serialization;
+﻿using Sanakan.ShindenApi.Converters;
+using Sanakan.ShindenApi.Models.Enums;
+using System.Text.Json.Serialization;
 
 namespace Sanakan.ShindenApi.Models
 {
@@ -8,10 +10,11 @@ namespace Sanakan.ShindenApi.Models
         public ulong DescriptionId { get; set; }
 
         [JsonPropertyName("description")]
-        public string OtherDescription { get; set; } // HttpUtility.HtmlDecode(desc?.OtherDescription)?.RemoveBBCode(),
+        [JsonConverter(typeof(HtmlDecodeAndRemoveBBCodeConverter))]
+        public string OtherDescription { get; set; }
 
         [JsonPropertyName("lang_code")]
-        public string LangCode { get; set; }
+        public Language LangCode { get; set; }
 
         [JsonPropertyName("title_id")]
         public ulong TitleId { get; set; }

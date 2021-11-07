@@ -1,19 +1,22 @@
-﻿using System.Text.Json.Serialization;
+﻿using Sanakan.ShindenApi.Converters;
+using Sanakan.ShindenApi.Models.Enums;
+using System.Text.Json.Serialization;
 
-namespace Sanakan.ShindenApi.API.Common
+namespace Sanakan.ShindenApi.Models
 {
     public class CharacterBio
     {
         [JsonPropertyName("character_biography_id")]
-        public string CharacterBiographyId { get; set; }
+        public ulong CharacterBiographyId { get; set; }
 
         [JsonPropertyName("character_id")]
-        public string CharacterId { get; set; }
+        public ulong CharacterId { get; set; }
 
         [JsonPropertyName("biography")]
+        [JsonConverter(typeof(HtmlDecodeConverter))]
         public string Biography { get; set; }
 
         [JsonPropertyName("lang")]
-        public string Lang { get; set; }
+        public Language Lang { get; set; }
     }
 }

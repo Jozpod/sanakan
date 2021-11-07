@@ -1,3 +1,6 @@
+using Sanakan.ShindenApi.Converters;
+using Sanakan.ShindenApi.Models.Enums;
+using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
@@ -6,66 +9,60 @@ namespace Sanakan.ShindenApi.Models
     public class Episode
     {
         [JsonPropertyName("episode_id")]
-        public string EpisodeId { get; set; }
+        public ulong EpisodeId { get; set; }
 
         [JsonPropertyName("episode_title")]
         public string EpisodeTitle { get; set; }
 
         [JsonPropertyName("type")]
-        public string Type { get; set; }
+        public EpisodeType Type { get; set; }
 
         [JsonPropertyName("is_filer")]
-        public string IsFiler { get; set; }
+        public bool IsFiler { get; set; }
 
         [JsonPropertyName("is_special")]
-        public string IsSpecial { get; set; }
+        public bool IsSpecial { get; set; }
 
         [JsonPropertyName("title_id")]
-        public string TitleId { get; set; }
+        public ulong TitleId { get; set; }
 
         [JsonPropertyName("title_main_id")]
         public string TitleMainId { get; set; }
 
-
         [JsonPropertyName("episode_time")]
-        public string EpisodeTime { get; set; }
-
+        [JsonConverter(typeof(TimeSpanFromMinutesConverter))]
+        public TimeSpan? EpisodeTime { get; set; }
 
         [JsonPropertyName("episode_no")]
-        public string EpisodeNo { get; set; }
-
+        public ulong EpisodeNo { get; set; }
 
         [JsonPropertyName("air_date")]
-        public string AirDate { get; set; }
-
+        [JsonConverter(typeof(DateTimeyyyyMMddConverter))]
+        public DateTime? AirDate { get; set; }
 
         [JsonPropertyName("air_channell")]
         public string AirChannell { get; set; }
 
         [JsonPropertyName("is_accepted")]
-        public string IsAccepted { get; set; }
+        public bool IsAccepted { get; set; }
 
         [JsonPropertyName("episode_title_id")]
-        public string EpisodeTitleId { get; set; }
-
+        public ulong EpisodeTitleId { get; set; }
 
         [JsonPropertyName("title_type")]
         public string TitleType { get; set; }
 
-
         [JsonPropertyName("title")]
+        [JsonConverter(typeof(HtmlDecodeAndRemoveBBCodeConverter))]
         public string Title { get; set; }
 
-
         [JsonPropertyName("lang")]
-        public string Lang { get; set; }
-
+        public Language Lang { get; set; }
 
         [JsonPropertyName("langs")]
         public List<string> Langs { get; set; }
 
-
         [JsonPropertyName("has_online")]
-        public string HasOnline { get; set; }
+        public bool HasOnline { get; set; }
     }
 }

@@ -1,62 +1,67 @@
-using System.Text.Json.Serialization;
-using Shinden.Models;
-using System;
+﻿using System.Text.Json.Serialization;
 
-namespace Shinden.API
+namespace Sanakan.ShindenApi.Models
 {
-    public class LastWatchedReaded
+    public class StaffInfoRelation
     {
-        [JsonPropertyName("watched_episode_id")]
-        public string WatchedEpisodeId { get; set; }
-
-        [JsonPropertyName("user_id")]
-        public string UserId { get; set; }
-
-        [JsonPropertyName("episode_id")]
-        public ulong EpisodeId { get; set; }
+        [JsonPropertyName("many_id")]
+        public ulong ManyId { get; set; }
 
         [JsonPropertyName("title_id")]
-        public ulong TitleId { get; set; }
+        public string TitleId { get; set; }
 
-        [JsonPropertyName("view_cnt")]
-        public uint ViewCnt { get; set; }
+        [JsonPropertyName("staff_id")]
+        public ulong StaffId { get; set; }
 
-        [JsonPropertyName("created_time")]
-        public DateTime CreatedTime { get; set; } // DateTime.ParseExact(title.CreatedTime, "yyyy-MM-dd HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture);
+        [JsonPropertyName("staff_i18n_id")]
+        public string StaffI18NId { get; set; }
 
-        [JsonPropertyName("type")]
-        public MangaType Type { get; set; } //
+        [JsonPropertyName("staff_detalis")]
+        public string StaffDetalis { get; set; }
 
-        [JsonPropertyName("is_filer")]
-        public bool IsFiler { get; set; }
+        [JsonPropertyName("character_id")]
+        public ulong? CharacterId { get; set; }
 
-        [JsonPropertyName("is_special")]
-        public bool IsSpecial { get; set; }
+        [JsonPropertyName("character_i18n_id")]
+        public string CharacterI18NId { get; set; }
 
-        [JsonPropertyName("title_main_id")]
-        public string TitleMainId { get; set; }
+        [JsonPropertyName("seiyuu_lang")]
+        public string SeiyuuLang { get; set; }
 
-        [JsonPropertyName("episode_time")]
-        public string EpisodeTime { get; set; }
+        [JsonPropertyName("first_name")]
+        public string FirstName { get; set; }
 
-        [JsonPropertyName("episode_no")]
-        public long EpisodeNo { get; set; }
+        [JsonPropertyName("last_name")]
+        public string LastName { get; set; }
 
-        [JsonPropertyName("air_date")]
-        public string AirDate { get; set; }
+        [JsonPropertyName("picture_artifact_id")]
+        public string PictureArtifactId { get; set; }
 
-        [JsonPropertyName("air_channell")]
-        public string AirChannell { get; set; }
+        [JsonPropertyName("role")]
+        public string Role { get; set; }
 
-        [JsonPropertyName("is_accepted")]
-        public string IsAccepted { get; set; }
+        [JsonPropertyName("c_order")]
+        public string COrder { get; set; }
 
+        [JsonPropertyName("s_first_name")]
+        public string SFirstName { get; set; }
+
+        [JsonPropertyName("s_last_name")]
+        public string SLastName { get; set; }
+
+        [JsonPropertyName("s_picture_artifact_id")]
+        public string SPictureArtifactId { get; set; }
+
+        [JsonPropertyName("position")]
+        public string Position { get; set; }
+        [JsonPropertyName("s_order")]
+        public string SOrder { get; set; }
         [JsonPropertyName("dmca")]
         public string Dmca { get; set; }
-
         [JsonPropertyName("title")]
         public string Title { get; set; }
-
+        [JsonPropertyName("type")]
+        public string Type { get; set; }
         [JsonPropertyName("rating_total_sum")]
         public string RatingTotalSum { get; set; }
 
@@ -82,7 +87,7 @@ namespace Shinden.API
         public string RatingTitlecahractersSum { get; set; }
 
         [JsonPropertyName("ranking_position")]
-        public string RankingPosition { get; set; }
+        public ulong RankingPosition { get; set; }
 
         [JsonPropertyName("ranking_rate")]
         public string RankingRate { get; set; }
@@ -107,9 +112,10 @@ namespace Shinden.API
 
         [JsonPropertyName("mpaa_rating")]
         public string MpaaRating { get; set; }
-
         [JsonPropertyName("cover_artifact_id")]
-        public ulong CoverArtifactId { get; set; }
+        public string CoverArtifactId { get; set; }
+        [JsonPropertyName("c_title_id")]
+        public string CTitleId { get; set; }
 
         [JsonPropertyName("rating_graphics_sum")]
         public string RatingGraphicsSum { get; set; }
@@ -124,39 +130,24 @@ namespace Shinden.API
         public string RatingMusicCnt { get; set; }
 
         [JsonPropertyName("episodes")]
-        public long Episodes { get; set; }
+        public string Episodes { get; set; }
+
+        [JsonPropertyName("episode_time")]
+        public string EpisodeTime { get; set; }
 
         [JsonPropertyName("anime_type")]
         public string AnimeType { get; set; }
 
-        [JsonPropertyName("watched_chapter_id")]
-        public string WatchedChapterId { get; set; }
-
-        [JsonPropertyName("chapter_id")]
-        public ulong ChapterId { get; set; }
-
-        [JsonPropertyName("chapter_no")]
-        public long ChapterNo { get; set; }
-
-        [JsonPropertyName("volume_no")]
-        public long VolumeNo { get; set; }
-
-        [JsonPropertyName("chapter_type")]
-        public string ChapterType { get; set; }
-
-        [JsonPropertyName("publish_date")]
-        public string PublishDate { get; set; }
-
         [JsonPropertyName("rating_lines_sum")]
-        public string RatingLinesSum { get; set; }
+        public double RatingLinesSum { get; set; }
 
         [JsonPropertyName("rating_lines_cnt")]
-        public string RatingLinesCnt { get; set; }
+        public double RatingLinesCnt { get; set; }
 
         [JsonPropertyName("volumes")]
-        public long Volumes { get; set; }
+        public string Volumes { get; set; }
 
         [JsonPropertyName("chapters")]
-        public long Chapters { get; set; }
+        public string Chapters { get; set; }
     }
 }

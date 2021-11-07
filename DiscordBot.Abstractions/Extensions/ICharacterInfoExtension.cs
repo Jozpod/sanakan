@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
-using Shinden.Models;
 using Discord;
 using Shinden.API;
 using Sanakan.DiscordBot.Abstractions.Models;
+using Sanakan.ShindenApi.Models;
+using Sanakan.ShindenApi.Models.Enums;
 
 namespace Sanakan.Extensions
 {
@@ -63,7 +64,7 @@ namespace Sanakan.Extensions
                 }
             };
 
-            if (info.Gender == Sex.Female)
+            if (info.Gender == Gender.Female)
             {
                 fields.Add(new EmbedFieldBuilder()
                 {
@@ -90,13 +91,13 @@ namespace Sanakan.Extensions
             return fields;
         }
 
-        public static string ToModel(this Sex s)
+        public static string ToModel(this Gender gender)
         {
-            switch(s)
+            switch(gender)
             {
-                case Sex.Other: return "Helikopter bojowy";
-                case Sex.Female: return "Kobieta";
-                case Sex.Male: return "Mężczyzna";
+                case Gender.Other: return "Helikopter bojowy";
+                case Gender.Female: return "Kobieta";
+                case Gender.Male: return "Mężczyzna";
                 default: return "Homoniewiadomo";
             }
         }

@@ -1,10 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
-using Sanakan.ShindenApi;
-using Sanakan.ShindenApi.API.Common;
 using Sanakan.ShindenApi.Converters;
+using Sanakan.ShindenApi.Models.Enums;
 using Sanakan.ShindenApi.Utilities;
-using Shinden.Models;
 
 namespace Sanakan.ShindenApi.Models
 {
@@ -14,47 +13,53 @@ namespace Sanakan.ShindenApi.Models
         public ulong CharacterId { get; set; }
 
         [JsonPropertyName("first_name")]
+        [JsonConverter(typeof(HtmlDecodeConverter))]
         public string FirstName { get; set; }
 
         [JsonPropertyName("last_name")]
+        [JsonConverter(typeof(HtmlDecodeConverter))]
         public string LastName { get; set; }
 
         [JsonPropertyName("is_real")]
         public bool IsReal { get; set; }
 
         [JsonPropertyName("birth_date")]
-        public string BirthDate { get; set; }
-         //return DateTime.ParseExact(info.BirthDate, "yyyy-MM-dd",
-         //       System.Globalization.CultureInfo.InvariantCulture);
+        [JsonConverter(typeof(DateTimeyyyyMMddConverter))]
+        public DateTime? BirthDate { get; set; }
 
         [JsonPropertyName("age")]
-        public string Age { get; set; }
+        [JsonConverter(typeof(HtmlDecodeConverter))]
+        public string? Age { get; set; }
 
         [JsonPropertyName("death_date")]
-        public string DeathDate { get; set; }
-        //return DateTime.ParseExact(info.DeathDate, "yyyy-MM-dd",
-        //        System.Globalization.CultureInfo.InvariantCulture);
+        [JsonConverter(typeof(DateTimeyyyyMMddConverter))]
+        public DateTime? DeathDate { get; set; }
 
         [JsonPropertyName("gender")]
-        [JsonConverter(typeof(EnumConverter<>))]
-        public Sex Gender { get; set; } // TO-DO
+        public Gender Gender { get; set; }
 
         [JsonPropertyName("bloodtype")]
+        [JsonConverter(typeof(HtmlDecodeConverter))]
         public string Bloodtype { get; set; }
 
         [JsonPropertyName("height")]
+        [JsonConverter(typeof(HtmlDecodeConverter))]
         public string Height { get; set; }
 
         [JsonPropertyName("weight")]
+        [JsonConverter(typeof(HtmlDecodeConverter))]
         public string Weight { get; set; }
 
         [JsonPropertyName("bust")]
+        [JsonConverter(typeof(HtmlDecodeConverter))]
         public string Bust { get; set; }
 
         [JsonPropertyName("waist")]
+        [JsonConverter(typeof(HtmlDecodeConverter))]
         public string Waist { get; set; }
 
         [JsonPropertyName("hips")]
+        [JsonConverter(typeof(HtmlDecodeConverter))]
         public string Hips { get; set; }
 
         [JsonPropertyName("picture_artifact_id")]
@@ -70,7 +75,7 @@ namespace Sanakan.ShindenApi.Models
         public List<PointsForEdit>? Points { get; set; }
 
         [JsonPropertyName("relations")]
-        public List<Relation>? Relations { get; set; }
+        public List<StaffInfoRelation>? Relations { get; set; }
 
         [JsonPropertyName("pictures")]
         public List<ImagePicture> Pictures { get; set; }

@@ -1,8 +1,7 @@
 using System.Text.Json.Serialization;
-using Shinden.Models;
-using System.Text.Json.Serialization;
+using Sanakan.ShindenApi.Models.Enums;
 
-namespace Shinden.API
+namespace Sanakan.ShindenApi.Models
 {
     public class QuickSearchResult
     {

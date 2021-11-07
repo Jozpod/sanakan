@@ -6,6 +6,7 @@ using Moq;
 using Moq.Protected;
 using Sanakan.Common.Configuration;
 using Sanakan.ShindenApi;
+using Sanakan.ShindenApi.Models;
 using Shinden.API;
 using System;
 using System.Collections.Generic;
@@ -16,7 +17,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace ShindenApi.Tests
+namespace Sanakan.ShindenApi.Tests
 {
     [TestClass]
     public class GetReviewsAsyncTests : Base
@@ -24,27 +25,7 @@ namespace ShindenApi.Tests
         [TestMethod]
         public async Task Should_Return_Reviews()
         {
-            _options
-                .Setup(pr => pr.CurrentValue)
-                .Returns(new ShindenApiConfiguration
-                {
-                    Token = "test_token"
-                });
-
-            var assembly = Assembly.GetExecutingAssembly();
-            var resourceName = "ShindenApi.Tests.TestData.reviews-result.json";
-            var stream = assembly.GetManifestResourceStream(resourceName);
-
-            _httpClientHandlerMock
-                .Protected()
-                .Setup<Task<HttpResponseMessage>>("SendAsync",
-                    ItExpr.IsAny<HttpRequestMessage>(),
-                    ItExpr.IsAny<CancellationToken>())
-                .ReturnsAsync(new HttpResponseMessage
-                {
-                    StatusCode = HttpStatusCode.OK,
-                    Content = new StreamContent(stream),
-                });
+            MockHttpOk("reviews-result.json", HttpMethod.Get);
 
             var review = new TitleReviews
             {
@@ -52,7 +33,16 @@ namespace ShindenApi.Tests
                 {
                     new Review
                     {
-                        
+                        ReviewId = 1,
+                        EnterCnt = 1,
+                        RateCount = 1,
+                        UserId = 1,
+                        ReadCnt = 1,
+                        Avatar = 1,
+                        Name = string.Empty,
+                        IsAbstract = true,
+                        Rating = 1,
+                        ReviewContent = string.Empty,
                     }
                 }
             };

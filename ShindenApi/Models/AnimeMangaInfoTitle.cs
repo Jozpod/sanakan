@@ -3,13 +3,15 @@ using Sanakan.ShindenApi.Utilities;
 using System;
 using System.Collections.Generic;
 using Sanakan.ShindenApi.Models;
+using Sanakan.ShindenApi.Converters;
+using Sanakan.ShindenApi.Models.Enums;
 
-namespace Sanakan.ShindenApi.API.Common
+namespace Sanakan.ShindenApi.Models
 {
     public class TitleEntry
     {
         [JsonPropertyName("mpaa_rating")]
-        public string MpaaRating { get; set; }
+        public MpaaRating MpaaRating { get; set; }
 
         [JsonPropertyName("rating_story_sum")]
         public string RatingStorySum { get; set; }
@@ -18,22 +20,25 @@ namespace Sanakan.ShindenApi.API.Common
         public AnimeMangaInfoDescription Description { get; set; }
 
         [JsonPropertyName("anime")]
-        public AnimeInfo Anime { get; set; }
+        public AnimeInfo? Anime { get; set; }
 
         [JsonPropertyName("manga")]
-        public MangaInfo Manga { get; set; }
+        public MangaInfo? Manga { get; set; }
 
         [JsonPropertyName("add_date")]
-        public DateTime AddDate { get; set; } // DateTime.ParseExact(title.AddDate, "yyyy-MM-dd HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture);
+        [JsonConverter(typeof(DateTimeyyyyMMddHHmmssConverter))]
+        public DateTime? AddDate { get; set; }
 
         [JsonPropertyName("cover_artifact_id")]
         public ulong CoverId { get; set; }
 
         [JsonPropertyName("finish_date")]
-        public DateTime? FinishDate { get; set; } // DateTime.ParseExact(title.AddDate, "yyyy-MM-dd HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture);
+        [JsonConverter(typeof(DateTimeFromUnixEpochConverter))]
+        public DateTime? FinishDate { get; set; }
 
         [JsonPropertyName("dmca")]
-        public string Dmca { get; set; }
+        [JsonConverter(typeof(ZeroOneToBoolConverter))]
+        public bool Dmca { get; set; }
 
         [JsonPropertyName("finish_precision")]
         public ulong FinishPrecision { get; set; }
@@ -45,10 +50,11 @@ namespace Sanakan.ShindenApi.API.Common
         public ulong PremierePrecision { get; set; }
 
         [JsonPropertyName("premiere_date")]
-        public DateTime? StartDate { get; set; } // return new DateTimePrecision(new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc).AddSeconds(unixTimeStamp ?? 0), precision);
+        [JsonConverter(typeof(DateTimeFromUnixEpochConverter))]
+        public DateTime? StartDate { get; set; }
 
         [JsonPropertyName("ranking_position")]
-        public string RankingPosition { get; set; }
+        public ulong RankingPosition { get; set; }
 
         [JsonPropertyName("rating_design_sum")]
         public string RatingDesignSum { get; set; }
@@ -57,7 +63,7 @@ namespace Sanakan.ShindenApi.API.Common
         public string RatingDesignCnt { get; set; }
 
         [JsonPropertyName("rating_story_cnt")]
-        public string RatingStoryCnt { get; set; }
+        public double RatingStoryCnt { get; set; }
 
         [JsonPropertyName("rating_total_sum")]
         public double? RatingTotalSum { get; set; }
@@ -69,10 +75,11 @@ namespace Sanakan.ShindenApi.API.Common
         public string RatingTitlecahractersCnt { get; set; }
 
         [JsonPropertyName("rating_total_cnt")]
-        public double RatingTotalCnt { get; set; }
+        public double RatingTotalCount { get; set; }
 
         [JsonPropertyName("title")]
-        public string Title { get; set; } // HttpUtility.HtmlDecode(title?.OtherTitle),
+        [JsonConverter(typeof(HtmlDecodeConverter))]
+        public string Title { get; set; }
 
         [JsonPropertyName("title_other")]
         public List<TitleOther> TitleOther { get; set; }
@@ -87,13 +94,15 @@ namespace Sanakan.ShindenApi.API.Common
         public string TitleStatus { get; set; }
 
         [JsonPropertyName("type")]
-        public string Type { get; set; }
+        [JsonConverter(typeof(IllustrationTypeConverter))]
+        public IllustrationType Type { get; set; }
 
         public string AnimeUrl => UrlHelpers.GetSeriesURL(TitleId);
         public string CoverUrl => UrlHelpers.GetBigImageURL(CoverId);
 
-        public double? TotalRating => RatingTotalSum == 0 ? 0 : RatingTotalCnt / RatingTotalSum;
+        public double? TotalRating => RatingTotalSum == 0 ? 0 : RatingTotalCount / RatingTotalSum;
 
+        [JsonIgnore]
         public IEnumerable<AnimeMangaInfoEntity> Tags => new[] {
             TagCategories.Entity,
             TagCategories.Source,

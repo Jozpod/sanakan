@@ -4,6 +4,7 @@ using Discord.WebSocket;
 using DiscordBot.Services;
 using Microsoft.EntityFrameworkCore;
 using Sanakan.Common;
+using Sanakan.Common.Cache;
 using Sanakan.Common.Models;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Repositories.Abstractions;
@@ -296,7 +297,7 @@ namespace Sanakan.DiscordBot.Modules
             var building = await ReplyAsync("", embed: $"🔨 Trwa budowanie topki...".ToEmbedMessage(EMType.Bot).Build());
             var users = await _userRepository.GetCachedAllUsersAsync();
             var topUsers = _profileService.GetTopUsers(users, type, _systemClock.UtcNow);
-            payload.ListItems = _profileService.BuildListView(topUsers, type, Context.Guild);
+            payload.ListItems = await _profileService.BuildListViewAsync(topUsers, type, Context.Guild);
 
             payload.Embed = new EmbedBuilder
             {
@@ -691,7 +692,8 @@ namespace Sanakan.DiscordBot.Modules
 
             await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"user-{botuser.Id}", "users" });
+            var discordUserkey = string.Format(CacheKeys.User, botuser.Id);
+            _cacheManager.ExpireTag(discordUserkey, CacheKeys.Users);
 
             await ReplyAsync("", embed: $"{user.Mention} wykupił kolor!".ToEmbedMessage(EMType.Success).Build());
         }

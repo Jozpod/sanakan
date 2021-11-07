@@ -2,8 +2,8 @@
 using Sanakan.DAL.Models;
 using Sanakan.Services;
 using Sanakan.Services.PocketWaifu;
+using Sanakan.ShindenApi.Models;
 using Shinden.API;
-using Shinden.Models;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.Primitives;
@@ -26,11 +26,11 @@ namespace Sanakan.Game.Services
             long topPos,
             string nickname,
             Discord.Color color);
-        Task<Image<Rgba32>> GetSiteStatisticAsync(
-            UserInfo shindenInfo,
-            Discord.Color color,
-            List<ILastReaded> lastRead = null,
-            List<ILastWatched> lastWatch = null);
+        public Task<Image<Rgba32>> GetSiteStatisticAsync(
+             UserInfo shindenInfo,
+             Discord.Color color,
+             List<LastWatchedRead>? lastRead = null,
+             List<LastWatchedRead>? lastWatch = null);
         Task<Image<Rgba32>> GetLevelUpBadgeAsync(
             string name,
             ulong userLevel,

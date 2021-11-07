@@ -11,16 +11,11 @@ namespace Sanakan.DAL.Tests
     public class GuildConfigRepositoryTests : TestBase
     {
         [TestMethod]
-        public async Task Should_CRUD_Entity()
+        public async Task Should_Return_Cached_Guild_Config_By_Id()
         {
             var repository = ServiceProvider.GetRequiredService<IGuildConfigRepository>();
-            var entity = new GuildOptions(1, 50);
-
-            repository.Add(entity);
-            await repository.SaveChangesAsync();
-
             var actual = await repository.GetCachedGuildFullConfigAsync(1);
-            actual.Should().BeEquivalentTo(entity);
+            actual.Should().NotBeNull();
         }
     }
 }

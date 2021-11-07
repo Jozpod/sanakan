@@ -16,9 +16,9 @@ namespace Sanakan.DAL.Models
         /// </summary>
         public ulong ObjectId { get; set; }
 
-        [StringLength(100)]
-        [Required]
+        [StringLength(50)]
         public string ObjectName { get; set; }
+
         public WishlistObjectType Type { get; set; }
 
         public ulong GameDeckId { get; set; }

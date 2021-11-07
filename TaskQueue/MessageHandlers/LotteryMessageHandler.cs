@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Sanakan.Common;
+using Sanakan.Common.Cache;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot.Abstractions.Extensions;
@@ -88,7 +89,9 @@ namespace Sanakan.TaskQueue.MessageHandlers
             await _guildConfigRepository.SaveChangesAsync();
             await userMessage.DeleteAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"user-{message.InvokingUserId}", "users", $"user-{message.DiscordUserId}" });
+            var discordUserkey = string.Format(CacheKeys.User, message.DiscordUserId);
+            var invokingUserkey = string.Format(CacheKeys.User, message.InvokingUserId);
+            _cacheManager.ExpireTag(discordUserkey, CacheKeys.Users, invokingUserkey); 
 
             var content = $"Loterie wygrywa {message.WinnerUser.Mention}.\nOtrzymuje: {string.Join("\n", cardsIds)}"
                 .ElipseTrimToLength(2000)

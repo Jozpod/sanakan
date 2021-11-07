@@ -9,17 +9,19 @@ namespace Sanakan.ShindenApi.Converters
     public class EnumConverter<T> : JsonConverter<T>
     {
         private readonly IDictionary<string, T> _dictionary;
+        private readonly T? _defaultValue;
 
-        public EnumConverter(IDictionary<string, T> dictionary)
+        public EnumConverter(IDictionary<string, T> dictionary, T? defaultValue = default)
         {
             _dictionary = dictionary;
+            _defaultValue = defaultValue;
         }
 
         public override T Read(ref Utf8JsonReader reader, Type type, JsonSerializerOptions options)
         {
             if (reader.TokenType != JsonTokenType.String)
             {
-                throw new Exception("");
+                throw new Exception("Invalid enum value type");
             }
 
             var enumString = reader.GetString();
@@ -29,7 +31,7 @@ namespace Sanakan.ShindenApi.Converters
                 return enumValue;
             }
 
-            return default;
+            return _defaultValue;
         }
 
         public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)

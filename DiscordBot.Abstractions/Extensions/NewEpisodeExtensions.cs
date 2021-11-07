@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using Discord;
 using Sanakan.DiscordBot.Abstractions.Models;
-using Shinden.API;
-using Shinden.Models;
+using Sanakan.ShindenApi.Models;
+using Sanakan.ShindenApi.Models.Enums;
 
 namespace Sanakan.Extensions
 {
@@ -51,7 +51,7 @@ namespace Sanakan.Extensions
                 new EmbedFieldBuilder
                 {
                     Name = "Data dodania",
-                    Value = ep.AddDate.ToShortDateString(),
+                    Value = ep.AddDate.Value.ToShortDateString(),
                     IsInline = false
                 }
             };

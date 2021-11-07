@@ -1,8 +1,7 @@
-﻿using Sanakan.ShindenApi.API.Common;
-using System;
+﻿using System;
 using System.Text.Json.Serialization;
 
-namespace Shinden.API
+namespace Sanakan.ShindenApi.Models
 {
     public class UserInfo
     {

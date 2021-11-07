@@ -6,6 +6,7 @@ using Moq;
 using Moq.Protected;
 using Sanakan.Common.Configuration;
 using Sanakan.ShindenApi;
+using Sanakan.ShindenApi.Models;
 using Shinden.API;
 using System;
 using System.Collections.Generic;
@@ -15,43 +16,29 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace ShindenApi.Tests
+namespace Sanakan.ShindenApi.Tests
 {
     [TestClass]
     public class GetEpisodesAsyncTests : Base
     {
-    
-
         [TestMethod]
         public async Task Should_Return_Epsiodes()
         {
-            _options
-                .Setup(pr => pr.CurrentValue)
-                .Returns(new ShindenApiConfiguration
-                {
-                    Token = "test_token"
-                });
+            MockHttpOk("episodes-result.json", HttpMethod.Get);
 
-            var assembly = Assembly.GetExecutingAssembly();
-            var resourceName = "ShindenApi.Tests.TestData.epsiodes-result.json";
-            var stream = assembly.GetManifestResourceStream(resourceName);
-
-            _httpClientHandlerMock
-                .Protected()
-                .Setup<Task<HttpResponseMessage>>("SendAsync",
-                    ItExpr.IsAny<HttpRequestMessage>(),
-                    ItExpr.IsAny<CancellationToken>())
-                .ReturnsAsync(new HttpResponseMessage
-                {
-                    StatusCode = HttpStatusCode.OK,
-                    Content = new StreamContent(stream),
-                });
-
-            var expected = new List<TitleEpisodes>
+            var expected = new TitleEpisodes
             {
-                new TitleEpisodes
+                ConnectedEpisodes = new List<Episode>
                 {
 
+                },
+                Episodes = new List<Episode>
+                {
+                    new Episode
+                    {
+                        IsAccepted = true,
+                        Langs = new List<string>(),
+                    }
                 }
             };
 

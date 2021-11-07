@@ -1,5 +1,7 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Sanakan.Common.Configuration;
 using Sanakan.DAL.Models.Analytics;
 using Sanakan.DAL.Repositories;
@@ -18,6 +20,33 @@ namespace Sanakan.DAL.Builder
         {
             services.Configure<DatabaseConfiguration>(configuration.GetSection("Database"));
             services.AddDbContext<SanakanDbContext>();
+            return services;
+        }
+
+        public static IServiceCollection AddSanakanDbContextPool(this IServiceCollection services, IConfiguration configuration)
+        {
+            services.Configure<DatabaseConfiguration>(configuration.GetSection("Database"));
+            services.AddDbContextPool<SanakanPooledDbContext>((sp, optionsBuilder) =>
+            {
+                var config = sp.GetRequiredService<IOptionsMonitor<DatabaseConfiguration>>().CurrentValue;
+
+                if (config.Provider == "MySql")
+                {
+                    optionsBuilder.UseMySql(
+                        config.ConnectionString,
+                        new MySqlServerVersion(config.Version));
+                }
+
+                if (config.Provider == "Sqlite")
+                {
+                    optionsBuilder.UseSqlite(config.ConnectionString);
+                }
+
+                if (config.Provider == "SqlServer")
+                {
+                    optionsBuilder.UseSqlServer(config.ConnectionString);
+                }
+            });
             return services;
         }
 

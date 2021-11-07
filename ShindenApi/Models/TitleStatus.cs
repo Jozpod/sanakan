@@ -1,7 +1,6 @@
 ﻿using System.Text.Json.Serialization;
-using System.Text.Json.Serialization;
 
-namespace Sanakan.ShindenApi.API.Common
+namespace Sanakan.ShindenApi.Models
 {
     public class TitleStatus
     {
@@ -25,6 +24,7 @@ namespace Sanakan.ShindenApi.API.Common
 
         [JsonPropertyName("priority")]
         public string Priority { get; set; }
+
         [JsonPropertyName("recommend")]
         public string Recommend { get; set; }
     }

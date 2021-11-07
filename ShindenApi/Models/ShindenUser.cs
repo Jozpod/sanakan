@@ -1,7 +1,9 @@
-﻿using System;
+﻿using Sanakan.ShindenApi.Converters;
+using Sanakan.ShindenApi.Models.Enums;
+using System;
 using System.Text.Json.Serialization;
 
-namespace Sanakan.ShindenApi.API.Common
+namespace Sanakan.ShindenApi.Models
 {
     public class ShindenUser
     {
@@ -9,31 +11,30 @@ namespace Sanakan.ShindenApi.API.Common
         public ulong UserId { get; set; }
 
         [JsonPropertyName("vb_id")]
-        public ulong VbId { get; set; }
+        public ulong Id { get; set; }
 
         [JsonPropertyName("name")]
         public string Name { get; set; }
 
         [JsonPropertyName("last_active")]
+        [JsonConverter(typeof(DateTimeyyyyMMddHHmmssConverter))]
         public DateTime? LastActive { get; set; }
-        //DateTime.ParseExact(info.LoggedUser.LastActive, "yyyy-MM-dd HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture);
 
         [JsonPropertyName("register_date")]
-        [JsonConverter()]
+        [JsonConverter(typeof(DateTimeyyyyMMddHHmmssConverter))]
         public DateTime? RegisterDate { get; set; }
-        //DateTime.ParseExact(info.RegisterDate, "yyyy-MM-dd HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture);
 
         [JsonPropertyName("rank")]
         public string Rank { get; set; }
 
         [JsonPropertyName("portal_lang")]
-        public string PortalLang { get; set; }
+        public Language? PortalLang { get; set; }
 
         [JsonPropertyName("email")]
         public string Email { get; set; }
 
         [JsonPropertyName("status")]
-        public string Status { get; set; }
+        public UserStatus Status { get; set; }
 
         [JsonPropertyName("avatar")]
         public ulong Avatar { get; set; }
@@ -45,14 +46,14 @@ namespace Sanakan.ShindenApi.API.Common
         public string MangaCss { get; set; }
 
         [JsonPropertyName("total_points")]
-        public long TotalPoints { get; set; }
+        public long? TotalPoints { get; set; }
 
         [JsonPropertyName("birthdate")]
+        [JsonConverter(typeof(DateTimeyyyyMMddConverter))]
         public DateTime? Birthdate { get; set; }
-        // DateTime.ParseExact(info.LoggedUser.Birthdate, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
 
         [JsonPropertyName("sex")]
-        public string Sex { get; set; }
+        public Gender Sex { get; set; }
 
         [JsonPropertyName("signature")]
         public string Signature { get; set; }

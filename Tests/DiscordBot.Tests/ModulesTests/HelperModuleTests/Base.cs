@@ -30,12 +30,13 @@ namespace DiscordBot.ModulesTests.HelperModuleTests
         protected readonly Mock<IGuildConfigRepository> _guildConfigRepositoryMock = new(MockBehavior.Strict);
         protected readonly Mock<ISystemClock> _systemClockMock = new(MockBehavior.Strict);
         protected readonly Mock<IOperatingSystem> _operatingSystemMock = new(MockBehavior.Strict);
+        protected readonly Mock<ICommandContext> _socketCommandContextMock = new(MockBehavior.Strict);
 
         public Base()
         {
             var serviceCollection = new ServiceCollection();
             var serviceProvider = serviceCollection.BuildServiceProvider();
-
+            
             _module = new(
                 _helperServiceMock.Object,
                 _sessionManagerMock.Object,
