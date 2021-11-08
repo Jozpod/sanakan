@@ -8,6 +8,7 @@ namespace Sanakan.ShindenApi
 {
     public interface IShindenClient
     {
+        Task<Result<EpisodesRange>> GetEpisodesRangeAsync(ulong episodeId);
         Task<Result<StaffInfo>> GetStaffInfoAsync(ulong staffId);
         Task<Result<TitleEpisodes>> GetEpisodesAsync(ulong episodeId);
         Task<Result<LogInResult>> LoginAsync(string username, string password);

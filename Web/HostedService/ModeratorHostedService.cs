@@ -34,8 +34,9 @@ namespace Sanakan.Web.HostedService
 
         public ModeratorHostedService(
             ILogger<MemoryUsageHostedService> logger,
-            IOptionsMonitor<DaemonsConfiguration> options,
             ISystemClock systemClock,
+            IDiscordSocketClientAccessor discordSocketClientAccessor,
+            IOptionsMonitor<DaemonsConfiguration> options,
             IServiceScopeFactory serviceScopeFactory,
             IOperatingSystem operatingSystem,
             ITimer timer,
@@ -43,6 +44,7 @@ namespace Sanakan.Web.HostedService
         {
             _logger = logger;
             _systemClock = systemClock;
+            _discordSocketClientAccessor = discordSocketClientAccessor;
             _serviceScopeFactory = serviceScopeFactory;
             _options = options;
             _operatingSystem = operatingSystem;

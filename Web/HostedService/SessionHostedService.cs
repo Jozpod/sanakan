@@ -37,14 +37,20 @@ namespace Sanakan.Web.HostedService
             ILogger<SessionHostedService> logger,
             IOptionsMonitor<DaemonsConfiguration> options,
             ISystemClock systemClock,
+            IDiscordSocketClientAccessor discordSocketClientAccessor,
             IServiceScopeFactory serviceScopeFactory,
+            ISessionManager sessionManager,
+            ITaskManager taskManager,
             ITimer timer)
         {
             _logger = logger;
-            _systemClock = systemClock;
-            _serviceScopeFactory = serviceScopeFactory;
             _options = options;
+            _systemClock = systemClock;
+            _discordSocketClientAccessor = discordSocketClientAccessor;
+            _serviceScopeFactory = serviceScopeFactory;
             _timer = timer;
+            _sessionManager = sessionManager;
+            _taskManager = taskManager;
             _discordSocketClientAccessor.Initialized += Initialized;
         }
 
@@ -103,9 +109,7 @@ namespace Sanakan.Web.HostedService
                 return;
             }
 
-            var userSessions = _sessionManager.Sessions.Where(pr =>
-                pr.OwnerId == message.Author.Id
-                && pr.SessionExecuteCondition.HasFlag(SessionExecuteCondition.Message));
+            var userSessions = _sessionManager.GetByOwnerId(message.Author.Id, SessionExecuteCondition.Message);
 
             if (!userSessions.Any())
             {
@@ -141,9 +145,7 @@ namespace Sanakan.Web.HostedService
                 return;
             }
 
-            var userSessions = _sessionManager.Sessions.Where(pr => 
-                pr.OwnerId == user.Id
-                && pr.SessionExecuteCondition.HasFlag(SessionExecuteCondition.ReactionAdded));
+            var userSessions = _sessionManager.GetByOwnerId(user.Id, SessionExecuteCondition.ReactionAdded);
 
             if (!userSessions.Any())
             {
@@ -198,9 +200,7 @@ namespace Sanakan.Web.HostedService
                 return;
             }
 
-            var userSessions = _sessionManager.Sessions.Where(pr =>
-                pr.OwnerId == user.Id
-                && pr.SessionExecuteCondition.HasFlag(SessionExecuteCondition.ReactionRemoved));
+            var userSessions = _sessionManager.GetByOwnerId(user.Id, SessionExecuteCondition.ReactionRemoved);
 
             if (!userSessions.Any())
             {
@@ -266,7 +266,8 @@ namespace Sanakan.Web.HostedService
 
             _isRunning = true;
             var utcNow = _systemClock.UtcNow;
-            var expiredSessions = _sessionManager.Sessions.Where(pr => pr.HasExpired(utcNow));
+            var expiredSessions = _sessionManager.GetExpired(utcNow);
+
             foreach (var expiredSession in expiredSessions)
             {
                 _sessionManager.Remove(expiredSession);

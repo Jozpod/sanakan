@@ -94,8 +94,64 @@ namespace Sanakan.ShindenApi.Models
         public string TitleStatus { get; set; }
 
         [JsonPropertyName("type")]
-        [JsonConverter(typeof(IllustrationTypeConverter))]
+        public string TypeStr { 
+            get
+            {
+                return string.Empty;
+            }
+            set
+            {
+                if(value.ToLower().Equals("anime"))
+                {
+                    Type = IllustrationType.Anime;
+                }
+                else
+                {
+                    Type = IllustrationType.Manga;
+                    switch (value)
+                    {
+                        case "light_novel":
+                            MangaType = MangaType.LightNovel;
+                            break;
+                        case "doujinshi":
+                            MangaType = MangaType.Doujinshi;
+                            break;
+                        case "novel":
+                            MangaType = MangaType.LightNovel;
+                            break;
+                        case "one_shot":
+                            MangaType = MangaType.OneShot;
+                            break;
+                        case "one shot":
+                            MangaType = MangaType.OneShot;
+                            break;
+                        case "doujin":
+                            MangaType = MangaType.Doujinshi;
+                            break;
+                        case "manhua":
+                            MangaType = MangaType.Manhua;
+                            break;
+                        case "manhwa":
+                            MangaType = MangaType.Manhwa;
+                            break;
+                        case "manga":
+                            MangaType = MangaType.Manga;
+                            break;
+                        default:
+                            MangaType = MangaType.NotSpecified;
+                            break;
+                    }
+                }
+                
+                
+            }
+        }
+
+        [JsonIgnore]
         public IllustrationType Type { get; set; }
+
+        [JsonIgnore]
+        public MangaType MangaType { get; set; }
 
         public string AnimeUrl => UrlHelpers.GetSeriesURL(TitleId);
         public string CoverUrl => UrlHelpers.GetBigImageURL(CoverId);

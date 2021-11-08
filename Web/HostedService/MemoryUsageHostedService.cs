@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.Configuration;
 using Sanakan.Common.Configuration;
+using Sanakan.DAL;
 
 namespace Sanakan.Web.HostedService
 {
@@ -24,6 +25,7 @@ namespace Sanakan.Web.HostedService
         private readonly IOperatingSystem _operatingSystem;
         private readonly ITaskManager _taskManager;
         private readonly ITimer _timer;
+        private readonly IDatabaseFacade _databaseFacade;
         private const int MB = 1048576;
 
         public MemoryUsageHostedService(
@@ -32,19 +34,25 @@ namespace Sanakan.Web.HostedService
             IOptionsMonitor<DaemonsConfiguration> options,
             IServiceScopeFactory serviceScopeFactory,
             IOperatingSystem operatingSystem,
-            ITimer timer)
+            ITaskManager taskManager,
+            ITimer timer,
+            IDatabaseFacade databaseFacade)
         {
             _logger = logger;
             _systemClock = systemClock;
             _options = options;
             _serviceScopeFactory = serviceScopeFactory;
             _operatingSystem = operatingSystem;
+            _taskManager = taskManager;
             _timer = timer;
             _process = _operatingSystem.GetCurrentProcess();
+            _databaseFacade = databaseFacade;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken = default)
         {
+            await _databaseFacade.EnsureCreatedAsync(stoppingToken);
+
             try
             {
                 stoppingToken.ThrowIfCancellationRequested();

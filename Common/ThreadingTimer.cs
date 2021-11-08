@@ -7,14 +7,27 @@ namespace Sanakan.Common
 {
     public class ThreadingTimer : ITimer, IDisposable
     {
-        private Timer _timer;
+        private Timer? _timer;
 
         public void Start(TimeSpan dueTime, TimeSpan period)
         {
+            if (_timer != null)
+            {
+                _timer.Dispose();
+                _timer = null;
+            }
+
             _timer = new Timer(TimerCallback, null, dueTime, period);
         }
 
-        public void Dispose() => _timer.Dispose();
+        public void Dispose()
+        {
+            if(_timer != null)
+            {
+                _timer.Dispose();
+                _timer = null;
+            }
+        }
 
         private void TimerCallback(object? state)
         {

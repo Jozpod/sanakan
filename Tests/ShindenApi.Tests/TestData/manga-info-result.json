@@ -17,12 +17,12 @@
     },
     "add_date": "2021-11-11 12:12:12",
     "cover_artifact_id": 1,
-    "finish_date": 123456,
+    "finish_date": 1234567891,
     "dmca": "1",
     "finish_precision": 0,
     "ranking_rate": "",
     "premiere_precision": 0,
-    "premiere_date": 12345,
+    "premiere_date": 1234567891,
     "ranking_position": 1,
     "rating_design_sum": "",
     "rating_design_cnt": "",
@@ -64,6 +64,6 @@
     },
     "title_id": 1,
     "title_status": "",
-    "type": "manga"
+    "type": "light_novel"
   }
 }

@@ -1,4 +1,5 @@
-﻿using Discord.WebSocket;
+﻿using Discord;
+using Discord.WebSocket;
 
 namespace Sanakan.TaskQueue.Messages
 {
@@ -14,7 +15,7 @@ namespace Sanakan.TaskQueue.Messages
         public ulong CommandCount { get; set; }
         public bool CalculateExperience { get; set; }
         public ulong GuildId { get; set; }
-        public SocketGuildUser User { get; set; }
-        public ISocketMessageChannel Channel { get; set; }
+        public IGuildUser User { get; set; }
+        public IMessageChannel Channel { get; set; }
     }
 }

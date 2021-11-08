@@ -33,15 +33,19 @@ namespace Sanakan.Web.HostedService
 
         public ProfileHostedService(
             ILogger<ProfileHostedService> logger,
-            IOptionsMonitor<DaemonsConfiguration> options,
             ISystemClock systemClock,
+            IDiscordSocketClientAccessor discordSocketClientAccessor,
+            IOptionsMonitor<DaemonsConfiguration> options,
             IServiceScopeFactory serviceScopeFactory,
+            ITimer timer,
             ITaskManager taskManager)
         {
             _logger = logger;
             _systemClock = systemClock;
-            _serviceScopeFactory = serviceScopeFactory;
+            _discordSocketClientAccessor = discordSocketClientAccessor;
             _options = options;
+            _serviceScopeFactory = serviceScopeFactory;
+            _timer = timer;
             _taskManager = taskManager;
         }
 

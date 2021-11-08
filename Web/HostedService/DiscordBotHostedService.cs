@@ -24,6 +24,7 @@ using Sanakan.DiscordBot.Abstractions.Extensions;
 using Sanakan.DAL.Models;
 using Sanakan.DiscordBot.Abstractions.Models;
 using Sanakan.TaskQueue;
+using Sanakan.DAL;
 
 namespace Sanakan.Web.HostedService
 {
@@ -40,21 +41,14 @@ namespace Sanakan.Web.HostedService
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly ISystemClock _systemClock;
         private readonly ITaskManager _taskManager;
+        private readonly IDatabaseFacade _databaseFacade;
+        private const double experienceSaveThreshold = 5;
+        private Dictionary<ulong, UserStat> _userStatsMap;
 
-        private Dictionary<ulong, ulong> _messages;
-        private Dictionary<ulong, ulong> _commands;
-        private const double SAVE_AT = 5;
-
-        private Dictionary<ulong, double> _userExperienceMap;
-
-        private Dictionary<ulong, DateTime> _saved;
-        private Dictionary<ulong, ulong> _characters;
-
-        private Dictionary<ulong, UserExperienceStat> _userExperienceStatsMap;
-
-        private class UserExperienceStat
+        private class UserStat
         {
-            public DateTime SavedOn { get; set; }
+            public DateTime? SavedOn { get; set; }
+            public double Experience { get; set; }
             public ulong CharacterCount { get; set; }
             public ulong CommandsCount { get; set; }
             public ulong MessagesCount { get; set; }
@@ -70,7 +64,8 @@ namespace Sanakan.Web.HostedService
             IOptionsMonitor<ExperienceConfiguration> experienceConfiguration,
             ISystemClock systemClock,
             CommandHandler commandHandler,
-            ITaskManager taskManager)
+            ITaskManager taskManager,
+            IDatabaseFacade databaseFacade)
         {
             _fileSystem = fileSystem;
             _blockingPriorityQueue = blockingPriorityQueue;
@@ -82,6 +77,7 @@ namespace Sanakan.Web.HostedService
             _systemClock = systemClock;
             _commandHandler = commandHandler;
             _taskManager = taskManager;
+            _databaseFacade = databaseFacade;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -92,8 +88,7 @@ namespace Sanakan.Web.HostedService
 
                 using var serviceScope = _serviceScopeFactory.CreateScope();
                 var serviceProvider = serviceScope.ServiceProvider;
-                var database = serviceProvider.GetRequiredService<DatabaseFacade>();
-                await database.EnsureCreatedAsync();
+                await _databaseFacade.EnsureCreatedAsync(stoppingToken);
 
                 stoppingToken.ThrowIfCancellationRequested();
 
@@ -133,39 +128,22 @@ namespace Sanakan.Web.HostedService
                 _discordSocketClientAccessor.Client = null;
                 _logger.LogInformation("The discord client stopped");
             }
+            catch(Exception ex)
+            {
+                _logger.LogInformation("Error occurred while running discord bot daemon", ex);
+            }
 
            
         }
 
-        private void CountMessage(ulong userId, bool isCommand)
-        {
-            if (!_messages.Any(x => x.Key == userId))
-            {
-                _messages.Add(userId, 1);
-            }
-            else
-            {
-                _messages[userId]++;
-            }
-
-            if (!_commands.Any(x => x.Key == userId))
-            {
-                _commands.Add(userId, isCommand ? 1u : 0u);
-            }
-            else if (isCommand)
-            {
-                _commands[userId]++;
-            }
-        }
-
-        private async Task HandleMessageAsync(SocketMessage message)
+        private async Task HandleMessageAsync(IMessage message)
         {
             if (message.Author.IsBot || message.Author.IsWebhook)
             {
                 return;
             }
 
-            var user = message.Author as SocketGuildUser;
+            var user = message.Author as IGuildUser;
 
             if (user == null)
             {
@@ -178,8 +156,8 @@ namespace Sanakan.Web.HostedService
                 return;
             }
 
-            var countMsg = true;
-            var calculateExp = true;
+            var countMessages = true;
+            var calculateExperience = true;
 
             using var serviceScope = _serviceScopeFactory.CreateScope();
             var serviceProvider = serviceScope.ServiceProvider;
@@ -192,74 +170,62 @@ namespace Sanakan.Web.HostedService
                 var role = user.Guild.GetRole(config.UserRoleId);
                 if (role != null)
                 {
-                    if (!user.Roles.Contains(role))
+                    if (!user.RoleIds.Contains(role.Id))
                     {
                         return;
                     }
                 }
 
-                if (config.ChannelsWithoutExp != null)
+                if (config.ChannelsWithoutExp.Any(x => x.Channel == message.Channel.Id))
                 {
-                    if (config.ChannelsWithoutExp.Any(x => x.Channel == message.Channel.Id))
-                        calculateExp = false;
+                    calculateExperience = false;
                 }
 
-                if (config.IgnoredChannels != null)
+                if (config.IgnoredChannels.Any(x => x.Channel == message.Channel.Id))
                 {
-                    if (config.IgnoredChannels.Any(x => x.Channel == message.Channel.Id))
-                        countMsg = false;
+                    countMessages = false;
                 }
             }
 
-            if (!_messages.Any(x => x.Key == user.Id))
+            if (!_userStatsMap.TryGetValue(user.Id, out var userExperienceStat))
             {
                 if (!await userRepository.ExistsByDiscordIdAsync(user.Id))
                 {
                     var databseUser = new User(user.Id, _systemClock.StartOfMonth);
                     userRepository.Add(databseUser);
                     await userRepository.SaveChangesAsync();
+                    userExperienceStat = new UserStat();
+                    _userStatsMap[user.Id] = userExperienceStat;
                 }
             }
 
-            if (countMsg)
+            if (countMessages)
             {
-                CountMessage(user.Id, _discordConfiguration.CurrentValue.IsCommand(message.Content));
-            }
-            CalculateExpAndCreateTask(user, message, calculateExp);
-        }
+                var isCommand = _discordConfiguration.CurrentValue.IsCommand(message.Content);
+                userExperienceStat.MessagesCount++;
 
-        private void CountCharacters(ulong userId, ulong characters)
-        {
-            if (!_characters.Any(x => x.Key == userId))
-            {
-                _characters.Add(userId, characters);
+                if(isCommand)
+                {
+                    userExperienceStat.CommandsCount++;
+                }
             }
-            else
-            {
-                _characters[userId] += characters;
-            }
-        }
 
-        private double GetPointsFromMessage(SocketMessage message)
-        {
-            int emoteChars = message.Tags.CountEmotesTextLength();
-            int linkChars = message.Content.CountLinkTextLength();
-            int nonWhiteSpaceChars = message.Content.Count(c => c != ' ');
-            int quotedChars = message.Content.CountQuotedTextLength();
-            double charsThatMatters = nonWhiteSpaceChars - linkChars - emoteChars - quotedChars;
-
-            CountCharacters(message.Author.Id, (ulong)(charsThatMatters < 1 ? 1 : charsThatMatters));
-            return GetExpPointBasedOnCharCount(charsThatMatters);
+            CalculateExpAndCreateTask(
+                userExperienceStat,
+                user,
+                message,
+                calculateExperience);
         }
 
         private double GetExpPointBasedOnCharCount(double charCount)
         {
             var experienceConfiguration = _experienceConfiguration.CurrentValue;
-            var cpp = experienceConfiguration.CharPerPoint;
+            var charPerPoint = experienceConfiguration.CharPerPoint;
             var min = experienceConfiguration.MinPerMessage;
             var max = experienceConfiguration.MaxPerMessage;
 
-            double experience = charCount / cpp;
+            var experience = charCount / charPerPoint;
+
             if (experience < min)
             {
                 return min;
@@ -273,76 +239,75 @@ namespace Sanakan.Web.HostedService
             return experience;
         }
 
-        private void CalculateExpAndCreateTask(SocketGuildUser user, SocketMessage message, bool calculateExperience)
+        private void CalculateExpAndCreateTask(
+            UserStat userExperienceStat,
+            IGuildUser user,
+            IMessage message,
+            bool calculateExperience)
         {
-            var experience = GetPointsFromMessage(message);
+            var emoteChars = message.Tags.CountEmotesTextLength();
+            var linkChars = message.Content.CountLinkTextLength();
+            var nonWhiteSpaceChars = message.Content.Count(character => !char.IsWhiteSpace(character));
+            var quotedChars = message.Content.CountQuotedTextLength();
+            var charsThatMatters = nonWhiteSpaceChars - linkChars - emoteChars - quotedChars;
+
+            var effectiveCharacters = (ulong)(charsThatMatters < 1 ? 1 : charsThatMatters);
+            userExperienceStat.CharacterCount += effectiveCharacters;
+            var experience = GetExpPointBasedOnCharCount(charsThatMatters);
 
             if (!calculateExperience)
             {
                 experience = 0;
             }
 
-            if (!_userExperienceMap.Any(x => x.Key == user.Id))
+            if(userExperienceStat.Experience == 0)
             {
-                _userExperienceMap.Add(message.Author.Id, experience);
+                userExperienceStat.Experience = experience;
                 return;
             }
 
-            _userExperienceMap[user.Id] += experience;
+            var utcNow = _systemClock.UtcNow;
 
-            var saved = _userExperienceMap[user.Id];
-            if (saved < SAVE_AT && !CheckLastSave(user.Id))
+            userExperienceStat.Experience += experience;
+            
+            if(!userExperienceStat.SavedOn.HasValue)
+            {
+                userExperienceStat.SavedOn = utcNow;
+            }
+
+            var halfAnHourElapsed = (_systemClock.UtcNow - userExperienceStat.SavedOn.Value.AddMinutes(30)).TotalSeconds > 1;
+
+            if (userExperienceStat.Experience < experienceSaveThreshold && !halfAnHourElapsed)
             {
                 return;
             }
 
-            var effectiveExperience = (long)Math.Floor(saved);
+            var effectiveExperience = (long)Math.Floor(userExperienceStat.Experience);
+
             if (effectiveExperience < 1)
             {
                 return;
             }
 
-            _userExperienceMap[message.Author.Id] -= effectiveExperience;
-            _saved[user.Id] = _systemClock.UtcNow;
-
-            var messageCount = _messages[user.Id];
-
-            //var task = CreateTask(user, message.Channel, effectiveExperience, , , , calculateExperience);
-            _characters[user.Id] = 0;
-            _messages[user.Id] = 0;
-            _commands[user.Id] = 0;
-
-            //    SocketGuildUser discordUser,
-            //    ISocketMessageChannel channel,
-            //    ulong experience,
-            //    ulong messages,
-            //    ulong commands,
-            //    ulong characters,
-            //    bool calculateExp)
+            userExperienceStat.Experience -= effectiveExperience;
+            userExperienceStat.SavedOn = _systemClock.UtcNow;
 
             _blockingPriorityQueue.TryEnqueue(new AddExperienceMessage
             {
                 Experience = effectiveExperience,
                 DiscordUserId = user.Id,
-                CommandCount = _commands[user.Id],
-                CharacterCount = _characters[user.Id],
-                MessageCount = messageCount,
+                CommandCount = userExperienceStat.CharacterCount,
+                CharacterCount = userExperienceStat.CharacterCount,
+                MessageCount = userExperienceStat.MessagesCount,
                 CalculateExperience = calculateExperience,
                 GuildId = user.Guild.Id,
                 User = user,
                 Channel = message.Channel,
-            }); ;
-        }
+            });
 
-        private bool CheckLastSave(ulong userId)
-        {
-            if (!_saved.Any(x => x.Key == userId))
-            {
-                _saved.Add(userId, _systemClock.UtcNow);
-                return false;
-            }
-
-            return (_systemClock.UtcNow - _saved[userId].AddMinutes(30)).TotalSeconds > 1;
+            userExperienceStat.CharacterCount = 0;
+            userExperienceStat.MessagesCount = 0;
+            userExperienceStat.CommandsCount = 0;
         }
 
         private async Task DisconnectedAsync(Exception ex)
@@ -390,7 +355,7 @@ namespace Sanakan.Web.HostedService
             await penaltyInfoRepository.SaveChangesAsync();
         }
 
-        private async Task UserJoinedAsync(SocketGuildUser user)
+        private async Task UserJoinedAsync(IGuildUser user)
         {
             if (user.IsBot || user.IsWebhook)
             {
@@ -421,8 +386,8 @@ namespace Sanakan.Web.HostedService
             }
 
             var content = ReplaceTags(user, guildConfig.WelcomeMessage);
-            var textChannel = user.Guild.GetTextChannel(guildConfig.GreetingChannelId);
-            await SendMessageAsync(content, textChannel);
+            var textChannel = (IMessageChannel)await user.Guild.GetChannelAsync(guildConfig.GreetingChannelId);
+            await textChannel.SendMessageAsync(content);
 
             if (guildConfig?.WelcomeMessagePM == null)
             {
@@ -446,7 +411,7 @@ namespace Sanakan.Web.HostedService
             }
         }
 
-        private async Task UserLeftAsync(SocketGuildUser user)
+        private async Task UserLeftAsync(IGuildUser user)
         {
             if (user.IsBot || user.IsWebhook)
             {
@@ -473,11 +438,12 @@ namespace Sanakan.Web.HostedService
                 }
 
                 var content = ReplaceTags(user, guildConfig.GoodbyeMessage);
-                var textChannel = user.Guild.GetTextChannel(guildConfig.GreetingChannelId);
-                await SendMessageAsync(content, textChannel);
+                var textChannel = (IMessageChannel)await user.Guild.GetChannelAsync(guildConfig.GreetingChannelId);
+                await textChannel.SendMessageAsync(content);
             }
 
             var thisUser = _client.Guilds.FirstOrDefault(x => x.Id == user.Id);
+
             if (thisUser != null)
             {
                 return;
@@ -487,13 +453,6 @@ namespace Sanakan.Web.HostedService
             {
                 DiscordUserId = user.Id,
             });
-
-            //var moveTask = new Task<Task>(async () =>
-            //{
-         
-            //});
-
-            //await _executor.TryAdd(new Executable("delete user", moveTask, Priority.High), TimeSpan.FromSeconds(1));
         }
 
         private async Task HandleUpdatedMsgAsync(
@@ -550,23 +509,20 @@ namespace Sanakan.Web.HostedService
                 return;
             }
 
-            if (message.Value.Channel is SocketGuildChannel gChannel)
+            if (message.Value.Channel is IGuildChannel gChannel)
             {
                 if (_discordConfiguration.CurrentValue.BlacklistedGuilds.Any(x => x == gChannel.Guild.Id))
                 {
                     return;
                 }
 
-                _ = Task.Run(async () =>
-                {
-                    await LogMessageAsync(gChannel, message.Value);
-                });
+                await LogMessageAsync(gChannel, message.Value);
             }
 
             await Task.CompletedTask;
         }
 
-        private async Task LogMessageAsync(SocketGuildChannel channel, IMessage oldMessage, IMessage? newMessage = null)
+        private async Task LogMessageAsync(IGuildChannel channel, IMessage oldMessage, IMessage? newMessage = null)
         {
             using var serviceScope = _serviceScopeFactory.CreateScope();
             var guildConfigRepository = serviceScope.ServiceProvider.GetRequiredService<IGuildConfigRepository>();
@@ -583,7 +539,7 @@ namespace Sanakan.Web.HostedService
                 return;
             }
 
-            var textChannel = channel.Guild.GetTextChannel(config.LogChannelId);
+            var textChannel = (IMessageChannel)channel.Guild.GetChannelAsync(config.LogChannelId);
 
             if (textChannel == null)
             {
@@ -639,12 +595,12 @@ namespace Sanakan.Web.HostedService
             return fields;
         }
 
-        private async Task SendMessageAsync(string message, ITextChannel channel)
-        {
-            if (channel != null) await channel.SendMessageAsync(message);
-        }
+        //private async Task SendMessageAsync(string message, ITextChannel channel)
+        //{
+        //    if (channel != null) 
+        //}
 
-        private string ReplaceTags(SocketGuildUser user, string message)
+        private string ReplaceTags(IGuildUser user, string message)
             => message.Replace("^nick", user.Nickname ?? user.Username).Replace("^mention", user.Mention);
 
         private Task onLog(LogMessage log)

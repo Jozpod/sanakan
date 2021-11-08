@@ -33,21 +33,24 @@ namespace Sanakan.Web.HostedService
         private readonly List<ulong> _usersWithSwappedNicknames;
 
         public ChaosHostedService(
-            IRandomNumberGenerator randomNumberGenerator,
             ILogger<MemoryUsageHostedService> logger,
+            ISystemClock systemClock,
             IOptionsMonitor<DiscordConfiguration> discordConfiguration,
             IOptionsMonitor<DaemonsConfiguration> daemonsConfiguration,
             IDiscordSocketClientAccessor discordSocketClientAccessor,
-            ISystemClock systemClock,
             IServiceScopeFactory serviceScopeFactory,
+            IRandomNumberGenerator randomNumberGenerator,
+            ITimer timer,
             ITaskManager taskManager)
         {
             _logger = logger;
             _systemClock = systemClock;
-            _serviceScopeFactory = serviceScopeFactory;
             _discordConfiguration = discordConfiguration;
             _daemonsConfiguration = daemonsConfiguration;
             _discordSocketClientAccessor = discordSocketClientAccessor;
+            _serviceScopeFactory = serviceScopeFactory;
+            _randomNumberGenerator = randomNumberGenerator;
+            _timer = timer;
             _taskManager = taskManager;
             _usersWithSwappedNicknames = new(100);
             _discordSocketClientAccessor.Initialized += OnInitialized;

@@ -53,18 +53,22 @@ namespace Sanakan.Web.HostedService
 
         public SupervisorHostedService(
             ILogger<SupervisorHostedService> logger,
+            IDiscordSocketClientAccessor discordSocketClientAccessor,
             IOptionsMonitor<DaemonsConfiguration> daemonsConfiguration,
             IOptionsMonitor<DiscordConfiguration> discordConfiguration,
             ISystemClock systemClock,
             IServiceScopeFactory serviceScopeFactory,
+            ITaskManager taskManager,
             ITimer timer)
         {
             _guilds = new Dictionary<ulong, Dictionary<ulong, SupervisorEntity>>();
             _logger = logger;
+            _discordSocketClientAccessor = discordSocketClientAccessor;
             _systemClock = systemClock;
             _serviceScopeFactory = serviceScopeFactory;
             _daemonsConfiguration = daemonsConfiguration;
             _discordConfiguration = discordConfiguration;
+            _taskManager = taskManager;
             _timer = timer;
 
             _discordSocketClientAccessor.Initialized += Initialized;

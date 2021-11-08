@@ -42,6 +42,12 @@ namespace Sanakan.Common.Builder
             return services;
         }
 
+        public static IServiceCollection AddTimer(this IServiceCollection services)
+        {
+            services.AddTransient<ITimer, ThreadingTimer>();
+            return services;
+        }
+
         public static IServiceCollection AddCache(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddMemoryCache();

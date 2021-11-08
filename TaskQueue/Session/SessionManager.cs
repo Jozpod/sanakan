@@ -8,21 +8,18 @@ namespace Sanakan.TaskQueue
 {
     internal class SessionManager : ISessionManager
     {
-        private readonly List<InteractionSession> _sessions;
-
-        private readonly object _syncRoot = new object();
-
-        public IReadOnlyCollection<InteractionSession> Sessions => _sessions.AsReadOnly();
+        private readonly ISet<InteractionSession> _sessions;
+        public object SyncRoot { get; } = new object();
 
         public SessionManager()
         {
-            _sessions = new List<InteractionSession>();
+            _sessions = new SortedSet<InteractionSession>();
         }
 
         public bool Exists<T>(ulong discordUserId) where T : InteractionSession
         {
             var exists = false;
-            lock (_syncRoot)
+            lock (SyncRoot)
             {
                 exists = _sessions.Any(pr => pr.OwnerId == discordUserId && pr.Type == typeof(T));
             }
@@ -31,8 +28,7 @@ namespace Sanakan.TaskQueue
 
         public void Remove(InteractionSession session)
         {
-
-            lock (_syncRoot)
+            lock (SyncRoot)
             {
                 _sessions.Remove(session);
             }
@@ -40,7 +36,7 @@ namespace Sanakan.TaskQueue
 
         public void Add(InteractionSession session)
         {
-            lock (_syncRoot)
+            lock (SyncRoot)
             {
                 _sessions.Add(session);
             }
@@ -48,7 +44,7 @@ namespace Sanakan.TaskQueue
 
         public void RemoveIfExists<T>(ulong discordUserId)
         {
-            lock (_syncRoot)
+            lock (SyncRoot)
             {
                 var session = _sessions.FirstOrDefault(pr => pr.OwnerId == discordUserId && pr.Type == typeof(T));
 
@@ -57,6 +53,31 @@ namespace Sanakan.TaskQueue
                     _sessions.Remove(session);
                     session.Dispose();
                 }
+            }
+        }
+
+        public IEnumerable<InteractionSession> GetByOwnerId(ulong OwnerId, SessionExecuteCondition executeCondition)
+        {
+            lock (SyncRoot)
+            {
+                var filtered = _sessions.Where(pr => pr.OwnerId == OwnerId
+                    && pr.SessionExecuteCondition.HasFlag(executeCondition))
+                    .ToList();
+
+                return filtered;
+            }
+            
+        }
+
+        public IEnumerable<InteractionSession> GetExpired(DateTime dateTime)
+        {
+            lock (SyncRoot)
+            {
+                var filtered = _sessions
+                    .Where(pr => pr.HasExpired(dateTime))
+                    .ToList();
+
+                return filtered;
             }
         }
     }

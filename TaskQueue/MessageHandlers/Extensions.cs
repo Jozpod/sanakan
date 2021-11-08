@@ -6,10 +6,10 @@ namespace Sanakan.TaskQueue.MessageHandlers
 {
     public static class Extensions
     {
-        public static void GetMessageHandler<T>(this IServiceProvider serviceProvider, T _)
+        public static IMessageHandler<T> GetMessageHandler<T>(this IServiceProvider serviceProvider, T _)
            where T : BaseMessage
         {
-            serviceProvider.GetRequiredService<IMessageHandler<T>>();
+            return serviceProvider.GetRequiredService<IMessageHandler<T>>();
         }
     }
 }

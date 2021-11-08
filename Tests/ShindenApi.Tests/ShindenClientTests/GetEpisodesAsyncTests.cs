@@ -36,14 +36,25 @@ namespace Sanakan.ShindenApi.Tests
                 {
                     new Episode
                     {
+                        AirChannell = string.Empty,
+                        EpisodeId = 1,
+                        EpisodeTitle = string.Empty,
+                        IsFiler = true,
+                        TitleId = 1,
+                        TitleMainId = string.Empty,
+                        EpisodeTime = TimeSpan.FromMinutes(40),
+                        EpisodeNo = 1,
+                        EpisodeTitleId = 1,
+                        Title = string.Empty,
+                        TitleType = string.Empty,
                         IsAccepted = true,
                         Langs = new List<string>(),
                     }
                 }
             };
 
-            var epsiodeId = 1ul;
-            var result = await _shindenClient.GetEpisodesAsync(epsiodeId);
+            var episodeId = 1ul;
+            var result = await _shindenClient.GetEpisodesAsync(episodeId);
             result.Value.Should().BeEquivalentTo(expected);
         }
     }

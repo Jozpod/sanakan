@@ -44,12 +44,16 @@ namespace Sanakan.Web.HostedService
         {
             try
             {
-                foreach (var message in _blockingPriorityQueue.GetEnumerable(stoppingToken))
+                await Task.Run(async () =>
                 {
-                    using var serviceScope = _serviceScopeFactory.CreateScope();
-                    var serviceProvider = serviceScope.ServiceProvider;
-                    serviceProvider.GetMessageHandler(message);
-                }
+                    foreach (var message in _blockingPriorityQueue.GetEnumerable(stoppingToken))
+                    {
+                        using var serviceScope = _serviceScopeFactory.CreateScope();
+                        var serviceProvider = serviceScope.ServiceProvider;
+                        var messageHandler = serviceProvider.GetMessageHandler(message);
+                        await messageHandler.HandleAsync(message);
+                    }
+                }, stoppingToken);
             }
             catch (OperationCanceledException)
             {

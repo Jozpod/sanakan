@@ -62,6 +62,7 @@ namespace Sanakan.ShindenApi
             _jsonSerializerOptions.Converters.Add(new UserStatusConverter());
             _jsonSerializerOptions.Converters.Add(new StaffTypeConverter());
             _jsonSerializerOptions.Converters.Add(new EpisodeTypeConverter());
+            _jsonSerializerOptions.Converters.Add(new IllustrationTypeConverter());
             _jsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
         }
 

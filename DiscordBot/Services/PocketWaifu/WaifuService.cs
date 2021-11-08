@@ -9,6 +9,7 @@ using Discord.WebSocket;
 using DiscordBot.Services;
 using DiscordBot.Services.PocketWaifu;
 using DiscordBot.Services.PocketWaifu.Abstractions;
+using Microsoft.Extensions.DependencyInjection;
 using Sanakan.Common;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Repositories.Abstractions;
@@ -37,9 +38,8 @@ namespace Sanakan.Services.PocketWaifu
         private readonly ICacheManager _cacheManager;
         private readonly IRandomNumberGenerator _randomNumberGenerator;
         private readonly IResourceManager _resourceManager;
-        private readonly ICardRepository _cardRepository;
-        private readonly IUserRepository _userRepository;
         private readonly ITaskManager _taskManager;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
 
         public WaifuService(
             IImageProcessor imageProcessor,
@@ -50,8 +50,8 @@ namespace Sanakan.Services.PocketWaifu
             ICacheManager cacheManager,
             IRandomNumberGenerator randomNumberGenerator,
             IResourceManager resourceManager,
-            IUserRepository userRepository,
-            ITaskManager taskManager)
+            ITaskManager taskManager,
+            IServiceScopeFactory serviceScopeFactory)
         {
             _imageProcessor = imageProcessor;
             _fileSystem = fileSystem;
@@ -61,8 +61,8 @@ namespace Sanakan.Services.PocketWaifu
             _cacheManager = cacheManager;
             _randomNumberGenerator = randomNumberGenerator;
             _resourceManager = resourceManager;
-            _userRepository = userRepository;
             _taskManager = taskManager;
+            _serviceScopeFactory = serviceScopeFactory;
         }
 
         private static List<RarityChance> _rarityChances = new List<RarityChance>()
@@ -645,7 +645,10 @@ namespace Sanakan.Services.PocketWaifu
             var count = (itemCount > 1) ? $" x{itemCount}" : "";
 
 
-            var bUser = await _userRepository.GetUserOrCreateAsync(discordUser.Id);
+            using var serviceScope = _serviceScopeFactory.CreateScope();
+            var serviceProvider = serviceScope.ServiceProvider;
+            var userRepository = serviceProvider.GetRequiredService<IUserRepository>();
+            var bUser = await userRepository.GetUserOrCreateAsync(discordUser.Id);
             if (!CheckIfUserCanBuy(type, bUser, realCost))
             {
                 return $"{discordUser.Mention} nie posiadasz wystarczającej liczby {GetShopCurrencyName(type)}!".ToEmbedMessage(EMType.Error).Build();
@@ -700,7 +703,7 @@ namespace Sanakan.Services.PocketWaifu
 
             RemoveMoneyFromUser(type, bUser, realCost);
 
-            await _userRepository.SaveChangesAsync();
+            await userRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(new string[] { $"user-{bUser.Id}", "users" });
 
@@ -1633,13 +1636,12 @@ namespace Sanakan.Services.PocketWaifu
                     .Where(c => !userCards.Any(x => x.CharacterId == c))
                     .ToList();
 
-                var cards = await _cardRepository
+                using var serviceScope = _serviceScopeFactory.CreateScope();
+                var serviceProvider = serviceScope.ServiceProvider;
+                var cardRepository = serviceProvider.GetRequiredService<ICardRepository>();
+
+                var cards = await cardRepository
                     .GetByCharacterIdsAsync(characters);
-                    //await db.Cards
-                    //.Include(x => x.TagList)
-                    //.Where(x => characters.Any(c => c == x.Character))
-                    //.AsNoTracking()
-                    //.ToListAsync();
 
                 allCards.AddRange(cards);
             }

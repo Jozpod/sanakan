@@ -8,11 +8,11 @@ namespace Sanakan.ShindenApi.Models
     public class AnimeInfo
     {
         [JsonPropertyName("rating_graphics_cnt")]
-        public string RatingGraphicsCnt { get; set; }
+        public double RatingGraphicsCnt { get; set; }
 
         [JsonPropertyName("episode_time")]
         [JsonConverter(typeof(TimeSpanFromMinutesConverter))]
-        public TimeSpan EpisodeTime { get; set; }
+        public TimeSpan? EpisodeTime { get; set; }
 
         [JsonPropertyName("anime_type")]
         public AnimeType AnimeType { get; set; }

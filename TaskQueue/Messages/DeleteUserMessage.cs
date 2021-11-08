@@ -8,7 +8,7 @@ namespace Sanakan.TaskQueue.Messages
 {
     public class DeleteUserMessage : BaseMessage
     {
-        public DeleteUserMessage() : base(Priority.Low)
+        public DeleteUserMessage() : base(Priority.High)
         {
         }
 

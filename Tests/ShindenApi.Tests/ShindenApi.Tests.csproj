@@ -17,6 +17,7 @@
     <None Remove="TestData\character-info-result.json" />
     <None Remove="TestData\characters-info-result.json" />
     <None Remove="TestData\characters-result.json" />
+    <None Remove="TestData\episodes-range-result.json" />
     <None Remove="TestData\episodes-result.json" />
     <None Remove="TestData\favourite-character-result.json" />
     <None Remove="TestData\last-read-result.json" />
@@ -35,6 +36,7 @@
     <EmbeddedResource Include="TestData\anime-info-result.json" />
     <EmbeddedResource Include="TestData\character-info-result.json" />
     <EmbeddedResource Include="TestData\characters-info-result.json" />
+    <EmbeddedResource Include="TestData\episodes-range-result.json" />
     <EmbeddedResource Include="TestData\episodes-result.json" />
     <EmbeddedResource Include="TestData\favourite-character-result.json" />
     <EmbeddedResource Include="TestData\last-read-result.json" />

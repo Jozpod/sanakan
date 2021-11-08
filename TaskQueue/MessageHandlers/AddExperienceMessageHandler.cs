@@ -73,7 +73,13 @@ namespace Sanakan.TaskQueue.MessageHandlers
 
             var level = ExperienceUtils.CalculateLevel(user.ExperienceCount);
             var username = discordUser.Nickname ?? discordUser.Username;
-            var color = discordUser.Roles.OrderByDescending(x => x.Position).First().Color;
+
+            var highestRole = discordUser.Guild.Roles
+                .Join(discordUser.RoleIds, pr => pr.Id, pr => pr, (src, dst) => src)
+                .OrderByDescending(pr => pr.Position)
+                .First();
+
+            var color = highestRole.Color;
             var avatarUrl = discordUser.GetUserOrDefaultAvatarUrl();
 
             if (level != user.Level && message.CalculateExperience)
@@ -121,7 +127,7 @@ namespace Sanakan.TaskQueue.MessageHandlers
                     continue;
                 }
 
-                bool hasRole = discordUser.Roles.Any(x => x.Id == role.Id);
+                bool hasRole = discordUser.RoleIds.Any(roleId => roleId == role.Id);
 
                 if (level >= lvlRole.Level)
                 {

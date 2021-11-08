@@ -13,12 +13,12 @@
       "air_date": "",
       "air_channell": "",
       "is_accepted": true,
-      "episode_title_id": "",
+      "episode_title_id": 1,
       "title_type": "",
       "title": "",
       "lang": "",
       "langs": [],
-      "has_online": ""
+      "has_online": false
     }
   ],
   "connected_episodes": [

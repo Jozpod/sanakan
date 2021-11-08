@@ -2,22 +2,23 @@
 
 # Sanakan #
 
-Discord bot which allows 
+
 
 ## Tech Stack
 
-built with [Discord.NET](https://github.com/RogueException/Discord.Net).
+![C#](https://img.shields.io/badge/c%23-%23239120.svg?style=for-the-badge&logo=c-sharp&logoColor=white)
+![Discord](https://img.shields.io/badge/Discord.NET-%237289DA.svg?style=for-the-badge&logo=discord&logoColor=white)
+![Swagger](https://img.shields.io/badge/-Swagger-%23Clojure?style=for-the-badge&logo=swagger&logoColor=white)
+![MySQL](https://img.shields.io/badge/mysql-%2300f.svg?style=for-the-badge&logo=mysql&logoColor=white)
+![SQLite](https://img.shields.io/badge/sqlite-%2307405e.svg?style=for-the-badge&logo=sqlite&logoColor=white)
 
 ## Getting Started ##
+
+> ℹ️ Make sure to customize settings to your needs. By default the app will use Mysql server.
 
 ```console
 dotnet run
 ```
-
-### Compilation ###
-
-1. Go to `src` directory
-2. Run `make full-build`
 
 ## Options
 ### Locale
@@ -32,7 +33,7 @@ dotnet run
 | :---------------------------------------: | :------------------: | :-------------------------------------: | :---------------------------------------------------------------- |
 | **[`Provider`](#Provider)**  | `{String}`  | `MySql` | The database engine to use. Currently supported MySql, Sqlite and SqlServer                              |
 |  **[`Version`](#Version)** | `{String}` | `8.0.27` | The database engine version if supported.                                                 |
-| **[`ConnectionString`](#ConnectionString)**  | `{String}` | `Server=localhost;Database=database;Uid=root;Pwd=password;` | connection string. |
+| **[`ConnectionString`](#ConnectionString)**  | `{String}` | `Server=localhost;Database=database;Uid=root;Pwd=password;` | Connection string. |
 
 ### Cache
 |                   Name                    |         Type         |                 Default                 | Description                                                       |

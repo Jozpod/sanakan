@@ -94,7 +94,12 @@ namespace Sanakan.DAL
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            modelBuilder.HasCharSet("utf8mb4", DelegationModes.ApplyToDatabases);
+
+            if (_config.CurrentValue.Provider == "MySql")
+            {
+                modelBuilder.HasCharSet("utf8mb4", DelegationModes.ApplyToDatabases);
+            }
+                
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(SanakanDbContext).Assembly);
         }
     }

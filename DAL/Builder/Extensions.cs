@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -47,6 +48,13 @@ namespace Sanakan.DAL.Builder
                     optionsBuilder.UseSqlServer(config.ConnectionString);
                 }
             });
+            return services;
+        }
+
+        
+        public static IServiceCollection AddDatabaseFacade(this IServiceCollection services)
+        {
+            services.AddSingleton<IDatabaseFacade, DatabaseFacade>();
             return services;
         }
 

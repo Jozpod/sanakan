@@ -7,8 +7,10 @@ using Moq.Protected;
 using Sanakan.Common.Configuration;
 using Sanakan.ShindenApi;
 using Sanakan.ShindenApi.Models;
+using Sanakan.ShindenApi.Models.Enums;
 using Shinden.API;
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
@@ -21,33 +23,43 @@ namespace Sanakan.ShindenApi.Tests
     public class GetCharacterInfoAsyncTests : Base
     {  
         [TestMethod]
-        public async Task Should_LogIn_And_Put_Cookies()
+        public async Task Should_Return_Character_Info()
         {
-            _options
-                .Setup(pr => pr.CurrentValue)
-                .Returns(new ShindenApiConfiguration
-                {
-                    Token = "test_token"
-                });
-
-            var assembly = Assembly.GetExecutingAssembly();
-            var resourceName = "ShindenApi.Tests.TestData.characters-info-result.json";
-            var stream = assembly.GetManifestResourceStream(resourceName);
-
-            _httpClientHandlerMock
-                .Protected()
-                .Setup<Task<HttpResponseMessage>>("SendAsync",
-                    ItExpr.IsAny<HttpRequestMessage>(),
-                    ItExpr.IsAny<CancellationToken>())
-                .ReturnsAsync(new HttpResponseMessage
-                {
-                    StatusCode = HttpStatusCode.OK,
-                    Content = new StreamContent(stream),
-                });
+            MockHttpOk("character-info-result.json", HttpMethod.Get);
 
             var expected = new CharacterInfo
             {
-
+                CharacterId = 1,
+                FirstName = string.Empty,
+                LastName = string.Empty,
+                IsReal = true,
+                Age = string.Empty,
+                Bloodtype = string.Empty,
+                Height = string.Empty,
+                Weight = string.Empty,
+                Bust = string.Empty,
+                Waist = string.Empty,
+                Hips = string.Empty,
+                PictureId = 1,
+                Biography = new CharacterBio
+                {
+                    CharacterBiographyId = 0UL,
+                    CharacterId = 0UL,
+                    Lang = Language.NotSpecified,
+                },
+                FavStats = new CharacterFav
+                {
+                    Fav = string.Empty,
+                    Unfav = string.Empty,
+                    AvgPos = string.Empty,
+                    OnePos = string.Empty,
+                    Under3Pos = string.Empty,
+                    Under10Pos = string.Empty,
+                    Under50Pos = string.Empty,
+                },
+                Points = new List<PointsForEdit>(),
+                Relations = new List<StaffInfoRelation>(),
+                Pictures = new List<ImagePicture>(),
             };
 
             var characterId = 1ul;

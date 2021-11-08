@@ -941,20 +941,27 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("generuje przykładowy obrazek otrzymania poziomu")]
         [Remarks("")]
         public async Task GenerateLevelUpBadgeAsync(
-            [Summary("użytkownik(opcjonalne)")]SocketGuildUser? socketGuildUser = null)
+            [Summary("użytkownik(opcjonalne)")]IGuildUser? socketGuildUser = null)
         {
-            var user = socketGuildUser ?? Context.User as SocketGuildUser;
+            var user = socketGuildUser ?? Context.User as IGuildUser;
 
             if (user == null)
             {
                 return;
             }
 
+            var role = user.Guild.Roles
+                .Join(user.RoleIds, pr => pr.Id, pr => pr, (src, dst) => src)
+                .OrderByDescending(pr => pr.Position)
+                .First();
+
+            var color = role.Color;
+
             using var badge = await _imageProcessor.GetLevelUpBadgeAsync(
                 "Very very long nickname of trolly user",
                 2154,
                 user.GetUserOrDefaultAvatarUrl(),
-                user.Roles.OrderByDescending(x => x.Position).First().Color);
+                color);
             using var badgeStream = badge.ToPngStream();
             await Context.Channel.SendFileAsync(badgeStream, $"{user.Id}.png");
         }

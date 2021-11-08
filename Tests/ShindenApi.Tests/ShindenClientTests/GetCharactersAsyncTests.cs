@@ -24,33 +24,66 @@ namespace Sanakan.ShindenApi.Tests
         [TestMethod]
         public async Task Should_Return_Characters()
         {
-            _options
-                .Setup(pr => pr.CurrentValue)
-                .Returns(new ShindenApiConfiguration
-                {
-                    Token = "test_token"
-                });
-
-            var assembly = Assembly.GetExecutingAssembly();
-            var resourceName = "ShindenApi.Tests.TestData.login-result.json";
-            var stream = assembly.GetManifestResourceStream(resourceName);
-
-            _httpClientHandlerMock
-                .Protected()
-                .Setup<Task<HttpResponseMessage>>("SendAsync",
-                    ItExpr.IsAny<HttpRequestMessage>(),
-                    ItExpr.IsAny<CancellationToken>())
-                .ReturnsAsync(new HttpResponseMessage
-                {
-                    StatusCode = HttpStatusCode.OK,
-                    Content = new StreamContent(stream),
-                });
+            MockHttpOk("characters-result.json", HttpMethod.Get);
 
             var expected = new TitleCharacters
             {
                 Relations = new List<StaffInfoRelation>
                 {
-
+                    new StaffInfoRelation
+                    {
+                        ManyId = 1,
+                        TitleId = string.Empty,
+                        StaffId = 1,
+                        StaffI18NId = string.Empty,
+                        StaffDetalis = string.Empty,
+                        CharacterId = 1,
+                        CharacterI18NId = string.Empty,
+                        SeiyuuLang = string.Empty,
+                        FirstName = string.Empty,
+                        LastName = string.Empty,
+                        PictureArtifactId = string.Empty,
+                        Role = string.Empty,
+                        COrder = string.Empty,
+                        SFirstName = string.Empty,
+                        SLastName = string.Empty,
+                        SPictureArtifactId = string.Empty,
+                        Position = string.Empty,
+                        SOrder = string.Empty,
+                        Dmca = string.Empty,
+                        Title = string.Empty,
+                        Type = string.Empty,
+                        RatingTotalSum = string.Empty,
+                        RatingTotalCnt = string.Empty,
+                        RatingStorySum = string.Empty,
+                        RatingStoryCnt = string.Empty,
+                        RatingDesignSum = string.Empty,
+                        RatingDesignCnt = string.Empty,
+                        RatingTitlecahractersCnt = string.Empty,
+                        RatingTitlecahractersSum = string.Empty,
+                        RankingPosition = 1,
+                        RankingRate = string.Empty,
+                        TitleStatus = string.Empty,
+                        AddDate = string.Empty,
+                        PremiereDate = string.Empty,
+                        PremierePrecision = string.Empty,
+                        FinishDate = string.Empty,
+                        FinishPrecision = string.Empty,
+                        MpaaRating = string.Empty,
+                        CoverArtifactId = string.Empty,
+                        CTitleId = string.Empty,
+                        RatingGraphicsSum = string.Empty,
+                        RatingGraphicsCnt = string.Empty,
+                        RatingMusicSum = string.Empty,
+                        RatingMusicCnt = string.Empty,
+                        Episodes = string.Empty,
+                        EpisodeTime = string.Empty,
+                        AnimeType = string.Empty,
+                        RatingLinesSum = 1,
+                        RatingLinesCnt = 1,
+                        Volumes = string.Empty,
+                        Chapters = string.Empty,
+                    }
                 }
             };
 

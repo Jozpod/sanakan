@@ -1,3 +1,4 @@
+using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -5,6 +6,7 @@ using Moq;
 using Moq.Protected;
 using Sanakan.Common.Configuration;
 using Sanakan.ShindenApi;
+using Sanakan.ShindenApi.Models;
 using System;
 using System.Net;
 using System.Net.Http;
@@ -18,32 +20,20 @@ namespace Sanakan.ShindenApi.Tests
     public class GetEpisodesRangeAsyncTests : Base
     {
         [TestMethod]
-        public async Task Should_LogIn_And_Put_Cookies()
+        public async Task Should_Return_Epsiode_Range()
         {
-            _options
-                .Setup(pr => pr.CurrentValue)
-                .Returns(new ShindenApiConfiguration
-                {
-                    Token = "test_token"
-                });
+            MockHttpOk("episodes-range-result.json", HttpMethod.Get);
 
-            var assembly = Assembly.GetExecutingAssembly();
-            var resourceName = "ShindenApi.Tests.TestData.login-result.json";
-            var stream = assembly.GetManifestResourceStream(resourceName);
+            var expected = new EpisodesRange
+            {
+                MaxNo = 20,
+                MinNo = 1,
+                Status = string.Empty,
+            };
 
-            _httpClientHandlerMock
-                .Protected()
-                .Setup<Task<HttpResponseMessage>>("SendAsync",
-                    ItExpr.IsAny<HttpRequestMessage>(),
-                    ItExpr.IsAny<CancellationToken>())
-                .ReturnsAsync(new HttpResponseMessage
-                {
-                    StatusCode = HttpStatusCode.OK,
-                    Content = new StreamContent(stream),
-                });
-
-            var result = await _shindenClient.LoginAsync("test", "test");
-            var test = _cookieContainer.GetCookies(new Uri("test"));
+            var episodeId = 1ul;
+            var result = await _shindenClient.GetEpisodesRangeAsync(episodeId);
+            result.Value.Should().BeEquivalentTo(expected);
         }
     }
 }

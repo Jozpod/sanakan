@@ -1,11 +1,12 @@
 ﻿using Discord.Commands;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sanakan.TaskQueue
 {
-    public abstract class InteractionSession : IDisposable
+    public abstract class InteractionSession : IComparable<InteractionSession>, IDisposable
     {
         public ulong OwnerId { get; }
         private readonly DateTime _createdOn;
@@ -47,6 +48,21 @@ namespace Sanakan.TaskQueue
         public virtual void Dispose()
         {
             
+        }
+
+        public int CompareTo(InteractionSession? other)
+        {
+            if (_expiresOn > other._expiresOn)
+            {
+                return 1;
+            }
+
+            if (_expiresOn < other._expiresOn)
+            {
+                return -1;
+            }
+
+            return 0;
         }
     }
 }

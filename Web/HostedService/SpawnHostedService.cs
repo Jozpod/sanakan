@@ -38,11 +38,8 @@ namespace Sanakan.Web.HostedService
         private readonly IOptionsMonitor<DiscordConfiguration> _discordConfiguration;
         private readonly IOptionsMonitor<ExperienceConfiguration> _experienceConfiguration;
         private readonly IServiceScopeFactory _serviceScopeFactory;
-        private readonly IGuildConfigRepository _guildConfigRepository;
-        private readonly IUserRepository _userRepository;
         private readonly IRandomNumberGenerator _randomNumberGenerator;
         private readonly IBlockingPriorityQueue _blockingPriorityQueue;
-        private readonly ITimer _timer;
         private readonly ITaskManager _taskManager;
         private readonly IWaifuService _waifu;
 
@@ -50,8 +47,6 @@ namespace Sanakan.Web.HostedService
         private Dictionary<ulong, long> UserCounter;
 
         public SpawnHostedService(
-            IGuildConfigRepository guildConfigRepository,
-            IUserRepository userRepository,
             IRandomNumberGenerator randomNumberGenerator,
             IBlockingPriorityQueue blockingPriorityQueue,
             ILogger<SpawnHostedService> logger,
@@ -62,8 +57,6 @@ namespace Sanakan.Web.HostedService
             IServiceScopeFactory serviceScopeFactory,
             ITaskManager taskManager)
         {
-            _guildConfigRepository = guildConfigRepository;
-            _userRepository = userRepository;
             _randomNumberGenerator = randomNumberGenerator;
             _blockingPriorityQueue = blockingPriorityQueue;
             _logger = logger;
@@ -183,7 +176,10 @@ namespace Sanakan.Web.HostedService
                                 muted = true;
                         }
 
-                        var dUser = await _userRepository.GetCachedFullUserAsync(selected.Id);
+                        using var serviceScope = _serviceScopeFactory.CreateScope();
+                        var serviceProvider = serviceScope.ServiceProvider;
+                        var userRepository = serviceProvider.GetRequiredService<IUserRepository>();
+                        var dUser = await userRepository.GetCachedFullUserAsync(selected.Id);
 
                         if (dUser != null && !muted)
                         {
@@ -383,7 +379,10 @@ namespace Sanakan.Web.HostedService
                 return;
             }
 
-            var config = await _guildConfigRepository.GetCachedGuildFullConfigAsync(guildId);
+            using var serviceScope = _serviceScopeFactory.CreateScope();
+            var serviceProvider = serviceScope.ServiceProvider;
+            var guildConfigRepository = serviceProvider.GetRequiredService<IGuildConfigRepository>();
+            var config = await guildConfigRepository.GetCachedGuildFullConfigAsync(guildId);
             if (config == null)
             {
                 return;

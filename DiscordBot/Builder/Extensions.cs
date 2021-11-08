@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using Discord.Commands;
+using Discord.WebSocket;
 using DiscordBot.Services;
 using DiscordBot.Services.PocketWaifu;
 using DiscordBot.Services.PocketWaifu.Abstractions;
@@ -24,6 +25,14 @@ namespace Sanakan.DiscordBot.Builder
         public static IServiceCollection AddDiscordBotServices(this IServiceCollection services)
         {
             services.AddSingleton<CommandService>();
+
+            services.AddSingleton(pr => {
+                return new DiscordSocketClient(new DiscordSocketConfig()
+                {
+                    AlwaysDownloadUsers = true,
+                    MessageCacheSize = 200,
+                });
+            });
 
             services.AddSingleton<ILandManager, LandManager>();
             services.AddSingleton<IModeratorService, ModeratorService>();

@@ -1,15 +1,13 @@
-﻿using Sanakan.DAL.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Sanakan.TaskQueue
 {
     public interface ISessionManager
     {
-        IReadOnlyCollection<InteractionSession> Sessions { get; }
+        public object SyncRoot { get; }
+        IEnumerable<InteractionSession> GetByOwnerId(ulong OwnerId, SessionExecuteCondition executeCondition);
+        IEnumerable<InteractionSession> GetExpired(DateTime dateTime);
         void Remove(InteractionSession session);
         void Add(InteractionSession session);
         bool Exists<T>(ulong discordUserId) where T : InteractionSession;

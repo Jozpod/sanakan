@@ -125,14 +125,6 @@ namespace Sanakan
             });
             
             services.AddDiscordBotServices();
-
-            services.AddSingleton(pr => {
-                return new DiscordSocketClient(new DiscordSocketConfig()
-                {
-                    AlwaysDownloadUsers = true,
-                    MessageCacheSize = 200,
-                });
-            });
             services.AddSingleton(Encoding.UTF8);
             services.AddResourcekManager();
             services.AddRandomNumberGenerator();
@@ -141,9 +133,12 @@ namespace Sanakan
             services.AddOperatingSystem();
             services.AddTaskManager();
             services.AddRepositories();
+            services.AddDatabaseFacade();
             services.AddTaskQueue();
             services.AddShindenApi();
             services.AddGameServices();
+            services.AddTimer();
+            services.AddSessionManager();
             services.AddCache(Configuration.GetSection("Cache"));
             services.Configure<SanakanConfiguration>(Configuration);
             services.Configure<DaemonsConfiguration>(Configuration.GetSection("Daemons"));
@@ -155,12 +150,14 @@ namespace Sanakan
             services.Configure<ExperienceConfiguration>(Configuration.GetSection("Experience"));
             services.Configure<ApiConfiguration>(Configuration.GetSection("SanakanApi"));
             services.Configure<List<RichMessageConfig>>(Configuration.GetSection("RMConfig"));
+            services.AddSanakanDbContext(Configuration);
             services.AddHostedService<TaskQueueHostedService>();
             services.AddHostedService<MemoryUsageHostedService>();
             services.AddHostedService<SessionHostedService>();
             services.AddHostedService<ProfileHostedService>();
             services.AddHostedService<SupervisorHostedService>();
             services.AddHostedService<ModeratorHostedService>();
+            services.AddHostedService<SpawnHostedService>();
             services.AddHostedService<ChaosHostedService>();
             services.AddHostedService<DiscordBotHostedService>();
         }
