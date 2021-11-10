@@ -27,18 +27,16 @@ namespace Sanakan.Web.HostedService
         private readonly IDiscordSocketClientAccessor _discordSocketClientAccessor;
         private readonly IOptionsMonitor<DaemonsConfiguration> _options;
         private readonly IServiceScopeFactory _serviceScopeFactory;
-        private readonly IOperatingSystem _operatingSystem;
         private readonly ITimer _timer;
         private readonly ICacheManager _cacheManager;
         private readonly ITaskManager _taskManager;
 
         public ModeratorHostedService(
-            ILogger<MemoryUsageHostedService> logger,
+            ILogger<ModeratorHostedService> logger,
             ISystemClock systemClock,
             IDiscordSocketClientAccessor discordSocketClientAccessor,
             IOptionsMonitor<DaemonsConfiguration> options,
             IServiceScopeFactory serviceScopeFactory,
-            IOperatingSystem operatingSystem,
             ITimer timer,
             ITaskManager taskManager)
         {
@@ -47,7 +45,6 @@ namespace Sanakan.Web.HostedService
             _discordSocketClientAccessor = discordSocketClientAccessor;
             _serviceScopeFactory = serviceScopeFactory;
             _options = options;
-            _operatingSystem = operatingSystem;
             _timer = timer;
             _taskManager = taskManager;
         }
@@ -115,7 +112,7 @@ namespace Sanakan.Web.HostedService
                     var muteMod = penalty
                         .Roles
                         .Any(x => gconfig.ModeratorRoles.Any(z =>
-                            z.Role == x.Role)) ? muteModRole : null;
+                            z.RoleId == x.RoleId)) ? muteModRole : null;
 
                     await MuteUserGuildAsync(user, muteRole, penalty.Roles, muteMod);
                     continue;
@@ -147,11 +144,13 @@ namespace Sanakan.Web.HostedService
             {
                 foreach (var role in roles)
                 {
-                    var r = user.Guild.GetRole(role.Role);
+                    var r = user.Guild.GetRole(role.RoleId);
 
                     if (r != null)
                         if (!user.Roles.Contains(r))
+                        {
                             await user.AddRoleAsync(r);
+                        }
                 }
             }
         }
@@ -178,7 +177,7 @@ namespace Sanakan.Web.HostedService
             {
                 foreach (var role in roles)
                 {
-                    var r = user.Guild.GetRole(role.Role);
+                    var r = user.Guild.GetRole(role.RoleId);
 
                     if (r != null)
                         if (user.Roles.Contains(r))

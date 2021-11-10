@@ -20,11 +20,12 @@ namespace Sanakan.Preconditions
 
         public RequireAdminRoleOrChannelPermission(ChannelPermission permission) => _permission = permission;
 
-        public async override Task<PreconditionResult> CheckPermissionsAsync(ICommandContext context, CommandInfo command, IServiceProvider services)
+        public async override Task<PreconditionResult> CheckPermissionsAsync(
+            ICommandContext context, CommandInfo command, IServiceProvider services)
         {
             var guildConfigRepository = services.GetRequiredService<IGuildConfigRepository>();
 
-            var user = context.User as SocketGuildUser;
+            var user = context.User as IGuildUser;
             
             if (user == null)
             {
@@ -45,14 +46,14 @@ namespace Sanakan.Preconditions
                 return CheckUser(user, channel);
             }
 
-            var role = context.Guild.GetRole(gConfig.AdminRoleId);
+            var role = context.Guild.GetRole(gConfig.AdminRoleId.Value);
             
             if (role == null)
             {
                 return CheckUser(user, channel);
             }
 
-            if (user.Roles.Any(x => x.Id == role.Id))
+            if (user.RoleIds.Any(id => id == role.Id))
             {
                 return PreconditionResult.FromSuccess();
             }
@@ -60,7 +61,7 @@ namespace Sanakan.Preconditions
             return CheckUser(user, channel);
         }
 
-        private PreconditionResult CheckUser(SocketGuildUser user, IGuildChannel channel)
+        private PreconditionResult CheckUser(IGuildUser user, IGuildChannel channel)
         {
             if (user.GuildPermissions.Administrator)
             {
@@ -72,7 +73,10 @@ namespace Sanakan.Preconditions
                 return PreconditionResult.FromSuccess();
             }
 
-            return PreconditionResult.FromError(ImageResources.YouHaveNoPowerHere);
+            var result = new PreconditionErrorPayload();
+            result.ImageUrl = ImageResources.YouHaveNoPowerHere;
+
+            return PreconditionResult.FromError(result.Serialize());
         }
     }
 }

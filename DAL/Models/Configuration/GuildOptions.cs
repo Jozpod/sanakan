@@ -60,7 +60,7 @@ namespace Sanakan.DAL.Models.Configuration
         /// <summary>
         /// The Discord role identifier.
         /// </summary>
-        public ulong AdminRoleId { get; set; }
+        public ulong? AdminRoleId { get; set; }
 
         /// <summary>
         /// The Discord role identifier.
@@ -116,8 +116,8 @@ namespace Sanakan.DAL.Models.Configuration
         [StringLength(50)]
         public string? GoodbyeMessage { get; set; }
         public long SafariLimit { get; set; }
-        public bool Supervision { get; set; }
-        public bool ChaosMode { get; set; }
+        public bool SupervisionEnabled { get; set; }
+        public bool ChaosModeEnabled { get; set; }
 
         [StringLength(10)]
         public string? Prefix { get; set; }

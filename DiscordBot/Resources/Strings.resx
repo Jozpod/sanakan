@@ -188,8 +188,14 @@ Traci siły po {3} min.</value>
 **-Aktywność**: {11}
 **-Inne**: {12}</value>
   </data>
+  <data name="RequiredChannel" xml:space="preserve">
+    <value>To polecenie działa na kanale {0}</value>
+  </data>
   <data name="RequiredLevelToExecuteCommand" xml:space="preserve">
     <value>Wymagany poziom do użycia polecenia: {0}!</value>
+  </data>
+  <data name="RequiredRole" xml:space="preserve">
+    <value>Do użycia tego polecenia wymagana jest rola {0}</value>
   </data>
   <data name="ServerConfiguration" xml:space="preserve">
     <value>Description = **Prefix:** {0}

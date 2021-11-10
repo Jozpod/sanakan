@@ -85,9 +85,9 @@ namespace Sanakan.Services
             var parameters = new object[]
             {
                 config.Prefix ?? "--",
-                config.Supervision.GetYesNo(),
-                config.ChaosMode.GetYesNo(),
-                guild.GetRole(config.AdminRoleId)?.Mention ?? "--",
+                config.SupervisionEnabled.GetYesNo(),
+                config.ChaosModeEnabled.GetYesNo(),
+                guild.GetRole(config.AdminRoleId.Value)?.Mention ?? "--",
                 guild.GetRole(config.UserRoleId)?.Mention ?? "--",
                 guild.GetRole(config.MuteRoleId)?.Mention ?? "--",
                 guild.GetRole(config.ModMuteRoleId)?.Mention ?? "--",
@@ -146,7 +146,7 @@ namespace Sanakan.Services
             if (config.ModeratorRoles?.Count > 0)
             {
                 foreach (var role in config.ModeratorRoles)
-                    value += $"{context.Guild.GetRole(role.Role)?.Mention ?? "usunięta"}\n";
+                    value += $"{context.Guild.GetRole(role.RoleId)?.Mention ?? "usunięta"}\n";
             }
             else value += "*brak*";
 
@@ -493,7 +493,7 @@ namespace Sanakan.Services
             {
                 foreach (var role in roles)
                 {
-                    var socketRoles = user.Guild.GetRole(role.Role);
+                    var socketRoles = user.Guild.GetRole(role.RoleId);
 
                     if (socketRoles != null && !user.Roles.Contains(socketRoles))
                     {
@@ -534,10 +534,10 @@ namespace Sanakan.Services
         }
 
         public async Task<PenaltyInfo> MuteUserAysnc(
-            SocketGuildUser user,
-            SocketRole muteRole,
-            SocketRole muteModRole,
-            SocketRole userRole,
+            IGuildUser user,
+            IRole? muteRole,
+            IRole? muteModRole,
+            IRole? userRole,
             TimeSpan duration,
             string reason = "nie podano",
             IEnumerable<ModeratorRoles>? modRoles = null)
@@ -555,40 +555,45 @@ namespace Sanakan.Services
 
             if (userRole != null)
             {
-                if (user.Roles.Contains(userRole))
+                if (user.RoleIds.Contains(userRole.Id))
                 {
                     await user.RemoveRoleAsync(userRole);
                     penaltyInfo.Roles.Add(new OwnedRole
                     {
-                        Role = userRole.Id
+                        RoleId = userRole.Id
                     });
                 }
             }
 
             if (modRoles != null)
             {
-                foreach (var r in modRoles)
+                foreach (var modRole in modRoles)
                 {
-                    var role = user.Roles.FirstOrDefault(x => x.Id == r.Role);
-                    if (role == null)
+                    var roleId = user.RoleIds
+                        .Select(pr => (ulong?)pr)
+                        .FirstOrDefault(id => id == modRole.RoleId);
+
+                    if(!roleId.HasValue)
                     {
                         continue;
                     }
 
-                    await user.RemoveRoleAsync(role);
+                    await user.RemoveRoleAsync(roleId.Value);
                     penaltyInfo.Roles.Add(new OwnedRole
                     {
-                        Role = role.Id
+                        RoleId = roleId.Value
                     });
                 }
             }
 
-            if (!user.Roles.Contains(muteRole))
+            if (!user.RoleIds.Contains(muteRole.Id))
+            {
                 await user.AddRoleAsync(muteRole);
+            }
 
             if (muteModRole != null)
             {
-                if (!user.Roles.Contains(muteModRole))
+                if (!user.RoleIds.Contains(muteModRole.Id))
                 {
                     await user.AddRoleAsync(muteModRole);
                 }   

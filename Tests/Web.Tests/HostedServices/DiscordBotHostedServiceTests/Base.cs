@@ -7,6 +7,7 @@ using Moq;
 using Sanakan.Common;
 using Sanakan.Common.Configuration;
 using Sanakan.Configuration;
+using Sanakan.DAL;
 using Sanakan.DiscordBot;
 using Sanakan.Services.Commands;
 using Sanakan.TaskQueue;
@@ -26,7 +27,8 @@ namespace Sanakan.Web.Test.HostedServices.DiscordBotHostedServiceTests
         protected readonly Mock<ISystemClock> _systemClockMock = new(MockBehavior.Strict);
         protected readonly Mock<CommandHandler> _commandHandlerMock = new(MockBehavior.Strict);
         protected readonly Mock<ITaskManager> _taskManagerMock = new(MockBehavior.Strict);
-
+        protected readonly Mock<IDatabaseFacade> _databaseFacadeMock = new(MockBehavior.Strict);
+        
         public Base()
         {
             var serviceCollection = new ServiceCollection();
@@ -43,7 +45,8 @@ namespace Sanakan.Web.Test.HostedServices.DiscordBotHostedServiceTests
                 _experienceConfigurationMock.Object,
                 _systemClockMock.Object,
                 _commandHandlerMock.Object,
-                _taskManagerMock.Object);
+                _taskManagerMock.Object,
+                _databaseFacadeMock.Object);
         }
     }
 }

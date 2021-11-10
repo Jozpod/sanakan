@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Sanakan.Configuration;
 using Sanakan.DAL.Repositories.Abstractions;
+using Sanakan.DiscordBot;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -22,7 +23,7 @@ namespace Sanakan.Preconditions
         {
             var guildConfigRepository = services.GetRequiredService<IGuildConfigRepository>();
             var userRepository = services.GetRequiredService<IUserRepository>();
-            var user = context.User as SocketGuildUser;
+            var user = context.User as IGuildUser;
             
             if (user == null)
             {
@@ -70,7 +71,10 @@ namespace Sanakan.Preconditions
             }
 
             var channel = await context.Guild.GetTextChannelAsync(gConfig.CommandChannels.First().Channel);
-            return PreconditionResult.FromError($"To polecenie działa na kanale {channel?.Mention}, możesz użyć go tutaj po osiągnięciu {_level} poziomu.");
+            var result = new PreconditionErrorPayload();
+            result.Message = $"To polecenie działa na kanale {channel?.Mention}, możesz użyć go tutaj po osiągnięciu {_level} poziomu.";
+
+            return PreconditionResult.FromError(result.Serialize());
 
         }
     }

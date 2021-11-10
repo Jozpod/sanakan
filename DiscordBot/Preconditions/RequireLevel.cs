@@ -26,8 +26,8 @@ namespace Sanakan.Preconditions
         {
             var guildConfigRepository = services.GetRequiredService<IGuildConfigRepository>();
             var userRepository = services.GetRequiredService<IUserRepository>();
-            var user = context.User as SocketGuildUser;
-            
+            var user = context.User as IGuildUser;
+
             if (user == null)
             {
                 return PreconditionResult.FromError(Strings.CanExecuteOnlyOnServer);
@@ -42,10 +42,10 @@ namespace Sanakan.Preconditions
 
             if (gConfig != null)
             {
-                var role = context.Guild.GetRole(gConfig.AdminRoleId);
+                var role = context.Guild.GetRole(gConfig.AdminRoleId.Value);
                 if (role != null)
                 {
-                    if (user.Roles.Any(x => x.Id == role.Id))
+                    if (user.RoleIds.Any(id => id == role.Id))
                     {
                         return PreconditionResult.FromSuccess();
                     }
@@ -53,10 +53,13 @@ namespace Sanakan.Preconditions
             }
 
             var botUser = await userRepository.GetBaseUserAndDontTrackAsync(user.Id);
+            var result = new PreconditionErrorPayload();
+            result.ImageUrl = ImageResources.WomenMagnifyingGlass;
+            result.Message = string.Format(Strings.RequiredLevelToExecuteCommand, _level);
 
             if (botUser == null)
             {
-                return PreconditionResult.FromError($"{ImageResources.WomenMagnifyingGlass}|{string.Format(Strings.RequiredLevelToExecuteCommand, _level)}");
+                return PreconditionResult.FromError(result.Serialize());
             }
 
             if (botUser.Level >= _level)
@@ -64,7 +67,7 @@ namespace Sanakan.Preconditions
                 return PreconditionResult.FromSuccess();
             }
 
-            return PreconditionResult.FromError($"{ImageResources.WomenMagnifyingGlass}|{string.Format(Strings.RequiredLevelToExecuteCommand, _level)}");
+            return PreconditionResult.FromError(result.Serialize());
         }
     }
 }

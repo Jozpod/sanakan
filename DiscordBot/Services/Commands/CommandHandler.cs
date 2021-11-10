@@ -21,6 +21,7 @@ using Sanakan.Game.Models;
 using System;
 using System.Linq;
 using System.Reflection;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -181,17 +182,17 @@ namespace Sanakan.Services.Commands
         }
 
         private async Task ProcessResultAsync(
-            IResult result,
+            IResult discordResult,
             SocketCommandContext context,
             int argPos,
             string prefix)
         {
-            if (result == null)
+            if (discordResult == null)
             {
                 return;
             }
 
-            switch (result.Error)
+            switch (discordResult.Error)
             {
                 case CommandError.UnknownCommand:
                     break;
@@ -203,32 +204,34 @@ namespace Sanakan.Services.Commands
 
                 case CommandError.ParseFailed:
                 case CommandError.BadArgCount:
-                    var cmd = _commandService.Search(context, argPos);
-                    if (cmd.Commands.Count > 0)
+                    var searchResult = _commandService.Search(context, argPos);
+                    if (searchResult.Commands.Any())
                     {
-                        await context.Channel.SendMessageAsync(_helper.GetCommandInfo(cmd.Commands.First().Command, prefix));
+                        var command = searchResult.Commands.First().Command;
+                        await context.Channel.SendMessageAsync(_helper.GetCommandInfo(command, prefix));
                     }
                     break;
 
                 case CommandError.UnmetPrecondition:
-                    var parts = result.ErrorReason.Split('|');
+                    var result = PreconditionErrorPayload.Deserialize(discordResult.ErrorReason);
+
                     var embedBuilder = new EmbedBuilder().WithColor(EMType.Error.Color());
 
-                    if (parts.Length > 1)
+                    if (result.Message != null)
                     {
-                        embedBuilder.WithDescription(parts[1])
-                            .WithImageUrl(parts[0]);
+                        embedBuilder.WithDescription(result.Message);
                     }
-                    else
+
+                    if (result.ImageUrl != null)
                     {
-                        embedBuilder.WithDescription(parts[0]);
+                        embedBuilder.WithImageUrl(result.ImageUrl);
                     }
 
                     await context.Channel.SendMessageAsync("", embed: embedBuilder.Build());
                     break;
 
                 default:
-                    _logger.LogInformation(result.ErrorReason);
+                    _logger.LogInformation(discordResult.ErrorReason);
                     break;
             }
         }

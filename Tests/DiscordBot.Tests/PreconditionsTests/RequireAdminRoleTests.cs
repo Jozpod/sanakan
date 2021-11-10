@@ -15,7 +15,7 @@ using System.IO;
 using Sanakan.Preconditions;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace DiscordBot.Test
+namespace Sanakan.DiscordBot.Tests.PreconditionsTests
 {
     [TestClass]
     public class RequireAdminRoleTests

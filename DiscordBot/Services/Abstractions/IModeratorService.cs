@@ -20,14 +20,16 @@ namespace Sanakan.DiscordBot.Services.Abstractions
             SocketGuildUser user,
             SocketRole muteRole,
             SocketRole muteModRole);
+
         Task<PenaltyInfo> MuteUserAysnc(
-           SocketGuildUser user,
-           SocketRole muteRole,
-           SocketRole muteModRole,
-           SocketRole userRole,
+           IGuildUser user,
+           IRole? muteRole,
+           IRole? muteModRole,
+           IRole? userRole,
            TimeSpan duration,
            string reason = "nie podano",
            IEnumerable<ModeratorRoles>? modRoles = null);
+
         Task<PenaltyInfo> BanUserAysnc(
            SocketGuildUser user,
            TimeSpan duration,

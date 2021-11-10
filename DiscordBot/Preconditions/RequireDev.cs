@@ -6,6 +6,7 @@ using Microsoft.Extensions.Options;
 using Sanakan.Common.Configuration;
 using Sanakan.Configuration;
 using Sanakan.DAL.Repositories.Abstractions;
+using Sanakan.DiscordBot;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -14,7 +15,10 @@ namespace Sanakan.Preconditions
 {
     public class RequireDev : PreconditionAttribute
     {
-        public async override Task<PreconditionResult> CheckPermissionsAsync(ICommandContext context, CommandInfo command, IServiceProvider services)
+        public async override Task<PreconditionResult> CheckPermissionsAsync(
+            ICommandContext context,
+            CommandInfo command,
+            IServiceProvider services)
         {
             var config = services.GetRequiredService<IOptionsMonitor<DiscordConfiguration>>().CurrentValue;
 
@@ -23,7 +27,10 @@ namespace Sanakan.Preconditions
                 return PreconditionResult.FromSuccess();
             }
 
-            return PreconditionResult.FromError("Insufficient permission");
+            var result = new PreconditionErrorPayload();
+            result.ImageUrl = ImageResources.ManWaggingFinger;
+
+            return PreconditionResult.FromError(result.Serialize());
         }
     }
 }

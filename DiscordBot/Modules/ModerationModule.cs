@@ -677,7 +677,7 @@ namespace Sanakan.DiscordBot.Modules
 
             var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(Context.Guild.Id);
 
-            var rol = config.ModeratorRoles.FirstOrDefault(x => x.Role == role.Id);
+            var rol = config.ModeratorRoles.FirstOrDefault(x => x.RoleId == role.Id);
             if (rol != null)
             {
                 config.ModeratorRoles.Remove(rol);
@@ -689,7 +689,7 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            rol = new ModeratorRoles { Role = role.Id };
+            rol = new ModeratorRoles { RoleId = role.Id };
             config.ModeratorRoles.Add(rol);
             await _guildConfigRepository.SaveChangesAsync();
 
@@ -1427,12 +1427,12 @@ namespace Sanakan.DiscordBot.Modules
         {
             var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(Context.Guild.Id);
 
-            config.ChaosMode = !config.ChaosMode;
+            config.ChaosModeEnabled = !config.ChaosModeEnabled;
             await _guildConfigRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });
 
-            await ReplyAsync("", embed: $"Tryb siania chaosu - włączony? `{config.ChaosMode.GetYesNo()}`.".ToEmbedMessage(EMType.Success).Build());
+            await ReplyAsync("", embed: $"Tryb siania chaosu - włączony? `{config.ChaosModeEnabled.GetYesNo()}`.".ToEmbedMessage(EMType.Success).Build());
         }
 
         [Command("tsup")]
@@ -1442,12 +1442,12 @@ namespace Sanakan.DiscordBot.Modules
         {
             var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(Context.Guild.Id);
 
-            config.Supervision = !config.Supervision;
+            config.SupervisionEnabled = !config.SupervisionEnabled;
             await _guildConfigRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });
 
-            await ReplyAsync("", embed: $"Tryb nadzoru - włączony?`{config.ChaosMode.GetYesNo()}`."
+            await ReplyAsync("", embed: $"Tryb nadzoru - włączony?`{config.ChaosModeEnabled.GetYesNo()}`."
                 .ToEmbedMessage(EMType.Success).Build());
         }
 

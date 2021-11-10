@@ -21,6 +21,7 @@ using Sanakan.DiscordBot.Abstractions.Models;
 using Discord;
 using Sanakan.Extensions;
 using Sanakan.DiscordBot.Services.Abstractions;
+using System.Text.RegularExpressions;
 
 namespace Sanakan.Web.HostedService
 {
@@ -77,26 +78,111 @@ namespace Sanakan.Web.HostedService
         private Task Initialized()
         {
             _discordSocketClientAccessor.Client.MessageReceived += HandleMessageAsync;
+            _discordSocketClientAccessor.Client.UserJoined += UserJoinedAsync;
             return Task.CompletedTask;
         }
 
-        private string GetMessageContent(SocketUserMessage message)
+        private string GetMessageContent(IUserMessage message)
         {
             string content = message.Content;
             if (string.IsNullOrEmpty(message.Content))
+            {
                 content = message?.Attachments?.FirstOrDefault()?.Filename ?? "embed";
+            }
 
             return content;
         }
 
-        private async Task HandleMessageAsync(SocketMessage message)
+        public class Test
+        {
+
+        }
+
+        private void AddSuspect(ulong guildId, string username)
+        {
+
+        }
+
+        private IEnumerable<ulong> Get()
+        {
+
+        }
+
+        private async Task UserJoinedAsync(IGuildUser user)
         {
             if (!_discordConfiguration.CurrentValue.FloodSpamSupervisionEnabled)
             {
                 return;
             }
 
-            var userMessage = message as SocketUserMessage;
+            if (user.IsBot || user.IsWebhook)
+            {
+                return;
+            }
+
+            if (_discordConfiguration.CurrentValue.BlacklistedGuilds.Any(x => x == user.Guild.Id))
+            {
+                return;
+            }
+
+            using var serviceScope = _serviceScopeFactory.CreateScope();
+            var serviceProvider = serviceScope.ServiceProvider;
+            var guildConfigRepository = serviceProvider.GetRequiredService<IGuildConfigRepository>();
+
+            var guildConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(user.Guild.Id);
+
+            if (guildConfig == null)
+            {
+                return;
+            }
+
+            if (!guildConfig.SupervisionEnabled)
+            {
+                return;
+            }
+
+            if (!_guildsJoin.Any(x => x.Key == user.Guild.Id))
+            {
+                _guildsJoin.Add(user.Guild.Id, new Dictionary<string, SupervisorJoinEntity>());
+                return;
+            }
+
+            var guild = _guildsJoin[user.Guild.Id];
+            if (!guild.Any(x => x.Key == user.Username))
+            {
+                guild.Add(user.Username, new SupervisorJoinEntity(user.Id));
+                return;
+            }
+
+            var susspect = guild[user.Username];
+            if (!susspect.IsValid())
+            {
+                susspect = new SupervisorJoinEntity(user.Id);
+                return;
+            }
+
+            susspect.Add(user.Id);
+
+            if (!susspect.IsBannable())
+            {
+                return;
+            }
+
+            foreach (var toBan in susspect.GetUsersToBan())
+            {
+                var thisUser = user.Guild.GetUser(toBan);
+                await user.Guild.AddBanAsync(thisUser, 1, $"Supervisor(ban) raid/scam [{user.Nickname}]");
+            }
+        }
+
+        private async Task HandleMessageAsync(IMessage message)
+        {
+            if (!_discordConfiguration.CurrentValue.FloodSpamSupervisionEnabled)
+            {
+                return;
+            }
+
+            var userMessage = message as IUserMessage;
 
             if (userMessage == null)
             {
@@ -108,7 +194,7 @@ namespace Sanakan.Web.HostedService
                 return;
             }
 
-            var user = userMessage.Author as SocketGuildUser;
+            var user = userMessage.Author as IGuildUser;
 
             if (user == null)
             {
@@ -131,7 +217,7 @@ namespace Sanakan.Web.HostedService
                 return;
             }
 
-            if (!gConfig.Supervision)
+            if (!gConfig.SupervisionEnabled)
             {
                 return;
             }
@@ -165,8 +251,8 @@ namespace Sanakan.Web.HostedService
                 thisMessage = new SupervisorMessage(utcNow, messageContent);
             }
 
-            if (gConfig.AdminRoleId != 0)
-                if (user.Roles.Any(x => x.Id == gConfig.AdminRoleId))
+            if (gConfig.AdminRoleId.HasValue)
+                if (user.RoleIds.Contains(gConfig.AdminRoleId.Value))
                 {
                     return;
                 }
@@ -178,21 +264,33 @@ namespace Sanakan.Web.HostedService
 
             var muteRole = user.Guild.GetRole(gConfig.MuteRoleId);
             var userRole = user.Guild.GetRole(gConfig.UserRoleId);
-            var notifChannel = user.Guild.GetTextChannel(gConfig.NotificationChannelId);
+            var notifChannel = (ITextChannel)await user.Guild.GetChannelAsync(gConfig.NotificationChannelId);
 
-            bool hasRole = user.Roles.Any(x => x.Id == gConfig.UserRoleId || x.Id == gConfig.MuteRoleId) || gConfig.UserRoleId == 0;
+            var isBannable = thisMessage.IsBannable();
+            if (_discordConfiguration.Get().GiveBanForUrlSpam)
+            {
+                isBannable |= thisMessage.ContainsUrl();
+            }
+
+            bool hasRole = user.RoleIds.Any(x => x == gConfig.UserRoleId
+                || x == gConfig.MuteRoleId)
+                || gConfig.UserRoleId == 0;
             var action = MakeDecision(messageContent, susspect.Inc(_systemClock.UtcNow), thisMessage.Inc(), hasRole);
             await MakeActionAsync(action, user, userMessage, userRole, muteRole, notifChannel);
 
             await Task.CompletedTask;
         }
 
+        //public static List<string> GetURLs(this string s) =>
+        //    new Regex(@"(http|ftp|https):\/\/([\w\-_]+(?:(?:\.[\w\-_]+)+))([\w\-\.,@?^=%&amp;:/~\+#]*[\w\-\@?^=%&amp;/~\+#])?", RegexOptions.Compiled | RegexOptions.IgnoreCase).Matches(s).Select(x => x.Value).ToList();
+
+
         private async Task MakeActionAsync(
            SupervisorAction action,
-           SocketGuildUser user,
-           SocketUserMessage message,
-           SocketRole userRole,
-           SocketRole muteRole,
+           IGuildUser user,
+           IUserMessage message,
+           IRole userRole,
+           IRole muteRole,
            ITextChannel notifChannel)
         {
             using var serviceScope = _serviceScopeFactory.CreateScope();
@@ -207,20 +305,24 @@ namespace Sanakan.Web.HostedService
                     break;
 
                 case SupervisorAction.Mute:
-                    if (muteRole != null)
+                    if (muteRole == null)
                     {
-                        if (user.Roles.Contains(muteRole))
-                            return;
-
-                        var info = await moderatorService.MuteUserAysnc(
-                            user,
-                            muteRole,
-                            null,
-                            userRole,
-                            TimeSpan.FromDays(1),
-                            "spam/flood");
-                        await moderatorService.NotifyAboutPenaltyAsync(user, notifChannel, info);
+                        return;
                     }
+
+                    if (user.RoleIds.Contains(muteRole.Id))
+                    {
+                        return;
+                    }
+
+                    var info = await moderatorService.MuteUserAysnc(
+                        user,
+                        muteRole,
+                        null,
+                        userRole,
+                        TimeSpan.FromDays(1),
+                        "spam/flood");
+                    await moderatorService.NotifyAboutPenaltyAsync(user, notifChannel, info);
                     break;
 
                 case SupervisorAction.Ban:
@@ -311,6 +413,24 @@ namespace Sanakan.Web.HostedService
                         {
                             _guilds[guild.Key][uId] = new SupervisorEntity(null, _systemClock.UtcNow);
                         }
+                    }
+
+                    var toClean2 = new Dictionary<ulong, List<string>>();
+                    foreach (var guild in _guildsJoin)
+                    {
+                        var usrs = new List<string>();
+                        foreach (var susspect in guild.Value)
+                        {
+                            if (!susspect.Value.IsValid())
+                                usrs.Add(susspect.Key);
+                        }
+                        toClean2.Add(guild.Key, usrs);
+                    }
+
+                    foreach (var guild in toClean2)
+                    {
+                        foreach (var nick in guild.Value)
+                            _guildsJoin[guild.Key][nick] = new SupervisorJoinEntity();
                     }
                 }
                 catch (Exception ex)

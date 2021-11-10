@@ -11,7 +11,7 @@ namespace Sanakan.DAL.Repositories.Abstractions
         IRemoveRepository<GuildOptions>,
         ISaveRepository
     {
-        Task<GuildOptions> GetGuildConfigOrCreateAsync(ulong guildId);
-        Task<GuildOptions> GetCachedGuildFullConfigAsync(ulong guildId);
+        Task<GuildOptions?> GetGuildConfigOrCreateAsync(ulong guildId);
+        Task<GuildOptions?> GetCachedGuildFullConfigAsync(ulong guildId);
     }
 }

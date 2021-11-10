@@ -20,7 +20,7 @@ namespace Sanakan.Preconditions
         {
             var guildConfigRepository = services.GetRequiredService<IGuildConfigRepository>();
 
-            var user = context.User as SocketGuildUser;
+            var user = context.User as IGuildUser;
 
             if (user == null)
             {
@@ -31,40 +31,48 @@ namespace Sanakan.Preconditions
             
             if (gConfig == null)
             {
-                return await CheckPermissionsAsync(user.GuildPermissions, context.Channel, services);
+                return await CheckPermissionsAsync(user.GuildPermissions);
             }
 
-            if (gConfig.ModeratorRoles.Any(x => user.Roles.Any(r => r.Id == x.Role)))
+            if (gConfig.ModeratorRoles.Any(x => user.RoleIds.Any(id => id == x.RoleId)))
             {
                 return PreconditionResult.FromSuccess();
             }
+
+            if(!gConfig.AdminRoleId.HasValue)
+            {
+                var result = new PreconditionErrorPayload();
+                result.Message = "No admin role configured";
+
+                return PreconditionResult.FromError(result.Serialize());
+            }
                 
-            var role = context.Guild.GetRole(gConfig.AdminRoleId);
+            var role = context.Guild.GetRole(gConfig.AdminRoleId.Value);
             
             if (role == null)
             {
-                return await CheckPermissionsAsync(user.GuildPermissions, context.Channel, services);
+                return await CheckPermissionsAsync(user.GuildPermissions);
             }
 
-            if (user.Roles.Any(x => x.Id == role.Id))
+            if (user.RoleIds.Any(id => id == role.Id))
             {
                 return PreconditionResult.FromSuccess();
             }
 
-            return await CheckPermissionsAsync(user.GuildPermissions, context.Channel, services);
+            return await CheckPermissionsAsync(user.GuildPermissions);
         }
 
-        private async Task<PreconditionResult> CheckPermissionsAsync(
-            GuildPermissions guildPermissions,
-            IMessageChannel channel,
-            IServiceProvider services)
+        private async Task<PreconditionResult> CheckPermissionsAsync(GuildPermissions guildPermissions)
         {
             if (guildPermissions.Administrator)
             {
                 return PreconditionResult.FromSuccess();
             }
 
-            return PreconditionResult.FromError(ImageResources.YouHaveNoPowerHere);
+            var result = new PreconditionErrorPayload();
+            result.ImageUrl = ImageResources.YouHaveNoPowerHere;
+
+            return PreconditionResult.FromError(result.Serialize());
         }
     }
 }

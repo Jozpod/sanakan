@@ -674,7 +674,9 @@ namespace Sanakan.DiscordBot.Modules
                 }
 
                 var gConfig = await _guildConfigRepository.GetCachedGuildFullConfigAsync(Context.Guild.Id);
-                if (!await _profileService.SetUserColorAsync(user, gConfig.AdminRoleId, color))
+                var adminRoleId = gConfig.AdminRoleId.Value;
+
+                if (!await _profileService.SetUserColorAsync(user, adminRoleId, color))
                 {
                     await ReplyAsync("", embed: $"Coś poszło nie tak!".ToEmbedMessage(EMType.Error).Build());
                     return;

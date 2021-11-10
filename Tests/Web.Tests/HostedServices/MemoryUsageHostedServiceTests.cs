@@ -7,6 +7,7 @@ using Moq;
 using Sanakan.Common;
 using Sanakan.Common.Configuration;
 using Sanakan.Configuration;
+using Sanakan.DAL;
 using Sanakan.DAL.Models.Analytics;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.Web.HostedService;
@@ -27,10 +28,11 @@ namespace Sanakan.Web.Test.HostedServices
         private readonly MemoryUsageHostedService _service;
         private readonly Mock<ISystemClock> _systemClockMock = new(MockBehavior.Strict);
         private readonly Mock<IOptionsMonitor<DaemonsConfiguration>> _optionsMock = new(MockBehavior.Strict);
-        private readonly IServiceProvider _serviceProvider;
         private readonly Mock<IOperatingSystem> _operatingSystemMock = new(MockBehavior.Strict);
         private readonly Mock<ISystemAnalyticsRepository> _systemAnalyticsRepositoryMock = new(MockBehavior.Strict);
         private readonly FakeTimer _fakeTimer = new ();
+        private readonly Mock<ITaskManager> _taskManagerMock = new(MockBehavior.Strict);
+        private readonly Mock<IDatabaseFacade> _databaseFacadeMock = new(MockBehavior.Strict);
         private readonly Process _process = new();
 
         public MemoryUsageHostedServiceTests()
@@ -50,7 +52,9 @@ namespace Sanakan.Web.Test.HostedServices
                 _optionsMock.Object,
                 serviceScopeFactory,
                 _operatingSystemMock.Object,
-                _fakeTimer);
+                _taskManagerMock.Object,
+                _fakeTimer,
+                _databaseFacadeMock.Object);
         }
 
         [TestMethod]

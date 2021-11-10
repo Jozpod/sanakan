@@ -869,6 +869,19 @@ namespace Sanakan.DiscordBot.Modules
                 .ToEmbedMessage(EMType.Success).Build());
         }
 
+        [Command("turlban"), Priority(1)]
+        [Summary("wyłącza/załącza banowanie za spam url")]
+        [Remarks("")]
+        public async Task ToggleBanIfDisallowedUrlAsync()
+        {
+            await _config.UpdateAsync(opt =>
+            {
+                opt.Discord.BanForUrlSpam = !opt.Discord.BanForUrlSpam;
+            });
+
+            await ReplyAsync("", embed: $"Banowanie uzytkownikow za spamowanie url: `{_config.Value.Discord.BanForUrlSpam}`".ToEmbedMessage(EMType.Success).Build());
+        }
+
         [Command("tsafari"), Priority(1)]
         [Summary("wyłącza/załącza safari")]
         [Remarks("true")]

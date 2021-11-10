@@ -34,7 +34,7 @@ namespace Sanakan.Preconditions
                 return CheckPermissions(user.GuildPermissions);
             }
 
-            var role = context.Guild.GetRole(gConfig.AdminRoleId);
+            var role = context.Guild.GetRole(gConfig.AdminRoleId.Value);
 
             if (role == null)
             {
@@ -56,7 +56,10 @@ namespace Sanakan.Preconditions
                 return PreconditionResult.FromSuccess();
             }
 
-            return PreconditionResult.FromError(ImageResources.YouHaveNoPowerHere);
+            var result = new PreconditionErrorPayload();
+            result.ImageUrl = ImageResources.YouHaveNoPowerHere;
+
+            return PreconditionResult.FromError(result.Serialize());
         }
     }
 }

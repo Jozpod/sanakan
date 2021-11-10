@@ -31,9 +31,9 @@ namespace Sanakan.TaskQueue.Tests.SessionTests
         {
             var session = new CraftSession(1, DateTime.UtcNow, new CraftSession.CraftSessionPayload());
             _sessionManager.Add(session);
-            _sessionManager.Sessions.Should().HaveCount(1);
+            _sessionManager.GetByOwnerId(1, SessionExecuteCondition.AllEvents).Should().HaveCount(1);
             _sessionManager.Remove(session);
-            _sessionManager.Sessions.Should().HaveCount(0);
+            _sessionManager.GetByOwnerId(1, SessionExecuteCondition.AllEvents).Should().HaveCount(0);
         }
     }
 }

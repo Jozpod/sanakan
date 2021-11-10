@@ -168,11 +168,29 @@ namespace Sanakan.DiscordBot.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to To polecenie działa na kanale {0}.
+        /// </summary>
+        internal static string RequiredChannel {
+            get {
+                return ResourceManager.GetString("RequiredChannel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Wymagany poziom do użycia polecenia: {0}!.
         /// </summary>
         internal static string RequiredLevelToExecuteCommand {
             get {
                 return ResourceManager.GetString("RequiredLevelToExecuteCommand", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Do użycia tego polecenia wymagana jest rola {0}.
+        /// </summary>
+        internal static string RequiredRole {
+            get {
+                return ResourceManager.GetString("RequiredRole", resourceCulture);
             }
         }
         

@@ -33,7 +33,7 @@ namespace Sanakan.Web.HostedService
         private readonly List<ulong> _usersWithSwappedNicknames;
 
         public ChaosHostedService(
-            ILogger<MemoryUsageHostedService> logger,
+            ILogger<ChaosHostedService> logger,
             ISystemClock systemClock,
             IOptionsMonitor<DiscordConfiguration> discordConfiguration,
             IOptionsMonitor<DaemonsConfiguration> daemonsConfiguration,
@@ -117,7 +117,7 @@ namespace Sanakan.Web.HostedService
                 return;
             }
 
-            if (!guildConfig.ChaosMode)
+            if (!guildConfig.ChaosModeEnabled)
             {
                 return;
             }

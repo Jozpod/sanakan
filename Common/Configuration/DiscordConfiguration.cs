@@ -13,6 +13,11 @@ namespace Sanakan.Common.Configuration
         /// The Discord bot token.
         /// </summary>
         public string BotToken { get; set; } = string.Empty;
+        
+        /// <summary>
+        /// Ban users when they flood chat with urls.
+        /// </summary>
+        public bool BanForUrlSpam { get; set; }
 
         /// <summary>
         /// Enables flood/spam supervision
