@@ -1,4 +1,4 @@
-﻿namespace Sanakan.Services.PocketWaifu.Fight
+﻿namespace Sanakan.Game.Models
 {
     public class AttackInfo
     {

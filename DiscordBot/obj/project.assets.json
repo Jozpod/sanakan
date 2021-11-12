@@ -1994,6 +1994,7 @@
           "Microsoft.Extensions.DependencyInjection": "5.0.2",
           "Microsoft.Extensions.Options": "5.0.0",
           "Sanakan.DAL": "1.0.0",
+          "Sanakan.DiscordBot.Abstractions": "1.0.0",
           "Shinden.NET": "0.0.1",
           "SixLabors.ImageSharp.Drawing": "1.0.0-beta0006"
         },

@@ -1277,10 +1277,10 @@ namespace Sanakan.DiscordBot.Modules
         {
             var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(Context.Guild.Id);
 
-            var chan = config.ChannelsWithoutExp.FirstOrDefault(x => x.Channel == Context.Channel.Id);
+            var chan = config.ChannelsWithoutExperience.FirstOrDefault(x => x.Channel == Context.Channel.Id);
             if (chan != null)
             {
-                config.ChannelsWithoutExp.Remove(chan);
+                config.ChannelsWithoutExperience.Remove(chan);
                 await _guildConfigRepository.SaveChangesAsync();
 
                 _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });
@@ -1292,7 +1292,7 @@ namespace Sanakan.DiscordBot.Modules
             chan = new WithoutExpChannel {
                 Channel = Context.Channel.Id
             };
-            config.ChannelsWithoutExp.Add(chan);
+            config.ChannelsWithoutExperience.Add(chan);
             await _guildConfigRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });

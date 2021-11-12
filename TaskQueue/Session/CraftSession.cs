@@ -10,6 +10,7 @@ using Sanakan.DiscordBot.Abstractions;
 using Sanakan.DiscordBot.Abstractions.Extensions;
 using Sanakan.DiscordBot.Abstractions.Models;
 using Sanakan.Extensions;
+using Sanakan.Game.Models;
 using Sanakan.Services.PocketWaifu;
 using System;
 using System.Collections.Generic;
@@ -75,13 +76,13 @@ namespace Sanakan.TaskQueue
             if (context.Message.Channel.Id != _payload.Message.Channel.Id)
                 return;
 
-            var cmd = context.Message?.Content?.ToLower();
-            if (cmd == null)
+            var command = context.Message?.Content?.ToLower();
+            if (command == null)
             {
                 return;
             }
 
-            var splitedCmd = cmd.Replace("\n", " ").Split(" ");
+            var splitedCmd = command.Replace("\n", " ").Split(" ");
             if (splitedCmd.Length < 2)
             {
                 return;
@@ -239,7 +240,7 @@ namespace Sanakan.TaskQueue
                         error = false;
 
                         var user = await userRepository.GetUserOrCreateAsync(_payload.PlayerInfo.User.Id);
-                        var rarity = GetRarityFromValue(GetValue());
+                        var rarity = RarityExtensions.GetRarityFromValue(GetValue());
                         var characterInfo = await waifuService.GetRandomCharacterAsync();
                         var newCard = waifuService.GenerateNewCard(
                             _payload.PlayerInfo.User,
@@ -320,7 +321,7 @@ namespace Sanakan.TaskQueue
             if (value > 1000)
             {
                 _payload.PlayerInfo.Accepted = true;
-                return GetRarityFromValue(value).ToString();
+                return RarityExtensions.GetRarityFromValue(value).ToString();
             }
             else _payload.PlayerInfo.Accepted = false;
 
@@ -328,17 +329,6 @@ namespace Sanakan.TaskQueue
         }
 
         private long GetValue() => _payload.PlayerInfo.Items.Sum(x => x.Type.CValue() * x.Count);
-
-        private Rarity GetRarityFromValue(long value)
-        {
-            if (value > 100000) return Rarity.SS;
-            if (value > 10000) return Rarity.S;
-            if (value > 8000) return Rarity.A;
-            if (value > 6000) return Rarity.B;
-            if (value > 4000) return Rarity.C;
-            if (value > 2000) return Rarity.D;
-            return Rarity.E;
-        }
 
         public override async void Dispose()
         {

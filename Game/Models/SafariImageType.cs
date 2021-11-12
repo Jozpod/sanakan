@@ -1,4 +1,4 @@
-﻿namespace Sanakan.DiscordBot.Services.PocketWaifu
+﻿namespace Sanakan.Game.Models
 {
     public enum SafariImageType
     {

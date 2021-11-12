@@ -37,6 +37,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TaskQueue.Tests", "Tests\Ta
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Game.Tests", "Tests\Game.Tests\Game.Tests.csproj", "{567EECEF-6940-4563-85B4-CE5EE5FE9961}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DiscordBot.Supervisor", "DiscordBot.Supervisor\DiscordBot.Supervisor.csproj", "{3529FC4F-C39B-4A9E-A0E5-C4AC5116C7CC}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DiscordBot.Supervisor.Tests", "Tests\DiscordBot.Supervisor.Tests\DiscordBot.Supervisor.Tests.csproj", "{12F01C5A-C7B4-45E6-832B-80818D4A33F5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -107,6 +111,14 @@ Global
 		{567EECEF-6940-4563-85B4-CE5EE5FE9961}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{567EECEF-6940-4563-85B4-CE5EE5FE9961}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{567EECEF-6940-4563-85B4-CE5EE5FE9961}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3529FC4F-C39B-4A9E-A0E5-C4AC5116C7CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3529FC4F-C39B-4A9E-A0E5-C4AC5116C7CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3529FC4F-C39B-4A9E-A0E5-C4AC5116C7CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3529FC4F-C39B-4A9E-A0E5-C4AC5116C7CC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{12F01C5A-C7B4-45E6-832B-80818D4A33F5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{12F01C5A-C7B4-45E6-832B-80818D4A33F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{12F01C5A-C7B4-45E6-832B-80818D4A33F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{12F01C5A-C7B4-45E6-832B-80818D4A33F5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -119,6 +131,7 @@ Global
 		{D7F38FE4-96C1-42F0-B124-E0B5BA26C8CF} = {87B94D2E-E158-475B-951E-FE4F00B8E6B7}
 		{161062BA-9165-4414-B04C-33C9CAEA89F3} = {87B94D2E-E158-475B-951E-FE4F00B8E6B7}
 		{567EECEF-6940-4563-85B4-CE5EE5FE9961} = {87B94D2E-E158-475B-951E-FE4F00B8E6B7}
+		{12F01C5A-C7B4-45E6-832B-80818D4A33F5} = {87B94D2E-E158-475B-951E-FE4F00B8E6B7}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {47BFA7D9-55FD-4775-914F-3FD89318D8D9}

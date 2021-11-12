@@ -19,7 +19,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace DiscordBot.ModulesTests.FunModuleTests
 {
     [TestClass]
-    public abstract class Base
+    public abstract class Base : TestBase
     {
         protected readonly FunModule _module;
         protected readonly Mock<IModeratorService> _moderatorServiceMock = new(MockBehavior.Strict);
@@ -41,6 +41,7 @@ namespace DiscordBot.ModulesTests.FunModuleTests
                 _systemClockMock.Object,
                 serviceScopeFactory,
                 _taskManagerMock.Object);
+            Initialize(_module);
         }
     }
 }

@@ -1,6 +1,6 @@
 using Sanakan.DAL.Models;
 
-namespace Sanakan.Services.PocketWaifu
+namespace Sanakan.Game.Models
 {
     public class RarityChance
     {

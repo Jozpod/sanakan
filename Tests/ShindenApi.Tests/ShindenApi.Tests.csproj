@@ -14,6 +14,7 @@
     <None Remove="TestData\all-characters-from-manga-result.json" />
     <None Remove="TestData\all-characters-result.json" />
     <None Remove="TestData\anime-info-result.json" />
+    <None Remove="TestData\change-title-status-result.json" />
     <None Remove="TestData\character-info-result.json" />
     <None Remove="TestData\characters-info-result.json" />
     <None Remove="TestData\characters-result.json" />
@@ -28,12 +29,17 @@
     <None Remove="TestData\new-epsiodes-result.json" />
     <None Remove="TestData\recommendations-result.json" />
     <None Remove="TestData\relations-result.json" />
+    <None Remove="TestData\remove-from-favourites-result.json" />
+    <None Remove="TestData\remove-title-result.json" />
     <None Remove="TestData\reviews-result.json" />
     <None Remove="TestData\staff-info-result.json" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="TestData\anime-info-result.json" />
+    <EmbeddedResource Include="TestData\remove-from-favourites-result.json" />
+    <EmbeddedResource Include="TestData\remove-title-result.json" />
+    <EmbeddedResource Include="TestData\change-title-status-result.json" />
     <EmbeddedResource Include="TestData\character-info-result.json" />
     <EmbeddedResource Include="TestData\characters-info-result.json" />
     <EmbeddedResource Include="TestData\episodes-range-result.json" />

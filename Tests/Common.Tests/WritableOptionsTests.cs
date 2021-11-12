@@ -66,7 +66,7 @@ namespace Sanakan.DAL.Tests
         {
             var sanakanConfiguration = _serviceProvider.GetRequiredService<IWritableOptions<SanakanConfiguration>>();
             var random = new Random();
-            var charPerPacket = random.Next(1000);
+            var charPerPacket = (ulong)random.Next(1000);
             var charPerPoint = random.Next(1000);
             var minPerMessage = random.Next(1000);
 

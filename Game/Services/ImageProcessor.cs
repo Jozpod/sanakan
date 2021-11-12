@@ -10,6 +10,7 @@ using Sanakan.Common;
 using Sanakan.Common.Models;
 using Sanakan.DAL.Models;
 using Sanakan.Extensions;
+using Sanakan.Game.Services.Abstractions;
 using Sanakan.Services;
 using Sanakan.Services.PocketWaifu;
 using Sanakan.ShindenApi;

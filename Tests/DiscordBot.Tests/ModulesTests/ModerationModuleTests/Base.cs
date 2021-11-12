@@ -11,7 +11,7 @@ using Sanakan.Common;
 namespace DiscordBot.ModulesTests.ModerationModuleTests
 {
     [TestClass]
-    public abstract class Base
+    public abstract class Base : TestBase
     {
         protected readonly ModerationModule _module;
         protected readonly Mock<IOptionsMonitor<DiscordConfiguration>> _discordConfigurationMock = new(MockBehavior.Strict);
@@ -40,6 +40,7 @@ namespace DiscordBot.ModulesTests.ModerationModuleTests
                 _guildConfigRepositoryMock.Object,
                 _randomNumberGeneratorMock.Object,
                 _taskManagerMock.Object);
+            Initialize(_module);
         }
     }
 }

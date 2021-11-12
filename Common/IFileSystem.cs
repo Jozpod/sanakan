@@ -25,7 +25,10 @@ namespace Sanakan.Common
         
         /// <inheritdoc cref="File.ReadAllTextAsync(string, System.Threading.CancellationToken)"/>
         Task<string> ReadAllTextAsync(string path);
-        
+
+        /// <inheritdoc cref="File.ReadAllLinesAsync(string, System.Threading.CancellationToken)"/>
+        Task<string[]> ReadAllLinesAsync(string path);
+
         /// <inheritdoc cref="File.OpenRead(string)"/>
         Stream OpenRead(string path);
 

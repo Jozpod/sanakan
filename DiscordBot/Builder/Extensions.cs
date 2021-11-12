@@ -5,7 +5,6 @@ using Discord.Commands;
 using Discord.WebSocket;
 using DiscordBot.Services;
 using DiscordBot.Services.PocketWaifu;
-using DiscordBot.Services.PocketWaifu.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Sanakan.Common.Models;

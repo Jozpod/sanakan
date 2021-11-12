@@ -15,7 +15,7 @@ namespace Sanakan.DAL.Models
 
         [StringLength(50)]
         public string Name { get; set; } = string.Empty;
-        public ulong TitleId { get; set; }
+        public ulong? TitleId { get; set; }
         public int CardCount { get; set; }
         public Rarity MinRarity { get; set; }
         public bool IsCardFromPackTradable { get; set; }

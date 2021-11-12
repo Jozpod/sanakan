@@ -3,7 +3,7 @@ using Discord.WebSocket;
 using Sanakan.DAL.Models;
 using System.Collections.Generic;
 
-namespace Sanakan.Services.PocketWaifu
+namespace Sanakan.Game.Models
 {
     public class PlayerInfo
     {
@@ -12,6 +12,6 @@ namespace Sanakan.Services.PocketWaifu
         public List<Item> Items { get; set; }
         public IUser User { get; set; }
         public bool Accepted { get; set; }
-        public User Dbuser { get; set; }
+        public User DatabaseUser { get; set; }
     }
 }

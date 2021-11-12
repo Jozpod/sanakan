@@ -22,13 +22,11 @@ namespace Sanakan.Web.HostedService
     {
         private readonly ILogger _logger;
         private readonly ISystemClock _systemClock;
-        private readonly IOptionsMonitor<SanakanConfiguration> _options;
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly IBlockingPriorityQueue _blockingPriorityQueue;
 
         public TaskQueueHostedService(
-            ILogger<MemoryUsageHostedService> logger,
-            IOptionsMonitor<SanakanConfiguration> options,
+            ILogger<TaskQueueHostedService> logger,
             ISystemClock systemClock,
             IServiceScopeFactory serviceScopeFactory,
             IBlockingPriorityQueue blockingPriorityQueue)
@@ -36,7 +34,6 @@ namespace Sanakan.Web.HostedService
             _logger = logger;
             _systemClock = systemClock;
             _serviceScopeFactory = serviceScopeFactory;
-            _options = options;
             _blockingPriorityQueue = blockingPriorityQueue;
         }
 
@@ -55,9 +52,13 @@ namespace Sanakan.Web.HostedService
                     }
                 }, stoppingToken);
             }
-            catch (OperationCanceledException)
+            catch (OperationCanceledException ex)
             {
-                
+                _logger.LogInformation("Task queue has been stopped");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("An error occurred while processing task", ex);
             }
         }
     }

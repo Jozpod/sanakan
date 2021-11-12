@@ -21,7 +21,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 namespace DiscordBot.ModulesTests.HelperModuleTests
 {
     [TestClass]
-    public abstract class Base
+    public abstract class Base : TestBase
     {
         protected readonly HelperModule _module;
         protected readonly Mock<IHelperService> _helperServiceMock = new(MockBehavior.Strict);
@@ -46,6 +46,7 @@ namespace DiscordBot.ModulesTests.HelperModuleTests
                 _systemClockMock.Object,
                 _operatingSystemMock.Object,
                 serviceProvider);
+            Initialize(_module);
         }
     }
 }

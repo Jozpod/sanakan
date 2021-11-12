@@ -3062,6 +3062,25 @@
           "bin/placeholder/Sanakan.DiscordBot.Abstractions.dll": {}
         }
       },
+      "Sanakan.DiscordBot.Supervisor/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v5.0",
+        "dependencies": {
+          "Discord.Net": "2.4.0",
+          "Humanizer.Core.pl": "2.11.10",
+          "Microsoft.Extensions.DependencyInjection": "5.0.2",
+          "Microsoft.Extensions.Options": "5.0.0",
+          "Sanakan.Common": "1.0.0",
+          "Sanakan.DAL": "1.0.0",
+          "SixLabors.ImageSharp.Drawing": "1.0.0-beta0006"
+        },
+        "compile": {
+          "bin/placeholder/Sanakan.DiscordBot.Supervisor.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Sanakan.DiscordBot.Supervisor.dll": {}
+        }
+      },
       "Sanakan.Game/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v5.0",
@@ -3070,6 +3089,7 @@
           "Microsoft.Extensions.DependencyInjection": "5.0.2",
           "Microsoft.Extensions.Options": "5.0.0",
           "Sanakan.DAL": "1.0.0",
+          "Sanakan.DiscordBot.Abstractions": "1.0.0",
           "Shinden.NET": "0.0.1",
           "SixLabors.ImageSharp.Drawing": "1.0.0-beta0006"
         },
@@ -9532,6 +9552,11 @@
       "path": "../DiscordBot.Abstractions/DiscordBot.Abstractions.csproj",
       "msbuildProject": "../DiscordBot.Abstractions/DiscordBot.Abstractions.csproj"
     },
+    "Sanakan.DiscordBot.Supervisor/1.0.0": {
+      "type": "project",
+      "path": "../DiscordBot.Supervisor/DiscordBot.Supervisor.csproj",
+      "msbuildProject": "../DiscordBot.Supervisor/DiscordBot.Supervisor.csproj"
+    },
     "Sanakan.Game/1.0.0": {
       "type": "project",
       "path": "../Game/Game.csproj",
@@ -9562,6 +9587,7 @@
       "Newtonsoft.Json >= 13.0.1",
       "Sanakan.Common >= 1.0.0",
       "Sanakan.DiscordBot >= 1.0.0",
+      "Sanakan.DiscordBot.Supervisor >= 1.0.0",
       "Sanakan.Game >= 1.0.0",
       "Sanakan.TaskQueue >= 1.0.0",
       "Swashbuckle.AspNetCore.SwaggerGen >= 5.6.3",
@@ -9602,6 +9628,9 @@
           "projectReferences": {
             "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\Common\\Common.csproj": {
               "projectPath": "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\Common\\Common.csproj"
+            },
+            "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\DiscordBot.Supervisor\\DiscordBot.Supervisor.csproj": {
+              "projectPath": "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\DiscordBot.Supervisor\\DiscordBot.Supervisor.csproj"
             },
             "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\DiscordBot\\DiscordBot.csproj": {
               "projectPath": "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\DiscordBot\\DiscordBot.csproj"

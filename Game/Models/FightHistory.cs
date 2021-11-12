@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Sanakan.Services.PocketWaifu.Fight
+namespace Sanakan.Game.Models
 {
     public class FightHistory
     {

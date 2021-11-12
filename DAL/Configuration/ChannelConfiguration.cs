@@ -26,7 +26,7 @@ namespace Sanakan.DAL.Configuration
 
             builder
                 .HasOne(e => e.GuildOptions)
-                .WithMany(g => g.ChannelsWithoutExp);
+                .WithMany(g => g.ChannelsWithoutExperience);
         }
 
         public void Configure(EntityTypeBuilder<WithoutSupervisionChannel> builder)

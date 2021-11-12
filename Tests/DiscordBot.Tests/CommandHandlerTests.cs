@@ -19,17 +19,13 @@ namespace Sanakan.DiscordBot.Tests
     public class CommandHandlerTests
     {
         private readonly CommandHandler _commandHandler;
-        private readonly Mock<IDiscordSocketClientAccessor> _discordSocketClientAccessorMock;
-        private readonly Mock<IOptionsMonitor<DiscordConfiguration>> _discordConfigurationMock;
-        private readonly Mock<CommandService> _commandServiceMock;
-        private readonly Mock<ISystemClock> _systemClockMock;
+        private readonly Mock<IDiscordSocketClientAccessor> _discordSocketClientAccessorMock = new(MockBehavior.Strict);
+        private readonly Mock<IOptionsMonitor<DiscordConfiguration>> _discordConfigurationMock = new(MockBehavior.Strict);
+        private readonly Mock<CommandService> _commandServiceMock = new(MockBehavior.Strict);
+        private readonly Mock<ISystemClock> _systemClockMock = new(MockBehavior.Strict);
 
         public CommandHandlerTests()
         {
-            _discordSocketClientAccessorMock = new(MockBehavior.Strict);
-            _discordConfigurationMock = new(MockBehavior.Strict);
-            _commandServiceMock = new(MockBehavior.Strict);
-            _systemClockMock = new(MockBehavior.Strict);
             var serviceCollection = new ServiceCollection();
             var serviceProvider = serviceCollection.BuildServiceProvider();
             var serviceScopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();

@@ -16,7 +16,7 @@ namespace DiscordBot.ModulesTests.DebugModuleTests
     {
         
         [TestMethod]
-        public async Task Should_Return_Random_Card()
+        public async Task Should_Send_Message()
         {
             var guildUserMock = new Mock<IGuildUser>(MockBehavior.Strict);
             var mentionableMock = new Mock<IMentionable>(MockBehavior.Strict);
@@ -72,6 +72,7 @@ namespace DiscordBot.ModulesTests.DebugModuleTests
                 .Setup(pr => pr.ExpireTag(It.IsAny<string[]>()));
 
             await _module.GenerateCardAsync(guildUserMock.Object);
+            _messageChannelMock.Verify();
         }
     }
 }

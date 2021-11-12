@@ -2,7 +2,6 @@
 using Discord.Commands;
 using Discord.WebSocket;
 using DiscordBot.Services.PocketWaifu;
-using DiscordBot.Services.PocketWaifu.Abstractions;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -20,6 +19,8 @@ using Sanakan.DiscordBot.Resources;
 using Sanakan.Extensions;
 using Sanakan.Game;
 using Sanakan.Game.Extensions;
+using Sanakan.Game.Models;
+using Sanakan.Game.Services.Abstractions;
 using Sanakan.Preconditions;
 using Sanakan.Services.Commands;
 using Sanakan.Services.PocketWaifu;
@@ -701,15 +702,16 @@ namespace Sanakan.DiscordBot.Modules
                         return;
                     }
                     karmaChange += 0.02 * itemCount;
-                    card.Dere = WaifuService.RandomizeDere(_randomNumberGenerator);
+                    var randomDere = _randomNumberGenerator.GetOneRandomFrom(DereExtensions.ListOfDeres);
+                    card.Dere = randomDere;
                     embed.Description += $"Nowy charakter to: {card.Dere}!";
                     _waifuService.DeleteCardImageIfExist(card);
                     break;
 
                 case ItemType.CardParamsReRoll:
                     karmaChange += 0.03 * itemCount;
-                    card.Attack = WaifuService.RandomizeAttack(_randomNumberGenerator, card.Rarity);
-                    card.Defence = WaifuService.RandomizeDefence(_randomNumberGenerator, card.Rarity);
+                    card.Attack = _randomNumberGenerator.GetRandomValue(card.Rarity.GetAttackMin(), card.Rarity.GetAttackMax() + 1);
+                    card.Defence = _randomNumberGenerator.GetRandomValue(card.Rarity.GetDefenceMin(), card.Rarity.GetDefenceMax() + 1);
                     embed.Description += $"Nowa moc karty to: 🔥{card.GetAttackWithBonus()} 🛡{card.GetDefenceWithBonus()}!";
                     _waifuService.DeleteCardImageIfExist(card);
                     break;
@@ -996,9 +998,11 @@ namespace Sanakan.DiscordBot.Modules
 
             bUser.GameDeck.Karma -= 5;
 
-            card.Defence = WaifuService.RandomizeDefence(_randomNumberGenerator,  Rarity.E);
-            card.Attack = WaifuService.RandomizeAttack(_randomNumberGenerator, Rarity.E);
-            card.Dere = WaifuService.RandomizeDere(_randomNumberGenerator);
+            var rarity = Rarity.E;
+            card.Defence = _randomNumberGenerator.GetRandomValue(rarity.GetDefenceMin(), rarity.GetDefenceMax() + 1);
+            card.Attack = _randomNumberGenerator.GetRandomValue(rarity.GetAttackMin(), rarity.GetAttackMax() + 1);
+            var randomDere = _randomNumberGenerator.GetOneRandomFrom(DereExtensions.ListOfDeres);
+            card.Dere = randomDere;
             card.Rarity = Rarity.E;
             card.UpgradesCount = 2;
             card.RestartCount += 1;
@@ -3161,7 +3165,7 @@ namespace Sanakan.DiscordBot.Modules
             payload.P1 = new PlayerInfo
             {
                 User = sourceUser,
-                Dbuser = duser1,
+                DatabaseUser = duser1,
                 Accepted = false,
                 CustomString = "",
                 Cards = new List<Card>()
@@ -3170,7 +3174,7 @@ namespace Sanakan.DiscordBot.Modules
             payload.P2 = new PlayerInfo
             {
                 User = destinationUser,
-                Dbuser = duser2,
+                DatabaseUser = duser2,
                 Accepted = false,
                 CustomString = "",
                 Cards = new List<Card>()
@@ -3227,7 +3231,7 @@ namespace Sanakan.DiscordBot.Modules
                 PlayerInfo = new PlayerInfo
                 {
                     User = discordUser,
-                    Dbuser = databaseUser,
+                    DatabaseUser = databaseUser,
                     Accepted = false,
                     CustomString = "",
                     Items = new List<Item>()
@@ -3480,12 +3484,12 @@ namespace Sanakan.DiscordBot.Modules
                     {
                         Cards = duser.GameDeck.Cards.Where(x => x.Active).ToList(),
                         User = Context.User,
-                        Dbuser = duser
+                        DatabaseUser = duser
                     },
                     new PlayerInfo
                     {
                         Cards = userEnemy.GameDeck.Cards.Where(x => x.Active).ToList(),
-                        Dbuser = userEnemy,
+                        DatabaseUser = userEnemy,
                         User = enemySocketUser
                     }
                 };

@@ -3,7 +3,6 @@ using Moq;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot.Services.Abstractions;
 using Sanakan.DiscordBot.Modules;
-using DiscordBot.Services.PocketWaifu.Abstractions;
 using Sanakan.TaskQueue;
 using Sanakan.ShindenApi;
 using Sanakan.Game.Services;
@@ -15,11 +14,12 @@ using Discord;
 using Discord.WebSocket;
 using System;
 using System.Linq;
+using Sanakan.Game.Services.Abstractions;
 
 namespace DiscordBot.ModulesTests.DebugModuleTests
 {
     [TestClass]
-    public abstract class Base
+    public abstract class Base : TestBase
     {
         protected readonly DebugModule _module;
         protected readonly Mock<IShindenClient> _shindenClientMock = new(MockBehavior.Strict);
@@ -36,77 +36,66 @@ namespace DiscordBot.ModulesTests.DebugModuleTests
         protected readonly Mock<IResourceManager> _resourceManagerMock = new(MockBehavior.Strict);
         protected readonly Mock<IRandomNumberGenerator> _randomNumberGeneratorMock = new(MockBehavior.Strict);
         protected readonly Mock<ITaskManager> _taskManagerMock = new(MockBehavior.Strict);
-        protected readonly Mock<ICommandContext> _commandContextMock = new(MockBehavior.Strict);
-        protected readonly Mock<IMessageChannel> _messageChannelMock = new(MockBehavior.Strict);
-        protected readonly Mock<IUserMessage> _userMessageMock = new(MockBehavior.Strict);
 
-        private void SetContext()
-        {
-            var setContext = _module.GetType().GetMethod(
-             "Discord.Commands.IModuleBase.SetContext",
-             BindingFlags.NonPublic | BindingFlags.Instance);
-            setContext.Invoke(_module, new object[] { _commandContextMock.Object });
-        }
+        //public static object CreateSocketGlobalUser(DiscordSocketClient discordSocketClient, ulong id)
+        //{
+        //    var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+        //    var discordNetAssembly = assemblies
+        //        .FirstOrDefault(pr => pr.FullName == "Discord.Net.WebSocket, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null");
 
-        public static object CreateSocketGlobalUser(DiscordSocketClient discordSocketClient, ulong id)
-        {
-            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-            var discordNetAssembly = assemblies
-                .FirstOrDefault(pr => pr.FullName == "Discord.Net.WebSocket, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null");
-
-            var socketGlobalUserType = discordNetAssembly.GetType("Discord.WebSocket.SocketGlobalUser");
+        //    var socketGlobalUserType = discordNetAssembly.GetType("Discord.WebSocket.SocketGlobalUser");
 
 
-            var socketGlobalUserCtor = socketGlobalUserType.GetConstructor(
-                BindingFlags.NonPublic | BindingFlags.Instance,
-                null, new[]{
-                        typeof(DiscordSocketClient),
-                        typeof(ulong),
-                    }, null);
+        //    var socketGlobalUserCtor = socketGlobalUserType.GetConstructor(
+        //        BindingFlags.NonPublic | BindingFlags.Instance,
+        //        null, new[]{
+        //                typeof(DiscordSocketClient),
+        //                typeof(ulong),
+        //            }, null);
 
-            var parameters = new object[] {
-                discordSocketClient, id
-            };
+        //    var parameters = new object[] {
+        //        discordSocketClient, id
+        //    };
 
-            var socketGlobalUser = socketGlobalUserCtor.Invoke(parameters);
-            return socketGlobalUser;
-        }
+        //    var socketGlobalUser = socketGlobalUserCtor.Invoke(parameters);
+        //    return socketGlobalUser;
+        //}
 
-        public static SocketGuild CreateSocketGuild(DiscordSocketClient discordSocketClient, ulong id)
-        {
-            var bindingAttr = BindingFlags.NonPublic | BindingFlags.Instance;
-            var socketGuildCtor = typeof(SocketGuild).GetConstructor(
-             bindingAttr,
-             null, new[]{
-                    typeof(DiscordSocketClient),
-                    typeof(ulong),
-             }, null);
+        //public static SocketGuild CreateSocketGuild(DiscordSocketClient discordSocketClient, ulong id)
+        //{
+        //    var bindingAttr = BindingFlags.NonPublic | BindingFlags.Instance;
+        //    var socketGuildCtor = typeof(SocketGuild).GetConstructor(
+        //     bindingAttr,
+        //     null, new[]{
+        //            typeof(DiscordSocketClient),
+        //            typeof(ulong),
+        //     }, null);
 
-            var socketGuild = (SocketGuild)socketGuildCtor.Invoke(new object[] {
-                discordSocketClient, id,
-            });
-            return socketGuild;
-        }
+        //    var socketGuild = (SocketGuild)socketGuildCtor.Invoke(new object[] {
+        //        discordSocketClient, id,
+        //    });
+        //    return socketGuild;
+        //}
 
-        public static SocketGuildUser CreateSocketGuildUser(SocketGuild socketGuild, object socketGlobalUser)
-        {
-            var bindingAttr = BindingFlags.NonPublic | BindingFlags.Instance;
-            var types = new[]{
-                typeof(SocketGuild),
-                socketGlobalUser.GetType(),
-            };
-            var socketGuildUserCtor = typeof(SocketGuildUser).GetConstructor(
-               bindingAttr,
-               null, types, null);
+        //public static SocketGuildUser CreateSocketGuildUser(SocketGuild socketGuild, object socketGlobalUser)
+        //{
+        //    var bindingAttr = BindingFlags.NonPublic | BindingFlags.Instance;
+        //    var types = new[]{
+        //        typeof(SocketGuild),
+        //        socketGlobalUser.GetType(),
+        //    };
+        //    var socketGuildUserCtor = typeof(SocketGuildUser).GetConstructor(
+        //       bindingAttr,
+        //       null, types, null);
 
-            var parameters = new object[] {
-                socketGuild, socketGlobalUser
-            };
+        //    var parameters = new object[] {
+        //        socketGuild, socketGlobalUser
+        //    };
 
-            var socketGuildUser = (SocketGuildUser)socketGuildUserCtor.Invoke(parameters);
+        //    var socketGuildUser = (SocketGuildUser)socketGuildUserCtor.Invoke(parameters);
 
-            return socketGuildUser;
-        }
+        //    return socketGuildUser;
+        //}
 
         public Base()
         {
@@ -125,30 +114,11 @@ namespace DiscordBot.ModulesTests.DebugModuleTests
                 _resourceManagerMock.Object,
                 _randomNumberGeneratorMock.Object,
                 _taskManagerMock.Object);
-            SetContext();
-
-            _commandContextMock
-                .Setup(pr => pr.Channel)
-                .Returns(_messageChannelMock.Object);
-
-            var discordSocketClientMock = new Mock<DiscordSocketClient>(MockBehavior.Strict);
-            var socketGlobalUser = CreateSocketGlobalUser(discordSocketClientMock.Object, 1);
-            var socketGuild = CreateSocketGuild(discordSocketClientMock.Object, 1);
-            var socketGuildUser = CreateSocketGuildUser(socketGuild, socketGlobalUser);
-
-            _commandContextMock
-                .Setup(pr => pr.User)
-                .Returns(socketGuildUser);
-
-            _messageChannelMock
-                .Setup(pr => pr.SendMessageAsync(
-                    It.IsAny<string>(),
-                    It.IsAny<bool>(),
-                    It.IsAny<Embed>(),
-                    It.IsAny<RequestOptions>(),
-                    It.IsAny<AllowedMentions>(),
-                    It.IsAny<MessageReference>()))
-                .ReturnsAsync(_userMessageMock.Object);
+            Initialize(_module);
+            //var discordSocketClientMock = new Mock<DiscordSocketClient>(MockBehavior.Strict);
+            //var socketGlobalUser = CreateSocketGlobalUser(discordSocketClientMock.Object, 1);
+            //var socketGuild = CreateSocketGuild(discordSocketClientMock.Object, 1);
+            //var socketGuildUser = CreateSocketGuildUser(socketGuild, socketGlobalUser);
         }
     }
 }

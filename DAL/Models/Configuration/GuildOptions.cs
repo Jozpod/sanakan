@@ -13,7 +13,7 @@ namespace Sanakan.DAL.Models.Configuration
         {
             ChannelsWithoutSupervision = new Collection<WithoutSupervisionChannel>();
             IgnoredChannels = new Collection<WithoutMessageCountChannel>();
-            ChannelsWithoutExp = new Collection<WithoutExpChannel>();
+            ChannelsWithoutExperience = new Collection<WithoutExpChannel>();
             CommandChannels = new Collection<CommandChannel>();
             ModeratorRoles = new Collection<ModeratorRoles>();
             RolesPerLevel = new Collection<LevelRole>();
@@ -22,13 +22,13 @@ namespace Sanakan.DAL.Models.Configuration
             Lands = new Collection<MyLand>();
         }
 
-        public GuildOptions(ulong id, long safariLimit)
+        public GuildOptions(ulong id, ulong safariLimit)
         {
             Id = id;
             SafariLimit = safariLimit;
             ChannelsWithoutSupervision = new Collection<WithoutSupervisionChannel>();
             IgnoredChannels = new Collection<WithoutMessageCountChannel>();
-            ChannelsWithoutExp = new Collection<WithoutExpChannel>();
+            ChannelsWithoutExperience = new Collection<WithoutExpChannel>();
             CommandChannels = new Collection<CommandChannel>();
             ModeratorRoles = new Collection<ModeratorRoles>();
             RolesPerLevel = new Collection<LevelRole>();
@@ -55,7 +55,7 @@ namespace Sanakan.DAL.Models.Configuration
         /// <summary>
         /// The Discord role identifier.
         /// </summary>
-        public ulong UserRoleId { get; set; }
+        public ulong? UserRoleId { get; set; }
 
         /// <summary>
         /// The Discord role identifier.
@@ -70,7 +70,7 @@ namespace Sanakan.DAL.Models.Configuration
         /// <summary>
         /// The Discord role identifier.
         /// </summary>
-        public ulong WaifuRoleId { get; set; }
+        public ulong? WaifuRoleId { get; set; }
 
         /// <summary>
         /// The Discord channel identifier of text channel which is used for notifications.
@@ -115,7 +115,11 @@ namespace Sanakan.DAL.Models.Configuration
 
         [StringLength(50)]
         public string? GoodbyeMessage { get; set; }
-        public long SafariLimit { get; set; }
+
+        /// <summary>
+        /// The number of Safari events which can happen during a day.
+        /// </summary>
+        public ulong SafariLimit { get; set; }
         public bool SupervisionEnabled { get; set; }
         public bool ChaosModeEnabled { get; set; }
 
@@ -126,7 +130,7 @@ namespace Sanakan.DAL.Models.Configuration
 
         public virtual ICollection<WithoutSupervisionChannel> ChannelsWithoutSupervision { get; set; }
         public virtual ICollection<WithoutMessageCountChannel> IgnoredChannels { get; set; }
-        public virtual ICollection<WithoutExpChannel> ChannelsWithoutExp { get; set; }
+        public virtual ICollection<WithoutExpChannel> ChannelsWithoutExperience { get; set; }
         public virtual ICollection<CommandChannel> CommandChannels { get; set; }
         public virtual ICollection<ModeratorRoles> ModeratorRoles { get; set; }
         public virtual ICollection<LevelRole> RolesPerLevel { get; set; }

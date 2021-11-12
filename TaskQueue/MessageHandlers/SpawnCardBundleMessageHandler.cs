@@ -83,7 +83,7 @@ namespace Sanakan.TaskQueue.MessageHandlers
             {
                 Value = 1,
                 UserId = message.DiscordUserId,
-                MeasureDate = _systemClock.UtcNow,
+                MeasuredOn = _systemClock.UtcNow,
                 GuildId = message.GuildId ?? 0,
                 Type = UserAnalyticsEventType.Pack
             };

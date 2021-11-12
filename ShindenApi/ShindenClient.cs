@@ -764,7 +764,9 @@ namespace Sanakan.ShindenApi
             };
         }
         public async Task<Result<TitleStatusAfterChange>> ChangeTitleStatusAsync(
-            ulong userId, ListType status, ulong titleId)
+            ulong userId,
+            ListType status,
+            ulong titleId)
         {
             await TryRenewSessionAsync();
 

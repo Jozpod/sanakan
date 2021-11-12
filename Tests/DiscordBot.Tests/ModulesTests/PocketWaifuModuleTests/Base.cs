@@ -3,17 +3,17 @@ using Moq;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot.Modules;
 using Sanakan.Common;
-using DiscordBot.Services.PocketWaifu.Abstractions;
 using Sanakan.ShindenApi;
 using Microsoft.Extensions.Options;
 using Sanakan.Common.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
 using Sanakan.TaskQueue;
+using Sanakan.Game.Services.Abstractions;
 
 namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
 {
     [TestClass]
-    public abstract class Base
+    public abstract class Base : TestBase
     {
         protected readonly PocketWaifuModule _module;
         protected readonly Mock<IOptionsMonitor<DiscordConfiguration>> _discordConfigurationMock = new(MockBehavior.Strict);
@@ -44,6 +44,7 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
                 _cardRepositoryMock.Object,
                 _systemClockMock.Object,
                 _taskManagerMock.Object);
+            Initialize(_module);
         }
     }
 }

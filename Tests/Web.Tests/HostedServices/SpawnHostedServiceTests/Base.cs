@@ -6,6 +6,10 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.Common;
 using Sanakan.Common.Configuration;
+using Sanakan.Configuration;
+using Sanakan.DiscordBot;
+using Sanakan.Game.Services.Abstractions;
+using Sanakan.TaskQueue;
 using Sanakan.Web.HostedService;
 using Sanakan.Web.Tests.HostedServices;
 
@@ -15,9 +19,14 @@ namespace Sanakan.Web.Test.HostedServices.SpawnHostedServiceTests
     public abstract class Base
     {
         protected readonly SpawnHostedService _service;
-        protected readonly Mock<IOptionsMonitor<DaemonsConfiguration>> _daemonsConfigurationMock = new(MockBehavior.Strict);
+        protected readonly Mock<IRandomNumberGenerator> _randomNumberGeneratorMock = new(MockBehavior.Strict);
         protected readonly Mock<IOptionsMonitor<DiscordConfiguration>> _discordConfigurationMock = new(MockBehavior.Strict);
+        protected readonly Mock<IOptionsMonitor<ExperienceConfiguration>> _experienceConfigurationMock = new(MockBehavior.Strict);
+        protected readonly Mock<IDiscordSocketClientAccessor> _discordSocketClientAccessorMock = new(MockBehavior.Strict);
         protected readonly Mock<ISystemClock> _systemClockMock = new(MockBehavior.Strict);
+        protected readonly Mock<IBlockingPriorityQueue> _blockingPriorityQueueMock = new(MockBehavior.Strict);
+        protected readonly Mock<IWaifuService> _waifuServiceMock = new(MockBehavior.Strict);
+        protected readonly Mock<ITaskManager> _taskManagerMock = new(MockBehavior.Strict);
         protected readonly FakeTimer _fakeTimer = new();
 
         public Base()
@@ -27,11 +36,16 @@ namespace Sanakan.Web.Test.HostedServices.SpawnHostedServiceTests
             var serviceScopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
 
             _service = new(
-                NullLogger<SupervisorHostedService>.Instance,
-                _daemonsConfigurationMock.Object,
+                _randomNumberGeneratorMock.Object,
+                _blockingPriorityQueueMock.Object,
+                NullLogger<SpawnHostedService>.Instance,
                 _discordConfigurationMock.Object,
+                _experienceConfigurationMock.Object,
+                _discordSocketClientAccessorMock.Object,
                 _systemClockMock.Object,
                 serviceScopeFactory,
+                _taskManagerMock.Object,
+                _waifuServiceMock.Object,
                 _fakeTimer);
         }
     }

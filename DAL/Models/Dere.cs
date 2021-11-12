@@ -1,4 +1,6 @@
-﻿namespace Sanakan.DAL.Models
+﻿using System.Collections.Generic;
+
+namespace Sanakan.DAL.Models
 {
     public enum Dere
     {
@@ -17,6 +19,18 @@
 
     public static class DereExtensions
     {
+        public static IEnumerable<Dere> ListOfDeres = new[]
+        {
+                Dere.Tsundere,
+                Dere.Kamidere,
+                Dere.Deredere,
+                Dere.Yandere,
+                Dere.Dandere,
+                Dere.Kuudere,
+                Dere.Mayadere,
+                Dere.Bodere
+        };
+
         public static double ValueModifier(this Rarity rarity)
         {
             switch (rarity)

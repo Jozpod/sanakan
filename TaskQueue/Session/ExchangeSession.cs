@@ -16,6 +16,7 @@ using Sanakan.DiscordBot.Abstractions;
 using Sanakan.DiscordBot.Abstractions.Models;
 using Sanakan.Extensions;
 using Sanakan.Game.Extensions;
+using Sanakan.Game.Models;
 using Sanakan.Services.PocketWaifu;
 using Sanakan.TaskQueue;
 
@@ -192,7 +193,8 @@ namespace Sanakan.TaskQueue
 
             foreach (var id in wid)
             {
-                var card = player.Dbuser.GameDeck.Cards.FirstOrDefault(x => x.Id == id);
+                var card = player.DatabaseUser.GameDeck.Cards.FirstOrDefault(x => x.Id == id);
+                
                 if (card == null)
                 {
                     error = true;
@@ -217,13 +219,13 @@ namespace Sanakan.TaskQueue
                     continue;
                 }
 
-                if (card.Dere == Dere.Yami && target.Dbuser.GameDeck.IsGood())
+                if (card.Dere == Dere.Yami && target.DatabaseUser.GameDeck.IsGood())
                 {
                     error = true;
                     continue;
                 }
 
-                if (card.Dere == Dere.Raito && target.Dbuser.GameDeck.IsEvil())
+                if (card.Dere == Dere.Raito && target.DatabaseUser.GameDeck.IsEvil())
                 {
                     error = true;
                     continue;
@@ -240,7 +242,7 @@ namespace Sanakan.TaskQueue
                         continue;
                     }
 
-                    if (target.Dbuser.GameDeck.Cards
+                    if (target.DatabaseUser.GameDeck.Cards
                         .Any(x => x.FromFigure && x.CharacterId == card.CharacterId))
                     {
                         error = true;

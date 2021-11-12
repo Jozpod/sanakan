@@ -9,6 +9,8 @@ using Sanakan.Common.Configuration;
 using Sanakan.Configuration;
 using Sanakan.DAL.Models.Analytics;
 using Sanakan.DAL.Repositories.Abstractions;
+using Sanakan.DiscordBot;
+using Sanakan.TaskQueue;
 using Sanakan.Web.HostedService;
 using Sanakan.Web.Tests.HostedServices;
 using System;
@@ -27,6 +29,9 @@ namespace Sanakan.Web.Test.HostedServices.SessionHostedServiceTests
         protected readonly SessionHostedService _service;
         protected readonly Mock<IOptionsMonitor<DaemonsConfiguration>> _daemonsConfigurationMock = new(MockBehavior.Strict);
         protected readonly Mock<ISystemClock> _systemClockMock = new(MockBehavior.Strict);
+        protected readonly Mock<IDiscordSocketClientAccessor> _discordSocketClientAccessorMock = new(MockBehavior.Strict);
+        protected readonly Mock<ISessionManager> _sessionManagerMock = new(MockBehavior.Strict);
+        protected readonly Mock<ITaskManager> _taskManagerMock = new(MockBehavior.Strict);
         protected readonly FakeTimer _fakeTimer = new();
 
         public Base()
@@ -39,7 +44,10 @@ namespace Sanakan.Web.Test.HostedServices.SessionHostedServiceTests
                 NullLogger<SessionHostedService>.Instance,
                 _daemonsConfigurationMock.Object,
                 _systemClockMock.Object,
+                _discordSocketClientAccessorMock.Object,
                 serviceScopeFactory,
+                _sessionManagerMock.Object,
+                _taskManagerMock.Object,
                 _fakeTimer);
         }
     }

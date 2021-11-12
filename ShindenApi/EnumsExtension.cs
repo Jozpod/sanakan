@@ -21,19 +21,6 @@ namespace Sanakan.ShindenApi
             }
         }
 
-        public static string ToQuery(this AnimeRateType type)
-        {
-            switch (type)
-            {
-                case AnimeRateType.Characters: return "titlecahracters";
-                case AnimeRateType.Graphic: return "graphics";
-                case AnimeRateType.Music: return "music";
-                case AnimeRateType.Stroy: return "story";
-                case AnimeRateType.Total: return "total";
-                default: return "total";
-            }
-        }
-
         public static string ToQuery(this ListType type)
         {
             switch (type)

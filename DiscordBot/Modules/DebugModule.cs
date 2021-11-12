@@ -1,7 +1,6 @@
 ﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using DiscordBot.Services.PocketWaifu.Abstractions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using System.Text.Json.Serialization;
@@ -45,6 +44,8 @@ using System.Text.Json;
 using Sanakan.ShindenApi.Models;
 using Discord.Rest;
 using Sanakan.Common.Cache;
+using Sanakan.Game.Services.Abstractions;
+using Sanakan.Game.Models;
 
 namespace Sanakan.DiscordBot.Modules
 {
@@ -345,7 +346,7 @@ namespace Sanakan.DiscordBot.Modules
 
             if (config != null)
             {
-                var wRole = Context.Guild.GetRole(config.WaifuRoleId);
+                var wRole = Context.Guild.GetRole(config.WaifuRoleId.Value);
                 if (wRole != null) mention = wRole.Mention;
 
                 mutedRole = guild.GetRole(config.MuteRoleId);
@@ -835,7 +836,7 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("ustawia liczbę znaków na pakiet")]
         [Remarks("true")]
         public async Task SetCharCntPerPacketAsync(
-            [Summary("liczba znaków")]long count,
+            [Summary("liczba znaków")]ulong count,
             [Summary("true/false - czy zapisać")]bool save = false)
         {
             if (save) {

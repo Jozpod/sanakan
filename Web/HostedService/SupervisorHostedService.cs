@@ -10,7 +10,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Sanakan.Configuration;
 using Sanakan.DAL.Repositories.Abstractions;
-using Sanakan.Services.Supervisor;
 using System.Collections.Generic;
 using Sanakan.DiscordBot;
 using Discord.WebSocket;
@@ -21,26 +20,12 @@ using Sanakan.DiscordBot.Abstractions.Models;
 using Discord;
 using Sanakan.Extensions;
 using Sanakan.DiscordBot.Services.Abstractions;
-using System.Text.RegularExpressions;
+using Sanakan.DiscordBot.Supervisor;
 
 namespace Sanakan.Web.HostedService
 {
     public class SupervisorHostedService : BackgroundService
     {
-        private enum SupervisorAction
-        {
-            None,
-            Ban,
-            Mute,
-            Warn
-        }
-
-        private const int MAX_TOTAL = 13;
-        private const int MAX_SPECIFIED = 8;
-
-        private const int COMMAND_MOD = 2;
-        private const int UNCONNECTED_MOD = -2;
-
         private readonly ILogger _logger;
         private readonly ISystemClock _systemClock;
         private readonly IDiscordSocketClientAccessor _discordSocketClientAccessor;
@@ -48,9 +33,10 @@ namespace Sanakan.Web.HostedService
         private readonly IOptionsMonitor<DiscordConfiguration> _discordConfiguration;
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly ITaskManager _taskManager;
-        private readonly SemaphoreSlim _semaphoreSlim = new SemaphoreSlim(1, 1);
         private readonly ITimer _timer;
-        private readonly Dictionary<ulong, Dictionary<ulong, SupervisorEntity>> _guilds;
+        private readonly IUserMessageSupervisor _userMessageSupervisor;
+        private readonly IUserJoinedGuildSupervisor _userJoinedGuildSupervisor;
+        private bool _isRunning;
 
         public SupervisorHostedService(
             ILogger<SupervisorHostedService> logger,
@@ -60,9 +46,10 @@ namespace Sanakan.Web.HostedService
             ISystemClock systemClock,
             IServiceScopeFactory serviceScopeFactory,
             ITaskManager taskManager,
-            ITimer timer)
+            ITimer timer,
+            IUserMessageSupervisor userMessageSupervisor,
+            IUserJoinedGuildSupervisor userJoinedGuildSupervisor)
         {
-            _guilds = new Dictionary<ulong, Dictionary<ulong, SupervisorEntity>>();
             _logger = logger;
             _discordSocketClientAccessor = discordSocketClientAccessor;
             _systemClock = systemClock;
@@ -73,6 +60,8 @@ namespace Sanakan.Web.HostedService
             _timer = timer;
 
             _discordSocketClientAccessor.Initialized += Initialized;
+            _userMessageSupervisor = userMessageSupervisor;
+            _userJoinedGuildSupervisor = userJoinedGuildSupervisor;
         }
 
         private Task Initialized()
@@ -91,21 +80,6 @@ namespace Sanakan.Web.HostedService
             }
 
             return content;
-        }
-
-        public class Test
-        {
-
-        }
-
-        private void AddSuspect(ulong guildId, string username)
-        {
-
-        }
-
-        private IEnumerable<ulong> Get()
-        {
-
         }
 
         private async Task UserJoinedAsync(IGuildUser user)
@@ -141,38 +115,14 @@ namespace Sanakan.Web.HostedService
                 return;
             }
 
-            if (!_guildsJoin.Any(x => x.Key == user.Guild.Id))
+            var guild = user.Guild;
+            var userIds = _userJoinedGuildSupervisor.GetUsersToBanCauseRaid(user.Guild.Id, user.Username, user.Id);
+            var usersToBan = await Task.WhenAll(userIds.Select(pr => guild.GetUserAsync(pr)));
+            foreach (var userToBan in usersToBan)
             {
-                _guildsJoin.Add(user.Guild.Id, new Dictionary<string, SupervisorJoinEntity>());
-                return;
+                await guild.AddBanAsync(user, 1, $"Supervisor(ban) raid/scam [{user.Nickname}]");
             }
 
-            var guild = _guildsJoin[user.Guild.Id];
-            if (!guild.Any(x => x.Key == user.Username))
-            {
-                guild.Add(user.Username, new SupervisorJoinEntity(user.Id));
-                return;
-            }
-
-            var susspect = guild[user.Username];
-            if (!susspect.IsValid())
-            {
-                susspect = new SupervisorJoinEntity(user.Id);
-                return;
-            }
-
-            susspect.Add(user.Id);
-
-            if (!susspect.IsBannable())
-            {
-                return;
-            }
-
-            foreach (var toBan in susspect.GetUsersToBan())
-            {
-                var thisUser = user.Guild.GetUser(toBan);
-                await user.Guild.AddBanAsync(thisUser, 1, $"Supervisor(ban) raid/scam [{user.Nickname}]");
-            }
         }
 
         private async Task HandleMessageAsync(IMessage message)
@@ -222,82 +172,37 @@ namespace Sanakan.Web.HostedService
                 return;
             }
 
-            if (!_guilds.Any(x => x.Key == user.Guild.Id))
-            {
-                _guilds.Add(user.Guild.Id, new Dictionary<ulong, SupervisorEntity>());
-                return;
-            }
-
-            var guild = _guilds[user.Guild.Id];
             var messageContent = GetMessageContent(userMessage);
-            if (!guild.Any(x => x.Key == user.Id))
+            var adminRoleId = gConfig.AdminRoleId;
+            var userRoleId = gConfig.UserRoleId;
+
+            if (adminRoleId.HasValue
+                && user.RoleIds.Contains(adminRoleId.Value))
             {
-                guild.Add(user.Id, new SupervisorEntity(messageContent, _systemClock.UtcNow));
                 return;
             }
-
-            var susspect = guild[user.Id];
-            if (!susspect.IsValid(_systemClock.UtcNow))
-            {
-                susspect = new SupervisorEntity(messageContent, _systemClock.UtcNow);
-                return;
-            }
-
-            var utcNow = _systemClock.UtcNow;
-            var thisMessage = susspect.Get(utcNow, messageContent);
-
-            if (!thisMessage.IsValid(utcNow))
-            {
-                thisMessage = new SupervisorMessage(utcNow, messageContent);
-            }
-
-            if (gConfig.AdminRoleId.HasValue)
-                if (user.RoleIds.Contains(gConfig.AdminRoleId.Value))
-                {
-                    return;
-                }
 
             if (gConfig.ChannelsWithoutSupervision.Any(x => x.Channel == message.Channel.Id))
             {
                 return;
             }
 
-            var muteRole = user.Guild.GetRole(gConfig.MuteRoleId);
-            var userRole = user.Guild.GetRole(gConfig.UserRoleId);
-            var notifChannel = (ITextChannel)await user.Guild.GetChannelAsync(gConfig.NotificationChannelId);
+            var lessSeverePunishment = true;
 
-            var isBannable = thisMessage.IsBannable();
-            if (_discordConfiguration.Get().GiveBanForUrlSpam)
-            {
-                isBannable |= thisMessage.ContainsUrl();
-            }
-
-            bool hasRole = user.RoleIds.Any(x => x == gConfig.UserRoleId
+            var hasRole = user.RoleIds.Any(x => x == userRoleId
                 || x == gConfig.MuteRoleId)
-                || gConfig.UserRoleId == 0;
-            var action = MakeDecision(messageContent, susspect.Inc(_systemClock.UtcNow), thisMessage.Inc(), hasRole);
-            await MakeActionAsync(action, user, userMessage, userRole, muteRole, notifChannel);
+                || !userRoleId.HasValue;
 
-            await Task.CompletedTask;
-        }
+            lessSeverePunishment &= hasRole;
 
-        //public static List<string> GetURLs(this string s) =>
-        //    new Regex(@"(http|ftp|https):\/\/([\w\-_]+(?:(?:\.[\w\-_]+)+))([\w\-\.,@?^=%&amp;:/~\+#]*[\w\-\@?^=%&amp;/~\+#])?", RegexOptions.Compiled | RegexOptions.IgnoreCase).Matches(s).Select(x => x.Value).ToList();
+            var muteRole = user.Guild.GetRole(gConfig.MuteRoleId);
+            var userRole = user.Guild.GetRole(userRoleId.Value);
+            var notifChannel = (ITextChannel)await user.Guild.GetChannelAsync(gConfig.NotificationChannelId);
+            var decision = _userMessageSupervisor.MakeDecision(user.Guild.Id, user.Id, messageContent, lessSeverePunishment);
 
-
-        private async Task MakeActionAsync(
-           SupervisorAction action,
-           IGuildUser user,
-           IUserMessage message,
-           IRole userRole,
-           IRole muteRole,
-           ITextChannel notifChannel)
-        {
-            using var serviceScope = _serviceScopeFactory.CreateScope();
-            var serviceProvider = serviceScope.ServiceProvider;
             var moderatorService = serviceProvider.GetRequiredService<IModeratorService>();
 
-            switch (action)
+            switch (decision)
             {
                 case SupervisorAction.Warn:
                     await message.Channel.SendMessageAsync("",
@@ -335,38 +240,6 @@ namespace Sanakan.Web.HostedService
             }
         }
 
-        private SupervisorAction MakeDecision(string content, int total, int specified, bool hasRole)
-        {
-            int mSpecified = MAX_SPECIFIED;
-            int mTotal = MAX_TOTAL;
-
-            if (_discordConfiguration.CurrentValue.IsCommand(content))
-            {
-                mTotal += COMMAND_MOD;
-                mSpecified += COMMAND_MOD;
-            }
-
-            if (!hasRole)
-            {
-                mTotal += UNCONNECTED_MOD;
-                mSpecified += UNCONNECTED_MOD;
-            }
-
-            int mWSpec = mSpecified - 1;
-            int mWTot = mTotal - 1;
-
-            if ((total == mWTot || specified == mWSpec) && hasRole)
-                return SupervisorAction.Warn;
-
-            if (total == mTotal || specified == mSpecified)
-            {
-                if (!hasRole) return SupervisorAction.Ban;
-                return SupervisorAction.Mute;
-            }
-
-            return SupervisorAction.None;
-        }
-
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             try
@@ -387,65 +260,25 @@ namespace Sanakan.Web.HostedService
 
         private async void OnTick(object sender, TimerEventArgs e)
         {
-            await _semaphoreSlim.WaitAsync();
+            if(_isRunning)
+            {
+                return;
+            }
+
+            _isRunning = true;
 
             try
             {
-                try
-                {
-                    var toClean = new Dictionary<ulong, List<ulong>>();
-                    foreach (var guild in _guilds)
-                    {
-                        var users = new List<ulong>();
-                        foreach (var susspect in guild.Value)
-                        {
-                            if (!susspect.Value.IsValid(_systemClock.UtcNow))
-                            {
-                                users.Add(susspect.Key);
-                            }
-                        }
-                        toClean.Add(guild.Key, users);
-                    }
-
-                    foreach (var guild in toClean)
-                    {
-                        foreach (var uId in guild.Value)
-                        {
-                            _guilds[guild.Key][uId] = new SupervisorEntity(null, _systemClock.UtcNow);
-                        }
-                    }
-
-                    var toClean2 = new Dictionary<ulong, List<string>>();
-                    foreach (var guild in _guildsJoin)
-                    {
-                        var usrs = new List<string>();
-                        foreach (var susspect in guild.Value)
-                        {
-                            if (!susspect.Value.IsValid())
-                                usrs.Add(susspect.Key);
-                        }
-                        toClean2.Add(guild.Key, usrs);
-                    }
-
-                    foreach (var guild in toClean2)
-                    {
-                        foreach (var nick in guild.Value)
-                            _guildsJoin[guild.Key][nick] = new SupervisorJoinEntity();
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogInformation($"Supervisor: autovalidate error {ex}");
-                }
+                _userJoinedGuildSupervisor.Refresh();
+                _userMessageSupervisor.Refresh();
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Could not get ", ex);
-
+                _logger.LogError($"Error occurred during refreshing supervisor subjects.", ex);
             }
             finally
             {
-                _semaphoreSlim.Release();
+                _isRunning = false;
             }
         }
     }

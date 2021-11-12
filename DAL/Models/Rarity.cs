@@ -23,6 +23,28 @@ namespace Sanakan.DAL.Models
             return 2d - rarity.ValueModifier();
         }
 
+        public static Rarity GetRarityFromValue(long value)
+        {
+            if (value > 100000) return Rarity.SS;
+            if (value > 10000) return Rarity.S;
+            if (value > 8000) return Rarity.A;
+            if (value > 6000) return Rarity.B;
+            if (value > 4000) return Rarity.C;
+            if (value > 2000) return Rarity.D;
+            return Rarity.E;
+        }
+
+        public static Rarity Random(int value)
+        {
+            if (value < 5) return Rarity.SS;
+            if (value < 25) return Rarity.S;
+            if (value < 75) return Rarity.A;
+            if (value < 175) return Rarity.B;
+            if (value < 370) return Rarity.C;
+            if (value < 620) return Rarity.D;
+            return Rarity.E;
+        }
+
         public static int GetAttackMin(this Rarity rarity)
         {
             switch (rarity)

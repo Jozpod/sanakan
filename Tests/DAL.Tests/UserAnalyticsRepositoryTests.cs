@@ -19,7 +19,7 @@ namespace Sanakan.DAL.Tests
             {
                 Id = 1,
                 GuildId = 1,
-                MeasureDate = DateTime.UtcNow,
+                MeasuredOn = DateTime.UtcNow,
                 Type = UserAnalyticsEventType.Card,
                 UserId = 1,
                 Value = 10,

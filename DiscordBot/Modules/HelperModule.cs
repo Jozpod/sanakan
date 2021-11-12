@@ -59,9 +59,10 @@ namespace Sanakan.DiscordBot.Modules
         [Alias("h", "help")]
         [Summary("wyświetla listę poleceń")]
         [Remarks("odcinki"), RequireAnyCommandChannel]
-        public async Task GiveHelpAsync([Summary("nazwa polecenia (opcjonalne)")][Remainder]string command = null)
+        public async Task GiveHelpAsync(
+            [Summary("nazwa polecenia (opcjonalne)")][Remainder]string? command = null)
         {
-            var gUser = Context.User as SocketGuildUser;
+            var gUser = Context.User as IGuildUser;
             
             if (gUser == null)
             {
@@ -76,8 +77,8 @@ namespace Sanakan.DiscordBot.Modules
 
             try
             {
-                bool admin = false;
-                bool dev = false;
+                bool isAdmin = false;
+                bool isDev = false;
 
                 var prefix = _config.CurrentValue.Prefix;
 
@@ -89,13 +90,13 @@ namespace Sanakan.DiscordBot.Modules
                         prefix = gConfig.Prefix;
                     }
 
-                    admin = gUser.Roles.Any(x => x.Id == gConfig?.AdminRoleId)
+                    isAdmin = gUser.RoleIds.Any(id => id == gConfig?.AdminRoleId)
                             || gUser.GuildPermissions.Administrator;
 
-                    dev = _config.CurrentValue.AllowedToDebug.Any(x => x == gUser.Id);
+                    isDev = _config.CurrentValue.AllowedToDebug.Any(x => x == gUser.Id);
                 }
 
-                await ReplyAsync(_helperService.GiveHelpAboutPublicCmd(command, prefix, admin, dev));
+                await ReplyAsync(_helperService.GiveHelpAboutPublicCmd(command, prefix, isAdmin, isDev));
             }
             catch (Exception ex)
             {
@@ -238,7 +239,7 @@ namespace Sanakan.DiscordBot.Modules
                 }
 
                 var notifChannel = await Context.Guild.GetChannelAsync(config.NotificationChannelId);
-                var userRole = Context.Guild.GetRole(config.UserRoleId);
+                var userRole = Context.Guild.GetRole(config.UserRoleId.Value);
                 var muteRole = Context.Guild.GetRole(config.MuteRoleId);
 
                 if (muteRole == null)

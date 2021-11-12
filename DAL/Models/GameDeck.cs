@@ -156,12 +156,14 @@ namespace Sanakan.DAL.Models
             }
         }
 
-        public void RemoveCardFromWishList(ulong id)
+        public void RemoveCardFromWishList(ulong cardId)
         {
-            var en = Wishes.FirstOrDefault(x => x.Type == WishlistObjectType.Card && x.ObjectId == id);
-            if (en != null)
+            var cardWishObject = Wishes.FirstOrDefault(x => x.Type == WishlistObjectType.Card
+                && x.ObjectId == cardId);
+
+            if (cardWishObject != null)
             {
-                Wishes.Remove(en);
+                Wishes.Remove(cardWishObject);
             }
         }
 

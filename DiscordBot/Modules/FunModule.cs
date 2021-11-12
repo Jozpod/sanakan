@@ -132,7 +132,7 @@ namespace Sanakan.DiscordBot.Modules
             }
 
             var notifChannel = await Context.Guild.GetChannelAsync(config.NotificationChannelId);
-            var userRole = Context.Guild.GetRole(config.UserRoleId);
+            var userRole = Context.Guild.GetRole(config.UserRoleId.Value);
             var muteRole = Context.Guild.GetRole(config.MuteRoleId);
 
             if (muteRole == null)

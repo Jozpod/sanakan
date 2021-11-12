@@ -9,7 +9,7 @@ namespace Sanakan.Game.Models
     public class CardBoosterPack
     {
         /// <summary>
-        /// Definuje czy kartami otrzymanymi z pakietu będzie można się wymieć
+        /// Specifies whether the cards in a bundle can be exchanged
         /// </summary>
         public bool Tradable { get; set; }
         
@@ -69,7 +69,7 @@ namespace Sanakan.Game.Models
                 break;
 
                 case CardsPoolType.List:
-                    pack.TitleId = 0;
+                    pack.TitleId = null;
                     foreach (var characterId in Pool.Character)
                     {
                         pack.Characters.Add(new BoosterPackCharacter(characterId));
@@ -78,7 +78,7 @@ namespace Sanakan.Game.Models
 
                 default:
                 case CardsPoolType.Random:
-                    pack.TitleId = 0;
+                    pack.TitleId = null;
                 break;
             }
 

@@ -5,7 +5,7 @@
         /// <summary>
         /// The amount of characters needed for one card packet.
         /// </summary>
-        public long CharPerPacket { get; set; }
+        public ulong CharPerPacket { get; set; }
 
         /// <summary>
         /// The character count per one experience point ratio.

@@ -18,7 +18,6 @@ using Discord.WebSocket;
 using System.Linq;
 using Discord;
 using Sanakan.TaskQueue;
-using DiscordBot.Services.PocketWaifu.Abstractions;
 using Sanakan.DiscordBot.Abstractions;
 using Sanakan.Services.PocketWaifu;
 using Sanakan.DiscordBot.Abstractions.Models;
@@ -27,6 +26,7 @@ using Sanakan.DiscordBot.Abstractions.Extensions;
 using Sanakan.Extensions;
 using Sanakan.ShindenApi.Models;
 using Sanakan.TaskQueue.Messages;
+using Sanakan.Game.Services.Abstractions;
 
 namespace Sanakan.Web.HostedService
 {
@@ -41,10 +41,12 @@ namespace Sanakan.Web.HostedService
         private readonly IRandomNumberGenerator _randomNumberGenerator;
         private readonly IBlockingPriorityQueue _blockingPriorityQueue;
         private readonly ITaskManager _taskManager;
-        private readonly IWaifuService _waifu;
+        private readonly IWaifuService _waifuService;
+        private readonly ITimer _timer;
+        private readonly object _syncRoot = new object();
 
-        private Dictionary<ulong, long> ServerCounter;
-        private Dictionary<ulong, long> UserCounter;
+        private IDictionary<ulong, Entry> ServerCounter;
+        private IDictionary<ulong, ulong> UserCounter;
 
         public SpawnHostedService(
             IRandomNumberGenerator randomNumberGenerator,
@@ -55,7 +57,9 @@ namespace Sanakan.Web.HostedService
             IDiscordSocketClientAccessor discordSocketClientAccessor,
             ISystemClock systemClock,
             IServiceScopeFactory serviceScopeFactory,
-            ITaskManager taskManager)
+            ITaskManager taskManager,
+            IWaifuService waifuService,
+            ITimer timer)
         {
             _randomNumberGenerator = randomNumberGenerator;
             _blockingPriorityQueue = blockingPriorityQueue;
@@ -66,10 +70,18 @@ namespace Sanakan.Web.HostedService
             _experienceConfiguration = experienceConfiguration;
             _discordSocketClientAccessor = discordSocketClientAccessor;
             _taskManager = taskManager;
+            _waifuService = waifuService;
+            _timer = timer;
             _discordSocketClientAccessor.Initialized += OnInitialized;
 
-            ServerCounter = new Dictionary<ulong, long>();
-            UserCounter = new Dictionary<ulong, long>();
+            ServerCounter = new Dictionary<ulong, Entry>();
+            UserCounter = new Dictionary<ulong, ulong>();
+        }
+
+        internal class Entry
+        {
+            public ulong EventCount { get; set; }
+            public DateTime ResetOn { get; set; }
         }
 
         private Task OnInitialized()
@@ -82,6 +94,8 @@ namespace Sanakan.Web.HostedService
         {
             try
             {
+                _timer.Tick += OnResetCounter;
+                _timer.Start(TimeSpan.Zero, TimeSpan.FromHours(1));
                 await _taskManager.Delay(Timeout.InfiniteTimeSpan, stoppingToken);
             }
             catch (OperationCanceledException)
@@ -90,119 +104,71 @@ namespace Sanakan.Web.HostedService
             }
         }
 
-        private async void HandleGuildAsync(
+        private void OnResetCounter(object sender, TimerEventArgs e)
+        {
+            var utcNow = _systemClock.UtcNow;
+            var resetInterval = TimeSpan.FromDays(1);
+
+            lock (_syncRoot)
+            {
+                foreach (var entry in ServerCounter.Values)
+                {
+                    if (utcNow - entry.ResetOn > resetInterval)
+                    {
+                        entry.EventCount = 0;
+                        entry.ResetOn = utcNow;
+                    }
+                }
+            }
+        }
+
+        private async Task HandleGuildAsync(
             ITextChannel spawnChannel,
             ITextChannel trashChannel,
-            long daily,
+            ulong dailyLimit,
             string mention,
-            bool noExp,
-            SocketRole muteRole)
+            bool noExperience,
+            IRole muteRole)
         {
-            if (!ServerCounter.Any(x => x.Key == spawnChannel.GuildId))
-            {
-                ServerCounter.Add(spawnChannel.GuildId, 0);
-                return;
-            }
-
-            if (ServerCounter[spawnChannel.GuildId] == 0)
-            {
-                await _taskManager.Delay(TimeSpan.FromDays(1));
-                ServerCounter[spawnChannel.GuildId] = 0;
-            }
-
-            int chance = noExp ? 285 : 85;
-
-            if (daily > 0 && ServerCounter[spawnChannel.GuildId] >= daily)
-            {
-                return;
-            }
-
             if (!_discordConfiguration.CurrentValue.SafariEnabled)
             {
                 return;
             }
 
-            if (!_randomNumberGenerator.TakeATry(chance))
-            {
-                return;
-            }
+            var guildId = spawnChannel.GuildId;
+            var effectiveLimit = 0ul;
 
-            ServerCounter[spawnChannel.GuildId] += 1;
-            _ = Task.Run(async () =>
+            lock (_syncRoot)
             {
-                await SpawnCardAsync(spawnChannel, trashChannel, mention, muteRole);
-            });
-        }
-
-        private void RunSafari(
-            EmbedBuilder embed,
-            IUserMessage msg,
-            Card newCard,
-            SafariImage pokeImage,
-            CharacterInfo character,
-            ITextChannel trashChannel,
-            SocketRole mutedRole)
-        {
-            _ = Task.Run(async () =>
-            {
-                try
+                if (ServerCounter.TryGetValue(guildId, out var limit))
                 {
-                    await _taskManager.Delay(TimeSpan.FromMinutes(5));
-
-                    var usersReacted = await msg.GetReactionUsersAsync(Emojis.RaisedHand, 300).FlattenAsync();
-                    var users = usersReacted.ToList();
-
-                    IUser winner = null;
-                    var watch = Stopwatch.StartNew();
-                    while (winner == null)
+                    effectiveLimit = limit.EventCount;
+                }
+                else
+                {
+                    ServerCounter[guildId] = new Entry
                     {
-                        if (watch.ElapsedMilliseconds > 60000)
-                        {
-                            throw new Exception("Timeout");
-                        }
-
-                        if (users.Count < 1)
-                        {
-                            embed.Description = $"Na polowanie nie stawił się żaden łowca!";
-                            await msg.ModifyAsync(x => x.Embed = embed.Build());
-                            return;
-                        }
-
-                        bool muted = false;
-                        var selected = _randomNumberGenerator.GetOneRandomFrom(users);
-                        if (mutedRole != null && selected is SocketGuildUser su)
-                        {
-                            if (su.Roles.Any(x => x.Id == mutedRole.Id))
-                                muted = true;
-                        }
-
-                        using var serviceScope = _serviceScopeFactory.CreateScope();
-                        var serviceProvider = serviceScope.ServiceProvider;
-                        var userRepository = serviceProvider.GetRequiredService<IUserRepository>();
-                        var dUser = await userRepository.GetCachedFullUserAsync(selected.Id);
-
-                        if (dUser != null && !muted)
-                        {
-                            if (!dUser.IsBlacklisted && dUser.GameDeck.MaxNumberOfCards > dUser.GameDeck.Cards.Count)
-                            {
-                                winner = selected;
-                            }
-                        }
-                        users.Remove(selected);
-                    }
-
-                    //var exe = GetSafariExe(embed, msg, newCard, pokeImage, character, trashChannel, winner);
-                    //await _executor.TryAdd(exe, TimeSpan.FromSeconds(1));
-
-                    await msg.RemoveAllReactionsAsync();
+                        ResetOn = _systemClock.UtcNow,
+                        EventCount = 0,
+                    };
                 }
-                catch (Exception ex)
+
+                var chance = noExperience ? 285 : 85;
+
+                if (effectiveLimit > 0 && effectiveLimit >= dailyLimit)
                 {
-                    _logger.LogError($"In Safari", ex);
-                    await msg.ModifyAsync(x => x.Embed = "Karta uciekła!".ToEmbedMessage(EMType.Error).Build());
-                    await msg.RemoveAllReactionsAsync();
+                    return;
                 }
-            });
+
+                if (!_randomNumberGenerator.TakeATry(chance))
+                {
+                    return;
+                }
+
+                ServerCounter[guildId].EventCount = effectiveLimit + 1;
+            }
+            
+            await SpawnCardAsync(spawnChannel, trashChannel, mention, muteRole);
         }
 
         //private Executable GetSafariExe(
@@ -216,58 +182,17 @@ namespace Sanakan.Web.HostedService
         //{
         //    return new Executable("safari", new Task<Task>(async () =>
         //    {
-        //        var botUser = await _userRepository.GetUserOrCreateAsync(winner.Id);
-
-        //        newCard.FirstIdOwner = winner.Id;
-        //        newCard.Affection += botUser.GameDeck.AffectionFromKarma();
-        //        botUser.GameDeck.RemoveCharacterFromWishList(newCard.CharacterId);
-
-        //        botUser.GameDeck.Cards.Add(newCard);
-        //        await _userRepository.SaveChangesAsync();
-
-        //        _cacheManager.ExpireTag(new string[] { $"user-{botUser.Id}", "users" });
-
-        //        var record = new UserAnalytics
-        //        {
-        //            Value = 1,
-        //            UserId = winner.Id,
-        //            MeasureDate = _systemClock.UtcNow,
-        //            GuildId = trashChannel?.Guild?.Id ?? 0,
-        //            Type = UserAnalyticsEventType.Card
-        //        };
-
-        //        _userAnalyticsRepository.Add(record);
-        //        await _userAnalyticsRepository.SaveChangesAsync();
-
-        //        _ = Task.Run(async () =>
-        //        {
-        //            try
-        //            {
-        //                embed.ImageUrl = await _waifu.GetSafariViewAsync(pokeImage, newCard, trashChannel);
-        //                embed.Description = $"{winner.Mention} zdobył na polowaniu i wsadził do klatki:\n"
-        //                                + $"{newCard.GetString(false, false, true)}\n({newCard.Title})";
-        //                await msg.ModifyAsync(x => x.Embed = embed.Build());
-
-        //                var privEmb = new EmbedBuilder()
-        //                {
-        //                    Color = EMType.Info.Color(),
-        //                    Description = $"Na [polowaniu]({msg.GetJumpUrl()}) zdobyłeś: {newCard.GetString(false, false, true)}"
-        //                };
-
-        //                var priv = await winner.GetOrCreateDMChannelAsync();
-        //                if (priv != null) await priv.SendMessageAsync("", false, privEmb.Build());
-        //            }
-        //            catch (Exception ex)
-        //            {
-        //                _logger.LogInformation($"In Safari: {ex}");
-        //            }
-        //        });
+                
         //    }));
         //}
 
-        private async Task SpawnCardAsync(ITextChannel spawnChannel, ITextChannel trashChannel, string mention, SocketRole muteRole)
+        private async Task SpawnCardAsync(
+            ITextChannel spawnChannel,
+            ITextChannel trashChannel,
+            string mention,
+            IRole muteRole)
         {
-            var character = await _waifu.GetRandomCharacterAsync();
+            var character = await _waifuService.GetRandomCharacterAsync();
 
             if (character == null)
             {
@@ -275,45 +200,134 @@ namespace Sanakan.Web.HostedService
                 return;
             }
 
-            var newCard = _waifu.GenerateNewCard(null, character);
+            var newCard = _waifuService.GenerateNewCard(null, character);
             newCard.Source = CardSource.Safari;
             newCard.Affection -= 1.8;
             newCard.InCage = true;
 
-            var pokeImage = await _waifu.GetRandomSarafiImage();
+            var pokeImage = await _waifuService.GetRandomSarafiImage();
             var time = _systemClock.UtcNow.AddMinutes(5);
             var embed = new EmbedBuilder
             {
                 Color = EMType.Bot.Color(),
                 Description = $"**Polowanie zakończy się o**: `{time.ToShortTimeString()}:{time.Second.ToString("00")}`",
-                ImageUrl = await _waifu.GetSafariViewAsync(pokeImage, trashChannel)
+                ImageUrl = await _waifuService.GetSafariViewAsync(pokeImage, trashChannel)
             };
 
-            var msg = await spawnChannel.SendMessageAsync(mention, embed: embed.Build());
-            RunSafari(embed, msg, newCard, pokeImage, character, trashChannel, muteRole);
-            await msg.AddReactionAsync(Emojis.RaisedHand);
+            var message = await spawnChannel.SendMessageAsync(mention, embed: embed.Build());
+            //RunSafari(embed, message, newCard, pokeImage, character, trashChannel, muteRole);
+
+            try
+            {
+                await _taskManager.Delay(TimeSpan.FromMinutes(5));
+
+                var usersReacted = await message.GetReactionUsersAsync(Emojis.RaisedHand, 300).FlattenAsync();
+                var users = usersReacted.ToList();
+
+                IUser? winner = null;
+
+                var cancellationTokenSource = new CancellationTokenSource();
+                cancellationTokenSource.CancelAfter(TimeSpan.FromMinutes(1));
+                var cancellationToken = cancellationTokenSource.Token;
+
+                await Task.Run(async () =>
+                {
+                    while (winner == null)
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+
+                        if (!users.Any())
+                        {
+                            embed.Description = $"Na polowanie nie stawił się żaden łowca!";
+                            await message.ModifyAsync(x => x.Embed = embed.Build());
+                            return;
+                        }
+
+                        var isUserMuted = false;
+                        var selected = _randomNumberGenerator.GetOneRandomFrom(users);
+
+                        if (muteRole != null && selected is IGuildUser guildUser)
+                        {
+                            if (guildUser.RoleIds.Any(id => id == muteRole.Id))
+                            {
+                                isUserMuted = true;
+                            }
+                        }
+
+                        using var serviceScope = _serviceScopeFactory.CreateScope();
+                        var serviceProvider = serviceScope.ServiceProvider;
+                        var userRepository = serviceProvider.GetRequiredService<IUserRepository>();
+                        var databaseUser = await userRepository.GetCachedFullUserAsync(selected.Id);
+                        var gameDeck = databaseUser.GameDeck;
+
+                        if (databaseUser != null && !isUserMuted)
+                        {
+                            if (!databaseUser.IsBlacklisted
+                                && gameDeck.MaxNumberOfCards > gameDeck.Cards.Count)
+                            {
+                                winner = selected;
+                            }
+                        }
+                        users.Remove(selected);
+                    }
+                }, cancellationToken);
+
+                await message.RemoveAllReactionsAsync();
+
+                if (winner == null)
+                {
+                    return;
+                }
+
+                _blockingPriorityQueue.TryEnqueue(new SafariMessage
+                {
+                    Winner = winner,
+                    Embed = embed,
+                    Card = newCard,
+                    Message = message,
+                    TrashChannel = trashChannel,
+                    Image = pokeImage,
+                    GuildId = trashChannel?.Guild?.Id,
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error occurred while running Safari", ex);
+                await message.ModifyAsync(x => x.Embed = "Karta uciekła!".ToEmbedMessage(EMType.Error).Build());
+                await message.RemoveAllReactionsAsync();
+            }
+
+            await message.AddReactionAsync(Emojis.RaisedHand);
         }
 
-        private void HandleUserAsync(SocketUserMessage message)
+        private void HandleUserAsync(IUserMessage message)
         {
-            var author = message.Author;
-            if (!UserCounter.Any(x => x.Key == author.Id))
+            var charactersNeeded = _experienceConfiguration.CurrentValue.CharPerPacket;
+            if (charactersNeeded <= 0)
             {
-                UserCounter.Add(author.Id, GetMessageRealLength(message));
                 return;
             }
 
-            var charNeeded = _experienceConfiguration.CurrentValue.CharPerPacket;
-            if (charNeeded <= 0)
+            var author = message.Author;
+            var messageLength = GetMessageRealLength(message);
+
+            if (UserCounter.TryGetValue(author.Id, out var charactersTotal))
             {
-                charNeeded = 3250;
+                charactersTotal += messageLength;
+            }
+            else
+            {
+                charactersTotal = messageLength;
             }
 
-            UserCounter[author.Id] += GetMessageRealLength(message);
-            if (UserCounter[author.Id] > charNeeded)
+            UserCounter[author.Id] = charactersTotal;
+
+            if (charactersTotal > charactersNeeded)
             {
                 UserCounter[author.Id] = 0;
-                var guildUser = author as SocketGuildUser;
+
+                var guildUser = author as IGuildUser;
+                
                 _blockingPriorityQueue.TryEnqueue(new SpawnCardBundleMessage
                 {
                     GuildId = guildUser?.Id,
@@ -324,34 +338,25 @@ namespace Sanakan.Web.HostedService
             }
         }
 
-        //private void SpawnUserPacket(SocketUser user, ISocketMessageChannel channel)
-        //{
-        //    var exe = new Executable($"packet u{user.Id}", new Task<Task>(async () =>
-        //    {
-        //       
-        //    }));
-
-        //    _executor.TryAdd(exe, TimeSpan.FromSeconds(1));
-        //}
-
-        private long GetMessageRealLength(SocketUserMessage message)
+        private ulong GetMessageRealLength(IUserMessage message)
         {
             if (string.IsNullOrEmpty(message.Content))
             {
                 return 1;
             }
 
-            int emoteChars = message.Tags.CountEmotesTextLength();
-            int linkChars = message.Content.CountLinkTextLength();
-            int nonWhiteSpaceChars = message.Content.Count(c => c != ' ');
-            int quotedChars = message.Content.CountQuotedTextLength();
-            long charsThatMatters = nonWhiteSpaceChars - linkChars - emoteChars - quotedChars;
-            return charsThatMatters < 1 ? 1 : charsThatMatters;
+            var emoteChars = (ulong)message.Tags.CountEmotesTextLength();
+            var linkChars = (ulong)message.Content.CountLinkTextLength();
+            var nonWhiteSpaceChars = (ulong)message.Content.Count(c => c != ' ');
+            var quotedChars = (ulong)message.Content.CountQuotedTextLength();
+            var charsThatMatters = nonWhiteSpaceChars - linkChars - emoteChars - quotedChars;
+
+            return charsThatMatters < 1ul ? 1ul : charsThatMatters;
         }
 
-        private async Task HandleMessageAsync(SocketMessage message)
+        private async Task HandleMessageAsync(IMessage message)
         {
-            var userMessage = message as SocketUserMessage;
+            var userMessage = message as IUserMessage;
 
             if (userMessage == null)
             {
@@ -365,7 +370,7 @@ namespace Sanakan.Web.HostedService
                 return;
             };
 
-            var user = userMessage.Author as SocketGuildUser;
+            var user = userMessage.Author as IGuildUser;
 
             if (user == null)
             {
@@ -382,31 +387,50 @@ namespace Sanakan.Web.HostedService
             using var serviceScope = _serviceScopeFactory.CreateScope();
             var serviceProvider = serviceScope.ServiceProvider;
             var guildConfigRepository = serviceProvider.GetRequiredService<IGuildConfigRepository>();
-            var config = await guildConfigRepository.GetCachedGuildFullConfigAsync(guildId);
-            if (config == null)
+            var guildConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(guildId);
+
+            if (guildConfig == null)
             {
                 return;
             }
 
-            var noExp = config.ChannelsWithoutExp.Any(x => x.Channel == userMessage.Channel.Id);
+            var noExperience = guildConfig.ChannelsWithoutExperience.Any(x => x.Channel == userMessage.Channel.Id);
 
-            if (!noExp)
+            if (!noExperience)
             {
                 HandleUserAsync(userMessage);
             }
 
-            var sch = user.Guild.GetTextChannel(config.WaifuConfig.SpawnChannelId.Value);
-            var tch = user.Guild.GetTextChannel(config.WaifuConfig.TrashSpawnChannelId.Value);
-            if (sch != null && tch != null)
+            var guild = user.Guild;
+            var spawnChannelId = guildConfig.WaifuConfig.SpawnChannelId;
+            var trashSpawnChannelId = guildConfig.WaifuConfig.TrashSpawnChannelId;
+
+            if (!spawnChannelId.HasValue || !trashSpawnChannelId.HasValue)
             {
-                string mention = "";
-                var wRole = user.Guild.GetRole(config.WaifuRoleId);
-                if (wRole != null) mention = wRole.Mention;
-
-                var muteRole = user.Guild.GetRole(config.MuteRoleId);
-
-                HandleGuildAsync(sch, tch, config.SafariLimit, mention, noExp, muteRole);
+                return;
             }
+
+            var spawnChannel = await guild.GetTextChannelAsync(spawnChannelId.Value);
+            var trashSpawnChannel = await guild.GetTextChannelAsync(trashSpawnChannelId.Value);
+
+            var mention = "";
+            var waifuRoleId = guildConfig.WaifuRoleId;
+
+            if (waifuRoleId.HasValue)
+            {
+                var waifuRole = guild.GetRole(waifuRoleId.Value);
+                mention = waifuRole.Mention;
+            }
+
+            var muteRole = guild.GetRole(guildConfig.MuteRoleId);
+
+            await HandleGuildAsync(
+                spawnChannel,
+                trashSpawnChannel,
+                guildConfig.SafariLimit,
+                mention,
+                noExperience,
+                muteRole);
         }
     }
 }

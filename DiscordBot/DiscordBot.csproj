@@ -62,6 +62,8 @@
 
   <ItemGroup>
     <Folder Include="Configuration\" />
+    <Folder Include="Services\PocketWaifu\Abstractions\" />
+    <Folder Include="Services\PocketWaifu\Fight\" />
   </ItemGroup>
 
 </Project>

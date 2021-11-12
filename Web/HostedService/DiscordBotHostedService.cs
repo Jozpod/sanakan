@@ -167,7 +167,7 @@ namespace Sanakan.Web.HostedService
             var config = await guildConfigRepository.GetCachedGuildFullConfigAsync(user.Guild.Id);
             if (config != null)
             {
-                var role = user.Guild.GetRole(config.UserRoleId);
+                var role = config.UserRoleId.HasValue ? user.Guild.GetRole(config.UserRoleId.Value) : null;
                 if (role != null)
                 {
                     if (!user.RoleIds.Contains(role.Id))
@@ -176,7 +176,7 @@ namespace Sanakan.Web.HostedService
                     }
                 }
 
-                if (config.ChannelsWithoutExp.Any(x => x.Channel == message.Channel.Id))
+                if (config.ChannelsWithoutExperience.Any(x => x.Channel == message.Channel.Id))
                 {
                     calculateExperience = false;
                 }

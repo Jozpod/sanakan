@@ -1,6 +1,7 @@
 ﻿using Discord;
-using Discord.WebSocket;
+using DiscordBot.Services.PocketWaifu;
 using Sanakan.DAL.Models;
+using Sanakan.Game.Models;
 using Sanakan.Services.PocketWaifu;
 using Sanakan.Services.PocketWaifu.Fight;
 using Sanakan.ShindenApi.Models;
@@ -10,7 +11,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Item = Sanakan.DAL.Models.Item;
 
-namespace DiscordBot.Services.PocketWaifu.Abstractions
+namespace Sanakan.Game.Services.Abstractions
 {
     public interface IWaifuService
     {
@@ -40,7 +41,6 @@ namespace DiscordBot.Services.PocketWaifu.Abstractions
         FightHistory MakeFightAsync(List<PlayerInfo> players, bool oneCard = false);
         string GetDeathLog(FightHistory fight, List<PlayerInfo> players);
         Embed GetShopView(ItemWithCost[] items, string name = "Sklepik", string currency = "TC");
-        Embed GetItemShopInfo(ItemWithCost item);
         Task<IEnumerable<Embed>> GetWaifuFromCharacterSearchResult(
             string title,
             IEnumerable<Card> cards,

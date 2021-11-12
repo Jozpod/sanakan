@@ -19,8 +19,16 @@ namespace Sanakan.DAL.Models.Analytics
         /// <summary>
         /// The Discord guild (server) identifier.
         /// </summary>
-        public ulong GuildId { get; set; }
-        public DateTime MeasureDate { get; set; }
+        public ulong? GuildId { get; set; }
+
+        /// <summary>
+        /// The datetime when event was measured.
+        /// </summary>
+        public DateTime MeasuredOn { get; set; }
+
+        /// <summary>
+        /// The user analytics event type.
+        /// </summary>
         public UserAnalyticsEventType Type { get; set; }
     }
 }

@@ -1,9 +1,8 @@
 using System.IO;
 using System.Text.Json.Serialization;
 using Sanakan.Common;
-using Sanakan.DiscordBot.Services.PocketWaifu;
 
-namespace Sanakan.Services.PocketWaifu
+namespace Sanakan.Game.Models
 {
     public class SafariImage
     {

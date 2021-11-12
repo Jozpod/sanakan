@@ -35,7 +35,7 @@ namespace Sanakan.DAL.Repositories
                 .Guilds
                 .AsQueryable()
                 .Include(x => x.IgnoredChannels)
-                .Include(x => x.ChannelsWithoutExp)
+                .Include(x => x.ChannelsWithoutExperience)
                 .Include(x => x.ChannelsWithoutSupervision)
                 .Include(x => x.CommandChannels)
                 .Include(x => x.SelfRoles)
@@ -59,7 +59,7 @@ namespace Sanakan.DAL.Repositories
             var config = await _dbContext.Guilds
                 .AsQueryable()
                 .Include(x => x.IgnoredChannels)
-                .Include(x => x.ChannelsWithoutExp)
+                .Include(x => x.ChannelsWithoutExperience)
                 .Include(x => x.ChannelsWithoutSupervision)
                 .Include(x => x.CommandChannels)
                 .Include(x => x.SelfRoles)

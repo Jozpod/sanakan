@@ -31,11 +31,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DAL\DAL.csproj" />
+    <ProjectReference Include="..\DiscordBot.Abstractions\DiscordBot.Abstractions.csproj" />
     <ProjectReference Include="..\ShindenApi\ShindenApi.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Services\Abstractions\" />
   </ItemGroup>
 
 </Project>

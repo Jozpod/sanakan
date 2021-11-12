@@ -7,6 +7,7 @@ using Sanakan.DiscordBot.Abstractions.Extensions;
 using Sanakan.Extensions;
 using Sanakan.Game;
 using Sanakan.Game.Services;
+using Sanakan.Game.Services.Abstractions;
 using Sanakan.TaskQueue.Messages;
 using System;
 using System.Collections.Generic;
@@ -99,7 +100,7 @@ namespace Sanakan.TaskQueue.MessageHandlers
                     Value = level,
                     UserId = user.Id,
                     GuildId = message.GuildId,
-                    MeasureDate = _systemClock.UtcNow,
+                    MeasuredOn = _systemClock.UtcNow,
                     Type = UserAnalyticsEventType.Level
                 };
 

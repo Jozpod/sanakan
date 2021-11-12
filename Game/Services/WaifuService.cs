@@ -8,32 +8,32 @@ using Discord;
 using Discord.WebSocket;
 using DiscordBot.Services;
 using DiscordBot.Services.PocketWaifu;
-using DiscordBot.Services.PocketWaifu.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Sanakan.Common;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Repositories.Abstractions;
+using Sanakan.DiscordBot;
 using Sanakan.DiscordBot.Abstractions.Extensions;
 using Sanakan.DiscordBot.Abstractions.Models;
-using Sanakan.DiscordBot.Services.PocketWaifu;
 using Sanakan.Extensions;
 using Sanakan.Game.Extensions;
+using Sanakan.Game.Models;
 using Sanakan.Game.Services;
+using Sanakan.Game.Services.Abstractions;
 using Sanakan.Services.PocketWaifu.Fight;
 using Sanakan.ShindenApi;
 using Sanakan.ShindenApi.Models;
 using Sanakan.ShindenApi.Utilities;
-using Shinden.API;
 using Item = Sanakan.DAL.Models.Item;
 
-namespace Sanakan.Services.PocketWaifu
+namespace Sanakan.Game.Services
 {
     internal class WaifuService : IWaifuService
     {
-        private readonly EventsService _events;
+        private readonly IEventsService _eventsService;
+        private readonly IImageProcessor _imageProcessor;
         private readonly IFileSystem _fileSystem;
         private readonly ISystemClock _systemClock;
-        private readonly IImageProcessor _imageProcessor;
         private readonly IShindenClient _shindenClient;
         private readonly ICacheManager _cacheManager;
         private readonly IRandomNumberGenerator _randomNumberGenerator;
@@ -42,6 +42,7 @@ namespace Sanakan.Services.PocketWaifu
         private readonly IServiceScopeFactory _serviceScopeFactory;
 
         public WaifuService(
+            IEventsService eventsService,
             IImageProcessor imageProcessor,
             IFileSystem fileSystem,
             ISystemClock systemClock,
@@ -53,10 +54,10 @@ namespace Sanakan.Services.PocketWaifu
             ITaskManager taskManager,
             IServiceScopeFactory serviceScopeFactory)
         {
+            _eventsService = eventsService;
             _imageProcessor = imageProcessor;
             _fileSystem = fileSystem;
             _systemClock = systemClock;
-            _events = events;
             _shindenClient = client;
             _cacheManager = cacheManager;
             _randomNumberGenerator = randomNumberGenerator;
@@ -64,125 +65,6 @@ namespace Sanakan.Services.PocketWaifu
             _taskManager = taskManager;
             _serviceScopeFactory = serviceScopeFactory;
         }
-
-        private static List<RarityChance> _rarityChances = new List<RarityChance>()
-            {
-                new RarityChance(5,    Rarity.SS),
-                new RarityChance(25,   Rarity.S ),
-                new RarityChance(75,   Rarity.A ),
-                new RarityChance(175,  Rarity.B ),
-                new RarityChance(370,  Rarity.C ),
-                new RarityChance(650,  Rarity.D ),
-                new RarityChance(1000, Rarity.E ),
-            };
-
-        private const int DERE_TAB_SIZE = ((int) Dere.Yato) + 1;
-
-        private static double[,] _dereDmgRelation = new double[DERE_TAB_SIZE, DERE_TAB_SIZE]
-        {
-            //Tsundere, Kamidere, Deredere, Yandere, Dandere, Kuudere, Mayadere, Bodere, Yami, Raito, Yato
-            { 0.5,      2,        2,        2,       2,       2,       2,        2,      3,    3,     3     }, //Tsundere
-            { 1,        0.5,      2,        0.5,     1,       1,       1,        1,      2,    1,     2     }, //Kamidere
-            { 1,        1,        0.5,      2,       0.5,     1,       1,        1,      2,    1,     2     }, //Deredere
-            { 1,        1,        1,        0.5,     2,       0.5,     1,        1,      2,    1,     2     }, //Yandere
-            { 1,        1,        1,        1,       0.5,     2,       0.5,      1,      2,    1,     2     }, //Dandere
-            { 1,        1,        1,        1,       1,       0.5,     2,        0.5,    2,    1,     2     }, //Kuudere
-            { 1,        0.5,      1,        1,       1,       1,       0.5,      2,      2,    1,     2     }, //Mayadere
-            { 1,        2,        0.5,      1,       1,       1,       1,        0.5,    2,    1,     2     }, //Bodere
-            { 1,        1,        1,        1,       1,       1,       1,        1,      0.5,  3,     2     }, //Yami
-            { 0.5,      0.5,      0.5,      0.5,     0.5,     0.5,     0.5,      0.5,    3,    0.5,   1     }, //Raito
-            { 0.5,      0.5,      0.5,      0.5,     0.5,     0.5,     0.5,      0.5,    1,    0.5,   1     }, //Yato
-        };
-
-        private static Dictionary<ExpeditionCardType, Dictionary<ItemType, Tuple<int, int>>> _chanceOfItemsInExpedition = new Dictionary<ExpeditionCardType, Dictionary<ItemType, Tuple<int, int>>>
-        {
-            {ExpeditionCardType.NormalItemWithExp, new Dictionary<ItemType, Tuple<int, int>>
-                {
-                    {ItemType.AffectionRecoverySmall,   new Tuple<int, int>(0,    4049)},
-                    {ItemType.AffectionRecoveryNormal,  new Tuple<int, int>(4049, 6949)},
-                    {ItemType.DereReRoll,               new Tuple<int, int>(6949, 7699)},
-                    {ItemType.CardParamsReRoll,         new Tuple<int, int>(7699, 8559)},
-                    {ItemType.AffectionRecoveryBig,     new Tuple<int, int>(8559, 9419)},
-                    {ItemType.AffectionRecoveryGreat,   new Tuple<int, int>(9419, 9729)},
-                    {ItemType.IncreaseUpgradeCount,       new Tuple<int, int>(9729, 9769)},
-                    {ItemType.IncreaseExpSmall,         new Tuple<int, int>(9769, 10000)},
-                    {ItemType.IncreaseExpBig,           new Tuple<int, int>(-1,   -2)},
-                    {ItemType.BetterIncreaseUpgradeCnt, new Tuple<int, int>(-3,   -4)},
-                }
-            },
-            {ExpeditionCardType.ExtremeItemWithExp, new Dictionary<ItemType, Tuple<int, int>>
-                {
-                    {ItemType.AffectionRecoverySmall,   new Tuple<int, int>(-1,   -2)},
-                    {ItemType.AffectionRecoveryNormal,  new Tuple<int, int>(0,    3499)},
-                    {ItemType.DereReRoll,               new Tuple<int, int>(-3,   -4)},
-                    {ItemType.CardParamsReRoll,         new Tuple<int, int>(-5,   -6)},
-                    {ItemType.AffectionRecoveryBig,     new Tuple<int, int>(3499, 6299)},
-                    {ItemType.AffectionRecoveryGreat,   new Tuple<int, int>(6299, 7499)},
-                    {ItemType.IncreaseUpgradeCount,       new Tuple<int, int>(7499, 7799)},
-                    {ItemType.IncreaseExpSmall,         new Tuple<int, int>(7799, 8599)},
-                    {ItemType.IncreaseExpBig,           new Tuple<int, int>(8599, 9799)},
-                    {ItemType.BetterIncreaseUpgradeCnt, new Tuple<int, int>(9799, 10000)},
-                }
-            },
-            {ExpeditionCardType.DarkItems, new Dictionary<ItemType, Tuple<int, int>>
-                {
-                    {ItemType.AffectionRecoverySmall,   new Tuple<int, int>(0,    1999)},
-                    {ItemType.AffectionRecoveryNormal,  new Tuple<int, int>(1999, 5999)},
-                    {ItemType.DereReRoll,               new Tuple<int, int>(-1,   -2)},
-                    {ItemType.CardParamsReRoll,         new Tuple<int, int>(5999, 6449)},
-                    {ItemType.AffectionRecoveryBig,     new Tuple<int, int>(6449, 8149)},
-                    {ItemType.AffectionRecoveryGreat,   new Tuple<int, int>(8149, 8949)},
-                    {ItemType.IncreaseUpgradeCount,       new Tuple<int, int>(8949, 9049)},
-                    {ItemType.IncreaseExpSmall,         new Tuple<int, int>(9049, 9849)},
-                    {ItemType.IncreaseExpBig,           new Tuple<int, int>(-2,   -3)},
-                    {ItemType.BetterIncreaseUpgradeCnt, new Tuple<int, int>(9849, 10000)},
-                }
-            },
-            {ExpeditionCardType.DarkItemWithExp, new Dictionary<ItemType, Tuple<int, int>>
-                {
-                    {ItemType.AffectionRecoverySmall,   new Tuple<int, int>(0,    2499)},
-                    {ItemType.AffectionRecoveryNormal,  new Tuple<int, int>(2499, 5999)},
-                    {ItemType.DereReRoll,               new Tuple<int, int>(5999, 6999)},
-                    {ItemType.CardParamsReRoll,         new Tuple<int, int>(6999, 7199)},
-                    {ItemType.AffectionRecoveryBig,     new Tuple<int, int>(7199, 8499)},
-                    {ItemType.AffectionRecoveryGreat,   new Tuple<int, int>(8499, 9099)},
-                    {ItemType.IncreaseUpgradeCount,       new Tuple<int, int>(9099, 9199)},
-                    {ItemType.IncreaseExpSmall,         new Tuple<int, int>(-1,   -2)},
-                    {ItemType.IncreaseExpBig,           new Tuple<int, int>(9199,  10000)},
-                    {ItemType.BetterIncreaseUpgradeCnt, new Tuple<int, int>(-3,   -4)},
-                }
-            },
-            {ExpeditionCardType.LightItems, new Dictionary<ItemType, Tuple<int, int>>
-                {
-                    {ItemType.AffectionRecoverySmall,   new Tuple<int, int>(0,    3799)},
-                    {ItemType.AffectionRecoveryNormal,  new Tuple<int, int>(3799, 6699)},
-                    {ItemType.DereReRoll,               new Tuple<int, int>(-1,   -2)},
-                    {ItemType.CardParamsReRoll,         new Tuple<int, int>(6699, 7199)},
-                    {ItemType.AffectionRecoveryBig,     new Tuple<int, int>(7199, 8199)},
-                    {ItemType.AffectionRecoveryGreat,   new Tuple<int, int>(8199, 8699)},
-                    {ItemType.IncreaseUpgradeCount,       new Tuple<int, int>(8699, 8799)},
-                    {ItemType.IncreaseExpSmall,         new Tuple<int, int>(8799, 9899)},
-                    {ItemType.IncreaseExpBig,           new Tuple<int, int>(-2,   -3)},
-                    {ItemType.BetterIncreaseUpgradeCnt, new Tuple<int, int>(9899, 10000)},
-                }
-            },
-            {ExpeditionCardType.LightItemWithExp, new Dictionary<ItemType, Tuple<int, int>>
-                {
-                    {ItemType.AffectionRecoverySmall,   new Tuple<int, int>(0,    3799)},
-                    {ItemType.AffectionRecoveryNormal,  new Tuple<int, int>(3799, 6399)},
-                    {ItemType.DereReRoll,               new Tuple<int, int>(6399, 7399)},
-                    {ItemType.CardParamsReRoll,         new Tuple<int, int>(7399, 7899)},
-                    {ItemType.AffectionRecoveryBig,     new Tuple<int, int>(7899, 8899)},
-                    {ItemType.AffectionRecoveryGreat,   new Tuple<int, int>(8899, 9399)},
-                    {ItemType.IncreaseUpgradeCount,       new Tuple<int, int>(9399, 9499)},
-                    {ItemType.IncreaseExpSmall,         new Tuple<int, int>(-1,   -2)},
-                    {ItemType.IncreaseExpBig,           new Tuple<int, int>(9499, 10000)},
-                    {ItemType.BetterIncreaseUpgradeCnt, new Tuple<int, int>(-3,   -4)},
-                }
-            }
-        };
-
-        static public double GetDereDmgMultiplier(Card atk, Card def) => _dereDmgRelation[(int)def.Dere, (int)atk.Dere];
 
         public bool EventState { get; set; } = false;
 
@@ -287,18 +169,20 @@ namespace Sanakan.Services.PocketWaifu
                 return RandomizeRarity(randomNumberGenerator);
             }
 
-            var ex = _rarityChances
+            var rarityChances = Game.Constants.RarityChances.ToList();
+
+            var excludedList = Game.Constants.RarityChances
                 .Where(x => rarityExcluded.Any(c => c == x.Rarity))
                 .ToList();
             
-            foreach (var e in ex)
+            foreach (var excluded in excludedList)
             {
-                _rarityChances.Remove(e);
+                rarityChances.Remove(excluded);
             }
 
             var num = randomNumberGenerator.GetRandomValue(1000);
 
-            foreach(var rar in _rarityChances)
+            foreach(var rar in rarityChances)
             {
                 if (num < rar.Chance)
                 {
@@ -306,7 +190,7 @@ namespace Sanakan.Services.PocketWaifu
                 }
             }
 
-            return _rarityChances.Last().Rarity;
+            return rarityChances.Last().Rarity;
         }
 
         public ItemType RandomizeItemFromBlackMarket()
@@ -570,9 +454,14 @@ namespace Sanakan.Services.PocketWaifu
             }
 
             var thisItem = itemsToBuy[--selectedItem];
+            var item = thisItem.Item;
             if (specialCmd == "info")
             {
-                return GetItemShopInfo(thisItem);
+                return new EmbedBuilder
+                {
+                    Color = EMType.Info.Color(),
+                    Description = $"**{item.Name}**\n_{item.Type.Desc()}_",
+                }.Build();
             }
 
             int itemCount = 0;
@@ -737,59 +626,6 @@ namespace Sanakan.Services.PocketWaifu
             return rExp;
         }
 
-        public static FightWinner GetFightWinner(Card card1, Card card2)
-        {
-            var FAcard1 = GetFA(card1, card2);
-            var FAcard2 = GetFA(card2, card1);
-
-            var c1Health = card1.GetHealthWithPenalty();
-            var c2Health = card2.GetHealthWithPenalty();
-            var atkTk1 = c1Health / FAcard2;
-            var atkTk2 = c2Health / FAcard1;
-
-            var winner = FightWinner.Draw;
-            if (atkTk1 > atkTk2 + 0.3)
-            {
-                winner = FightWinner.Card1;
-            }
-
-            if (atkTk2 > atkTk1 + 0.3)
-            {
-                winner = FightWinner.Card2;
-            }
-
-            return winner;
-        }
-
-        public static double GetFA(Card target, Card enemy)
-        {
-            double atk1 = target.GetAttackWithBonus();
-            if (!target.HasImage())
-            {
-                atk1 -= atk1 * 20 / 100;
-            }
-
-            double def2 = enemy.GetDefenceWithBonus();
-            if (!enemy.HasImage())
-            {
-                def2 -= def2 * 20 / 100;
-            }
-
-            var realAtk1 = atk1 - def2;
-            if (!target.FromFigure || !enemy.FromFigure)
-            {
-                if (def2 > 99)
-                {
-                    def2 = 99;
-                }
-                realAtk1 = atk1 * (100 - def2) / 100;
-            }
-
-            realAtk1 *= GetDereDmgMultiplier(target, enemy);
-
-            return realAtk1;
-        }
-
         public static int RandomizeAttack(IRandomNumberGenerator randomNumberGenerator, Rarity rarity)
             => randomNumberGenerator.GetRandomValue(rarity.GetAttackMin(), rarity.GetAttackMax() + 1);
 
@@ -799,28 +635,13 @@ namespace Sanakan.Services.PocketWaifu
         public static int RandomizeHealth(IRandomNumberGenerator randomNumberGenerator, Card card)
             => randomNumberGenerator.GetRandomValue(card.Rarity.GetHealthMin(), card.GetHealthMax() + 1);
 
-        public static Dere RandomizeDere(IRandomNumberGenerator randomNumberGenerator)
-        {
-            return randomNumberGenerator.GetOneRandomFrom(new List<Dere>()
-            {
-                Dere.Tsundere,
-                Dere.Kamidere,
-                Dere.Deredere,
-                Dere.Yandere,
-                Dere.Dandere,
-                Dere.Kuudere,
-                Dere.Mayadere,
-                Dere.Bodere
-            });
-        }
-
         public Card GenerateNewCard(IUser user, CharacterInfo character, Rarity rarity)
         {
             var date = _systemClock.UtcNow;
             var defence = RandomizeDefence(_randomNumberGenerator, rarity);
             var attack = RandomizeAttack(_randomNumberGenerator, rarity);
             var name = character.ToString();
-            var dere = RandomizeDere(_randomNumberGenerator);
+            var dere = _randomNumberGenerator.GetOneRandomFrom(DereExtensions.ListOfDeres);
             var characterId = character.CharacterId;
             var title = character?.Relations?.OrderBy(x => x.CharacterId)?
                 .FirstOrDefault()?
@@ -912,28 +733,28 @@ namespace Sanakan.Services.PocketWaifu
             return nDef;
         }
 
-        private double GetDmgDeal(Card c1, Card c2)
-        {
-            return GetFA(c1, c2);
-        }
-
         public string GetDeathLog(FightHistory fight, List<PlayerInfo> players)
         {
             string deathLog = "";
-            for (int i = 0; i < fight.Rounds.Count; i++)
+            for (var i = 0; i < fight.Rounds.Count; i++)
             {
-                var dead = fight.Rounds[i].Cards.Where(x => x.Hp <= 0);
-                if (dead.Count() > 0)
+                var deadCards = fight.Rounds[i].Cards.Where(x => x.Hp <= 0);
+                if (deadCards.Any())
                 {
                     deathLog += $"**Runda {i + 1}**:\n";
-                    foreach (var d in dead)
+                    foreach (var deadCard in deadCards)
                     {
-                        var thisCard = players.First(x => x.Cards.Any(c => c.Id == d.CardId)).Cards.First(x => x.Id == d.CardId);
+                        var thisCard = players
+                            .First(x => x.Cards.Any(c => c.Id == deadCard.CardId))
+                            .Cards
+                            .First(x => x.Id == deadCard.CardId);
+
                         deathLog += $"❌ {thisCard.GetString(true, false, true, true)}\n";
                     }
                     deathLog += "\n";
                 }
             }
+
             return deathLog;
         }
 
@@ -941,16 +762,19 @@ namespace Sanakan.Services.PocketWaifu
         {
             var totalCards = new List<CardWithHealth>();
 
-            foreach (var player in players)
+            foreach (var card in players.SelectMany(pr => pr.Cards))
             {
-                foreach (var card in player.Cards)
-                    totalCards.Add(new CardWithHealth() { Card = card, Health = card.GetHealthWithPenalty() });
+                totalCards.Add(new CardWithHealth()
+                {
+                    Card = card,
+                    Health = card.GetHealthWithPenalty(),
+                });
             }
 
             var rounds = new List<RoundInfo>();
-            bool fight = true;
+            bool canFight = true;
 
-            while (fight)
+            while (canFight)
             {
                 var round = new RoundInfo();
                 totalCards = _randomNumberGenerator.Shuffle(totalCards).ToList();
@@ -958,14 +782,20 @@ namespace Sanakan.Services.PocketWaifu
                 foreach (var card in totalCards)
                 {
                     if (card.Health <= 0)
+                    {
                         continue;
+                    }
 
-                    var enemies = totalCards.Where(x => x.Health > 0 && x.Card.GameDeckId != card.Card.GameDeckId).ToList();
-                    if (enemies.Count() > 0)
+                    var enemies = totalCards
+                        .Where(x => x.Health > 0
+                            && x.Card.GameDeckId != card.Card.GameDeckId)
+                        .ToList();
+
+                    if (enemies.Any())
                     {
                         var target = _randomNumberGenerator.GetOneRandomFrom(enemies);
-                        var dmg = GetDmgDeal(card.Card, target.Card);
-                        target.Health -= dmg;
+                        var damage = CardExtensions.GetFA(card.Card, target.Card);
+                        target.Health -= damage;
 
                         if (target.Health < 1)
                             target.Health = 0;
@@ -983,7 +813,7 @@ namespace Sanakan.Services.PocketWaifu
 
                         round.Fights.Add(new AttackInfo
                         {
-                            Dmg = dmg,
+                            Dmg = damage,
                             AtkCardId = card.Card.Id,
                             DefCardId = target.Card.Id
                         });
@@ -994,23 +824,32 @@ namespace Sanakan.Services.PocketWaifu
 
                 if (oneCard)
                 {
-                    fight = totalCards.Count(x => x.Health > 0) > 1;
+                    canFight = totalCards.Count(x => x.Health > 0) > 1;
                 }
                 else
                 {
                     var alive = totalCards.Where(x => x.Health > 0).Select(x => x.Card);
                     var one = alive.FirstOrDefault();
-                    if (one == null) break;
+                    if (one == null)
+                    {
+                        break;
+                    }
 
-                    fight = alive.Any(x => x.GameDeckId != one.GameDeckId);
+                    canFight = alive.Any(x => x.GameDeckId != one.GameDeckId);
                 }
             }
 
-            PlayerInfo winner = null;
-            var win = totalCards.Where(x => x.Health > 0).Select(x => x.Card).FirstOrDefault();
+            PlayerInfo? winner = null;
+            var winningCard = totalCards
+                .Where(x => x.Health > 0)
+                .Select(x => x.Card)
+                .FirstOrDefault();
 
-            if (win != null)
-                winner = players.FirstOrDefault(x => x.Cards.Any(c => c.GameDeckId == win.GameDeckId));
+            if (winningCard != null)
+            {
+                winner = players.FirstOrDefault(x => 
+                    x.Cards.Any(c => c.GameDeckId == winningCard.GameDeckId));
+            }
 
             return new FightHistory(winner) { Rounds = rounds };
         }
@@ -1243,9 +1082,9 @@ namespace Sanakan.Services.PocketWaifu
                         characterInfo = result.Value;
                     }
                 }
-                else if (pack.TitleId != 0)
+                else if (pack.TitleId.HasValue)
                 {
-                    var charactersResult = await _shindenClient.GetCharactersAsync(pack.TitleId);
+                    var charactersResult = await _shindenClient.GetCharactersAsync(pack.TitleId.Value);
                     
                     if (charactersResult != null)
                     {
@@ -1507,15 +1346,6 @@ namespace Sanakan.Services.PocketWaifu
             }.Build();
         }
 
-        public Embed GetItemShopInfo(ItemWithCost item)
-        {
-            return new EmbedBuilder
-            {
-                Color = EMType.Info.Color(),
-                Description = $"**{item.Item.Name}**\n_{item.Item.Type.Desc()}_",
-            }.Build();
-        }
-
         public async Task<IEnumerable<Embed>> GetContentOfWishlist(List<ulong> cardsId, List<ulong> charactersId, List<ulong> titlesId)
         {
             var contentTable = new List<string>();
@@ -1773,20 +1603,20 @@ namespace Sanakan.Services.PocketWaifu
 
             if (CheckEventInExpedition(card.Expedition, duration))
             {
-                var e = _events.RandomizeEvent(card.Expedition, duration);
-                allowItems = _events.ExecuteEvent(e, user, card, ref reward);
+                var @event = _eventsService.RandomizeEvent(card.Expedition, duration);
+                (allowItems, reward) = _eventsService.ExecuteEvent(@event, user, card, reward);
 
-                totalItemsCnt += _events.GetMoreItems(e);
-                if (e == EventType.ChangeDere)
+                totalItemsCnt += _eventsService.GetMoreItems(@event);
+                if (@event == EventType.ChangeDere)
                 {
-                    card.Dere = RandomizeDere(_randomNumberGenerator);
+                    card.Dere = _randomNumberGenerator.GetOneRandomFrom(DereExtensions.ListOfDeres);
                     reward += $"{card.Dere}\n";
                 }
-                if (e == EventType.LoseCard)
+                if (@event == EventType.LoseCard)
                 {
                     user.StoreExpIfPossible(totalExp);
                 }
-                if (e == EventType.Fight && !allowItems)
+                if (@event == EventType.Fight && !allowItems)
                 {
                     totalExp /= 6;
                 }
@@ -1906,7 +1736,7 @@ namespace Sanakan.Services.PocketWaifu
 
         private Item RandomizeItemForExpedition(ExpeditionCardType expedition)
         {
-            var c = _chanceOfItemsInExpedition[expedition];
+            var chanceOfItems = Game.Constants.ChanceOfItemsInExpedition[expedition];
 
             var quality = Quality.Broken;
             if (expedition.HasDifferentQualitiesOnExpedition())
@@ -1916,44 +1746,44 @@ namespace Sanakan.Services.PocketWaifu
 
             switch (_randomNumberGenerator.GetRandomValue(10000))
             {
-                case int n when (n < c[ItemType.AffectionRecoverySmall].Item2
-                                && n >= c[ItemType.AffectionRecoverySmall].Item1):
+                case int n when (n < chanceOfItems[ItemType.AffectionRecoverySmall].Item2
+                                && n >= chanceOfItems[ItemType.AffectionRecoverySmall].Item1):
                     return ItemType.AffectionRecoverySmall.ToItem(1, quality);
 
-                case int n when (n < c[ItemType.AffectionRecoveryNormal].Item2
-                                && n >= c[ItemType.AffectionRecoveryNormal].Item1):
+                case int n when (n < chanceOfItems[ItemType.AffectionRecoveryNormal].Item2
+                                && n >= chanceOfItems[ItemType.AffectionRecoveryNormal].Item1):
                     return ItemType.AffectionRecoveryNormal.ToItem(1, quality);
 
-                case int n when (n < c[ItemType.DereReRoll].Item2
-                                && n >= c[ItemType.DereReRoll].Item1):
+                case int n when (n < chanceOfItems[ItemType.DereReRoll].Item2
+                                && n >= chanceOfItems[ItemType.DereReRoll].Item1):
                     return ItemType.DereReRoll.ToItem(1, quality);
 
-                case int n when (n < c[ItemType.CardParamsReRoll].Item2
-                                && n >= c[ItemType.CardParamsReRoll].Item1):
+                case int n when (n < chanceOfItems[ItemType.CardParamsReRoll].Item2
+                                && n >= chanceOfItems[ItemType.CardParamsReRoll].Item1):
                     return ItemType.CardParamsReRoll.ToItem(1, quality);
 
-                case int n when (n < c[ItemType.AffectionRecoveryBig].Item2
-                                && n >= c[ItemType.AffectionRecoveryBig].Item1):
+                case int n when (n < chanceOfItems[ItemType.AffectionRecoveryBig].Item2
+                                && n >= chanceOfItems[ItemType.AffectionRecoveryBig].Item1):
                     return ItemType.AffectionRecoveryBig.ToItem(1, quality);
 
-                case int n when (n < c[ItemType.AffectionRecoveryGreat].Item2
-                                && n >= c[ItemType.AffectionRecoveryGreat].Item1):
+                case int n when (n < chanceOfItems[ItemType.AffectionRecoveryGreat].Item2
+                                && n >= chanceOfItems[ItemType.AffectionRecoveryGreat].Item1):
                     return ItemType.AffectionRecoveryGreat.ToItem(1, quality);
 
-                case int n when (n < c[ItemType.IncreaseUpgradeCount].Item2
-                                && n >= c[ItemType.IncreaseUpgradeCount].Item1):
+                case int n when (n < chanceOfItems[ItemType.IncreaseUpgradeCount].Item2
+                                && n >= chanceOfItems[ItemType.IncreaseUpgradeCount].Item1):
                     return ItemType.IncreaseUpgradeCount.ToItem(1, quality);
 
-                case int n when (n < c[ItemType.IncreaseExpSmall].Item2
-                                && n >= c[ItemType.IncreaseExpSmall].Item1):
+                case int n when (n < chanceOfItems[ItemType.IncreaseExpSmall].Item2
+                                && n >= chanceOfItems[ItemType.IncreaseExpSmall].Item1):
                     return ItemType.IncreaseExpSmall.ToItem(1, quality);
 
-                case int n when (n < c[ItemType.IncreaseExpBig].Item2
-                                && n >= c[ItemType.IncreaseExpBig].Item1):
+                case int n when (n < chanceOfItems[ItemType.IncreaseExpBig].Item2
+                                && n >= chanceOfItems[ItemType.IncreaseExpBig].Item1):
                     return ItemType.IncreaseExpBig.ToItem(1, quality);
 
-                case int n when (n < c[ItemType.BetterIncreaseUpgradeCnt].Item2
-                                && n >= c[ItemType.BetterIncreaseUpgradeCnt].Item1):
+                case int n when (n < chanceOfItems[ItemType.BetterIncreaseUpgradeCnt].Item2
+                                && n >= chanceOfItems[ItemType.BetterIncreaseUpgradeCnt].Item1):
                     return ItemType.BetterIncreaseUpgradeCnt.ToItem(1, quality);
 
                 default: return null;

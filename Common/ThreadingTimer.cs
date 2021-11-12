@@ -9,6 +9,17 @@ namespace Sanakan.Common
     {
         private Timer? _timer;
 
+        public void Start(TimeSpan dueTime, TimeSpan period, object state)
+        {
+            if (_timer != null)
+            {
+                _timer.Dispose();
+                _timer = null;
+            }
+
+            _timer = new Timer(TimerCallback, state, dueTime, period);
+        }
+
         public void Start(TimeSpan dueTime, TimeSpan period)
         {
             if (_timer != null)

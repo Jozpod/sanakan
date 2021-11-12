@@ -8,6 +8,13 @@ namespace Sanakan.ShindenApi
 {
     public interface IShindenClient
     {
+        Task<Result<Modification>> RemoveFromFavouritesAsync(ulong userId, FavouriteType favouriteType, ulong favouriteId);
+        Task<Result<Modification>> AddToFavouritesAsync(ulong userId, FavouriteType favouriteType, ulong favouriteId);
+        Task<Result<Status>> RateMangaAsync(ulong titleId, MangaRateType type, uint value);
+        Task<Result<Status>> RateAnimeAsync(ulong titleId, AnimeRateType type, uint value);
+        Task<Result<IncreaseWatched>> IncreaseNumberOfWatchedEpisodesAsync(ulong userId, ulong titleId);
+        Task<Result<TitleStatusAfterChange>> RemoveTitleFromListAsync(ulong userId, ulong titleId);
+        Task<Result<TitleStatusAfterChange>> ChangeTitleStatusAsync(ulong userId, ListType status, ulong titleId);
         Task<Result<EpisodesRange>> GetEpisodesRangeAsync(ulong episodeId);
         Task<Result<StaffInfo>> GetStaffInfoAsync(ulong staffId);
         Task<Result<TitleEpisodes>> GetEpisodesAsync(ulong episodeId);

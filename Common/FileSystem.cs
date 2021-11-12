@@ -20,6 +20,8 @@ namespace Sanakan.Common
 
         public Stream OpenRead(string path) => File.OpenRead(path);
 
+        public Task<string[]> ReadAllLinesAsync(string path) => File.ReadAllLinesAsync(path);
+
         public Task<string> ReadAllTextAsync(string path) => File.ReadAllTextAsync(path);
 
         public Task WriteAllTextAsync(string physicalPath, string contents) => File.WriteAllTextAsync(physicalPath, contents);

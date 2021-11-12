@@ -52,7 +52,7 @@ namespace Sanakan.Services
             var modsRolesCnt = config.ModeratorRoles?.Count;
             var mods = (modsRolesCnt > 0) ? $"({modsRolesCnt}) `config mods`" : "--";
 
-            var wExpCnt = config.ChannelsWithoutExp?.Count;
+            var wExpCnt = config.ChannelsWithoutExperience?.Count;
             var wExp = (wExpCnt > 0) ? $"({wExpCnt}) `config wexp`" : "--";
 
             var wCntCnt = config.IgnoredChannels?.Count;
@@ -236,9 +236,9 @@ namespace Sanakan.Services
         private EmbedBuilder GetNonExpChannelsConfig(GuildOptions config, SocketCommandContext context)
         {
             string value = "**Kanały bez exp:**\n\n";
-            if (config.ChannelsWithoutExp?.Count > 0)
+            if (config.ChannelsWithoutExperience?.Count > 0)
             {
-                foreach (var channel in config.ChannelsWithoutExp)
+                foreach (var channel in config.ChannelsWithoutExperience)
                     value += $"{context.Guild.GetTextChannel(channel.Channel)?.Mention ?? $"{channel.Channel}"}\n";
             }
             else value += "*brak*";

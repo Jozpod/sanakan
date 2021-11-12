@@ -9,7 +9,7 @@ using Sanakan.TaskQueue;
 namespace DiscordBot.ModulesTests.ProfileModuleTests
 {
     [TestClass]
-    public abstract class Base
+    public abstract class Base : TestBase
     {
         protected readonly ProfileModule _module;
         protected readonly Mock<IProfileService> _profileServiceMock = new(MockBehavior.Strict);
@@ -30,6 +30,7 @@ namespace DiscordBot.ModulesTests.ProfileModuleTests
                 _gameDeckRepositoryMock.Object,
                 _userRepositoryMock.Object,
                 _systemClockMock.Object);
+            Initialize(_module);
         }
     }
 }

@@ -498,7 +498,9 @@ namespace Sanakan.DAL.Models
         {
             var maxHealth = 999;
             if (FromFigure)
+            {
                 maxHealth = 99999;
+            }
 
             var percent = Affection * 5d / 100d;
             var newHealth = (int)(Health + (Health * percent));
@@ -508,17 +510,23 @@ namespace Sanakan.DAL.Models
             }
 
             if (newHealth > maxHealth)
+            {
                 newHealth = maxHealth;
+            }
 
             if (allowZero)
             {
                 if (newHealth < 0)
+                {
                     newHealth = 0;
+                }
             }
             else
             {
                 if (newHealth < 10)
+                {
                     newHealth = 10;
+                }
             }
 
             return newHealth;

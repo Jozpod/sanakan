@@ -9,6 +9,7 @@ using Shinden.API;
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Sanakan.Game.Services.Abstractions;
 
 namespace Sanakan.Game.Tests
 {

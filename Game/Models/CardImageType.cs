@@ -1,4 +1,4 @@
-﻿namespace DiscordBot.Services
+﻿namespace Sanakan.Game.Models
 {
     public enum CardImageType
     {
