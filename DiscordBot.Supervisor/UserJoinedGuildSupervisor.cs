@@ -1,4 +1,6 @@
-﻿using Sanakan.Common;
+﻿using Microsoft.Extensions.Options;
+using Sanakan.Common;
+using Sanakan.Common.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,15 +10,19 @@ namespace Sanakan.DiscordBot.Supervisor
 {
     internal class UserJoinedGuildSupervisor : IUserJoinedGuildSupervisor
     {
+        private readonly IOptionsMonitor<SupervisorConfiguration> _supervisorConfiguration;
         private readonly IDictionary<string, Entry> _entries;
         private readonly TimeSpan _timeIntervalBetweenUserGuildJoins;
         private readonly ISystemClock _systemClock;
 
-        public UserJoinedGuildSupervisor(ISystemClock systemClock)
+        public UserJoinedGuildSupervisor(
+            IOptionsMonitor<SupervisorConfiguration> supervisorConfiguration,
+            ISystemClock systemClock)
         {
+            _supervisorConfiguration = supervisorConfiguration;
             _systemClock = systemClock;
             _entries = new Dictionary<string, Entry>(100);
-            _timeIntervalBetweenUserGuildJoins = TimeSpan.FromMinutes(2);
+            _timeIntervalBetweenUserGuildJoins = _supervisorConfiguration.CurrentValue.TimeIntervalBetweenUserGuildJoins;
         }
 
         internal class Entry
@@ -59,7 +65,7 @@ namespace Sanakan.DiscordBot.Supervisor
                 _entries[key] = entry;
             }
 
-            if(entry.UserIds.Count > 3)
+            if(entry.UserIds.Count > _supervisorConfiguration.CurrentValue.SameUsernameLimit)
             {
                 entry.IsRaid = true;
             }

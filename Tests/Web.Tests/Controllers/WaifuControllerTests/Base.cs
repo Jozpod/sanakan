@@ -1,5 +1,4 @@
-﻿using DiscordBot.Services.PocketWaifu.Abstractions;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan;
@@ -8,6 +7,7 @@ using Sanakan.Common.Configuration;
 using Sanakan.Configuration;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Repositories.Abstractions;
+using Sanakan.Game.Services.Abstractions;
 using Sanakan.ShindenApi;
 using Sanakan.TaskQueue;
 using Sanakan.TaskQueue.Messages;

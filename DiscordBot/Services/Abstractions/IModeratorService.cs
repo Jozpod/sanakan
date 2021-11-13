@@ -14,7 +14,7 @@ namespace Sanakan.DiscordBot.Services.Abstractions
     {
         Task<EmbedBuilder> GetConfigurationAsync(GuildOptions config, SocketCommandContext context, ConfigType type);
         Task NotifyUserAsync(IUser user, string reason);
-        Embed BuildTodo(IMessage message, SocketGuildUser who);
+        Embed BuildTodo(IMessage message, IGuildUser who);
         Task<Embed> GetMutedListAsync(SocketCommandContext context);
         Task UnmuteUserAsync(
             SocketGuildUser user,

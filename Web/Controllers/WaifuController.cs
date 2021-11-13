@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using DiscordBot.Services.PocketWaifu.Abstractions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -29,6 +28,7 @@ using Sanakan.TaskQueue.Messages;
 using Sanakan.Game.Models;
 using Sanakan.Common.Configuration;
 using Sanakan.TaskQueue;
+using Sanakan.Game.Services.Abstractions;
 
 namespace Sanakan.Web.Controllers
 {

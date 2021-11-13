@@ -26,7 +26,6 @@ namespace Sanakan.Game.Tests
             var xPos = 0;
             var yPos = 0;
 
-
             var siteStatistics = _imageProcessor.GetCatchThatWaifuImage(card, pokeImg, xPos, yPos);
         }
     }

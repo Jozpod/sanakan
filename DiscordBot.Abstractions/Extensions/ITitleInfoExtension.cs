@@ -52,11 +52,10 @@ namespace Sanakan.Extensions
         {
             string start = "";
             string finish = "";
-            var def = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc).ToLocalTime();
 
             if (info.Title.FinishDate.HasValue)
             {
-                finish = info.Title.FinishDate.Value == def.Date ? "" : $" - {info.Title.FinishDate.Value.ToShortDateString()}";
+                finish = info.Title.FinishDate.HasValue ? $" - {info.Title.FinishDate.Value.ToShortDateString()}" : "";
             }
 
             if (info.Title.StartDate.HasValue)
@@ -135,7 +134,7 @@ namespace Sanakan.Extensions
         {
             var fields = new List<EmbedFieldBuilder>();
 
-            if (info.Title.TitleOther.Count > 0)
+            if (info.Title.TitleOther.Any())
             {
                 fields.Add(new EmbedFieldBuilder()
                 {

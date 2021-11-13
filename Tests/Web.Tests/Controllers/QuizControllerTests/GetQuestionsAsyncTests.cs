@@ -1,5 +1,4 @@
-﻿using DiscordBot.Services.PocketWaifu.Abstractions;
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;

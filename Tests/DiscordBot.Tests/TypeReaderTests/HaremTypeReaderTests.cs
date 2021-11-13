@@ -9,6 +9,7 @@ using Moq;
 using Sanakan.Common;
 using Sanakan.Common.Configuration;
 using Sanakan.DiscordBot.Services;
+using Sanakan.Game.Models;
 using Sanakan.Services.Commands;
 using Sanakan.TypeReaders;
 using System;

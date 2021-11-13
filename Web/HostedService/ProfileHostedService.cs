@@ -133,7 +133,7 @@ namespace Sanakan.Web.HostedService
             }
         }
 
-        private async Task RemoveRoleAsync(SocketGuild guild, ulong roleId, ulong userId)
+        private async Task RemoveRoleAsync(IGuild guild, ulong roleId, ulong userId)
         {
             var role = guild.GetRole(roleId);
 
@@ -142,7 +142,8 @@ namespace Sanakan.Web.HostedService
                 return;
             }
 
-            var user = guild.GetUser(userId);
+            var user = await guild.GetUserAsync(userId);
+
             if (user == null)
             {
                 return;

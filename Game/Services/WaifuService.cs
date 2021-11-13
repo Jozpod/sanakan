@@ -47,7 +47,6 @@ namespace Sanakan.Game.Services
             IFileSystem fileSystem,
             ISystemClock systemClock,
             IShindenClient client,
-            EventsService events,
             ICacheManager cacheManager,
             IRandomNumberGenerator randomNumberGenerator,
             IResourceManager resourceManager,
@@ -143,30 +142,15 @@ namespace Sanakan.Game.Services
             }
         }
 
-        public static Rarity RandomizeRarity(IRandomNumberGenerator randomNumberGenerator)
-        {
-            var num = randomNumberGenerator.GetRandomValue(1000);
-            if (num < 5)   return Rarity.SS;
-            if (num < 25)  return Rarity.S;
-            if (num < 75)  return Rarity.A;
-            if (num < 175) return Rarity.B;
-            if (num < 370) return Rarity.C;
-            if (num < 620) return Rarity.D;
-            return Rarity.E;
-        }
-
         public static Rarity RandomizeRarity(
             IRandomNumberGenerator randomNumberGenerator,
-            List<Rarity> rarityExcluded)
+            IEnumerable<Rarity> rarityExcluded)
         {
-            if (rarityExcluded == null)
+            int value;
+            if (!rarityExcluded.Any())
             {
-                return RandomizeRarity(randomNumberGenerator);
-            }
-            
-            if (rarityExcluded.Count < 1)
-            {
-                return RandomizeRarity(randomNumberGenerator);
+                value = randomNumberGenerator.GetRandomValue(1000);
+                return RarityExtensions.Random(value);
             }
 
             var rarityChances = Game.Constants.RarityChances.ToList();
@@ -180,13 +164,13 @@ namespace Sanakan.Game.Services
                 rarityChances.Remove(excluded);
             }
 
-            var num = randomNumberGenerator.GetRandomValue(1000);
+            value = randomNumberGenerator.GetRandomValue(1000);
 
-            foreach(var rar in rarityChances)
+            foreach(var rarityChance in rarityChances)
             {
-                if (num < rar.Chance)
+                if (value < rarityChance.Chance)
                 {
-                    return rar.Rarity;
+                    return rarityChance.Rarity;
                 }
             }
 
@@ -678,7 +662,7 @@ namespace Sanakan.Game.Services
         }
 
         public Card GenerateNewCard(IUser user, CharacterInfo character)
-            => GenerateNewCard(user, character, RandomizeRarity(_randomNumberGenerator));
+            => GenerateNewCard(user, character, RandomizeRarity(_randomNumberGenerator, Enumerable.Empty<Rarity>()));
 
         public Card GenerateNewCard(IUser user, CharacterInfo character, List<Rarity> rarityExcluded)
             => GenerateNewCard(user, character, RandomizeRarity(_randomNumberGenerator, rarityExcluded));
@@ -1243,34 +1227,44 @@ namespace Sanakan.Game.Services
             }
         }
 
-        public async Task<string> GetSafariViewAsync(SafariImage info, Card card, ITextChannel trashChannel)
+        public async Task<string> GetSafariViewAsync(SafariImage safariImage, Card card, ITextChannel trashChannel)
         {
-            var uri = info != null ? info.Uri(_fileSystem, SafariImageType.Truth) 
-                : SafariImage.DefaultUri(SafariImageType.Truth);
+            var safariImageType = SafariImageType.Truth;
+            var imagePath = safariImageType.ToUri(safariImage.Index);
+
+            if(!_fileSystem.Exists(imagePath))
+            {
+                imagePath = safariImageType.DefaultUri();
+            }
 
             var DefaultX = 884;
             var DefaultY = 198;
 
-            var GetX = _fileSystem.Exists(ThisUri(info, SafariImageType.Truth)) ? info.X : DefaultX;
-            var GetY = _fileSystem.Exists(ThisUri(info, SafariImageType.Truth)) ? info.Y : DefaultY;
+            var GetX = _fileSystem.Exists(ThisUri(safariImage, safariImageType)) ? safariImage.X : DefaultX;
+            var GetY = _fileSystem.Exists(ThisUri(safariImage, safariImageType)) ? safariImage.Y : DefaultY;
 
             using var cardImage = await _imageProcessor.GetWaifuCardAsync(card);
-            var posX = info != null ? GetX : SafariImage.DefaultX();
-            int posY = info != null ? GetY : SafariImage.DefaultY();
-            using var pokeImage = _imageProcessor.GetCatchThatWaifuImage(cardImage, uri, posX, posY);
+            var posX = safariImage != null ? GetX : SafariImage.DefaultX();
+            int posY = safariImage != null ? GetY : SafariImage.DefaultY();
+            using var pokeImage = _imageProcessor.GetCatchThatWaifuImage(cardImage, imagePath, posX, posY);
             using var stream = pokeImage.ToJpgStream();
 
             var msg = await trashChannel.SendFileAsync(stream, $"poke.jpg");
             return msg.Attachments.First().Url;
         }
 
-        public async Task<string> GetSafariViewAsync(SafariImage info, ITextChannel trashChannel)
+        public async Task<string> GetSafariViewAsync(SafariImage safariImage, ITextChannel trashChannel)
         {
-            string uri = info != null ? info.Uri(_fileSystem, SafariImageType.Mystery) 
-                : SafariImage.DefaultUri(SafariImageType.Mystery);
+            var safariImageType = SafariImageType.Mystery;
+            var imagePath = safariImageType.ToUri(safariImage.Index);
 
-            var msg = await trashChannel.SendFileAsync(uri);
-            return msg.Attachments.First().Url;
+            if (!_fileSystem.Exists(imagePath))
+            {
+                imagePath = safariImageType.DefaultUri();
+            }
+
+            var message = await trashChannel.SendFileAsync(imagePath);
+            return message.Attachments.First().Url;
         }
 
         public async Task<Embed> BuildCardImageAsync(
@@ -1295,7 +1289,7 @@ namespace Sanakan.Game.Services
                 imageUrl = await GetWaifuProfileImageAsync(card, trashChannel);
             }
 
-            string ownerString = ((owner as SocketGuildUser)?.Nickname ?? owner?.Username) ?? "????";
+            var ownerString = ((owner as IGuildUser)?.Nickname ?? owner?.Username) ?? "????";
 
             return new EmbedBuilder
             {

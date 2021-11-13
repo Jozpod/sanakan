@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Sanakan.Common.Extensions;
 using Sanakan.DAL.Models;
@@ -17,36 +18,54 @@ namespace Sanakan.Extensions
         }
         public static string GetStatusIcons(this Card card)
         {
-            var icons = new List<string>();
-            if (card.Active) icons.Add("☑️");
-            if (card.Unique) icons.Add("💠");
-            if (card.FromFigure) icons.Add("🎖️");
-            if (!card.IsTradable) icons.Add("⛔");
-            if (card.IsBroken) icons.Add("💔");
-            if (card.InCage) icons.Add("🔒");
-            if (card.Expedition != ExpeditionCardType.None) icons.Add("✈️");
-            if (!string.IsNullOrEmpty(card.CustomImageUrl)) icons.Add("🖼️");
-            if (!string.IsNullOrEmpty(card.CustomBorder)) icons.Add("✂️");
-
             var value = card.GetThreeStateMarketValue();
-            if (value == MarketValue.Low) icons.Add("♻️");
-            if (value == MarketValue.High) icons.Add("💰");
-
-            if (card.TagList.Count > 0)
+            var result = new StringBuilder(20);
+            var metaData = new[]
             {
-                if (card.TagList.Any(x => x.Name.Equals("ulubione", StringComparison.CurrentCultureIgnoreCase)))
-                    icons.Add("💗");
+                (card.Active, "☑️"),
+                (card.Unique, "💠"),
+                (card.FromFigure, "🎖️"),
+                (!card.IsTradable, "⛔"),
+                (card.IsBroken, "💔"),
+                (card.InCage, "🔒"),
+                (card.Expedition != ExpeditionCardType.None, "✈️"),
+                (!string.IsNullOrEmpty(card.CustomImageUrl), "🖼️"),
+                (!string.IsNullOrEmpty(card.CustomBorder), "✂️"),
+                (value == MarketValue.Low, "♻️"),
+                (value == MarketValue.High, "💰")
+            };
 
-                if (card.TagList.Any(x => x.Name.Equals("galeria", StringComparison.CurrentCultureIgnoreCase)))
-                    icons.Add("📌");
-
-                if (card.TagList.Any(x => x.Name.Equals("rezerwacja", StringComparison.CurrentCultureIgnoreCase)))
-                    icons.Add("📝");
-
-                if (card.TagList.Any(x => x.Name.Equals("wymiana", StringComparison.CurrentCultureIgnoreCase)))
-                    icons.Add("🔄");
+            foreach (var (flag, icon) in metaData)
+            {
+                if(flag)
+                {
+                    result.AppendFormat("{0} ", icon);
+                }
             }
-            return string.Join(" ", icons);
+
+            foreach (var tagItem in card.TagList)
+            {
+                var tagName = tagItem.Name.ToLowerInvariant();
+                switch (tagName)
+                {
+                    case "ulubione":
+                        result.AppendFormat("{0} ", "💗");
+                        break;
+                    case "galeria":
+                        result.AppendFormat("{0} ", "📌");
+                        break;
+                    case "rezerwacja":
+                        result.AppendFormat("{0} ", "📝");
+                        break;
+                    case "wymiana":
+                        result.AppendFormat("{0} ", "🔄");
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            return result.ToString();
         }
         public static string GetString(
             this Card card,
@@ -67,36 +86,70 @@ namespace Sanakan.Extensions
         public static string GetDesc(this Card card)
         {
             var tags = string.Join(" ", card.TagList.Select(x => x.Name));
-            if (card.TagList.Count < 1) tags = "---";
+            if (card.TagList.Count < 1)
+            {
+                tags = "---";
+            }
 
-            return $"{card.GetNameWithUrl()} **{card.GetCardRealRarity()}**\n"
-                + $"*{card.Title ?? "????"}*\n\n"
-                + $"*{card.GetCardParams(true, false, true)}*\n\n"
-                + $"**Relacja:** {card.GetAffectionString()}\n"
-                + $"**Doświadczenie:** {card.ExperienceCount.ToString("F")}/{card.ExpToUpgrade().ToString("F")}\n"
-                + $"**Dostępne ulepszenia:** {card.UpgradesCount}\n\n"
-                + $"**W klatce:** {card.InCage.GetYesNo()}\n"
-                + $"**Aktywna:** {card.Active.GetYesNo()}\n"
-                + $"**Możliwość wymiany:** {card.IsTradable.GetYesNo()}\n\n"
-                + $"**WID:** {card.Id} *({card.CharacterId})*\n"
-                + $"**Restarty:** {card.RestartCount}\n"
-                + $"**Pochodzenie:** {card.Source.GetString()}\n"
-                + $"**Tagi:** {tags}\n"
-                + $"{card.GetStatusIcons()}\n\n";
+            return @$"{card.GetNameWithUrl()} **{card.GetCardRealRarity()}**
+*{card.Title ?? "????"}*
+
+
+*{card.GetCardParams(true, false, true)}*
+
+
+**Relacja:** {card.GetAffectionString()}
+
+**Doświadczenie:** {card.ExperienceCount.ToString("F")}/{card.ExpToUpgrade().ToString("F")}
+
+**Dostępne ulepszenia:** {card.UpgradesCount}
+
+
+**W klatce:** {card.InCage.GetYesNo()}
+
+**Aktywna:** {card.Active.GetYesNo()}
+
+**Możliwość wymiany:** {card.IsTradable.GetYesNo()}
+
+
+**WID:** {card.Id} *({card.CharacterId})*
+
+**Restarty:** {card.RestartCount}
+
+**Pochodzenie:** {card.Source.GetString()}
+
+**Tagi:** {tags}
+
+{card.GetStatusIcons()}
+            
+";
         }
         public static string GetDescSmall(this Card card)
         {
             var tags = string.Join(" ", card.TagList.Select(x => x.Name));
-            if (card.TagList.Count < 1) tags = "---";
+            var cardSummary = card.GetString(true, true, true, false, true);
+            if (card.TagList.Count < 1)
+            {
+                tags = "---";
+            }
 
-            return $"**[{card.Id}]** *({card.CharacterId})*\n"
-                + $"{card.GetString(true, true, true, false, true)}\n"
-                + $"_{card.Title}_\n\n"
-                + $"{card.Dere}\n"
-                + $"{card.GetAffectionString()}\n"
-                + $"{card.ExperienceCount.ToString("F")}/{card.ExpToUpgrade().ToString("F")} exp\n\n"
-                + $"{tags}\n"
-                + $"{card.GetStatusIcons()}";
+            return @$"**[{card.Id}]** *({card.CharacterId})*
+
+{cardSummary}
+
+_{card.Title}_
+
+
+{card.Dere}
+
+{card.GetAffectionString()}
+
+{card.ExperienceCount.ToString("F")}/{card.ExpToUpgrade().ToString("F")} exp
+
+
+{tags}
+
+{card.GetStatusIcons()}";
         }
     }
 }

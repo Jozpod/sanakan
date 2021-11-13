@@ -9,7 +9,7 @@ using Sanakan.Common;
 namespace DiscordBot.ModulesTests.ShindenModuleTests
 {
     [TestClass]
-    public abstract class Base
+    public abstract class Base : TestBase
     {
         protected readonly ShindenModule _module;
         protected readonly Mock<IShindenClient> _shindenClientMock = new(MockBehavior.Strict);
@@ -28,6 +28,7 @@ namespace DiscordBot.ModulesTests.ShindenModuleTests
                 _userRepositoryMock.Object,
                 _systemClockMock.Object,
                 _taskManagerMock.Object);
+            Initialize(_module);
         }
     }
 }

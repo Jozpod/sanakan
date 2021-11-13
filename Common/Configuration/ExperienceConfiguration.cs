@@ -1,4 +1,4 @@
-﻿namespace Sanakan.Configuration
+﻿namespace Sanakan.Common.Configuration
 {
     public class ExperienceConfiguration
     {

@@ -4,18 +4,28 @@ using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Text.Json;
+using System.Collections.Generic;
 
 namespace Sanakan.Common
 {
-    internal class ResourceManager : IResourceManager
+    public class ResourceManager : IResourceManager
     {
-        private readonly Assembly _assembly;
+        private static readonly IDictionary<string, Assembly> _assemblyDict;
         private readonly IFileSystem _fileSystem;
 
         public ResourceManager(IFileSystem fileSystem)
         {
             _fileSystem = fileSystem;
-            _assembly = Assembly.GetCallingAssembly();
+        }
+
+        static ResourceManager()
+        {
+            _assemblyDict = new Dictionary<string, Assembly>();
+        }
+
+        public static void Add(Assembly assembly, string resourcePath)
+        {
+            _assemblyDict.Add(resourcePath, assembly);
         }
 
         public ValueTask<T?> ReadFromJsonAsync<T>(string path)
@@ -26,7 +36,9 @@ namespace Sanakan.Common
 
         public Stream GetResourceStream(string resourcePath)
         {
-            return _assembly.GetManifestResourceStream(resourcePath)
+            var assembly = _assemblyDict[resourcePath];
+
+            return assembly.GetManifestResourceStream(resourcePath)
                 ?? throw new Exception($"Could not find resource: {resourcePath}");
         }
     }

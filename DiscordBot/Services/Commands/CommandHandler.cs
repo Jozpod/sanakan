@@ -66,8 +66,6 @@ namespace Sanakan.Services.Commands
 
             var client = _discordSocketClientAccessor.Client;
 
-          
-
             _helper.PublicModulesInfo = await _commandService
                 .AddModulesAsync(Assembly.GetEntryAssembly(), _serviceProvider);
 

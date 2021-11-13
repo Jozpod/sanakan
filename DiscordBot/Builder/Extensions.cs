@@ -7,6 +7,7 @@ using DiscordBot.Services;
 using DiscordBot.Services.PocketWaifu;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Sanakan.Common;
 using Sanakan.Common.Models;
 using Sanakan.DAL.Models;
 using Sanakan.DiscordBot;
@@ -36,10 +37,8 @@ namespace Sanakan.DiscordBot.Builder
             services.AddSingleton<ILandManager, LandManager>();
             services.AddSingleton<IModeratorService, ModeratorService>();
             services.AddSingleton<IDiscordSocketClientAccessor, DiscordSocketClientAccessor>();
-            services.AddSingleton<IWaifuService, WaifuService>();
             services.AddSingleton<IProfileService, ProfileService>();
             services.AddSingleton<IHelperService, HelperService>();
-            services.AddSingleton<EventsService>();
             services.AddSingleton<CommandHandler>();
             return services;
         }
@@ -55,6 +54,15 @@ namespace Sanakan.DiscordBot.Builder
             commandService.AddTypeReader<HaremType>(new TypeReaders.HaremTypeReader());
             commandService.AddTypeReader<TopType>(new TypeReaders.TopTypeReader());
             commandService.AddTypeReader<bool>(new TypeReaders.BoolTypeReader());
+        }
+
+        public static IServiceCollection AddImageResources(this IServiceCollection services)
+        {
+            var assembly = typeof(Extensions).Assembly;
+            ResourceManager.Add(assembly, ImageResources.ManWaggingFinger);
+            ResourceManager.Add(assembly, ImageResources.WomenMagnifyingGlass);
+            ResourceManager.Add(assembly, ImageResources.YouHaveNoPowerHere);
+            return services;
         }
     }
 }

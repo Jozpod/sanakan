@@ -55,7 +55,16 @@ namespace Sanakan.Services
         public string GivePrivateHelp(string moduleName)
         {
             var item = GetInfoAboutModule(PrivateModulesInfo[moduleName]);
-            return $"**Lista poleceń:**\n\n**{item.Prefix}:** " + string.Join("  ", item.Commands);
+            var stringBuilder = new StringBuilder($"**Lista poleceń:**\n\n**{item.Prefix}:** ", 500);
+
+            foreach (var command in item.Commands)
+            {
+                stringBuilder.AppendFormat("{0}  ", command);
+            }
+
+            stringBuilder.Length -= 2;
+
+            return stringBuilder.ToString();
         }
 
         public string GiveHelpAboutPrivateCmd(string moduleName, string command, string prefix, bool throwEx = true)
@@ -183,7 +192,7 @@ namespace Sanakan.Services
 
         private SanakanSubModuleInfo GetInfoAboutModule(ModuleInfo module)
         {
-            var subMInfo = new SanakanSubModuleInfo()
+            var sanakanSubModuleInfo = new SanakanSubModuleInfo()
             {
                 Prefix = module.Name,
                 Commands = new List<string>()
@@ -194,14 +203,14 @@ namespace Sanakan.Services
                 if (!string.IsNullOrEmpty(commands.Name))
                 {
                     var name = "`" + commands.Name + "`";
-                    if (!subMInfo.Commands.Contains(name))
+                    if (!sanakanSubModuleInfo.Commands.Contains(name))
                     {
-                        subMInfo.Commands.Add(name);
+                        sanakanSubModuleInfo.Commands.Add(name);
                     }
                 }
             }
 
-            return subMInfo;
+            return sanakanSubModuleInfo;
         }
 
         private string GetModGroupPrefix(ModuleInfo mod, bool space = true)
@@ -390,18 +399,24 @@ namespace Sanakan.Services
             };
         }
 
-        public async Task<IMessage> FindMessageInGuildAsync(SocketGuild guild, ulong id)
+        public async Task<IMessage?> FindMessageInGuildAsync(IGuild guild, ulong id)
         {
-            IMessage? msg = null;
-            foreach (ITextChannel channel in guild.Channels)
-                if (channel != null)
+            IMessage? message = null;
+            foreach (var channel in await guild.GetTextChannelsAsync())
+            {
+                if (channel == null)
                 {
-                    msg = await channel.GetMessageAsync(id);
-                    if (msg != null)
-                        break;
+                    continue;
                 }
 
-            return msg;
+                message = await channel.GetMessageAsync(id);
+                if (message != null)
+                {
+                    break;
+                }
+            }
+
+            return message;
         }
 
         public IEmbed BuildRaportInfo(IMessage message, string reportAuthor, string reason, ulong reportId)

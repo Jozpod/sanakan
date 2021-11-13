@@ -24,6 +24,9 @@ using System.Collections.Generic;
 using System.IO;
 using Sanakan.ShindenApi.Models.Enums;
 using Sanakan.ShindenApi.Models;
+using Sanakan.Game.Services.Abstractions;
+using Sanakan.Session;
+using System.Text;
 
 namespace Sanakan.DiscordBot.Modules
 {
@@ -37,12 +40,11 @@ namespace Sanakan.DiscordBot.Modules
             InvalidUrlForum
         }
 
-        private readonly IShindenClient _shindenclient;
+        private readonly IShindenClient _shindenClient;
         private readonly ISessionManager _sessionManager;
         private readonly ICacheManager _cacheManager;
         private readonly IUserRepository _userRepository;
         private readonly ISystemClock _systemClock;
-        private readonly IShindenClient _shindenClient;
         private readonly IImageProcessor _imageProcessor;
         private readonly ITaskManager _taskManager;
 
@@ -54,7 +56,7 @@ namespace Sanakan.DiscordBot.Modules
             ISystemClock systemClock,
             ITaskManager taskManager)
         {
-            _shindenclient = shindenClient;
+            _shindenClient = shindenClient;
             _sessionManager = sessionManager;
             _cacheManager = cacheManager;
             _userRepository = userRepository;
@@ -68,7 +70,7 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks(""), RequireCommandChannel]
         public async Task ShowNewEpisodesAsync()
         {
-            var response = await _shindenclient.GetNewEpisodesAsync();
+            var response = await _shindenClient.GetNewEpisodesAsync();
 
             if (response.Value == null)
             {
@@ -140,7 +142,7 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            var searchResult = await _shindenclient.SearchCharacterAsync(name);
+            var searchResult = await _shindenClient.SearchCharacterAsync(name);
 
             if (searchResult.Value == null)
             {
@@ -156,16 +158,16 @@ namespace Sanakan.DiscordBot.Modules
             if (list.Count == 1)
             {
                 var firstCharacter = list.First();
-                var info = (await _shindenclient.GetCharacterInfoAsync(firstCharacter.Id)).Value;
+                var characterInfo = (await _shindenClient.GetCharacterInfoAsync(firstCharacter.Id)).Value;
 
                 var embed = new EmbedBuilder()
                 {
-                    Title = $"{info} ({info.CharacterId})".ElipseTrimToLength(EmbedBuilder.MaxTitleLength),
-                    Description = info?.Biography?.Biography?.ElipseTrimToLength(1000),
+                    Title = $"{characterInfo} ({characterInfo.CharacterId})".ElipseTrimToLength(EmbedBuilder.MaxTitleLength),
+                    Description = characterInfo?.Biography?.Biography?.ElipseTrimToLength(1000),
                     Color = EMType.Info.Color(),
-                    ImageUrl = info.PictureUrl,
-                    Fields = info.GetFields(),
-                    Url = info.CharacterUrl,
+                    ImageUrl = characterInfo.PictureUrl,
+                    Fields = characterInfo.GetFields(),
+                    Url = characterInfo.CharacterUrl,
                 }.Build();
 
                 await ReplyAsync("", false, embed);
@@ -239,7 +241,7 @@ namespace Sanakan.DiscordBot.Modules
                     break;
             }
 
-            var userResult = await _shindenclient.GetUserInfoAsync(shindenId);
+            var userResult = await _shindenClient.GetUserInfoAsync(shindenId);
 
             if (userResult.Value == null)
             {
@@ -307,23 +309,27 @@ namespace Sanakan.DiscordBot.Modules
 
         public string[] GetSearchResponse(IEnumerable<object> list, string title)
         {
-            string temp = "";
+            var temp = new StringBuilder(2000);
             int messageNr = 0;
             var toSend = new string[10];
             toSend[0] = $"{title}\n```ini\n";
-            int i = 0;
+            var index = 0;
 
             foreach (var item in list)
             {
-                temp += $"[{++i}] {item}\n";
+                temp.AppendFormat("[{0}] {1}\n", ++index, item);
                 if (temp.Length > 1800)
                 {
                     toSend[messageNr] += "\n```";
-                    toSend[++messageNr] += $"```ini\n[{i}] {item}\n";
-                    temp = "";
+                    toSend[++messageNr] += $"```ini\n[{index}] {item}\n";
+                    temp.Clear();
                 }
-                else toSend[messageNr] += $"[{i}] {item}\n";
+                else
+                {
+                    toSend[messageNr] += $"[{index}] {item}\n";
+                }
             }
+
             toSend[messageNr] += "```\nNapisz `koniec`, aby zamknąć menu.";
 
             return toSend;
@@ -331,7 +337,8 @@ namespace Sanakan.DiscordBot.Modules
 
         public async Task SendSearchInfoAsync(ICommandContext context, string title, QuickSearchType type)
         {
-            if (title.Equals("fate/loli")) {
+            if (title.Equals("fate/loli"))
+            {
                 title = "Fate/kaleid Liner Prisma Illya";
             }
 
@@ -406,7 +413,7 @@ namespace Sanakan.DiscordBot.Modules
             }
         }
 
-        public async Task<Stream> GetSiteStatisticAsync(ulong shindenUserId, SocketGuildUser user)
+        public async Task<Stream?> GetSiteStatisticAsync(ulong shindenUserId, SocketGuildUser user)
         {
             var result = await _shindenClient.GetUserInfoAsync(shindenUserId);
 
@@ -424,8 +431,8 @@ namespace Sanakan.DiscordBot.Modules
             using var image = await _imageProcessor.GetSiteStatisticAsync(
                 shindenUser,
                 color,
-                null, //resLR.Value != null ? resLR.Value : null,
-                null); //resLW.Value != null ? resLW.Value : null);
+                resLR.Value,
+                resLW.Value);
 
             return image.ToPngStream();
         }

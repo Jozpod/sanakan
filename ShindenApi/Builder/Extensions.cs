@@ -17,6 +17,7 @@ namespace Sanakan.ShindenApi.Builder
             {
                 var options = serviceProvider.GetRequiredService<IOptionsMonitor<ShindenApiConfiguration>>();
 
+                httpClient.BaseAddress = options.CurrentValue.BaseUrl;
                 httpClient.DefaultRequestHeaders.Add("Accept-Language", "pl");
                 httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
                 httpClient.DefaultRequestHeaders.Add("User-Agent", $"{options.CurrentValue.UserAgent}");

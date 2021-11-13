@@ -14,7 +14,7 @@ namespace Sanakan.DiscordBot.Services.Abstractions
 {
     public interface IProfileService
     {
-        Task RomoveUserColorAsync(SocketGuildUser user);
+        Task RomoveUserColorAsync(IGuildUser user);
         bool HasSameColor(SocketGuildUser user, FColor color);
         Task<bool> SetUserColorAsync(SocketGuildUser user, ulong adminRole, FColor color);
         Task<SaveResult> SaveProfileImageAsync(

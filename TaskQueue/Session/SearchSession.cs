@@ -8,11 +8,12 @@ using Discord.Commands;
 using Microsoft.Extensions.DependencyInjection;
 using Sanakan.Extensions;
 using Sanakan.ShindenApi;
+using Sanakan.ShindenApi.Models;
 using Sanakan.TaskQueue;
 using Shinden;
 using Shinden.API;
 
-namespace Sanakan.ShindenApi.Models
+namespace Sanakan.Session
 {
     public class SearchSession : InteractionSession
     {

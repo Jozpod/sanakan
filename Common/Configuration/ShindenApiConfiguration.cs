@@ -5,6 +5,11 @@ namespace Sanakan.Common.Configuration
     public class ShindenApiConfiguration
     {
         /// <summary>
+        /// The Shinden API base url.
+        /// </summary>
+        public Uri BaseUrl { get; set; }
+
+        /// <summary>
         /// The Shinden API key.
         /// </summary>
         public string Token { get; set; }

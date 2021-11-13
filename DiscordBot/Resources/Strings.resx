@@ -266,6 +266,9 @@ Traci siły po {3} min.</value>
 
 **Krainy**: {31}</value>
   </data>
+  <data name="ServerNotConfigured" xml:space="preserve">
+    <value>Serwer nie jest poprawnie skonfigurowany.</value>
+  </data>
   <data name="SlotMachineInfo" xml:space="preserve">
     <value>**Nastawa** / **Wartośći** 
 Info `(wypisywanie informacji)`

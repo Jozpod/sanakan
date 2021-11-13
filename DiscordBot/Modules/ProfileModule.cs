@@ -506,31 +506,33 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("zmienia obrazek tła profilu (koszt 5000 SC/2500 TC)")]
         [Remarks("https://i.imgur.com/LjVxiv8.png"), RequireCommandChannel]
         public async Task ChangeBackgroundAsync(
-            [Summary("bezpośredni adres do obrazka (450 x 145)")]string imgUrl,
+            [Summary("bezpośredni adres do obrazka (450 x 145)")]string imageUrl,
             [Summary("waluta (SC/TC)")]SCurrency currency = SCurrency.Sc)
         {
             var tcCost = 2500;
             var scCost = 5000;
+            var mention = Context.User.Mention;
 
             var botuser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
             if (botuser.ScCount < scCost && currency == SCurrency.Sc)
             {
-                await ReplyAsync("", embed: $"{Context.User.Mention} nie posiadasz wystarczającej liczby SC!".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync("", embed: $"{mention} nie posiadasz wystarczającej liczby SC!".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
             if (botuser.TcCount < tcCost && currency == SCurrency.Tc)
             {
-                await ReplyAsync("", embed: $"{Context.User.Mention} nie posiadasz wystarczającej liczby TC!".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync("", embed: $"{mention} nie posiadasz wystarczającej liczby TC!".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
-            var res = await _profileService.SaveProfileImageAsync(imgUrl, $"{Paths.SavedData}/BG{botuser.Id}.png", 450, 145, true);
+            var savePath = $"{Paths.SavedData}/BG{botuser.Id}.png";
+            var saveResult = await _profileService.SaveProfileImageAsync(imageUrl, savePath, 450, 145, true);
             
-            if (res == SaveResult.Success)
+            if (saveResult == SaveResult.Success)
             {
                 botuser.BackgroundProfileUri = $"{Paths.SavedData}/BG{botuser.Id}.png";
             }
-            else if (res == SaveResult.BadUrl)
+            else if (saveResult == SaveResult.BadUrl)
             {
                 await ReplyAsync("", embed: "Nie wykryto obrazka! Upewnij się, że podałeś poprawny adres!".ToEmbedMessage(EMType.Error).Build());
                 return;
@@ -552,9 +554,10 @@ namespace Sanakan.DiscordBot.Modules
 
             await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"user-{botuser.Id}", "users" });
+            var userKey = string.Format(CacheKeys.User, botuser.Id);
+            _cacheManager.ExpireTag(userKey, CacheKeys.Users);
 
-            var content = $"Zmieniono tło profilu użytkownika: {Context.User.Mention}!".ToEmbedMessage(EMType.Success).Build();
+            var content = $"Zmieniono tło profilu użytkownika: {mention}!".ToEmbedMessage(EMType.Success).Build();
             await ReplyAsync("", embed: content);
         }
 

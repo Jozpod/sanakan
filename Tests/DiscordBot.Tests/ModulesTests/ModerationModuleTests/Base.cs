@@ -28,6 +28,13 @@ namespace DiscordBot.ModulesTests.ModerationModuleTests
 
         public Base()
         {
+            _discordConfigurationMock
+                .Setup(pr => pr.CurrentValue)
+                .Returns(new DiscordConfiguration
+                {
+
+                });
+
             _module = new(
                 _discordConfigurationMock.Object,
                 _helperServiceMock.Object,

@@ -51,7 +51,7 @@ namespace Sanakan.Services
             _imageProcessor = imageProcessor;
         }
 
-        public async Task RomoveUserColorAsync(SocketGuildUser user)
+        public async Task RomoveUserColorAsync(IGuildUser user)
         {
             if (user == null)
             {
@@ -59,20 +59,27 @@ namespace Sanakan.Services
             }
 
             var colors = FColorExtensions.FColors;
+            var guild = user.Guild;
+            var roles = guild.Roles;
             foreach (uint color in colors)
             {
-                var socketRole = user.Roles.FirstOrDefault(x => x.Name == color.ToString());
-                if (socketRole == null)
+                var role = roles
+                    .Join(user.RoleIds, pr => pr.Id, pr => pr, (src, dst) => src)
+                    .FirstOrDefault(x => x.Name == color.ToString());
+                if (role == null)
                 {
                     continue;
                 }
 
-                if (socketRole.Members.Count() == 1)
+                var members = (await guild.GetUsersAsync())
+                    .Where(x => x.RoleIds.Any(id => id == role.Id));
+
+                if (members.Count() == 1)
                 {
-                    await socketRole.DeleteAsync();
+                    await role.DeleteAsync();
                     return;
                 }
-                await user.RemoveRoleAsync(socketRole);
+                await user.RemoveRoleAsync(role);
             }
         }
 

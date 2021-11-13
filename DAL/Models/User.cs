@@ -128,19 +128,19 @@ namespace Sanakan.DAL.Models
         /// Specifies whether the user is blacklisted in Discord.
         /// </summary>
         public bool IsBlacklisted { get; set; }
-        
+
         /// <summary>
-        /// 
+        /// The amount of Ac coins.
         /// </summary>
         public long AcCount { get; set; }
-        
+
         /// <summary>
-        /// 
+        /// The amount of Tc coins.
         /// </summary>
         public long TcCount { get; set; }
         
         /// <summary>
-        /// 
+        /// The amount of Sc coins.
         /// </summary>
         public long ScCount { get; set; }
 

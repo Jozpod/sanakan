@@ -35,7 +35,7 @@ namespace Sanakan.Preconditions
                 return PreconditionResult.FromSuccess();
             }
 
-            var role = context.Guild.GetRole(gConfig.UserRoleId);
+            var role = context.Guild.GetRole(gConfig.UserRoleId.Value);
             
             if (role == null)
             {

@@ -1966,11 +1966,13 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks("karta 4212"), RequireWaifuCommandChannel]
         public async Task AddToWishlistAsync(
             [Summary("typ id (p - postać, t - tytuł, c - karta)")]WishlistObjectType type,
-            [Summary("id/WID")]ulong id)
+            [Summary("id/WID")]ulong objectId)
         {
             var response = "";
-            var bUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
-            if (bUser.GameDeck.Wishes.Any(x => x.Type == type && x.ObjectId == id))
+            var databaseUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
+            var wishList = databaseUser.GameDeck.Wishes;
+
+            if (wishList.Any(x => x.Type == type && x.ObjectId == objectId))
             {
                 await ReplyAsync("", embed: "Już posiadasz taki wpis w liście życzeń!".ToEmbedMessage(EMType.Error).Build());
                 return;
@@ -1978,21 +1980,21 @@ namespace Sanakan.DiscordBot.Modules
 
             var wishlistObject = new WishlistObject
             {
-                ObjectId = id,
+                ObjectId = objectId,
                 Type = type
             };
 
             switch (type)
             {
                 case WishlistObjectType.Card:
-                    var card = await _cardRepository.GetByIdAsync(id);
+                    var card = await _cardRepository.GetByIdAsync(objectId);
 
                     if (card == null)
                     {
                         await ReplyAsync("", embed: "Taka karta nie istnieje!".ToEmbedMessage(EMType.Error).Build());
                         return;
                     }
-                    if (card.GameDeckId == bUser.Id)
+                    if (card.GameDeckId == databaseUser.Id)
                     {
                         await ReplyAsync("", embed: "Już posiadasz taką kartę!".ToEmbedMessage(EMType.Error).Build());
                         return;
@@ -2002,7 +2004,7 @@ namespace Sanakan.DiscordBot.Modules
                     break;
 
                 case WishlistObjectType.Title:
-                    var animeMangaInfoResult = await _shindenClient.GetAnimeMangaInfoAsync(id);
+                    var animeMangaInfoResult = await _shindenClient.GetAnimeMangaInfoAsync(objectId);
 
                     if (animeMangaInfoResult.Value == null)
                     {
@@ -2014,7 +2016,7 @@ namespace Sanakan.DiscordBot.Modules
                     break;
 
                 case WishlistObjectType.Character:
-                    var characterResult = await _shindenClient.GetCharacterInfoAsync(id);
+                    var characterResult = await _shindenClient.GetCharacterInfoAsync(objectId);
 
                     if (characterResult.Value == null)
                     {
@@ -2027,11 +2029,12 @@ namespace Sanakan.DiscordBot.Modules
                     break;
             }
 
-            bUser.GameDeck.Wishes.Add(wishlistObject);
+            wishList.Add(wishlistObject);
 
             await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"user-{bUser.Id}", "users" });
+            var userKey = string.Format(CacheKeys.User, databaseUser.Id);
+            _cacheManager.ExpireTag(userKey, CacheKeys.Users);
 
             await ReplyAsync("", embed: $"{Context.User.Mention} dodał do listy życzeń: {response}".ToEmbedMessage(EMType.Success).Build());
         }

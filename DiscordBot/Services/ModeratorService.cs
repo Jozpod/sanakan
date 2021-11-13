@@ -87,12 +87,12 @@ namespace Sanakan.Services
                 config.Prefix ?? "--",
                 config.SupervisionEnabled.GetYesNo(),
                 config.ChaosModeEnabled.GetYesNo(),
-                guild.GetRole(config.AdminRoleId.Value)?.Mention ?? "--",
-                guild.GetRole(config.UserRoleId)?.Mention ?? "--",
+                config.AdminRoleId.HasValue ? guild.GetRole(config.AdminRoleId.Value)?.Mention : "--",
+                config.UserRoleId.HasValue ? guild.GetRole(config.UserRoleId.Value)?.Mention : "--",
                 guild.GetRole(config.MuteRoleId)?.Mention ?? "--",
                 guild.GetRole(config.ModMuteRoleId)?.Mention ?? "--",
                 guild.GetRole(config.GlobalEmotesRoleId)?.Mention ?? "--",
-                guild.GetRole(config.WaifuRoleId)?.Mention ?? "--",
+                config.WaifuRoleId.HasValue ? guild.GetRole(config.WaifuRoleId.Value)?.Mention : "--",
                 channels.FirstOrDefault(pr => pr.Id == waifuConfiguration?.MarketChannelId)?.Mention ?? "--",
                 channels.FirstOrDefault(pr => pr.Id == waifuConfiguration?.SpawnChannelId)?.Mention ?? "--",
                 channels.FirstOrDefault(pr => pr.Id == waifuConfiguration?.DuelChannelId)?.Mention ?? "--",
@@ -413,7 +413,7 @@ namespace Sanakan.Services
             }.Build();
         }
 
-        public Embed BuildTodo(IMessage message, SocketGuildUser who)
+        public Embed BuildTodo(IMessage message, IGuildUser who)
         {
             string image = "";
             if (message.Attachments.Count > 0)

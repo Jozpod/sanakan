@@ -19,18 +19,31 @@ namespace Sanakan.DiscordBot.Supervisor.Tests
     public class UserJoinedGuildSupervisorTests
     {
         private readonly IUserJoinedGuildSupervisor _userJoinedGuildSupervisor;
+        private readonly Mock<IOptionsMonitor<SupervisorConfiguration>> _supervisorConfigurationMock = new(MockBehavior.Strict);
         private readonly Mock<ISystemClock> _systemClockMock = new(MockBehavior.Strict);
 
         public UserJoinedGuildSupervisorTests()
         {
-            _userJoinedGuildSupervisor = new UserJoinedGuildSupervisor(_systemClockMock.Object);
+            _supervisorConfigurationMock
+               .Setup(pr => pr.CurrentValue)
+               .Returns(new SupervisorConfiguration
+               {
+                   MessagesLimit = 12,
+                   MessageLimit = 6,
+                   MessageCommandLimit = 2,
+                   SameUsernameLimit = 3,
+               });
+
+            _userJoinedGuildSupervisor = new UserJoinedGuildSupervisor(
+                _supervisorConfigurationMock.Object,
+                _systemClockMock.Object);
         }
 
         [TestMethod]
         public async Task Should_Return_Users()
         {
             var guildId = 1ul;
-            var suspects = Enumerable.Range(1, 4).Select(pr => ("username", (ulong)pr));
+            var suspects = Enumerable.Range(1, 4).Select(pr => ("username", (ulong)pr)).ToList();
             IEnumerable<ulong> usersToBan;
 
             _systemClockMock

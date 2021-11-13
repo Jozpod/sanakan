@@ -57,16 +57,28 @@ dotnet run
 | **[`ModeratorPeriod`](#ModeratorPeriod)** | `{String\|TimeSpan}` | `00:30:00` | The time interval between invocations of <>. |
 | **[`SupervisorDueTime`](#SupervisorDueTime)** | `{String\|TimeSpan}` | `00:05:00` | The inital amount of time to delay before <>. |
 | **[`SupervisorPeriod`](#SupervisorPeriod)** | `{String\|TimeSpan}` | `00:05:00` | The time interval between invocations of <>. |
+
 ### Discord
 |                   Name                    |         Type         |                 Default                 | Description                                                       |
 | :---------------------------------------: | :------------------: | :-------------------------------------: | :---------------------------------------------------------------- |
 | **[`Prefix`](#Prefix)** | `{String}` | `s` | Run commands on Discord only when they start with given prefix. |
 | **[`BotToken`](#BotToken)**  |  `{String}` | `` | The discord bot token. |
-|  **[`FloodSpamSupervisionEnabled`](#SupervisorEnabled)**  | `{Boolean}` | `true` | Enables flood/spam supervision |
+| **[`FloodSpamSupervisionEnabled`](#SupervisorEnabled)**  | `{Boolean}` | `true` | Enables flood/spam supervision |
 | **[`RestartWhenDisconnected - Demonization`](#RestartWhenDisconnected)** | `{Boolean}` | `true` | Restarts the Discord socket client when it is disconnected. |
 | **[`SafariEnabled`](#SafariEnabled)** | `{Boolean}`  | `true` | If enabled it allows generating cards from user messages. |
 | **[`AllowedToDebug`](#AllowedToDebug)** | `{Array}` | `[]` | The list of Discord user identifiers which can access diagnostics. |
 | **[`BlacklistedGuilds`](#BlacklistedGuilds)** | `{Array}` | `[]` | The list of Discord guild ( servers ) identifiers to blacklist. |
+
+### Supervisor
+|                   Name                    |         Type         |                 Default                 | Description                                                       |
+| :---------------------------------------: | :------------------: | :-------------------------------------: | :---------------------------------------------------------------- |
+| **[`MessagesLimit`](#MessagesLimit)** | `{Number}` | `12` | Run commands on Discord only when they start with given prefix. |
+| **[`MessageLimit`](#MessageLimit)**  |  `{Number}` | `6` | The maximum amount of the same message user is allowed to send in a short time frame. |
+| **[`MessageCommandLimit`](#MessageCommandLimit)**  | `{Number}` | `2` | Additional amount of messages user can send when message is command. |
+| **[`MessageExpiry`](#MessageExpiry)**  | `{String\|TimeSpan}` | `00:02:00` | Specifies amount of time after which user message won't be analyzer nor be involved in decision mechanism. |
+| **[`SameUsernameLimit`](#SameUsernameLimit)**  | `{Number}` | `3` | The maximum amount of users which can join guild with the same username. |
+| **[`TimeIntervalBetweenMessages`](#TimeIntervalBetweenMessages)**  | `{String\|TimeSpan}` | `00:00:05` | Allowed time frame between sent messages by user. |
+| **[`TimeIntervalBetweenUserGuildJoins`](#TimeIntervalBetweenUserGuildJoins)**  | `{String\|TimeSpan}` | `00:02:00` | Allowed time frame between events where user joins guild. |
 
 ### Experience
 |                   Name                    |         Type         |                 Default                 | Description                                                       |
@@ -76,9 +88,18 @@ dotnet run
 | **[`MinPerMessage`](#MinPerMessage)**  | `{Number}` | 0.00005 | The minimum amount of experience points user receives per message. |
 | **[`MaxPerMessage`](#MaxPerMessage)** | `{Number}` | 5 | The maximum amount of experience points user receives per message. |
 
+### Imaging
+|                   Name                    |         Type         |                 Default                 | Description                                                       |
+| :---------------------------------------: | :------------------: | :-------------------------------------: | :---------------------------------------------------------------- |
+| **[`CharacterImageWidth`](#CharacterImageWidth)** | `{Number}` | `475` | The width of the character picture. |
+| **[`CharacterImageHeight`](#CharacterImageHeight)** | `{Number}` | `667` | The height of the character picture. |
+| **[`StatsImageWidth`](#StatsImageHeight)** | `{Number}` | `120` | The width of the stats picture. |
+| **[`StatsImageHeight`](#StatsImageHeight)** | `{Number}` | `40` | The height of the stats picture. |
+
 ### Shinden API
 |                   Name                    |         Type         |                 Default                 | Description                                                       |
 | :---------------------------------------: | :------------------: | :-------------------------------------: | :---------------------------------------------------------------- |
+| **[`BaseUrl`](#BaseUrl)** | `{String}` | `` | The Shinden API base url. |
 | **[`Token`](#Token)** | `{String}` | `` | The API token which is supplied in certain requests sent to Shinden API. |
 | **[`UserAgent`](#UserAgent)**  | `{String}` | `` |  Lets servers and network peers identify the application, operating system, vendor, and/or version of the request. |
 | **[`Marmolade`](#Marmolade)**  | `{Boolean}` | `` | Mysterious HTTP header used for Shinden API |

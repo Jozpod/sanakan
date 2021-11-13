@@ -1,5 +1,4 @@
 ﻿using Discord.WebSocket;
-using DiscordBot.Services.PocketWaifu.Abstractions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -22,6 +21,7 @@ using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot;
 using Sanakan.DiscordBot.Builder;
 using Sanakan.DiscordBot.Services;
+using Sanakan.DiscordBot.Supervisor;
 using Sanakan.Game.Builder;
 using Sanakan.Services;
 using Sanakan.Services.Commands;
@@ -126,7 +126,7 @@ namespace Sanakan
             
             services.AddDiscordBotServices();
             services.AddSingleton(Encoding.UTF8);
-            services.AddResourcekManager();
+            services.AddResourceManager();
             services.AddRandomNumberGenerator();
             services.AddFileSystem();
             services.AddSystemClock();
@@ -138,18 +138,12 @@ namespace Sanakan
             services.AddShindenApi();
             services.AddGameServices();
             services.AddTimer();
+            services.AddSupervisorServices();
             services.AddSessionManager();
+            services.AddImageResources();
+            services.AddFontResources();
             services.AddCache(Configuration.GetSection("Cache"));
-            services.Configure<SanakanConfiguration>(Configuration);
-            services.Configure<DaemonsConfiguration>(Configuration.GetSection("Daemons"));
-            services.Configure<DatabaseConfiguration>(Configuration.GetSection("Database"));
-            services.Configure<LocaleConfiguration>(Configuration.GetSection("Locale"));
-            services.Configure<DiscordConfiguration>(Configuration.GetSection("Discord"));
-            services.Configure<ShindenApiConfiguration>(Configuration.GetSection("ShindenApi"));
-            services.Configure<ApiConfiguration>(Configuration.GetSection("ShindenApi"));
-            services.Configure<ExperienceConfiguration>(Configuration.GetSection("Experience"));
-            services.Configure<ApiConfiguration>(Configuration.GetSection("SanakanApi"));
-            services.Configure<List<RichMessageConfig>>(Configuration.GetSection("RMConfig"));
+            services.AddConfiguration(Configuration);
             services.AddSanakanDbContext(Configuration);
             services.AddHostedService<TaskQueueHostedService>();
             services.AddHostedService<MemoryUsageHostedService>();

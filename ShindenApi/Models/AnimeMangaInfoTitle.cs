@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using Sanakan.ShindenApi.Models;
 using Sanakan.ShindenApi.Converters;
 using Sanakan.ShindenApi.Models.Enums;
+using System.Linq;
 
 namespace Sanakan.ShindenApi.Models
 {
@@ -159,13 +160,14 @@ namespace Sanakan.ShindenApi.Models
         public double? TotalRating => RatingTotalSum == 0 ? 0 : RatingTotalCount / RatingTotalSum;
 
         [JsonIgnore]
-        public IEnumerable<AnimeMangaInfoEntity> Tags => new[] {
-            TagCategories.Entity,
-            TagCategories.Source,
-            TagCategories.Studio,
-            TagCategories.Genre,
-            TagCategories.Place,
-            TagCategories.Tag,
-        };
+        public IEnumerable<AnimeMangaInfoEntity> Tags => TagCategories == null ? Enumerable.Empty<AnimeMangaInfoEntity>() : 
+            new[] {
+                TagCategories.Entity,
+                TagCategories.Source,
+                TagCategories.Studio,
+                TagCategories.Genre,
+                TagCategories.Place,
+                TagCategories.Tag,
+            };
     }
 }

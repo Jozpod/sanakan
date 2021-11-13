@@ -2,8 +2,8 @@
 {
     public enum SaveResult
     {
-        Error,
-        BadUrl,
-        Success
+        Error = 0,
+        BadUrl = 1,
+        Success = 2
     }
 }

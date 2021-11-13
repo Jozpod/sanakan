@@ -334,7 +334,7 @@ namespace Sanakan.Web.HostedService
             return;
         }
 
-        private async Task BotLeftGuildAsync(SocketGuild guild)
+        private async Task BotLeftGuildAsync(IGuild guild)
         {
             using var serviceScope = _serviceScopeFactory.CreateScope();
             var guildConfigRepository = serviceScope.ServiceProvider.GetRequiredService<IGuildConfigRepository>();

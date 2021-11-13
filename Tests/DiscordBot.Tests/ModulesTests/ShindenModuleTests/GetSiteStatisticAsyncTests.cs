@@ -15,7 +15,7 @@ namespace DiscordBot.ModulesTests.ShindenModuleTests
     {
 
         [TestMethod]
-        public async Task Should_Remove_Person()
+        public async Task Should_Get_Site_Statistics()
         {
 
             var shindenUserId = 1ul;

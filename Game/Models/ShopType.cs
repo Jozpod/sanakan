@@ -2,8 +2,8 @@
 {
     public enum ShopType
     {
-        Normal,
-        Pvp,
-        Activity
+        Normal = 0,
+        Pvp = 1,
+        Activity = 2
     }
 }

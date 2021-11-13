@@ -127,7 +127,7 @@ namespace Sanakan.DiscordBot.Modules
 
             if (config == null)
             {
-                await ReplyAsync("", embed: "Serwer nie jest poprawnie skonfigurowany.".ToEmbedMessage(EMType.Bot).Build());
+                await ReplyAsync("", embed: Strings.ServerNotConfigured.ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
 

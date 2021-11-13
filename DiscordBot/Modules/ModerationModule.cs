@@ -13,6 +13,7 @@ using Sanakan.DiscordBot;
 using Sanakan.DiscordBot.Abstractions;
 using Sanakan.DiscordBot.Abstractions.Extensions;
 using Sanakan.DiscordBot.Abstractions.Models;
+using Sanakan.DiscordBot.Resources;
 using Sanakan.DiscordBot.Services.Abstractions;
 using Sanakan.Extensions;
 using Sanakan.Preconditions;
@@ -208,7 +209,7 @@ namespace Sanakan.DiscordBot.Modules
 
             var guild = Context.Guild;
             var notifChannel = await guild.GetChannelAsync(config.NotificationChannelId) as ITextChannel;
-            var userRole = guild.GetRole(config.UserRoleId);
+            var userRole = guild.GetRole(config.UserRoleId.Value);
             var muteRole = guild.GetRole(config.MuteRoleId);
 
             if (muteRole == null)
@@ -262,14 +263,14 @@ namespace Sanakan.DiscordBot.Modules
 
             if (config == null)
             {
-                await ReplyAsync("", embed: "Serwer nie jest poprawnie skonfigurowany.".ToEmbedMessage(EMType.Bot).Build());
+                await ReplyAsync("", embed: Strings.ServerNotConfigured.ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
 
             
             var notifChannel = guild.GetChannelAsync(config.NotificationChannelId) as ITextChannel;
             var muteModRole = guild.GetRole(config.ModMuteRoleId);
-            var userRole = guild.GetRole(config.UserRoleId);
+            var userRole = guild.GetRole(config.UserRoleId.Value);
             var muteRole = guild.GetRole(config.MuteRoleId);
 
             if (muteRole == null)
@@ -313,7 +314,7 @@ namespace Sanakan.DiscordBot.Modules
             var config = await _guildConfigRepository.GetCachedGuildFullConfigAsync(Context.Guild.Id);
             if (config == null)
             {
-                await ReplyAsync("", embed: "Serwer nie jest poprawnie skonfigurowany.".ToEmbedMessage(EMType.Bot).Build());
+                await ReplyAsync("", embed: Strings.ServerNotConfigured.ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
 
@@ -1368,7 +1369,7 @@ namespace Sanakan.DiscordBot.Modules
 
             if (config == null)
             {
-                await ReplyAsync("", embed: "Serwer nie jest poprawnie skonfigurowany.".ToEmbedMessage(EMType.Bot).Build());
+                await ReplyAsync("", embed: Strings.ServerNotConfigured.ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
 
@@ -1387,7 +1388,7 @@ namespace Sanakan.DiscordBot.Modules
             }
 
             await Context.Message.AddReactionAsync(Emojis.HandSign);
-            var content = _moderatorService.BuildTodo(message, Context.User as SocketGuildUser);
+            var content = _moderatorService.BuildTodo(message, Context.User as IGuildUser);
             await todoChannel.SendMessageAsync(message.GetJumpUrl(), embed: content);
         }
 
@@ -1454,7 +1455,7 @@ namespace Sanakan.DiscordBot.Modules
         [Command("check")]
         [Summary("sprawdza użytkownika")]
         [Remarks("Karna"), RequireAdminRole]
-        public async Task CheckUserAsync([Summary("użytkownik")]SocketGuildUser user)
+        public async Task CheckUserAsync([Summary("użytkownik")]IGuildUser user)
         {
             var report = "**Globalki:** ✅\n\n";
             var guildConfig = await _guildConfigRepository.GetCachedGuildFullConfigAsync(user.Guild.Id);
@@ -1463,7 +1464,7 @@ namespace Sanakan.DiscordBot.Modules
 
             if (globalRole != null)
             {
-                if (user.Roles.Contains(globalRole))
+                if (user.RoleIds.Contains(globalRole.Id))
                 {
                     var sub = duser.TimeStatuses.FirstOrDefault(x => x.Type == StatusType.Globals && x.GuildId == user.Guild.Id);
                     if (sub == null)
@@ -1481,7 +1482,13 @@ namespace Sanakan.DiscordBot.Modules
 
             var kolorRep = $"**Kolor:** ✅\n\n";
             var colorRoles = FColorExtensions.FColors.Cast<uint>();
-            if (user.Roles.Any(x => colorRoles.Any(c => c.ToString() == x.Name)))
+            var guild = user.Guild;
+            var roles = guild.Roles;
+
+            var role = roles
+                .Join(user.RoleIds, pr => pr.Id, pr => pr, (src, dst) => src);
+
+            if (role.Any(x => colorRoles.Any(c => c.ToString() == x.Name)))
             {
                 var sub = duser.TimeStatuses
                     .FirstOrDefault(x => x.Type == StatusType.Color
@@ -1501,14 +1508,14 @@ namespace Sanakan.DiscordBot.Modules
             report += kolorRep;
 
             var nickRep = $"**Nick:** ✅";
-            if (guildConfig.UserRoleId != 0)
+            if (guildConfig.UserRoleId.HasValue)
             {
-                var userRole = user.Guild.GetRole(guildConfig.UserRoleId);
-                if (userRole != null && user.Roles.Contains(userRole))
+                var userRole = user.Guild.GetRole(guildConfig.UserRoleId.Value);
+                if (userRole != null && user.RoleIds.Contains(userRole.Id))
                 {
                     var realNick = user.Nickname ?? user.Username;
 
-                    if (duser.ShindenId != 0)
+                    if (duser.ShindenId.HasValue)
                     {
                         var userResult = await _shindenClient.GetUserInfoAsync(duser.ShindenId.Value);
 
@@ -1645,7 +1652,7 @@ namespace Sanakan.DiscordBot.Modules
             var user = await Context.Guild.GetUserAsync(raport.User);
             var notifyChannel = await guild.GetChannelAsync(config.NotificationChannelId) as IMessageChannel;
             var reportChannel = await guild.GetChannelAsync(config.RaportChannelId) as IMessageChannel;
-            var userRole = guild.GetRole(config.UserRoleId);
+            var userRole = guild.GetRole(config.UserRoleId.Value);
             var muteRole = guild.GetRole(config.MuteRoleId);
 
             if (muteRole == null)
@@ -1785,7 +1792,8 @@ namespace Sanakan.DiscordBot.Modules
         {
             if (command == null)
             {
-                await ReplyAsync(_helperService.GivePrivateHelp("Moderacja"));
+                var info = _helperService.GivePrivateHelp("Moderacja");
+                await ReplyAsync(info);
             }
 
             try

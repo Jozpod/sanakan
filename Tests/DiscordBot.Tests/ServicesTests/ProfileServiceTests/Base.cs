@@ -8,6 +8,7 @@ using Sanakan.ShindenApi;
 using Sanakan.Common;
 using Sanakan.Game.Services;
 using Sanakan.DiscordBot.Services.Abstractions;
+using Sanakan.Game.Services.Abstractions;
 
 namespace DiscordBot.ServicesTests.ProfileServiceTests
 {

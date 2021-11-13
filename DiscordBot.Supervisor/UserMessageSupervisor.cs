@@ -14,22 +14,23 @@ namespace Sanakan.DiscordBot.Supervisor
     internal class UserMessageSupervisor : IUserMessageSupervisor
     {
         private readonly IOptionsMonitor<DiscordConfiguration> _discordConfiguration;
+        private readonly IOptionsMonitor<SupervisorConfiguration> _supervisorConfiguration;
         private readonly ISystemClock _systemClock;
         private readonly IFileSystem _fileSystem;
         private readonly IDictionary<string, UserEntry> _entries;
         private IEnumerable<string> _disallowedUrls;
         private readonly TimeSpan _messageExpiry;
         private readonly TimeSpan _timeIntervalBetweenMessages;
-        public readonly Regex _urlsRegex;
-
-        public const int MessagesLimit = 12;
-        public const int MessageLimit = 6;
+        private readonly Regex _urlsRegex;
 
         public UserMessageSupervisor(
-            IOptionsMonitor<DiscordConfiguration> _discordConfiguration,
+            IOptionsMonitor<DiscordConfiguration> discordConfiguration,
+            IOptionsMonitor<SupervisorConfiguration> supervisorConfiguration,
             ISystemClock systemClock,
             IFileSystem fileSystem)
         {
+            _discordConfiguration = discordConfiguration;
+            _supervisorConfiguration = supervisorConfiguration;
             _entries = new Dictionary<string, UserEntry>(100);
             _systemClock = systemClock;
             _fileSystem = fileSystem;
@@ -38,8 +39,8 @@ namespace Sanakan.DiscordBot.Supervisor
                 RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
             _disallowedUrls = _fileSystem.ReadAllLinesAsync("disallowed-urls.txt").GetAwaiter().GetResult();
-            _messageExpiry = TimeSpan.FromMinutes(2);
-            _timeIntervalBetweenMessages = TimeSpan.FromSeconds(5);
+            _messageExpiry = supervisorConfiguration.CurrentValue.MessageExpiry;
+            _timeIntervalBetweenMessages = supervisorConfiguration.CurrentValue.TimeIntervalBetweenMessages;
         }
 
         internal class MessageEntry
@@ -56,17 +57,6 @@ namespace Sanakan.DiscordBot.Supervisor
             public IDictionary<int, MessageEntry> Messages { get; set; }
             public DateTime ModifiedOn { get; set; }
         }
-
-        //public bool HasExpired(ulong guildId, ulong userId)
-        //{
-        //    var key = $"{guildId}-{userId}";
-        //    if (_entries.TryGetValue(key, out var entry))
-        //    {
-        //        return (entry.ModifiedOn - _systemClock.UtcNow) > _messageExpiry;
-        //    }
-
-        //    return false;
-        //}
 
         public SupervisorAction MakeDecision(ulong guildId, ulong userId, string content, bool lessSeverePunishment)
         {
@@ -141,8 +131,10 @@ namespace Sanakan.DiscordBot.Supervisor
                 _entries[key] = userEntry;
             }
 
-            var userMessageLimit = MessagesLimit;
-            var messageLimit = MessageLimit;
+            var configuration = _supervisorConfiguration.CurrentValue;
+            var userMessageLimit = configuration.MessagesLimit;
+            var messageLimit = configuration.MessageLimit;
+            var commandLimit = configuration.MessageCommandLimit;
 
             if (_discordConfiguration.CurrentValue.BanForUrlSpam)
             {
@@ -151,8 +143,8 @@ namespace Sanakan.DiscordBot.Supervisor
 
             if (messageEntry.IsCommand)
             {
-                userMessageLimit += 2;
-                messageLimit += 2;
+                userMessageLimit += commandLimit;
+                messageLimit += commandLimit;
             }
 
             if(!lessSeverePunishment)

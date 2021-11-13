@@ -256,6 +256,15 @@ namespace Sanakan.DiscordBot.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Serwer nie jest poprawnie skonfigurowany..
+        /// </summary>
+        internal static string ServerNotConfigured {
+            get {
+                return ResourceManager.GetString("ServerNotConfigured", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to **Nastawa** / **Wartośći** 
         ///Info `(wypisywanie informacji)`
         ///Mnożnik / `1`, `2`, `3`
