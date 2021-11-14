@@ -10,45 +10,34 @@ using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Sanakan.ShindenApi.Models;
+using Moq.Protected;
+using System.Threading;
+using System.Net;
+using System.IO;
+using FluentAssertions;
+using System.Security.Cryptography;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 
 namespace Sanakan.Game.Tests
 {
     [TestClass]
     public class GetLevelUpBadgeAsyncTests : Base
     {
-
         [TestMethod]
         public async Task Should_Generate_Level_Up_Badge()
         {
             var name = "test-user";
             var level = 20ul;
-            var avatarUrl = "avatar-url";
+            var avatarUrl = "https://test.com/avatar-url";
             var color = Discord.Color.Blue;
 
-            var badge = await _imageProcessor.GetLevelUpBadgeAsync(name, level, avatarUrl, color);
-            //badge.Save();
-        }
+            MockHttpGetImage("TestData/card-image.png");
 
-        [TestMethod]
-        public async Task Should_Generate_User_Profile()
-        {
-            var shindenUser = new UserInfo
-            {
+            var badgeImage = await _imageProcessor.GetLevelUpBadgeAsync(name, level, avatarUrl, color);
+            badgeImage.Should().NotBeNull();
 
-            };
-            var databaseUser = new User(1, DateTime.UtcNow);
-            var avatarUrl = "avatar-url";
-            var color = Discord.Color.Blue;
-            var topPosition = 10;
-            var nickname = "nickname";
-
-            var test = await _imageProcessor.GetUserProfileAsync(
-                shindenUser,
-                databaseUser,
-                avatarUrl,
-                topPosition,
-                nickname,
-                color);
+            await ShouldBeEqual("TestData/expected-badge.png", badgeImage);
         }
     }
 }

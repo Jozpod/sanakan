@@ -46,7 +46,7 @@ namespace Sanakan.Web.Controllers
                 var result = new Commands
                 {
                     Prefix = _config.CurrentValue.Prefix,
-                    Modules = GetInfoAboutModules(_helperService.PublicModulesInfo)
+                    Modules = GetInfoAboutModules(_helperService.GetPublicModules()),
                 };
 
                 return Ok(result);
@@ -60,84 +60,96 @@ namespace Sanakan.Web.Controllers
             }
         }
 
-        private List<Module> GetInfoAboutModules(IEnumerable<ModuleInfo> modules)
+        private List<Module> GetInfoAboutModules(IEnumerable<ModuleInfo> moduleInfos)
         {
-            var mod = new List<Module>();
-            foreach (var item in modules)
+            var listOfModules = new List<Module>();
+            foreach (var moduleInfo in moduleInfos)
             {
-                var mInfo = new Module
+                var summaryModuleInfo = new Module
                 {
-                    Name = item.Name,
+                    Name = moduleInfo.Name,
                     SubModules = new List<SubModule>()
                 };
 
-                if (mod.Any(x => x.Name.Equals(item.Name)))
+                if (listOfModules.Any(x => x.Name.Equals(moduleInfo.Name)))
                 {
-                    mInfo = mod.First(x => x.Name.Equals(item.Name));
+                    summaryModuleInfo = listOfModules.First(x => x.Name.Equals(moduleInfo.Name));
                 }
                 else
                 {
-                    mod.Add(mInfo);
+                    listOfModules.Add(summaryModuleInfo);
                 }
+
+                var alias = moduleInfo.Aliases.FirstOrDefault();
 
                 var subMInfo = new SubModule()
                 {
-                    Prefix = item.Aliases.FirstOrDefault(),
+                    Prefix = alias,
                     Commands = new List<Command>(),
                     PrefixAliases = new List<string>()
                 };
 
-                foreach(var ali in item.Aliases)
+                foreach(var ali in moduleInfo.Aliases)
                 {
                     if (!ali.Equals(subMInfo.Prefix))
-                        subMInfo.PrefixAliases.Add(ali);
-                }
-
-                foreach (var cmd in item.Commands)
-                {
-                    if (!string.IsNullOrEmpty(cmd.Name))
                     {
-                        var cc = new Command()
-                        {
-                            Name = cmd.Name,
-                            Example = cmd.Remarks,
-                            Description = cmd.Summary,
-                            Aliases = new List<string>(),
-                            Attributes = new List<Api.Models.CommandAttribute>(),
-                        };
-
-                        foreach(var atr in cmd.Parameters)
-                        {
-                            cc.Attributes.Add(new Api.Models.CommandAttribute
-                            {
-                                Name = atr.Name,
-                                Description = atr.Summary
-                            });
-                        }
-
-                        foreach(var al in cmd.Aliases)
-                        {
-                            var alss = GetBoreboneCmdAlias(subMInfo.PrefixAliases, subMInfo.Prefix, al);
-                            if (!cc.Aliases.Any(x => x.Equals(alss)))
-                                cc.Aliases.Add(alss);
-                        }
-                        subMInfo.Commands.Add(cc);
+                        subMInfo.PrefixAliases.Add(ali);
                     }
                 }
-                mInfo.SubModules.Add(subMInfo);
+
+                foreach (var command in moduleInfo.Commands)
+                {
+                    if (string.IsNullOrEmpty(command.Name))
+                    {
+                        continue;
+                    }
+
+                    var commandSummary = new Command()
+                    {
+                        Name = command.Name,
+                        Example = command.Remarks,
+                        Description = command.Summary,
+                        Aliases = new List<string>(),
+                        Attributes = new List<Api.Models.CommandAttribute>(),
+                    };
+
+                    foreach (var parameter in command.Parameters)
+                    {
+                        commandSummary.Attributes.Add(new Api.Models.CommandAttribute
+                        {
+                            Name = parameter.Name,
+                            Description = parameter.Summary
+                        });
+                    }
+
+                    foreach (var commandAlias in command.Aliases)
+                    {
+                        var parsedAlias = GetBoreboneCommandAlias(subMInfo.PrefixAliases, subMInfo.Prefix, commandAlias);
+                        if (!commandSummary.Aliases.Any(x => x.Equals(parsedAlias)))
+                        {
+                            commandSummary.Aliases.Add(parsedAlias);
+                        }
+                    }
+                    subMInfo.Commands.Add(commandSummary);
+                }
+                summaryModuleInfo.SubModules.Add(subMInfo);
             }
-            return mod;
+            return listOfModules;
         }
 
-        private string GetBoreboneCmdAlias(List<string> moduleAli, string modulePrex, string cmdAlias)
+        private string GetBoreboneCommandAlias(List<string> moduleAli, string modulePrex, string commandAlias)
         {
             if (!string.IsNullOrEmpty(modulePrex))
-                cmdAlias = cmdAlias.Replace(modulePrex + " ", "");
+            {
+                commandAlias = commandAlias.Replace(modulePrex + " ", "");
+            }
 
-            foreach(var ali in moduleAli)
-                cmdAlias  = cmdAlias.Replace(ali + " ", "");
+            foreach (var ali in moduleAli)
+            {
+                commandAlias = commandAlias.Replace(ali + " ", "");
+            }
 
-            return cmdAlias;
+            return commandAlias;
         }
     }
 }

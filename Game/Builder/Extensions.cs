@@ -14,6 +14,7 @@ namespace Sanakan.Game.Builder
     {
         public static IServiceCollection AddGameServices(this IServiceCollection services)
         {
+            services.AddHttpClient();
             services.AddSingleton<IImageProcessor, ImageProcessor>();
             services.AddSingleton<IWaifuService, WaifuService>();
             services.AddSingleton<IEventsService, EventsService>();

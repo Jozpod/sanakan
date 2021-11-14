@@ -10,13 +10,16 @@ namespace Sanakan.DiscordBot.Services.Abstractions
 {
     public interface IHelperService
     {
-        IEnumerable<ModuleInfo> PublicModulesInfo { get; }
+        IEnumerable<ModuleInfo> GetPublicModules();
+        string GetCommandInfo(CommandInfo commandInfo, string? prefix = null);
+        void AddPublicModuleInfo(IEnumerable<ModuleInfo> moduleInfos);
+        void AddPrivateModuleInfo(params (string, ModuleInfo)[] moduleInfos);
         string GivePrivateHelp(string moduleName);
         string GivePublicHelp();
-        string GiveHelpAboutPrivateCmd(string moduleName, string command, string prefix, bool throwEx = true);
-        IEmbed GetInfoAboutUser(SocketGuildUser user);
+        string? GiveHelpAboutPrivateCommand(string moduleName, string command, string prefix, bool throwEx = true);
+        IEmbed GetInfoAboutUser(IGuildUser user);
         Task<IEmbed> GetInfoAboutServerAsync(IGuild guild);
         IEmbed BuildRaportInfo(IMessage message, string reportAuthor, string reason, ulong reportId);
-        string GiveHelpAboutPublicCmd(string command, string prefix, bool admin = false, bool dev = false);
+        string GiveHelpAboutPublicCommand(string command, string prefix, bool admin = false, bool dev = false);
     }
 }

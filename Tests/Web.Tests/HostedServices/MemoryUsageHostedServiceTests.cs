@@ -33,7 +33,7 @@ namespace Sanakan.Web.Test.HostedServices
         private readonly FakeTimer _fakeTimer = new ();
         private readonly Mock<ITaskManager> _taskManagerMock = new(MockBehavior.Strict);
         private readonly Mock<IDatabaseFacade> _databaseFacadeMock = new(MockBehavior.Strict);
-        private readonly Process _process = new();
+        private readonly Process _process = Process.GetCurrentProcess();
 
         public MemoryUsageHostedServiceTests()
         {
@@ -45,6 +45,15 @@ namespace Sanakan.Web.Test.HostedServices
             _operatingSystemMock
                 .Setup(pr => pr.GetCurrentProcess())
                 .Returns(_process);
+
+            _databaseFacadeMock
+                .Setup(pr => pr.EnsureCreatedAsync(It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
+
+            _taskManagerMock
+                .Setup(pr => pr.Delay(
+                    It.IsAny<TimeSpan>(),
+                    It.IsAny<CancellationToken>()));
 
             _service = new MemoryUsageHostedService(
                 NullLogger<MemoryUsageHostedService>.Instance,

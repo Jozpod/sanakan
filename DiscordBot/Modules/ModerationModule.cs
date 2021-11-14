@@ -4,6 +4,7 @@ using Discord.WebSocket;
 using DiscordBot.Services;
 using Microsoft.Extensions.Options;
 using Sanakan.Common;
+using Sanakan.Common.Cache;
 using Sanakan.Common.Configuration;
 using Sanakan.Common.Extensions;
 using Sanakan.DAL.Models;
@@ -362,7 +363,7 @@ namespace Sanakan.DiscordBot.Modules
             config.Prefix = prefix;
             await _guildConfigRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"config-{guildId}" });
+            _cacheManager.ExpireTag(CacheKeys.GuildConfig(guildId));
 
             var content = $"Ustawiono `{prefix ?? "domyślny"}` prefix.".ToEmbedMessage(EMType.Success).Build();
             await ReplyAsync("", embed: content);
@@ -376,7 +377,8 @@ namespace Sanakan.DiscordBot.Modules
             [Summary("wiadomość (opcjonalne, off - wyłączenie)")]
             [Remainder]string? messsage = null)
         {
-            var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(Context.Guild.Id);
+            var guildId = Context.Guild.Id;
+            var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(guildId);
             if (messsage == null)
             {
                 await ReplyAsync("", embed: $"**Wiadomość powitalna:**\n\n{config?.WelcomeMessage ?? "off"}".ToEmbedMessage(EMType.Bot).Build());
@@ -392,7 +394,7 @@ namespace Sanakan.DiscordBot.Modules
             config.WelcomeMessage = messsage;
             await _guildConfigRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });
+            _cacheManager.ExpireTag(CacheKeys.GuildConfig(guildId));
 
             await ReplyAsync("", embed: $"Ustawiono `{messsage}` jako wiadomość powitalną.".ToEmbedMessage(EMType.Success).Build());
         }
@@ -405,7 +407,8 @@ namespace Sanakan.DiscordBot.Modules
             [Summary("wiadomość (opcjonalne, off - wyłączenie)")]
             [Remainder]string? messsage = null)
         {
-            var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(Context.Guild.Id);
+            var guildId = Context.Guild.Id;
+            var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(guildId);
 
             if (messsage == null)
             {
@@ -423,7 +426,7 @@ namespace Sanakan.DiscordBot.Modules
             config.WelcomeMessagePM = messsage;
             await _guildConfigRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });
+            _cacheManager.ExpireTag(CacheKeys.GuildConfig(guildId));
 
             await ReplyAsync("", embed: $"Ustawiono `{messsage}` jako wiadomość powitalną wysyłaną na pw.".ToEmbedMessage(EMType.Success).Build());
         }
@@ -435,7 +438,8 @@ namespace Sanakan.DiscordBot.Modules
         public async Task SetOrShowGoodbyeMessageAsync(
             [Summary("wiadomość (opcjonalne, off - wyłączenie)")][Remainder]string? messsage = null)
         {
-            var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(Context.Guild.Id);
+            var guildId = Context.Guild.Id;
+            var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(guildId);
 
             if (messsage == null)
             {
@@ -452,7 +456,7 @@ namespace Sanakan.DiscordBot.Modules
             config.GoodbyeMessage = messsage;
             await _guildConfigRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });
+            _cacheManager.ExpireTag(CacheKeys.GuildConfig(guildId));
 
             await ReplyAsync("", embed: $"Ustawiono `{messsage}` jako wiadomość pożegnalną.".ToEmbedMessage(EMType.Success).Build());
         }
@@ -514,6 +518,8 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks("34125343243432"), RequireAdminRole]
         public async Task SetAdminRoleAsync([Summary("id roli")]SocketRole role)
         {
+            var guildId = Context.Guild.Id;
+
             if (role == null)
             {
                 await ReplyAsync("", embed: "Nie odnaleziono roli na serwerze.".ToEmbedMessage(EMType.Error).Build());
@@ -530,7 +536,7 @@ namespace Sanakan.DiscordBot.Modules
             config.AdminRoleId = role.Id;
             await _guildConfigRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });
+            _cacheManager.ExpireTag(CacheKeys.GuildConfig(guildId));
 
             await ReplyAsync("", embed: $"Ustawiono {role.Mention} jako role administratora.".ToEmbedMessage(EMType.Success).Build());
         }
@@ -540,13 +546,15 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks("34125343243432"), RequireAdminRole]
         public async Task SetUserRoleAsync([Summary("id roli")]SocketRole role)
         {
+            var guildId = Context.Guild.Id;
+
             if (role == null)
             {
                 await ReplyAsync("", embed: "Nie odnaleziono roli na serwerze.".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
-            var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(Context.Guild.Id);
+            var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(guildId);
             if (config.UserRoleId == role.Id)
             {
                 await ReplyAsync("", embed: $"Rola {role.Mention} już jest ustawiona jako rola użytkownika.".ToEmbedMessage(EMType.Bot).Build());
@@ -556,7 +564,7 @@ namespace Sanakan.DiscordBot.Modules
             config.UserRoleId = role.Id;
             await _guildConfigRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });
+            _cacheManager.ExpireTag(CacheKeys.GuildConfig(guildId));
 
             await ReplyAsync("", embed: $"Ustawiono {role.Mention} jako role użytkownika.".ToEmbedMessage(EMType.Success).Build());
         }
@@ -566,13 +574,15 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks("34125343243432"), RequireAdminRole]
         public async Task SetMuteRoleAsync([Summary("id roli")]SocketRole role)
         {
+            var guildId = Context.Guild.Id;
+
             if (role == null)
             {
                 await ReplyAsync("", embed: "Nie odnaleziono roli na serwerze.".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
-            var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(Context.Guild.Id);
+            var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(guildId);
             if (config.MuteRoleId == role.Id)
             {
                 await ReplyAsync("", embed: $"Rola {role.Mention} już jest ustawiona jako rola wyciszająca użytkownika.".ToEmbedMessage(EMType.Bot).Build());
@@ -582,7 +592,7 @@ namespace Sanakan.DiscordBot.Modules
             config.MuteRoleId = role.Id;
             await _guildConfigRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });
+            _cacheManager.ExpireTag(CacheKeys.GuildConfig(guildId));
 
             await ReplyAsync("", embed: $"Ustawiono {role.Mention} jako role wyciszającą użytkownika.".ToEmbedMessage(EMType.Success).Build());
         }
@@ -592,13 +602,15 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks("34125343243432"), RequireAdminRole]
         public async Task SetMuteModRoleAsync([Summary("id roli")]SocketRole role)
         {
+            var guildId = Context.Guild.Id;
+
             if (role == null)
             {
                 await ReplyAsync("", embed: "Nie odnaleziono roli na serwerze.".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
-            var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(Context.Guild.Id);
+            var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(guildId);
             if (config.ModMuteRoleId == role.Id)
             {
                 await ReplyAsync("", embed: $"Rola {role.Mention} już jest ustawiona jako rola wyciszająca moderatora.".ToEmbedMessage(EMType.Bot).Build());
@@ -608,7 +620,7 @@ namespace Sanakan.DiscordBot.Modules
             config.ModMuteRoleId = role.Id;
             await _guildConfigRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });
+            _cacheManager.ExpireTag(CacheKeys.GuildConfig(guildId));
 
             await ReplyAsync("", embed: $"Ustawiono {role.Mention} jako role wyciszającą moderatora.".ToEmbedMessage(EMType.Success).Build());
         }
@@ -618,13 +630,15 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks("34125343243432"), RequireAdminRole]
         public async Task SetGlobalRoleAsync([Summary("id roli")]SocketRole role)
         {
+            var guildId = Context.Guild.Id;
+
             if (role == null)
             {
                 await ReplyAsync("", embed: "Nie odnaleziono roli na serwerze.".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
-            var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(Context.Guild.Id);
+            var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(guildId);
             if (config.GlobalEmotesRoleId == role.Id)
             {
                 await ReplyAsync("", embed: $"Rola {role.Mention} już jest ustawiona jako rola globalnych emotek.".ToEmbedMessage(EMType.Bot).Build());
@@ -634,7 +648,7 @@ namespace Sanakan.DiscordBot.Modules
             config.GlobalEmotesRoleId = role.Id;
             await _guildConfigRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });
+            _cacheManager.ExpireTag(CacheKeys.GuildConfig(guildId));
 
             await ReplyAsync("", embed: $"Ustawiono {role.Mention} jako role globalnych emotek.".ToEmbedMessage(EMType.Success).Build());
         }
@@ -644,13 +658,15 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks("34125343243432"), RequireAdminRole]
         public async Task SetWaifuRoleAsync([Summary("id roli")]SocketRole role)
         {
+            var guildId = Context.Guild.Id;
+
             if (role == null)
             {
                 await ReplyAsync("", embed: "Nie odnaleziono roli na serwerze.".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
-            var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(Context.Guild.Id);
+            var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(guildId);
             if (config.WaifuRoleId == role.Id)
             {
                 await ReplyAsync("", embed: $"Rola {role.Mention} już jest ustawiona jako rola waifu.".ToEmbedMessage(EMType.Bot).Build());
@@ -660,7 +676,7 @@ namespace Sanakan.DiscordBot.Modules
             config.WaifuRoleId = role.Id;
             await _guildConfigRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });
+            _cacheManager.ExpireTag(CacheKeys.GuildConfig(guildId));
 
             await ReplyAsync("", embed: $"Ustawiono {role.Mention} jako role waifu.".ToEmbedMessage(EMType.Success).Build());
         }
@@ -670,31 +686,33 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks("34125343243432"), RequireAdminRole]
         public async Task SetModRoleAsync([Summary("id roli")]SocketRole role)
         {
+            var guildId = Context.Guild.Id;
+
             if (role == null)
             {
                 await ReplyAsync("", embed: "Nie odnaleziono roli na serwerze.".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
-            var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(Context.Guild.Id);
+            var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(guildId);
 
-            var rol = config.ModeratorRoles.FirstOrDefault(x => x.RoleId == role.Id);
-            if (rol != null)
+            var moderatorRole = config.ModeratorRoles.FirstOrDefault(x => x.RoleId == role.Id);
+            if (moderatorRole != null)
             {
-                config.ModeratorRoles.Remove(rol);
+                config.ModeratorRoles.Remove(moderatorRole);
                 await _guildConfigRepository.SaveChangesAsync();
 
-                _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });
+                _cacheManager.ExpireTag(CacheKeys.GuildConfig(guildId));
 
                 await ReplyAsync("", embed: $"Usunięto {role.Mention} z listy roli moderatorów.".ToEmbedMessage(EMType.Success).Build());
                 return;
             }
 
-            rol = new ModeratorRoles { RoleId = role.Id };
-            config.ModeratorRoles.Add(rol);
+            moderatorRole = new ModeratorRoles { RoleId = role.Id };
+            config.ModeratorRoles.Add(moderatorRole);
             await _guildConfigRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });
+            _cacheManager.ExpireTag(CacheKeys.GuildConfig(guildId));
 
             await ReplyAsync("", embed: $"Ustawiono {role.Mention} jako role moderatora.".ToEmbedMessage(EMType.Success).Build());
         }
@@ -704,35 +722,37 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks("34125343243432 130"), RequireAdminRole]
         public async Task SetUselessRoleAsync([Summary("id roli")]SocketRole role, [Summary("poziom")]uint level)
         {
+            var guildId = Context.Guild.Id;
+
             if (role == null)
             {
                 await ReplyAsync("", embed: "Nie odnaleziono roli na serwerze.".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
-            var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(Context.Guild.Id);
+            var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(guildId);
 
-            var rol = config.RolesPerLevel.FirstOrDefault(x => x.Role == role.Id);
-            if (rol != null)
+            var levelRole = config.RolesPerLevel.FirstOrDefault(x => x.Role == role.Id);
+            if (levelRole != null)
             {
-                config.RolesPerLevel.Remove(rol);
+                config.RolesPerLevel.Remove(levelRole);
                 await _guildConfigRepository.SaveChangesAsync();
 
-                _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });
+                _cacheManager.ExpireTag(CacheKeys.GuildConfig(guildId));
 
                 await ReplyAsync("", embed: $"Usunięto {role.Mention} z listy roli na poziom.".ToEmbedMessage(EMType.Success).Build());
                 return;
             }
 
-            rol = new LevelRole
+            levelRole = new LevelRole
             {
                 Role = role.Id,
                 Level = level
             };
-            config.RolesPerLevel.Add(rol);
+            config.RolesPerLevel.Add(levelRole);
             await _guildConfigRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });
+            _cacheManager.ExpireTag(CacheKeys.GuildConfig(guildId));
 
             await ReplyAsync("", embed: $"Ustawiono {role.Mention} jako role na poziom `{level}`.".ToEmbedMessage(EMType.Success).Build());
         }
@@ -742,13 +762,15 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks("34125343243432 newsy"), RequireAdminRole]
         public async Task SetSelfRoleAsync([Summary("id roli")]SocketRole role, [Summary("nazwa")][Remainder]string name = null)
         {
+            var guildId = Context.Guild.Id;
+
             if (role == null)
             {
                 await ReplyAsync("", embed: "Nie odnaleziono roli na serwerze.".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
-            var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(Context.Guild.Id);
+            var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(guildId);
 
             var rol = config.SelfRoles.FirstOrDefault(x => x.Role == role.Id);
             if (rol != null)
@@ -756,7 +778,7 @@ namespace Sanakan.DiscordBot.Modules
                 config.SelfRoles.Remove(rol);
                 await _guildConfigRepository.SaveChangesAsync();
 
-                _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });
+                _cacheManager.ExpireTag(CacheKeys.GuildConfig(guildId));
 
                 await ReplyAsync("", embed: $"Usunięto {role.Mention} z listy roli automatycznego zarządzania.".ToEmbedMessage(EMType.Success).Build());
                 return;
@@ -775,7 +797,7 @@ namespace Sanakan.DiscordBot.Modules
             config.SelfRoles.Add(rol);
             await _guildConfigRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });
+            _cacheManager.ExpireTag(CacheKeys.GuildConfig(guildId));
 
             await ReplyAsync("", embed: $"Ustawiono {role.Mention} jako role automatycznego zarządzania: `{name}`.".ToEmbedMessage(EMType.Success).Build());
         }
@@ -783,15 +805,20 @@ namespace Sanakan.DiscordBot.Modules
         [Command("myland"), RequireAdminRole]
         [Summary("dodaje nowy myland")]
         [Remarks("34125343243432 64325343243432 Kopacze")]
-        public async Task AddMyLandRoleAsync([Summary("id roli")]SocketRole manager, [Summary("id roli")]SocketRole underling = null, [Summary("nazwa landu")][Remainder]string name = null)
+        public async Task AddMyLandRoleAsync(
+            [Summary("id roli")]SocketRole manager,
+            [Summary("id roli")]SocketRole? underling = null,
+            [Summary("nazwa landu")][Remainder]string? name = null)
         {
+            var guildId = Context.Guild.Id;
+
             if (manager == null)
             {
                 await ReplyAsync("", embed: "Nie odnaleziono roli na serwerze.".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
-            var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(Context.Guild.Id);
+            var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(guildId);
 
             var land = config.Lands.FirstOrDefault(x => x.ManagerId == manager.Id);
             if (land != null)
@@ -801,7 +828,7 @@ namespace Sanakan.DiscordBot.Modules
                 config.Lands.Remove(land);
                 await _guildConfigRepository.SaveChangesAsync();
 
-                _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });
+                _cacheManager.ExpireTag(CacheKeys.GuildConfig(guildId));
                 return;
             }
 
@@ -833,7 +860,7 @@ namespace Sanakan.DiscordBot.Modules
             config.Lands.Add(land);
             await _guildConfigRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });
+            _cacheManager.ExpireTag(CacheKeys.GuildConfig(guildId));
 
             await ReplyAsync("", embed: $"Dodano {land.Name} z właścicielem {manager.Mention} i podwładnym {underling.Mention}.".ToEmbedMessage(EMType.Success).Build());
         }
@@ -843,19 +870,24 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks(""), RequireAdminRole]
         public async Task SetLogChannelAsync()
         {
-            var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(Context.Guild.Id);
+            var guildId = Context.Guild.Id;
+            var channelName = Context.Channel.Name;
+            var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(guildId);
+
             if (config.LogChannelId == Context.Channel.Id)
             {
-                await ReplyAsync("", embed: $"Kanał `{Context.Channel.Name}` już jest ustawiony jako kanał logowania usuniętych wiadomości.".ToEmbedMessage(EMType.Bot).Build());
+                await ReplyAsync("", embed: $"Kanał `{channelName}` już jest ustawiony jako kanał logowania usuniętych wiadomości."
+                    .ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
 
             config.LogChannelId = Context.Channel.Id;
             await _guildConfigRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });
+            _cacheManager.ExpireTag(CacheKeys.GuildConfig(guildId));
 
-            await ReplyAsync("", embed: $"Ustawiono `{Context.Channel.Name}` jako kanał logowania usuniętych wiadomości.".ToEmbedMessage(EMType.Success).Build());
+            await ReplyAsync("", embed: $"Ustawiono `{channelName}` jako kanał logowania usuniętych wiadomości."
+                .ToEmbedMessage(EMType.Success).Build());
         }
 
         [Command("helloch")]
@@ -863,19 +895,23 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks(""), RequireAdminRole]
         public async Task SetGreetingChannelAsync()
         {
-            var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(Context.Guild.Id);
+            var guildId = Context.Guild.Id;
+            var channelName = Context.Channel.Name;
+            var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(guildId);
+
             if (config.GreetingChannelId == Context.Channel.Id)
             {
-                await ReplyAsync("", embed: $"Kanał `{Context.Channel.Name}` już jest ustawiony jako kanał witania nowych użytkowników.".ToEmbedMessage(EMType.Bot).Build());
+                await ReplyAsync("", embed: $"Kanał `{channelName}` już jest ustawiony jako kanał witania nowych użytkowników."
+                    .ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
 
             config.GreetingChannelId = Context.Channel.Id;
             await _guildConfigRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });
+            _cacheManager.ExpireTag(CacheKeys.GuildConfig(guildId));
 
-            await ReplyAsync("", embed: $"Ustawiono `{Context.Channel.Name}` jako kanał witania nowych użytkowników.".ToEmbedMessage(EMType.Success).Build());
+            await ReplyAsync("", embed: $"Ustawiono `{channelName}` jako kanał witania nowych użytkowników.".ToEmbedMessage(EMType.Success).Build());
         }
 
         [Command("notifch")]
@@ -883,19 +919,24 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks(""), RequireAdminRole]
         public async Task SetNotifChannelAsync()
         {
-            var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(Context.Guild.Id);
+            var guildId = Context.Guild.Id;
+            var channelName = Context.Channel.Name;
+            var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(guildId);
+
             if (config.NotificationChannelId == Context.Channel.Id)
             {
-                await ReplyAsync("", embed: $"Kanał `{Context.Channel.Name}` już jest ustawiony jako kanał powiadomień o karach.".ToEmbedMessage(EMType.Bot).Build());
+                await ReplyAsync("", embed: $"Kanał `{channelName}` już jest ustawiony jako kanał powiadomień o karach."
+                    .ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
             
             config.NotificationChannelId = Context.Channel.Id;
             await _guildConfigRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });
+            _cacheManager.ExpireTag(CacheKeys.GuildConfig(guildId));
 
-            await ReplyAsync("", embed: $"Ustawiono `{Context.Channel.Name}` jako kanał powiadomień o karach.".ToEmbedMessage(EMType.Success).Build());
+            await ReplyAsync("", embed: $"Ustawiono `{channelName}` jako kanał powiadomień o karach."
+                .ToEmbedMessage(EMType.Success).Build());
         }
 
         [Command("raportch")]
@@ -903,19 +944,24 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks(""), RequireAdminRole]
         public async Task SetRaportChannelAsync()
         {
+            var guildId = Context.Guild.Id;
+            var channelName = Context.Channel.Name;
             var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(Context.Guild.Id);
+
             if (config.RaportChannelId == Context.Channel.Id)
             {
-                await ReplyAsync("", embed: $"Kanał `{Context.Channel.Name}` już jest ustawiony jako kanał raportów.".ToEmbedMessage(EMType.Bot).Build());
+                await ReplyAsync("", embed: $"Kanał `{channelName}` już jest ustawiony jako kanał raportów."
+                    .ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
 
             config.RaportChannelId = Context.Channel.Id;
             await _guildConfigRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });
+            _cacheManager.ExpireTag(CacheKeys.GuildConfig(guildId));
 
-            await ReplyAsync("", embed: $"Ustawiono `{Context.Channel.Name}` jako kanał raportów.".ToEmbedMessage(EMType.Success).Build());
+            await ReplyAsync("", embed: $"Ustawiono `{channelName}` jako kanał raportów."
+                .ToEmbedMessage(EMType.Success).Build());
         }
 
         [Command("quizch")]
@@ -923,20 +969,22 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks(""), RequireAdminRole]
         public async Task SetQuizChannelAsync()
         {
+            var guildId = Context.Guild.Id;
+            var channelName = Context.Channel.Name;
             var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(Context.Guild.Id);
 
             if (config.QuizChannelId == Context.Channel.Id)
             {
-                await ReplyAsync("", embed: $"Kanał `{Context.Channel.Name}` już jest ustawiony jako kanał quizów.".ToEmbedMessage(EMType.Bot).Build());
+                await ReplyAsync("", embed: $"Kanał `{channelName}` już jest ustawiony jako kanał quizów.".ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
 
             config.QuizChannelId = Context.Channel.Id;
             await _guildConfigRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });
+            _cacheManager.ExpireTag(CacheKeys.GuildConfig(guildId));
 
-            await ReplyAsync("", embed: $"Ustawiono `{Context.Channel.Name}` jako kanał quizów.".ToEmbedMessage(EMType.Success).Build());
+            await ReplyAsync("", embed: $"Ustawiono `{channelName}` jako kanał quizów.".ToEmbedMessage(EMType.Success).Build());
         }
 
         [Command("todoch")]
@@ -944,19 +992,24 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks(""), RequireAdminRole]
         public async Task SetTodoChannelAsync()
         {
-            var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(Context.Guild.Id);
+            var guildId = Context.Guild.Id;
+            var channelName = Context.Channel.Name; 
+            var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(guildId);
+
             if (config.ToDoChannelId == Context.Channel.Id)
             {
-                await ReplyAsync("", embed: $"Kanał `{Context.Channel.Name}` już jest ustawiony jako kanał todo.".ToEmbedMessage(EMType.Bot).Build());
+                await ReplyAsync("", embed: $"Kanał `{channelName}` już jest ustawiony jako kanał todo."
+                    .ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
 
             config.ToDoChannelId = Context.Channel.Id;
             await _guildConfigRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });
+            _cacheManager.ExpireTag(CacheKeys.GuildConfig(guildId));
 
-            await ReplyAsync("", embed: $"Ustawiono `{Context.Channel.Name}` jako kanał todo.".ToEmbedMessage(EMType.Success).Build());
+            await ReplyAsync("", embed: $"Ustawiono `{channelName}` jako kanał todo."
+                .ToEmbedMessage(EMType.Success).Build());
         }
 
         [Command("nsfwch")]
@@ -964,17 +1017,20 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks(""), RequireAdminRole]
         public async Task SetNsfwChannelAsync()
         {
+            var guildId = Context.Guild.Id;
+            var channelName = Context.Channel.Name;
             var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(Context.Guild.Id);
+
             if (config.NsfwChannelId == Context.Channel.Id)
             {
-                await ReplyAsync("", embed: $"Kanał `{Context.Channel.Name}` już jest ustawiony jako kanał nsfw.".ToEmbedMessage(EMType.Bot).Build());
+                await ReplyAsync("", embed: $"Kanał `{channelName}` już jest ustawiony jako kanał nsfw.".ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
 
             config.NsfwChannelId = Context.Channel.Id;
             await _guildConfigRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });
+            _cacheManager.ExpireTag(CacheKeys.GuildConfig(guildId));
 
             await ReplyAsync("", embed: $"Ustawiono `{Context.Channel.Name}` jako kanał nsfw.".ToEmbedMessage(EMType.Success).Build());
         }
@@ -984,7 +1040,9 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks(""), RequireAdminRole]
         public async Task SetTrashFightWaifuChannelAsync()
         {
-            var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(Context.Guild.Id);
+            var guildId = Context.Guild.Id;
+            var channelName = Context.Channel.Name;
+            var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(guildId);
 
             if (config.WaifuConfig == null)
             {
@@ -993,16 +1051,18 @@ namespace Sanakan.DiscordBot.Modules
 
             if (config.WaifuConfig.TrashFightChannelId == Context.Channel.Id)
             {
-                await ReplyAsync("", embed: $"Kanał `{Context.Channel.Name}` już jest ustawiony jako kanał śmieciowy walk waifu.".ToEmbedMessage(EMType.Bot).Build());
+                await ReplyAsync("", embed: $"Kanał `{channelName}` już jest ustawiony jako kanał śmieciowy walk waifu."
+                    .ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
 
             config.WaifuConfig.TrashFightChannelId = Context.Channel.Id;
             await _guildConfigRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });
+            _cacheManager.ExpireTag(CacheKeys.GuildConfig(guildId));
 
-            var content = $"Ustawiono `{Context.Channel.Name}` jako kanał śmieciowy walk waifu.".ToEmbedMessage(EMType.Success).Build();
+            var content = $"Ustawiono `{channelName}` jako kanał śmieciowy walk waifu."
+                .ToEmbedMessage(EMType.Success).Build();
             await ReplyAsync("", embed: content);
         }
 
@@ -1011,7 +1071,9 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks(""), RequireAdminRole]
         public async Task SetTrashCmdWaifuChannelAsync()
         {
-            var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(Context.Guild.Id);
+            var guildId = Context.Guild.Id;
+            var channelName = Context.Channel.Name;
+            var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(guildId);
             
             if (config.WaifuConfig == null)
             {
@@ -1020,16 +1082,18 @@ namespace Sanakan.DiscordBot.Modules
 
             if (config.WaifuConfig.TrashCommandsChannelId == Context.Channel.Id)
             {
-                await ReplyAsync("", embed: $"Kanał `{Context.Channel.Name}` już jest ustawiony jako kanał śmieciowy poleceń waifu.".ToEmbedMessage(EMType.Bot).Build());
+                await ReplyAsync("", embed: $"Kanał `{channelName}` już jest ustawiony jako kanał śmieciowy poleceń waifu."
+                    .ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
 
             config.WaifuConfig.TrashCommandsChannelId = Context.Channel.Id;
             await _guildConfigRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });
+            _cacheManager.ExpireTag(CacheKeys.GuildConfig(guildId));
 
-            await ReplyAsync("", embed: $"Ustawiono `{Context.Channel.Name}` jako kanał śmieciowy poleceń waifu.".ToEmbedMessage(EMType.Success).Build());
+            await ReplyAsync("", embed: $"Ustawiono `{channelName}` jako kanał śmieciowy poleceń waifu."
+                .ToEmbedMessage(EMType.Success).Build());
         }
 
         [Command("tsafarich")]
@@ -1037,7 +1101,9 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks(""), RequireAdminRole]
         public async Task SetTrashSpawnWaifuChannelAsync()
         {
-            var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(Context.Guild.Id);
+            var guildId = Context.Guild.Id;
+            var channelName = Context.Channel.Name;
+            var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(guildId);
 
             if (config.WaifuConfig == null)
             {
@@ -1046,16 +1112,18 @@ namespace Sanakan.DiscordBot.Modules
 
             if (config.WaifuConfig.TrashSpawnChannelId == Context.Channel.Id)
             {
-                await ReplyAsync("", embed: $"Kanał `{Context.Channel.Name}` już jest ustawiony jako kanał śmieciowy polowań waifu.".ToEmbedMessage(EMType.Bot).Build());
+                await ReplyAsync("", embed: $"Kanał `{channelName}` już jest ustawiony jako kanał śmieciowy polowań waifu."
+                    .ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
 
             config.WaifuConfig.TrashSpawnChannelId = Context.Channel.Id;
             await _guildConfigRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });
+            _cacheManager.ExpireTag(CacheKeys.GuildConfig(guildId));
 
-            await ReplyAsync("", embed: $"Ustawiono `{Context.Channel.Name}` jako kanał śmieciowy polowań waifu.".ToEmbedMessage(EMType.Success).Build());
+            await ReplyAsync("", embed: $"Ustawiono `{channelName}` jako kanał śmieciowy polowań waifu."
+                .ToEmbedMessage(EMType.Success).Build());
         }
 
         [Command("marketch")]
@@ -1063,7 +1131,9 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks(""), RequireAdminRole]
         public async Task SetMarketWaifuChannelAsync()
         {
-            var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(Context.Guild.Id);
+            var guildId = Context.Guild.Id;
+            var channelName = Context.Channel.Name;
+            var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(guildId);
 
             if (config.WaifuConfig == null)
             {
@@ -1073,16 +1143,18 @@ namespace Sanakan.DiscordBot.Modules
 
             if (config.WaifuConfig.MarketChannelId == Context.Channel.Id)
             {
-                await ReplyAsync("", embed: $"Kanał `{Context.Channel.Name}` już jest ustawiony jako kanał rynku waifu.".ToEmbedMessage(EMType.Bot).Build());
+                await ReplyAsync("", embed: $"Kanał `{channelName}` już jest ustawiony jako kanał rynku waifu."
+                    .ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
 
             config.WaifuConfig.MarketChannelId = Context.Channel.Id;
             await _guildConfigRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });
+            _cacheManager.ExpireTag(CacheKeys.GuildConfig(guildId));
 
-            await ReplyAsync("", embed: $"Ustawiono `{Context.Channel.Name}` jako kanał rynku waifu.".ToEmbedMessage(EMType.Success).Build());
+            await ReplyAsync("", embed: $"Ustawiono `{channelName}` jako kanał rynku waifu."
+                .ToEmbedMessage(EMType.Success).Build());
         }
 
         [Command("duelch")]
@@ -1090,7 +1162,10 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks(""), RequireAdminRole]
         public async Task SetDuelWaifuChannelAsync()
         {
-            var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(Context.Guild.Id);
+            var guildId = Context.Guild.Id;
+            var channelName = Context.Channel.Name;
+            var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(guildId);
+
             if (config.WaifuConfig == null)
             {
                 config.WaifuConfig = new WaifuConfiguration();
@@ -1098,16 +1173,18 @@ namespace Sanakan.DiscordBot.Modules
 
             if (config.WaifuConfig.DuelChannelId == Context.Channel.Id)
             {
-                await ReplyAsync("", embed: $"Kanał `{Context.Channel.Name}` już jest ustawiony jako kanał pojedynków waifu.".ToEmbedMessage(EMType.Bot).Build());
+                await ReplyAsync("", embed: $"Kanał `{channelName}` już jest ustawiony jako kanał pojedynków waifu."
+                    .ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
 
             config.WaifuConfig.DuelChannelId = Context.Channel.Id;
             await _guildConfigRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });
+            _cacheManager.ExpireTag(CacheKeys.GuildConfig(guildId));
 
-            await ReplyAsync("", embed: $"Ustawiono `{Context.Channel.Name}` jako kanał pojedynków waifu.".ToEmbedMessage(EMType.Success).Build());
+            await ReplyAsync("", embed: $"Ustawiono `{channelName}` jako kanał pojedynków waifu."
+                .ToEmbedMessage(EMType.Success).Build());
         }
 
         [Command("spawnch")]
@@ -1115,7 +1192,10 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks(""), RequireAdminRole]
         public async Task SetSafariWaifuChannelAsync()
         {
-            var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(Context.Guild.Id);
+            var guildId = Context.Guild.Id;
+            var channelName = Context.Channel.Name;
+            var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(guildId);
+
             if (config.WaifuConfig == null)
             {
                 config.WaifuConfig = new WaifuConfiguration();
@@ -1124,16 +1204,18 @@ namespace Sanakan.DiscordBot.Modules
 
             if (config.WaifuConfig.SpawnChannelId == Context.Channel.Id)
             {
-                await ReplyAsync("", embed: $"Kanał `{Context.Channel.Name}` już jest ustawiony jako kanał safari waifu.".ToEmbedMessage(EMType.Bot).Build());
+                await ReplyAsync("", embed: $"Kanał `{channelName}` już jest ustawiony jako kanał safari waifu."
+                    .ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
 
             config.WaifuConfig.SpawnChannelId = Context.Channel.Id;
             await _guildConfigRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });
+            _cacheManager.ExpireTag(CacheKeys.GuildConfig(guildId));
 
-            await ReplyAsync("", embed: $"Ustawiono `{Context.Channel.Name}` jako kanał safari waifu.".ToEmbedMessage(EMType.Success).Build());
+            await ReplyAsync("", embed: $"Ustawiono `{channelName}` jako kanał safari waifu."
+                .ToEmbedMessage(EMType.Success).Build());
         }
 
         [Command("fightch")]
@@ -1141,7 +1223,9 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks(""), RequireAdminRole]
         public async Task SetFightWaifuChannelAsync()
         {
-            var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(Context.Guild.Id);
+            var guildId = Context.Guild.Id;
+            var channelName = Context.Channel.Name;
+            var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(guildId);
 
             if (config.WaifuConfig == null)
             {
@@ -1157,9 +1241,9 @@ namespace Sanakan.DiscordBot.Modules
                 config.WaifuConfig.FightChannels.Remove(chan);
                 await _guildConfigRepository.SaveChangesAsync();
 
-                _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });
+                _cacheManager.ExpireTag(CacheKeys.GuildConfig(guildId));
 
-                await ReplyAsync("", embed: $"Usunięto `{Context.Channel.Name}` z listy kanałów walk waifu.".ToEmbedMessage(EMType.Success).Build());
+                await ReplyAsync("", embed: $"Usunięto `{channelName}` z listy kanałów walk waifu.".ToEmbedMessage(EMType.Success).Build());
                 return;
             }
 
@@ -1170,9 +1254,9 @@ namespace Sanakan.DiscordBot.Modules
             config.WaifuConfig.FightChannels.Add(chan);
             await _guildConfigRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });
+            _cacheManager.ExpireTag(CacheKeys.GuildConfig(guildId));
 
-            await ReplyAsync("", embed: $"Ustawiono `{Context.Channel.Name}` jako kanał walk waifu.".ToEmbedMessage(EMType.Success).Build());
+            await ReplyAsync("", embed: $"Ustawiono `{channelName}` jako kanał walk waifu.".ToEmbedMessage(EMType.Success).Build());
         }
 
         [Command("wcmdch")]
@@ -1180,7 +1264,9 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks(""), RequireAdminRole]
         public async Task SetCmdWaifuChannelAsync()
         {
-            var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(Context.Guild.Id);
+            var guildId = Context.Guild.Id;
+            var channelName = Context.Channel.Name;
+            var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(guildId);
 
             if (config.WaifuConfig == null)
             {
@@ -1188,14 +1274,16 @@ namespace Sanakan.DiscordBot.Modules
             }
 
             var chan = config.WaifuConfig.CommandChannels.FirstOrDefault(x => x.Channel == Context.Channel.Id);
+
             if (chan != null)
             {
                 config.WaifuConfig.CommandChannels.Remove(chan);
                 await _guildConfigRepository.SaveChangesAsync();
 
-                _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });
+                _cacheManager.ExpireTag(CacheKeys.GuildConfig(guildId));
 
-                await ReplyAsync("", embed: $"Usunięto `{Context.Channel.Name}` z listy kanałów poleceń waifu.".ToEmbedMessage(EMType.Success).Build());
+                await ReplyAsync("", embed: $"Usunięto `{channelName}` z listy kanałów poleceń waifu."
+                    .ToEmbedMessage(EMType.Success).Build());
                 return;
             }
 
@@ -1208,7 +1296,8 @@ namespace Sanakan.DiscordBot.Modules
 
             _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });
 
-            await ReplyAsync("", embed: $"Ustawiono `{Context.Channel.Name}` jako kanał poleceń waifu.".ToEmbedMessage(EMType.Success).Build());
+            await ReplyAsync("", embed: $"Ustawiono `{channelName}` jako kanał poleceń waifu."
+                .ToEmbedMessage(EMType.Success).Build());
         }
 
         [Command("cmdch")]
@@ -1216,7 +1305,9 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks(""), RequireAdminRole]
         public async Task SetCmdChannelAsync()
         {
-            var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(Context.Guild.Id);
+            var guildId = Context.Guild.Id;
+            var channelName = Context.Channel.Name;
+            var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(guildId);
 
             var chan = config.CommandChannels.FirstOrDefault(x => x.Channel == Context.Channel.Id);
             if (chan != null)
@@ -1224,9 +1315,10 @@ namespace Sanakan.DiscordBot.Modules
                 config.CommandChannels.Remove(chan);
                 await _guildConfigRepository.SaveChangesAsync();
 
-                _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });
+                _cacheManager.ExpireTag(CacheKeys.GuildConfig(guildId));
 
-                await ReplyAsync("", embed: $"Usunięto `{Context.Channel.Name}` z listy kanałów poleceń.".ToEmbedMessage(EMType.Success).Build());
+                await ReplyAsync("", embed: $"Usunięto `{channelName}` z listy kanałów poleceń."
+                    .ToEmbedMessage(EMType.Success).Build());
                 return;
             }
 
@@ -1234,9 +1326,10 @@ namespace Sanakan.DiscordBot.Modules
             config.CommandChannels.Add(chan);
             await _guildConfigRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });
+            _cacheManager.ExpireTag(CacheKeys.GuildConfig(guildId));
 
-            await ReplyAsync("", embed: $"Ustawiono `{Context.Channel.Name}` jako kanał poleceń.".ToEmbedMessage(EMType.Success).Build());
+            await ReplyAsync("", embed: $"Ustawiono `{channelName}` jako kanał poleceń."
+                .ToEmbedMessage(EMType.Success).Build());
         }
 
         [Command("ignch")]
@@ -1244,31 +1337,36 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks(""), RequireAdminRole]
         public async Task SetIgnoredChannelAsync()
         {
-            var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(Context.Guild.Id);
+            var guildId = Context.Guild.Id;
+            var channelName = Context.Channel.Name;
+            var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(guildId);
 
-            var chan = config.IgnoredChannels
+            var ignoredChannel = config.IgnoredChannels
                 .FirstOrDefault(x => x.Channel == Context.Channel.Id);
 
-            if (chan != null)
+            if (ignoredChannel != null)
             {
-                config.IgnoredChannels.Remove(chan);
+                config.IgnoredChannels.Remove(ignoredChannel);
                 await _guildConfigRepository.SaveChangesAsync();
 
-                _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });
+                _cacheManager.ExpireTag(CacheKeys.GuildConfig(guildId));
 
-                await ReplyAsync("", embed: $"Usunięto `{Context.Channel.Name}` z listy kanałów ignorowanych.".ToEmbedMessage(EMType.Success).Build());
+                await ReplyAsync("", embed: $"Usunięto `{channelName}` z listy kanałów ignorowanych."
+                    .ToEmbedMessage(EMType.Success).Build());
                 return;
             }
 
-            chan = new WithoutMessageCountChannel {
+            ignoredChannel = new WithoutMessageCountChannel {
                 Channel = Context.Channel.Id
             };
-            config.IgnoredChannels.Add(chan);
+            config.IgnoredChannels.Add(ignoredChannel);
 
             await _guildConfigRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });
-            await ReplyAsync("", embed: $"Ustawiono `{Context.Channel.Name}` jako kanał ignorowany.".ToEmbedMessage(EMType.Success).Build());
+            _cacheManager.ExpireTag(CacheKeys.GuildConfig(guildId));
+
+            await ReplyAsync("", embed: $"Ustawiono `{channelName}` jako kanał ignorowany."
+                .ToEmbedMessage(EMType.Success).Build());
         }
 
         [Command("noexpch")]
@@ -1276,7 +1374,9 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks(""), RequireAdminRole]
         public async Task SetNonExpChannelAsync()
         {
-            var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(Context.Guild.Id);
+            var guildId = Context.Guild.Id;
+            var channelName = Context.Channel.Name;
+            var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(guildId);
 
             var chan = config.ChannelsWithoutExperience.FirstOrDefault(x => x.Channel == Context.Channel.Id);
             if (chan != null)
@@ -1284,9 +1384,10 @@ namespace Sanakan.DiscordBot.Modules
                 config.ChannelsWithoutExperience.Remove(chan);
                 await _guildConfigRepository.SaveChangesAsync();
 
-                _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });
+                _cacheManager.ExpireTag(CacheKeys.GuildConfig(guildId));
 
-                await ReplyAsync("", embed: $"Usunięto `{Context.Channel.Name}` z listy kanałów bez doświadczenia.".ToEmbedMessage(EMType.Success).Build());
+                await ReplyAsync("", embed: $"Usunięto `{channelName}` z listy kanałów bez doświadczenia."
+                    .ToEmbedMessage(EMType.Success).Build());
                 return;
             }
 
@@ -1296,9 +1397,10 @@ namespace Sanakan.DiscordBot.Modules
             config.ChannelsWithoutExperience.Add(chan);
             await _guildConfigRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });
+            _cacheManager.ExpireTag(CacheKeys.GuildConfig(guildId));
 
-            await ReplyAsync("", embed: $"Ustawiono `{Context.Channel.Name}` jako kanał bez doświadczenia.".ToEmbedMessage(EMType.Success).Build());
+            await ReplyAsync("", embed: $"Ustawiono `{channelName}` jako kanał bez doświadczenia."
+                .ToEmbedMessage(EMType.Success).Build());
         }
 
         [Command("nosupch")]
@@ -1306,6 +1408,8 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks(""), RequireAdminRole]
         public async Task SetNonSupChannelAsync()
         {
+            var guildId = Context.Guild.Id;
+            var channelName = Context.Channel.Name;
             var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(Context.Guild.Id);
 
             var chan = config.ChannelsWithoutSupervision.FirstOrDefault(x => x.Channel == Context.Channel.Id);
@@ -1314,9 +1418,10 @@ namespace Sanakan.DiscordBot.Modules
                 config.ChannelsWithoutSupervision.Remove(chan);
                 await _guildConfigRepository.SaveChangesAsync();
 
-                _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });
+                _cacheManager.ExpireTag(CacheKeys.GuildConfig(guildId));
 
-                await ReplyAsync("", embed: $"Usunięto `{Context.Channel.Name}` z listy kanałów bez nadzoru.".ToEmbedMessage(EMType.Success).Build());
+                await ReplyAsync("", embed: $"Usunięto `{channelName}` z listy kanałów bez nadzoru."
+                    .ToEmbedMessage(EMType.Success).Build());
                 return;
             }
 
@@ -1324,9 +1429,10 @@ namespace Sanakan.DiscordBot.Modules
             config.ChannelsWithoutSupervision.Add(chan);
             await _guildConfigRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });
+            _cacheManager.ExpireTag(CacheKeys.GuildConfig(guildId));
 
-            await ReplyAsync("", embed: $"Ustawiono `{Context.Channel.Name}` jako kanał bez nadzoru.".ToEmbedMessage(EMType.Success).Build());
+            await ReplyAsync("", embed: $"Ustawiono `{channelName}` jako kanał bez nadzoru."
+                .ToEmbedMessage(EMType.Success).Build());
         }
 
         [Command("todo", RunMode = RunMode.Async)]
@@ -1426,14 +1532,17 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks(""), RequireAdminRole]
         public async Task SetToggleChaosModeAsync()
         {
-            var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(Context.Guild.Id);
+            var guildId = Context.Guild.Id;
+            var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(guildId);
 
             config.ChaosModeEnabled = !config.ChaosModeEnabled;
             await _guildConfigRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });
+            var enabled = config.ChaosModeEnabled.GetYesNo();
 
-            await ReplyAsync("", embed: $"Tryb siania chaosu - włączony? `{config.ChaosModeEnabled.GetYesNo()}`.".ToEmbedMessage(EMType.Success).Build());
+            _cacheManager.ExpireTag(CacheKeys.GuildConfig(guildId));
+
+            await ReplyAsync("", embed: $"Tryb siania chaosu - włączony? `{enabled}`.".ToEmbedMessage(EMType.Success).Build());
         }
 
         [Command("tsup")]
@@ -1441,12 +1550,13 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks(""), RequireAdminRole]
         public async Task SetToggleSupervisionModeAsync()
         {
-            var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(Context.Guild.Id);
+            var guildId = Context.Guild.Id;
+            var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(guildId);
 
             config.SupervisionEnabled = !config.SupervisionEnabled;
             await _guildConfigRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });
+            _cacheManager.ExpireTag(CacheKeys.GuildConfig(guildId));
 
             await ReplyAsync("", embed: $"Tryb nadzoru - włączony?`{config.ChaosModeEnabled.GetYesNo()}`."
                 .ToEmbedMessage(EMType.Success).Build());
@@ -1809,7 +1919,7 @@ namespace Sanakan.DiscordBot.Modules
                     }
                 }
 
-                await ReplyAsync(_helperService.GiveHelpAboutPrivateCmd("Moderacja", command, prefix));
+                await ReplyAsync(_helperService.GiveHelpAboutPrivateCommand("Moderacja", command, prefix));
             }
             catch (Exception ex)
             {

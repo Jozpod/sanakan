@@ -13,29 +13,13 @@ namespace Sanakan.Web.Tests.Controllers.TokenControllerTests
     {
         protected readonly TokenController _controller;
         protected readonly Mock<IJwtBuilder> _jwtBuilderMock = new(MockBehavior.Strict);
-        protected readonly Mock<IOptionsMonitor<ApiConfiguration>> _configMock = new(MockBehavior.Strict);
+        protected readonly Mock<IOptionsMonitor<ApiConfiguration>> _apiConfigurationMock = new(MockBehavior.Strict);
 
         public Base()
         {
             _controller = new (
-                _configMock.Object,
+                _apiConfigurationMock.Object,
                 _jwtBuilderMock.Object);
-        }
-
-        [TestMethod]
-        public void Should_Return_Unauthorized()
-        {
-            var result = _controller.CreateToken();
-        }
-
-        [TestMethod]
-        public void Should_Return_Forbidden()
-        {
-        }
-
-        [TestMethod]
-        public void Should_Return_Ok()
-        {
         }
     }
 }

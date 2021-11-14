@@ -833,7 +833,7 @@ namespace Sanakan.DiscordBot.Modules
 
             await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"user-{bUser.Id}", "users" });
+            _cacheManager.ExpireTag(CacheKeys.User(bUser.Id), CacheKeys.Users);
 
             await ReplyAsync("", embed: embed.Build());
         }
@@ -936,8 +936,7 @@ namespace Sanakan.DiscordBot.Modules
 
             await _userRepository.SaveChangesAsync();
 
-            var discordUserkey = string.Format(CacheKeys.User, databaseUser.Id);
-            _cacheManager.ExpireTag(discordUserkey, CacheKeys.Users);
+            _cacheManager.ExpireTag(CacheKeys.User(databaseUser.Id), CacheKeys.Users);
 
             string openString = "";
             string packString = $"{count} pakietów";
@@ -965,34 +964,35 @@ namespace Sanakan.DiscordBot.Modules
         {
             var bUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
             var card = bUser.GameDeck.Cards.FirstOrDefault(x => x.Id == id);
+            var mention = Context.User.Mention;
 
             if (card == null)
             {
-                await ReplyAsync("", embed: $"{Context.User.Mention} nie posiadasz takiej karty.".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync("", embed: $"{mention} nie posiadasz takiej karty.".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
             if (card.Rarity != Rarity.SSS)
             {
-                await ReplyAsync("", embed: $"{Context.User.Mention} ta karta nie ma najwyższego poziomu.".ToEmbedMessage(EMType.Bot).Build());
+                await ReplyAsync("", embed: $"{mention} ta karta nie ma najwyższego poziomu.".ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
 
             if (card.FromFigure)
             {
-                await ReplyAsync("", embed: $"{Context.User.Mention} tej karty nie można restartować.".ToEmbedMessage(EMType.Bot).Build());
+                await ReplyAsync("", embed: $"{mention} tej karty nie można restartować.".ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
 
             if (card.Expedition != ExpeditionCardType.None)
             {
-                await ReplyAsync("", embed: $"{Context.User.Mention} ta karta jest na wyprawie!".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync("", embed: $"{mention} ta karta jest na wyprawie!".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
             if (card.IsUnusable)
             {
-                await ReplyAsync("", embed: $"{Context.User.Mention} ta karta ma zbyt niską relację, aby dało się ją zrestartować.".ToEmbedMessage(EMType.Bot).Build());
+                await ReplyAsync("", embed: $"{mention} ta karta ma zbyt niską relację, aby dało się ją zrestartować.".ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
 
@@ -1026,9 +1026,10 @@ namespace Sanakan.DiscordBot.Modules
             await _userRepository.SaveChangesAsync();
             _waifuService.DeleteCardImageIfExist(card);
 
-            _cacheManager.ExpireTag(new string[] { $"user-{bUser.Id}", "users" });
+            _cacheManager.ExpireTag(CacheKeys.User(bUser.Id), CacheKeys.Users);
 
-            await ReplyAsync("", embed: $"{Context.User.Mention} zrestartował kartę do: {card.GetString(false, false, true)}.".ToEmbedMessage(EMType.Success).Build());
+            var cardSummary = card.GetString(false, false, true);
+            await ReplyAsync("", embed: $"{mention} zrestartował kartę do: {cardSummary}.".ToEmbedMessage(EMType.Success).Build());
         }
 
         [Command("aktualizuj")]
@@ -1042,10 +1043,11 @@ namespace Sanakan.DiscordBot.Modules
             var discordUser = Context.User;
             var bUser = await _userRepository.GetUserOrCreateAsync(discordUser.Id);
             var card = bUser.GameDeck.Cards.FirstOrDefault(x => x.Id == id);
+            var mention = discordUser.Mention;
 
             if (card == null)
             {
-                await ReplyAsync("", embed: $"{discordUser.Mention} nie posiadasz takiej karty."
+                await ReplyAsync("", embed: $"{mention} nie posiadasz takiej karty."
                     .ToEmbedMessage(EMType.Error).Build());
                 return;
             }
@@ -1053,7 +1055,7 @@ namespace Sanakan.DiscordBot.Modules
             if (card.FromFigure)
             {
                 _waifuService.DeleteCardImageIfExist(card);
-                await ReplyAsync("", embed: $"{discordUser.Mention} tej karty nie można zaktualizować."
+                await ReplyAsync("", embed: $"{mention} tej karty nie można zaktualizować."
                     .ToEmbedMessage(EMType.Error).Build());
                 return;
             }
@@ -1086,14 +1088,14 @@ namespace Sanakan.DiscordBot.Modules
                 await _userRepository.SaveChangesAsync();
                 _waifuService.DeleteCardImageIfExist(card);
 
-                _cacheManager.ExpireTag(new string[] { $"user-{bUser.Id}", "users" });
+                _cacheManager.ExpireTag(CacheKeys.User(bUser.Id), CacheKeys.Users);
 
-                await ReplyAsync("", embed: $"{Context.User.Mention} zaktualizował kartę: {card.GetString(false, false, true)}.".ToEmbedMessage(EMType.Success).Build());
+                await ReplyAsync("", embed: $"{mention} zaktualizował kartę: {card.GetString(false, false, true)}.".ToEmbedMessage(EMType.Success).Build());
             }
             catch (Exception ex)
             {
                 await _userRepository.SaveChangesAsync();
-                await ReplyAsync("", embed: $"{Context.User.Mention}: {ex.Message}".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync("", embed: $"{mention}: {ex.Message}".ToEmbedMessage(EMType.Error).Build());
             }
         }
 
@@ -1148,7 +1150,7 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            ++bUser.Stats.UpgaredCards;
+            ++bUser.Stats.UpgradedCardsCount;
             bUser.GameDeck.Karma += 1;
 
             card.Defence = _waifuService.GetDefenceAfterLevelUp(card.Rarity, card.Defence);
@@ -1177,9 +1179,10 @@ namespace Sanakan.DiscordBot.Modules
             await _userRepository.SaveChangesAsync();
             _waifuService.DeleteCardImageIfExist(card);
 
-            _cacheManager.ExpireTag(new string[] { $"user-{bUser.Id}", "users" });
+            _cacheManager.ExpireTag(CacheKeys.User(bUser.Id), CacheKeys.Users);
 
-            await ReplyAsync("", embed: $"{Context.User.Mention} ulepszył kartę do: {card.GetString(false, false, true)}.".ToEmbedMessage(EMType.Success).Build());
+            await ReplyAsync("", embed: $"{Context.User.Mention} ulepszył kartę do: {card.GetString(false, false, true)}."
+                .ToEmbedMessage(EMType.Success).Build());
         }
 
         [Command("uwolnij")]
@@ -1233,7 +1236,7 @@ namespace Sanakan.DiscordBot.Modules
 
             await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"user-{bUser.Id}", "users" });
+            _cacheManager.ExpireTag(CacheKeys.User(bUser.Id), CacheKeys.Users);
 
             if (broken.Count != cardsToSac.Count)
             {
@@ -1288,7 +1291,7 @@ namespace Sanakan.DiscordBot.Modules
                     bUser.GameDeck.CTCount += (long)incCt;
                 }
 
-                bUser.Stats.DestroyedCards += 1;
+                bUser.Stats.DestroyedCardsCount += 1;
 
                 bUser.GameDeck.Cards.Remove(card);
                 _waifuService.DeleteCardImageIfExist(card);
@@ -1299,7 +1302,7 @@ namespace Sanakan.DiscordBot.Modules
 
             await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"user-{bUser.Id}", "users" });
+            _cacheManager.ExpireTag(CacheKeys.User(bUser.Id), CacheKeys.Users);
 
             if (broken.Count != cardsToSac.Count)
             {
@@ -1367,7 +1370,7 @@ namespace Sanakan.DiscordBot.Modules
 
             await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"user-{bUser.Id}", "users" });
+            _cacheManager.ExpireTag(CacheKeys.User(bUser.Id), CacheKeys.Users);
 
             await ReplyAsync("", embed: $"{Context.User.Mention} przeniesiono doświadczenie na kartę."
                 .ToEmbedMessage(EMType.Success).Build());
@@ -1442,7 +1445,7 @@ namespace Sanakan.DiscordBot.Modules
 
             await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"user-{bUser.Id}", "users" });
+            _cacheManager.ExpireTag(CacheKeys.User(bUser.Id), CacheKeys.Users);
 
             var content = $"{Context.User.Mention} otrzymałeś skrzynię doświadczenia.".ToEmbedMessage(EMType.Success).Build();
             await ReplyAsync("", embed: content);
@@ -1504,7 +1507,7 @@ namespace Sanakan.DiscordBot.Modules
 
             var wishStr = wasOnWishlist ? "💚 " : ((wishlists.Count > 0) ? "💗 " : "🤍 ");
 
-            _cacheManager.ExpireTag(new string[] { $"user-{botuser.Id}", "users" });
+            _cacheManager.ExpireTag(CacheKeys.User(botuser.Id), CacheKeys.Users);
 
             await ReplyAsync("", embed: $"{Context.User.Mention} otrzymałeś {wishStr}{card.GetString(false, false, true)}"
                 .ToEmbedMessage(EMType.Success).Build());
@@ -1635,7 +1638,7 @@ namespace Sanakan.DiscordBot.Modules
 
             await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"user-{botuser.Id}", "users" });
+            _cacheManager.ExpireTag(CacheKeys.User(botuser.Id), CacheKeys.Users);
 
             await ReplyAsync("", embed: $"{Context.User.Mention} udało Ci się zdobyć:\n\n{reward}".ToEmbedMessage(EMType.Success).Build());
         }
@@ -1760,7 +1763,7 @@ namespace Sanakan.DiscordBot.Modules
 
             await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"user-{botuser.Id}", "users" });
+            _cacheManager.ExpireTag(CacheKeys.User(botuser.Id), CacheKeys.Users);
 
             await ReplyAsync("", embed: $"{Context.User.Mention} udało Ci się zdobyć:\n\n{reward}".ToEmbedMessage(EMType.Success).Build());
         }
@@ -1769,7 +1772,7 @@ namespace Sanakan.DiscordBot.Modules
         [Alias("sacrifice", "poswiec", "poświec", "poświeć", "poswięć", "poswieć")]
         [Summary("dodaje exp do karty, poświęcając kilka innych")]
         [Remarks("5412 5411 5410"), RequireWaifuCommandChannel]
-        public async Task SacraficeCardMultiAsync(
+        public async Task SacrificeCardMultiAsync(
             [Summary("WID(do ulepszenia)")]ulong idToUp,
             [Summary("WID kart(do poświęcenia)")]params ulong[] idsToSac)
         {
@@ -1815,7 +1818,7 @@ namespace Sanakan.DiscordBot.Modules
                     continue;
                 }
 
-                ++bUser.Stats.SacraficeCards;
+                ++bUser.Stats.SacrificedCardsCount;
                 bUser.GameDeck.Karma -= 0.28;
 
                 var exp = _waifuService.GetExpToUpgrade(cardToUp, card);
@@ -1831,7 +1834,7 @@ namespace Sanakan.DiscordBot.Modules
 
             await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"user-{bUser.Id}", "users" });
+            _cacheManager.ExpireTag(CacheKeys.User(bUser.Id), CacheKeys.Users);
 
             if (cardsToSac.Count > broken.Count)
             {
@@ -1922,7 +1925,7 @@ namespace Sanakan.DiscordBot.Modules
 
             await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"user-{bUser.Id}", "users" });
+            _cacheManager.ExpireTag(CacheKeys.User(bUser.Id), CacheKeys.Users);
 
             await ReplyAsync("", embed: $"{user.Mention} wyciągnął {cntIn} kart z klatki.".ToEmbedMessage(EMType.Success).Build());
         }
@@ -1954,7 +1957,7 @@ namespace Sanakan.DiscordBot.Modules
 
             await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"user-{bUser.Id}", "users" });
+            _cacheManager.ExpireTag(CacheKeys.User(bUser.Id), CacheKeys.Users);
 
             var content = $"{Context.User.Mention} usunął pozycje z listy życzeń.".ToEmbedMessage(EMType.Success).Build();
             await ReplyAsync("", embed: content);
@@ -2033,8 +2036,7 @@ namespace Sanakan.DiscordBot.Modules
 
             await _userRepository.SaveChangesAsync();
 
-            var userKey = string.Format(CacheKeys.User, databaseUser.Id);
-            _cacheManager.ExpireTag(userKey, CacheKeys.Users);
+            _cacheManager.ExpireTag(CacheKeys.User(databaseUser.Id), CacheKeys.Users);
 
             await ReplyAsync("", embed: $"{Context.User.Mention} dodał do listy życzeń: {response}".ToEmbedMessage(EMType.Success).Build());
         }
@@ -2051,7 +2053,7 @@ namespace Sanakan.DiscordBot.Modules
 
             await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"user-{bUser.Id}", "users" });
+            _cacheManager.ExpireTag(CacheKeys.User(bUser.Id), CacheKeys.Users);
 
             var response = (!view) ? $"ukrył" : $"udostępnił";
             var content = $"{Context.User.Mention} {response} swoją listę życzeń!".ToEmbedMessage(EMType.Success).Build();
@@ -2424,7 +2426,7 @@ namespace Sanakan.DiscordBot.Modules
 
             await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"user-{bUser.Id}", "users" });
+            _cacheManager.ExpireTag(CacheKeys.User(bUser.Id), CacheKeys.Users);
 
             await ReplyAsync("", embed: $"{Context.User.Mention} wyzwolił kartę {thisCard.GetString(false, false, true)}".ToEmbedMessage(EMType.Success).Build());
         }
@@ -2461,7 +2463,7 @@ namespace Sanakan.DiscordBot.Modules
 
             await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"user-{bUser.Id}", "users" });
+            _cacheManager.ExpireTag(CacheKeys.User(bUser.Id), CacheKeys.Users);
 
             await ReplyAsync("", embed: $"{Context.User.Mention} powiększył swój limit kart do {bUser.GameDeck.MaxNumberOfCards}.".ToEmbedMessage(EMType.Success).Build());
         }
@@ -2622,7 +2624,7 @@ namespace Sanakan.DiscordBot.Modules
 
             await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"user-{bUser.Id}", "users" });
+            _cacheManager.ExpireTag(CacheKeys.User(bUser.Id), CacheKeys.Users);
 
             await ReplyAsync("", embed: $"{Context.User.Mention} powiększył swój limit kart w galerii do {bUser.GameDeck.CardsInGallery}.".ToEmbedMessage(EMType.Success).Build());
         }
@@ -2681,7 +2683,7 @@ namespace Sanakan.DiscordBot.Modules
 
             await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"user-{bUser.Id}", "users" });
+            _cacheManager.ExpireTag(CacheKeys.User(bUser.Id), CacheKeys.Users);
 
             await ReplyAsync("", embed: $"{Context.User.Mention} uzyskał *{item3.Name}*".ToEmbedMessage(EMType.Success).Build());
         }
@@ -2719,7 +2721,7 @@ namespace Sanakan.DiscordBot.Modules
 
             await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"user-{bUser.Id}", "users" });
+            _cacheManager.ExpireTag(CacheKeys.User(bUser.Id), CacheKeys.Users);
 
             await ReplyAsync("", embed: $"{Context.User.Mention} oznaczył {cardsSelected.Count} kart.".ToEmbedMessage(EMType.Success).Build());
         }
@@ -2744,8 +2746,7 @@ namespace Sanakan.DiscordBot.Modules
 
             await _userRepository.SaveChangesAsync();
 
-            var discordUserkey = string.Format(CacheKeys.User, databaseUser.Id);
-            _cacheManager.ExpireTag(discordUserkey, CacheKeys.Users);
+            _cacheManager.ExpireTag(CacheKeys.User(databaseUser.Id), CacheKeys.Users);
 
             await ReplyAsync("", embed: $"{Context.User.Mention} zdjął tagi z {cardsSelected.Count} kart.".ToEmbedMessage(EMType.Success).Build());
         }
@@ -2778,7 +2779,7 @@ namespace Sanakan.DiscordBot.Modules
 
             await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"user-{bUser.Id}", "users" });
+            _cacheManager.ExpireTag(CacheKeys.User(bUser.Id), CacheKeys.Users);
 
             await ReplyAsync("", embed: $"{Context.User.Mention} oznaczył {untaggedCards.Count} kart.".ToEmbedMessage(EMType.Success).Build());
         }
@@ -2822,7 +2823,7 @@ namespace Sanakan.DiscordBot.Modules
 
             await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"user-{bUser.Id}", "users" });
+            _cacheManager.ExpireTag(CacheKeys.User(bUser.Id), CacheKeys.Users);
 
             await ReplyAsync("", embed: $"{Context.User.Mention} oznaczył {cards.Count} kart.".ToEmbedMessage(EMType.Success).Build());
         }
@@ -2835,8 +2836,8 @@ namespace Sanakan.DiscordBot.Modules
             [Summary("tag")]string tag,
             [Summary("WID kart")]params ulong[] wids)
         {
-            var bUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
-            var cardsSelected = bUser.GameDeck.Cards.Where(x => wids.Any(c => c == x.Id)).ToList();
+            var databaseUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
+            var cardsSelected = databaseUser.GameDeck.Cards.Where(x => wids.Any(c => c == x.Id)).ToList();
 
             if (cardsSelected.Count < 1)
             {
@@ -2857,7 +2858,7 @@ namespace Sanakan.DiscordBot.Modules
 
             await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"user-{bUser.Id}", "users" });
+            _cacheManager.ExpireTag(CacheKeys.User(databaseUser.Id), CacheKeys.Users);
 
             await ReplyAsync("", embed: $"{Context.User.Mention} zdjął tag {tag} z {counter} kart.".ToEmbedMessage(EMType.Success).Build());
         }
@@ -2874,7 +2875,7 @@ namespace Sanakan.DiscordBot.Modules
 
             await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"user-{bUser.Id}", "users" });
+            _cacheManager.ExpireTag(CacheKeys.User(bUser.Id), CacheKeys.Users);
 
             await ReplyAsync("", embed: $"{Context.User.Mention} ustawił nowe zasady wymiany.".ToEmbedMessage(EMType.Success).Build());
         }
@@ -2943,7 +2944,7 @@ namespace Sanakan.DiscordBot.Modules
 
             await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"user-{bUser.Id}", "users" });
+            _cacheManager.ExpireTag(CacheKeys.User(bUser.Id), CacheKeys.Users);
 
             var message = thisCard.Active ? "aktywował: " : "dezaktywował: ";
             var power = $"**Moc talii**: {bUser.GameDeck.DeckPower.ToString("F")}";
@@ -2974,9 +2975,8 @@ namespace Sanakan.DiscordBot.Modules
                 IncludeGameDeck = true,
                 AsNoTracking = true,
             });
-            //.FromCacheAsync(new[] { "users" });
 
-            if (cards.Count() < 1)
+            if (!cards.Any())
             {
                 await ReplyAsync("", embed: $"Nie odnaleziono kart {character}".ToEmbedMessage(EMType.Error).Build());
                 return;
@@ -3323,7 +3323,7 @@ namespace Sanakan.DiscordBot.Modules
 
             await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"user-{botUser.Id}", "users" });
+            _cacheManager.ExpireTag(CacheKeys.User(botUser.Id), CacheKeys.Users);
 
             _ = Task.Run(async () =>
             {
@@ -3388,7 +3388,7 @@ namespace Sanakan.DiscordBot.Modules
 
             await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"user-{botUser.Id}", "users" });
+            _cacheManager.ExpireTag(CacheKeys.User(botUser.Id), CacheKeys.Users);
 
             _ = Task.Run(async () =>
             {
@@ -3538,14 +3538,14 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks("451"), RequireWaifuCommandChannel]
         public async Task SetProfileWaifuAsync([Summary("WID")]ulong wid)
         {
-            var bUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
+            var databaseUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
 
             if (wid == 0)
             {
-                if (bUser.GameDeck.FavouriteWaifuId.HasValue)
+                if (databaseUser.GameDeck.FavouriteWaifuId.HasValue)
                 {
-                    var prevWaifus = bUser.GameDeck.Cards
-                        .Where(x => x.CharacterId == bUser.GameDeck.FavouriteWaifuId);
+                    var prevWaifus = databaseUser.GameDeck.Cards
+                        .Where(x => x.CharacterId == databaseUser.GameDeck.FavouriteWaifuId);
 
                     foreach (var card in prevWaifus)
                     {
@@ -3553,7 +3553,7 @@ namespace Sanakan.DiscordBot.Modules
                         _ = card.CalculateCardPower();
                     }
 
-                    bUser.GameDeck.FavouriteWaifuId = null;
+                    databaseUser.GameDeck.FavouriteWaifuId = null;
                     await _userRepository.SaveChangesAsync();
                 }
 
@@ -3561,7 +3561,7 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            var thisCard = bUser.GameDeck.Cards.FirstOrDefault(x => x.Id == wid && !x.InCage);
+            var thisCard = databaseUser.GameDeck.Cards.FirstOrDefault(x => x.Id == wid && !x.InCage);
 
             if (thisCard == null)
             {
@@ -3570,24 +3570,24 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            if (bUser.GameDeck.FavouriteWaifuId == thisCard.CharacterId)
+            if (databaseUser.GameDeck.FavouriteWaifuId == thisCard.CharacterId)
             {
                 await ReplyAsync("", embed: $"{Context.User.Mention} masz już ustawioną tą postać!"
                     .ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
-            var allPrevWaifus = bUser.GameDeck.Cards.Where(x => x.CharacterId == bUser.GameDeck.FavouriteWaifuId);
+            var allPrevWaifus = databaseUser.GameDeck.Cards.Where(x => x.CharacterId == databaseUser.GameDeck.FavouriteWaifuId);
             foreach (var card in allPrevWaifus)
             {
                 card.Affection -= 5;
                 _ = card.CalculateCardPower();
             }
 
-            bUser.GameDeck.FavouriteWaifuId = thisCard.CharacterId;
+            databaseUser.GameDeck.FavouriteWaifuId = thisCard.CharacterId;
             await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"user-{bUser.Id}", "users" });
+            _cacheManager.ExpireTag(CacheKeys.User(databaseUser.Id), CacheKeys.Users);
 
             await ReplyAsync("", embed: $"{Context.User.Mention} ustawił {thisCard.Name} jako ulubioną postać.".ToEmbedMessage(EMType.Success).Build());
         }
@@ -3682,7 +3682,7 @@ namespace Sanakan.DiscordBot.Modules
             }
 
             await _userRepository.SaveChangesAsync();
-            _cacheManager.ExpireTag(new string[] { $"user-{bUser.Id}", "users" });
+            _cacheManager.ExpireTag(CacheKeys.User(bUser.Id), CacheKeys.Users);
 
             await ReplyAsync("", embed: $"{Context.User.Mention} nowy charakter to {thisCard.Dere}".ToEmbedMessage(EMType.Success).Build());
         }
@@ -3754,9 +3754,9 @@ namespace Sanakan.DiscordBot.Modules
                 (int)gameDeck.ExperienceContainer.Level,
                 gameDeck.ExperienceContainer.ExperienceCount.ToString("F"),
                 userStats.ReleasedCards,
-                userStats.DestroyedCards, 
-                userStats.SacraficeCards,
-                userStats.UpgaredCards,
+                userStats.DestroyedCardsCount, 
+                userStats.SacrificedCardsCount,
+                userStats.UpgradedCardsCount,
                 userStats.UnleashedCards,
                 gameDeck.CTCount,
                 gameDeck.Karma.ToString("F"),

@@ -521,10 +521,12 @@ namespace Sanakan.Game.Services
             using var serviceScope = _serviceScopeFactory.CreateScope();
             var serviceProvider = serviceScope.ServiceProvider;
             var userRepository = serviceProvider.GetRequiredService<IUserRepository>();
-            var bUser = await userRepository.GetUserOrCreateAsync(discordUser.Id);
-            if (!CheckIfUserCanBuy(type, bUser, realCost))
+            var databaseUser = await userRepository.GetUserOrCreateAsync(discordUser.Id);
+
+            if (!CheckIfUserCanBuy(type, databaseUser, realCost))
             {
-                return $"{discordUser.Mention} nie posiadasz wystarczającej liczby {GetShopCurrencyName(type)}!".ToEmbedMessage(EMType.Error).Build();
+                return $"{discordUser.Mention} nie posiadasz wystarczającej liczby {GetShopCurrencyName(type)}!"
+                    .ToEmbedMessage(EMType.Error).Build();
             }
 
             if (thisItem.Item.Type.IsBoosterPack())
@@ -540,45 +542,45 @@ namespace Sanakan.Game.Services
                     if (booster != null)
                     {
                         booster.CardSourceFromPack = GetBoosterpackSource(type);
-                        bUser.GameDeck.BoosterPacks.Add(booster);
+                        databaseUser.GameDeck.BoosterPacks.Add(booster);
                     }
                 }
 
-                bUser.Stats.WastedPuzzlesOnCards += realCost;
+                databaseUser.Stats.WastedPuzzlesOnCards += realCost;
             }
             else if (thisItem.Item.Type.IsPreAssembledFigure())
             {
-                if (bUser.GameDeck.Figures.Any(x => x.PAS == thisItem.Item.Type.ToPASType()))
+                if (databaseUser.GameDeck.Figures.Any(x => x.PAS == thisItem.Item.Type.ToPASType()))
                 {
                     return $"{discordUser.Mention} masz już taką figurkę.".ToEmbedMessage(EMType.Error).Build();
                 }
 
                 var figure = thisItem.Item.Type.ToPAFigure(_systemClock.UtcNow);
-                if (figure != null) bUser.GameDeck.Figures.Add(figure);
+                if (figure != null) databaseUser.GameDeck.Figures.Add(figure);
 
-                IncreaseMoneySpentOnCards(type, bUser, realCost);
+                IncreaseMoneySpentOnCards(type, databaseUser, realCost);
             }
             else
             {
-                var inUserItem = bUser.GameDeck.Items
+                var inUserItem = databaseUser.GameDeck.Items
                     .FirstOrDefault(x => x.Type == thisItem.Item.Type
                         && x.Quality == thisItem.Item.Quality);
 
                 if (inUserItem == null)
                 {
                     inUserItem = thisItem.Item.Type.ToItem(itemCount, thisItem.Item.Quality);
-                    bUser.GameDeck.Items.Add(inUserItem);
+                    databaseUser.GameDeck.Items.Add(inUserItem);
                 }
                 else inUserItem.Count += itemCount;
 
-                IncreaseMoneySpentOnCookies(type, bUser, realCost);
+                IncreaseMoneySpentOnCookies(type, databaseUser, realCost);
             }
 
-            RemoveMoneyFromUser(type, bUser, realCost);
+            RemoveMoneyFromUser(type, databaseUser, realCost);
 
             await userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"user-{bUser.Id}", "users" });
+            _cacheManager.ExpireTag(new string[] { $"user-{databaseUser.Id}", "users" });
 
             return $"{discordUser.Mention} zakupił: _{thisItem.Item.Name}{boosterPackTitleName}{count}_.".ToEmbedMessage(EMType.Success).Build();
         }
@@ -1129,7 +1131,7 @@ namespace Sanakan.Game.Services
             var sImageLocation = $"{Paths.CardsMiniatures}/{card.Id}.png";
             var pImageLocation = $"{Paths.CardsInProfiles}/{card.Id}.png";
 
-            using var image = await _imageProcessor.GetWaifuCardAsync(card);
+            using var image = await _imageProcessor.GetWaifuCardImageAsync(card);
             image.SaveToPath(imageLocation, 300);
             image.SaveToPath(sImageLocation, 133);
 
@@ -1243,14 +1245,14 @@ namespace Sanakan.Game.Services
             var GetX = _fileSystem.Exists(ThisUri(safariImage, safariImageType)) ? safariImage.X : DefaultX;
             var GetY = _fileSystem.Exists(ThisUri(safariImage, safariImageType)) ? safariImage.Y : DefaultY;
 
-            using var cardImage = await _imageProcessor.GetWaifuCardAsync(card);
-            var posX = safariImage != null ? GetX : SafariImage.DefaultX();
-            int posY = safariImage != null ? GetY : SafariImage.DefaultY();
-            using var pokeImage = _imageProcessor.GetCatchThatWaifuImage(cardImage, imagePath, posX, posY);
+            using var cardImage = await _imageProcessor.GetWaifuCardImageAsync(card);
+            var xPosition = safariImage != null ? GetX : SafariImage.DefaultX();
+            int yPosition = safariImage != null ? GetY : SafariImage.DefaultY();
+            using var pokeImage = _imageProcessor.GetCatchThatWaifuImage(cardImage, imagePath, xPosition, yPosition);
             using var stream = pokeImage.ToJpgStream();
 
-            var msg = await trashChannel.SendFileAsync(stream, $"poke.jpg");
-            return msg.Attachments.First().Url;
+            var message = await trashChannel.SendFileAsync(stream, $"poke.jpg");
+            return message.Attachments.First().Url;
         }
 
         public async Task<string> GetSafariViewAsync(SafariImage safariImage, ITextChannel trashChannel)

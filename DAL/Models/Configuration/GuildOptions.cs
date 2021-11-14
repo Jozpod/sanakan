@@ -93,7 +93,7 @@ namespace Sanakan.DAL.Models.Configuration
         public ulong ToDoChannelId { get; set; }
 
         /// <summary>
-        /// The Discord channel identifier.
+        /// The Discord channel identifier which is marked as "Not Safe For Work".
         /// </summary>
         public ulong NsfwChannelId { get; set; }
 

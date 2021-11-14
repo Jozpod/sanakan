@@ -313,5 +313,23 @@ namespace Sanakan.DiscordBot.Resources {
                 return ResourceManager.GetString("UserQuestsProgress", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to **Portfel** {0}:
+        ///
+        ///{1} **SC**
+        ///{2} **TC**
+        ///{3} **AC**
+        ///
+        ///
+        ///**PW**:
+        ///{4} **CT**
+        ///{5} **PC**.
+        /// </summary>
+        internal static string WalletInfo {
+            get {
+                return ResourceManager.GetString("WalletInfo", resourceCulture);
+            }
+        }
     }
 }

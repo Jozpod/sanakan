@@ -27,8 +27,8 @@ namespace Sanakan.Web.Controllers
     public class RichMessageController : ControllerBase
     {
         private readonly ISystemClock _systemClock;
-        private readonly IOptionsMonitor<SanakanConfiguration> _config;
         private readonly IDiscordSocketClientAccessor _client;
+        private readonly IOptionsMonitor<SanakanConfiguration> _config;
 
         public RichMessageController(
             ISystemClock systemClock,
@@ -43,64 +43,75 @@ namespace Sanakan.Web.Controllers
         /// <summary>
         /// Deletes rich message
         /// </summary>
-        [HttpDelete("{id}")]
+        [HttpDelete("{messageId}")]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status200OK)]
         public async Task<IActionResult> DeleteRichMessageAsync(ulong messageId)
         {
             var config = _config.CurrentValue;
 
-            _ = Task.Run(async () =>
+            var client = _client.Client;
+
+            if(client == null)
             {
-                foreach (var rmc in config.RMConfig)
+                return ShindenInternalServerError("Cannot access discord client.");
+            }
+
+            foreach (var richMessageConfig in config.RMConfig)
+            {
+                var guild = client.GetGuild(richMessageConfig.GuildId);
+
+                if (guild == null)
                 {
-                    var guild = _client.Client.GetGuild(rmc.GuildId);
-                    
-                    if (guild == null)
-                    {
-                        continue;
-                    }
-
-                    var channel = guild.GetTextChannel(rmc.ChannelId);
-                    
-                    if (channel == null)
-                    {
-                        continue;
-                    }
-
-                    var msg = await channel.GetMessageAsync(messageId);
-
-                    if (msg == null)
-                    {
-                        continue;
-                    }
-
-                    await msg.DeleteAsync();
-                    break;
+                    continue;
                 }
-            });
+
+                var channel = guild.GetTextChannel(richMessageConfig.ChannelId);
+
+                if (channel == null)
+                {
+                    continue;
+                }
+
+                var message = await channel.GetMessageAsync(messageId);
+
+                if (message == null)
+                {
+                    continue;
+                }
+
+                await message.DeleteAsync();
+                break;
+            }
 
             return ShindenOk("Message deleted!");
         }
 
         /// <summary>
-        /// Modyfikuje wiadomość typu RichMessage
+        /// Modifies rich type message.
         /// </summary>
         /// <remarks>
-        /// Do modyfikacji wiadomości należy podać wszystkie dane od nowa.
-        /// Jeśli chcemy aby link z pola Url zadziałał to należy również sprecyzować tytuł wiadomości.
+        /// All fields must be supplied or message is generated from scratch.
+        /// The title of message must be provided for URL field to work properly.
         /// </remarks>
-        /// <param name="id">id wiadomości</param>
-        /// <param name="message">The message</param>
-        [HttpPut("{id}")]
+        /// <param name="messageId">The message identifier.</param>
+        /// <param name="richMessage">The message</param>
+        [HttpPut("{messageId}")]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status200OK)]
-        public async Task<IActionResult> ModifyeRichMessageAsync(
-            ulong id, [FromBody, Required]RichMessage message)
+        public async Task<IActionResult> ModifyRichMessageAsync(
+            ulong messageId, [FromBody, Required]RichMessage richMessage)
         {
             var config = _config.CurrentValue;
 
+            var client = _client.Client;
+
+            if (client == null)
+            {
+                return ShindenInternalServerError("Cannot access discord client.");
+            }
+
             foreach (var rmc in config.RMConfig)
             {
-                var guild = _client.Client.GetGuild(rmc.GuildId);
+                var guild = client.GetGuild(rmc.GuildId);
 
                 if (guild == null)
                 {
@@ -114,14 +125,14 @@ namespace Sanakan.Web.Controllers
                     continue;
                 }
 
-                var msg = await channel.GetMessageAsync(id);
+                var messgae = (IUserMessage)await channel.GetMessageAsync(messageId);
 
-                if (msg == null)
+                if (messgae == null)
                 {
                     continue;
                 }
 
-                await ((IUserMessage)msg).ModifyAsync(x => x.Embed = message.ToEmbed());
+                await messgae.ModifyAsync(x => x.Embed = richMessage.ToEmbed());
                 break;
             }
 
@@ -132,11 +143,11 @@ namespace Sanakan.Web.Controllers
         /// Sends rich message.
         /// </summary>
         /// <remarks>
-        /// Do utworzenia wiadomości wystarczy ustawić jej typ oraz, podać opis.
-        /// Jeśli chcemy aby link z pola Url zadziałał to należy również sprecyzować tytuł wiadomości.
+        /// The minimum amount of information required for new message is type and description.
+        /// The title of message must be provided for URL field to work.
         /// </remarks>
-        /// <param name="message">wiadomość</param>
-        /// <param name="mention">czy oznanczyć zainteresowanych</param>
+        /// <param name="message">The message content.</param>
+        /// <param name="mention">The mention option.</param>
         [HttpPost]
         [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
@@ -151,27 +162,34 @@ namespace Sanakan.Web.Controllers
                 mention = false;
             }
 
-            var msgList = new List<ulong>();
+            var client = _client.Client;
+
+            if (client == null)
+            {
+                return ShindenInternalServerError("Cannot access discord client.");
+            }
+
+            var messageList = new List<ulong>();
             var richMessageConfigEntries = config.RMConfig.Where(x => x.Type == message.MessageType);
 
             foreach (var richMessageConfig in richMessageConfigEntries)
             {
                 if (richMessageConfig.Type == RichMessageType.UserNotify)
                 {
-                    var user = _client.Client.GetUser(richMessageConfig.ChannelId);
+                    var user = client.GetUser(richMessageConfig.ChannelId);
                     if (user == null)
                     {
                         continue;
                     }
 
-                    var pwCh = await user.GetOrCreateDMChannelAsync();
-                    var pwm = await pwCh.SendMessageAsync("", embed: message.ToEmbed());
+                    var dmChannel = await user.GetOrCreateDMChannelAsync();
+                    var privateMessage = await dmChannel.SendMessageAsync("", embed: message.ToEmbed());
 
-                    msgList.Add(pwm.Id);
+                    messageList.Add(privateMessage.Id);
                     continue;
                 }
 
-                var guild = _client.Client.GetGuild(richMessageConfig.GuildId);
+                var guild = client.GetGuild(richMessageConfig.GuildId);
                 
                 if (guild == null)
                 {
@@ -200,29 +218,29 @@ namespace Sanakan.Web.Controllers
 
                 if (discordMessage != null)
                 {
-                    msgList.Add(discordMessage.Id);
+                    messageList.Add(discordMessage.Id);
                 }
             }
 
-            if (msgList.Count == 0)
+            if (messageList.Count == 0)
             {
                 return ShindenBadRequest("Message not send!");
             }
 
-            if (msgList.Count > 1)
+            if (messageList.Count > 1)
             {
-                return ShindenRichOk("Message sended!", msgList.ToArray());
+                return ShindenRichOk("Message sended!", messageList.ToArray());
             }
 
-            return ShindenRichOk("Message sended!", msgList.First());
+            return ShindenRichOk("Message sended!", messageList.First());
         }
 
         /// <summary>
-        /// Zwraca przykładową wiadomość typu RichMessage
+        /// Returns example rich type message.
         /// </summary>
         [HttpGet]
         [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
-        public IActionResult GetExampleMsg()
+        public IActionResult GetExampleMessage()
         {
             var result = new RichMessage
             {

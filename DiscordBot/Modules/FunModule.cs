@@ -27,6 +27,7 @@ using Sanakan.Game.Models;
 using Sanakan.DiscordBot.Abstractions;
 using Humanizer;
 using Sanakan.DiscordBot.Modules;
+using Sanakan.Common.Cache;
 
 namespace Sanakan.DiscordBot.Modules
 {
@@ -105,7 +106,7 @@ namespace Sanakan.DiscordBot.Modules
 
             await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"user-{botuser.Id}" });
+            _cacheManager.ExpireTag(CacheKeys.User(botuser.Id));
 
             await ReplyAsync("", embed: $"{Context.User.Mention} łap drobne na waciki!".ToEmbedMessage(EMType.Success).Build());
         }
@@ -215,7 +216,7 @@ namespace Sanakan.DiscordBot.Modules
 
             await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"user-{botuser.Id}", "users" });
+            _cacheManager.ExpireTag(CacheKeys.User(botuser.Id), CacheKeys.Users);
 
             await ReplyAsync("", embed: $"{Context.User.Mention} łap piątaka!".ToEmbedMessage(EMType.Success).Build());
         }
@@ -287,7 +288,7 @@ namespace Sanakan.DiscordBot.Modules
 
             await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"user-{botuser.Id}", "users" });
+            _cacheManager.ExpireTag(CacheKeys.User(botuser.Id), CacheKeys.Users);
 
             await ReplyAsync("", embed: embed.Build());
             await Context.Channel.SendFileAsync(string.Format(Paths.CoinPicture, (int)thrown));
@@ -315,7 +316,7 @@ namespace Sanakan.DiscordBot.Modules
 
             await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"user-{botuser.Id}", "users" });
+            _cacheManager.ExpireTag(CacheKeys.User(botuser.Id), CacheKeys.Users);
 
             await ReplyAsync("", embed: $"{Context.User.Mention} zmienił nastawy automatu.".ToEmbedMessage(EMType.Success).Build());
         }
@@ -371,7 +372,7 @@ namespace Sanakan.DiscordBot.Modules
 
             var smConfig = botUser.SMConfig;
 
-            _cacheManager.ExpireTag(new string[] { $"user-{botUser.Id}", "users" });
+            _cacheManager.ExpireTag(CacheKeys.User(botUser.Id), CacheKeys.Users);
 
             var psay = smConfig.PsayMode > 0 ? $"{PsyduckEmoji} " : " ";
             var beatValue = smConfig.Beat.Value();
@@ -394,7 +395,9 @@ namespace Sanakan.DiscordBot.Modules
         [Alias("donatesc")]
         [Summary("dajesz datek innemu graczowi w postaci SC obarczony 40% podatkiem")]
         [Remarks("Karna 2000"), RequireCommandChannel]
-        public async Task GiveUserScAsync([Summary("użytkownik")]SocketGuildUser user, [Summary("liczba SC (min. 1000)")]uint value)
+        public async Task GiveUserScAsync(
+            [Summary("użytkownik")]IGuildUser user,
+            [Summary("liczba SC (min. 1000)")]uint value)
         {
             if (value < 1000)
             {
@@ -430,7 +433,7 @@ namespace Sanakan.DiscordBot.Modules
 
             await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"user-{thisUser.Id}", "users", $"user-{targetUser.Id}" });
+            _cacheManager.ExpireTag(CacheKeys.User(thisUser.Id), CacheKeys.Users, CacheKeys.User(targetUser.Id));
 
             await ReplyAsync("", embed: $"{Context.User.Mention} podarował {user.Mention} {newScCnt} SC".ToEmbedMessage(EMType.Success).Build());
         }

@@ -96,7 +96,7 @@ namespace Sanakan.DiscordBot.Modules
                     isDev = _config.CurrentValue.AllowedToDebug.Any(x => x == gUser.Id);
                 }
 
-                await ReplyAsync(_helperService.GiveHelpAboutPublicCmd(command, prefix, isAdmin, isDev));
+                await ReplyAsync(_helperService.GiveHelpAboutPublicCommand(command, prefix, isAdmin, isDev));
             }
             catch (Exception ex)
             {

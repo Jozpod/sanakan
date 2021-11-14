@@ -49,8 +49,4 @@
     <ProjectReference Include="..\..\TaskQueue\TaskQueue.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="MessageHandlersTests\" />
-  </ItemGroup>
-
 </Project>

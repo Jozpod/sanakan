@@ -16,9 +16,9 @@ namespace Sanakan.DAL.Models
         public long TotalAnswers { get; set; }
         public long TurnamentsWon { get; set; }
 
-        public long UpgaredCards { get; set; }
-        public long SacraficeCards { get; set; }
-        public long DestroyedCards { get; set; }
+        public long UpgradedCardsCount { get; set; }
+        public long SacrificedCardsCount { get; set; }
+        public long DestroyedCardsCount { get; set; }
         public long UnleashedCards { get; set; }
         public long ReleasedCards { get; set; }
         public long OpenedBoosterPacks { get; set; }

@@ -103,7 +103,7 @@ namespace Sanakan.DiscordBot.Modules
         [Command("poke", RunMode = RunMode.Async)]
         [Summary("generuje obrazek safari")]
         [Remarks("1")]
-        public async Task GeneratePokeImageAsync([Summary("nr grafiki")]int index)
+        public async Task GeneratePokeImageAsync([Summary("nr grafiki")]int imageIndex)
         {
             try
             {
@@ -119,7 +119,7 @@ namespace Sanakan.DiscordBot.Modules
                 var channel = (ITextChannel)Context.Channel;
 
                 _ = await _waifuService.GetSafariViewAsync(
-                    images[index],
+                    images[imageIndex],
                     _waifuService.GenerateNewCard(null, character), channel);
             }
             catch (Exception ex)
@@ -159,8 +159,7 @@ namespace Sanakan.DiscordBot.Modules
             await _userRepository.SaveChangesAsync();
 
             var discordUserId = Context.User.Id;
-            var key = string.Format(CacheKeys.User, discordUserId);
-            _cacheManager.ExpireTag(key, CacheKeys.Users);
+            _cacheManager.ExpireTag(CacheKeys.User(discordUserId), CacheKeys.Users);
 
             await ReplyAsync("", embed: $"{user.Mention} - blacklist: {targetUser.IsBlacklisted}".ToEmbedMessage(EMType.Success).Build());
         }
@@ -384,9 +383,9 @@ namespace Sanakan.DiscordBot.Modules
 
                     bool muted = false;
                     var selected = _randomNumberGenerator.GetOneRandomFrom(users);
-                    if (mutedRole != null && selected is SocketGuildUser su)
+                    if (mutedRole != null && selected is IGuildUser selectedUser)
                     {
-                        if (su.Roles.Any(x => x.Id == mutedRole.Id))
+                        if (selectedUser.RoleIds.Any(id => id == mutedRole.Id))
                         {
                             muted = true;
                         }
@@ -468,8 +467,7 @@ namespace Sanakan.DiscordBot.Modules
 
             await _cardRepository.SaveChangesAsync();
 
-            var discordUserkey = string.Format(CacheKeys.User, discordUserId);
-            _cacheManager.ExpireTag(discordUserkey, CacheKeys.Users);
+            _cacheManager.ExpireTag(CacheKeys.User(discordUserId), CacheKeys.Users);
 
             await ReplyAsync("", embed: reply.ToEmbedMessage(EMType.Success).Build());
         }
@@ -526,7 +524,7 @@ namespace Sanakan.DiscordBot.Modules
 
             await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"user-{Context.User.Id}", "users" });
+            _cacheManager.ExpireTag(CacheKeys.User(Context.User.Id), CacheKeys.Users);
 
             var content = $"{user.Mention} ustawiono {level} poziom.".ToEmbedMessage(EMType.Success).Build();
             await ReplyAsync("", embed: content);
@@ -603,8 +601,7 @@ namespace Sanakan.DiscordBot.Modules
 
             await _cardRepository.SaveChangesAsync();
 
-            var discordUserkey = string.Format(CacheKeys.User, Context.User.Id);
-            _cacheManager.ExpireTag(discordUserkey, CacheKeys.Users);
+            _cacheManager.ExpireTag(CacheKeys.User(Context.User.Id), CacheKeys.Users);
 
             await ReplyAsync("", embed: reply.ToEmbedMessage(EMType.Success).Build());
         }
@@ -657,15 +654,16 @@ namespace Sanakan.DiscordBot.Modules
         [Command("dusrcards"), Priority(1)]
         [Summary("usuwa karty użytkownika o podanym id z bazy")]
         [Remarks("845155646123")]
-        public async Task RemoveCardsUserAsync([Summary("id użytkownika")]ulong id)
+        public async Task RemoveCardsUserAsync([Summary("id użytkownika")]ulong discordUserId)
         {
-            var user = await _userRepository.GetUserOrCreateAsync(id);
+            var user = await _userRepository.GetUserOrCreateAsync(discordUserId);
             user.GameDeck.Cards.Clear();
 
             await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { "users", $"user-{id}" });
-            var content = $"Karty użytkownika o id: `{id}` zostały skasowane.".ToEmbedMessage(EMType.Success).Build();
+            _cacheManager.ExpireTag(CacheKeys.User(discordUserId), CacheKeys.Users);
+
+            var content = $"Karty użytkownika o id: `{discordUserId}` zostały skasowane.".ToEmbedMessage(EMType.Success).Build();
 
             await ReplyAsync("", embed: content);
         }
@@ -674,11 +672,11 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("usuwa użytkownika o podanym id z bazy")]
         [Remarks("845155646123")]
         public async Task FactoryUserAsync(
-            [Summary("id użytkownika")]ulong id,
+            [Summary("id użytkownika")]ulong discordUserId,
             [Summary("czy usunąć karty?")]bool cards = false)
         {
             var fakeUser = await _userRepository.GetUserOrCreateAsync(1);
-            var user = await _userRepository.GetUserOrCreateAsync(id);
+            var user = await _userRepository.GetUserOrCreateAsync(discordUserId);
 
             if (!cards)
             {
@@ -686,7 +684,7 @@ namespace Sanakan.DiscordBot.Modules
                 {
                     card.InCage = false;
                     card.TagList.Clear();
-                    card.LastOwnerId = id;
+                    card.LastOwnerId = discordUserId;
                     card.GameDeckId = fakeUser.GameDeck.Id;
                 }
             }
@@ -694,19 +692,19 @@ namespace Sanakan.DiscordBot.Modules
             _userRepository.Remove(user);
             await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { "users", $"user-{id}" });
+            _cacheManager.ExpireTag(CacheKeys.User(discordUserId), CacheKeys.Users);
 
-            await ReplyAsync("", embed: $"Użytkownik o id: `{id}` został wymazany.".ToEmbedMessage(EMType.Success).Build());
+            await ReplyAsync("", embed: $"Użytkownik o id: `{discordUserId}` został wymazany.".ToEmbedMessage(EMType.Success).Build());
         }
 
         [Command("tc duser"), Priority(1)]
         [Summary("usuwa dane użytkownika o podanym id z bazy i danej wartości tc")]
         [Remarks("845155646123 5000")]
         public async Task FactoryUserAsync(
-            [Summary("id użytkownika")]ulong id,
+            [Summary("id użytkownika")]ulong discordUserId,
             [Summary("wartość tc")]long value)
         {
-            var user = await _userRepository.GetUserOrCreateAsync(id);
+            var user = await _userRepository.GetUserOrCreateAsync(discordUserId);
             var cards = user.GameDeck.Cards.OrderByDescending(x => x.CreatedOn).ToList();
 
             foreach (var card in cards)
@@ -749,9 +747,9 @@ namespace Sanakan.DiscordBot.Modules
 
             await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { "users", $"user-{id}" });
+            _cacheManager.ExpireTag(CacheKeys.User(discordUserId), CacheKeys.Users);
 
-            await ReplyAsync("", embed: $"Użytkownik o id: `{id}` został zrównany.".ToEmbedMessage(EMType.Success).Build());
+            await ReplyAsync("", embed: $"Użytkownik o id: `{discordUserId}` został zrównany.".ToEmbedMessage(EMType.Success).Build());
         }
 
         [Command("utitle"), Priority(1)]
@@ -1040,8 +1038,7 @@ namespace Sanakan.DiscordBot.Modules
 
             await _userRepository.SaveChangesAsync();
 
-            var discordUserkey = string.Format(CacheKeys.User, botuser.Id);
-            _cacheManager.ExpireTag(discordUserkey, CacheKeys.Users);
+            _cacheManager.ExpireTag(CacheKeys.User(botuser.Id), CacheKeys.Users);
 
             var cnt = (count > 1) ? $" x{count}" : "";
             var content = $"{user.Mention} otrzymał _{item.Name}_{cnt}.".ToEmbedMessage(EMType.Success).Build();
@@ -1082,8 +1079,7 @@ namespace Sanakan.DiscordBot.Modules
 
             await _userRepository.SaveChangesAsync();
 
-            var discordUserkey = string.Format(CacheKeys.User, databaseUser.Id);
-            _cacheManager.ExpireTag(discordUserkey, CacheKeys.Users);
+            _cacheManager.ExpireTag(CacheKeys.User(databaseUser.Id), CacheKeys.Users);
 
             var content = $"{user.Mention} otrzymał {card.GetString(false, false, true)}.".ToEmbedMessage(EMType.Success).Build();
 
@@ -1125,8 +1121,7 @@ namespace Sanakan.DiscordBot.Modules
 
             _waifuService.DeleteCardImageIfExist(card);
 
-            var discordUserkey = string.Format(CacheKeys.User, card.GameDeckId);
-            _cacheManager.ExpireTag(discordUserkey, CacheKeys.Users);
+            _cacheManager.ExpireTag(CacheKeys.User(card.GameDeckId), CacheKeys.Users);
 
             await ReplyAsync("", embed: $"Utworzono: {card.GetString(false, false, true)}.".ToEmbedMessage(EMType.Success).Build());
         }
@@ -1143,7 +1138,7 @@ namespace Sanakan.DiscordBot.Modules
 
             await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"user-{botuser.Id}", "users" });
+            _cacheManager.ExpireTag(CacheKeys.User(botuser.Id), CacheKeys.Users);
 
             var content = $"{user.Mention} ma teraz {botuser.ScCount} SC".ToEmbedMessage(EMType.Success).Build();
             await ReplyAsync("", embed: content);
@@ -1161,7 +1156,7 @@ namespace Sanakan.DiscordBot.Modules
 
             await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"user-{botuser.Id}", "users" });
+            _cacheManager.ExpireTag(CacheKeys.User(botuser.Id), CacheKeys.Users);
 
             await ReplyAsync("", embed: $"{user.Mention} ma teraz {botuser.AcCount} AC".ToEmbedMessage(EMType.Success).Build());
         }
@@ -1178,8 +1173,7 @@ namespace Sanakan.DiscordBot.Modules
 
             await _userRepository.SaveChangesAsync();
 
-            var discordUserkey = string.Format(CacheKeys.User, botuser.Id);
-            _cacheManager.ExpireTag(discordUserkey, CacheKeys.Users);
+            _cacheManager.ExpireTag(CacheKeys.User(botuser.Id), CacheKeys.Users);
 
             await ReplyAsync("", embed: $"{user.Mention} ma teraz {botuser.TcCount} TC".ToEmbedMessage(EMType.Success).Build());
         }
@@ -1196,7 +1190,7 @@ namespace Sanakan.DiscordBot.Modules
 
             await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"user-{botuser.Id}", "users" });
+            _cacheManager.ExpireTag(CacheKeys.User(botuser.Id), CacheKeys.Users);
 
             await ReplyAsync("", embed: $"{user.Mention} ma teraz {botuser.GameDeck.PVPCoins} PC".ToEmbedMessage(EMType.Success).Build());
         }
@@ -1213,7 +1207,7 @@ namespace Sanakan.DiscordBot.Modules
 
             await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"user-{botuser.Id}", "users" });
+            _cacheManager.ExpireTag(CacheKeys.User(botuser.Id), CacheKeys.Users);
 
             await ReplyAsync("", embed: $"{user.Mention} ma teraz {botuser.GameDeck.CTCount} CT".ToEmbedMessage(EMType.Success).Build());
         }
@@ -1230,7 +1224,7 @@ namespace Sanakan.DiscordBot.Modules
 
             await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"user-{botuser.Id}", "users" });
+            _cacheManager.ExpireTag(CacheKeys.User(botuser.Id), CacheKeys.Users);
 
             await ReplyAsync("", embed: $"{user.Mention} ma teraz {botuser.ExperienceCount} punktów doświadczenia.".ToEmbedMessage(EMType.Success).Build());
         }
@@ -1247,7 +1241,7 @@ namespace Sanakan.DiscordBot.Modules
 
             await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"user-{botuser.Id}", "users" });
+            _cacheManager.ExpireTag(CacheKeys.User(botuser.Id), CacheKeys.Users);
 
             var content = $"{user.Mention} ma teraz {botuser.WarningsCount} punktów ostrzeżeń.".ToEmbedMessage(EMType.Success).Build();
             await ReplyAsync("", embed: content);
@@ -1426,7 +1420,7 @@ namespace Sanakan.DiscordBot.Modules
                     }
                 }
 
-                await ReplyAsync(_helperService.GiveHelpAboutPrivateCmd("Debug", command, prefix));
+                await ReplyAsync(_helperService.GiveHelpAboutPrivateCommand("Debug", command, prefix));
             }
             catch (Exception ex)
             {

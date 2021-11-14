@@ -492,9 +492,10 @@ namespace Sanakan.TaskQueue
 
                         _payload.State = ExchangeStatus.End;
 
-                        var discordUser1key = string.Format(CacheKeys.User, _payload.P1.User.Id);
-                        var discordUser2key = string.Format(CacheKeys.User, _payload.P2.User.Id);
-                        _cacheManager.ExpireTag(discordUser1key, discordUser2key,  CacheKeys.Users);
+                        _cacheManager.ExpireTag(
+                            CacheKeys.User(_payload.P1.User.Id),
+                            CacheKeys.User(_payload.P2.User.Id),
+                            CacheKeys.Users);
                     }
                 }
                 else if (reaction.Emote.Equals(Emojis.DeclineEmote) && _payload.State != ExchangeStatus.End)

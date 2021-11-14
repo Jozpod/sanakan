@@ -20,6 +20,7 @@ namespace Sanakan.TaskQueue.Builder
             services.AddScoped<IMessageHandler<UpdateCardMessage>, UpdateCardMessageHandler>();
             services.AddScoped<IMessageHandler<UpdateCardPictureMessage>, UpdateCardPictureMessageHandler>();
             services.AddScoped<IMessageHandler<AddExperienceMessage>, AddExperienceMessageHandler>();
+            services.AddScoped<IMessageHandler<SafariMessage>, SafariMessageHandler>();
             return services;
         }
 

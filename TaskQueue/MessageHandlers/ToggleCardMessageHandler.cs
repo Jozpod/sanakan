@@ -29,8 +29,7 @@ namespace Sanakan.TaskQueue.MessageHandlers
             userCard.Active = !userCard.Active;
             await _userRepository.SaveChangesAsync();
 
-            var key = string.Format(CacheKeys.User, databaseUser.Id);
-            _cacheManager.ExpireTag(key, CacheKeys.Users);
+            _cacheManager.ExpireTag(CacheKeys.User(databaseUser.Id), CacheKeys.Users);
         }
     }
 }

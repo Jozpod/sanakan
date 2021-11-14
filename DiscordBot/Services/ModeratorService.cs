@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Discord;
@@ -27,7 +28,6 @@ namespace Sanakan.Services
 {
     internal class ModeratorService : IModeratorService
     {
-        private readonly DiscordSocketClient _client;
         private readonly ILogger _logger;
         private readonly ICacheManager _cacheManager;
         private readonly ISystemClock _systemClock;
@@ -35,13 +35,11 @@ namespace Sanakan.Services
         
         public ModeratorService(
             ILogger<IModeratorService> logger,
-            DiscordSocketClient client,
             ICacheManager cacheManager,
             ISystemClock systemClock,
             IServiceScopeFactory serviceScopeFactory)
         {
             _logger = logger;
-            _client = client;
             _cacheManager = cacheManager;
             _systemClock = systemClock;
             _serviceScopeFactory = serviceScopeFactory;
@@ -127,171 +125,271 @@ namespace Sanakan.Services
             };
         }
 
-        private EmbedBuilder GetSelfRolesConfig(GuildOptions config, SocketCommandContext context)
+        private async Task<EmbedBuilder> GetSelfRolesConfig(GuildOptions config, ICommandContext context)
         {
-            string value = "**AutoRole:**\n\n";
-            if (config.SelfRoles?.Count > 0)
+            var stringBuilder = new StringBuilder("**AutoRole:**\n\n", 500);
+            var guild = context.Guild;
+
+            if (config.SelfRoles.Any())
             {
                 foreach (var role in config.SelfRoles)
-                    value += $"*{role.Name}* - {context.Guild.GetRole(role.Role)?.Mention ?? "usunięta"}\n";
-            }
-            else value += "*brak*";
-
-            return new EmbedBuilder().WithColor(EMType.Bot.Color()).WithDescription(value.ElipseTrimToLength(1950));
-        }
-
-        private EmbedBuilder GetModRolesConfig(GuildOptions config, SocketCommandContext context)
-        {
-            string value = "**Role moderatorów:**\n\n";
-            if (config.ModeratorRoles?.Count > 0)
-            {
-                foreach (var role in config.ModeratorRoles)
-                    value += $"{context.Guild.GetRole(role.RoleId)?.Mention ?? "usunięta"}\n";
-            }
-            else value += "*brak*";
-
-            return new EmbedBuilder().WithColor(EMType.Bot.Color()).WithDescription(value.ElipseTrimToLength(1950));
-        }
-
-        private EmbedBuilder GetLandsConfig(GuildOptions config, SocketCommandContext context)
-        {
-            string value = "**Krainy:**\n\n";
-            if (config.Lands?.Count > 0)
-            {
-                foreach (var land in config.Lands)
                 {
-                    value += $"*{land.Name}*: M:{context.Guild.GetRole(land.ManagerId)?.Mention ?? "usunięta"} U:{context.Guild.GetRole(land.UnderlingId)?.Mention ?? "usunięta"}\n";
+                    var mention = guild.GetRole(role.Role)?.Mention ?? "usunięta";
+                    stringBuilder.AppendFormat("*{0}* - {1}\n", role.Name, mention);
                 }
             }
-            else value += "*brak*";
-
-            return new EmbedBuilder().WithColor(EMType.Bot.Color()).WithDescription(value.ElipseTrimToLength(1950));
-        }
-
-        private EmbedBuilder GetLevelRolesConfig(GuildOptions config, SocketCommandContext context)
-        {
-            string value = "**Role na poziom:**\n\n";
-            if (config.RolesPerLevel?.Count > 0)
+            else
             {
-                foreach (var role in config.RolesPerLevel.OrderBy(x => x.Level))
-                    value += $"*{role.Level}*: {context.Guild.GetRole(role.Role)?.Mention ?? "usunięta"}\n";
+                stringBuilder.Append("*brak*");
             }
-            else value += "*brak*";
 
-            return new EmbedBuilder().WithColor(EMType.Bot.Color()).WithDescription(value.ElipseTrimToLength(1950));
+            var description = stringBuilder.ToString().ElipseTrimToLength(1950);
+            return new EmbedBuilder().WithColor(EMType.Bot.Color()).WithDescription(description);
         }
 
-        private EmbedBuilder GetCmdChannelsConfig(GuildOptions config, SocketCommandContext context)
+        private async Task<EmbedBuilder> GetModRolesConfig(GuildOptions config, ICommandContext context)
         {
-            string value = "**Kanały poleceń:**\n\n";
-            if (config.CommandChannels?.Count > 0)
-            {
-                foreach (var channel in config.CommandChannels)
-                    value += $"{context.Guild.GetTextChannel(channel.Channel)?.Mention ?? $"{channel.Channel}"}\n";
-            }
-            else value += "*brak*";
+            var stringBuilder = new StringBuilder("**Role moderatorów:**\n\n", 500);
+            var guild = context.Guild;
+            var moderatorRoles = config.ModeratorRoles ?? Enumerable.Empty<ModeratorRoles>();
 
-            return new EmbedBuilder().WithColor(EMType.Bot.Color()).WithDescription(value.ElipseTrimToLength(1950));
+            if (moderatorRoles.Any())
+            {
+                foreach (var moderatorRole in moderatorRoles)
+                {
+                    var mention = guild.GetRole(moderatorRole.RoleId)?.Mention ?? "usunięta";
+                    stringBuilder.AppendFormat("{0}\n", mention);
+                }
+            }
+            else
+            {
+                stringBuilder.Append("*brak*");
+            }
+
+            var description = stringBuilder.ToString().ElipseTrimToLength(1950);
+            return new EmbedBuilder().WithColor(EMType.Bot.Color()).WithDescription(description);
         }
 
-        private EmbedBuilder GetWaifuCmdChannelsConfig(GuildOptions config, SocketCommandContext context)
+        private EmbedBuilder GetLandsConfig(GuildOptions config, ICommandContext context)
         {
-            string value = "**Kanały poleceń waifu:**\n\n";
-            if (config.WaifuConfig?.CommandChannels?.Count > 0)
-            {
-                foreach (var channel in config.WaifuConfig.CommandChannels)
-                    value += $"{context.Guild.GetTextChannel(channel.Channel)?.Mention ?? $"{channel.Channel}"}\n";
-            }
-            else value += "*brak*";
+            var stringBuilder = new StringBuilder("**Krainy:**\n\n", 500);
+            var guild = context.Guild;
+            var lands = config.Lands ?? Enumerable.Empty<MyLand>();
 
-            return new EmbedBuilder().WithColor(EMType.Bot.Color()).WithDescription(value.ElipseTrimToLength(1950));
+            if (lands.Any())
+            {
+                foreach (var land in lands)
+                {
+                    var mention = context.Guild.GetRole(land.ManagerId)?.Mention ?? "usunięta";
+                    var roleMention = guild.GetRole(land.UnderlingId)?.Mention ?? "usunięta";
+                    stringBuilder.AppendFormat("*{0}*: M:{1} U:{2}\n", land.Name, mention, roleMention);
+                }
+            }
+            else
+            {
+                stringBuilder.Append("*brak*");
+            }
+
+            var description = stringBuilder.ToString().ElipseTrimToLength(1950);
+            return new EmbedBuilder().WithColor(EMType.Bot.Color()).WithDescription(description);
         }
 
-        private EmbedBuilder GetWaifuFightChannelsConfig(GuildOptions config, SocketCommandContext context)
+        private async Task<EmbedBuilder> GetLevelRolesConfig(GuildOptions config, ICommandContext context)
         {
-            string value = "**Kanały walk waifu:**\n\n";
-            if (config.WaifuConfig?.FightChannels?.Count > 0)
-            {
-                foreach (var channel in config.WaifuConfig.FightChannels)
-                    value += $"{context.Guild.GetTextChannel(channel.Channel)?.Mention ?? $"{channel.Channel}"}\n";
-            }
-            else value += "*brak*";
+            var stringBuilder = new StringBuilder("**Role na poziom:**\n\n", 500);
+            var guild = context.Guild;
 
-            return new EmbedBuilder().WithColor(EMType.Bot.Color()).WithDescription(value.ElipseTrimToLength(1950));
+            if (config.RolesPerLevel.Any())
+            {
+                foreach (var rolePerLevel in config.RolesPerLevel.OrderBy(x => x.Level))
+                {
+                    var mention = guild.GetRole(rolePerLevel.Role)?.Mention ?? "usunięta";
+                    stringBuilder.AppendFormat("*{0}*: {1}\n", rolePerLevel.Level, mention);
+                }
+            }
+            else
+            {
+                stringBuilder.Append("*brak*");
+            }
+
+            var description = stringBuilder.ToString().ElipseTrimToLength(1950);
+            return new EmbedBuilder().WithColor(EMType.Bot.Color()).WithDescription(description);
         }
 
-        private EmbedBuilder GetIgnoredChannelsConfig(GuildOptions config, SocketCommandContext context)
+        private async Task<EmbedBuilder> GetCmdChannelsConfig(GuildOptions config, ICommandContext context)
         {
-            string value = "**Kanały bez zliczania wiadomości:**\n\n";
-            if (config.IgnoredChannels?.Count > 0)
-            {
-                foreach (var channel in config.IgnoredChannels)
-                    value += $"{context.Guild.GetTextChannel(channel.Channel)?.Mention ?? $"{channel.Channel}"}\n";
-            }
-            else value += "*brak*";
+            var stringBuilder = new StringBuilder("**Kanały poleceń:**\n\n", 500);
+            var commandChannels = config.CommandChannels ?? Enumerable.Empty<CommandChannel>();
+            var guild = context.Guild;
 
-            return new EmbedBuilder().WithColor(EMType.Bot.Color()).WithDescription(value.ElipseTrimToLength(1950));
+            if (commandChannels.Any())
+            {
+                foreach (var commandChannel in commandChannels)
+                {
+                    var channel = await guild.GetTextChannelAsync(commandChannel.Channel);
+                    var mention = channel?.Mention ?? commandChannel.Channel.ToString();
+                    stringBuilder.AppendFormat("{0}\n", mention);
+                }
+            }
+            else
+            {
+                stringBuilder.Append("*brak*");
+            }
+
+            var description = stringBuilder.ToString().ElipseTrimToLength(1950);
+            return new EmbedBuilder().WithColor(EMType.Bot.Color()).WithDescription(description);
         }
 
-        private EmbedBuilder GetNonExpChannelsConfig(GuildOptions config, SocketCommandContext context)
+        private async Task<EmbedBuilder> GetWaifuCmdChannelsConfig(GuildOptions config, ICommandContext context)
         {
-            string value = "**Kanały bez exp:**\n\n";
-            if (config.ChannelsWithoutExperience?.Count > 0)
-            {
-                foreach (var channel in config.ChannelsWithoutExperience)
-                    value += $"{context.Guild.GetTextChannel(channel.Channel)?.Mention ?? $"{channel.Channel}"}\n";
-            }
-            else value += "*brak*";
+            var stringBuilder = new StringBuilder("**Kanały poleceń waifu:**\n\n", 500);
+            var guild = context.Guild;
+            var waifuCommandChannels = config.WaifuConfig?.CommandChannels ?? Enumerable.Empty<WaifuCommandChannel>();
 
-            return new EmbedBuilder().WithColor(EMType.Bot.Color()).WithDescription(value.ElipseTrimToLength(1950));
+            if (waifuCommandChannels.Any())
+            {
+                foreach (var waifuCommandChannel in waifuCommandChannels)
+                {
+                    var channel = await guild.GetTextChannelAsync(waifuCommandChannel.Channel);
+                    var mention = channel?.Mention ?? waifuCommandChannel.Channel.ToString();
+                    stringBuilder.AppendFormat("{0}\n", mention);
+                }
+            }
+            else
+            {
+                stringBuilder.Append("*brak*");
+            }
+
+            var description = stringBuilder.ToString().ElipseTrimToLength(1950);
+            return new EmbedBuilder().WithColor(EMType.Bot.Color()).WithDescription(description);
         }
 
-        private EmbedBuilder GetNonSupChannelsConfig(GuildOptions config, SocketCommandContext context)
+        private async Task<EmbedBuilder> GetWaifuFightChannelsConfig(GuildOptions config, ICommandContext context)
         {
-            string value = "**Kanały bez nadzoru:**\n\n";
-            if (config.ChannelsWithoutSupervision?.Count > 0)
-            {
-                foreach (var channel in config.ChannelsWithoutSupervision)
-                    value += $"{context.Guild.GetTextChannel(channel.Channel)?.Mention ?? $"{channel.Channel}"}\n";
-            }
-            else value += "*brak*";
+            var stringBuilder = new StringBuilder("**Kanały walk waifu:**\n\n", 500);
+            var guild = context.Guild;
+            var fightChannels = config.WaifuConfig?.FightChannels ?? Enumerable.Empty<WaifuFightChannel>();
 
-            return new EmbedBuilder().WithColor(EMType.Bot.Color()).WithDescription(value.ElipseTrimToLength(1950));
+            if (fightChannels.Any())
+            {
+                foreach (var fightChannel in fightChannels)
+                {
+                    var channel = await guild.GetTextChannelAsync(fightChannel.Channel);
+                    var mention = channel?.Mention ?? fightChannel.Channel.ToString();
+                    stringBuilder.AppendFormat("{0}\n", mention);
+                }
+            }
+            else
+            {
+                stringBuilder.Append("*brak*");
+            }
+
+            var description = stringBuilder.ToString().ElipseTrimToLength(1950);
+            return new EmbedBuilder().WithColor(EMType.Bot.Color()).WithDescription(description);
         }
 
-        public async Task<EmbedBuilder> GetConfigurationAsync(GuildOptions config, SocketCommandContext context, ConfigType type)
+        private async Task<EmbedBuilder> GetIgnoredChannelsConfig(GuildOptions config, ICommandContext context)
+        {
+            var stringBuilder = new StringBuilder("**Kanały bez zliczania wiadomości:**\n\n", 500);
+            var guild = context.Guild;
+
+            if (config.IgnoredChannels.Any())
+            {
+                foreach (var ignoredChannel in config.IgnoredChannels)
+                {
+                    var channel = await guild.GetTextChannelAsync(ignoredChannel.Channel);
+                    var mention = channel?.Mention ?? ignoredChannel.Channel.ToString();
+                    stringBuilder.AppendFormat("{0}\n", mention);
+                }
+            }
+            else
+            {
+                stringBuilder.Append("*brak*");
+            }
+
+            var description = stringBuilder.ToString().ElipseTrimToLength(1950);
+            return new EmbedBuilder().WithColor(EMType.Bot.Color()).WithDescription(description);
+        }
+
+        private async Task<EmbedBuilder> GetNonExpChannelsConfig(GuildOptions config, ICommandContext context)
+        {
+            var stringBuilder = new StringBuilder("**Kanały bez exp:**\n\n", 500);
+            var guild = context.Guild;
+
+            if (config.ChannelsWithoutExperience.Any())
+            {
+                foreach (var channelWithoutExperience in config.ChannelsWithoutExperience)
+                {
+                    var channel = await guild.GetTextChannelAsync(channelWithoutExperience.Channel);
+                    var mention = channel?.Mention ?? channelWithoutExperience.Channel.ToString();
+                    stringBuilder.AppendFormat("{0}\n", mention);
+                }
+            }
+            else
+            {
+                stringBuilder.Append("*brak*");
+            }
+
+            var description = stringBuilder.ToString().ElipseTrimToLength(1950);
+            return new EmbedBuilder().WithColor(EMType.Bot.Color()).WithDescription(description);
+        }
+
+        private async Task<EmbedBuilder> GetNonSupChannelsConfig(GuildOptions config, ICommandContext context)
+        {
+            var stringBuilder = new StringBuilder("**Kanały bez nadzoru:**\n\n", 500);
+            var guild = context.Guild;
+
+            if (config.ChannelsWithoutSupervision.Any())
+            {
+                foreach (var channelWithoutSupervision in config.ChannelsWithoutSupervision)
+                {
+                    var channel = await guild.GetTextChannelAsync(channelWithoutSupervision.Channel);
+                    var mention = channel?.Mention ?? channelWithoutSupervision.Channel.ToString();
+                    stringBuilder.AppendFormat("{0}\n", mention);
+                }
+            }
+            else
+            {
+                stringBuilder.Append("*brak*");
+            }
+
+            var description = stringBuilder.ToString().ElipseTrimToLength(1950);
+            return new EmbedBuilder().WithColor(EMType.Bot.Color()).WithDescription(description);
+        }
+
+        public async Task<EmbedBuilder> GetConfigurationAsync(GuildOptions config, ICommandContext context, ConfigType type)
         {
             switch (type)
             {
                 case ConfigType.NonExpChannels:
-                    return GetNonExpChannelsConfig(config, context);
+                    return await GetNonExpChannelsConfig(config, context);
 
                 case ConfigType.IgnoredChannels:
-                    return GetIgnoredChannelsConfig(config, context);
+                    return await GetIgnoredChannelsConfig(config, context);
 
                 case ConfigType.NonSupChannels:
-                    return GetNonSupChannelsConfig(config, context);
+                    return await GetNonSupChannelsConfig(config, context);
 
                 case ConfigType.WaifuCmdChannels:
-                    return GetWaifuCmdChannelsConfig(config, context);
+                    return await GetWaifuCmdChannelsConfig(config, context);
 
                 case ConfigType.WaifuFightChannels:
-                    return GetWaifuFightChannelsConfig(config, context);
+                    return await GetWaifuFightChannelsConfig(config, context);
 
                 case ConfigType.CommandChannels:
-                    return GetCmdChannelsConfig(config, context);
+                    return await GetCmdChannelsConfig(config, context);
 
                 case ConfigType.LevelRoles:
-                    return GetLevelRolesConfig(config, context);
+                    return await GetLevelRolesConfig(config, context);
 
                 case ConfigType.Lands:
                     return GetLandsConfig(config, context);
 
                 case ConfigType.ModeratorRoles:
-                    return GetModRolesConfig(config, context);
+                    return await GetModRolesConfig(config, context);
 
                 case ConfigType.SelfRoles:
-                    return GetSelfRolesConfig(config, context);
+                    return await GetSelfRolesConfig(config, context);
 
                 default:
                 case ConfigType.Global:
@@ -380,7 +478,7 @@ namespace Sanakan.Services
             }
         }
 
-        public async Task<Embed> GetMutedListAsync(SocketCommandContext context)
+        public async Task<Embed> GetMutedListAsync(ICommandContext context)
         {
             var mutedList = "Brak";
             using var serviceScope = _serviceScopeFactory.CreateScope();
@@ -388,6 +486,7 @@ namespace Sanakan.Services
             var penaltyInfoRepository = serviceProvider.GetRequiredService<IPenaltyInfoRepository>();
 
             var penaltyList = await penaltyInfoRepository.GetMutedPenaltiesAsync(context.Guild.Id);
+            var guild = context.Guild;
 
             if (penaltyList.Any())
             {
@@ -395,7 +494,7 @@ namespace Sanakan.Services
                 foreach (var penalty in penaltyList)
                 {
                     var endDate = penalty.StartDate + penalty.Duration;
-                    var name = context.Guild.GetUser(penalty.UserId)?.Mention;
+                    var name = (await guild.GetUserAsync(penalty.UserId))?.Mention;
                     
                     if (name is null)
                     {
@@ -439,9 +538,9 @@ namespace Sanakan.Services
         }
 
         public async Task UnmuteUserAsync(
-            SocketGuildUser user,
-            SocketRole muteRole,
-            SocketRole muteModRole)
+            IGuildUser user,
+            IRole muteRole,
+            IRole muteModRole)
         {
             using var serviceScope = _serviceScopeFactory.CreateScope();
             var serviceProvider = serviceScope.ServiceProvider;
@@ -473,17 +572,25 @@ namespace Sanakan.Services
             _cacheManager.ExpireTag(CacheKeys.Muted);
         }
 
-        private async Task UnmuteUserGuildAsync(SocketGuildUser user, SocketRole muteRole, SocketRole muteModRole, IEnumerable<OwnedRole> roles)
+        private async Task UnmuteUserGuildAsync(
+            IGuildUser user,
+            IRole muteRole,
+            IRole muteModRole,
+            IEnumerable<OwnedRole> roles)
         {
+            var roleIds = user.RoleIds;
+
             if (muteRole != null)
             {
-                if (user.Roles.Contains(muteRole))
+                if (roleIds.Contains(muteRole.Id))
+                {
                     await user.RemoveRoleAsync(muteRole);
+                }
             }
 
             if (muteModRole != null)
             {
-                if (user.Roles.Contains(muteModRole))
+                if (roleIds.Contains(muteModRole.Id))
                 {
                     await user.RemoveRoleAsync(muteModRole);
                 }
@@ -493,18 +600,18 @@ namespace Sanakan.Services
             {
                 foreach (var role in roles)
                 {
-                    var socketRoles = user.Guild.GetRole(role.RoleId);
+                    var socketRole = user.Guild.GetRole(role.RoleId);
 
-                    if (socketRoles != null && !user.Roles.Contains(socketRoles))
+                    if (socketRole != null && !roleIds.Contains(socketRole.Id))
                     {
-                        await user.AddRoleAsync(socketRoles);
+                        await user.AddRoleAsync(socketRole.Id);
                     }
                 }
             }
         }
 
         public async Task<PenaltyInfo> BanUserAysnc(
-            SocketGuildUser user,
+            IGuildUser user,
             TimeSpan duration,
             string reason = "nie podano")
         {

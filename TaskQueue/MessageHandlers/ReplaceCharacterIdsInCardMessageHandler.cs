@@ -29,7 +29,7 @@ namespace Sanakan.TaskQueue.MessageHandlers
             foreach (var card in cards)
             {
                 card.CharacterId = message.NewCharacterId;
-                userRelease.Add(string.Format(CacheKeys.User, card.GameDeckId));
+                userRelease.Add(CacheKeys.User(card.GameDeckId));
             }
 
             await _cardRepository.SaveChangesAsync();

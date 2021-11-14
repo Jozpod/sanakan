@@ -16,6 +16,7 @@ using Sanakan.DiscordBot;
 using Sanakan.DiscordBot.Abstractions.Extensions;
 using Sanakan.DiscordBot.Abstractions.Models;
 using Sanakan.DiscordBot.Services;
+using Sanakan.DiscordBot.Services.Abstractions;
 using Sanakan.Extensions;
 using Sanakan.Game.Models;
 using System;
@@ -32,29 +33,28 @@ namespace Sanakan.Services.Commands
         private readonly IDiscordSocketClientAccessor _discordSocketClientAccessor;
         private readonly CommandService _commandService;
         private readonly ILogger _logger;
-        
         private readonly ISystemClock _systemClock;
         private readonly IOptionsMonitor<DiscordConfiguration> _config;
-        private readonly HelperService _helper;
+        private readonly IHelperService _helperService;
         private readonly IServiceProvider _serviceProvider;
-        private readonly IServiceScopeFactory _scopeFactory;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
 
         public CommandHandler(
             IDiscordSocketClientAccessor discordSocketClientAccessor,
+            CommandService commandService,
             IOptionsMonitor<DiscordConfiguration> config,
             ILogger<CommandHandler> logger,
-            CommandService commandService,
             ISystemClock systemClock,
             IServiceProvider serviceProvider,
             IServiceScopeFactory scopeFactory)
         {
             _discordSocketClientAccessor = discordSocketClientAccessor;
+            _commandService = commandService;
             _config = config;
             _logger = logger;
-            _commandService = commandService;
             _systemClock = systemClock;
             _serviceProvider = serviceProvider;
-            _scopeFactory = scopeFactory;
+            _serviceScopeFactory = scopeFactory;
         }
 
         public async Task InitializeAsync()
@@ -66,11 +66,12 @@ namespace Sanakan.Services.Commands
 
             var client = _discordSocketClientAccessor.Client;
 
-            _helper.PublicModulesInfo = await _commandService
-                .AddModulesAsync(Assembly.GetEntryAssembly(), _serviceProvider);
+            _helperService.AddPublicModuleInfo(await _commandService
+                .AddModulesAsync(Assembly.GetEntryAssembly(), _serviceProvider));
 
-            _helper.PrivateModulesInfo.Add("Moderacja", await _commandService.AddModuleAsync<DiscordBot.Modules.ModerationModule>(_serviceProvider));
-            _helper.PrivateModulesInfo.Add("Debug", await _commandService.AddModuleAsync<DiscordBot.Modules.DebugModule>(_serviceProvider));
+            _helperService.AddPrivateModuleInfo(
+                ("Moderacja", await _commandService.AddModuleAsync<DiscordBot.Modules.ModerationModule>(_serviceProvider)),
+                ("Debug", await _commandService.AddModuleAsync<DiscordBot.Modules.DebugModule>(_serviceProvider)));
 
             client.MessageReceived += HandleCommandAsync;
         }
@@ -99,7 +100,7 @@ namespace Sanakan.Services.Commands
             var config = _config.CurrentValue;
             var prefix = config.Prefix;
             var context = new SocketCommandContext(client, userMessage);
-            using var serviceScope = _scopeFactory.CreateScope();
+            using var serviceScope = _serviceScopeFactory.CreateScope();
 
             if (context.Guild != null)
             {
@@ -206,7 +207,7 @@ namespace Sanakan.Services.Commands
                     if (searchResult.Commands.Any())
                     {
                         var command = searchResult.Commands.First().Command;
-                        await context.Channel.SendMessageAsync(_helper.GetCommandInfo(command, prefix));
+                        await context.Channel.SendMessageAsync(_helperService.GetCommandInfo(command, prefix));
                     }
                     break;
 

@@ -147,9 +147,9 @@ namespace Sanakan.Game.Services
         public async Task SaveImageFromUrlAsync(string url, string path)
             => await SaveImageFromUrlAsync(url, path, Size.Empty);
 
-        public async Task SaveImageFromUrlAsync(string url, string path, Size size, bool strech = false)
+        public async Task SaveImageFromUrlAsync(string imageUrl, string filePath, Size size, bool strech = false)
         {
-            using var stream = await GetImageFromUrlAsync(url, true);
+            using var stream = await GetImageFromUrlAsync(imageUrl, true);
             using var image = Image.Load(stream);
 
             if (size.Height > 0 || size.Width > 0)
@@ -157,7 +157,7 @@ namespace Sanakan.Game.Services
                 CheckProfileImageSize(image, size, strech);
             }
 
-            image.SaveToPath(path);
+            image.SaveToPath(filePath);
         }
 
         public async Task<Image<Rgba32>> GetUserProfileAsync(
@@ -328,7 +328,9 @@ namespace Sanakan.Game.Services
                         }
 
                         if (botUser.ProfileType == ProfileType.StatisticsWithImage)
+                        {
                             goto case ProfileType.Image;
+                        }
                     }
                     break;
 
@@ -353,16 +355,18 @@ namespace Sanakan.Game.Services
         private async Task<Image<Rgba32>> GetCardsProfileImage(User botUser)
         {
             var profilePic = new Image<Rgba32>(325, 272);
+            var gameDeck = botUser.GameDeck;
+            var cards = gameDeck.Cards;
 
-            if (botUser.GameDeck.FavouriteWaifuId != null)
+            if (gameDeck.FavouriteWaifuId.HasValue)
             {
-                var tChar = botUser.GameDeck.Cards
+                var favouriteCharacter = gameDeck.Cards
                     .OrderBy(x => x.Rarity)
                     .FirstOrDefault(x => x.CharacterId == botUser.GameDeck.FavouriteWaifuId);
 
-                if (tChar != null)
+                if (favouriteCharacter != null)
                 {
-                    using var cardImage = await GetWaifuInProfileCardAsync(tChar);
+                    using var cardImage = await GetWaifuInProfileCardAsync(favouriteCharacter);
                     
                     cardImage.Mutate(x => x.Resize(new ResizeOptions
                     {
@@ -373,14 +377,45 @@ namespace Sanakan.Game.Services
                 }
             }
 
-            var sss = $"{botUser.GameDeck.Cards.Count(x => x.Rarity == Rarity.SSS)}";
-            var ss = $"{botUser.GameDeck.Cards.Count(x => x.Rarity == Rarity.SS)}";
-            var s = $"{botUser.GameDeck.Cards.Count(x => x.Rarity == Rarity.S)}";
-            var a = $"{botUser.GameDeck.Cards.Count(x => x.Rarity == Rarity.A)}";
-            var b = $"{botUser.GameDeck.Cards.Count(x => x.Rarity == Rarity.B)}";
-            var c = $"{botUser.GameDeck.Cards.Count(x => x.Rarity == Rarity.C)}";
-            var d = $"{botUser.GameDeck.Cards.Count(x => x.Rarity == Rarity.D)}";
-            var e = $"{botUser.GameDeck.Cards.Count(x => x.Rarity == Rarity.E)}";
+            var sss = 0;
+            var ss = 0;
+            var s = 0;
+            var a = 0;
+            var b = 0;
+            var c = 0;
+            var d = 0;
+            var e = 0;
+
+            foreach (var card in cards)
+            {
+                switch(card.Rarity)
+                {
+                    case Rarity.SSS:
+                        sss++;
+                        break;
+                    case Rarity.SS:
+                        ss++;
+                        break;
+                    case Rarity.S:
+                        s++;
+                        break;
+                    case Rarity.A:
+                        a++;
+                        break;
+                    case Rarity.B:
+                        b++;
+                        break;
+                    case Rarity.C:
+                        c++;
+                        break;
+                    case Rarity.D:
+                        d++;
+                        break;
+                    case Rarity.E:
+                        e++;
+                        break;
+                }
+            }
 
             int jumpY = 18;
             int row2X = 45;
@@ -389,48 +424,30 @@ namespace Sanakan.Game.Services
             var font1 = GetFontSize(_latoBold, 18, $"SUM", 100);
             var font2 = GetFontSize(_latoLight, 18, "10000", 130);
 
-            profilePic.Mutate(x => x.DrawText("SSS", font1, Colors.Dawn, new Point(startX, startY)));
-            profilePic.Mutate(x => x.DrawText(sss, font2, Colors.Dawn, new Point(startX + row2X, startY)));
-            startY += jumpY;
+            var defaultXPosition = startX + row2X;
+            var textColor = Colors.Dawn;
 
-            profilePic.Mutate(x => x.DrawText("SS", font1, Colors.Dawn, new Point(startX, startY)));
-            profilePic.Mutate(x => x.DrawText(ss, font2, Colors.Dawn, new Point(startX + row2X, startY)));
-            startY += jumpY;
+            var rarityMap = new[]
+            {
+                ("SSS", sss.ToString(), jumpY, defaultXPosition),
+                ("SS", ss.ToString(), jumpY, defaultXPosition),
+                ("S", s.ToString(), jumpY, defaultXPosition),
+                ("A", a.ToString(), jumpY, defaultXPosition),
+                ("B", b.ToString(), jumpY, defaultXPosition),
+                ("C", c.ToString(), jumpY, defaultXPosition),
+                ("D", d.ToString(), jumpY, defaultXPosition),
+                ("E", e.ToString(), jumpY, defaultXPosition),
+                ("SUM", cards.Count.ToString(), 4 * jumpY, defaultXPosition),
+                ("CT", gameDeck.CTCount.ToString(), jumpY, defaultXPosition),
+                ("K", gameDeck.Karma.ToString("F"), jumpY, startX + 15),
+            };
 
-            profilePic.Mutate(x => x.DrawText("S", font1, Colors.Dawn, new Point(startX, startY)));
-            profilePic.Mutate(x => x.DrawText(s, font2, Colors.Dawn, new Point(startX + row2X, startY)));
-            startY += jumpY;
-
-            profilePic.Mutate(x => x.DrawText("A", font1, Colors.Dawn, new Point(startX, startY)));
-            profilePic.Mutate(x => x.DrawText(a, font2, Colors.Dawn, new Point(startX + row2X, startY)));
-            startY += jumpY;
-
-            profilePic.Mutate(x => x.DrawText("B", font1, Colors.Dawn, new Point(startX, startY)));
-            profilePic.Mutate(x => x.DrawText(b, font2, Colors.Dawn, new Point(startX + row2X, startY)));
-            startY += jumpY;
-
-            profilePic.Mutate(x => x.DrawText("C", font1, Colors.Dawn, new Point(startX, startY)));
-            profilePic.Mutate(x => x.DrawText(c, font2, Colors.Dawn, new Point(startX + row2X, startY)));
-            startY += jumpY;
-
-            profilePic.Mutate(x => x.DrawText("D", font1, Colors.Dawn, new Point(startX, startY)));
-            profilePic.Mutate(x => x.DrawText(d, font2, Colors.Dawn, new Point(startX + row2X, startY)));
-            startY += jumpY;
-
-            profilePic.Mutate(x => x.DrawText("E", font1, Colors.Dawn, new Point(startX, startY)));
-            profilePic.Mutate(x => x.DrawText(e, font2, Colors.Dawn, new Point(startX + row2X, startY)));
-            startY += jumpY;
-
-            profilePic.Mutate(x => x.DrawText("SUM", font1, Colors.Dawn, new Point(startX, startY)));
-            profilePic.Mutate(x => x.DrawText($"{botUser.GameDeck.Cards.Count}", font2, Colors.Dawn, new Point(startX + row2X, startY)));
-            startY += jumpY * 4;
-
-            profilePic.Mutate(x => x.DrawText("CT", font1, Colors.Dawn, new Point(startX, startY)));
-            profilePic.Mutate(x => x.DrawText($"{botUser.GameDeck.CTCount}", font2, Colors.Dawn, new Point(startX + row2X, startY)));
-            startY += jumpY;
-
-            profilePic.Mutate(x => x.DrawText("K", font1, Colors.Dawn, new Point(startX, startY)));
-            profilePic.Mutate(x => x.DrawText(botUser.GameDeck.Karma.ToString("F"), font2, Colors.Dawn, new Point(startX + 15, startY)));
+            foreach (var (text, count, yOffset, xPosition) in rarityMap)
+            {
+                profilePic.Mutate(x => x.DrawText(text, font1, textColor, new Point(startX, startY)));
+                profilePic.Mutate(x => x.DrawText(count, font2, textColor, new Point(xPosition, startY)));
+                startY += yOffset;
+            }    
 
             return profilePic;
         }
@@ -446,11 +463,12 @@ namespace Sanakan.Game.Services
             border.Mutate(x => x.BackgroundColor(Rgba32.FromHex(color)));
             badge.Mutate(x => x.DrawImage(border, new Point(63, 5), 1));
 
-
             using var stream = await GetImageFromUrlAsync(avatarUrl);
-            
+
             if (stream == null)
+            {
                 return badge;
+            }
 
             using var avatar = Image.Load(stream);
                 
@@ -505,7 +523,7 @@ namespace Sanakan.Game.Services
                 status?.Plan
             };
 
-            for (int i = 0; i < rowArr.Length; i++)
+            for (var i = 0; i < rowArr.Length; i++)
             {
                 baseImg.Mutate(x => x.DrawText($"{rowArr[i]}", font, fontColor, new Point(startPointX, startPointY)));
                 startPointY += fontSizeAndInterline;
@@ -554,17 +572,18 @@ namespace Sanakan.Game.Services
 
             if (listTime.Count > 2)
             {
-                string fs = listTime.First(); listTime.Remove(fs);
-                string sc = listTime.First(); listTime.Remove(sc);
+                string fs = listTime.First();
+                listTime.Remove(fs);
+                string sc = listTime.First();
+                listTime.Remove(sc);
+
                 baseImg.Mutate(x => x.DrawText(gOptions, $"{fs} {sc}", font, fontColor, new Point(xSecondRow, ySecondStart)));
 
                 ySecondStart += fontSizeAndInterline;
-                baseImg.Mutate(x => x.DrawText(gOptions, $"{string.Join<string>(" ", listTime)}", font, fontColor, new Point(xSecondRow, ySecondStart)));
             }
-            else
-            {
-                baseImg.Mutate(x => x.DrawText(gOptions, $"{string.Join<string>(" ", listTime)}", font, fontColor, new Point(xSecondRow, ySecondStart)));
-            }
+
+            var text = string.Join<string>(" ", listTime);
+            baseImg.Mutate(x => x.DrawText(gOptions, text, font, fontColor, new Point(xSecondRow, ySecondStart)));
 
             return baseImg;
         }
@@ -706,11 +725,12 @@ namespace Sanakan.Game.Services
             baseImg.Mutate(x => x.DrawImage(template, _origin, 1));
 
             var avatarUrl = UrlHelpers.GetUserAvatarURL(shindenInfo.AvatarId, shindenInfo.Id.Value);
+            var hexColor = color.RawValue.ToString("X6");
 
             using var avatar = await GetSiteStatisticUserBadge(
                 avatarUrl,
                 shindenInfo.Name,
-                color.RawValue.ToString("X6"));
+                hexColor);
             baseImg.Mutate(x => x.DrawImage(avatar, _origin, 1));
 
             using var image = new Image<Rgba32>(325, 248);
@@ -1303,13 +1323,13 @@ namespace Sanakan.Game.Services
         {
             if (url == null)
             {
-                return await GetWaifuCardAsync(card);
+                return await GetWaifuCardImageAsync(card);
             }
 
             return Image.Load(url);
         }
 
-        public async Task<Image<Rgba32>> GetWaifuCardAsync(Card card)
+        public async Task<Image<Rgba32>> GetWaifuCardImageAsync(Card card)
         {
             var image = await GetWaifuCardNoStatsAsync(card);
 

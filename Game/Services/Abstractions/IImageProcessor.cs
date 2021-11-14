@@ -17,13 +17,13 @@ namespace Sanakan.Game.Services.Abstractions
 {
     public interface IImageProcessor
     {
-        Task SaveImageFromUrlAsync(string url, string path);
-        Task SaveImageFromUrlAsync(string url, string path, Size size, bool strech = false);
+        Task SaveImageFromUrlAsync(string imageUrl, string filePath);
+        Task SaveImageFromUrlAsync(string imageUrl, string filePath, Size size, bool strech = false);
         Task<Image<Rgba32>> GetUserProfileAsync(
             UserInfo? shindenUser,
             User botUser,
             string avatarUrl,
-            long topPos,
+            long topPosition,
             string nickname,
             Discord.Color color);
         public Task<Image<Rgba32>> GetSiteStatisticAsync(
@@ -41,6 +41,6 @@ namespace Sanakan.Game.Services.Abstractions
         Image<Rgba32> GetDuelCardImage(DuelInfo info, DuelImage image, Image<Rgba32> win, Image<Rgba32> los);
         Image<Rgba32> GetCatchThatWaifuImage(Image<Rgba32> card, string imageUrl, int xPos, int yPos);
         Task<Image<Rgba32>> GetWaifuCardAsync(string url, Card card);
-        Task<Image<Rgba32>> GetWaifuCardAsync(Card card);
+        Task<Image<Rgba32>> GetWaifuCardImageAsync(Card card);
     }
 }

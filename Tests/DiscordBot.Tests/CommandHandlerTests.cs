@@ -32,9 +32,9 @@ namespace Sanakan.DiscordBot.Tests
             
         _commandHandler = new(
                 _discordSocketClientAccessorMock.Object,
+                _commandServiceMock.Object,
                 _discordConfigurationMock.Object,
                 NullLogger<CommandHandler>.Instance,
-                _commandServiceMock.Object,
                 _systemClockMock.Object,
                 serviceProvider,
                 serviceScopeFactory);

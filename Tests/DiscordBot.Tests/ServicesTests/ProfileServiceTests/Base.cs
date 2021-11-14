@@ -16,7 +16,6 @@ namespace DiscordBot.ServicesTests.ProfileServiceTests
     public abstract class Base
     {
         protected readonly IProfileService _profileService;
-        protected readonly Mock<DiscordSocketClient> _discordSocketClientMock = new(MockBehavior.Strict);
         protected readonly Mock<IShindenClient> _shindenClientMock = new(MockBehavior.Strict);
         protected readonly Mock<IImageProcessor> _imageProcessorMock = new(MockBehavior.Strict);
         protected readonly Mock<IFileSystem> _fileSystemMock = new(MockBehavior.Strict);
@@ -28,7 +27,6 @@ namespace DiscordBot.ServicesTests.ProfileServiceTests
             var serviceScopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
 
             _profileService = new ProfileService(
-                _discordSocketClientMock.Object,
                 _shindenClientMock.Object,
                 _imageProcessorMock.Object,
                 _fileSystemMock.Object,

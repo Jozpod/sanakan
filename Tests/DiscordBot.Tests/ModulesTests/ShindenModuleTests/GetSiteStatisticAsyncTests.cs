@@ -17,7 +17,6 @@ namespace DiscordBot.ModulesTests.ShindenModuleTests
         [TestMethod]
         public async Task Should_Get_Site_Statistics()
         {
-
             var shindenUserId = 1ul;
             var result = await _module.GetSiteStatisticAsync(shindenUserId, null);
         }

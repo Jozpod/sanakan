@@ -11,6 +11,7 @@ using Sanakan.DiscordBot.Abstractions.Extensions;
 using Sanakan.DiscordBot.Abstractions.Models;
 using Sanakan.Extensions;
 using Sanakan.Game.Models;
+using Sanakan.Game.Services.Abstractions;
 using Sanakan.Services.PocketWaifu;
 using System;
 using System.Collections.Generic;
@@ -201,104 +202,105 @@ namespace Sanakan.TaskQueue
             }
         }
 
-        private async Task<bool> HandleReactionAsync(SessionContext context)
+        private async Task HandleReactionAsync(SessionContext context)
         {
             var cacheManager = _serviceProvider.GetRequiredService<ICacheManager>();
             var userRepository = _serviceProvider.GetRequiredService<IUserRepository>();
-            var waifuService = _serviceProvider.GetRequiredService<dynamic>();
+            var waifuService = _serviceProvider.GetRequiredService<IWaifuService>();
             
-            bool end = false;
             if (context.Message.Id != _payload.Message.Id)
             {
-                return false;
+                return;
             }
 
-            if (await _payload.Message.Channel.GetMessageAsync(_payload.Message.Id) is IUserMessage msg)
+            var userMessage = await _payload.Message.Channel.GetMessageAsync(_payload.Message.Id) as IUserMessage;
+
+            if (userMessage == null)
             {
-                var reaction = context.AddReaction ?? context.RemoveReaction;
-                if (reaction == null)
+                return;
+            }
+
+            var reaction = context.AddReaction ?? context.RemoveReaction;
+            if (reaction == null)
+            {
+                return;
+            }
+
+            if (reaction.Emote.Equals(Emojis.DeclineEmote))
+            {
+                await userMessage.ModifyAsync(x => x.Embed = $"{_payload.Name}\n\nOdrzucono tworzenie karty.".ToEmbedMessage(EMType.Bot).Build());
+
+                cacheManager.ExpireTag(CacheKeys.User(_payload.PlayerInfo.User.Id), CacheKeys.Users);
+
+                return;
+            }
+
+            if (!reaction.Emote.Equals(Emojis.Checked))
+            {
+                return;
+            }
+
+            bool error = true;
+
+            if (!_payload.PlayerInfo.Accepted)
+            {
+                return;
+            }
+
+            error = false;
+
+            var user = await userRepository.GetUserOrCreateAsync(_payload.PlayerInfo.User.Id);
+            var rarity = RarityExtensions.GetRarityFromValue(GetValue());
+            var characterInfo = await waifuService.GetRandomCharacterAsync();
+            var newCard = waifuService.GenerateNewCard(
+                _payload.PlayerInfo.User,
+                characterInfo,
+                rarity);
+
+            newCard.Source = CardSource.Crafting;
+            newCard.Affection = user.GameDeck.AffectionFromKarma();
+
+            foreach (var item in _payload.PlayerInfo.Items)
+            {
+                var thisItem = user.GameDeck.Items
+                    .FirstOrDefault(x => x.Type == item.Type
+                        && x.Quality == item.Quality);
+
+                if (thisItem == null)
                 {
-                    return false;
+                    error = true;
+                    break;
                 }
 
-                if (reaction.Emote.Equals(Emojis.DeclineEmote))
+                if (thisItem.Count < item.Count)
                 {
-                    await msg.ModifyAsync(x => x.Embed = $"{_payload.Name}\n\nOdrzucono tworzenie karty.".ToEmbedMessage(EMType.Bot).Build());
-
-                    var key = string.Format(CacheKeys.User, _payload.PlayerInfo.User.Id);
-                    cacheManager.ExpireTag(key, CacheKeys.Users);
-
-                    return true;
+                    error = true;
+                    break;
                 }
-
-                if (reaction.Emote.Equals(Emojis.Checked))
+                thisItem.Count -= item.Count;
+                if (thisItem.Count < 1)
                 {
-                    bool error = true;
-
-                    if (_payload.PlayerInfo.Accepted)
-                    {
-                        error = false;
-
-                        var user = await userRepository.GetUserOrCreateAsync(_payload.PlayerInfo.User.Id);
-                        var rarity = RarityExtensions.GetRarityFromValue(GetValue());
-                        var characterInfo = await waifuService.GetRandomCharacterAsync();
-                        var newCard = waifuService.GenerateNewCard(
-                            _payload.PlayerInfo.User,
-                            characterInfo,
-                            rarity);
-
-                        newCard.Source = CardSource.Crafting;
-                        newCard.Affection = user.GameDeck.AffectionFromKarma();
-
-                        foreach (var item in _payload.PlayerInfo.Items)
-                        {
-                            var thisItem = user.GameDeck.Items
-                                .FirstOrDefault(x => x.Type == item.Type
-                                    && x.Quality == item.Quality);
-
-                            if (thisItem == null)
-                            {
-                                error = true;
-                                break;
-                            }
-
-                            if (thisItem.Count < item.Count)
-                            {
-                                error = true;
-                                break;
-                            }
-                            thisItem.Count -= item.Count;
-                            if (thisItem.Count < 1)
-                            {
-                                user.GameDeck.Items.Remove(thisItem);
-                            }
-                        }
-
-                        if (!error)
-                        {
-                            user.GameDeck.Cards.Add(newCard);
-
-                            await userRepository.SaveChangesAsync();
-
-                            await msg.ModifyAsync(x => x.Embed = $"{_payload.Name}\n\n**Utworzono:** {newCard.GetString(false, false, true)}"
-                                .ToEmbedMessage(EMType.Success).Build());
-                        }
-                    }
-
-                    if (error)
-                    {
-                        await msg.ModifyAsync(x => x.Embed = $"{_payload.Name}\n\nBrakuje przedmiotów, tworzenie karty nie powiodło się."
-                        .ToEmbedMessage(EMType.Bot).Build());
-                    }
-
-                    var discordUserkey = string.Format(CacheKeys.User, _payload.PlayerInfo.User.Id);
-                    cacheManager.ExpireTag(discordUserkey, CacheKeys.Users);
-
-                    return true;
+                    user.GameDeck.Items.Remove(thisItem);
                 }
             }
 
-            return end;
+            if (!error)
+            {
+                user.GameDeck.Cards.Add(newCard);
+
+                await userRepository.SaveChangesAsync();
+
+                await userMessage.ModifyAsync(x => x.Embed = $"{_payload.Name}\n\n**Utworzono:** {newCard.GetString(false, false, true)}"
+                    .ToEmbedMessage(EMType.Success).Build());
+            }
+
+            if (error)
+            {
+                await userMessage.ModifyAsync(x => x.Embed = $"{_payload.Name}\n\nBrakuje przedmiotów, tworzenie karty nie powiodło się."
+                .ToEmbedMessage(EMType.Bot).Build());
+            }
+
+            cacheManager.ExpireTag(CacheKeys.User(_payload.PlayerInfo.User.Id), CacheKeys.Users);
         }
 
         public Embed BuildEmbed()
@@ -337,17 +339,18 @@ namespace Sanakan.TaskQueue
                 return;
             }
 
-            var message = await _payload.Message.Channel.GetMessageAsync(_payload.Message.Id);
+            var userMessage = await _payload.Message.Channel.GetMessageAsync(_payload.Message.Id) as IUserMessage;
 
-            if (message is IUserMessage userMessage)
+            if (userMessage == null)
             {
-                try
-                {
-                    await userMessage.RemoveAllReactionsAsync();
-                }
-                catch (Exception) { }
+                return;
             }
 
+            try
+            {
+                await userMessage.RemoveAllReactionsAsync();
+            }
+            catch (Exception) { }
         }
     }
 }

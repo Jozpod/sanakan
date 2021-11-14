@@ -171,7 +171,7 @@ namespace Sanakan.Web.Controllers
         /// <summary>
         /// Pobieranie użytkownika bota z zmniejszoną ilością danych
         /// </summary>
-        /// <param name="id">id użytkownika shindena</param>
+        /// <param name="id">The Shinden user identifier.</param>
         [HttpGet("shinden/simple/{id}"), Authorize(Policy = AuthorizePolicies.Site)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(UserWithToken), StatusCodes.Status200OK)]
@@ -286,7 +286,7 @@ namespace Sanakan.Web.Controllers
 
             var botUser = await _userRepository.GetByDiscordIdAsync(model.DiscordUserId);
 
-            if (botUser != null || botUser.ShindenId != 0)
+            if (botUser != null || botUser.ShindenId.HasValue)
             {
                 return ShindenNotFound("User already connected!");
             }
@@ -358,17 +358,6 @@ namespace Sanakan.Web.Controllers
                 ShindenUserId = shindenUser.Id.Value,
             });
 
-            //var exe = new Executable($"api-register u{model.DiscordUserId}", new Task<Task>(async () =>
-            //{
-            //    botUser = await _userRepository.GetUserOrCreateAsync(model.DiscordUserId);
-            //    botUser.ShindenId = shindenUser.Id.Value;
-
-            //    await _userRepository.SaveChangesAsync();
-
-            //    _cacheManager.ExpireTag(new string[] { $"user-{discordUser.Id}", "users" });
-            //}), Priority.High);
-
-            //await _executor.TryAdd(exe, TimeSpan.FromSeconds(1));
             return ShindenOk("User connected!");
         }
 
@@ -396,28 +385,6 @@ namespace Sanakan.Web.Controllers
                 Amount = amount
             });
 
-            //var exe = new Executable($"api-tc u{id} ({value})", new Task<Task>(async () =>
-            //{
-            //    var record = new TransferAnalytics()
-            //    {
-            //        Value = value,
-            //        DiscordId = user.Id,
-            //        Date = _systemClock.UtcNow,
-            //        ShindenId = user.ShindenId.Value,
-            //        Source = TransferSource.ByDiscordId,
-            //    };
-
-            //    _transferAnalyticsRepository.Add(record);
-
-            //    user = await _userRepository.GetUserOrCreateAsync(id);
-            //    user.TcCount += value;
-
-            //    await _userRepository.SaveChangesAsync();
-
-            //    _cacheManager.ExpireTag(new string[] { $"user-{user.Id}", "users" });
-            //}), Priority.High);
-
-            //await _executor.TryAdd(exe, TimeSpan.FromSeconds(1));
             return ShindenOk("TC added!");
         }
 
@@ -445,29 +412,6 @@ namespace Sanakan.Web.Controllers
                 Amount = amount
             });
 
-            //var exe = new Executable($"api-tc su{id} ({value})", new Task<Task>(async () =>
-            //{
-            //user = await _userRepository.GetByShindenIdAsync(id);
-            //user.TcCount += value;
-
-            //await _userRepository.SaveChangesAsync();
-
-            //_cacheManager.ExpireTag(new string[] { $"user-{user.Id}", "users" });
-
-            //var record = new TransferAnalytics()
-            //{
-            //    Value = value,
-            //    DiscordId = user.Id,
-            //    Date = _systemClock.UtcNow,
-            //    ShindenId = user.ShindenId.Value,
-            //    Source = TransferSource.ByShindenId,
-            //};
-
-            //_transferAnalyticsRepository.Add(record);
-            //await _transferAnalyticsRepository.SaveChangesAsync();
-            //}), Priority.High);
-
-            //await _executor.TryAdd(exe, TimeSpan.FromSeconds(1));
             return ShindenOk("TC added!");
         }
     }

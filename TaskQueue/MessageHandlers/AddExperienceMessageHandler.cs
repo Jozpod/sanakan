@@ -91,7 +91,7 @@ namespace Sanakan.TaskQueue.MessageHandlers
                     username,
                     level,
                     avatarUrl,
-                    color);;
+                    color);
                 using var badgeStream = badge.ToPngStream();
                 await channel.SendFileAsync(badgeStream, $"{user.Id}.png");
 

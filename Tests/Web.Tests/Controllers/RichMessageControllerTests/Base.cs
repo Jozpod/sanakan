@@ -25,11 +25,5 @@ namespace Sanakan.Web.Tests.Controllers.RichMessageControllerTests
                 _discordSocketClientAccessorMock.Object,
                 _sanakanConfigurationMock.Object);
         }
-
-        [TestMethod]
-        public void TestMethod1()
-        {
-            
-        }
     }
 }

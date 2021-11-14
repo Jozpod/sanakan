@@ -301,4 +301,16 @@ Tygodniowe misje:**
 
 Dzienne misje odświeżają się o północy, a tygodniowe co niedzielę.</value>
   </data>
+  <data name="WalletInfo" xml:space="preserve">
+    <value>**Portfel** {0}:
+
+{1} **SC**
+{2} **TC**
+{3} **AC**
+
+
+**PW**:
+{4} **CT**
+{5} **PC**</value>
+  </data>
 </root>

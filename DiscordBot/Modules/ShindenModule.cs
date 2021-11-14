@@ -27,6 +27,7 @@ using Sanakan.ShindenApi.Models;
 using Sanakan.Game.Services.Abstractions;
 using Sanakan.Session;
 using System.Text;
+using Sanakan.Common.Cache;
 
 namespace Sanakan.DiscordBot.Modules
 {
@@ -83,7 +84,7 @@ namespace Sanakan.DiscordBot.Modules
 
             if (episodes?.Count > 0)
             {
-                var msg = await ReplyAsync("", embed: "Lista poszła na PW!".ToEmbedMessage(EMType.Success).Build());
+                var message = await ReplyAsync("", embed: "Lista poszła na PW!".ToEmbedMessage(EMType.Success).Build());
 
                 try
                 {
@@ -99,7 +100,8 @@ namespace Sanakan.DiscordBot.Modules
                 }
                 catch (Exception ex)
                 {
-                    await msg.ModifyAsync(x => x.Embed = $"{user.Mention} nie udało się wyłać PW! ({ex.Message})".ToEmbedMessage(EMType.Error).Build());
+                    await message.ModifyAsync(x => x.Embed = $"{user.Mention} nie udało się wyłać PW! ({ex.Message})"
+                        .ToEmbedMessage(EMType.Error).Build());
                 }
 
                 return;
@@ -184,9 +186,9 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("wyświetla statystyki użytkownika z strony")]
         [Remarks("karna")]
         public async Task ShowSiteStatisticAsync(
-            [Summary("użytkownik (opcjonalne)")]SocketGuildUser? socketGuildUser = null)
+            [Summary("użytkownik (opcjonalne)")]IGuildUser? guildUser = null)
         {
-            var user = socketGuildUser ?? Context.User as SocketGuildUser;
+            var user = guildUser ?? Context.User as IGuildUser;
             
             if (user == null)
             {
@@ -270,7 +272,7 @@ namespace Sanakan.DiscordBot.Modules
 
             await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"user-{botuser.Id}" });
+            _cacheManager.ExpireTag(CacheKeys.User(botuser.Id));
 
             await ReplyAsync("", embed: "Konta zostały połączone.".ToEmbedMessage(EMType.Success).Build());
             return;
@@ -413,7 +415,7 @@ namespace Sanakan.DiscordBot.Modules
             }
         }
 
-        public async Task<Stream?> GetSiteStatisticAsync(ulong shindenUserId, SocketGuildUser user)
+        public async Task<Stream?> GetSiteStatisticAsync(ulong shindenUserId, IGuildUser user)
         {
             var result = await _shindenClient.GetUserInfoAsync(shindenUserId);
 
@@ -425,7 +427,10 @@ namespace Sanakan.DiscordBot.Modules
             var shindenUser = result.Value;
             var resLR = await _shindenClient.GetLastReadAsync(shindenUserId);
             var resLW = await _shindenClient.GetLastWatchedAsync(shindenUserId);
-            var color = user.Roles.OrderByDescending(x => x.Position)
+
+            var color = user.Guild.Roles
+                .Join(user.RoleIds, pr => pr.Id, pr => pr, (src, dst) => src)
+                .OrderByDescending(pr => pr.Position)
                 .FirstOrDefault()?.Color ?? Discord.Color.DarkerGrey;
 
             using var image = await _imageProcessor.GetSiteStatisticAsync(

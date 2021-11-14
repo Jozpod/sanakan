@@ -79,7 +79,7 @@ namespace Sanakan.TaskQueue
 
         public async Task<bool> OnAccept(SessionContext context, IServiceProvider serviceProvider)
         {
-            var moderatorService = serviceProvider.GetRequiredService<dynamic>();
+            var moderatorService = serviceProvider.GetRequiredService<IModeratorService>();
 
             if (await _payload.Message.Channel.GetMessageAsync(_payload.Message.Id) is IUserMessage userMessage)
             {

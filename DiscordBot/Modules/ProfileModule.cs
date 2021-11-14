@@ -62,7 +62,8 @@ namespace Sanakan.DiscordBot.Modules
         [Alias("wallet")]
         [Summary("wyświetla portfel użytkownika")]
         [Remarks("")]
-        public async Task ShowWalletAsync([Summary("użytkownik (opcjonalne)")]SocketUser? socketUser = null)
+        public async Task ShowWalletAsync(
+            [Summary("użytkownik (opcjonalne)")]IUser? socketUser = null)
         {
             var user = socketUser ?? Context.User;
 
@@ -78,9 +79,20 @@ namespace Sanakan.DiscordBot.Modules
                 await ReplyAsync("", embed: "Ta osoba nie ma profilu bota.".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
+
+            var parameters = new object[]
+            {
+                user.Mention,
+                botuser?.ScCount,
+                botuser?.TcCount,
+                botuser?.AcCount,
+                botuser?.GameDeck?.CTCount,
+                botuser?.GameDeck?.PVPCoins,
+            };
+
+            var walletInfo = string.Format(Strings.WalletInfo, parameters);
             
-            var content = ($"**Portfel** {user.Mention}:\n\n{botuser?.ScCount} **SC**\n{botuser?.TcCount} **TC**\n{botuser?.AcCount} **AC**\n\n"
-                + $"**PW**:\n{botuser?.GameDeck?.CTCount} **CT**\n{botuser?.GameDeck?.PVPCoins} **PC**")
+            var content = walletInfo
                 .ToEmbedMessage(EMType.Info)
                 .Build();
 
@@ -283,7 +295,7 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("wyświetla topke użytkowników")]
         [Remarks(""), RequireAnyCommandChannel]
         public async Task ShowTopAsync(
-            [Summary("rodzaj topki (poziom/sc/tc/pc/ac/posty(m/ms)/kart(a/y/ym)/karma(-))/pvp(s)")]TopType type = TopType.Level)
+            [Summary("rodzaj topki (poziom/sc/tc/pc/ac/posty(m/ms)/kart(a/y/ym)/karma(-))/pvp(s)")]TopType topType = TopType.Level)
         {
             var payload = new ListSession<string>.ListSessionPayload
             {
@@ -296,23 +308,23 @@ namespace Sanakan.DiscordBot.Modules
 
             var building = await ReplyAsync("", embed: $"🔨 Trwa budowanie topki...".ToEmbedMessage(EMType.Bot).Build());
             var users = await _userRepository.GetCachedAllUsersAsync();
-            var topUsers = _profileService.GetTopUsers(users, type, _systemClock.UtcNow);
-            payload.ListItems = await _profileService.BuildListViewAsync(topUsers, type, Context.Guild);
+            var topUsers = _profileService.GetTopUsers(users, topType, _systemClock.UtcNow);
+            payload.ListItems = await _profileService.BuildListViewAsync(topUsers, topType, Context.Guild);
 
             payload.Embed = new EmbedBuilder
             {
                 Color = EMType.Info.Color(),
-                Title = $"Topka {type.Name()}"
+                Title = $"Topka {topType.Name()}"
             };
 
             await building.DeleteAsync();
-            var msg = await ReplyAsync("", embed: session.BuildPage(0));
-            await msg.AddReactionsAsync(new[] {
+            var message = await ReplyAsync("", embed: session.BuildPage(0));
+            await message.AddReactionsAsync(new[] {
                 Emojis.LeftwardsArrow,
                 Emojis.RightwardsArrow,
             });
 
-            payload.Message = msg;
+            payload.Message = message;
             _sessionManager.Add(session);
         }
 
@@ -329,8 +341,8 @@ namespace Sanakan.DiscordBot.Modules
 
             await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"user-{botuser.Id}", "users" });
-            
+            _cacheManager.ExpireTag(CacheKeys.User(botuser.Id), CacheKeys.Users);
+
             var content = $"Podgląd waifu w profilu {Context.User.Mention} został {result}."
                 .ToEmbedMessage(EMType.Success).Build();
 
@@ -342,9 +354,9 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("wyświetla profil użytkownika")]
         [Remarks("karna")]
         public async Task ShowUserProfileAsync(
-            [Summary("użytkownik (opcjonalne)")]SocketGuildUser? socketGuildUser = null)
+            [Summary("użytkownik (opcjonalne)")]IGuildUser? guildUser = null)
         {
-            var user = socketGuildUser ?? Context.User as SocketGuildUser;
+            var user = guildUser ?? Context.User as IGuildUser;
             
             if (user == null)
             {
@@ -376,14 +388,14 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("wyświetla postęp misji użytkownika")]
         [Remarks("tak"), RequireAnyCommandChannel]
         public async Task ShowUserQuestsProgressAsync(
-            [Summary("czy odebrać nagrody?")]bool claim = false)
+            [Summary("czy odebrać nagrody?")]bool claimGifts = false)
         {
             var botuser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
             var weeklyQuests = botuser.CreateOrGetAllWeeklyQuests();
             var dailyQuests = botuser.CreateOrGetAllDailyQuests();
             var utcNow = _systemClock.UtcNow;
             
-            if (claim)
+            if (claimGifts)
             {
                 var rewards = new List<string>();
                 var allClaimedBefore = dailyQuests.Count(x => x.IsClaimed(utcNow)) == dailyQuests.Count;
@@ -411,9 +423,9 @@ namespace Sanakan.DiscordBot.Modules
                     }
                 }
 
-                if (rewards.Count > 0)
+                if (rewards.Any())
                 {
-                    _cacheManager.ExpireTag(new string[] { $"user-{botuser.Id}", "users" });
+                    _cacheManager.ExpireTag(CacheKeys.User(botuser.Id), CacheKeys.Users);
 
                     await ReplyAsync("", embed: $"**Odebrane nagrody:**\n\n{string.Join("\n", rewards)}".ToEmbedMessage(EMType.Success).WithUser(Context.User).Build());
                     await _userRepository.SaveChangesAsync();
@@ -441,37 +453,38 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("zmienia styl profilu (koszt 3000 SC/1000 TC)")]
         [Remarks("1 https://i.imgur.com/8UK8eby.png"), RequireCommandChannel]
         public async Task ChangeStyleAsync(
-            [Summary("typ stylu (statystyki(0), obrazek(1), brzydkie(2), karcianka(3))")]ProfileType type,
-            [Summary("bezpośredni adres do obrazka gdy wybrany styl 1 lub 2 (325 x 272)")]string? imgUrl = null,
+            [Summary("typ stylu (statystyki(0), obrazek(1), brzydkie(2), karcianka(3))")]ProfileType profileType,
+            [Summary("bezpośredni adres do obrazka gdy wybrany styl 1 lub 2 (325 x 272)")]string? imageUrl = null,
             [Summary("waluta (SC/TC)")]SCurrency currency = SCurrency.Sc)
         {
             var scCost = 3000;
             var tcCost = 1000;
-
+            var mention = Context.User.Mention;
             var botuser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
 
             if (botuser.ScCount < scCost && currency == SCurrency.Sc)
             {
-                await ReplyAsync("", embed: $"{Context.User.Mention} nie posiadasz wystarczającej liczby SC!".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync("", embed: $"{mention} nie posiadasz wystarczającej liczby SC!".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
             if (botuser.TcCount < tcCost && currency == SCurrency.Tc)
             {
-                await ReplyAsync("", embed: $"{Context.User.Mention} nie posiadasz wystarczającej liczby TC!".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync("", embed: $"{mention} nie posiadasz wystarczającej liczby TC!".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
-            switch (type)
+            switch (profileType)
             {
                 case ProfileType.Image:
                 case ProfileType.StatisticsWithImage:
-                    var res = await _profileService.SaveProfileImageAsync(imgUrl, $"{Paths.SavedData}/SR{botuser.Id}.png", 325, 272);
-                    if (res == SaveResult.Success)
+                    var saveResult = await _profileService.SaveProfileImageAsync(imageUrl, $"{Paths.SavedData}/SR{botuser.Id}.png", 325, 272);
+
+                    if (saveResult == SaveResult.Success)
                     {
                         botuser.StatsReplacementProfileUri = $"{Paths.SavedData}/SR{botuser.Id}.png";
                         break;
                     }
-                    else if (res == SaveResult.BadUrl)
+                    else if (saveResult == SaveResult.BadUrl)
                     {
                         await ReplyAsync("", embed: "Nie wykryto obrazka! Upewnij się, że podałeś poprawny adres!".ToEmbedMessage(EMType.Error).Build());
                         return;
@@ -491,13 +504,13 @@ namespace Sanakan.DiscordBot.Modules
             {
                 botuser.TcCount -= tcCost;
             }
-            botuser.ProfileType = type;
+            botuser.ProfileType = profileType;
 
             await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"user-{botuser.Id}", "users" });
+            _cacheManager.ExpireTag(CacheKeys.User(botuser.Id), CacheKeys.Users);
 
-            var content = $"Zmieniono styl profilu użytkownika: {Context.User.Mention}!".ToEmbedMessage(EMType.Success).Build();
+            var content = $"Zmieniono styl profilu użytkownika: {mention}!".ToEmbedMessage(EMType.Success).Build();
             await ReplyAsync("", embed: content);
         }
 
@@ -554,8 +567,7 @@ namespace Sanakan.DiscordBot.Modules
 
             await _userRepository.SaveChangesAsync();
 
-            var userKey = string.Format(CacheKeys.User, botuser.Id);
-            _cacheManager.ExpireTag(userKey, CacheKeys.Users);
+            _cacheManager.ExpireTag(CacheKeys.User(botuser.Id), CacheKeys.Users);
 
             var content = $"Zmieniono tło profilu użytkownika: {mention}!".ToEmbedMessage(EMType.Success).Build();
             await ReplyAsync("", embed: content);
@@ -611,7 +623,7 @@ namespace Sanakan.DiscordBot.Modules
 
             await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"user-{botuser.Id}", "users" });
+            _cacheManager.ExpireTag(CacheKeys.User(botuser.Id));
 
             await ReplyAsync("", embed: $"{user.Mention} wykupił miesiąc globalnych emotek!".ToEmbedMessage(EMType.Success).Build());
         }
@@ -697,8 +709,7 @@ namespace Sanakan.DiscordBot.Modules
 
             await _userRepository.SaveChangesAsync();
 
-            var discordUserkey = string.Format(CacheKeys.User, botuser.Id);
-            _cacheManager.ExpireTag(discordUserkey, CacheKeys.Users);
+            _cacheManager.ExpireTag(CacheKeys.User(botuser.Id), CacheKeys.Users);
 
             await ReplyAsync("", embed: $"{user.Mention} wykupił kolor!".ToEmbedMessage(EMType.Success).Build());
         }

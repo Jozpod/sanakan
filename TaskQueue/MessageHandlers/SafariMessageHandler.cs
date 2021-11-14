@@ -59,8 +59,7 @@ namespace Sanakan.TaskQueue.MessageHandlers
             botUser.GameDeck.Cards.Add(card);
             await _userRepository.SaveChangesAsync();
 
-            var userKey = string.Format(CacheKeys.User, botUser.Id);
-            _cacheManager.ExpireTag(new string[] { userKey, CacheKeys.Users });
+            _cacheManager.ExpireTag(CacheKeys.User(botUser.Id), CacheKeys.Users);
 
             var record = new UserAnalytics
             {

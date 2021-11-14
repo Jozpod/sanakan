@@ -118,7 +118,7 @@ namespace Sanakan.DAL.Repositories
 
         public async Task<User?> GetCachedFullUserByShindenIdAsync(ulong shindenUserId)
         {
-            var key = string.Format(CacheKeys.User, shindenUserId);
+            var key = CacheKeys.User(shindenUserId);
 
             var cached = _cacheManager.Get<User>(key);
 
