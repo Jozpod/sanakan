@@ -16,10 +16,10 @@ namespace DiscordBot.ModulesTests.DebugModuleTests
     {
         
         [TestMethod]
-        public async Task Should_Send_Message()
+        public async Task Should_Add_Quiz_And_Send_Message()
         {
-            await _module.AddNewQuizAsync();
-            _messageChannelMock.Verify();
+            var json = "test";
+            await _module.AddNewQuizAsync(json);
         }
     }
 }

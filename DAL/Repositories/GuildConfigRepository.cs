@@ -22,7 +22,7 @@ namespace Sanakan.DAL.Repositories
 
         public async Task<GuildOptions> GetCachedGuildFullConfigAsync(ulong guildId)
         {
-            var key = string.Format(CacheKeys.GuilConfig, guildId);
+            var key = CacheKeys.GuildConfig(guildId);
 
             var cached = _cacheManager.Get<GuildOptions>(key);
 

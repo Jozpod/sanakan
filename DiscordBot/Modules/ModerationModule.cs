@@ -15,11 +15,11 @@ using Sanakan.DiscordBot.Abstractions;
 using Sanakan.DiscordBot.Abstractions.Extensions;
 using Sanakan.DiscordBot.Abstractions.Models;
 using Sanakan.DiscordBot.Resources;
+using Sanakan.DiscordBot.Services;
 using Sanakan.DiscordBot.Services.Abstractions;
 using Sanakan.Extensions;
 using Sanakan.Preconditions;
 using Sanakan.Services;
-using Sanakan.Services.Commands;
 using Sanakan.ShindenApi;
 using Shinden;
 using System;
@@ -226,7 +226,7 @@ namespace Sanakan.DiscordBot.Modules
             }
 
             var usr = Context.User as SocketGuildUser;
-            var info = await _moderatorService.MuteUserAysnc(
+            var info = await _moderatorService.MuteUserAsync(
                 user,
                 muteRole as SocketRole,
                 null,
@@ -293,7 +293,7 @@ namespace Sanakan.DiscordBot.Modules
             }
 
             var usr = Context.User as SocketGuildUser;
-            var info = await _moderatorService.MuteUserAysnc(
+            var info = await _moderatorService.MuteUserAsync(
                 user,
                 muteRole as SocketRole,
                 muteModRole as SocketRole,
@@ -628,7 +628,8 @@ namespace Sanakan.DiscordBot.Modules
         [Command("globalr")]
         [Summary("ustawia role globalnych emotek")]
         [Remarks("34125343243432"), RequireAdminRole]
-        public async Task SetGlobalRoleAsync([Summary("id roli")]SocketRole role)
+        public async Task SetGlobalRoleAsync(
+            [Summary("id roli")]IRole role)
         {
             var guildId = Context.Guild.Id;
 
@@ -806,8 +807,8 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("dodaje nowy myland")]
         [Remarks("34125343243432 64325343243432 Kopacze")]
         public async Task AddMyLandRoleAsync(
-            [Summary("id roli")]SocketRole manager,
-            [Summary("id roli")]SocketRole? underling = null,
+            [Summary("id roli")]IRole? manager,
+            [Summary("id roli")]IRole? underling = null,
             [Summary("nazwa landu")][Remainder]string? name = null)
         {
             var guildId = Context.Guild.Id;
@@ -1294,7 +1295,7 @@ namespace Sanakan.DiscordBot.Modules
             config.WaifuConfig.CommandChannels.Add(chan);
             await _guildConfigRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"config-{Context.Guild.Id}" });
+            _cacheManager.ExpireTag(CacheKeys.GuildConfig(guildId));
 
             await ReplyAsync("", embed: $"Ustawiono `{channelName}` jako kanał poleceń waifu."
                 .ToEmbedMessage(EMType.Success).Build());
@@ -1880,7 +1881,7 @@ namespace Sanakan.DiscordBot.Modules
             config.Raports.Remove(raport);
             await _userRepository.SaveChangesAsync();
 
-            var info = await _moderatorService.MuteUserAysnc(
+            var info = await _moderatorService.MuteUserAsync(
                 user as SocketGuildUser,
                 muteRole as SocketRole,
                 null,

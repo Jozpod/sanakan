@@ -1,10 +1,14 @@
 ﻿using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
+using Sanakan.DAL.Repositories.Abstractions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static Sanakan.DiscordBot.Session.ExchangeSession;
 
 namespace Sanakan.DiscordBot.Session.Tests
 {
@@ -12,16 +16,29 @@ namespace Sanakan.DiscordBot.Session.Tests
     public class ExchangeSessionTests
     {
         private readonly ExchangeSession _session;
+        private readonly Mock<IUserRepository> _userRepositoryMock = new(MockBehavior.Strict);
 
         public ExchangeSessionTests()
         {
-            _session = new();
+            var payload = new ExchangeSessionPayload
+            {
+
+            };
+            _session = new(1ul, DateTime.UtcNow, payload);
         }
 
         [TestMethod]
         public async Task Should_Check_If_Session_Exists()
         {
-            await _session.ExecuteAsync();
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton(_userRepositoryMock.Object);
+            var context = new SessionContext
+            {
+
+            };
+            var serviceProvider = serviceCollection.BuildServiceProvider();
+
+            await _session.ExecuteAsync(context, serviceProvider);
         }
     }
 }

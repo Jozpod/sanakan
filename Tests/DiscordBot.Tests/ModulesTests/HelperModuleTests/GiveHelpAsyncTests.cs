@@ -13,7 +13,7 @@ namespace DiscordBot.ModulesTests.HelperModuleTests
     {
         
         [TestMethod]
-        public async Task Should_Give_Bot_Info()
+        public async Task Should_Send_Help_Command_Message()
         {
             await _module.GiveHelpAsync();
         }

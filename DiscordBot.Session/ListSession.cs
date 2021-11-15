@@ -63,32 +63,6 @@ namespace Sanakan.DiscordBot.Session
 
         private int MaxPageReal() => MaxPage() - 1;
 
-        private async Task DisposeAction()
-        {
-            if (_payload.Message == null)
-            {
-                return;
-            }
-
-            if (await _payload.Message.Channel.GetMessageAsync(_payload.Message.Id) is IUserMessage msg)
-            {
-                try
-                {
-                    await msg.RemoveAllReactionsAsync();
-                }
-                catch (Exception)
-                {
-                    await msg.RemoveReactionsAsync(_payload.Bot, new IEmote[] {
-                        Emojis.LeftwardsArrow, Emojis.RightwardsArrow
-                    });
-                }
-            }
-
-            _payload.Message = null;
-
-            _payload.ListItems = null;
-        }
-
         public override async Task ExecuteAsync(
             SessionContext context,
             IServiceProvider serviceProvider,
@@ -99,29 +73,72 @@ namespace Sanakan.DiscordBot.Session
                 return;
             }
 
-            if (await _payload.Message.Channel.GetMessageAsync(_payload.Message.Id) is IUserMessage msg)
+            var userMessage = await _payload.Message.Channel.GetMessageAsync(_payload.Message.Id) as IUserMessage;
+
+            if (userMessage == null)
             {
-                var reaction = context.AddReaction ?? context.RemoveReaction;
-                if (reaction.Emote.Equals(Emojis.LeftwardsArrow))
-                {
-                    if (--_payload.CurrentPage < 0)
-                    {
-                        _payload.CurrentPage = MaxPageReal();
-                    }
-                    await msg.ModifyAsync(x => x.Embed = BuildPage(_payload.CurrentPage));
-
-                    ResetExpiry();
-                }
-                else if (reaction.Emote.Equals(Emojis.RightwardsArrow))
-                {
-                    if (++_payload.CurrentPage > MaxPageReal()) _payload.CurrentPage = 0;
-                    await msg.ModifyAsync(x => x.Embed = BuildPage(_payload.CurrentPage));
-
-                    ResetExpiry();
-                }
+                return;
             }
 
-            return;
+            var reaction = context.AddReaction ?? context.RemoveReaction;
+
+            if (reaction.Emote.Equals(Emojis.LeftwardsArrow))
+            {
+                if (--_payload.CurrentPage < 0)
+                {
+                    _payload.CurrentPage = MaxPageReal();
+                }
+                await userMessage.ModifyAsync(x => x.Embed = BuildPage(_payload.CurrentPage));
+
+                ResetExpiry();
+                return;
+            }
+            
+            if (reaction.Emote.Equals(Emojis.RightwardsArrow))
+            {
+                if (++_payload.CurrentPage > MaxPageReal())
+                {
+                    _payload.CurrentPage = 0;
+                }
+
+                await userMessage.ModifyAsync(x => x.Embed = BuildPage(_payload.CurrentPage));
+
+                ResetExpiry();
+            }
+        }
+
+        public override async ValueTask DisposeAsync()
+        {
+            if (_payload.Message == null)
+            {
+                return;
+            }
+
+            var userMessage = await _payload.Message.Channel.GetMessageAsync(_payload.Message.Id) as IUserMessage;
+
+            if (userMessage == null)
+            {
+                _payload.Message = null;
+                _payload.ListItems = null;
+                return;
+            }
+
+            try
+            {
+                await userMessage.RemoveAllReactionsAsync();
+            }
+            catch (Exception)
+            {
+                var reactions = new IEmote[] {
+                    Emojis.LeftwardsArrow,
+                    Emojis.RightwardsArrow
+                };
+
+                await userMessage.RemoveReactionsAsync(_payload.Bot, reactions);
+            }
+
+            _payload.Message = null;
+            _payload.ListItems = null;
         }
     }
 }

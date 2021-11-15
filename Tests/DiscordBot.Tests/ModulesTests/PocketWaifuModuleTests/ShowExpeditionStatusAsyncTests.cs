@@ -15,10 +15,10 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
     {
         
         [TestMethod]
-        public async Task Should_Add_To_Wish_List()
+        public async Task Should_Send_Message_Containing_Expedition_Status()
         {
   
-            await _module.ShowExpeditionStatusAsync(wishlistObjectType, objectId);
+            await _module.ShowExpeditionStatusAsync();
         }
     }
 }

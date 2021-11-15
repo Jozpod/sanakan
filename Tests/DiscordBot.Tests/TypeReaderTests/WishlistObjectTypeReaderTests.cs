@@ -9,7 +9,6 @@ using Sanakan.Common;
 using Sanakan.Common.Configuration;
 using Sanakan.DAL.Models;
 using Sanakan.DiscordBot.Services;
-using Sanakan.Services.Commands;
 using Sanakan.TypeReaders;
 using System;
 using System.Collections.Generic;

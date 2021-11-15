@@ -1986,6 +1986,47 @@
           "bin/placeholder/Sanakan.DiscordBot.Abstractions.dll": {}
         }
       },
+      "Sanakan.DiscordBot.Services/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v5.0",
+        "dependencies": {
+          "Discord.Net": "2.4.0",
+          "Humanizer.Core.pl": "2.11.10",
+          "Microsoft.Extensions.DependencyInjection": "5.0.2",
+          "Microsoft.Extensions.Options": "5.0.0",
+          "Sanakan.Common": "1.0.0",
+          "Sanakan.DAL": "1.0.0",
+          "Sanakan.DiscordBot.Abstractions": "1.0.0",
+          "Sanakan.TaskQueue": "1.0.0",
+          "Shinden.NET": "0.0.1",
+          "SixLabors.ImageSharp.Drawing": "1.0.0-beta0006"
+        },
+        "compile": {
+          "bin/placeholder/Sanakan.DiscordBot.Services.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Sanakan.DiscordBot.Services.dll": {}
+        }
+      },
+      "Sanakan.DiscordBot.Session/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v5.0",
+        "dependencies": {
+          "Discord.Net": "2.4.0",
+          "Microsoft.Extensions.DependencyInjection": "5.0.2",
+          "Sanakan.Common": "1.0.0",
+          "Sanakan.DAL": "1.0.0",
+          "Sanakan.DiscordBot.Abstractions": "1.0.0",
+          "Sanakan.DiscordBot.Services": "1.0.0",
+          "Sanakan.Game": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/Sanakan.DiscordBot.Session.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Sanakan.DiscordBot.Session.dll": {}
+        }
+      },
       "Sanakan.Game/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v5.0",
@@ -6722,6 +6763,16 @@
       "path": "../DiscordBot.Abstractions/DiscordBot.Abstractions.csproj",
       "msbuildProject": "../DiscordBot.Abstractions/DiscordBot.Abstractions.csproj"
     },
+    "Sanakan.DiscordBot.Services/1.0.0": {
+      "type": "project",
+      "path": "../DiscordBot.Services/DiscordBot.Services.csproj",
+      "msbuildProject": "../DiscordBot.Services/DiscordBot.Services.csproj"
+    },
+    "Sanakan.DiscordBot.Session/1.0.0": {
+      "type": "project",
+      "path": "../DiscordBot.Session/DiscordBot.Session.csproj",
+      "msbuildProject": "../DiscordBot.Session/DiscordBot.Session.csproj"
+    },
     "Sanakan.Game/1.0.0": {
       "type": "project",
       "path": "../Game/Game.csproj",
@@ -6747,6 +6798,7 @@
       "Sanakan.Common >= 1.0.0",
       "Sanakan.DAL >= 1.0.0",
       "Sanakan.DiscordBot.Abstractions >= 1.0.0",
+      "Sanakan.DiscordBot.Session >= 1.0.0",
       "Sanakan.TaskQueue >= 1.0.0",
       "Shinden.NET >= 0.0.1",
       "SixLabors.ImageSharp.Drawing >= 1.0.0-beta0006"
@@ -6791,6 +6843,9 @@
             },
             "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\DiscordBot.Abstractions\\DiscordBot.Abstractions.csproj": {
               "projectPath": "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\DiscordBot.Abstractions\\DiscordBot.Abstractions.csproj"
+            },
+            "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\DiscordBot.Session\\DiscordBot.Session.csproj": {
+              "projectPath": "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\DiscordBot.Session\\DiscordBot.Session.csproj"
             },
             "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\ShindenApi\\ShindenApi.csproj": {
               "projectPath": "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\ShindenApi\\ShindenApi.csproj"

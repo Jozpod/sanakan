@@ -15,9 +15,12 @@ namespace Sanakan.TaskQueue.MessageHandlers
         private readonly IUserRepository _userRepository;
         private readonly ICacheManager _cacheManager;
 
-        public DeleteUserMessageHandler()
+        public DeleteUserMessageHandler(
+            IUserRepository userRepository,
+            ICacheManager cacheManager)
         {
-
+            _userRepository = userRepository;
+            _cacheManager = cacheManager;
         }
 
         public async Task HandleAsync(DeleteUserMessage message)

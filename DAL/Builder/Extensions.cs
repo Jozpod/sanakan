@@ -31,19 +31,19 @@ namespace Sanakan.DAL.Builder
             {
                 var config = sp.GetRequiredService<IOptionsMonitor<DatabaseConfiguration>>().CurrentValue;
 
-                if (config.Provider == "MySql")
+                if (config.Provider == DatabaseProvider.MySql)
                 {
                     optionsBuilder.UseMySql(
                         config.ConnectionString,
                         new MySqlServerVersion(config.Version));
                 }
 
-                if (config.Provider == "Sqlite")
+                if (config.Provider == DatabaseProvider.Sqlite)
                 {
                     optionsBuilder.UseSqlite(config.ConnectionString);
                 }
 
-                if (config.Provider == "SqlServer")
+                if (config.Provider == DatabaseProvider.SqlServer)
                 {
                     optionsBuilder.UseSqlServer(config.ConnectionString);
                 }

@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Sanakan.DAL.Models;
 using System;
@@ -16,13 +17,24 @@ namespace Sanakan.DiscordBot.Session.Tests
 
         public ListSessionTests()
         {
-            _session = new();
+            var payload = new ListSession<Card>.ListSessionPayload
+            {
+
+            };
+            _session = new(1ul, DateTime.UtcNow, payload);
         }
 
         [TestMethod]
         public async Task Should_()
         {
-            await _session.ExecuteAsync();
+            var serviceCollection = new ServiceCollection();
+            var context = new SessionContext
+            {
+
+            };
+            var serviceProvider = serviceCollection.BuildServiceProvider();
+
+            await _session.ExecuteAsync(context, serviceProvider);
         }
     }
 }

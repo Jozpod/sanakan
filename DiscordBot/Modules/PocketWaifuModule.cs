@@ -16,20 +16,15 @@ using Sanakan.DiscordBot.Abstractions;
 using Sanakan.DiscordBot.Abstractions.Extensions;
 using Sanakan.DiscordBot.Abstractions.Models;
 using Sanakan.DiscordBot.Resources;
+using Sanakan.DiscordBot.Session;
 using Sanakan.Extensions;
 using Sanakan.Game;
 using Sanakan.Game.Extensions;
 using Sanakan.Game.Models;
 using Sanakan.Game.Services.Abstractions;
 using Sanakan.Preconditions;
-using Sanakan.Services.Commands;
-using Sanakan.Services.PocketWaifu;
-using Sanakan.Services.Session;
-using Sanakan.Services.Session.Models;
 using Sanakan.ShindenApi;
 using Sanakan.ShindenApi.Utilities;
-using Sanakan.TaskQueue;
-using Shinden.API;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -1773,18 +1768,19 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("dodaje exp do karty, poświęcając kilka innych")]
         [Remarks("5412 5411 5410"), RequireWaifuCommandChannel]
         public async Task SacrificeCardMultiAsync(
-            [Summary("WID(do ulepszenia)")]ulong idToUp,
-            [Summary("WID kart(do poświęcenia)")]params ulong[] idsToSac)
+            [Summary("WID(do ulepszenia)")]ulong idToUpgrade,
+            [Summary("WID kart(do poświęcenia)")]params ulong[] idsToSacrifice)
         {
-            if (idsToSac.Any(x => x == idToUp))
+            if (idsToSacrifice.Any(x => x == idToUpgrade))
             {
-                await ReplyAsync("", embed: $"{Context.User.Mention} podałeś ten sam WID do ulepszenia i zniszczenia.".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync("", embed: $"{Context.User.Mention} podałeś ten sam WID do ulepszenia i zniszczenia."
+                    .ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
             var bUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
-            var cardToUp = bUser.GameDeck.Cards.FirstOrDefault(x => x.Id == idToUp);
-            var cardsToSac = bUser.GameDeck.Cards.Where(x => idsToSac.Any(c => c == x.Id)).ToList();
+            var cardToUp = bUser.GameDeck.Cards.FirstOrDefault(x => x.Id == idToUpgrade);
+            var cardsToSac = bUser.GameDeck.Cards.Where(x => idsToSacrifice.Any(c => c == x.Id)).ToList();
 
             if (cardsToSac.Count < 1 || cardToUp == null)
             {
@@ -2833,7 +2829,7 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("kasuje tag z kart")]
         [Remarks("ulubione 2211 2123 33123"), RequireWaifuCommandChannel]
         public async Task RemoveCardTagAsync(
-            [Summary("tag")]string tag,
+            [Summary("tag")]string cardTag,
             [Summary("WID kart")]params ulong[] wids)
         {
             var databaseUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
@@ -2848,7 +2844,7 @@ namespace Sanakan.DiscordBot.Modules
             int counter = 0;
             foreach (var thisCard in cardsSelected)
             {
-                var tTag = thisCard.TagList.FirstOrDefault(x => x.Name.Equals(tag, StringComparison.CurrentCultureIgnoreCase));
+                var tTag = thisCard.TagList.FirstOrDefault(x => x.Name.Equals(cardTag, StringComparison.CurrentCultureIgnoreCase));
                 if (tTag != null)
                 {
                     ++counter;
@@ -2860,7 +2856,7 @@ namespace Sanakan.DiscordBot.Modules
 
             _cacheManager.ExpireTag(CacheKeys.User(databaseUser.Id), CacheKeys.Users);
 
-            await ReplyAsync("", embed: $"{Context.User.Mention} zdjął tag {tag} z {counter} kart.".ToEmbedMessage(EMType.Success).Build());
+            await ReplyAsync("", embed: $"{Context.User.Mention} zdjął tag {cardTag} z {counter} kart.".ToEmbedMessage(EMType.Success).Build());
         }
 
         [Command("zasady wymiany")]
@@ -2956,10 +2952,10 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("pozwala wyszukać użytkowników posiadających kartę danej postaci")]
         [Remarks("51 tak"), RequireWaifuCommandChannel]
         public async Task SearchCharacterCardsAsync(
-            [Summary("id postaci na shinden")]ulong id,
+            [Summary("id postaci na shinden")]ulong characterId,
             [Summary("czy zamienić oznaczenia na nicki?")]bool showNames = false)
         {
-            var characterResult = await _shindenClient.GetCharacterInfoAsync(id);
+            var characterResult = await _shindenClient.GetCharacterInfoAsync(characterId);
             
             if (characterResult.Value == null)
             {
@@ -2969,7 +2965,7 @@ namespace Sanakan.DiscordBot.Modules
 
             var character = characterResult.Value;
 
-            var cards = await _cardRepository.GetByCharacterIdAsync(id, new CardQueryOptions
+            var cards = await _cardRepository.GetByCharacterIdAsync(characterId, new CardQueryOptions
             {
                 IncludeTagList = true,
                 IncludeGameDeck = true,
@@ -3128,9 +3124,9 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("propozycja wymiany z użytkownikiem")]
         [Remarks("Karna"), RequireWaifuMarketChannel]
         public async Task ExchangeCardsAsync(
-            [Summary("użytkownik")]SocketGuildUser destinationUser)
+            [Summary("użytkownik")]IGuildUser destinationUser)
         {
-            var sourceUser = Context.User as SocketGuildUser;
+            var sourceUser = Context.User as IGuildUser;
             
             if (sourceUser == null)
             {
@@ -3165,7 +3161,7 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            payload.P1 = new PlayerInfo
+            payload.SourcePlayer = new PlayerInfo
             {
                 User = sourceUser,
                 DatabaseUser = duser1,
@@ -3174,7 +3170,7 @@ namespace Sanakan.DiscordBot.Modules
                 Cards = new List<Card>()
             };
 
-            payload.P2 = new PlayerInfo
+            payload.DestinationPlayer = new PlayerInfo
             {
                 User = destinationUser,
                 DatabaseUser = duser2,
@@ -3186,9 +3182,9 @@ namespace Sanakan.DiscordBot.Modules
             payload.Name = "🔄 **Wymiana:**";
             payload.Tips = $"Polecenia: `dodaj [WID]`, `usuń [WID]`.\n\n\u0031\u20E3 - zakończenie dodawania {sourceUser.Mention}\n\u0032\u20E3 - zakończenie dodawania {destinationUser.Mention}";
 
-            var msg = await ReplyAsync("", embed: session.BuildEmbed());
-            await msg.AddReactionsAsync(session.StartReactions);
-            payload.Message = msg;
+            var message = await ReplyAsync("", embed: session.BuildEmbed());
+            await message.AddReactionsAsync(session.StartReactions);
+            payload.Message = message;
 
             _sessionManager.Add(session);
         }
@@ -3599,10 +3595,11 @@ namespace Sanakan.DiscordBot.Modules
         public async Task ChangeCardAsync([Summary("WID")]ulong wid)
         {
             var bUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
+            var mention = Context.User.Mention;
 
             if (!bUser.GameDeck.CanCreateDemon() && !bUser.GameDeck.CanCreateAngel())
             {
-                await ReplyAsync("", embed: $"{Context.User.Mention} nie jesteś zły, ani dobry - po prostu nijaki."
+                await ReplyAsync("", embed: $"{mention} nie jesteś zły, ani dobry - po prostu nijaki."
                     .ToEmbedMessage(EMType.Error).Build());
                 return;
             }
@@ -3610,32 +3607,32 @@ namespace Sanakan.DiscordBot.Modules
             var thisCard = bUser.GameDeck.Cards.FirstOrDefault(x => x.Id == wid);
             if (thisCard == null)
             {
-                await ReplyAsync("", embed: $"{Context.User.Mention} nie odnaleziono karty.".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync("", embed: $"{mention} nie odnaleziono karty.".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
             if (thisCard.InCage)
             {
-                await ReplyAsync("", embed: $"{Context.User.Mention} ta karta znajduje się w klatce.".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync("", embed: $"{mention} ta karta znajduje się w klatce.".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
             if (!thisCard.CanGiveBloodOrUpgradeToSSS())
             {
-                await ReplyAsync("", embed: $"{Context.User.Mention} ta karta ma zbyt niską relacje".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync("", embed: $"{mention} ta karta ma zbyt niską relacje".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
             var blood = bUser.GameDeck.Items.FirstOrDefault(x => x.Type == ItemType.BetterIncreaseUpgradeCnt);
             if (blood == null)
             {
-                await ReplyAsync("", embed: $"{Context.User.Mention} o dziwo nie posiadasz kropli swojej krwi.".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync("", embed: $"{mention} o dziwo nie posiadasz kropli swojej krwi.".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
             if (blood.Count < 3)
             {
-                await ReplyAsync("", embed: $"{Context.User.Mention} o dziwo posiadasz za mało kropli swojej krwi.".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync("", embed: $"{mention} o dziwo posiadasz za mało kropli swojej krwi.".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
@@ -3646,7 +3643,7 @@ namespace Sanakan.DiscordBot.Modules
             {
                 if (thisCard.Dere == Dere.Yami)
                 {
-                    await ReplyAsync("", embed: $"{Context.User.Mention} ta karta została już przeistoczona wcześniej.".ToEmbedMessage(EMType.Error).Build());
+                    await ReplyAsync("", embed: $"{mention} ta karta została już przeistoczona wcześniej.".ToEmbedMessage(EMType.Error).Build());
                     return;
                 }
 
@@ -3665,7 +3662,7 @@ namespace Sanakan.DiscordBot.Modules
             {
                 if (thisCard.Dere == Dere.Raito)
                 {
-                    await ReplyAsync("", embed: $"{Context.User.Mention} ta karta została już przeistoczona wcześniej.".ToEmbedMessage(EMType.Error).Build());
+                    await ReplyAsync("", embed: $"{mention} ta karta została już przeistoczona wcześniej.".ToEmbedMessage(EMType.Error).Build());
                     return;
                 }
 
@@ -3684,7 +3681,7 @@ namespace Sanakan.DiscordBot.Modules
             await _userRepository.SaveChangesAsync();
             _cacheManager.ExpireTag(CacheKeys.User(bUser.Id), CacheKeys.Users);
 
-            await ReplyAsync("", embed: $"{Context.User.Mention} nowy charakter to {thisCard.Dere}".ToEmbedMessage(EMType.Success).Build());
+            await ReplyAsync("", embed: $"{mention} nowy charakter to {thisCard.Dere}".ToEmbedMessage(EMType.Success).Build());
         }
 
         private const double PVPRankMultiplier = 0.45;

@@ -15,7 +15,9 @@ namespace DiscordBot.ModulesTests.HelperModuleTests
         [TestMethod]
         public async Task Should_Give_Bot_Info()
         {
-            await _module.ReportUserAsync();
+            var messageId = 1ul;
+            var reason = "reason";
+            await _module.ReportUserAsync(messageId, reason);
         }
     }
 }

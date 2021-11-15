@@ -2,9 +2,6 @@
 using Discord.WebSocket;
 using Sanakan.Extensions;
 using Sanakan.Preconditions;
-using Sanakan.Services.Commands;
-using Sanakan.Services.Session;
-using Sanakan.Services.Session.Models;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -25,9 +22,9 @@ using System.IO;
 using Sanakan.ShindenApi.Models.Enums;
 using Sanakan.ShindenApi.Models;
 using Sanakan.Game.Services.Abstractions;
-using Sanakan.Session;
 using System.Text;
 using Sanakan.Common.Cache;
+using Sanakan.DiscordBot.Session;
 
 namespace Sanakan.DiscordBot.Modules
 {

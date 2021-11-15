@@ -1,7 +1,4 @@
 ﻿using Discord.Commands;
-using Sanakan.Services;
-using Sanakan.Extensions;
-using Sanakan.Services.Commands;
 using System.Threading.Tasks;
 using Sanakan.Preconditions;
 using Discord.WebSocket;

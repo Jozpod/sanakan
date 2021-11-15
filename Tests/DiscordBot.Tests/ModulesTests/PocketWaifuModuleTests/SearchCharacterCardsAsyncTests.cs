@@ -17,8 +17,8 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
         [TestMethod]
         public async Task Should_Send_Private_Message_Containing_Characters()
         {
-       
-            await _module.SearchCharacterCardsAsync();
+            var characterId = 1ul;
+            await _module.SearchCharacterCardsAsync(characterId);
         }
     }
 }

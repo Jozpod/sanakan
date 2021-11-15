@@ -220,7 +220,7 @@ namespace Sanakan.Web.HostedService
                         return;
                     }
 
-                    var info = await moderatorService.MuteUserAysnc(
+                    var info = await moderatorService.MuteUserAsync(
                         user,
                         muteRole,
                         null,

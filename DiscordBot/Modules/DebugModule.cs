@@ -21,9 +21,6 @@ using Sanakan.Game;
 using Sanakan.Game.Extensions;
 using Sanakan.Game.Services;
 using Sanakan.Preconditions;
-using Sanakan.Services;
-using Sanakan.Services.Commands;
-using Sanakan.Services.PocketWaifu;
 using Sanakan.ShindenApi;
 using Sanakan.ShindenApi.Utilities;
 using Sanakan.TaskQueue;
@@ -1274,8 +1271,9 @@ namespace Sanakan.DiscordBot.Modules
 
             thisCard.Expedition = expedition;
             var message = _waifuService.EndExpedition(botUser, thisCard, true);
+            var cardSummary = thisCard.GetString(false, false, true);
 
-            var content = $"Karta {thisCard.GetString(false, false, true)} wróciła z {expedition.GetName("ej")} wyprawy!\n\n{message}"
+            var content = $"Karta {cardSummary} wróciła z {expedition.GetName("ej")} wyprawy!\n\n{message}"
                 .ToEmbedMessage(EMType.Success).Build();
 
             await ReplyAsync("", embed: content);

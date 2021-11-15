@@ -18,6 +18,7 @@ using Discord.WebSocket;
 using Discord;
 using System.Linq;
 using Discord.Commands;
+using Sanakan.DiscordBot.Session;
 
 namespace Sanakan.Web.HostedService
 {
@@ -71,25 +72,24 @@ namespace Sanakan.Web.HostedService
             {
                 if (!session.HasExpired(utcNow))
                 {
-                    session.Dispose();
+                    await session.DisposeAsync();
                     _sessionManager.Remove(session);
                 }
 
                 using var serviceScope = _serviceScopeFactory.CreateScope();
+                var serviceProvider = serviceScope.ServiceProvider;
 
                 switch (session.RunMode)
                 {
                     case RunMode.Async:
-                        var serviceProvider = serviceScope.ServiceProvider;
                         await session.ExecuteAsync(sessionPayload, serviceProvider);
                         _sessionManager.Remove(session);
                         break;
 
                     default:
                     case RunMode.Sync:
-                        //session.SetDestroyer(DisposeAsync);
-                        //if (!await _executor.TryAdd(session.GetExecutable(context), TimeSpan.FromSeconds(1)))
-                        //    _logger.Log($"Sessions: {session.GetEventType()}-{session.GetOwner().Id} waiting time has been exceeded!");
+                        await session.ExecuteAsync(sessionPayload, serviceProvider);
+                        _sessionManager.Remove(session);
                         break;
                 }
             }

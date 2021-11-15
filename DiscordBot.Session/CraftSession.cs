@@ -26,8 +26,7 @@ namespace Sanakan.DiscordBot.Session
     {
         private readonly CraftSessionPayload _payload;
         public IEmote[] StartReactions => new IEmote[] { Emojis.Checked, Emojis.DeclineEmote };
-
-        public IServiceProvider _serviceProvider { get; private set; }
+        private IServiceProvider _serviceProvider { get; set; }
 
         public class CraftSessionPayload
         {
@@ -135,7 +134,7 @@ namespace Sanakan.DiscordBot.Session
             }
         }
 
-        private async Task HandleAddAsync(int number, long count, SocketUserMessage message)
+        private async Task HandleAddAsync(int number, long count, IUserMessage message)
         {
             if (number >= _payload.Items.Count)
             {
@@ -167,7 +166,7 @@ namespace Sanakan.DiscordBot.Session
             }
         }
 
-        private async Task HandleDeleteAsync(int number, long count, SocketUserMessage message)
+        private async Task HandleDeleteAsync(int number, long count, IUserMessage message)
         {
             if (number >= _payload.PlayerInfo.Items.Count)
             {
@@ -333,24 +332,27 @@ namespace Sanakan.DiscordBot.Session
             }.Build();
         }
 
-        public override async void Dispose()
+        public override async ValueTask DisposeAsync()
         {
             if (_payload.Message == null)
             {
                 return;
             }
 
-            var message = await _payload.Message.Channel.GetMessageAsync(_payload.Message.Id);
+            var userMessage = await _payload.Message.Channel.GetMessageAsync(_payload.Message.Id) as IUserMessage;
 
-            if (message is IUserMessage userMessage)
+            if (userMessage == null)
             {
-                try
-                {
-                    await userMessage.RemoveAllReactionsAsync();
-                }
-                catch (Exception) { }
+                return;             
             }
 
+            try
+            {
+                await userMessage.RemoveAllReactionsAsync();
+            }
+            catch (Exception) { }
+
+            _serviceProvider = null;
         }
     }
 }

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static Sanakan.DiscordBot.Session.AcceptSession;
 
 namespace Sanakan.DiscordBot.Session.Tests
 {
@@ -16,7 +17,11 @@ namespace Sanakan.DiscordBot.Session.Tests
 
         public AcceptSessionTests()
         {
-            _session = new();
+            var payload = new AcceptSessionPayload
+            {
+
+            };
+            _session = new(1ul, DateTime.UtcNow, payload);
         }
 
         [TestMethod]

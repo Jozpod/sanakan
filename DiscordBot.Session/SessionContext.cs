@@ -11,8 +11,8 @@ namespace Sanakan.DiscordBot.Session
     public class SessionContext
     {
         public ISocketMessageChannel Channel { get; set; }
-        public SocketUser User { get; set; }
-        public SocketUserMessage Message { get; set; }
+        public IUser User { get; set; }
+        public IUserMessage Message { get; set; }
         public IDiscordClient Client { get; set; }
         public SocketReaction? AddReaction { get; set; }
         public SocketReaction? RemoveReaction { get; set; }

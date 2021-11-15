@@ -32,12 +32,13 @@
     <ProjectReference Include="..\Common\Common.csproj" />
     <ProjectReference Include="..\DAL\DAL.csproj" />
     <ProjectReference Include="..\DiscordBot.Abstractions\DiscordBot.Abstractions.csproj" />
+    <ProjectReference Include="..\DiscordBot.Session\DiscordBot.Session.csproj" />
     <ProjectReference Include="..\ShindenApi\ShindenApi.csproj" />
     <ProjectReference Include="..\TaskQueue\TaskQueue.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="Resources\Strings - Copy.Designer.cs">
+    <Compile Update="Resources\Strings.Designer.cs">
       <DependentUpon>Strings.Designer.cs</DependentUpon>
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
@@ -55,15 +56,9 @@
       <Generator>ResXFileCodeGenerator</Generator>
     </EmbeddedResource>
     <EmbeddedResource Update="Resources\Strings.resx">
-      <LastGenOutput>Strings.Designer.cs</LastGenOutput>
-      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>ResXFileCodeGenerator</LastGenOutput>
+      <Generator>Strings.Designer.cs</Generator>
     </EmbeddedResource>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Configuration\" />
-    <Folder Include="Services\PocketWaifu\Abstractions\" />
-    <Folder Include="Services\PocketWaifu\Fight\" />
   </ItemGroup>
 
 </Project>

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Sanakan.Common;
 using Sanakan.Common.Cache;
@@ -24,19 +25,14 @@ namespace Sanakan.DiscordBot.Session
     public class ExchangeSession : InteractionSession
     {
         private readonly ExchangeSessionPayload _payload;
-        public enum ExchangeStatus
-        {
-            Add,
-            AcceptP1,
-            AcceptP2,
-            End
-        }
+        private readonly ICacheManager _cacheManager;
+        private IServiceProvider _serviceProvider { get; set; }
 
         public class ExchangeSessionPayload
         {
             public IMessage Message { get; set; }
-            public PlayerInfo P1 { get; set; }
-            public PlayerInfo P2 { get; set; }
+            public PlayerInfo SourcePlayer { get; set; }
+            public PlayerInfo DestinationPlayer { get; set; }
             public string Name { get; set; }
             public string Tips { get; set; }
 
@@ -44,9 +40,6 @@ namespace Sanakan.DiscordBot.Session
 
         }
 
-       
-        private readonly ICacheManager _cacheManager;
-        private readonly IUserRepository _userRepository;
         public IEmote[] StartReactions => new IEmote[] { Emojis.OneEmote, Emojis.TwoEmote };
 
         public ExchangeSession(
@@ -67,7 +60,9 @@ namespace Sanakan.DiscordBot.Session
            IServiceProvider serviceProvider,
            CancellationToken cancellationToken = default)
         {
-            if (_payload.P1 == null || _payload.P2 == null || _payload.Message == null)
+            _serviceProvider = serviceProvider;
+
+            if (_payload.SourcePlayer == null || _payload.DestinationPlayer == null || _payload.Message == null)
             {
                 return;
             }
@@ -82,7 +77,7 @@ namespace Sanakan.DiscordBot.Session
             return new EmbedBuilder
             {
                 Color = EMType.Warning.Color(),
-                Description = $"{_payload.Name}\n\n{_payload.P1.CustomString}\n\n{_payload.P2.CustomString}\n\n{_payload.Tips}".ElipseTrimToLength(2000)
+                Description = $"{_payload.Name}\n\n{_payload.SourcePlayer.CustomString}\n\n{_payload.DestinationPlayer.CustomString}\n\n{_payload.Tips}".ElipseTrimToLength(2000)
             }.Build();
         }
 
@@ -131,15 +126,15 @@ namespace Sanakan.DiscordBot.Session
 
             var socketUserMessage = context.Message;
 
-            if (context.User.Id == _payload.P1.User.Id)
+            if (context.User.Id == _payload.SourcePlayer.User.Id)
             {
-                thisPlayer = _payload.P1;
-                targetPlayer = _payload.P2;
+                thisPlayer = _payload.SourcePlayer;
+                targetPlayer = _payload.DestinationPlayer;
             }
-            if (context.User.Id == _payload.P2.User.Id)
+            if (context.User.Id == _payload.DestinationPlayer.User.Id)
             {
-                thisPlayer = _payload.P2;
-                targetPlayer = _payload.P1;
+                thisPlayer = _payload.DestinationPlayer;
+                targetPlayer = _payload.SourcePlayer;
             }
             if (thisPlayer == null)
             {
@@ -299,37 +294,40 @@ namespace Sanakan.DiscordBot.Session
         public string BuildProposition(PlayerInfo player)
         {
             if (player.Cards.Count > 12)
+            {
                 return $"{player.User.Mention} oferuje:\n\n**[{player.Cards.Count}]** kart";
+            }
 
             return $"{player.User.Mention} oferuje:\n{string.Join("\n", player.Cards.Select(x => x.GetString(false, false, true)))}";
         }
 
-        private async Task<bool> HandleReactionAsync(SessionContext context)
+        private async Task HandleReactionAsync(SessionContext context)
         {
-            bool end = false;
             if (context.Message.Id != _payload.Message.Id)
-                return false;
+            {
+                return;
+            }
 
             if (!(await _payload.Message.Channel.GetMessageAsync(_payload.Message.Id) is IUserMessage message))
             {
-                return end;
+                return;
             }
 
             var reaction = context.AddReaction ?? context.RemoveReaction;
 
             if (reaction == null || message == null)
             {
-                return false;
+                return;
             }
 
             switch (_payload.State)
             {
                 case ExchangeStatus.AcceptP1:
-                    end = await HandleUserReactionInAccept(reaction, _payload.P1, message);
+                    await HandleUserReactionInAccept(reaction, _payload.SourcePlayer, message);
                     break;
 
                 case ExchangeStatus.AcceptP2:
-                    end = await HandleUserReactionInAccept(reaction, _payload.P2, message);
+                    await HandleUserReactionInAccept(reaction, _payload.DestinationPlayer, message);
                     break;
 
                 default:
@@ -338,26 +336,25 @@ namespace Sanakan.DiscordBot.Session
                     break;
             }
 
-            return end;
         }
 
         private async Task HandleReactionInAdd(SocketReaction reaction, IUserMessage msg)
         {
-            if (reaction.Emote.Equals(Emojis.OneEmote) && reaction.UserId == _payload.P1.User.Id)
+            if (reaction.Emote.Equals(Emojis.OneEmote) && reaction.UserId == _payload.SourcePlayer.User.Id)
             {
-                _payload.P1.Accepted = true;
+                _payload.SourcePlayer.Accepted = true;
                 ResetExpiry();
             }
-            else if (reaction.Emote.Equals(Emojis.TwoEmote) && reaction.UserId == _payload.P2.User.Id)
+            else if (reaction.Emote.Equals(Emojis.TwoEmote) && reaction.UserId == _payload.DestinationPlayer.User.Id)
             {
-                _payload.P2.Accepted = true;
+                _payload.DestinationPlayer.Accepted = true;
                 ResetExpiry();
             }
 
-            if (_payload.P1.Accepted && _payload.P2.Accepted)
+            if (_payload.SourcePlayer.Accepted && _payload.DestinationPlayer.Accepted)
             {
                 _payload.State = ExchangeStatus.AcceptP1;
-                _payload.Tips = $"{_payload.P1.User.Mention} daj {Emojis.Checked} aby zaakceptować, lub {Emojis.DeclineEmote} aby odrzucić.";
+                _payload.Tips = $"{_payload.SourcePlayer.User.Mention} daj {Emojis.Checked} aby zaakceptować, lub {Emojis.DeclineEmote} aby odrzucić.";
 
                 await msg.RemoveAllReactionsAsync();
                 await msg.ModifyAsync(x => x.Embed = BuildEmbed());
@@ -368,146 +365,165 @@ namespace Sanakan.DiscordBot.Session
             }
         }
 
-        private async Task<bool> HandleUserReactionInAccept(SocketReaction reaction, PlayerInfo player, IUserMessage msg)
+        private async Task HandleUserReactionInAccept(SocketReaction reaction, PlayerInfo player, IUserMessage message)
         {
-            bool end = false;
-            bool msgCh = false;
+            var msgCh = false;
+            var userRepository = _serviceProvider.GetRequiredService<IUserRepository>();
 
-            if (reaction.UserId == player.User.Id)
+            if (reaction.UserId != player.User.Id)
             {
-                if (reaction.Emote.Equals(Emojis.Checked))
-                {
-                    if (_payload.State == ExchangeStatus.AcceptP1)
-                    {
-                        msgCh = true;
-                        ResetExpiry();
-                        _payload.State = ExchangeStatus.AcceptP2;
-                        _payload.Tips = $"{_payload.P2.User.Mention} daj {Emojis.Checked} aby zaakceptować, lub {Emojis.DeclineEmote} aby odrzucić.";
-                    }
-                    else if (_payload.State == ExchangeStatus.AcceptP2)
-                    {
-                        _payload.Tips = $"Wymiana zakończona!";
-                        msgCh = true;
-                        end = true;
-
-                        if (_payload.P1.Cards.Count == 0 && _payload.P2.Cards.Count == 0)
-                        {
-                            return end;
-                        }
-                            
-                        var user1 = await _userRepository.GetUserOrCreateAsync(_payload.P1.User.Id);
-                        var user2 = await _userRepository.GetUserOrCreateAsync(_payload.P2.User.Id);
-
-                        double avgValueP1 = _payload.P1.Cards.Sum(x => x.MarketValue) / ((_payload.P1.Cards.Count == 0) ? 1 : _payload.P1.Cards.Count);
-                        double avgValueP2 = _payload.P2.Cards.Sum(x => x.MarketValue) / ((_payload.P2.Cards.Count == 0) ? 1 : _payload.P2.Cards.Count);
-
-                        double avgRarP1 = _payload.P1.Cards.Sum(x => (int)x.Rarity) / ((_payload.P1.Cards.Count == 0) ? 1 : _payload.P1.Cards.Count);
-                        double avgRarP2 = _payload.P2.Cards.Sum(x => (int)x.Rarity) / ((_payload.P2.Cards.Count == 0) ? 1 : _payload.P2.Cards.Count);
-                        var avgRarDif = avgRarP1 - avgRarP2;
-
-                        if (avgRarDif > 0)
-                        {
-                            avgValueP1 /= avgRarDif + 1;
-                        }
-                        else if (avgRarDif < 0)
-                        {
-                            avgRarDif = -avgRarDif;
-                            avgValueP2 /= avgRarDif + 1;
-                        }
-
-                        var divP1 = _payload.P1.Cards.Count / ((avgValueP1 <= 0) ? 1 : avgValueP1);
-                        var divP2 = _payload.P2.Cards.Count / ((avgValueP2 <= 0) ? 1 : avgValueP2);
-
-                        var exchangeRateP1 = divP2 / ((_payload.P1.Cards.Count == 0) ? (divP2 * 0.5) : divP1);
-                        var exchangeRateP2 = divP1 / ((_payload.P2.Cards.Count == 0) ? (divP1 * 0.5) : divP2);
-
-                        if (exchangeRateP1 > 1) exchangeRateP1 = 10;
-                        if (exchangeRateP1 < 0.0001) exchangeRateP1 = 0.001;
-
-                        if (exchangeRateP2 > 1) exchangeRateP2 = 10;
-                        if (exchangeRateP2 < 0.0001) exchangeRateP2 = 0.001;
-
-                        foreach (var c in _payload.P1.Cards)
-                        {
-                            var card = user1.GameDeck.Cards.FirstOrDefault(x => x.Id == c.Id);
-                            if (card != null)
-                            {
-                                card.Active = false;
-                                card.TagList.Clear();
-                                card.Affection -= 1.5;
-
-                                if (card.ExperienceCount > 1)
-                                    card.ExperienceCount *= 0.3;
-
-                                var valueDiff = card.MarketValue - exchangeRateP1;
-                                var changed = card.MarketValue + valueDiff * 0.8;
-                                if (changed < 0.0001) changed = 0.0001;
-                                if (changed > 1) changed = 1;
-                                card.MarketValue = changed;
-
-                                if (card.FirstOwnerId == 0)
-                                    card.FirstOwnerId = user1.Id;
-
-                                user1.GameDeck.RemoveFromWaifu(card);
-
-                                card.GameDeckId = user2.GameDeck.Id;
-
-                                user2.GameDeck.RemoveCharacterFromWishList(card.CharacterId);
-                                user2.GameDeck.RemoveCardFromWishList(card.Id);
-                            }
-                        }
-
-                        foreach (var c in _payload.P2.Cards)
-                        {
-                            var card = user2.GameDeck.Cards.FirstOrDefault(x => x.Id == c.Id);
-                            if (card != null)
-                            {
-                                card.Active = false;
-                                card.TagList.Clear();
-                                card.Affection -= 1.5;
-
-                                if (card.ExperienceCount > 1)
-                                    card.ExperienceCount *= 0.3;
-
-                                var valueDiff = card.MarketValue - exchangeRateP2;
-                                var changed = card.MarketValue + valueDiff * 0.8;
-                                if (changed < 0.0001) changed = 0.0001;
-                                if (changed > 1) changed = 1;
-                                card.MarketValue = changed;
-
-                                if (card.FirstOwnerId == 0)
-                                    card.FirstOwnerId = user2.Id;
-
-                                user2.GameDeck.RemoveFromWaifu(card);
-
-                                card.GameDeckId = user1.GameDeck.Id;
-
-                                user1.GameDeck.RemoveCharacterFromWishList(card.CharacterId);
-                                user1.GameDeck.RemoveCardFromWishList(card.Id);
-                            }
-                        }
-
-                        await _userRepository.SaveChangesAsync();
-
-                        _payload.State = ExchangeStatus.End;
-
-                        _cacheManager.ExpireTag(
-                            CacheKeys.User(_payload.P1.User.Id),
-                            CacheKeys.User(_payload.P2.User.Id),
-                            CacheKeys.Users);
-                    }
-                }
-                else if (reaction.Emote.Equals(Emojis.DeclineEmote) && _payload.State != ExchangeStatus.End)
-                {
-                    ResetExpiry();
-                    _payload.Tips = $"{player.User.Mention} odrzucił propozycje wymiany!";
-                    msgCh = true;
-                    end = true;
-                }
-
-                if (msg != null && msgCh) await msg.ModifyAsync(x => x.Embed = BuildEmbed());
+                return;
             }
-            return end;
+
+            if (reaction.Emote.Equals(Emojis.Checked))
+            {
+                if (_payload.State == ExchangeStatus.AcceptP1)
+                {
+                    msgCh = true;
+                    ResetExpiry();
+                    _payload.State = ExchangeStatus.AcceptP2;
+                    _payload.Tips = $"{_payload.DestinationPlayer.User.Mention} daj {Emojis.Checked} aby zaakceptować, lub {Emojis.DeclineEmote} aby odrzucić.";
+                }
+                else if (_payload.State == ExchangeStatus.AcceptP2)
+                {
+                    _payload.Tips = $"Wymiana zakończona!";
+                    msgCh = true;
+
+                    if (_payload.SourcePlayer.Cards.Count == 0 && _payload.DestinationPlayer.Cards.Count == 0)
+                    {
+                        return;
+                    }
+
+                    var sourceUser = await userRepository.GetUserOrCreateAsync(_payload.SourcePlayer.User.Id);
+                    var user2 = await userRepository.GetUserOrCreateAsync(_payload.DestinationPlayer.User.Id);
+
+                    double avgValueP1 = _payload.SourcePlayer.Cards.Sum(x => x.MarketValue) / ((_payload.SourcePlayer.Cards.Count == 0) ? 1 : _payload.SourcePlayer.Cards.Count);
+                    double avgValueP2 = _payload.DestinationPlayer.Cards.Sum(x => x.MarketValue) / ((_payload.DestinationPlayer.Cards.Count == 0) ? 1 : _payload.DestinationPlayer.Cards.Count);
+
+                    double avgRarP1 = _payload.SourcePlayer.Cards.Sum(x => (int)x.Rarity) / ((_payload.SourcePlayer.Cards.Count == 0) ? 1 : _payload.SourcePlayer.Cards.Count);
+                    double avgRarP2 = _payload.DestinationPlayer.Cards.Sum(x => (int)x.Rarity) / ((_payload.DestinationPlayer.Cards.Count == 0) ? 1 : _payload.DestinationPlayer.Cards.Count);
+                    var avgRarDif = avgRarP1 - avgRarP2;
+
+                    if (avgRarDif > 0)
+                    {
+                        avgValueP1 /= avgRarDif + 1;
+                    }
+                    else if (avgRarDif < 0)
+                    {
+                        avgRarDif = -avgRarDif;
+                        avgValueP2 /= avgRarDif + 1;
+                    }
+
+                    var divP1 = _payload.SourcePlayer.Cards.Count / ((avgValueP1 <= 0) ? 1 : avgValueP1);
+                    var divP2 = _payload.DestinationPlayer.Cards.Count / ((avgValueP2 <= 0) ? 1 : avgValueP2);
+
+                    var exchangeRateP1 = divP2 / ((_payload.SourcePlayer.Cards.Count == 0) ? (divP2 * 0.5) : divP1);
+                    var exchangeRateP2 = divP1 / ((_payload.DestinationPlayer.Cards.Count == 0) ? (divP1 * 0.5) : divP2);
+
+                    if (exchangeRateP1 > 1) exchangeRateP1 = 10;
+                    if (exchangeRateP1 < 0.0001) exchangeRateP1 = 0.001;
+
+                    if (exchangeRateP2 > 1) exchangeRateP2 = 10;
+                    if (exchangeRateP2 < 0.0001) exchangeRateP2 = 0.001;
+
+                    foreach (var sourceCards in _payload.SourcePlayer.Cards)
+                    {
+                        var card = sourceUser.GameDeck.Cards.FirstOrDefault(x => x.Id == sourceCards.Id);
+                        if (card == null)
+                        {
+                            continue;
+                        }
+
+                        card.Active = false;
+                        card.TagList.Clear();
+                        card.Affection -= 1.5;
+
+                        if (card.ExperienceCount > 1)
+                        {
+                            card.ExperienceCount *= 0.3;
+                        }
+
+                        var valueDiff = card.MarketValue - exchangeRateP1;
+                        var changed = card.MarketValue + valueDiff * 0.8;
+                        if (changed < 0.0001) changed = 0.0001;
+                        if (changed > 1) changed = 1;
+                        card.MarketValue = changed;
+
+                        if (!card.FirstOwnerId.HasValue)
+                        {
+                            card.FirstOwnerId = sourceUser.Id;
+                        }
+
+                        sourceUser.GameDeck.RemoveFromWaifu(card);
+
+                        card.GameDeckId = user2.GameDeck.Id;
+
+                        user2.GameDeck.RemoveCharacterFromWishList(card.CharacterId);
+                        user2.GameDeck.RemoveCardFromWishList(card.Id);
+                    }
+
+                    foreach (var destinationCards in _payload.DestinationPlayer.Cards)
+                    {
+                        var card = user2.GameDeck.Cards.FirstOrDefault(x => x.Id == destinationCards.Id);
+                        if (card == null)
+                        {
+                            continue;
+                        }
+
+                        card.Active = false;
+                        card.TagList.Clear();
+                        card.Affection -= 1.5;
+
+                        if (card.ExperienceCount > 1)
+                            card.ExperienceCount *= 0.3;
+
+                        var valueDiff = card.MarketValue - exchangeRateP2;
+                        var changed = card.MarketValue + valueDiff * 0.8;
+                        if (changed < 0.0001)
+                        {
+                            changed = 0.0001;
+                        }
+
+                        if (changed > 1)
+                        {
+                            changed = 1;
+                        }
+                        card.MarketValue = changed;
+
+                        if (!card.FirstOwnerId.HasValue)
+                        {
+                            card.FirstOwnerId = user2.Id;
+                        }
+
+                        user2.GameDeck.RemoveFromWaifu(card);
+
+                        card.GameDeckId = sourceUser.GameDeck.Id;
+
+                        sourceUser.GameDeck.RemoveCharacterFromWishList(card.CharacterId);
+                        sourceUser.GameDeck.RemoveCardFromWishList(card.Id);
+                    }
+
+                    await userRepository.SaveChangesAsync();
+
+                    _payload.State = ExchangeStatus.End;
+
+                    _cacheManager.ExpireTag(
+                        CacheKeys.User(_payload.SourcePlayer.User.Id),
+                        CacheKeys.User(_payload.DestinationPlayer.User.Id),
+                        CacheKeys.Users);
+                }
+            }
+            else if (reaction.Emote.Equals(Emojis.DeclineEmote) && _payload.State != ExchangeStatus.End)
+            {
+                ResetExpiry();
+                _payload.Tips = $"{player.User.Mention} odrzucił propozycje wymiany!";
+                msgCh = true;
+            }
+
+            if (message != null && msgCh)
+            {
+                await message.ModifyAsync(x => x.Embed = BuildEmbed());
+            }
         }
 
         private async Task DisposeAction()
@@ -529,8 +545,9 @@ namespace Sanakan.DiscordBot.Session
             _payload.Message = null;
             _payload.Name = null;
             _payload.Tips = null;
-            _payload.P1 = null;
-            _payload.P2 = null;
+            _payload.SourcePlayer = null;
+            _payload.DestinationPlayer = null;
+            _serviceProvider = null;
         }
     }
 }

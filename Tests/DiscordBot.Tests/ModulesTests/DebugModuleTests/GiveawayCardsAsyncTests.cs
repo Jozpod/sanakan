@@ -18,8 +18,10 @@ namespace DiscordBot.ModulesTests.DebugModuleTests
         [TestMethod]
         public async Task Should_Send_Message()
         {
-            await _module.GiveawayCardsAsync();
-            _messageChannelMock.Verify();
+            var discordUserId = 1ul;
+            var cardCount = 1u;
+            var duration = 5u;
+            await _module.GiveawayCardsAsync(discordUserId, cardCount, duration);
         }
     }
 }

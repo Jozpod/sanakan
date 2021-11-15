@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Sanakan.DAL;
+using System;
 
 namespace Sanakan.Common.Configuration
 {
@@ -7,7 +8,7 @@ namespace Sanakan.Common.Configuration
         /// <summary>
         /// The database provider.
         /// </summary>
-        public string Provider { get; set; } = string.Empty;
+        public DatabaseProvider Provider { get; set; }
 
         /// <summary>
         /// The database version if supported.

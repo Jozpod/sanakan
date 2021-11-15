@@ -5,6 +5,7 @@ using Sanakan.DiscordBot.Services.Abstractions;
 using Sanakan.DiscordBot.Modules;
 using Sanakan.Common;
 using Sanakan.TaskQueue;
+using Sanakan.DiscordBot.Session;
 
 namespace DiscordBot.ModulesTests.ProfileModuleTests
 {

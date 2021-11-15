@@ -17,6 +17,7 @@ using Sanakan.Common.Configuration;
 using Sanakan.Common;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
+using Sanakan.DiscordBot.Session;
 
 namespace DiscordBot.ModulesTests.HelperModuleTests
 {

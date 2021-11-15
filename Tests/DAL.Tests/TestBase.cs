@@ -21,8 +21,8 @@ namespace Sanakan.DAL.Tests
         protected static SanakanDbContext DbContext;
         protected static ServiceProvider ServiceProvider;
 
-        [AssemblyInitialize()]
-        public static async Task AssemblyInitialize(TestContext context)
+        [ClassInitialize()]
+        public static async Task ClassInitialize(TestContext context)
         {
             var serviceCollection = new ServiceCollection();
 
@@ -87,8 +87,8 @@ namespace Sanakan.DAL.Tests
             await DbContext.SaveChangesAsync();
         }
 
-        [AssemblyCleanup()]
-        public static async Task AssemblyCleanup()
+        [ClassCleanup()]
+        public static async Task ClassCleanup()
         {
             if (DbContext != null)
             {

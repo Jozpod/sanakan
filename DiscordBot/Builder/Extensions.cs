@@ -12,11 +12,8 @@ using Sanakan.Common.Models;
 using Sanakan.DAL.Models;
 using Sanakan.DiscordBot;
 using Sanakan.DiscordBot.Services;
-using Sanakan.DiscordBot.Services.Abstractions;
 using Sanakan.Game.Models;
 using Sanakan.Services;
-using Sanakan.Services.Commands;
-using Sanakan.Services.PocketWaifu;
 
 namespace Sanakan.DiscordBot.Builder
 {
@@ -34,12 +31,8 @@ namespace Sanakan.DiscordBot.Builder
                 });
             });
 
-            services.AddSingleton<ILandManager, LandManager>();
-            services.AddSingleton<IModeratorService, ModeratorService>();
             services.AddSingleton<IDiscordSocketClientAccessor, DiscordSocketClientAccessor>();
-            services.AddSingleton<IProfileService, ProfileService>();
-            services.AddSingleton<IHelperService, HelperService>();
-            services.AddSingleton<CommandHandler>();
+            services.AddSingleton<ICommandHandler, CommandHandler>();
             return services;
         }
 

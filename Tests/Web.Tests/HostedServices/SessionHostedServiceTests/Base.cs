@@ -10,6 +10,7 @@ using Sanakan.Configuration;
 using Sanakan.DAL.Models.Analytics;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot;
+using Sanakan.DiscordBot.Session;
 using Sanakan.TaskQueue;
 using Sanakan.Web.HostedService;
 using Sanakan.Web.Tests.HostedServices;

@@ -15,10 +15,10 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
     {
         
         [TestMethod]
-        public async Task Should_Add_To_Wish_List()
+        public async Task Should_Remove_Card_Tag()
         {
-            
-            await _module.RemoveCardTagAsync(wishlistObjectType, objectId);
+            var tag = "test tag";
+            await _module.RemoveCardTagAsync(tag);
         }
     }
 }

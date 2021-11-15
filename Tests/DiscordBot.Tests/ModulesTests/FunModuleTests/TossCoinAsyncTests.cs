@@ -8,6 +8,7 @@ using System;
 using Moq;
 using Sanakan.ShindenApi.Models;
 using Sanakan.DAL.Models;
+using Sanakan.DiscordBot.Services;
 
 namespace DiscordBot.ModulesTests.FunModuleTests
 {
@@ -18,8 +19,9 @@ namespace DiscordBot.ModulesTests.FunModuleTests
         [TestMethod]
         public async Task Should_Send_Message()
         {
-            await _module.TossCoinAsync();
-            _messageChannelMock.Verify();
+            var coinSide = CoinSide.Head;
+            var amount = 1000;
+            await _module.TossCoinAsync(coinSide, amount);
         }
     }
 }

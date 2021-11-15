@@ -5,7 +5,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Sanakan.Common;
-using Sanakan.Services.Commands;
 using Sanakan.Web.Configuration;
 using System;
 using System.Collections.Generic;
@@ -30,10 +29,9 @@ namespace Sanakan.Web.HostedService
 {
     public class DiscordBotHostedService : BackgroundService
     {
-        private DiscordSocketClient _client;
         private readonly IBlockingPriorityQueue _blockingPriorityQueue;
         private readonly IDiscordSocketClientAccessor _discordSocketClientAccessor;
-        private readonly CommandHandler _commandHandler;
+        private readonly ICommandHandler _commandHandler;
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
         private readonly IOptionsMonitor<DiscordConfiguration> _discordConfiguration;
@@ -63,7 +61,7 @@ namespace Sanakan.Web.HostedService
             IOptionsMonitor<DiscordConfiguration> discordConfiguration,
             IOptionsMonitor<ExperienceConfiguration> experienceConfiguration,
             ISystemClock systemClock,
-            CommandHandler commandHandler,
+            ICommandHandler commandHandler,
             ITaskManager taskManager,
             IDatabaseFacade databaseFacade)
         {
@@ -98,34 +96,31 @@ namespace Sanakan.Web.HostedService
                 _fileSystem.CreateDirectory(Paths.Profiles);
                 stoppingToken.ThrowIfCancellationRequested();
 
-                _client = serviceProvider.GetRequiredService<DiscordSocketClient>();
-                _client.Log += onLog;
-                _client.Disconnected += DisconnectedAsync;
-                _client.LeftGuild += BotLeftGuildAsync;
-                _client.UserJoined += UserJoinedAsync;
-                _client.UserLeft += UserLeftAsync;
-                _client.MessageReceived += HandleMessageAsync;
-                _client.MessageDeleted += HandleDeletedMsgAsync;
-                _client.MessageUpdated += HandleUpdatedMsgAsync;
+                _discordSocketClientAccessor.Log += onLog;
+                _discordSocketClientAccessor.Disconnected += DisconnectedAsync;
+                _discordSocketClientAccessor.LeftGuild += BotLeftGuildAsync;
+                _discordSocketClientAccessor.UserJoined += UserJoinedAsync;
+                _discordSocketClientAccessor.UserLeft += UserLeftAsync;
+                _discordSocketClientAccessor.MessageReceived += HandleMessageAsync;
+                _discordSocketClientAccessor.MessageDeleted += HandleDeletedMsgAsync;
+                _discordSocketClientAccessor.MessageUpdated += HandleUpdatedMsgAsync;
                 stoppingToken.ThrowIfCancellationRequested();
 
                 var configuration = _discordConfiguration.CurrentValue;
-                await _client.LoginAsync(TokenType.Bot, configuration.BotToken);
-                await _client.SetGameAsync($"{configuration.Prefix}pomoc");
-                await _client.StartAsync();
+                await _discordSocketClientAccessor.LoginAsync(TokenType.Bot, configuration.BotToken);
+                await _discordSocketClientAccessor.SetGameAsync($"{configuration.Prefix}pomoc");
+                await _discordSocketClientAccessor.Client.StartAsync();
                 stoppingToken.ThrowIfCancellationRequested();
                 
                 await _commandHandler.InitializeAsync();
                 
                 stoppingToken.ThrowIfCancellationRequested();
-                _discordSocketClientAccessor.Client = _client;
 
                 await _taskManager.Delay(Timeout.InfiniteTimeSpan, stoppingToken);
             }
             catch (InvalidOperationException)
             {
-                _discordSocketClientAccessor.Client?.Dispose();
-                _discordSocketClientAccessor.Client = null;
+                
                 _logger.LogInformation("The discord client stopped");
             }
             catch(Exception ex)
@@ -323,12 +318,14 @@ namespace Sanakan.Web.HostedService
 
             await _taskManager.Delay(TimeSpan.FromSeconds(40));
 
-            if (_client.ConnectionState == ConnectionState.Connected)
+            var client = _discordSocketClientAccessor.Client;
+
+            if (client.ConnectionState == ConnectionState.Connected)
             {
                 return;
             }
 
-            await _client.StartAsync();
+            await client.StartAsync();
             _logger.LogInformation("Reconnected!");
 
             return;
@@ -442,12 +439,7 @@ namespace Sanakan.Web.HostedService
                 await textChannel.SendMessageAsync(content);
             }
 
-            var thisUser = _client.Guilds.FirstOrDefault(x => x.Id == user.Id);
-
-            if (thisUser != null)
-            {
-                return;
-            }
+            var client = _discordSocketClientAccessor.Client;
 
             _blockingPriorityQueue.TryEnqueue(new DeleteUserMessage
             {
@@ -456,9 +448,9 @@ namespace Sanakan.Web.HostedService
         }
 
         private async Task HandleUpdatedMsgAsync(
-    Cacheable<IMessage, ulong> oldMessage,
-    SocketMessage newMessage,
-    ISocketMessageChannel channel)
+            Cacheable<IMessage, ulong> oldMessage,
+            IMessage newMessage,
+            ISocketMessageChannel channel)
         {
             if (!oldMessage.HasValue)
             {

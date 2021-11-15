@@ -88,7 +88,7 @@ namespace Sanakan.DiscordBot.Session
             }
 
             var reason = "Chciał to dostał :)";
-            var info = await moderatorService.MuteUserAysnc(
+            var info = await moderatorService.MuteUserAsync(
                 _payload.User,
                 _payload.MuteRole,
                 null,

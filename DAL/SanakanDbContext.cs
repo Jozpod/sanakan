@@ -73,19 +73,19 @@ namespace Sanakan.DAL
         {
             var config = _config.CurrentValue;
 
-            if (config.Provider == "MySql")
+            if (config.Provider == DatabaseProvider.MySql)
             {
                 optionsBuilder.UseMySql(
                     config.ConnectionString,
                     new MySqlServerVersion(config.Version));
             }
 
-            if (config.Provider == "Sqlite")
+            if (config.Provider == DatabaseProvider.Sqlite)
             {
                 optionsBuilder.UseSqlite(config.ConnectionString);
             }
 
-            if (config.Provider == "SqlServer")
+            if (config.Provider == DatabaseProvider.SqlServer)
             {
                 optionsBuilder.UseSqlServer(config.ConnectionString);
             }
@@ -95,7 +95,7 @@ namespace Sanakan.DAL
         {
             base.OnModelCreating(modelBuilder);
 
-            if (_config.CurrentValue.Provider == "MySql")
+            if (_config.CurrentValue.Provider == DatabaseProvider.MySql)
             {
                 modelBuilder.HasCharSet("utf8mb4", DelegationModes.ApplyToDatabases);
             }

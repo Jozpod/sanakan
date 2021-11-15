@@ -15,10 +15,15 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
     {
         
         [TestMethod]
-        public async Task Should_Add_To_Wish_List()
+        public async Task Should_Sacrifice_Cards_And_Upgrade()
         {
-       
-            await _module.SacrificeCardMultiAsync();
+            var idToUpgrade = 1ul;
+            var idsToSacrifice = new[]
+            {
+                2ul,
+                3ul,
+            };
+            await _module.SacrificeCardMultiAsync(idToUpgrade, idsToSacrifice);
         }
     }
 }

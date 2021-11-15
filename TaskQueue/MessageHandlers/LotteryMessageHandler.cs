@@ -89,9 +89,7 @@ namespace Sanakan.TaskQueue.MessageHandlers
             await _guildConfigRepository.SaveChangesAsync();
             await userMessage.DeleteAsync();
 
-            var discordUserkey = string.Format(CacheKeys.User, message.DiscordUserId);
-            var invokingUserkey = string.Format(CacheKeys.User, message.InvokingUserId);
-            _cacheManager.ExpireTag(discordUserkey, CacheKeys.Users, invokingUserkey); 
+            _cacheManager.ExpireTag(CacheKeys.User(message.DiscordUserId), CacheKeys.Users, CacheKeys.User(message.InvokingUserId)); 
 
             var content = $"Loterie wygrywa {message.WinnerUser.Mention}.\nOtrzymuje: {string.Join("\n", cardsIds)}"
                 .ElipseTrimToLength(2000)

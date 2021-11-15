@@ -40,6 +40,8 @@ namespace Sanakan.Common.Builder
         public static IServiceCollection AddFileSystem(this IServiceCollection services)
         {
             services.AddSingleton<IFileSystem, FileSystem>();
+            services.AddSingleton<IFileSystemWatcherFactory, FileSystemWatcherFactory>();
+            services.AddSingleton<IFileSystemWatcher, FileSystemWatcher>();
             return services;
         }
 

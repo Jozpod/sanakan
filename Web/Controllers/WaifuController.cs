@@ -210,15 +210,15 @@ namespace Sanakan.Web.Controllers
         }
 
         /// <summary>
-        /// Pobiera profil użytkownika
+        /// Gets user profile.
         /// </summary>
-        /// <param name="id">The user identifier in Shinden.</param>
-        [HttpGet("user/{id}/profile")]
+        /// <param name="shindenUserId">The user identifier in Shinden.</param>
+        [HttpGet("user/{shindenUserId}/profile")]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetUserWaifuProfileAsync(ulong id)
+        public async Task<IActionResult> GetUserWaifuProfileAsync(ulong shindenUserId)
         {
-            var user = await _userRepository.GetUserWaifuProfileAsync(id);
+            var user = await _userRepository.GetUserWaifuProfileAsync(shindenUserId);
 
             if (user == null)
             {
@@ -235,19 +235,21 @@ namespace Sanakan.Web.Controllers
                 tagList.AddRange(tag);
             }
 
-            var cardCount = new Dictionary<string, long>
+            var gameDeck = user.GameDeck;
+            var cards = gameDeck.Cards;
+            var cardCount = new Dictionary<string, long>();
+            foreach (var card in cards)
+            {
+                var rarity = card.Rarity.ToString();
+                if (!cardCount.ContainsKey(rarity))
                 {
-                    {Rarity.SSS.ToString(), user.GameDeck.Cards.Count(x => x.Rarity == Rarity.SSS)},
-                    {Rarity.SS.ToString(),  user.GameDeck.Cards.Count(x => x.Rarity == Rarity.SS)},
-                    {Rarity.S.ToString(),   user.GameDeck.Cards.Count(x => x.Rarity == Rarity.S)},
-                    {Rarity.A.ToString(),   user.GameDeck.Cards.Count(x => x.Rarity == Rarity.A)},
-                    {Rarity.B.ToString(),   user.GameDeck.Cards.Count(x => x.Rarity == Rarity.B)},
-                    {Rarity.C.ToString(),   user.GameDeck.Cards.Count(x => x.Rarity == Rarity.C)},
-                    {Rarity.D.ToString(),   user.GameDeck.Cards.Count(x => x.Rarity == Rarity.D)},
-                    {Rarity.E.ToString(),   user.GameDeck.Cards.Count(x => x.Rarity == Rarity.E)},
-                    {"max",                 user.GameDeck.MaxNumberOfCards},
-                    {"total",               user.GameDeck.Cards.Count}
-                };
+                    cardCount[rarity] = 0;
+                }
+                cardCount[rarity]++;
+            }
+
+            cardCount["max"] = gameDeck.MaxNumberOfCards;
+            cardCount["total"] = cards.Count;
 
             var wallet = new Dictionary<string, long>
                 {
@@ -430,15 +432,15 @@ namespace Sanakan.Web.Controllers
         }
 
         /// <summary>
-        /// Pobiera listę życzeń użytkownika
+        /// Gets the user wishlist.
         /// </summary>
-        /// <param name="id">id użytkownika shindena</param>
-        [HttpGet("user/shinden/{id}/wishlist"), Authorize(Policy = AuthorizePolicies.Site)]
+        /// <param name="shindenUserId">The shinden user identifier.</param>
+        [HttpGet("user/shinden/{shindenUserId}/wishlist"), Authorize(Policy = AuthorizePolicies.Site)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(IEnumerable<Card>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetShindenUserWishlistAsync(ulong id)
+        public async Task<IActionResult> GetShindenUserWishlistAsync(ulong shindenUserId)
         {
-            var user = await _userRepository.GetCachedFullUserByShindenIdAsync(id);
+            var user = await _userRepository.GetCachedFullUserByShindenIdAsync(shindenUserId);
 
             if (user == null)
             {
@@ -528,16 +530,15 @@ namespace Sanakan.Web.Controllers
         /// </summary>
         /// <param name="discordUserId">The user identifier in Discord.</param>
         /// <param name="boosterPacks">The bundle model.</param>
-        /// <returns>użytkownik bota</returns>
         [HttpPost("discord/{discordUserId}/boosterpack"), Authorize(Policy = AuthorizePolicies.Site)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status200OK)]
         public async Task<IActionResult> GiveUserAPacksAsync(
             ulong discordUserId,
-            [FromBody] List<CardBoosterPack> boosterPacks)
+            [FromBody] IEnumerable<CardBoosterPack>? boosterPacks)
         {
-            if (boosterPacks?.Count < 1)
+            if (!boosterPacks.Any())
             {
                 return ShindenInternalServerError(Strings.ModelIsInvalid);
             }
@@ -546,10 +547,10 @@ namespace Sanakan.Web.Controllers
 
             foreach (var pack in boosterPacks)
             {
-                var rPack = pack.ToRealPack();
-                if (rPack != null)
+                var realPack = pack.ToRealPack();
+                if (realPack != null)
                 {
-                    packs.Add(rPack);
+                    packs.Add(realPack);
                 }
             }
 
@@ -565,27 +566,12 @@ namespace Sanakan.Web.Controllers
                 return ShindenNotFound(Strings.UserNotFound);
             }
 
-            _blockingPriorityQueue.TryEnqueue(new GivesCardsMessage
+            _blockingPriorityQueue.TryEnqueue(new GiveCardsMessage
             {
                 DiscordUserId = discordUserId,
-                BoosterPacks = boosterPacks,
+                BoosterPacks = packs,
             });
 
-            //var exe = new Executable($"api-packet u{id}", new Task<Task>(async () =>
-            //{
-            //    var botUser = await _userRepository.GetUserOrCreateAsync(id);
-
-            //    foreach (var pack in packs)
-            //    {
-            //        botUser.GameDeck.BoosterPacks.Add(pack);
-            //    }
-
-            //    await _userRepository.SaveChangesAsync();
-
-            //    _cacheManager.ExpireTag(new string[] { $"user-{botUser.Id}", "users" });
-            //}));
-
-            //await _executor.TryAdd(exe, TimeSpan.FromSeconds(1));
             return ShindenOk("Boosterpack added!");
         }
 
@@ -864,7 +850,7 @@ namespace Sanakan.Web.Controllers
         /// <summary>
         /// Activates or deactivates card ( authorization required )
         /// </summary>
-        /// <param name="wid">id karty</param>
+        /// <param name="wid">The card identifier.</param>
         [HttpPut("deck/toggle/card/{wid}"), Authorize(Policy = AuthorizePolicies.Player)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status404NotFound)]

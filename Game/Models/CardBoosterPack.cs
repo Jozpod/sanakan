@@ -1,5 +1,6 @@
 ﻿using Sanakan.DAL.Models;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Sanakan.Game.Models
 {
@@ -53,7 +54,7 @@ namespace Sanakan.Game.Models
 
             if (RarityExcluded != null)
             {
-                if (RarityExcluded.Count > 0)
+                if (RarityExcluded.Any())
                 {
                     foreach (var rarityExcluded in RarityExcluded)
                     {

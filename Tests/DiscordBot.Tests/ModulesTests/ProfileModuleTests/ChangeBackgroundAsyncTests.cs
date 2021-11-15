@@ -8,6 +8,7 @@ using System;
 using Sanakan.DAL.Models;
 using Moq;
 using DiscordBot.Services;
+using Sanakan.DiscordBot.Services;
 
 namespace DiscordBot.ModulesTests.ProfileModuleTests
 {

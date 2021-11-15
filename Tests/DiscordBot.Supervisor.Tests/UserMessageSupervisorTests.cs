@@ -23,7 +23,9 @@ namespace Sanakan.DiscordBot.Supervisor.Tests
         private readonly Mock<IOptionsMonitor<SupervisorConfiguration>> _supervisorConfigurationMock = new(MockBehavior.Strict);
         private readonly Mock<ISystemClock> _systemClockMock = new(MockBehavior.Strict);
         private readonly Mock<IFileSystem> _fileSystemMock = new(MockBehavior.Strict);
-
+        private readonly Mock<IFileSystemWatcherFactory> _fileSystemWatcherFactoryMock = new(MockBehavior.Strict);
+        private readonly FakeFileSystemWatcher _fileSystemWatcher = new();
+        
         public UserMessageSupervisorTests()
         {
             _supervisorConfigurationMock
@@ -46,15 +48,21 @@ namespace Sanakan.DiscordBot.Supervisor.Tests
                 .Setup(pr => pr.ReadAllLinesAsync("disallowed-urls.txt"))
                 .ReturnsAsync(new string[] { "boostnltro.com" });
 
+            _fileSystemWatcherFactoryMock
+                .Setup(pr => pr.Create(It.IsAny<FileSystemWatcherOptions>()))
+                .Returns(_fileSystemWatcher);
+
             _systemClockMock
                 .Setup(pr => pr.UtcNow)
                 .Returns(DateTime.UtcNow);
 
             _userMessageSupervisor = new UserMessageSupervisor(
+                NullLogger<UserMessageSupervisor>.Instance,
                 _discordConfigurationMock.Object,
                 _supervisorConfigurationMock.Object,
                 _systemClockMock.Object,
-                _fileSystemMock.Object);
+                _fileSystemMock.Object,
+                _fileSystemWatcherFactoryMock.Object);
         }
 
         [TestMethod]

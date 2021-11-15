@@ -11,8 +11,8 @@ namespace Sanakan.Web.Tests.Controllers.DebugControllerTests
     [TestClass]
     public abstract class Base
     {
-        private readonly DebugController _controller;
-        private readonly Mock<IDiscordSocketClientAccessor> _discordSocketClientMock = new(MockBehavior.Strict);
+        protected readonly DebugController _controller;
+        protected readonly Mock<IDiscordSocketClientAccessor> _discordSocketClientMock = new(MockBehavior.Strict);
 
         public Base()
         {

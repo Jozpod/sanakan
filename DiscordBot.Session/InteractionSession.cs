@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Sanakan.DiscordBot.Session
 {
-    public abstract class InteractionSession : IComparable<InteractionSession>, IDisposable
+    public abstract class InteractionSession : IComparable<InteractionSession>, IAsyncDisposable
     {
         public ulong OwnerId { get; }
         private readonly DateTime _createdOn;
@@ -45,11 +45,6 @@ namespace Sanakan.DiscordBot.Session
             _expiresOn = _expiresOn + _expiryPeriod;
         }
 
-        public virtual void Dispose()
-        {
-            
-        }
-
         public int CompareTo(InteractionSession? other)
         {
             if (_expiresOn > other._expiresOn)
@@ -63,6 +58,11 @@ namespace Sanakan.DiscordBot.Session
             }
 
             return 0;
+        }
+
+        public virtual ValueTask DisposeAsync()
+        {
+            return ValueTask.CompletedTask;
         }
     }
 }

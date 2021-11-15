@@ -21,12 +21,8 @@ namespace Sanakan.TaskQueue.Builder
             services.AddScoped<IMessageHandler<UpdateCardPictureMessage>, UpdateCardPictureMessageHandler>();
             services.AddScoped<IMessageHandler<AddExperienceMessage>, AddExperienceMessageHandler>();
             services.AddScoped<IMessageHandler<SafariMessage>, SafariMessageHandler>();
-            return services;
-        }
-
-        public static IServiceCollection AddSessionManager(this IServiceCollection services)
-        {
-            services.AddSingleton<ISessionManager, SessionManager>();
+            services.AddScoped<IMessageHandler<GiveCardsMessage>, GiveCardsMessageHandler>();
+            
             return services;
         }
     }

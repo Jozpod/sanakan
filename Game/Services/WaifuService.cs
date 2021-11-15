@@ -10,6 +10,7 @@ using DiscordBot.Services;
 using DiscordBot.Services.PocketWaifu;
 using Microsoft.Extensions.DependencyInjection;
 using Sanakan.Common;
+using Sanakan.Common.Cache;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot;
@@ -580,7 +581,7 @@ namespace Sanakan.Game.Services
 
             await userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(new string[] { $"user-{databaseUser.Id}", "users" });
+            _cacheManager.ExpireTag(CacheKeys.User(databaseUser.Id), CacheKeys.Users);
 
             return $"{discordUser.Mention} zakupił: _{thisItem.Item.Name}{boosterPackTitleName}{count}_.".ToEmbedMessage(EMType.Success).Build();
         }

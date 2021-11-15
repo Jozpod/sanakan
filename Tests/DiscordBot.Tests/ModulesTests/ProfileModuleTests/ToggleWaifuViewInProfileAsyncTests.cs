@@ -16,10 +16,10 @@ namespace DiscordBot.ModulesTests.ProfileModuleTests
     {
         
         [TestMethod]
-        public async Task Should_Give_Bot_Info()
+        public async Task Should_Set_Waifu_In_Profile()
         {
 
-            await _module.ToggleWaifuViewInProfileAsync(imageUrl);
+            await _module.ToggleWaifuViewInProfileAsync();
         }
     }
 }

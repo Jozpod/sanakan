@@ -9,7 +9,6 @@ using Sanakan.Common.Configuration;
 using Sanakan.Configuration;
 using Sanakan.DAL;
 using Sanakan.DiscordBot;
-using Sanakan.Services.Commands;
 using Sanakan.TaskQueue;
 using Sanakan.Web.HostedService;
 
@@ -25,7 +24,7 @@ namespace Sanakan.Web.Test.HostedServices.DiscordBotHostedServiceTests
         protected readonly Mock<IOptionsMonitor<DiscordConfiguration>> _discordConfigurationMock = new(MockBehavior.Strict);
         protected readonly Mock<IOptionsMonitor<ExperienceConfiguration>> _experienceConfigurationMock = new(MockBehavior.Strict);
         protected readonly Mock<ISystemClock> _systemClockMock = new(MockBehavior.Strict);
-        protected readonly Mock<CommandHandler> _commandHandlerMock = new(MockBehavior.Strict);
+        protected readonly Mock<ICommandHandler> _commandHandlerMock = new(MockBehavior.Strict);
         protected readonly Mock<ITaskManager> _taskManagerMock = new(MockBehavior.Strict);
         protected readonly Mock<IDatabaseFacade> _databaseFacadeMock = new(MockBehavior.Strict);
         

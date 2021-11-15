@@ -51,7 +51,7 @@ namespace Sanakan.DiscordBot.Session
                 if(session != null)
                 {
                     _sessions.Remove(session);
-                    session.Dispose();
+                    session.DisposeAsync();
                 }
             }
         }

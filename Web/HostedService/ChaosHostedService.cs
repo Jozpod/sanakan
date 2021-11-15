@@ -16,6 +16,8 @@ using Sanakan.Common.Configuration;
 using System.Collections.Generic;
 using Discord.WebSocket;
 using System.Linq;
+using Discord;
+using System.Collections.ObjectModel;
 
 namespace Sanakan.Web.HostedService
 {
@@ -30,7 +32,8 @@ namespace Sanakan.Web.HostedService
         private readonly IRandomNumberGenerator _randomNumberGenerator;
         private readonly ITimer _timer;
         private readonly ITaskManager _taskManager;
-        private readonly List<ulong> _usersWithSwappedNicknames;
+        private readonly ISet<ulong> _usersWithSwappedNicknames;
+        private readonly object _syncRoot = new ();
 
         public ChaosHostedService(
             ILogger<ChaosHostedService> logger,
@@ -52,13 +55,13 @@ namespace Sanakan.Web.HostedService
             _randomNumberGenerator = randomNumberGenerator;
             _timer = timer;
             _taskManager = taskManager;
-            _usersWithSwappedNicknames = new(100);
-            _discordSocketClientAccessor.Initialized += OnInitialized;
+            _usersWithSwappedNicknames = new HashSet<ulong>();
+            _discordSocketClientAccessor.LoggedIn += LoggedIn;
         }
 
-        private Task OnInitialized()
+        private Task LoggedIn()
         {
-            _discordSocketClientAccessor.Client.MessageReceived += HandleMessageAsync;
+            _discordSocketClientAccessor.MessageReceived += HandleMessageAsync;
             return Task.CompletedTask;
         }
 
@@ -80,9 +83,17 @@ namespace Sanakan.Web.HostedService
             }
         }
 
-        private async Task HandleMessageAsync(SocketMessage message)
+        private async void OnTick(object sender, TimerEventArgs e)
         {
-            var userMessage = message as SocketUserMessage;
+            lock (_syncRoot)
+            {
+                _usersWithSwappedNicknames.Clear();
+            }
+        }
+
+        private async Task HandleMessageAsync(IMessage message)
+        {
+            var userMessage = message as IUserMessage;
 
             if (userMessage == null)
             {
@@ -94,7 +105,7 @@ namespace Sanakan.Web.HostedService
                 return;
             }
 
-            var sourceUser = userMessage.Author as SocketGuildUser;
+            var sourceUser = userMessage.Author as IGuildUser;
 
             if (sourceUser == null)
             {
@@ -127,8 +138,8 @@ namespace Sanakan.Web.HostedService
                 return;
             }
 
-            var notChangedUsers = sourceUser.Guild
-                .Users
+            var notChangedUsers = (await sourceUser.Guild
+                .GetUsersAsync())
                 .Where(x => !x.IsBot
                     && x.Id != sourceUser.Id
                     && !_usersWithSwappedNicknames.Any(c => c == x.Id))
@@ -152,12 +163,11 @@ namespace Sanakan.Web.HostedService
 
             await sourceUser.ModifyAsync(x => x.Nickname = targetNickname);
             await targetUser.ModifyAsync(x => x.Nickname = sourceNickname);
-            _usersWithSwappedNicknames.AddRange(new[] { sourceUser.Id, targetUser.Id });
-        }
-
-        private async void OnTick(object sender, TimerEventArgs e)
-        {
-            _usersWithSwappedNicknames.Clear();
+            lock (_syncRoot)
+            {
+                _usersWithSwappedNicknames.Add(sourceUser.Id);
+                _usersWithSwappedNicknames.Add(targetUser.Id);
+            }
         }
     }
 }

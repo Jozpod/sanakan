@@ -16,10 +16,10 @@ namespace DiscordBot.ModulesTests.DebugModuleTests
     {
         
         [TestMethod]
-        public async Task Should_Send_Message()
+        public async Task Should_Simulate_Expedition_And_Send_Outcome_Message()
         {
-            await _module.SimulateExpeditionAsync();
-            _messageChannelMock.Verify();
+            var waifuId = 1ul;
+            await _module.SimulateExpeditionAsync(waifuId);
         }
     }
 }

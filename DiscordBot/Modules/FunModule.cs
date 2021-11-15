@@ -4,10 +4,6 @@ using Discord.WebSocket;
 using Sanakan.DAL.Models;
 using Sanakan.Extensions;
 using Sanakan.Preconditions;
-using Sanakan.Services;
-using Sanakan.Services.Commands;
-using Sanakan.Services.Session.Models;
-using Sanakan.Services.Session;
 using Sanakan.Services.SlotMachine;
 using System;
 using System.Collections.Generic;
@@ -28,6 +24,7 @@ using Sanakan.DiscordBot.Abstractions;
 using Humanizer;
 using Sanakan.DiscordBot.Modules;
 using Sanakan.Common.Cache;
+using Sanakan.DiscordBot.Session;
 
 namespace Sanakan.DiscordBot.Modules
 {
@@ -248,7 +245,7 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("bot wykonuje rzut monetą, wygrywasz kwotę, o którą się założysz")]
         [Remarks("reszka 10"), RequireCommandChannel]
         public async Task TossCoinAsync(
-            [Summary("strona monety (orzeł/reszka)")]CoinSide side,
+            [Summary("strona monety (orzeł/reszka)")]CoinSide coinSide,
             [Summary("ilość SC")]int amount)
         {
             if (amount <= 0)
@@ -272,7 +269,7 @@ namespace Sanakan.DiscordBot.Modules
             botuser.Stats.Tail += (thrown == CoinSide.Tail) ? 1 : 0;
             botuser.Stats.Head += (thrown == CoinSide.Head) ? 1 : 0;
 
-            if (thrown == side)
+            if (thrown == coinSide)
             {
                 ++botuser.Stats.Hit;
                 botuser.ScCount += amount * 2;

@@ -1,10 +1,12 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Sanakan.Common;
 using Sanakan.Common.Configuration;
 using Sanakan.DiscordBot.Supervisor;
 using Sanakan.Extensions;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -13,22 +15,27 @@ namespace Sanakan.DiscordBot.Supervisor
 {
     internal class UserMessageSupervisor : IUserMessageSupervisor
     {
+        private readonly ILogger<UserMessageSupervisor> _logger;
         private readonly IOptionsMonitor<DiscordConfiguration> _discordConfiguration;
         private readonly IOptionsMonitor<SupervisorConfiguration> _supervisorConfiguration;
         private readonly ISystemClock _systemClock;
         private readonly IFileSystem _fileSystem;
         private readonly IDictionary<string, UserEntry> _entries;
+        private readonly IFileSystemWatcher _fileSystemWatcher;
         private IEnumerable<string> _disallowedUrls;
         private readonly TimeSpan _messageExpiry;
         private readonly TimeSpan _timeIntervalBetweenMessages;
         private readonly Regex _urlsRegex;
 
         public UserMessageSupervisor(
+            ILogger<UserMessageSupervisor> logger,
             IOptionsMonitor<DiscordConfiguration> discordConfiguration,
             IOptionsMonitor<SupervisorConfiguration> supervisorConfiguration,
             ISystemClock systemClock,
-            IFileSystem fileSystem)
+            IFileSystem fileSystem,
+            IFileSystemWatcherFactory fileSystemWatcherFactory)
         {
+            _logger = logger;
             _discordConfiguration = discordConfiguration;
             _supervisorConfiguration = supervisorConfiguration;
             _entries = new Dictionary<string, UserEntry>(100);
@@ -37,10 +44,30 @@ namespace Sanakan.DiscordBot.Supervisor
             _urlsRegex = new Regex(
                 @"(http|ftp|https):\/\/([\w\-_]+(?:(?:\.[\w\-_]+)+))([\w\-\.,@?^=%&amp;:/~\+#]*[\w\-\@?^=%&amp;/~\+#])?",
                 RegexOptions.Compiled | RegexOptions.IgnoreCase);
+            var fileName = "disallowed-urls.txt";
+            _fileSystemWatcher = fileSystemWatcherFactory.Create(new FileSystemWatcherOptions
+            {
+                Path = typeof(UserMessageSupervisor).Assembly.Location,
+                Filter = fileName,
+            });
+            _fileSystemWatcher.Changed += UrlsChanged;
 
-            _disallowedUrls = _fileSystem.ReadAllLinesAsync("disallowed-urls.txt").GetAwaiter().GetResult();
+            _disallowedUrls = _fileSystem.ReadAllLinesAsync(fileName).GetAwaiter().GetResult();
             _messageExpiry = supervisorConfiguration.CurrentValue.MessageExpiry;
             _timeIntervalBetweenMessages = supervisorConfiguration.CurrentValue.TimeIntervalBetweenMessages;
+        }
+
+        private async void UrlsChanged(object sender, FileSystemEventArgs eventArgs)
+        {
+            try
+            {
+                _disallowedUrls = await _fileSystem.ReadAllLinesAsync(eventArgs.Name);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Error occurred while updating urls", ex);
+            }
+           
         }
 
         internal class MessageEntry

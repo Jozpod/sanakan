@@ -15,6 +15,7 @@ using Sanakan.Common;
 using Sanakan.DiscordBot.Services.Abstractions;
 using Sanakan.TaskQueue;
 using Microsoft.Extensions.DependencyInjection;
+using Sanakan.DiscordBot.Session;
 
 namespace DiscordBot.ModulesTests.FunModuleTests
 {
