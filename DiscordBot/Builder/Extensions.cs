@@ -8,6 +8,7 @@ using DiscordBot.Services.PocketWaifu;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Sanakan.Common;
+using Sanakan.Common.Configuration;
 using Sanakan.Common.Models;
 using Sanakan.DAL.Models;
 using Sanakan.DiscordBot;
@@ -21,22 +22,25 @@ namespace Sanakan.DiscordBot.Builder
     {
         public static IServiceCollection AddDiscordBotServices(this IServiceCollection services)
         {
-            services.AddSingleton<CommandService>();
+            services.AddSingleton<ICommandService, CommandService>();
 
-            services.AddSingleton(pr => {
+            services.AddSingleton((sp) => {
+
+                var discordConfiguration = sp.GetRequiredService<IOptionsMonitor<DiscordConfiguration>>().CurrentValue;
+
                 return new DiscordSocketClient(new DiscordSocketConfig()
                 {
-                    AlwaysDownloadUsers = true,
-                    MessageCacheSize = 200,
+                    AlwaysDownloadUsers = discordConfiguration.AlwaysDownloadUsers,
+                    MessageCacheSize = discordConfiguration.MessageCacheSize,
                 });
             });
 
-            services.AddSingleton<IDiscordSocketClientAccessor, DiscordSocketClientAccessor>();
+            services.AddSingleton<IDiscordClientAccessor, DiscordSocketClientAccessor>();
             services.AddSingleton<ICommandHandler, CommandHandler>();
             return services;
         }
 
-        public static void AddTypeReaders(this CommandService commandService)
+        public static void AddTypeReaders(this ICommandService commandService)
         {
             commandService.AddTypeReader<SlotMachineSetting>(new TypeReaders.SlotMachineSettingTypeReader());
             commandService.AddTypeReader<WishlistObjectType>(new TypeReaders.WishlistObjectTypeReader());

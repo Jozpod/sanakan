@@ -47,7 +47,7 @@ namespace Sanakan.DiscordBot.Supervisor
             var fileName = "disallowed-urls.txt";
             _fileSystemWatcher = fileSystemWatcherFactory.Create(new FileSystemWatcherOptions
             {
-                Path = typeof(UserMessageSupervisor).Assembly.Location,
+                Path = Path.GetDirectoryName(typeof(UserMessageSupervisor).Assembly.Location),
                 Filter = fileName,
             });
             _fileSystemWatcher.Changed += UrlsChanged;

@@ -45,5 +45,15 @@ namespace Sanakan.Common.Configuration
         /// The list of Discord guild ( servers ) identifiers to blacklist
         /// </summary>
         public ICollection<ulong> BlacklistedGuilds { get; set; } = new Collection<ulong>();
+
+        /// <summary>
+        /// Gets or sets whether or not all users should be downloaded as guilds come available.
+        /// </summary>
+        public bool AlwaysDownloadUsers { get; set; }
+
+        /// <summary>
+        /// Gets or sets the number of messages per channel that should be kept in cache.
+        /// </summary>
+        public int MessageCacheSize { get; set; }
     }
 }

@@ -7,19 +7,19 @@ using System.Linq;
 using System.Threading.Tasks;
 using SearchResult = Sanakan.DiscordBot.Abstractions.SearchResult;
 
-namespace Sanakan.Extensions
+namespace Sanakan.DiscordBot.Extensions
 {
     public static class CommandServiceExtensions
     {
         public static async Task<SearchResult> GetExecutableCommandAsync(
-            this CommandService commandService,
+            this ICommandService commandService,
             ICommandContext context,
             int argPos,
             IServiceProvider services)
             => await GetExecutableCommandAsync(commandService, context, context.Message.Content.Substring(argPos), services).ConfigureAwait(false);
 
         public static async Task<SearchResult> GetExecutableCommandAsync(
-            this CommandService commandService,
+            this ICommandService commandService,
             ICommandContext context,
             string input,
             IServiceProvider services)
@@ -43,9 +43,9 @@ namespace Sanakan.Extensions
 
             var successfulPreconditions = preconditionResults
                 .Where(x => x.Value.IsSuccess)
-                .ToArray();
+                .ToList();
 
-            if (successfulPreconditions.Length == 0)
+            if (!successfulPreconditions.Any())
             {
                 var bestCandidate = preconditionResults
                     .OrderByDescending(x => x.Key.Command.Priority)

@@ -50,7 +50,7 @@ namespace Sanakan.Web.Controllers
         private readonly IBlockingPriorityQueue _blockingPriorityQueue;
         private readonly ITransferAnalyticsRepository _transferAnalyticsRepository;
         private readonly IShindenClient _shindenClient;
-        private readonly IDiscordSocketClientAccessor _discordSocketClientAccessor;
+        private readonly IDiscordClientAccessor _discordSocketClientAccessor;
         private readonly ISystemClock _systemClock;
         private readonly ICacheManager _cacheManager;
         private readonly IUserContext _userContext;
@@ -58,7 +58,7 @@ namespace Sanakan.Web.Controllers
         private readonly IRequestBodyReader _requestBodyReader;
 
         public UserController(
-            IDiscordSocketClientAccessor discordSocketClientAccessor,
+            IDiscordClientAccessor discordSocketClientAccessor,
             IOptionsMonitor<SanakanConfiguration> config,
             IUserRepository userRepository,
             ITransferAnalyticsRepository transferAnalyticsRepository,
@@ -231,14 +231,14 @@ namespace Sanakan.Web.Controllers
                 return ShindenForbidden("Could not access discord client");
             }
 
-            var guild = client.GetGuild(Constants.ShindenDiscordGuildId);
+            var guild = await client.GetGuildAsync(Constants.ShindenDiscordGuildId);
 
             if (guild == null)
             {
                 return ShindenNotFound("Guild not found!");
             }
 
-            var userOnGuild = guild.GetUser(user.Id);
+            var userOnGuild = await guild.GetUserAsync(user.Id);
 
             if (userOnGuild == null)
             {
@@ -277,7 +277,7 @@ namespace Sanakan.Web.Controllers
                 return ShindenForbidden("Could not access discord client");
             }
 
-            var discordUser = client.GetUser(model.DiscordUserId);
+            var discordUser = await client.GetUserAsync(model.DiscordUserId);
             
             if (discordUser == null)
             {
@@ -327,13 +327,13 @@ namespace Sanakan.Web.Controllers
                         .Where(x => x.Type == RichMessageType.AdminNotify);
                     foreach (var rmc in rmcs)
                     {
-                        var guild = client.GetGuild(rmc.GuildId);
+                        var guild = await client.GetGuildAsync(rmc.GuildId);
                         if (guild == null)
                         {
                             continue;
                         }
 
-                        var channel = guild.GetTextChannel(rmc.ChannelId);
+                        var channel = await guild.GetTextChannelAsync(rmc.ChannelId);
                         if (channel == null)
                         {
                             continue;

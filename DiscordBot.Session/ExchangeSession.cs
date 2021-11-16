@@ -14,6 +14,7 @@ using Sanakan.DAL.Models;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot;
 using Sanakan.DiscordBot.Abstractions;
+using Sanakan.DiscordBot.Abstractions.Extensions;
 using Sanakan.DiscordBot.Abstractions.Models;
 using Sanakan.Extensions;
 using Sanakan.Game.Extensions;
@@ -322,11 +323,11 @@ namespace Sanakan.DiscordBot.Session
 
             switch (_payload.State)
             {
-                case ExchangeStatus.AcceptP1:
+                case ExchangeStatus.AcceptSourcePlayer:
                     await HandleUserReactionInAccept(reaction, _payload.SourcePlayer, message);
                     break;
 
-                case ExchangeStatus.AcceptP2:
+                case ExchangeStatus.AcceptDestinationPlayer:
                     await HandleUserReactionInAccept(reaction, _payload.DestinationPlayer, message);
                     break;
 
@@ -338,14 +339,15 @@ namespace Sanakan.DiscordBot.Session
 
         }
 
-        private async Task HandleReactionInAdd(SocketReaction reaction, IUserMessage msg)
+        private async Task HandleReactionInAdd(IReaction reaction, IUserMessage userMessage)
         {
-            if (reaction.Emote.Equals(Emojis.OneEmote) && reaction.UserId == _payload.SourcePlayer.User.Id)
+            var userId = reaction.GetUserId();
+            if (reaction.Emote.Equals(Emojis.OneEmote) && userId == _payload.SourcePlayer.User.Id)
             {
                 _payload.SourcePlayer.Accepted = true;
                 ResetExpiry();
             }
-            else if (reaction.Emote.Equals(Emojis.TwoEmote) && reaction.UserId == _payload.DestinationPlayer.User.Id)
+            else if (reaction.Emote.Equals(Emojis.TwoEmote) && userId == _payload.DestinationPlayer.User.Id)
             {
                 _payload.DestinationPlayer.Accepted = true;
                 ResetExpiry();
@@ -353,41 +355,42 @@ namespace Sanakan.DiscordBot.Session
 
             if (_payload.SourcePlayer.Accepted && _payload.DestinationPlayer.Accepted)
             {
-                _payload.State = ExchangeStatus.AcceptP1;
+                _payload.State = ExchangeStatus.AcceptSourcePlayer;
                 _payload.Tips = $"{_payload.SourcePlayer.User.Mention} daj {Emojis.Checked} aby zaakceptować, lub {Emojis.DeclineEmote} aby odrzucić.";
 
-                await msg.RemoveAllReactionsAsync();
-                await msg.ModifyAsync(x => x.Embed = BuildEmbed());
-                await msg.AddReactionsAsync(new IEmote[] {
+                await userMessage.RemoveAllReactionsAsync();
+                await userMessage.ModifyAsync(x => x.Embed = BuildEmbed());
+                await userMessage.AddReactionsAsync(new IEmote[] {
                     Emojis.Checked,
                     Emojis.DeclineEmote
                 });
             }
         }
 
-        private async Task HandleUserReactionInAccept(SocketReaction reaction, PlayerInfo player, IUserMessage message)
+        private async Task HandleUserReactionInAccept(IReaction reaction, PlayerInfo player, IUserMessage message)
         {
-            var msgCh = false;
+            var messageChannel = false;
             var userRepository = _serviceProvider.GetRequiredService<IUserRepository>();
+            var userId = reaction.GetUserId();
 
-            if (reaction.UserId != player.User.Id)
+            if (userId != player.User.Id)
             {
                 return;
             }
 
             if (reaction.Emote.Equals(Emojis.Checked))
             {
-                if (_payload.State == ExchangeStatus.AcceptP1)
+                if (_payload.State == ExchangeStatus.AcceptSourcePlayer)
                 {
-                    msgCh = true;
+                    messageChannel = true;
                     ResetExpiry();
-                    _payload.State = ExchangeStatus.AcceptP2;
+                    _payload.State = ExchangeStatus.AcceptDestinationPlayer;
                     _payload.Tips = $"{_payload.DestinationPlayer.User.Mention} daj {Emojis.Checked} aby zaakceptować, lub {Emojis.DeclineEmote} aby odrzucić.";
                 }
-                else if (_payload.State == ExchangeStatus.AcceptP2)
+                else if (_payload.State == ExchangeStatus.AcceptDestinationPlayer)
                 {
                     _payload.Tips = $"Wymiana zakończona!";
-                    msgCh = true;
+                    messageChannel = true;
 
                     if (_payload.SourcePlayer.Cards.Count == 0 && _payload.DestinationPlayer.Cards.Count == 0)
                     {
@@ -517,10 +520,10 @@ namespace Sanakan.DiscordBot.Session
             {
                 ResetExpiry();
                 _payload.Tips = $"{player.User.Mention} odrzucił propozycje wymiany!";
-                msgCh = true;
+                messageChannel = true;
             }
 
-            if (message != null && msgCh)
+            if (message != null && messageChannel)
             {
                 await message.ModifyAsync(x => x.Embed = BuildEmbed());
             }

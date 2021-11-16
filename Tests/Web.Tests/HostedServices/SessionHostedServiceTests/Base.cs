@@ -22,7 +22,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Sanakan.Web.Test.HostedServices.SessionHostedServiceTests
+namespace Sanakan.Web.Tests.HostedServices.SessionHostedServiceTests
 {
     [TestClass]
     public abstract class Base
@@ -30,7 +30,7 @@ namespace Sanakan.Web.Test.HostedServices.SessionHostedServiceTests
         protected readonly SessionHostedService _service;
         protected readonly Mock<IOptionsMonitor<DaemonsConfiguration>> _daemonsConfigurationMock = new(MockBehavior.Strict);
         protected readonly Mock<ISystemClock> _systemClockMock = new(MockBehavior.Strict);
-        protected readonly Mock<IDiscordSocketClientAccessor> _discordSocketClientAccessorMock = new(MockBehavior.Strict);
+        protected readonly Mock<IDiscordClientAccessor> _discordSocketClientAccessorMock = new(MockBehavior.Strict);
         protected readonly Mock<ISessionManager> _sessionManagerMock = new(MockBehavior.Strict);
         protected readonly Mock<ITaskManager> _taskManagerMock = new(MockBehavior.Strict);
         protected readonly FakeTimer _fakeTimer = new();

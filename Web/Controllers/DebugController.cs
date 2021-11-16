@@ -15,10 +15,10 @@ namespace Sanakan.Web.Controllers
     public class DebugController : ControllerBase
     {
         private readonly ILogger _logger;
-        private readonly IDiscordSocketClientAccessor _discordSocketClientAccessor;
+        private readonly IDiscordClientAccessor _discordSocketClientAccessor;
 
         public DebugController(
-            IDiscordSocketClientAccessor discordSocketClientAccessor,
+            IDiscordClientAccessor discordSocketClientAccessor,
             ILogger<DebugController> logger)
         {
             _discordSocketClientAccessor = discordSocketClientAccessor;
@@ -26,25 +26,25 @@ namespace Sanakan.Web.Controllers
         }
 
         /// <summary>
-        /// Zabija bota
+        /// Logouts discord client bot
         /// </summary>
         [HttpPost("kill"), Authorize(Policy = AuthorizePolicies.Site)]
         [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
         public async Task<IActionResult> RestartBotAsync()
         {
-            await _discordSocketClientAccessor.Client.LogoutAsync();
+            await _discordSocketClientAccessor.LogoutAsync();
             _logger.LogDebug("Kill app from web.");
             return Ok();
         }
 
         /// <summary>
-        /// Aktualizuje bota
+        /// Updates bot
         /// </summary>
         [HttpPost("update"), Authorize(Policy = AuthorizePolicies.Site)]
         [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
         public async Task<IActionResult> UpdateBotAsync()
         {
-            await _discordSocketClientAccessor.Client.LogoutAsync();
+            await _discordSocketClientAccessor.LogoutAsync();
             //System.IO.File.Create("./updateNow");
             _logger.LogDebug("Update app from web.");
             return Ok();

@@ -28,7 +28,7 @@ namespace Sanakan.Web.HostedService
     {
         private readonly ILogger _logger;
         private readonly ISystemClock _systemClock;
-        private readonly IDiscordSocketClientAccessor _discordSocketClientAccessor;
+        private readonly IDiscordClientAccessor _discordSocketClientAccessor;
         private readonly IOptionsMonitor<DaemonsConfiguration> _daemonsConfiguration;
         private readonly IOptionsMonitor<DiscordConfiguration> _discordConfiguration;
         private readonly IServiceScopeFactory _serviceScopeFactory;
@@ -40,7 +40,7 @@ namespace Sanakan.Web.HostedService
 
         public SupervisorHostedService(
             ILogger<SupervisorHostedService> logger,
-            IDiscordSocketClientAccessor discordSocketClientAccessor,
+            IDiscordClientAccessor discordSocketClientAccessor,
             IOptionsMonitor<DaemonsConfiguration> daemonsConfiguration,
             IOptionsMonitor<DiscordConfiguration> discordConfiguration,
             ISystemClock systemClock,
@@ -59,15 +59,15 @@ namespace Sanakan.Web.HostedService
             _taskManager = taskManager;
             _timer = timer;
 
-            _discordSocketClientAccessor.Initialized += Initialized;
+            _discordSocketClientAccessor.LoggedIn += LoggedIn;
             _userMessageSupervisor = userMessageSupervisor;
             _userJoinedGuildSupervisor = userJoinedGuildSupervisor;
         }
 
-        private Task Initialized()
+        private Task LoggedIn()
         {
-            _discordSocketClientAccessor.Client.MessageReceived += HandleMessageAsync;
-            _discordSocketClientAccessor.Client.UserJoined += UserJoinedAsync;
+            _discordSocketClientAccessor.MessageReceived += HandleMessageAsync;
+            _discordSocketClientAccessor.UserJoined += UserJoinedAsync;
             return Task.CompletedTask;
         }
 

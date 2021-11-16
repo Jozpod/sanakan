@@ -29,6 +29,7 @@ using Sanakan.Services.PocketWaifu;
 using Sanakan.ShindenApi;
 using Sanakan.ShindenApi.Builder;
 using Sanakan.TaskQueue.Builder;
+using Sanakan.Web;
 using Sanakan.Web.HostedService;
 using System;
 using System.Collections.Generic;
@@ -50,6 +51,10 @@ namespace Sanakan
 
         public void ConfigureServices(IServiceCollection services)
         {
+            var jwtConfiguration = Configuration
+                .GetSection("SanakanApi:Jwt")
+                .Get<JwtConfiguration>();
+
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(opt =>
             {
@@ -59,29 +64,29 @@ namespace Sanakan
                     ValidateAudience = true,
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
-                    ValidIssuer = Configuration.GetSection("Jwt.Issuer").Value,
-                    ValidAudience = Configuration.GetSection("Jwt.Issuer").Value,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration.GetSection("Jwt.Key").Value))
+                    ValidIssuer = jwtConfiguration.Issuer,
+                    ValidAudience = jwtConfiguration.Issuer,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtConfiguration.IssuerSigningKey))
                 };
             });
 
             services.AddAuthorization(op =>
             {
-                op.AddPolicy("Player", policy =>
+                op.AddPolicy(RegisteredClaimNames.Player, policy =>
                 {
                     policy.AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme);
                     policy.RequireAuthenticatedUser();
 
-                    policy.RequireAssertion(context => context.User.HasClaim(c => c.Type == "Player" 
-                        && c.Value == "waifu_player"));
+                    policy.RequireAssertion(context => context.User.HasClaim(c => c.Type == RegisteredClaimNames.Player
+                        && c.Value == RegisteredClaimNames.WaifuPlayer));
                 });
 
-                op.AddPolicy("Site", policy =>
+                op.AddPolicy(RegisteredClaimNames.Site, policy =>
                 {
                     policy.AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme);
                     policy.RequireAuthenticatedUser();
 
-                    policy.RequireAssertion(context => !context.User.HasClaim(c => c.Type == "Player"));
+                    policy.RequireAssertion(context => !context.User.HasClaim(c => c.Type == RegisteredClaimNames.Player));
                 });
             });
 

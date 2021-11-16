@@ -13,7 +13,7 @@ using Sanakan.TaskQueue;
 using Sanakan.Web.HostedService;
 using Sanakan.Web.Tests.HostedServices;
 
-namespace Sanakan.Web.Test.HostedServices.SpawnHostedServiceTests
+namespace Sanakan.Web.Tests.HostedServices.SpawnHostedServiceTests
 {
     [TestClass]
     public abstract class Base
@@ -22,7 +22,7 @@ namespace Sanakan.Web.Test.HostedServices.SpawnHostedServiceTests
         protected readonly Mock<IRandomNumberGenerator> _randomNumberGeneratorMock = new(MockBehavior.Strict);
         protected readonly Mock<IOptionsMonitor<DiscordConfiguration>> _discordConfigurationMock = new(MockBehavior.Strict);
         protected readonly Mock<IOptionsMonitor<ExperienceConfiguration>> _experienceConfigurationMock = new(MockBehavior.Strict);
-        protected readonly Mock<IDiscordSocketClientAccessor> _discordSocketClientAccessorMock = new(MockBehavior.Strict);
+        protected readonly Mock<IDiscordClientAccessor> _discordSocketClientAccessorMock = new(MockBehavior.Strict);
         protected readonly Mock<ISystemClock> _systemClockMock = new(MockBehavior.Strict);
         protected readonly Mock<IBlockingPriorityQueue> _blockingPriorityQueueMock = new(MockBehavior.Strict);
         protected readonly Mock<IWaifuService> _waifuServiceMock = new(MockBehavior.Strict);

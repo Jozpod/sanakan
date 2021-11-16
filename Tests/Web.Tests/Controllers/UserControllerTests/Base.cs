@@ -16,7 +16,7 @@ namespace Sanakan.Web.Tests.Controllers.UserControllerTests
     public abstract class Base
     {
         protected readonly UserController _controller;
-        protected readonly Mock<IDiscordSocketClientAccessor> _discordSocketClientAccessorMock = new(MockBehavior.Strict);
+        protected readonly Mock<IDiscordClientAccessor> _discordSocketClientAccessorMock = new(MockBehavior.Strict);
         protected readonly Mock<IOptionsMonitor<SanakanConfiguration>> _sanakanConfigurationMock = new(MockBehavior.Strict);
         protected readonly Mock<IUserRepository> _userRepositoryMock = new(MockBehavior.Strict);
         protected readonly Mock<ITransferAnalyticsRepository> _transferAnalyticsRepositoryMock = new(MockBehavior.Strict);

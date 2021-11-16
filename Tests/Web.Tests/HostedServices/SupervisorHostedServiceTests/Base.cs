@@ -11,13 +11,13 @@ using Sanakan.DiscordBot.Supervisor;
 using Sanakan.Web.HostedService;
 using Sanakan.Web.Tests.HostedServices;
 
-namespace Sanakan.Web.Test.HostedServices.SupervisorHostedServiceTests
+namespace Sanakan.Web.Tests.HostedServices.SupervisorHostedServiceTests
 {
     [TestClass]
     public abstract class Base
     {
         protected readonly SupervisorHostedService _service;
-        protected readonly Mock<IDiscordSocketClientAccessor> _discordSocketClientAccessorMock = new(MockBehavior.Strict);
+        protected readonly Mock<IDiscordClientAccessor> _discordSocketClientAccessorMock = new(MockBehavior.Strict);
         protected readonly Mock<IOptionsMonitor<DaemonsConfiguration>> _daemonsConfigurationMock = new(MockBehavior.Strict);
         protected readonly Mock<IOptionsMonitor<DiscordConfiguration>> _discordConfigurationMock = new(MockBehavior.Strict);
         protected readonly Mock<ISystemClock> _systemClockMock = new(MockBehavior.Strict);

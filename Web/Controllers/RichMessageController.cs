@@ -27,12 +27,12 @@ namespace Sanakan.Web.Controllers
     public class RichMessageController : ControllerBase
     {
         private readonly ISystemClock _systemClock;
-        private readonly IDiscordSocketClientAccessor _client;
+        private readonly IDiscordClientAccessor _client;
         private readonly IOptionsMonitor<SanakanConfiguration> _config;
 
         public RichMessageController(
             ISystemClock systemClock,
-            IDiscordSocketClientAccessor client,
+            IDiscordClientAccessor client,
             IOptionsMonitor<SanakanConfiguration> config)
         {
             _systemClock = systemClock;
@@ -58,14 +58,14 @@ namespace Sanakan.Web.Controllers
 
             foreach (var richMessageConfig in config.RMConfig)
             {
-                var guild = client.GetGuild(richMessageConfig.GuildId);
+                var guild = await client.GetGuildAsync(richMessageConfig.GuildId);
 
                 if (guild == null)
                 {
                     continue;
                 }
 
-                var channel = guild.GetTextChannel(richMessageConfig.ChannelId);
+                var channel = await guild.GetTextChannelAsync(richMessageConfig.ChannelId);
 
                 if (channel == null)
                 {
@@ -109,16 +109,16 @@ namespace Sanakan.Web.Controllers
                 return ShindenInternalServerError("Cannot access discord client.");
             }
 
-            foreach (var rmc in config.RMConfig)
+            foreach (var richMessageConfig in config.RMConfig)
             {
-                var guild = client.GetGuild(rmc.GuildId);
+                var guild = await client.GetGuildAsync(richMessageConfig.GuildId);
 
                 if (guild == null)
                 {
                     continue;
                 }
 
-                var channel = guild.GetTextChannel(rmc.ChannelId);
+                var channel = await guild.GetTextChannelAsync(richMessageConfig.ChannelId);
 
                 if (channel == null)
                 {
@@ -176,7 +176,7 @@ namespace Sanakan.Web.Controllers
             {
                 if (richMessageConfig.Type == RichMessageType.UserNotify)
                 {
-                    var user = client.GetUser(richMessageConfig.ChannelId);
+                    var user = await client.GetUserAsync(richMessageConfig.ChannelId);
                     if (user == null)
                     {
                         continue;
@@ -189,14 +189,14 @@ namespace Sanakan.Web.Controllers
                     continue;
                 }
 
-                var guild = client.GetGuild(richMessageConfig.GuildId);
+                var guild = await client.GetGuildAsync(richMessageConfig.GuildId);
                 
                 if (guild == null)
                 {
                     continue;
                 }
 
-                var channel = guild.GetTextChannel(richMessageConfig.ChannelId);
+                var channel = await guild.GetTextChannelAsync(richMessageConfig.ChannelId);
 
                 if (channel == null)
                 {

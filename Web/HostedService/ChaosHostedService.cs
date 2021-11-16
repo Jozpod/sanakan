@@ -25,7 +25,7 @@ namespace Sanakan.Web.HostedService
     {
         private readonly ILogger _logger;
         private readonly ISystemClock _systemClock;
-        private readonly IDiscordSocketClientAccessor _discordSocketClientAccessor;
+        private readonly IDiscordClientAccessor _discordSocketClientAccessor;
         private readonly IOptionsMonitor<DiscordConfiguration> _discordConfiguration;
         private readonly IOptionsMonitor<DaemonsConfiguration> _daemonsConfiguration;
         private readonly IServiceScopeFactory _serviceScopeFactory;
@@ -40,7 +40,7 @@ namespace Sanakan.Web.HostedService
             ISystemClock systemClock,
             IOptionsMonitor<DiscordConfiguration> discordConfiguration,
             IOptionsMonitor<DaemonsConfiguration> daemonsConfiguration,
-            IDiscordSocketClientAccessor discordSocketClientAccessor,
+            IDiscordClientAccessor discordSocketClientAccessor,
             IServiceScopeFactory serviceScopeFactory,
             IRandomNumberGenerator randomNumberGenerator,
             ITimer timer,
@@ -138,8 +138,8 @@ namespace Sanakan.Web.HostedService
                 return;
             }
 
-            var notChangedUsers = (await sourceUser.Guild
-                .GetUsersAsync())
+            var guild = sourceUser.Guild;
+            var notChangedUsers = (await guild.GetUsersAsync())
                 .Where(x => !x.IsBot
                     && x.Id != sourceUser.Id
                     && !_usersWithSwappedNicknames.Any(c => c == x.Id))

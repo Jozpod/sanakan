@@ -25,7 +25,7 @@ namespace Sanakan.Web.HostedService
     {
         private readonly ILogger _logger;
         private readonly ISystemClock _systemClock;
-        private readonly IDiscordSocketClientAccessor _discordSocketClientAccessor;
+        private readonly IDiscordClientAccessor _discordSocketClientAccessor;
         private readonly IOptionsMonitor<DaemonsConfiguration> _options;
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly ITimer _timer;
@@ -34,7 +34,7 @@ namespace Sanakan.Web.HostedService
         public ProfileHostedService(
             ILogger<ProfileHostedService> logger,
             ISystemClock systemClock,
-            IDiscordSocketClientAccessor discordSocketClientAccessor,
+            IDiscordClientAccessor discordSocketClientAccessor,
             IOptionsMonitor<DaemonsConfiguration> options,
             IServiceScopeFactory serviceScopeFactory,
             ITimer timer,
@@ -90,7 +90,8 @@ namespace Sanakan.Web.HostedService
                     continue;
                 }
 
-                var guild = client.GetGuild(timeStatus.GuildId.Value);
+                var guild = await client.GetGuildAsync(timeStatus.GuildId.Value);
+
                 switch (timeStatus.Type)
                 {
                     case StatusType.Globals:
@@ -99,7 +100,8 @@ namespace Sanakan.Web.HostedService
                         break;
 
                     case StatusType.Color:
-                        await RomoveUserColorAsync(guild.GetUser(timeStatus.UserId));
+                        var user = await guild.GetUserAsync(timeStatus.UserId);
+                        await RomoveUserColorAsync(user);
                         break;
 
                     default:
@@ -108,7 +110,7 @@ namespace Sanakan.Web.HostedService
             }
         }
 
-        public async Task RomoveUserColorAsync(SocketGuildUser user)
+        public async Task RomoveUserColorAsync(IGuildUser user)
         {
             if (user == null)
             {
@@ -116,20 +118,28 @@ namespace Sanakan.Web.HostedService
             }
 
             var colors = FColorExtensions.FColors;
+            var guild = user.Guild;
+
             foreach (uint color in colors)
             {
-                var socketRole = user.Roles.FirstOrDefault(x => x.Name == color.ToString());
-                if (socketRole == null)
+                var role = guild.Roles
+                   .Join(user.RoleIds, pr => pr.Id, pr => pr, (src, dst) => src)
+                   .FirstOrDefault(x => x.Name == color.ToString());
+
+                if (role == null)
                 {
                     continue;
                 }
 
-                if (socketRole.Members.Count() == 1)
+                var members = (await guild.GetUsersAsync()).Where(x => x.RoleIds.Any(id => id == role.Id));
+
+                if (members.Count() == 1)
                 {
-                    await socketRole.DeleteAsync();
+                    await role.DeleteAsync();
                     return;
                 }
-                await user.RemoveRoleAsync(socketRole);
+
+                await user.RemoveRoleAsync(role);
             }
         }
 

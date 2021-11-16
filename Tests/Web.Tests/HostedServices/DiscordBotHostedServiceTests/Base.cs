@@ -12,7 +12,7 @@ using Sanakan.DiscordBot;
 using Sanakan.TaskQueue;
 using Sanakan.Web.HostedService;
 
-namespace Sanakan.Web.Test.HostedServices.DiscordBotHostedServiceTests
+namespace Sanakan.Web.Tests.HostedServices.DiscordBotHostedServiceTests
 {
     [TestClass]
     public abstract class Base
@@ -20,7 +20,7 @@ namespace Sanakan.Web.Test.HostedServices.DiscordBotHostedServiceTests
         protected readonly DiscordBotHostedService _service;
         protected readonly Mock<IFileSystem> _fileSystemMock = new(MockBehavior.Strict);
         protected readonly Mock<IBlockingPriorityQueue> _blockingPriorityQueueMock = new(MockBehavior.Strict);
-        protected readonly Mock<IDiscordSocketClientAccessor> _discordSocketClientAccessorMock = new(MockBehavior.Strict);
+        protected readonly Mock<IDiscordClientAccessor> _discordSocketClientAccessorMock = new(MockBehavior.Strict);
         protected readonly Mock<IOptionsMonitor<DiscordConfiguration>> _discordConfigurationMock = new(MockBehavior.Strict);
         protected readonly Mock<IOptionsMonitor<ExperienceConfiguration>> _experienceConfigurationMock = new(MockBehavior.Strict);
         protected readonly Mock<ISystemClock> _systemClockMock = new(MockBehavior.Strict);

@@ -10,14 +10,9 @@ namespace Sanakan.Extensions
 {
     public static class QuestionExtension
     {
-        private static IDictionary<int, Discord.IEmote> NumberEmoteMap = new Dictionary<int, Discord.IEmote>
+        private static Discord.IEmote GetEmote(int index)
         {
-            { 0, Emojis.Zero },
-        };
-
-        private static Discord.IEmote GetEmote(int i)
-        {
-            switch (i)
+            switch (index)
             {
                 case 0:
                     return Emojis.Zero;
@@ -42,18 +37,20 @@ namespace Sanakan.Extensions
             };
         }
 
-        public static Discord.IEmote[] GetEmotes(this Question q)
+        public static Discord.IEmote[] GetEmotes(this Question question)
         {
-            List<Discord.IEmote> emo = new List<Discord.IEmote>();
+            var count = question.Answers.Count;
+            var emotes = new Discord.IEmote[count];
+            var answers = question.Answers;
 
-            foreach (var qu in q.Answers)
+            for (var index = 0; index < count; index++)
             {
-                emo.Add(GetEmote(qu.Number));
+                emotes[index] = GetEmote(answers[index].Number);
             }
 
-            return emo.ToArray();
+            return emotes.ToArray();
         }
 
-        public static Discord.IEmote GetRightEmote(this Question q) => GetEmote(q.Answer);
+        public static Discord.IEmote GetRightEmote(this Question question) => GetEmote(question.Answer);
     }
 }

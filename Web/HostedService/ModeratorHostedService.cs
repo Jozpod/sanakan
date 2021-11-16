@@ -17,6 +17,7 @@ using Sanakan.DiscordBot;
 using Discord.WebSocket;
 using System.Collections.Generic;
 using Sanakan.Common.Cache;
+using Discord;
 
 namespace Sanakan.Web.HostedService
 {
@@ -24,7 +25,7 @@ namespace Sanakan.Web.HostedService
     {
         private readonly ILogger _logger;
         private readonly ISystemClock _systemClock;
-        private readonly IDiscordSocketClientAccessor _discordSocketClientAccessor;
+        private readonly IDiscordClientAccessor _discordSocketClientAccessor;
         private readonly IOptionsMonitor<DaemonsConfiguration> _options;
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly ITimer _timer;
@@ -34,7 +35,7 @@ namespace Sanakan.Web.HostedService
         public ModeratorHostedService(
             ILogger<ModeratorHostedService> logger,
             ISystemClock systemClock,
-            IDiscordSocketClientAccessor discordSocketClientAccessor,
+            IDiscordClientAccessor discordSocketClientAccessor,
             IOptionsMonitor<DaemonsConfiguration> options,
             IServiceScopeFactory serviceScopeFactory,
             ITimer timer,
@@ -77,14 +78,14 @@ namespace Sanakan.Web.HostedService
 
             foreach (var penalty in await penaltyInfoRepository.GetCachedFullPenalties())
             {
-                var guild = _discordSocketClientAccessor.Client.GetGuild(penalty.GuildId);
+                var guild = await _discordSocketClientAccessor.Client.GetGuildAsync(penalty.GuildId);
 
                 if (guild == null)
                 {
                     continue;
                 }
 
-                var user = guild.GetUser(penalty.UserId);
+                var user = await guild.GetUserAsync(penalty.UserId);
 
                 if (user == null)
                 {
@@ -126,62 +127,84 @@ namespace Sanakan.Web.HostedService
             }
         }
 
-        private async Task UnmuteUserGuildAsync(SocketGuildUser user, SocketRole muteRole, SocketRole muteModRole, IEnumerable<OwnedRole> roles)
+        private async Task UnmuteUserGuildAsync(
+            IGuildUser user,
+            IRole muteRole,
+            IRole muteModRole,
+            IEnumerable<OwnedRole> ownerRoles)
         {
             if (muteRole != null)
             {
-                if (user.Roles.Contains(muteRole))
+                if (user.RoleIds.Contains(muteRole.Id))
+                {
                     await user.RemoveRoleAsync(muteRole);
+                }
             }
 
             if (muteModRole != null)
             {
-                if (user.Roles.Contains(muteModRole))
+                if (user.RoleIds.Contains(muteModRole.Id))
+                {
                     await user.RemoveRoleAsync(muteModRole);
+                }
             }
 
-            if (roles != null)
+            if (ownerRoles != null)
             {
-                foreach (var role in roles)
+                foreach (var ownerRole in ownerRoles)
                 {
-                    var r = user.Guild.GetRole(role.RoleId);
+                    var role = user.Guild.GetRole(ownerRole.RoleId);
 
-                    if (r != null)
-                        if (!user.Roles.Contains(r))
-                        {
-                            await user.AddRoleAsync(r);
-                        }
+                    if (role == null)
+                    {
+                        continue;
+                    }
+
+                    if (!user.RoleIds.Contains(role.Id))
+                    {
+                        await user.AddRoleAsync(role.Id);
+                    }
                 }
             }
         }
 
         private async Task MuteUserGuildAsync(
-            SocketGuildUser user,
-            SocketRole muteRole,
-            IEnumerable<OwnedRole> roles,
-            SocketRole? modMuteRole = null)
+            IGuildUser user,
+            IRole muteRole,
+            IEnumerable<OwnedRole> ownerRoles,
+            IRole? modMuteRole = null)
         {
             if (muteRole != null)
             {
-                if (!user.Roles.Contains(muteRole))
+                if (!user.RoleIds.Contains(muteRole.Id))
+                {
                     await user.AddRoleAsync(muteRole);
+                }
             }
 
             if (modMuteRole != null)
             {
-                if (!user.Roles.Contains(modMuteRole))
+                if (!user.RoleIds.Contains(modMuteRole.Id))
+                {
                     await user.AddRoleAsync(modMuteRole);
+                }
             }
 
-            if (roles != null)
+            if (ownerRoles != null)
             {
-                foreach (var role in roles)
+                foreach (var ownerRole in ownerRoles)
                 {
-                    var r = user.Guild.GetRole(role.RoleId);
+                    var role = user.Guild.GetRole(ownerRole.RoleId);
 
-                    if (r != null)
-                        if (user.Roles.Contains(r))
-                            await user.RemoveRoleAsync(r);
+                    if (role == null)
+                    {
+                        continue;
+                    }
+
+                    if (!user.RoleIds.Contains(role.Id))
+                    {
+                        await user.AddRoleAsync(role.Id);
+                    }
                 }
             }
         }

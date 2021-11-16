@@ -9,6 +9,11 @@ namespace Sanakan.Common.Configuration
         /// <summary>
         /// The list of API keys.
         /// </summary>
+        public JwtConfiguration Jwt { get; set; } = new();
+
+        /// <summary>
+        /// The list of API keys.
+        /// </summary>
         public List<SanakanApiKey> ApiKeys { get; set; } = new();
 
         /// <summary>

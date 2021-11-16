@@ -448,23 +448,23 @@ namespace Sanakan.DiscordBot.Modules
             var riddle = riddles.FirstOrDefault();
 
             riddle.RandomizeAnswers(_randomNumberGenerator);
-            var msg = await ReplyAsync(riddle.Get());
-            await msg.AddReactionsAsync(riddle.GetEmotes());
+            var message = await ReplyAsync(riddle.Get());
+            await message.AddReactionsAsync(riddle.GetEmotes());
 
             await _taskManager.Delay(TimeSpan.FromMilliseconds(15000));
 
             int answers = 0;
-            var react = await msg.GetReactionUsersAsync(riddle.GetRightEmote(), 100).FlattenAsync();
+            var react = await message.GetReactionUsersAsync(riddle.GetRightEmote(), 100).FlattenAsync();
             foreach (var addR in riddle.GetEmotes())
             {
-                var re = await msg.GetReactionUsersAsync(addR, 100).FlattenAsync();
+                var re = await message.GetReactionUsersAsync(addR, 100).FlattenAsync();
                 if (re.Any(x => x.Id == Context.User.Id))
                 {
                     answers++;
                 }
             }
 
-            await msg.RemoveAllReactionsAsync();
+            await message.RemoveAllReactionsAsync();
 
             if (react.Any(x => x.Id == Context.User.Id) && answers < 2)
             {

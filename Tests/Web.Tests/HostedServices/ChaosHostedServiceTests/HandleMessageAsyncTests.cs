@@ -1,4 +1,5 @@
-﻿using FluentAssertions;
+﻿using Discord.Commands;
+using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -13,18 +14,16 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Sanakan.Web.Tests.Controllers.RichMessageControllerTests
+namespace Sanakan.Web.Tests.HostedServices.ChaosHostedServiceTests
 {
     [TestClass]
-    public class DeleteRichMessageAsyncTest : Base
+    public class HandleMessageAsyncTests : Base
     {
+
         [TestMethod]
-        public async Task Should_Return_Question()
+        public async Task Should_Swap_User_Nicknames()
         {
-            var messageId = 1ul;
-            var result = await _controller.DeleteRichMessageAsync(messageId);
-            var okObjectResult = result.Should().BeOfType<ObjectResult>().Subject;
-            okObjectResult.Value.Should().NotBeNull();
+            _discordSocketClientAccessorMock.Raise(pr => pr.LoggedIn += null);
         }
     }
 }

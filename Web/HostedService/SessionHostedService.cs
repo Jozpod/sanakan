@@ -19,6 +19,7 @@ using Discord;
 using System.Linq;
 using Discord.Commands;
 using Sanakan.DiscordBot.Session;
+using Sanakan.DiscordBot.Abstractions.Extensions;
 
 namespace Sanakan.Web.HostedService
 {
@@ -26,7 +27,7 @@ namespace Sanakan.Web.HostedService
     {
         private readonly ILogger _logger;
         private readonly ISystemClock _systemClock;
-        private readonly IDiscordSocketClientAccessor _discordSocketClientAccessor;
+        private readonly IDiscordClientAccessor _discordSocketClientAccessor;
         private readonly IOptionsMonitor<DaemonsConfiguration> _options;
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly ITimer _timer;
@@ -38,7 +39,7 @@ namespace Sanakan.Web.HostedService
             ILogger<SessionHostedService> logger,
             IOptionsMonitor<DaemonsConfiguration> options,
             ISystemClock systemClock,
-            IDiscordSocketClientAccessor discordSocketClientAccessor,
+            IDiscordClientAccessor discordSocketClientAccessor,
             IServiceScopeFactory serviceScopeFactory,
             ISessionManager sessionManager,
             ITaskManager taskManager,
@@ -52,15 +53,14 @@ namespace Sanakan.Web.HostedService
             _timer = timer;
             _sessionManager = sessionManager;
             _taskManager = taskManager;
-            _discordSocketClientAccessor.Initialized += Initialized;
+            _discordSocketClientAccessor.LoggedIn += LoggedIn;
         }
 
-        private Task Initialized()
+        private Task LoggedIn()
         {
-            var client = _discordSocketClientAccessor.Client;
-            client.MessageReceived += HandleMessageAsync;
-            client.ReactionAdded += HandleReactionAddedAsync;
-            client.ReactionRemoved += HandleReactionRemovedAsync;
+            _discordSocketClientAccessor.MessageReceived += HandleMessageAsync;
+            _discordSocketClientAccessor.ReactionAdded += HandleReactionAddedAsync;
+            _discordSocketClientAccessor.ReactionRemoved += HandleReactionRemovedAsync;
             return Task.CompletedTask;
         }
 
@@ -95,9 +95,9 @@ namespace Sanakan.Web.HostedService
             }
         }
 
-        private async Task HandleMessageAsync(SocketMessage message)
+        private async Task HandleMessageAsync(IMessage message)
         {
-            var userMessage = message as SocketUserMessage;
+            var userMessage = message as IUserMessage;
 
             if (userMessage == null)
             {
@@ -131,21 +131,29 @@ namespace Sanakan.Web.HostedService
 
         private async Task HandleReactionAddedAsync(
             Cacheable<IUserMessage, ulong> userMessage,
-            ISocketMessageChannel channel,
-            SocketReaction reaction)
+            IMessageChannel channel,
+            IReaction reaction)
         {
-            if (!reaction.User.IsSpecified)
-            {
-                return;
-            }
-            var user = reaction.User.Value;
+            var userId = reaction.GetUserId();
 
-            if (user.IsBot || user.IsWebhook)
+            if (!userId.HasValue)
             {
                 return;
             }
 
-            var userSessions = _sessionManager.GetByOwnerId(user.Id, SessionExecuteCondition.ReactionAdded);
+            var reactionUser = await channel.GetUserAsync(userId.Value);
+
+            if (reactionUser == null)
+            {
+                return;
+            }
+
+            if (reactionUser.IsBot || reactionUser.IsWebhook)
+            {
+                return;
+            }
+
+            var userSessions = _sessionManager.GetByOwnerId(userId.Value, SessionExecuteCondition.ReactionAdded);
 
             if (!userSessions.Any())
             {
@@ -153,7 +161,7 @@ namespace Sanakan.Web.HostedService
             }
 
             var client = _discordSocketClientAccessor.Client;
-            var socketUser = client.GetUser(user.Id);
+            var socketUser = await client.GetUserAsync(userId.Value);
             if (socketUser == null)
             {
                 return;
@@ -165,7 +173,7 @@ namespace Sanakan.Web.HostedService
                 return;
             }
 
-            var socketUserMessage = message as SocketUserMessage;
+            var socketUserMessage = message as IUserMessage;
             
             if (socketUserMessage == null)
             {
@@ -186,21 +194,29 @@ namespace Sanakan.Web.HostedService
 
         private async Task HandleReactionRemovedAsync(
             Cacheable<IUserMessage, ulong> userMessage,
-            ISocketMessageChannel channel,
-            SocketReaction reaction)
+            IMessageChannel channel,
+            IReaction reaction)
         {
-            if (!reaction.User.IsSpecified)
-            {
-                return;
-            }
-            var user = reaction.User.Value;
+            var userId = reaction.GetUserId();
 
-            if (user.IsBot || user.IsWebhook)
+            if (!userId.HasValue)
             {
                 return;
             }
 
-            var userSessions = _sessionManager.GetByOwnerId(user.Id, SessionExecuteCondition.ReactionRemoved);
+            var reactionUser = await channel.GetUserAsync(userId.Value);
+
+            if (reactionUser == null)
+            {
+                return;
+            }
+
+            if (reactionUser.IsBot || reactionUser.IsWebhook)
+            {
+                return;
+            }
+
+            var userSessions = _sessionManager.GetByOwnerId(userId.Value, SessionExecuteCondition.ReactionRemoved);
 
             if (!userSessions.Any())
             {
@@ -208,7 +224,7 @@ namespace Sanakan.Web.HostedService
             }
 
             var client = _discordSocketClientAccessor.Client;
-            var socketUser = client.GetUser(user.Id);
+            var socketUser = await client.GetUserAsync(userId.Value);
             if (socketUser == null)
             {
                 return;
@@ -220,7 +236,7 @@ namespace Sanakan.Web.HostedService
                 return;
             }
 
-            var socketUserMessage = message as SocketUserMessage;
+            var socketUserMessage = message as IUserMessage;
 
             if (socketUserMessage == null)
             {

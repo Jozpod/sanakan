@@ -9,8 +9,8 @@ namespace Sanakan.DiscordBot.Session
     public enum ExchangeStatus
     {
         Add,
-        AcceptP1,
-        AcceptP2,
+        AcceptSourcePlayer,
+        AcceptDestinationPlayer,
         End
     }
 }

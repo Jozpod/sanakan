@@ -68,6 +68,8 @@ dotnet run
 | **[`SafariEnabled`](#SafariEnabled)** | `{Boolean}`  | `true` | If enabled it allows generating cards from user messages. |
 | **[`AllowedToDebug`](#AllowedToDebug)** | `{Array}` | `[]` | The list of Discord user identifiers which can access diagnostics. |
 | **[`BlacklistedGuilds`](#BlacklistedGuilds)** | `{Array}` | `[]` | The list of Discord guild ( servers ) identifiers to blacklist. |
+| **[`AlwaysDownloadUsers`](#AlwaysDownloadUsers)** | `{Boolean}` | `true` | Specifies whether or not all users should be downloaded as guilds come available. |
+| **[`MessageCacheSize`](#MessageCacheSize)** | `{Number}` | `200` | The number of messages per channel that should be kept in cache.. |
 
 ### Supervisor
 |                   Name                    |         Type         |                 Default                 | Description                                                       |

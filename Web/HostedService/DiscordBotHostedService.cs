@@ -30,7 +30,7 @@ namespace Sanakan.Web.HostedService
     public class DiscordBotHostedService : BackgroundService
     {
         private readonly IBlockingPriorityQueue _blockingPriorityQueue;
-        private readonly IDiscordSocketClientAccessor _discordSocketClientAccessor;
+        private readonly IDiscordClientAccessor _discordSocketClientAccessor;
         private readonly ICommandHandler _commandHandler;
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
@@ -57,7 +57,7 @@ namespace Sanakan.Web.HostedService
             IBlockingPriorityQueue blockingPriorityQueue,
             ILogger<DiscordBotHostedService> logger,
             IServiceScopeFactory serviceScopeFactory,
-            IDiscordSocketClientAccessor discordSocketClientAccessor,
+            IDiscordClientAccessor discordSocketClientAccessor,
             IOptionsMonitor<DiscordConfiguration> discordConfiguration,
             IOptionsMonitor<ExperienceConfiguration> experienceConfiguration,
             ISystemClock systemClock,

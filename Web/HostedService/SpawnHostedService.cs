@@ -34,7 +34,7 @@ namespace Sanakan.Web.HostedService
     {
         private readonly ILogger _logger;
         private readonly ISystemClock _systemClock;
-        private readonly IDiscordSocketClientAccessor _discordSocketClientAccessor;
+        private readonly IDiscordClientAccessor _discordSocketClientAccessor;
         private readonly IOptionsMonitor<DiscordConfiguration> _discordConfiguration;
         private readonly IOptionsMonitor<ExperienceConfiguration> _experienceConfiguration;
         private readonly IServiceScopeFactory _serviceScopeFactory;
@@ -54,7 +54,7 @@ namespace Sanakan.Web.HostedService
             ILogger<SpawnHostedService> logger,
             IOptionsMonitor<DiscordConfiguration> discordConfiguration,
             IOptionsMonitor<ExperienceConfiguration> experienceConfiguration,
-            IDiscordSocketClientAccessor discordSocketClientAccessor,
+            IDiscordClientAccessor discordSocketClientAccessor,
             ISystemClock systemClock,
             IServiceScopeFactory serviceScopeFactory,
             ITaskManager taskManager,
@@ -72,7 +72,7 @@ namespace Sanakan.Web.HostedService
             _taskManager = taskManager;
             _waifuService = waifuService;
             _timer = timer;
-            _discordSocketClientAccessor.Initialized += OnInitialized;
+            _discordSocketClientAccessor.LoggedIn += LoggedIn;
 
             ServerCounter = new Dictionary<ulong, Entry>();
             UserCounter = new Dictionary<ulong, ulong>();
@@ -84,9 +84,9 @@ namespace Sanakan.Web.HostedService
             public DateTime ResetOn { get; set; }
         }
 
-        private Task OnInitialized()
+        private Task LoggedIn()
         {
-            _discordSocketClientAccessor.Client.MessageReceived += HandleMessageAsync;
+            _discordSocketClientAccessor.MessageReceived += HandleMessageAsync;
             return Task.CompletedTask;
         }
 

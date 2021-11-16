@@ -18,7 +18,7 @@ namespace Sanakan.DAL.Models
         public string Content { get; set; } = string.Empty;
         public TimeSpan TimeToAnswer { get; set; }
 
-        public virtual ICollection<Answer> Answers { get; set; }
+        public virtual IList<Answer> Answers { get; set; }
 
         public bool CheckAnswer(int ans) => Answer == ans;
 

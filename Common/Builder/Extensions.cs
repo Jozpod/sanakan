@@ -41,7 +41,6 @@ namespace Sanakan.Common.Builder
         {
             services.AddSingleton<IFileSystem, FileSystem>();
             services.AddSingleton<IFileSystemWatcherFactory, FileSystemWatcherFactory>();
-            services.AddSingleton<IFileSystemWatcher, FileSystemWatcher>();
             return services;
         }
 
