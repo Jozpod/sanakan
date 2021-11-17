@@ -29,7 +29,7 @@ namespace Sanakan.TaskQueue.MessageHandlers
 
         public async Task HandleAsync(UpdateCardMessage message)
         {
-            var userRelease = new List<string>() { "users" };
+            var userRelease = new List<string>() { CacheKeys.Users };
             var cards = await _cardRepository.GetCardsByCharacterIdAsync(message.CharacterId);
 
             foreach (var card in cards)

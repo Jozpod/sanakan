@@ -16,8 +16,12 @@ namespace Sanakan.DAL.Models
 
         public ulong Id { get; set; }
         public StatusType Type { get; set; }
-        public DateTime? EndsAt { get; set; }
+        public DateTime? EndsOn { get; set; }
 
+        /// <summary>
+        /// The value might indicate:
+        /// The acquired daily card bundles before <see cref="EndsOn"/>.
+        /// </summary>
         public ulong IValue { get; set; }
         public bool BValue { get; set; }
 
@@ -31,7 +35,7 @@ namespace Sanakan.DAL.Models
         {
             IValue = 0;
             BValue = false;
-            EndsAt = null;
+            EndsOn = null;
         }
 
         public bool IsClaimed(DateTime dateTime)
@@ -41,7 +45,7 @@ namespace Sanakan.DAL.Models
             => IsActive(dateTime) && !BValue
             && Type.IsQuest() && IValue >= (uint)Type.ToComplete();
 
-        public TimeSpan RemainingTime(DateTime currentTime) => EndsAt.Value - currentTime;
+        public TimeSpan RemainingTime(DateTime currentTime) => EndsOn.Value - currentTime;
 
         public void Count(DateTime currentDate, uint times = 1)
         {
@@ -62,12 +66,12 @@ namespace Sanakan.DAL.Models
 
                 if (Type.IsDailyQuestType())
                 {
-                    EndsAt = currentDate.Date.AddDays(1);
+                    EndsOn = currentDate.Date.AddDays(1);
                 }
 
                 if (Type.IsWeeklyQuestType())
                 {
-                    EndsAt = currentDate.Date.AddDays(7 - (int)currentDate.DayOfWeek);
+                    EndsOn = currentDate.Date.AddDays(7 - (int)currentDate.DayOfWeek);
                 }
             }
 
@@ -121,6 +125,6 @@ namespace Sanakan.DAL.Models
             }
         }
 
-        public bool IsActive(DateTime dateTime) => EndsAt.HasValue && EndsAt.Value < dateTime;
+        public bool IsActive(DateTime dateTime) => EndsOn.HasValue && EndsOn.Value < dateTime;
     }
 }

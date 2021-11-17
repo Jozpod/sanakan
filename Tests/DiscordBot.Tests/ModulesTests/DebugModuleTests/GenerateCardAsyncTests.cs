@@ -8,6 +8,7 @@ using System;
 using Moq;
 using Sanakan.ShindenApi.Models;
 using Sanakan.DAL.Models;
+using System.Threading;
 
 namespace DiscordBot.ModulesTests.DebugModuleTests
 {
@@ -57,7 +58,7 @@ namespace DiscordBot.ModulesTests.DebugModuleTests
                 .ReturnsAsync(characterInfo);
 
             _waifuServiceMock
-                .Setup(pr => pr.GenerateNewCard(discordUser, characterInfo))
+                .Setup(pr => pr.GenerateNewCard(discordUser.Id, characterInfo))
                 .Returns(card);
 
             _userRepositoryMock
@@ -65,7 +66,7 @@ namespace DiscordBot.ModulesTests.DebugModuleTests
                 .ReturnsAsync(user);
 
             _userRepositoryMock
-                .Setup(pr => pr.SaveChangesAsync())
+                .Setup(pr => pr.SaveChangesAsync(It.IsAny<CancellationToken>()))
                 .Returns(Task.CompletedTask);
 
             _cacheManagerMock

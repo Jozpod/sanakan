@@ -18,23 +18,26 @@ namespace Sanakan.TaskQueue.MessageHandlers
 {
     internal class AddExperienceMessageHandler : IMessageHandler<AddExperienceMessage>
     {
-        private const double DefaultLevelMultiplier = 0.35;
         private readonly ISystemClock _systemClock;
         private readonly IImageProcessor _imageProcessor;
         private readonly IUserRepository _userRepository;
         private readonly IGuildConfigRepository _guildConfigRepository;
         private readonly IUserAnalyticsRepository _userAnalyticsRepository;
+        private readonly TimeSpan _oneMonth;
 
         public AddExperienceMessageHandler(
             ISystemClock systemClock,
+            IImageProcessor imageProcessor,
             IUserRepository userRepository,
             IGuildConfigRepository guildConfigRepository,
             IUserAnalyticsRepository userAnalyticsRepository)
         {
+            _imageProcessor = imageProcessor;
             _systemClock = systemClock;
             _userRepository = userRepository;
             _guildConfigRepository = guildConfigRepository;
             _userAnalyticsRepository = userAnalyticsRepository;
+            _oneMonth = TimeSpan.FromDays(30);
         }
 
         public async Task HandleAsync(AddExperienceMessage message)
@@ -44,16 +47,17 @@ namespace Sanakan.TaskQueue.MessageHandlers
             var channel = message.Channel;
 
             var user = await _userRepository.GetUserOrCreateAsync(message.DiscordUserId);
+
             if (user == null)
             {
                 return;
             }
 
-            var totalSeconds = (_systemClock.UtcNow - user.MeasureDate.AddMonths(1)).TotalSeconds;
+            var lastMeasure = _systemClock.UtcNow - user.MeasuredOn;
 
-            if (totalSeconds > 1)
+            if (lastMeasure > _oneMonth)
             {
-                user.MeasureDate = _systemClock.StartOfMonth;
+                user.MeasuredOn = _systemClock.StartOfMonth;
                 user.MessagesCountAtDate = user.MessagesCount;
                 user.CharacterCountFromDate = characterCount;
             }
@@ -62,7 +66,7 @@ namespace Sanakan.TaskQueue.MessageHandlers
                 user.CharacterCountFromDate += characterCount;
             }
 
-            var experience = CheckFloodAndReturnExp(message.Experience, user);
+            var experience = CheckFloodAndReturnExperience(message.Experience, user);
             if (experience < 1)
             {
                 experience = 1;
@@ -86,7 +90,6 @@ namespace Sanakan.TaskQueue.MessageHandlers
             if (level != user.Level && message.CalculateExperience)
             {
                 user.Level = level;
-                //await NotifyAboutLevelAsync(discordUser, channel, newLevel);
                 using var badge = await _imageProcessor.GetLevelUpBadgeAsync(
                     username,
                     level,
@@ -144,7 +147,7 @@ namespace Sanakan.TaskQueue.MessageHandlers
             await _userRepository.SaveChangesAsync();
         }
 
-        private ulong CheckFloodAndReturnExp(long experience, User botUser)
+        private ulong CheckFloodAndReturnExperience(long experience, User botUser)
         {
             var timeStatus = botUser
                 .TimeStatuses
@@ -163,7 +166,7 @@ namespace Sanakan.TaskQueue.MessageHandlers
                 timeStatus.IValue = 101;
             }
 
-            timeStatus.EndsAt = utcNow.AddMinutes(10);
+            timeStatus.EndsOn = utcNow.AddMinutes(10);
             if (--timeStatus.IValue < 20)
             {
                 timeStatus.IValue = 20;

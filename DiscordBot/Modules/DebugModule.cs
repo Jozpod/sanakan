@@ -1063,9 +1063,9 @@ namespace Sanakan.DiscordBot.Modules
             }
 
             if (rarity == Rarity.E) {
-                card = _waifuService.GenerateNewCard(user, character);
+                card = _waifuService.GenerateNewCard(user.Id, character);
             } else {
-                card = _waifuService.GenerateNewCard(user, character, rarity);
+                card = _waifuService.GenerateNewCard(user.Id, character, rarity);
             }
 
             card.Source = CardSource.GodIntervention;

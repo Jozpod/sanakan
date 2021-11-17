@@ -20,33 +20,32 @@ namespace Sanakan.TaskQueue.MessageHandlers
     {
         private readonly IRandomNumberGenerator _randomNumberGenerator;
         private readonly IUserRepository _userRepository;
-        private readonly IGuildConfigRepository _guildConfigRepository;
-        private readonly ISystemClock _systemClock;
         private readonly ICacheManager _cacheManager;
 
         public LotteryMessageHandler(
+            IRandomNumberGenerator randomNumberGenerator,
             IUserRepository userRepository,
-            IGuildConfigRepository guildConfigRepository,
-            ISystemClock systemClock,
             ICacheManager cacheManager)
         {
+            _randomNumberGenerator = randomNumberGenerator;
             _userRepository = userRepository;
-            _systemClock = systemClock;
-            _guildConfigRepository = guildConfigRepository;
+            _cacheManager = cacheManager;
         }
 
         public async Task HandleAsync(LotteryMessage message)
         {
             var userMessage = message.UserMessage;
             var user = await _userRepository.GetUserOrCreateAsync(message.DiscordUserId);
+
             if (user == null)
             {
                 await userMessage.ModifyAsync(x => x.Embed = "Nie odnaleziono kart do rozdania!".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
-            var loteryCards = user.GameDeck.Cards.ToList();
-            if (loteryCards.Count < 1)
+            var loteryCards = user.GameDeck.Cards;
+            
+            if (!loteryCards.Any())
             {
                 await userMessage.ModifyAsync(x => x.Embed = "Nie odnaleziono kart do rozdania!".ToEmbedMessage(EMType.Error).Build());
                 return;
@@ -63,30 +62,32 @@ namespace Sanakan.TaskQueue.MessageHandlers
             var cardsIds = new List<string>();
             var idsToSelect = loteryCards.Select(x => x.Id).ToList();
 
-            for (int i = 0; i < message.CardCount; i++)
+            for (var index = 0; index < message.CardCount; index++)
             {
-                if (idsToSelect.Count < 1)
+                if (!idsToSelect.Any())
+                {
                     break;
+                }
 
-                var wid = _randomNumberGenerator.GetOneRandomFrom(idsToSelect);
-                var thisCard = loteryCards.FirstOrDefault(x => x.Id == wid);
+                var waifuId = _randomNumberGenerator.GetOneRandomFrom(idsToSelect);
+                var randomCard = loteryCards.FirstOrDefault(x => x.Id == waifuId);
 
-                cardsIds.Add(thisCard.GetString(false, false, true));
+                cardsIds.Add(randomCard.GetString(false, false, true));
 
-                thisCard.Active = false;
-                thisCard.InCage = false;
-                thisCard.TagList.Clear();
-                thisCard.Expedition = ExpeditionCardType.None;
+                randomCard.Active = false;
+                randomCard.InCage = false;
+                randomCard.TagList.Clear();
+                randomCard.Expedition = ExpeditionCardType.None;
 
-                thisCard.GameDeckId = winnerUser.GameDeck.Id;
+                randomCard.GameDeckId = winnerUser.GameDeck.Id;
 
-                winnerUser.GameDeck.RemoveCharacterFromWishList(thisCard.CharacterId);
-                winnerUser.GameDeck.RemoveCardFromWishList(thisCard.Id);
+                winnerUser.GameDeck.RemoveCharacterFromWishList(randomCard.CharacterId);
+                winnerUser.GameDeck.RemoveCardFromWishList(randomCard.Id);
 
-                idsToSelect.Remove(wid);
+                idsToSelect.Remove(waifuId);
             }
 
-            await _guildConfigRepository.SaveChangesAsync();
+            await _userRepository.SaveChangesAsync();
             await userMessage.DeleteAsync();
 
             _cacheManager.ExpireTag(CacheKeys.User(message.DiscordUserId), CacheKeys.Users, CacheKeys.User(message.InvokingUserId)); 
@@ -101,7 +102,7 @@ namespace Sanakan.TaskQueue.MessageHandlers
 
             try
             {
-                var privEmb = new EmbedBuilder()
+                var privateEmbed = new EmbedBuilder()
                 {
                     Color = EMType.Info.Color(),
                     Description = $"Na [loterii]({jumpUrl}) zdobyłeś {cardsIds.Count} kart."
@@ -111,7 +112,7 @@ namespace Sanakan.TaskQueue.MessageHandlers
 
                 if (dmChannel != null)
                 {
-                    await dmChannel.SendMessageAsync("", embed: privEmb.Build());
+                    await dmChannel.SendMessageAsync("", embed: privateEmbed.Build());
                 }
             }
             catch (Exception) { }

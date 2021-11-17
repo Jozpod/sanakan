@@ -111,7 +111,7 @@ namespace Sanakan.Web.Test.HostedServices
                 .Verifiable();
 
             _systemAnalyticsRepositoryMock
-                .Setup(pr => pr.SaveChangesAsync())
+                .Setup(pr => pr.SaveChangesAsync(It.IsAny<CancellationToken>()))
                 .Returns(Task.CompletedTask)
                 .Verifiable();
 

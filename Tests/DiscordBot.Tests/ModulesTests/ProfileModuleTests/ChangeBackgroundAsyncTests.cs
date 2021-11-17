@@ -9,6 +9,7 @@ using Sanakan.DAL.Models;
 using Moq;
 using DiscordBot.Services;
 using Sanakan.DiscordBot.Services;
+using System.Threading;
 
 namespace DiscordBot.ModulesTests.ProfileModuleTests
 {
@@ -39,7 +40,7 @@ namespace DiscordBot.ModulesTests.ProfileModuleTests
                 .ReturnsAsync(SaveResult.Success);
 
             _userRepositoryMock
-                .Setup(pr => pr.SaveChangesAsync())
+                .Setup(pr => pr.SaveChangesAsync(It.IsAny<CancellationToken>()))
                 .Returns(Task.CompletedTask);
 
             _cacheManagerMock

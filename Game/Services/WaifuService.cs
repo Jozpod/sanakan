@@ -622,7 +622,7 @@ namespace Sanakan.Game.Services
         public static int RandomizeHealth(IRandomNumberGenerator randomNumberGenerator, Card card)
             => randomNumberGenerator.GetRandomValue(card.Rarity.GetHealthMin(), card.GetHealthMax() + 1);
 
-        public Card GenerateNewCard(IUser user, CharacterInfo character, Rarity rarity)
+        public Card GenerateNewCard(ulong? discordUserId, CharacterInfo character, Rarity rarity)
         {
             var date = _systemClock.UtcNow;
             var defence = RandomizeDefence(_randomNumberGenerator, rarity);
@@ -644,9 +644,9 @@ namespace Sanakan.Game.Services
                 dere,
                 date);
 
-            if (user != null)
+            if (discordUserId.HasValue)
             {
-                card.FirstOwnerId = user.Id;
+                card.FirstOwnerId = discordUserId.Value;
             }
 
             var pictureUrl = UrlHelpers.GetPersonPictureURL(character.PictureId.Value);
@@ -664,15 +664,15 @@ namespace Sanakan.Game.Services
             return card;
         }
 
-        public Card GenerateNewCard(IUser user, CharacterInfo character)
-            => GenerateNewCard(user, character, RandomizeRarity(_randomNumberGenerator, Enumerable.Empty<Rarity>()));
+        public Card GenerateNewCard(ulong? discordUserId, CharacterInfo character)
+            => GenerateNewCard(discordUserId, character, RandomizeRarity(_randomNumberGenerator, Enumerable.Empty<Rarity>()));
 
-        public Card GenerateNewCard(IUser user, CharacterInfo character, List<Rarity> rarityExcluded)
-            => GenerateNewCard(user, character, RandomizeRarity(_randomNumberGenerator, rarityExcluded));
+        public Card GenerateNewCard(ulong? discordUserId, CharacterInfo character, List<Rarity> rarityExcluded)
+            => GenerateNewCard(discordUserId, character, RandomizeRarity(_randomNumberGenerator, rarityExcluded));
 
         private int ScaleNumber(int oMin, int oMax, int nMin, int nMax, int value)
         {
-            var m = (double)(nMax - nMin)/(double)(oMax - oMin);
+            var m = (nMax - nMin) / (double)(oMax - oMin);
             var c = (oMin * m) - nMin;
 
             return (int)((m * value) - c);
@@ -1047,7 +1047,7 @@ namespace Sanakan.Game.Services
             }.Build();
         }
 
-        public async Task<List<Card>> OpenBoosterPackAsync(IUser user, BoosterPack pack)
+        public async Task<List<Card>> OpenBoosterPackAsync(ulong? discordUserId, BoosterPack pack)
         {
             var cardsFromPack = new List<Card>();
 
@@ -1103,14 +1103,14 @@ namespace Sanakan.Game.Services
                         .ToList();
 
                     var newCard = GenerateNewCard(
-                        user,
+                        discordUserId,
                         characterInfo,
                         rarityList);
 
                     if (pack.MinRarity != Rarity.E && i == pack.CardCount - 1)
                     {
                         newCard = GenerateNewCard(
-                            user,
+                            discordUserId,
                             characterInfo,
                             pack.MinRarity);
                     }

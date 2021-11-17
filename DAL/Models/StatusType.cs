@@ -14,6 +14,10 @@ namespace Sanakan.DAL.Models
         Color = 3,
         Market = 4,
         Card = 5,
+
+        /// <summary>
+        /// Related to card bundles/packets. 
+        /// </summary>
         Packet = 6,
         Pvp = 7,
         Flood = 16, // normal

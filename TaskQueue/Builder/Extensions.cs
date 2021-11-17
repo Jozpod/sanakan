@@ -13,7 +13,7 @@ namespace Sanakan.TaskQueue.Builder
             services.AddSingleton<IBlockingPriorityQueue, BlockingPriorityQueue>();
             services.AddScoped<IMessageHandler<LotteryMessage>, LotteryMessageHandler>();
             services.AddScoped<IMessageHandler<DeleteUserMessage>, DeleteUserMessageHandler>();
-            services.AddScoped<IMessageHandler<ConnectUserMessage>, ConnectUserMessageMessageHandler>();
+            services.AddScoped<IMessageHandler<ConnectUserMessage>, ConnectUserMessageHandler>();
             services.AddScoped<IMessageHandler<ReplaceCharacterIdsInCardMessage>, ReplaceCharacterIdsInCardMessageHandler>();
             services.AddScoped<IMessageHandler<ToggleCardMessage>, ToggleCardMessageHandler>();
             services.AddScoped<IMessageHandler<SpawnCardBundleMessage>, SpawnCardBundleMessageHandler>();

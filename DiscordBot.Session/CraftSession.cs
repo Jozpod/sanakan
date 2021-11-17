@@ -69,67 +69,70 @@ namespace Sanakan.DiscordBot.Session
 
         private async Task HandleMessageAsync(SessionContext context)
         {
-            if (context.Message.Id == _payload.Message.Id)
-                return;
+            var message = context.Message;
 
-            if (context.Message.Channel.Id != _payload.Message.Channel.Id)
+            if (message.Id == _payload.Message.Id)
+            {
                 return;
+            }
 
-            var command = context.Message?.Content?.ToLower();
+            if (message.Channel.Id != _payload.Message.Channel.Id)
+            {
+                return;
+            }
+
+            var command = message?.Content?.ToLower();
             if (command == null)
             {
                 return;
             }
 
-            var splitedCmd = command.Replace("\n", " ").Split(" ");
-            if (splitedCmd.Length < 2)
+            var splitedCommand = command.Replace("\n", " ").Split(" ");
+            if (splitedCommand.Length < 2)
             {
                 return;
             }
 
-            var commandType = splitedCmd[0];
+            var commandType = splitedCommand[0];
             if (commandType == null)
             {
                 return;
             }
 
-            int itemNum = -1;
-            var itemNr = splitedCmd[1];
+            var itemNumber = 0;
+            var itemNr = splitedCommand[1];
             if (!string.IsNullOrEmpty(itemNr))
             {
-                if (int.TryParse(itemNr, out var num))
-                {
-                    itemNum = num;
-                }
+                int.TryParse(itemNr, out itemNumber);
             }
 
-            int itemCount = 1;
-            if (splitedCmd.Length > 2)
+            var itemCount = 1;
+            if (splitedCommand.Length > 2)
             {
-                var itemCnt = splitedCmd[2];
-                if (!string.IsNullOrEmpty(itemCnt))
+                var newItemCount = splitedCommand[2];
+                if (!string.IsNullOrEmpty(newItemCount))
                 {
-                    if (int.TryParse(itemCnt, out var count))
+                    if (int.TryParse(newItemCount, out var count))
                     {
                         itemCount = count;
                     }
                 }
             }
 
-            if (itemNum < 1)
+            if (itemNumber < 1)
             {
-                await context.Message.AddReactionAsync(Emojis.CrossMark);
+                await message.AddReactionAsync(Emojis.CrossMark);
                 return;
             }
 
             if (commandType.Contains("usuń") || commandType.Contains("usun"))
             {
-                await HandleDeleteAsync(itemNum - 1, itemCount, context.Message);
+                await HandleDeleteAsync(itemNumber - 1, itemCount, message);
                 ResetExpiry();
             }
             else if (commandType.Contains("dodaj"))
             {
-                await HandleAddAsync(itemNum - 1, itemCount, context.Message);
+                await HandleAddAsync(itemNumber - 1, itemCount, message);
                 ResetExpiry();
             }
         }
@@ -142,21 +145,30 @@ namespace Sanakan.DiscordBot.Session
                 return;
             }
 
-            var thisItem = _payload.Items[number];
-            if (thisItem.Count <= count)
+            var firstItem = _payload.Items[number];
+            if (firstItem.Count <= count)
             {
-                count = thisItem.Count;
-                _payload.Items.Remove(thisItem);
+                count = firstItem.Count;
+                _payload.Items.Remove(firstItem);
             }
-            else thisItem.Count -= count;
+            else
+            {
+                firstItem.Count -= count;
+            }
 
-            var thisItem2 = _payload.PlayerInfo.Items.FirstOrDefault(x => x.Type == thisItem.Type && x.Quality == thisItem.Quality);
-            if (thisItem2 == null)
+            var secondItem = _payload.PlayerInfo.Items
+                .FirstOrDefault(x => x.Type == firstItem.Type
+                    && x.Quality == firstItem.Quality);
+
+            if (secondItem == null)
             {
-                thisItem2 = thisItem.Type.ToItem(count, thisItem.Quality);
-                _payload.PlayerInfo.Items.Add(thisItem2);
+                secondItem = firstItem.Type.ToItem(count, firstItem.Quality);
+                _payload.PlayerInfo.Items.Add(secondItem);
             }
-            else thisItem2.Count += count;
+            else
+            {
+                secondItem.Count += count;
+            }
 
             await message.AddReactionAsync(Emojis.InboxTray);
 
@@ -168,35 +180,41 @@ namespace Sanakan.DiscordBot.Session
 
         private async Task HandleDeleteAsync(int number, long count, IUserMessage message)
         {
-            if (number >= _payload.PlayerInfo.Items.Count)
+            var playerItems = _payload.PlayerInfo.Items;
+
+            if (number >= playerItems.Count)
             {
                 await message.AddReactionAsync(Emojis.CrossMark);
                 return;
             }
 
-            var thisItem = _payload.PlayerInfo.Items[number];
-            if (thisItem.Count <= count)
+            var items = _payload.Items;
+            var firstItem = playerItems[number];
+            if (firstItem.Count <= count)
             {
-                count = thisItem.Count;
-                _payload.PlayerInfo.Items.Remove(thisItem);
+                count = firstItem.Count;
+                playerItems.Remove(firstItem);
             }
-            else thisItem.Count -= count;
+            else firstItem.Count -= count;
 
-            var thisItem2 = _payload.Items.FirstOrDefault(x => x.Type == thisItem.Type
-                && x.Quality == thisItem.Quality);
+            var secondItem = items.FirstOrDefault(x => x.Type == firstItem.Type
+                && x.Quality == firstItem.Quality);
 
-            if (thisItem2 == null)
+            if (secondItem == null)
             {
-                thisItem2 = thisItem.Type.ToItem(count, thisItem.Quality);
-                _payload.Items.Add(thisItem2);
+                secondItem = firstItem.Type.ToItem(count, firstItem.Quality);
+                items.Add(secondItem);
             }
-            else thisItem2.Count += count;
+            else
+            {
+                secondItem.Count += count;
+            }
 
             await message.AddReactionAsync(Emojis.OutboxTray);
 
-            if (await _payload.Message.Channel.GetMessageAsync(_payload.Message.Id) is IUserMessage msg)
+            if (await _payload.Message.Channel.GetMessageAsync(_payload.Message.Id) is IUserMessage userMessage)
             {
-                await msg.ModifyAsync(x => x.Embed = BuildEmbed());
+                await userMessage.ModifyAsync(x => x.Embed = BuildEmbed());
             }
         }
 
@@ -225,12 +243,14 @@ namespace Sanakan.DiscordBot.Session
                 return;
             }
 
+            var discordUserId = _payload.PlayerInfo.User.Id;
+
             if (reaction.Emote.Equals(Emojis.DeclineEmote))
             {
                 await userMessage.ModifyAsync(x => x.Embed = $"{_payload.Name}\n\nOdrzucono tworzenie karty."
                     .ToEmbedMessage(EMType.Bot).Build());
 
-                cacheManager.ExpireTag(CacheKeys.User(_payload.PlayerInfo.User.Id), CacheKeys.Users);
+                cacheManager.ExpireTag(CacheKeys.User(discordUserId), CacheKeys.Users);
 
                 return;
             }
@@ -249,12 +269,12 @@ namespace Sanakan.DiscordBot.Session
 
             error = false;
 
-            var user = await userRepository.GetUserOrCreateAsync(_payload.PlayerInfo.User.Id);
+            var user = await userRepository.GetUserOrCreateAsync(discordUserId);
             var totalCValue = _payload.PlayerInfo.Items.Sum(x => x.Type.CValue() * x.Count);
             var rarity = RarityExtensions.GetRarityFromValue(totalCValue);
             var characterInfo = await waifuService.GetRandomCharacterAsync();
             var newCard = waifuService.GenerateNewCard(
-                _payload.PlayerInfo.User,
+                discordUserId,
                 characterInfo,
                 rarity);
 

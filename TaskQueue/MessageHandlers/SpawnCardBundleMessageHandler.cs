@@ -18,18 +18,16 @@ namespace Sanakan.TaskQueue.MessageHandlers
         private readonly IUserRepository _userRepository;
         private readonly IUserAnalyticsRepository _userAnalyticsRepository;
         private readonly ISystemClock _systemClock;
-        private readonly ICacheManager _cacheManager;
+        private const int _dailyCardBundleLimit = 3;
 
         public SpawnCardBundleMessageHandler(
             IUserRepository userRepository,
             IUserAnalyticsRepository userAnalyticsRepository,
-            ISystemClock systemClock,
-            ICacheManager cacheManager)
+            ISystemClock systemClock)
         {
             _userRepository = userRepository;
             _userAnalyticsRepository = userAnalyticsRepository;
             _systemClock = systemClock;
-            _userAnalyticsRepository = userAnalyticsRepository;
         }
 
         public async Task HandleAsync(SpawnCardBundleMessage message)
@@ -41,11 +39,12 @@ namespace Sanakan.TaskQueue.MessageHandlers
                 return;
             }
 
-            var timeStatus = botUser.TimeStatuses.FirstOrDefault(x => x.Type == StatusType.Packet);
+            var statusType = StatusType.Packet;
+            var timeStatus = botUser.TimeStatuses.FirstOrDefault(x => x.Type == statusType);
 
             if (timeStatus == null)
             {
-                timeStatus = new TimeStatus(StatusType.Packet);
+                timeStatus = new TimeStatus(statusType);
                 botUser.TimeStatuses.Add(timeStatus);
             }
 
@@ -53,11 +52,11 @@ namespace Sanakan.TaskQueue.MessageHandlers
 
             if (!timeStatus.IsActive(utcNow))
             {
-                timeStatus.EndsAt = utcNow.Date.AddDays(1);
+                timeStatus.EndsOn = utcNow.Date.AddDays(1);
                 timeStatus.IValue = 0;
             }
 
-            if (++timeStatus.IValue > 3)
+            if (++timeStatus.IValue > _dailyCardBundleLimit)
             {
                 return;
             }

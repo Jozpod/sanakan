@@ -62,11 +62,6 @@ namespace Sanakan.DiscordBot
 
         public async Task InitializeAsync()
         {
-            if(_discordSocketClientAccessor.Client == null)
-            {
-                throw new Exception("Client not connected");
-            }
-
             var client = _discordSocketClientAccessor.Client;
 
             _helperService.AddPublicModuleInfo(await _commandService
@@ -81,8 +76,6 @@ namespace Sanakan.DiscordBot
 
         private async Task HandleCommandAsync(IMessage message)
         {
-            var client = _discordSocketClientAccessor.Client;
-
             var userMessage = message as IUserMessage;
             
             if (userMessage == null)
@@ -106,7 +99,7 @@ namespace Sanakan.DiscordBot
             }
 
             var guild = guildUser.Guild;
-
+            var client = _discordSocketClientAccessor.Client;
             var channel = (IMessageChannel)await client.GetChannelAsync(userMessage.Channel.Id);
 
             using var serviceScope = _serviceScopeFactory.CreateScope();

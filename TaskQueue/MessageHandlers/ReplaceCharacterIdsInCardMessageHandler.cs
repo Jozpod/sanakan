@@ -19,11 +19,12 @@ namespace Sanakan.TaskQueue.MessageHandlers
             ICacheManager cacheManager)
         {
             _cardRepository = cardRepository;
+            _cacheManager = cacheManager;
         }
 
         public async Task HandleAsync(ReplaceCharacterIdsInCardMessage message)
         {
-            var userRelease = new List<string>() { "users" };
+            var userRelease = new List<string>() { CacheKeys.Users };
             var cards = await _cardRepository.GetByCharacterIdAsync(message.OldCharacterId);
 
             foreach (var card in cards)

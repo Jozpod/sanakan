@@ -616,7 +616,7 @@ namespace Sanakan.DiscordBot.Modules
                 await user.AddRoleAsync(gRole);
             }
 
-            global.EndsAt = global.EndsAt.Value.AddMonths(1);
+            global.EndsOn = global.EndsOn.Value.AddMonths(1);
             botuser.TcCount -= cost;
 
             await _userRepository.SaveChangesAsync();
@@ -671,19 +671,19 @@ namespace Sanakan.DiscordBot.Modules
 
             if (color == FColor.CleanColor)
             {
-                colort.EndsAt = _systemClock.UtcNow;
+                colort.EndsOn = _systemClock.UtcNow;
                 await _profileService.RomoveUserColorAsync(user);
             }
             else
             {
                 if (_profileService.HasSameColor(user, color) && colort.IsActive(_systemClock.UtcNow))
                 {
-                    colort.EndsAt = colort.EndsAt.Value.AddMonths(1);
+                    colort.EndsOn = colort.EndsOn.Value.AddMonths(1);
                 }
                 else
                 {
                     await _profileService.RomoveUserColorAsync(user);
-                    colort.EndsAt = _systemClock.UtcNow.AddMonths(1);
+                    colort.EndsOn = _systemClock.UtcNow.AddMonths(1);
                 }
 
                 var gConfig = await _guildConfigRepository.GetCachedGuildFullConfigAsync(Context.Guild.Id);

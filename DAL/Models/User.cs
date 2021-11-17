@@ -31,7 +31,7 @@ namespace Sanakan.DAL.Models
             StatsReplacementProfileUri = "none";
             TimeStatuses = new List<TimeStatus>();
             BackgroundProfileUri = Paths.DefaultBackgroundPicture;
-            MeasureDate = datetime;
+            MeasuredOn = datetime;
             GameDeck = new GameDeck
             {
                 Id = discordUserId,
@@ -166,7 +166,11 @@ namespace Sanakan.DAL.Models
         public string StatsReplacementProfileUri { get; set; }
         public ulong MessagesCount { get; set; }
         public ulong CommandsCount { get; set; }
-        public DateTime MeasureDate { get; set; }
+
+        /// <summary>
+        /// The datetime when experience was measured.
+        /// </summary>
+        public DateTime MeasuredOn { get; set; }
         public ulong MessagesCountAtDate { get; set; }
         public ulong CharacterCountFromDate { get; set; }
         public bool ShowWaifuInProfile { get; set; }
@@ -233,8 +237,8 @@ namespace Sanakan.DAL.Models
         }
 
         public bool IsCharCounterActive(DateTime date)
-            => date.Month == MeasureDate.Month
-           && date.Year == MeasureDate.Year;
+            => date.Month == MeasuredOn.Month
+           && date.Year == MeasuredOn.Year;
 
         public bool IsPVPSeasonalRankActive(DateTime date)
             => GameDeck.IsPVPSeasonalRankActive(date);

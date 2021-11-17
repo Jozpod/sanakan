@@ -98,7 +98,7 @@ namespace Sanakan.DiscordBot.Modules
             }
 
 
-            timeStatus.EndsAt = _systemClock.UtcNow.AddHours(20);
+            timeStatus.EndsOn = _systemClock.UtcNow.AddHours(20);
             botuser.ScCount += 100;
 
             await _userRepository.SaveChangesAsync();
@@ -199,7 +199,7 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            hourly.EndsAt = _systemClock.UtcNow.AddHours(1);
+            hourly.EndsOn = _systemClock.UtcNow.AddHours(1);
             botuser.ScCount += 5;
 
             var mission = botuser.TimeStatuses.FirstOrDefault(x => x.Type == StatusType.DHourly);

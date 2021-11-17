@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Sanakan.DAL.Repositories.Abstractions;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sanakan.DAL.Repositories
@@ -24,6 +25,6 @@ namespace Sanakan.DAL.Repositories
 
         public void RemoveRange(IEnumerable<T> entity) => _dbSet.RemoveRange(entity);
 
-        public Task SaveChangesAsync() => _dbContext.SaveChangesAsync();
+        public Task SaveChangesAsync(CancellationToken cancellationToken = default) => _dbContext.SaveChangesAsync(cancellationToken);
     }
 }

@@ -15,9 +15,9 @@ namespace Sanakan.Game.Services.Abstractions
 {
     public interface IWaifuService
     {
-        Card GenerateNewCard(IUser user, CharacterInfo character, Rarity rarity);
-        Card GenerateNewCard(IUser? user, CharacterInfo character);
-        Card GenerateNewCard(IUser user, CharacterInfo character, List<Rarity> rarityExcluded);
+        Card GenerateNewCard(ulong? discordUserId, CharacterInfo character, Rarity rarity);
+        Card GenerateNewCard(ulong? discordUserId, CharacterInfo character);
+        Card GenerateNewCard(ulong? discordUserId, CharacterInfo character, List<Rarity> rarityExcluded);
         Embed GetBoosterPackList(IUser user, List<BoosterPack> packs);
         double GetExpToUpgrade(Card toUp, Card toSac);
         ItemType RandomizeItemFromMarket();
@@ -33,7 +33,7 @@ namespace Sanakan.Game.Services.Abstractions
         Embed GetItemList(IUser user, List<Item> items);
         Task<string> GetWaifuProfileImageAsync(Card card, IMessageChannel trashCh);
         List<Card> GetListInRightOrder(IEnumerable<Card> list, HaremType type, string tag);
-        Task<List<Card>> OpenBoosterPackAsync(IUser user, BoosterPack pack);
+        Task<List<Card>> OpenBoosterPackAsync(ulong? discordUserId, BoosterPack pack);
         Task<string> GetSafariViewAsync(SafariImage info, Card card, ITextChannel trashChannel);
         Task<string> GetSafariViewAsync(SafariImage info, ITextChannel trashChannel);
         Task<Embed> BuildCardImageAsync(Card card, ITextChannel trashChannel, IUser owner, bool showStats);

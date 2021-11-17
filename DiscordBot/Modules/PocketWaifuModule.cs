@@ -897,7 +897,7 @@ namespace Sanakan.DiscordBot.Modules
 
             foreach (var pack in packs)
             {
-                var cards = await _waifuService.OpenBoosterPackAsync(Context.User, pack);
+                var cards = await _waifuService.OpenBoosterPackAsync(Context.User.Id, pack);
                 if (cards.Count < pack.CardCount)
                 {
                     await ReplyAsync("", embed: $"{Context.User.Mention} nie udało się otworzyć pakietu.".ToEmbedMessage(EMType.Error).Build());
@@ -1485,9 +1485,9 @@ namespace Sanakan.DiscordBot.Modules
             }
             mission.Count(utcNow);
 
-            freeCard.EndsAt = _systemClock.UtcNow.AddHours(22);
+            freeCard.EndsOn = _systemClock.UtcNow.AddHours(22);
 
-            var card = _waifuService.GenerateNewCard(Context.User, await _waifuService.GetRandomCharacterAsync(),
+            var card = _waifuService.GenerateNewCard(Context.User.Id, await _waifuService.GetRandomCharacterAsync(),
                 new List<Rarity>() { Rarity.SS, Rarity.S, Rarity.A });
 
             bool wasOnWishlist = botuser.GameDeck.RemoveCharacterFromWishList(card.CharacterId);
@@ -1598,7 +1598,7 @@ namespace Sanakan.DiscordBot.Modules
             if (card.CanGiveRing()) ++itemCnt;
             if (botuser.GameDeck.CanCreateAngel()) ++itemCnt;
 
-            market.EndsAt = _systemClock.UtcNow.AddHours(nextMarket);
+            market.EndsOn = _systemClock.UtcNow.AddHours(nextMarket);
             card.Affection += 0.1;
 
             _ = card.CalculateCardPower();
@@ -1729,7 +1729,7 @@ namespace Sanakan.DiscordBot.Modules
                 ++itemCnt;
             }
 
-            market.EndsAt = _systemClock.UtcNow.AddHours(nextMarket);
+            market.EndsOn = _systemClock.UtcNow.AddHours(nextMarket);
             card.Affection -= 0.2;
 
             _ = card.CalculateCardPower();
@@ -3430,7 +3430,7 @@ namespace Sanakan.DiscordBot.Modules
 
             if (!pvpDailyMax.IsActive(utcNow))
             {
-                pvpDailyMax.EndsAt = utcNow.Date.AddHours(3).AddDays(1);
+                pvpDailyMax.EndsOn = utcNow.Date.AddHours(3).AddDays(1);
                 duser.GameDeck.PVPDailyGamesPlayed = 0;
             }
 

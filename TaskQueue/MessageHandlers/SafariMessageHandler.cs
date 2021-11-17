@@ -22,21 +22,20 @@ namespace Sanakan.TaskQueue.MessageHandlers
     {
         private readonly IUserRepository _userRepository;
         private readonly IUserAnalyticsRepository _userAnalyticsRepository;
-        private readonly IGuildConfigRepository _guildConfigRepository;
         private readonly ISystemClock _systemClock;
         private readonly ICacheManager _cacheManager;
         private readonly IWaifuService _waifuService;
 
         public SafariMessageHandler(
+            IUserRepository userRepository,
             IUserAnalyticsRepository userAnalyticsRepository,
-            IGuildConfigRepository guildConfigRepository,
             ISystemClock systemClock,
             ICacheManager cacheManager,
             IWaifuService waifuService)
         {
+            _userRepository = userRepository;
             _userAnalyticsRepository = userAnalyticsRepository;
             _systemClock = systemClock;
-            _guildConfigRepository = guildConfigRepository;
             _cacheManager = cacheManager;
             _waifuService = waifuService;
         }
@@ -50,9 +49,10 @@ namespace Sanakan.TaskQueue.MessageHandlers
             var trashChannel = safariMessage.TrashChannel;
             var pokeImage = safariMessage.Image;
             var message = safariMessage.Message;
-            var botUser = await _userRepository.GetUserOrCreateAsync(winner.Id);
+            var discordUserId = winner.Id;
+            var botUser = await _userRepository.GetUserOrCreateAsync(discordUserId);
 
-            card.FirstOwnerId = winner.Id;
+            card.FirstOwnerId = discordUserId;
             card.Affection += botUser.GameDeck.AffectionFromKarma();
             botUser.GameDeck.RemoveCharacterFromWishList(card.CharacterId);
 
@@ -64,7 +64,7 @@ namespace Sanakan.TaskQueue.MessageHandlers
             var record = new UserAnalytics
             {
                 Value = 1,
-                UserId = winner.Id,
+                UserId = discordUserId,
                 MeasuredOn = _systemClock.UtcNow,
                 GuildId = guildId,
                 Type = UserAnalyticsEventType.Card
