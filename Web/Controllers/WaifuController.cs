@@ -260,6 +260,13 @@ namespace Sanakan.Web.Controllers
                     {"SC", user.ScCount},
                 };
 
+            var waifuCard = user.GameDeck.Cards.Where(x => x.CharacterId == user.GameDeck
+                .FavouriteWaifuId)
+                .OrderBy(x => x.Rarity).ThenByDescending(x => x.Quality)
+                .FirstOrDefault();
+
+            var waifu = waifuCard == null ? null : new CardFinalView(waifuCard);
+
             var result = new UserSiteProfile()
             {
                 Wallet = wallet,
@@ -274,9 +281,7 @@ namespace Sanakan.Web.Controllers
                 BackgroundImageUrl = user.GameDeck.BackgroundImageUrl,
                 ForegroundImageUrl = user.GameDeck.ForegroundImageUrl,
                 Expeditions = user.GameDeck.Cards.Where(x => x.Expedition != ExpeditionCardType.None).ToExpeditionView(user.GameDeck.Karma),
-                Waifu = user.GameDeck.Cards.Where(x => x.CharacterId == user.GameDeck
-                .FavouriteWaifuId)
-                .OrderBy(x => x.Rarity).ThenByDescending(x => x.Quality).FirstOrDefault().ToView(),
+                Waifu = waifu,
                 Gallery = user.GameDeck.
                 Cards.Where(x => x.HasTag("galeria"))
                 .Take(user.GameDeck.CardsInGallery)

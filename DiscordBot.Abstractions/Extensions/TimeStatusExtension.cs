@@ -13,13 +13,13 @@ namespace Sanakan.Extensions
             if (status.Type.IsQuest())
             {
                 var max = (uint)status.Type.ToComplete();
-                var actualProgress = status.IsActive(dateTime) ? status.IValue : 0;
+                var actualProgress = status.IsActive(dateTime) ? status.IntegerValue : 0;
 
-                var progress = (actualProgress >= max) ? (status.BValue ? Emotes.IconFull.ToString() : Emotes.IconEmpty.ToString())
+                var progress = (actualProgress >= max) ? (status.BooleanValue ? Emotes.IconFull.ToString() : Emotes.IconEmpty.ToString())
                     : $"[{actualProgress}/{status.Type.ToComplete()}]";
 
                 var reward = status.IsActive(dateTime)
-                    && status.BValue ? "" : $"\nNagroda: `{status.Type.GetRewardString()}`";
+                    && status.BooleanValue ? "" : $"\nNagroda: `{status.Type.GetRewardString()}`";
 
                 return $"{status.Type.Icon()} **{status.Type.Name()}** {progress}{reward}";
             }

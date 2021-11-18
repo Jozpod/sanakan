@@ -108,7 +108,7 @@ namespace Sanakan.Extensions
         public static int CountQuotedTextLength(this string message) => _quotedTextLengthRegex.Matches(message).Sum(x => x.Length);
 
         public static int CountLinkTextLength(this string message) => _linkRegex.Matches(message).Sum(x => x.Length);
-        public static bool IsAColorInHEX(this string message) => _hexRegex.IsMatch(message);
+        public static bool IsHexTriplet(this string message) => _hexRegex.IsMatch(message);
         public static bool IsCommand(this DiscordConfiguration sanakanConfiguration, string message)
         {
             if (CommandRegex == null)

@@ -279,11 +279,11 @@ namespace Sanakan.DAL.Repositories
             return query.FirstOrDefaultAsync(x => x.Id == id);
         }
 
-        public Task<List<Card>> GetByIdFirstOrLastOwnerAsync(ulong userId)
+        public Task<List<Card>> GetByIdFirstOrLastOwnerAsync(ulong discordUserId)
         {
             return _dbContext.Cards
                 .Include(x => x.TagList)
-                .Where(x => (x.LastOwnerId == userId || (x.FirstOwnerId == userId
+                .Where(x => (x.LastOwnerId == discordUserId || (x.FirstOwnerId == discordUserId
                     && x.LastOwnerId == 0))
                     && x.GameDeckId == 1)
                 .ToListAsync();

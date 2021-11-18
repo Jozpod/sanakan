@@ -9,38 +9,32 @@ namespace Sanakan.Api.Models
     /// </summary>
     public class ExpeditionCard
     {
-        public ExpeditionCard(Card card, double karma)
+        public ExpeditionCard(Card? card, double karma)
         {
-            Card = card.ToView();
-            StartTime = card.ExpeditionDate;
-            Expedition = card.Expedition.GetName();
+            Card = card == null ? null : new CardFinalView(card);
+            StartedOn = card.ExpeditionDate;
+            ExpeditionType = card.Expedition.GetName();
             MaxTime = card.CalculateMaxTimeOnExpeditionInMinutes(karma);
         }
 
         /// <summary>
-        /// Moment wyruszenia na ekspedycję
+        /// The datetime when expedition started.
         /// </summary>
-        public DateTime StartTime { get; set; }
+        public DateTime StartedOn { get; set; }
 
         /// <summary>
-        /// Rodzaj wyprawy
+        /// The type of expedition.
         /// </summary>
-        public string Expedition { get; set; }
+        public string ExpeditionType { get; set; }
         
         /// <summary>
-        /// Czas po którym przestaje karta otrzymywać bonusy w minutach
+        /// The amount of time in minutes after which card won't get any bonus points.
         /// </summary>
         public double MaxTime { get; set; }
+
         /// <summary>
-        /// Karta
+        /// The card related to the expedition.
         /// </summary>
-        public CardFinalView Card { get; set; }
-
-        public static ExpeditionCard ConvertFromRaw(Card card, double karma)
-        {
-            return new ExpeditionCard(card, karma);
-        }
-
-
+        public CardFinalView? Card { get; set; }
     }
 }

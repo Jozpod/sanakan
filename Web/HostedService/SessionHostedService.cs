@@ -23,7 +23,7 @@ using Sanakan.DiscordBot.Abstractions.Extensions;
 
 namespace Sanakan.Web.HostedService
 {
-    public class SessionHostedService : BackgroundService
+    internal class SessionHostedService : BackgroundService
     {
         private readonly ILogger _logger;
         private readonly ISystemClock _systemClock;
@@ -62,6 +62,43 @@ namespace Sanakan.Web.HostedService
             _discordSocketClientAccessor.ReactionAdded += HandleReactionAddedAsync;
             _discordSocketClientAccessor.ReactionRemoved += HandleReactionRemovedAsync;
             return Task.CompletedTask;
+        }
+
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        {
+            try
+            {
+                stoppingToken.ThrowIfCancellationRequested();
+                _timer.Tick += OnTick;
+                _timer.Start(
+                    _options.CurrentValue.SessionDueTime,
+                    _options.CurrentValue.SessionPeriod);
+
+                await _taskManager.Delay(Timeout.InfiniteTimeSpan, stoppingToken);
+            }
+            catch (OperationCanceledException)
+            {
+                _timer.Stop();
+            }
+        }
+
+        private void OnTick(object sender, TimerEventArgs e)
+        {
+            if (_isRunning)
+            {
+                return;
+            }
+
+            _isRunning = true;
+            var utcNow = _systemClock.UtcNow;
+            var expiredSessions = _sessionManager.GetExpired(utcNow);
+
+            foreach (var expiredSession in expiredSessions)
+            {
+                _sessionManager.Remove(expiredSession);
+            }
+
+            _isRunning = false;
         }
 
         private async Task RunSessions(IEnumerable<InteractionSession> sessions, SessionContext sessionPayload)
@@ -253,43 +290,6 @@ namespace Sanakan.Web.HostedService
             };
 
             await RunSessions(userSessions, sessionPayload).ConfigureAwait(false);
-        }
-
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-        {
-            try
-            {
-                stoppingToken.ThrowIfCancellationRequested();
-                _timer.Tick += OnTick;
-                _timer.Start(
-                    _options.CurrentValue.SessionDueTime,
-                    _options.CurrentValue.SessionPeriod);
-
-                await _taskManager.Delay(Timeout.InfiniteTimeSpan, stoppingToken);
-            }
-            catch (OperationCanceledException)
-            {
-                _timer.Stop();
-            }
-        }
-
-        private async void OnTick(object sender, TimerEventArgs e)
-        {
-            if(_isRunning)
-            {
-                return;
-            }
-
-            _isRunning = true;
-            var utcNow = _systemClock.UtcNow;
-            var expiredSessions = _sessionManager.GetExpired(utcNow);
-
-            foreach (var expiredSession in expiredSessions)
-            {
-                _sessionManager.Remove(expiredSession);
-            }
-
-            _isRunning = false;
         }
     }
 }

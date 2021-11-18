@@ -30,7 +30,7 @@ using Sanakan.Game.Services.Abstractions;
 
 namespace Sanakan.Web.HostedService
 {
-    public class SpawnHostedService : BackgroundService
+    internal class SpawnHostedService : BackgroundService
     {
         private readonly ILogger _logger;
         private readonly ISystemClock _systemClock;
@@ -196,7 +196,7 @@ namespace Sanakan.Web.HostedService
 
             if (character == null)
             {
-                _logger.LogInformation("In Satafi: bad shinden connection");
+                _logger.LogInformation("In safari: bad shinden connection");
                 return;
             }
 

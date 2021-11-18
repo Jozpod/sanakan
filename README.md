@@ -63,6 +63,7 @@ dotnet run
 | :---------------------------------------: | :------------------: | :-------------------------------------: | :---------------------------------------------------------------- |
 | **[`Prefix`](#Prefix)** | `{String}` | `s` | Run commands on Discord only when they start with given prefix. |
 | **[`BotToken`](#BotToken)**  |  `{String}` | `` | The discord bot token. |
+| **[`MainGuild`](#MainGuild)**  | `{Number}` | `245931283031523330` | The main discord guild identifier which is used in Sanakan API. By default it is Shinden guild id. |
 | **[`FloodSpamSupervisionEnabled`](#SupervisorEnabled)**  | `{Boolean}` | `true` | Enables flood/spam supervision |
 | **[`RestartWhenDisconnected - Demonization`](#RestartWhenDisconnected)** | `{Boolean}` | `true` | Restarts the Discord socket client when it is disconnected. |
 | **[`SafariEnabled`](#SafariEnabled)** | `{Boolean}`  | `true` | If enabled it allows generating cards from user messages. |

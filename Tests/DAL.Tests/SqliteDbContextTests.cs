@@ -46,6 +46,7 @@ namespace Sanakan.DAL.Tests
 
             await DbContext.Database.EnsureCreatedAsync();
             await GenerateTestData();
+            await DbContext.Database.EnsureDeletedAsync();
         }
 
         public async Task GenerateTestData()

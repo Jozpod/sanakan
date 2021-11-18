@@ -56,6 +56,10 @@ namespace Sanakan.DAL.Configuration
             builder.HasKey(e => e.Id);
             builder.HasIndex(e => e.DeckPower);
 
+            builder.HasCheckConstraint("CK_GameDeck_BackgroundImageUrl", "BackgroundImageUrl RLIKE'^http'");
+            builder.HasCheckConstraint("CK_GameDeck_ForegroundColor", "ForegroundColor RLIKE'^#[0-9]'");
+            builder.HasCheckConstraint("CK_GameDeck_ForegroundImageUrl", "ForegroundImageUrl RLIKE'^http'");
+
             builder.HasOne(e => e.User)
                 .WithOne(u => u.GameDeck);
         }
@@ -87,6 +91,11 @@ namespace Sanakan.DAL.Configuration
             builder.Property(pr => pr.ExpeditionDate)
                .HasColumnType("datetime(4)");
 
+            builder.HasCheckConstraint("CK_Card_Title", "Title <> '' OR Title IS NULL");
+            builder.HasCheckConstraint("CK_Card_ImageUrl", "ImageUrl <> '' OR ImageUrl IS NULL");
+            builder.HasCheckConstraint("CK_Card_CustomImageUrl", "CustomImageUrl <> '' OR CustomImageUrl IS NULL");
+            builder.HasCheckConstraint("CK_Card_CustomBorderUrl", "CustomBorderUrl <> '' OR CustomBorderUrl IS NULL");
+            
             builder
                 .HasOne(e => e.GameDeck)
                 .WithMany(d => d.Cards);

@@ -123,8 +123,17 @@
   <data name="ApiKeyNotProvided" xml:space="preserve">
     <value>API key is not provided</value>
   </data>
+  <data name="CannotAccessDiscord" xml:space="preserve">
+    <value>Could not access discord</value>
+  </data>
+  <data name="CannotAccessShinden" xml:space="preserve">
+    <value>Could not access Shinden</value>
+  </data>
   <data name="CardNotFound" xml:space="preserve">
     <value>Card not found</value>
+  </data>
+  <data name="GuildNotFound" xml:space="preserve">
+    <value>Guild not found!</value>
   </data>
   <data name="ModelIsInvalid" xml:space="preserve">
     <value>Model is Invalid</value>

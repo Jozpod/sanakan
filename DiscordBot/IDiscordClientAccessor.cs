@@ -12,7 +12,7 @@ namespace Sanakan.DiscordBot
         Task LoginAsync(TokenType tokenType, string token, bool validateToken = true);
 
         /// <inheritdoc cref="DiscordSocketClient.SetGameAsync"/>
-        Task SetGameAsync(string name, string streamUrl = null, ActivityType type = ActivityType.Playing);
+        Task SetGameAsync(string name, string? streamUrl = null, ActivityType type = ActivityType.Playing);
 
         /// <inheritdoc cref="BaseDiscordClient.LogoutAsync"/>
         Task LogoutAsync();

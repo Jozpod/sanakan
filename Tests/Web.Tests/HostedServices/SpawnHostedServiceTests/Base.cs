@@ -1,5 +1,6 @@
 ﻿using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -18,7 +19,7 @@ namespace Sanakan.Web.Tests.HostedServices.SpawnHostedServiceTests
     [TestClass]
     public abstract class Base
     {
-        protected readonly SpawnHostedService _service;
+        protected readonly BackgroundService _service;
         protected readonly Mock<IRandomNumberGenerator> _randomNumberGeneratorMock = new(MockBehavior.Strict);
         protected readonly Mock<IOptionsMonitor<DiscordConfiguration>> _discordConfigurationMock = new(MockBehavior.Strict);
         protected readonly Mock<IOptionsMonitor<ExperienceConfiguration>> _experienceConfigurationMock = new(MockBehavior.Strict);
@@ -35,7 +36,7 @@ namespace Sanakan.Web.Tests.HostedServices.SpawnHostedServiceTests
             var serviceProvider = serviceCollection.BuildServiceProvider();
             var serviceScopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
 
-            _service = new(
+            _service = new SpawnHostedService(
                 _randomNumberGeneratorMock.Object,
                 _blockingPriorityQueueMock.Object,
                 NullLogger<SpawnHostedService>.Instance,

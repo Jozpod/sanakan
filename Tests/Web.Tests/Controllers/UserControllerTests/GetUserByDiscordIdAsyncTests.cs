@@ -23,15 +23,15 @@ namespace Sanakan.Web.Tests.Controllers.UserControllerTests
         public async Task Should_Return_Ok()
         {
             var discordUserId = 0ul;
-            var expected = new User(discordUserId, DateTime.UtcNow);
+            var user = new User(discordUserId, DateTime.UtcNow);
 
             _userRepositoryMock
                 .Setup(pr => pr.GetCachedFullUserAsync(discordUserId))
-                .ReturnsAsync(expected);
+                .ReturnsAsync(user);
 
             var result = await _controller.GetUserByDiscordIdAsync(discordUserId);
             var okObjectResult = result.Should().BeOfType<OkObjectResult>().Subject;
-            okObjectResult.Value.Should().BeEquivalentTo(expected);
+            okObjectResult.Value.Should().BeEquivalentTo(user);
         }
     }
 }

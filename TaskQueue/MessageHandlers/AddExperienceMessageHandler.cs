@@ -163,16 +163,16 @@ namespace Sanakan.TaskQueue.MessageHandlers
 
             if (!timeStatus.IsActive(utcNow))
             {
-                timeStatus.IValue = 101;
+                timeStatus.IntegerValue = 101;
             }
 
             timeStatus.EndsOn = utcNow.AddMinutes(10);
-            if (--timeStatus.IValue < 20)
+            if (--timeStatus.IntegerValue < 20)
             {
-                timeStatus.IValue = 20;
+                timeStatus.IntegerValue = 20;
             }
 
-            var ratio = timeStatus.IValue / 100d;
+            var ratio = timeStatus.IntegerValue / 100d;
 
             return (ulong)(experience * ratio);
         }

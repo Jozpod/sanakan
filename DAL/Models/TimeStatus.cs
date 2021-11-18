@@ -22,8 +22,8 @@ namespace Sanakan.DAL.Models
         /// The value might indicate:
         /// The acquired daily card bundles before <see cref="EndsOn"/>.
         /// </summary>
-        public ulong IValue { get; set; }
-        public bool BValue { get; set; }
+        public ulong IntegerValue { get; set; }
+        public bool BooleanValue { get; set; }
 
         public ulong? GuildId { get; set; }
         public ulong UserId { get; set; }
@@ -33,19 +33,19 @@ namespace Sanakan.DAL.Models
 
         public void Reset()
         {
-            IValue = 0;
-            BValue = false;
+            IntegerValue = 0;
+            BooleanValue = false;
             EndsOn = null;
         }
 
         public bool IsClaimed(DateTime dateTime)
-            => IsActive(dateTime) && BValue;
+            => IsActive(dateTime) && BooleanValue;
 
         public bool CanClaim(DateTime dateTime)
-            => IsActive(dateTime) && !BValue
-            && Type.IsQuest() && IValue >= (uint)Type.ToComplete();
+            => IsActive(dateTime) && !BooleanValue
+            && Type.IsQuest() && IntegerValue >= (uint)Type.ToComplete();
 
-        public TimeSpan RemainingTime(DateTime currentTime) => EndsOn.Value - currentTime;
+        public TimeSpan RemainingTime(DateTime currentTime) => EndsOn.HasValue ? EndsOn.Value - currentTime : TimeSpan.Zero;
 
         public void Count(DateTime currentDate, uint times = 1)
         {
@@ -54,15 +54,15 @@ namespace Sanakan.DAL.Models
                 return;
             }
 
-            if (IsActive(currentDate) && !BValue)
+            if (IsActive(currentDate) && !BooleanValue)
             {
-                IValue += times;
+                IntegerValue += times;
             }
 
             else if (!IsActive(currentDate))
             {
-                IValue = times;
-                BValue = false;
+                IntegerValue = times;
+                BooleanValue = false;
 
                 if (Type.IsDailyQuestType())
                 {
@@ -76,20 +76,20 @@ namespace Sanakan.DAL.Models
             }
 
             var max = (ulong)Type.ToComplete();
-            if (max > 0 && IValue > max)
+            if (max > 0 && IntegerValue > max)
             {
-                IValue = max;
+                IntegerValue = max;
             }
         }
 
         public void Claim(User user)
         {
-            if (BValue)
+            if (BooleanValue)
             {
                 return;
             }
 
-            BValue = true;
+            BooleanValue = true;
 
             switch (Type)
             {

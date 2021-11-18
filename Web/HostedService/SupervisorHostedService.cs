@@ -21,13 +21,13 @@ using Discord;
 using Sanakan.Extensions;
 using Sanakan.DiscordBot.Services.Abstractions;
 using Sanakan.DiscordBot.Supervisor;
+using System.Collections;
 
 namespace Sanakan.Web.HostedService
 {
-    public class SupervisorHostedService : BackgroundService
+    internal class SupervisorHostedService : BackgroundService
     {
         private readonly ILogger _logger;
-        private readonly ISystemClock _systemClock;
         private readonly IDiscordClientAccessor _discordSocketClientAccessor;
         private readonly IOptionsMonitor<DaemonsConfiguration> _daemonsConfiguration;
         private readonly IOptionsMonitor<DiscordConfiguration> _discordConfiguration;
@@ -36,6 +36,7 @@ namespace Sanakan.Web.HostedService
         private readonly ITimer _timer;
         private readonly IUserMessageSupervisor _userMessageSupervisor;
         private readonly IUserJoinedGuildSupervisor _userJoinedGuildSupervisor;
+        private readonly object _syncRoot = new object();
         private bool _isRunning;
 
         public SupervisorHostedService(
@@ -43,7 +44,6 @@ namespace Sanakan.Web.HostedService
             IDiscordClientAccessor discordSocketClientAccessor,
             IOptionsMonitor<DaemonsConfiguration> daemonsConfiguration,
             IOptionsMonitor<DiscordConfiguration> discordConfiguration,
-            ISystemClock systemClock,
             IServiceScopeFactory serviceScopeFactory,
             ITaskManager taskManager,
             ITimer timer,
@@ -52,7 +52,6 @@ namespace Sanakan.Web.HostedService
         {
             _logger = logger;
             _discordSocketClientAccessor = discordSocketClientAccessor;
-            _systemClock = systemClock;
             _serviceScopeFactory = serviceScopeFactory;
             _daemonsConfiguration = daemonsConfiguration;
             _discordConfiguration = discordConfiguration;
@@ -69,6 +68,51 @@ namespace Sanakan.Web.HostedService
             _discordSocketClientAccessor.MessageReceived += HandleMessageAsync;
             _discordSocketClientAccessor.UserJoined += UserJoinedAsync;
             return Task.CompletedTask;
+        }
+
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        {
+            try
+            {
+                stoppingToken.ThrowIfCancellationRequested();
+                _timer.Tick += OnTick;
+                _timer.Start(
+                    _daemonsConfiguration.CurrentValue.SupervisorDueTime,
+                    _daemonsConfiguration.CurrentValue.SupervisorPeriod);
+
+                await _taskManager.Delay(Timeout.InfiniteTimeSpan, stoppingToken);
+            }
+            catch (OperationCanceledException)
+            {
+                _timer.Stop();
+            }
+        }
+
+        private async void OnTick(object sender, TimerEventArgs e)
+        {
+            if (_isRunning)
+            {
+                return;
+            }
+
+            _isRunning = true;
+
+            try
+            {
+                lock (_syncRoot)
+                {
+                    _userJoinedGuildSupervisor.Refresh();
+                    _userMessageSupervisor.Refresh();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error occurred during refreshing supervisor subjects.", ex);
+            }
+            finally
+            {
+                _isRunning = false;
+            }
         }
 
         private string GetMessageContent(IUserMessage message)
@@ -116,7 +160,13 @@ namespace Sanakan.Web.HostedService
             }
 
             var guild = user.Guild;
-            var userIds = _userJoinedGuildSupervisor.GetUsersToBanCauseRaid(user.Guild.Id, user.Username, user.Id);
+            var userIds = Enumerable.Empty<ulong>();
+
+            lock (_syncRoot)
+            {
+                userIds = _userJoinedGuildSupervisor.GetUsersToBanCauseRaid(user.Guild.Id, user.Username, user.Id);
+            }
+            
             var usersToBan = await Task.WhenAll(userIds.Select(pr => guild.GetUserAsync(pr)));
             foreach (var userToBan in usersToBan)
             {
@@ -198,7 +248,12 @@ namespace Sanakan.Web.HostedService
             var muteRole = user.Guild.GetRole(gConfig.MuteRoleId);
             var userRole = user.Guild.GetRole(userRoleId.Value);
             var notifChannel = (ITextChannel)await user.Guild.GetChannelAsync(gConfig.NotificationChannelId);
-            var decision = _userMessageSupervisor.MakeDecision(user.Guild.Id, user.Id, messageContent, lessSeverePunishment);
+            var decision = SupervisorAction.None;
+
+            lock (_syncRoot)
+            {
+                decision = _userMessageSupervisor.MakeDecision(user.Guild.Id, user.Id, messageContent, lessSeverePunishment);
+            }
 
             var moderatorService = serviceProvider.GetRequiredService<IModeratorService>();
 
@@ -237,48 +292,6 @@ namespace Sanakan.Web.HostedService
                 default:
                 case SupervisorAction.None:
                     break;
-            }
-        }
-
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-        {
-            try
-            {
-                stoppingToken.ThrowIfCancellationRequested();
-                _timer.Tick += OnTick;
-                _timer.Start(
-                    _daemonsConfiguration.CurrentValue.SupervisorDueTime,
-                    _daemonsConfiguration.CurrentValue.SupervisorPeriod);
-
-                await _taskManager.Delay(Timeout.InfiniteTimeSpan, stoppingToken);
-            }
-            catch (OperationCanceledException)
-            {
-                _timer.Stop();
-            }
-        }
-
-        private async void OnTick(object sender, TimerEventArgs e)
-        {
-            if(_isRunning)
-            {
-                return;
-            }
-
-            _isRunning = true;
-
-            try
-            {
-                _userJoinedGuildSupervisor.Refresh();
-                _userMessageSupervisor.Refresh();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Error occurred during refreshing supervisor subjects.", ex);
-            }
-            finally
-            {
-                _isRunning = false;
             }
         }
     }

@@ -21,10 +21,9 @@ using System.Collections.ObjectModel;
 
 namespace Sanakan.Web.HostedService
 {
-    public class ChaosHostedService : BackgroundService
+    internal class ChaosHostedService : BackgroundService
     {
         private readonly ILogger _logger;
-        private readonly ISystemClock _systemClock;
         private readonly IDiscordClientAccessor _discordSocketClientAccessor;
         private readonly IOptionsMonitor<DiscordConfiguration> _discordConfiguration;
         private readonly IOptionsMonitor<DaemonsConfiguration> _daemonsConfiguration;
@@ -37,7 +36,6 @@ namespace Sanakan.Web.HostedService
 
         public ChaosHostedService(
             ILogger<ChaosHostedService> logger,
-            ISystemClock systemClock,
             IOptionsMonitor<DiscordConfiguration> discordConfiguration,
             IOptionsMonitor<DaemonsConfiguration> daemonsConfiguration,
             IDiscordClientAccessor discordSocketClientAccessor,
@@ -47,7 +45,6 @@ namespace Sanakan.Web.HostedService
             ITaskManager taskManager)
         {
             _logger = logger;
-            _systemClock = systemClock;
             _discordConfiguration = discordConfiguration;
             _daemonsConfiguration = daemonsConfiguration;
             _discordSocketClientAccessor = discordSocketClientAccessor;
@@ -57,11 +54,28 @@ namespace Sanakan.Web.HostedService
             _taskManager = taskManager;
             _usersWithSwappedNicknames = new HashSet<ulong>();
             _discordSocketClientAccessor.LoggedIn += LoggedIn;
+            _discordSocketClientAccessor.LoggedOut += LoggedOut;
+            _discordSocketClientAccessor.Disconnected += DisconnectedAsync;
+        }
+
+        private Task LoggedOut()
+        {
+            _timer.Stop();
+            return Task.CompletedTask;
+        }
+
+        private Task DisconnectedAsync(Exception ex)
+        {
+            _timer.Stop();
+            return Task.CompletedTask;
         }
 
         private Task LoggedIn()
         {
             _discordSocketClientAccessor.MessageReceived += HandleMessageAsync;
+            _timer.Start(
+                _daemonsConfiguration.CurrentValue.ChaosDueTime,
+                _daemonsConfiguration.CurrentValue.ChaosPeriod);
             return Task.CompletedTask;
         }
 
@@ -71,10 +85,6 @@ namespace Sanakan.Web.HostedService
             {
                 stoppingToken.ThrowIfCancellationRequested();
                 _timer.Tick += OnTick;
-                _timer.Start(
-                    _daemonsConfiguration.CurrentValue.ChaosDueTime,
-                    _daemonsConfiguration.CurrentValue.ChaosPeriod);
-
                 await _taskManager.Delay(Timeout.InfiniteTimeSpan, stoppingToken);
             }
             catch (OperationCanceledException)
@@ -83,7 +93,7 @@ namespace Sanakan.Web.HostedService
             }
         }
 
-        private async void OnTick(object sender, TimerEventArgs e)
+        private async void OnTick(object sender, TimerEventArgs eventArgs)
         {
             lock (_syncRoot)
             {
@@ -112,8 +122,11 @@ namespace Sanakan.Web.HostedService
                 return;
             }
 
+            var guild = sourceUser.Guild;
+            var guildId = guild.Id;
+
             if (_discordConfiguration.CurrentValue
-                .BlacklistedGuilds.Any(x => x == sourceUser.Guild.Id))
+                .BlacklistedGuilds.Any(x => x == guildId))
             {
                 return;
             }
@@ -121,7 +134,7 @@ namespace Sanakan.Web.HostedService
             using var serviceScope = _serviceScopeFactory.CreateScope();
             var serviceProvider = serviceScope.ServiceProvider;
             var guildConfigRepository = serviceProvider.GetRequiredService<IGuildConfigRepository>();
-            var guildConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(sourceUser.Guild.Id);
+            var guildConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(guildId);
 
             if (guildConfig == null)
             {
@@ -138,7 +151,6 @@ namespace Sanakan.Web.HostedService
                 return;
             }
 
-            var guild = sourceUser.Guild;
             var notChangedUsers = (await guild.GetUsersAsync())
                 .Where(x => !x.IsBot
                     && x.Id != sourceUser.Id

@@ -18,7 +18,7 @@ using Sanakan.TaskQueue;
 
 namespace Sanakan.Web.HostedService
 {
-    public class TaskQueueHostedService : BackgroundService
+    internal class TaskQueueHostedService : BackgroundService
     {
         private readonly ILogger _logger;
         private readonly ISystemClock _systemClock;

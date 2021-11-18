@@ -53,10 +53,10 @@ namespace Sanakan.TaskQueue.MessageHandlers
             if (!timeStatus.IsActive(utcNow))
             {
                 timeStatus.EndsOn = utcNow.Date.AddDays(1);
-                timeStatus.IValue = 0;
+                timeStatus.IntegerValue = 0;
             }
 
-            if (++timeStatus.IValue > _dailyCardBundleLimit)
+            if (++timeStatus.IntegerValue > _dailyCardBundleLimit)
             {
                 return;
             }

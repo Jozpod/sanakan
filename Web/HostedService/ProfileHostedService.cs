@@ -21,20 +21,21 @@ using DiscordBot.Services;
 
 namespace Sanakan.Web.HostedService
 {
-    public class ProfileHostedService : BackgroundService
+    internal class ProfileHostedService : BackgroundService
     {
         private readonly ILogger _logger;
         private readonly ISystemClock _systemClock;
-        private readonly IDiscordClientAccessor _discordSocketClientAccessor;
+        private readonly IDiscordClientAccessor _discordClientAccessor;
         private readonly IOptionsMonitor<DaemonsConfiguration> _options;
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly ITimer _timer;
         private readonly ITaskManager _taskManager;
+        private bool _isRunning;
 
         public ProfileHostedService(
             ILogger<ProfileHostedService> logger,
             ISystemClock systemClock,
-            IDiscordClientAccessor discordSocketClientAccessor,
+            IDiscordClientAccessor discordClientAccessor,
             IOptionsMonitor<DaemonsConfiguration> options,
             IServiceScopeFactory serviceScopeFactory,
             ITimer timer,
@@ -42,11 +43,27 @@ namespace Sanakan.Web.HostedService
         {
             _logger = logger;
             _systemClock = systemClock;
-            _discordSocketClientAccessor = discordSocketClientAccessor;
+            _discordClientAccessor = discordClientAccessor;
             _options = options;
             _serviceScopeFactory = serviceScopeFactory;
             _timer = timer;
             _taskManager = taskManager;
+            _discordClientAccessor.LoggedIn += LoggedIn;
+            _discordClientAccessor.LoggedOut += LoggedOut;
+        }
+
+        private Task LoggedOut()
+        {
+            _timer.Stop();
+            return Task.CompletedTask;
+        }
+
+        private Task LoggedIn()
+        {
+            _timer.Start(
+                    _options.CurrentValue.ProfileDueTime,
+                    _options.CurrentValue.ProfilePeriod);
+            return Task.CompletedTask;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -55,10 +72,6 @@ namespace Sanakan.Web.HostedService
             {
                 stoppingToken.ThrowIfCancellationRequested();
                 _timer.Tick += OnTick;
-                _timer.Start(
-                    _options.CurrentValue.ProfileDueTime,
-                    _options.CurrentValue.ProfilePeriod);
-
                 await _taskManager.Delay(Timeout.InfiniteTimeSpan, stoppingToken);
             }
             catch (OperationCanceledException)
@@ -69,44 +82,57 @@ namespace Sanakan.Web.HostedService
 
         private async void OnTick(object sender, TimerEventArgs e)
         {
-            var client = _discordSocketClientAccessor.Client;
-
-            if(client == null)
+            if (_isRunning)
             {
                 return;
             }
 
-            using var serviceScope = _serviceScopeFactory.CreateScope();
-            var serviceProvider = serviceScope.ServiceProvider;
-            var guildConfigRepository = serviceProvider.GetRequiredService<IGuildConfigRepository>();
-            var timeStatusRepository = serviceProvider.GetRequiredService<ITimeStatusRepository>();
+            _isRunning = true;
 
-            var timeStatuses = await timeStatusRepository.GetBySubTypeAsync();
-
-            foreach (var timeStatus in timeStatuses)
+            try
             {
-                if (timeStatus.IsActive(_systemClock.UtcNow))
+                var client = _discordClientAccessor.Client;
+
+                using var serviceScope = _serviceScopeFactory.CreateScope();
+                var serviceProvider = serviceScope.ServiceProvider;
+                var guildConfigRepository = serviceProvider.GetRequiredService<IGuildConfigRepository>();
+                var timeStatusRepository = serviceProvider.GetRequiredService<ITimeStatusRepository>();
+
+                var timeStatuses = await timeStatusRepository.GetBySubTypeAsync();
+
+                foreach (var timeStatus in timeStatuses)
                 {
-                    continue;
+                    if (timeStatus.IsActive(_systemClock.UtcNow))
+                    {
+                        continue;
+                    }
+
+                    var guild = await client.GetGuildAsync(timeStatus.GuildId.Value);
+
+                    switch (timeStatus.Type)
+                    {
+                        case StatusType.Globals:
+                            var guildConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(timeStatus.GuildId.Value);
+                            await RemoveRoleAsync(guild, guildConfig?.GlobalEmotesRoleId ?? 0, timeStatus.UserId);
+                            break;
+
+                        case StatusType.Color:
+                            var user = await guild.GetUserAsync(timeStatus.UserId);
+                            await RomoveUserColorAsync(user);
+                            break;
+
+                        default:
+                            break;
+                    }
                 }
-
-                var guild = await client.GetGuildAsync(timeStatus.GuildId.Value);
-
-                switch (timeStatus.Type)
-                {
-                    case StatusType.Globals:
-                        var guildConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(timeStatus.GuildId.Value);
-                        await RemoveRoleAsync(guild, guildConfig?.GlobalEmotesRoleId ?? 0, timeStatus.UserId);
-                        break;
-
-                    case StatusType.Color:
-                        var user = await guild.GetUserAsync(timeStatus.UserId);
-                        await RomoveUserColorAsync(user);
-                        break;
-
-                    default:
-                        break;
-                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Error occurred in profile background service", ex);
+            }
+            finally
+            {
+                _isRunning = false;
             }
         }
 

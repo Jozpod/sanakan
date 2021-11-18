@@ -27,7 +27,7 @@ using Sanakan.DAL;
 
 namespace Sanakan.Web.HostedService
 {
-    public class DiscordBotHostedService : BackgroundService
+    internal class DiscordBotHostedService : BackgroundService
     {
         private readonly IBlockingPriorityQueue _blockingPriorityQueue;
         private readonly IDiscordClientAccessor _discordSocketClientAccessor;
@@ -41,7 +41,8 @@ namespace Sanakan.Web.HostedService
         private readonly ITaskManager _taskManager;
         private readonly IDatabaseFacade _databaseFacade;
         private const double experienceSaveThreshold = 5;
-        private Dictionary<ulong, UserStat> _userStatsMap;
+        private IDictionary<ulong, UserStat> _userStatsMap;
+        private readonly TimeSpan _halfAnHour;
 
         private class UserStat
         {
@@ -76,6 +77,8 @@ namespace Sanakan.Web.HostedService
             _commandHandler = commandHandler;
             _taskManager = taskManager;
             _databaseFacade = databaseFacade;
+            _halfAnHour = TimeSpan.FromMinutes(30);
+            _userStatsMap = new Dictionary<ulong, UserStat>();
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -84,8 +87,6 @@ namespace Sanakan.Web.HostedService
             {
                 stoppingToken.ThrowIfCancellationRequested();
 
-                using var serviceScope = _serviceScopeFactory.CreateScope();
-                var serviceProvider = serviceScope.ServiceProvider;
                 await _databaseFacade.EnsureCreatedAsync(stoppingToken);
 
                 stoppingToken.ThrowIfCancellationRequested();
@@ -102,8 +103,8 @@ namespace Sanakan.Web.HostedService
                 _discordSocketClientAccessor.UserJoined += UserJoinedAsync;
                 _discordSocketClientAccessor.UserLeft += UserLeftAsync;
                 _discordSocketClientAccessor.MessageReceived += HandleMessageAsync;
-                _discordSocketClientAccessor.MessageDeleted += HandleDeletedMsgAsync;
-                _discordSocketClientAccessor.MessageUpdated += HandleUpdatedMsgAsync;
+                _discordSocketClientAccessor.MessageDeleted += HandleDeletedMessageAsync;
+                _discordSocketClientAccessor.MessageUpdated += HandleUpdatedMessageAsync;
                 stoppingToken.ThrowIfCancellationRequested();
 
                 var configuration = _discordConfiguration.CurrentValue;
@@ -120,33 +121,34 @@ namespace Sanakan.Web.HostedService
             }
             catch (InvalidOperationException)
             {
-                
                 _logger.LogInformation("The discord client stopped");
             }
             catch(Exception ex)
             {
                 _logger.LogInformation("Error occurred while running discord bot daemon", ex);
             }
-
-           
         }
 
         private async Task HandleMessageAsync(IMessage message)
         {
-            if (message.Author.IsBot || message.Author.IsWebhook)
+            var user = message.Author;
+
+            if (user.IsBot || user.IsWebhook)
             {
                 return;
             }
 
-            var user = message.Author as IGuildUser;
+            var guildUser = user as IGuildUser;
 
-            if (user == null)
+            if (guildUser == null)
             {
                 return;
             }
+
+            var guild = guildUser.Guild;
 
             if (_discordConfiguration.CurrentValue
-                .BlacklistedGuilds.Any(x => x == user.Guild.Id))
+                .BlacklistedGuilds.Any(x => x == guild.Id))
             {
                 return;
             }
@@ -159,13 +161,13 @@ namespace Sanakan.Web.HostedService
             var guildConfigRepository = serviceProvider.GetRequiredService<IGuildConfigRepository>();
             var userRepository = serviceProvider.GetRequiredService<IUserRepository>();
 
-            var config = await guildConfigRepository.GetCachedGuildFullConfigAsync(user.Guild.Id);
+            var config = await guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
             if (config != null)
             {
-                var role = config.UserRoleId.HasValue ? user.Guild.GetRole(config.UserRoleId.Value) : null;
+                var role = config.UserRoleId.HasValue ? guild.GetRole(config.UserRoleId.Value) : null;
                 if (role != null)
                 {
-                    if (!user.RoleIds.Contains(role.Id))
+                    if (!guildUser.RoleIds.Contains(role.Id))
                     {
                         return;
                     }
@@ -182,15 +184,17 @@ namespace Sanakan.Web.HostedService
                 }
             }
 
-            if (!_userStatsMap.TryGetValue(user.Id, out var userExperienceStat))
+            var userId = user.Id;
+
+            if (!_userStatsMap.TryGetValue(userId, out var userExperienceStat))
             {
                 if (!await userRepository.ExistsByDiscordIdAsync(user.Id))
                 {
-                    var databseUser = new User(user.Id, _systemClock.StartOfMonth);
+                    var databseUser = new User(userId, _systemClock.StartOfMonth);
                     userRepository.Add(databseUser);
                     await userRepository.SaveChangesAsync();
                     userExperienceStat = new UserStat();
-                    _userStatsMap[user.Id] = userExperienceStat;
+                    _userStatsMap[userId] = userExperienceStat;
                 }
             }
 
@@ -205,9 +209,9 @@ namespace Sanakan.Web.HostedService
                 }
             }
 
-            CalculateExpAndCreateTask(
+            CalculateExperienceAndCreateTask(
                 userExperienceStat,
-                user,
+                guildUser,
                 message,
                 calculateExperience);
         }
@@ -234,16 +238,17 @@ namespace Sanakan.Web.HostedService
             return experience;
         }
 
-        private void CalculateExpAndCreateTask(
+        private void CalculateExperienceAndCreateTask(
             UserStat userExperienceStat,
             IGuildUser user,
             IMessage message,
             bool calculateExperience)
         {
+            var content = message.Content;
             var emoteChars = message.Tags.CountEmotesTextLength();
-            var linkChars = message.Content.CountLinkTextLength();
-            var nonWhiteSpaceChars = message.Content.Count(character => !char.IsWhiteSpace(character));
-            var quotedChars = message.Content.CountQuotedTextLength();
+            var linkChars = content.CountLinkTextLength();
+            var nonWhiteSpaceChars = content.Count(character => !char.IsWhiteSpace(character));
+            var quotedChars = content.CountQuotedTextLength();
             var charsThatMatters = nonWhiteSpaceChars - linkChars - emoteChars - quotedChars;
 
             var effectiveCharacters = (ulong)(charsThatMatters < 1 ? 1 : charsThatMatters);
@@ -270,7 +275,7 @@ namespace Sanakan.Web.HostedService
                 userExperienceStat.SavedOn = utcNow;
             }
 
-            var halfAnHourElapsed = (_systemClock.UtcNow - userExperienceStat.SavedOn.Value.AddMinutes(30)).TotalSeconds > 1;
+            var halfAnHourElapsed = (utcNow - userExperienceStat.SavedOn.Value) > _halfAnHour;
 
             if (userExperienceStat.Experience < experienceSaveThreshold && !halfAnHourElapsed)
             {
@@ -285,7 +290,7 @@ namespace Sanakan.Web.HostedService
             }
 
             userExperienceStat.Experience -= effectiveExperience;
-            userExperienceStat.SavedOn = _systemClock.UtcNow;
+            userExperienceStat.SavedOn = utcNow;
 
             _blockingPriorityQueue.TryEnqueue(new AddExperienceMessage
             {
@@ -316,12 +321,17 @@ namespace Sanakan.Web.HostedService
                 return;
             }
 
-            await _taskManager.Delay(TimeSpan.FromSeconds(40));
+            var reconnectTimeSpan = TimeSpan.FromSeconds(40);
+
+            _logger.LogDebug("Reconnecting after {0}", reconnectTimeSpan);
+
+            await _taskManager.Delay(reconnectTimeSpan);
 
             var client = _discordSocketClientAccessor.Client;
 
             if (client.ConnectionState == ConnectionState.Connected)
             {
+                _logger.LogDebug("Already connected");
                 return;
             }
 
@@ -447,7 +457,7 @@ namespace Sanakan.Web.HostedService
             });
         }
 
-        private async Task HandleUpdatedMsgAsync(
+        private async Task HandleUpdatedMessageAsync(
             Cacheable<IMessage, ulong> oldMessage,
             IMessage newMessage,
             ISocketMessageChannel channel)
@@ -484,34 +494,36 @@ namespace Sanakan.Web.HostedService
             await Task.CompletedTask;
         }
 
-        private async Task HandleDeletedMsgAsync(Cacheable<IMessage, ulong> message, ISocketMessageChannel channel)
+        private async Task HandleDeletedMessageAsync(Cacheable<IMessage, ulong> cachedMessage, IChannel channel)
         {
-            if (!message.HasValue)
+            if (!cachedMessage.HasValue)
             {
                 return;
             }
 
-            if (message.Value.Author.IsBot || message.Value.Author.IsWebhook)
+            var message = cachedMessage.Value;
+            var user = message.Author;
+
+            if (user.IsBot || user.IsWebhook)
             {
                 return;
             }
 
-            if (message.Value.Content.Length < 4 && message.Value.Attachments.Count < 1)
+            if (message.Content.Length < 4 && message.Attachments.Count < 1)
             {
                 return;
             }
 
-            if (message.Value.Channel is IGuildChannel gChannel)
+            if (message.Channel is IGuildChannel gChannel)
             {
                 if (_discordConfiguration.CurrentValue.BlacklistedGuilds.Any(x => x == gChannel.Guild.Id))
                 {
                     return;
                 }
 
-                await LogMessageAsync(gChannel, message.Value);
+                await LogMessageAsync(gChannel, message);
             }
 
-            await Task.CompletedTask;
         }
 
         private async Task LogMessageAsync(IGuildChannel channel, IMessage oldMessage, IMessage? newMessage = null)
@@ -524,22 +536,31 @@ namespace Sanakan.Web.HostedService
                 return;
             }
 
-            var config = await guildConfigRepository.GetCachedGuildFullConfigAsync(channel.Guild.Id);
+            var guild = channel.Guild;
+            var config = await guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
 
             if (config == null)
             {
                 return;
             }
 
-            var textChannel = (IMessageChannel)channel.Guild.GetChannelAsync(config.LogChannelId);
+            var textChannel = (await guild.GetChannelAsync(config.LogChannelId)) as IMessageChannel;
 
             if (textChannel == null)
             {
                 return;
             }
 
-            var jump = (newMessage == null) ? "" : $"{newMessage.GetJumpUrl()}";
-            await textChannel.SendMessageAsync(jump, embed: BuildMessage(oldMessage, newMessage));
+            try
+            {
+                var jumpUrl = (newMessage == null) ? "" : $"{newMessage.GetJumpUrl()}";
+                await textChannel.SendMessageAsync(jumpUrl, embed: BuildMessage(oldMessage, newMessage));
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
         }
 
         private Embed BuildMessage(IMessage oldMessage, IMessage newMessage)
@@ -586,11 +607,6 @@ namespace Sanakan.Web.HostedService
 
             return fields;
         }
-
-        //private async Task SendMessageAsync(string message, ITextChannel channel)
-        //{
-        //    if (channel != null) 
-        //}
 
         private string ReplaceTags(IGuildUser user, string message)
             => message.Replace("^nick", user.Nickname ?? user.Username).Replace("^mention", user.Mention);

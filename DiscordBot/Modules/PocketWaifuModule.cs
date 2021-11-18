@@ -330,7 +330,7 @@ namespace Sanakan.DiscordBot.Modules
         public async Task UseItemAsync(
             [Summary("nr przedmiotu")]int itemNumber,
             [Summary("WID")]ulong wid = 0,
-            [Summary("liczba przedmiotów/link do obrazka/typ gwiazdki")]string detail = "1")
+            [Summary("liczba przedmiotów/link do obrazka/typ gwiazdki")]string itemsCountOrImageLinkOrStarType = "1")
         {
             var discordUser = Context.User;
 
@@ -365,7 +365,7 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            var dis = int.TryParse(detail, out itemCount);
+            var dis = int.TryParse(itemsCountOrImageLinkOrStarType, out itemCount);
             if (itemCount < 1)
             {
                 dis = false;
@@ -514,7 +514,7 @@ namespace Sanakan.DiscordBot.Modules
                 case ItemType.ChangeStarType:
                     try
                     {
-                        card.StarStyle = new StarStyle().Parse(detail);
+                        card.StarStyle = new StarStyle().Parse(itemsCountOrImageLinkOrStarType);
                     }
                     catch (Exception)
                     {
@@ -589,7 +589,7 @@ namespace Sanakan.DiscordBot.Modules
                     break;
 
                 case ItemType.SetCustomImage:
-                    if (!detail.IsURLToImage())
+                    if (!itemsCountOrImageLinkOrStarType.IsURLToImage())
                     {
                         await ReplyAsync("", embed: "Nie wykryto obrazka! Upewnij się, że podałeś poprawny adres!".ToEmbedMessage(EMType.Error).Build());
                         return;
@@ -599,7 +599,7 @@ namespace Sanakan.DiscordBot.Modules
                         await ReplyAsync("", embed: "Aby ustawić własny obrazek, karta musi posiadać wcześniej ustawiony główny (na stronie)!".ToEmbedMessage(EMType.Error).Build());
                         return;
                     }
-                    card.CustomImageUrl = detail;
+                    card.CustomImageUrl = itemsCountOrImageLinkOrStarType;
                     consumeItem = !card.FromFigure;
                     karmaChange += 0.001 * itemCount;
                     embed.Description += "Ustawiono nowy obrazek. Pamiętaj jednak, że dodanie nieodpowiedniego obrazka może skutkować skasowaniem karty!";
@@ -607,7 +607,7 @@ namespace Sanakan.DiscordBot.Modules
                     break;
 
                 case ItemType.SetCustomBorder:
-                    if (!detail.IsURLToImage())
+                    if (!itemsCountOrImageLinkOrStarType.IsURLToImage())
                     {
                         await ReplyAsync("", embed: "Nie wykryto obrazka! Upewnij się, że podałeś poprawny adres!".ToEmbedMessage(EMType.Error).Build());
                         return;
@@ -617,7 +617,7 @@ namespace Sanakan.DiscordBot.Modules
                         await ReplyAsync("", embed: "Aby ustawić ramkę, karta musi posiadać wcześniej ustawiony obrazek na stronie!".ToEmbedMessage(EMType.Error).Build());
                         return;
                     }
-                    card.CustomBorder = detail;
+                    card.CustomBorderUrl = itemsCountOrImageLinkOrStarType;
                     karmaChange += 0.001 * itemCount;
                     embed.Description += "Ustawiono nowy obrazek jako ramkę. Pamiętaj jednak, że dodanie nieodpowiedniego obrazka może skutkować skasowaniem karty!";
                     _waifuService.DeleteCardImageIfExist(card);
@@ -2468,18 +2468,21 @@ namespace Sanakan.DiscordBot.Modules
         [Alias("site color")]
         [Summary("zmienia kolor przewodni profilu na stronie waifu (500 TC)")]
         [Remarks("#dc5341"), RequireWaifuCommandChannel]
-        public async Task ChangeWaifuSiteForegroundColorAsync([Summary("kolor w formacie hex")]string color)
+        public async Task ChangeWaifuSiteForegroundColorAsync(
+            [Summary("kolor w formacie hex")]string color)
         {
             var tcCost = 500;
 
             var botuser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
+            var mention = Context.User.Mention;
+
             if (botuser.TcCount < tcCost)
             {
-                await ReplyAsync("", embed: $"{Context.User.Mention} nie posiadasz wystarczającej liczby TC!".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync("", embed: $"{mention} nie posiadasz wystarczającej liczby TC!".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
-            if (!color.IsAColorInHEX())
+            if (!color.IsHexTriplet())
             {
                 await ReplyAsync("", embed: "Nie wykryto koloru! Upewnij się, że podałeś poprawny kod HEX!".ToEmbedMessage(EMType.Error).Build());
                 return;
@@ -2490,14 +2493,15 @@ namespace Sanakan.DiscordBot.Modules
 
             await _userRepository.SaveChangesAsync();
 
-            await ReplyAsync("", embed: $"Zmieniono kolor na stronie waifu użytkownika: {Context.User.Mention}!".ToEmbedMessage(EMType.Success).Build());
+            await ReplyAsync("", embed: $"Zmieniono kolor na stronie waifu użytkownika: {mention}!".ToEmbedMessage(EMType.Success).Build());
         }
 
         [Command("szczegół strony")]
         [Alias("szczegoł strony", "szczegol strony", "szczegól strony", "site fg", "site foreground")]
         [Summary("zmienia obrazek nakładany na tło profilu na stronie waifu (500 TC)")]
         [Remarks("https://i.imgur.com/eQoaZid.png"), RequireWaifuCommandChannel]
-        public async Task ChangeWaifuSiteForegroundAsync([Summary("bezpośredni adres do obrazka")]string imgUrl)
+        public async Task ChangeWaifuSiteForegroundAsync(
+            [Summary("bezpośredni adres do obrazka")]string imageUrl)
         {
             var tcCost = 500;
 
@@ -2508,14 +2512,14 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            if (!imgUrl.IsURLToImage())
+            if (!imageUrl.IsURLToImage())
             {
                 await ReplyAsync("", embed: "Nie wykryto obrazka! Upewnij się, że podałeś poprawny adres!".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
             botuser.TcCount -= tcCost;
-            botuser.GameDeck.ForegroundImageUrl = imgUrl;
+            botuser.GameDeck.ForegroundImageUrl = imageUrl;
 
             await _userRepository.SaveChangesAsync();
 
@@ -2527,7 +2531,7 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("zmienia obrazek tła profilu na stronie waifu (2000 TC)")]
         [Remarks("https://i.imgur.com/wmDhRWd.jpeg"), RequireWaifuCommandChannel]
         public async Task ChangeWaifuSiteBackgroundAsync(
-            [Summary("bezpośredni adres do obrazka")]string imgUrl)
+            [Summary("bezpośredni adres do obrazka")]string imageUrl)
         {
             var tcCost = 2000;
 
@@ -2538,14 +2542,14 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            if (!imgUrl.IsURLToImage())
+            if (!imageUrl.IsURLToImage())
             {
                 await ReplyAsync("", embed: "Nie wykryto obrazka! Upewnij się, że podałeś poprawny adres!".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
             botuser.TcCount -= tcCost;
-            botuser.GameDeck.BackgroundImageUrl = imgUrl;
+            botuser.GameDeck.BackgroundImageUrl = imageUrl;
 
             await _userRepository.SaveChangesAsync();
 

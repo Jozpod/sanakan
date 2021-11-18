@@ -79,11 +79,38 @@ namespace Sanakan.Web.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Could not access discord.
+        /// </summary>
+        internal static string CannotAccessDiscord {
+            get {
+                return ResourceManager.GetString("CannotAccessDiscord", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Could not access Shinden.
+        /// </summary>
+        internal static string CannotAccessShinden {
+            get {
+                return ResourceManager.GetString("CannotAccessShinden", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Card not found.
         /// </summary>
         internal static string CardNotFound {
             get {
                 return ResourceManager.GetString("CardNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Guild not found!.
+        /// </summary>
+        internal static string GuildNotFound {
+            get {
+                return ResourceManager.GetString("GuildNotFound", resourceCulture);
             }
         }
         

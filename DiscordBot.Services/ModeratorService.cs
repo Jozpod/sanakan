@@ -445,7 +445,7 @@ namespace Sanakan.DiscordBot.Services
                     {
                         IsInline = true,
                         Name = "Kiedy:",
-                        Value = $"{penaltyInfo.StartDate.ToShortDateString()} {penaltyInfo.StartDate.ToShortTimeString()}"
+                        Value = $"{penaltyInfo.StartedOn.ToShortDateString()} {penaltyInfo.StartedOn.ToShortTimeString()}"
                     },
                     new EmbedFieldBuilder
                     {
@@ -491,7 +491,7 @@ namespace Sanakan.DiscordBot.Services
                 mutedList = "";
                 foreach (var penalty in penaltyList)
                 {
-                    var endDate = penalty.StartDate + penalty.Duration;
+                    var endDate = penalty.StartedOn + penalty.Duration;
                     var name = (await guild.GetUserAsync(penalty.UserId))?.Mention;
                     
                     if (name is null)
@@ -623,7 +623,7 @@ namespace Sanakan.DiscordBot.Services
                 Reason = reason,
                 GuildId = user.Guild.Id,
                 Type = PenaltyType.Ban,
-                StartDate = _systemClock.UtcNow,
+                StartedOn = _systemClock.UtcNow,
                 Duration = duration,
                 Roles = new List<OwnedRole>(),
             };
@@ -653,7 +653,7 @@ namespace Sanakan.DiscordBot.Services
                 Reason = reason,
                 GuildId = user.Guild.Id,
                 Type = PenaltyType.Mute,
-                StartDate = _systemClock.UtcNow,
+                StartedOn = _systemClock.UtcNow,
                 Duration = duration,
                 Roles = new List<OwnedRole>(),
             };

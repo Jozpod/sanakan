@@ -41,7 +41,7 @@ namespace Sanakan.DAL.Models
             Dere = dere;
             Curse = CardCurse.None;
             RarityOnStart = rarity;
-            CustomBorder = null;
+            CustomBorderUrl = null;
             FromFigure = false;
             CustomImageUrl = null;
             IsTradable = true;
@@ -106,7 +106,11 @@ namespace Sanakan.DAL.Models
         public ulong? LastOwnerId { get; set; }
         public bool Unique { get; set; }
         public StarStyle StarStyle { get; set; }
-        public string? CustomBorder { get; set; }
+
+        /// <summary>
+        /// The URL to border image.
+        /// </summary>
+        public string? CustomBorderUrl { get; set; }
         public double MarketValue { get; set; }
         public CardCurse Curse { get; set; }
         public double CardPower { get; set; }

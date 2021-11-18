@@ -14,9 +14,6 @@ namespace Sanakan.DAL.Models
             Cards = new Collection<Card>();
         }
 
-        public const double MAX_DECK_POWER = 800;
-        public const double MIN_DECK_POWER = 200;
-
         /// <summary>
         /// The Discord user identifier and also <see cref="User"/> identifier.
         /// </summary>
@@ -112,14 +109,17 @@ namespace Sanakan.DAL.Models
         public DeckPowerStatus CanFightPvP()
         {
             DeckPower = CalculateDeckPower();
-            if (DeckPower > GetMaxDeckPower())
+            
+            if (DeckPower > Constants.MaxDeckPower)
             {
                 return DeckPowerStatus.TooHigh;
             }
-            if (DeckPower < GetMinDeckPower())
+
+            if (DeckPower < Constants.MinDeckPower)
             {
                 return DeckPowerStatus.TooLow;
             }
+
             return DeckPowerStatus.Ok;
         }
 
@@ -175,10 +175,6 @@ namespace Sanakan.DAL.Models
 
         public double CalculateDeckPower()
             => Cards.Where(x => x.Active).Sum(x => x.CalculateCardPower());
-
-        public double GetMaxDeckPower() => MAX_DECK_POWER;
-
-        public double GetMinDeckPower() => MIN_DECK_POWER;
 
         public int LimitOfCardsOnExpedition() => 10;
 

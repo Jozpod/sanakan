@@ -15,7 +15,12 @@ namespace Sanakan.Common.Configuration
         /// The Discord bot token.
         /// </summary>
         public string BotToken { get; set; } = string.Empty;
-        
+
+        /// <summary>
+        /// The main discord guild identifier which is used in Sanakan API.
+        /// </summary>
+        public ulong MainGuild { get; set; }
+
         /// <summary>
         /// Ban users when they flood chat with urls.
         /// </summary>

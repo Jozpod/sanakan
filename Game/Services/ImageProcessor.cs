@@ -928,12 +928,12 @@ namespace Sanakan.Game.Services
 
         private async Task<Image<Rgba32>> LoadCustomBorderAsync(Card card)
         {
-            if (card.CustomBorder == null)
+            if (card.CustomBorderUrl == null)
             {
                 return GenerateBorder(card);
             }
 
-            using var stream = await GetImageFromUrlAsync(card.CustomBorder);
+            using var stream = await GetImageFromUrlAsync(card.CustomBorderUrl);
 
             if (stream == null)
             {
@@ -1125,7 +1125,7 @@ namespace Sanakan.Game.Services
             switch (card.Quality)
             {
                 case Quality.Zeta:
-                    if (card.CustomBorder != null)
+                    if (card.CustomBorderUrl != null)
                         return false;
                     return true;
 
@@ -1189,7 +1189,7 @@ namespace Sanakan.Game.Services
 
         private void ApplyBorderBack(Image<Rgba32> image, Card card)
         {
-            var isFromFigureOriginalBorder = card.CustomBorder == null && card.FromFigure;
+            var isFromFigureOriginalBorder = card.CustomBorderUrl == null && card.FromFigure;
             var backBorderStr = string.Format(Paths.BackBorderPicture, card.Quality);
 
             if (isFromFigureOriginalBorder && _fileSystem.Exists(backBorderStr))

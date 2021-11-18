@@ -17,6 +17,7 @@ namespace Sanakan.Api
         private readonly IOptionsMonitor<JwtConfig> _options;
         private readonly ISystemClock _systemClock;
         private readonly SigningCredentials _signingCredentials;
+        private readonly SecurityTokenHandler _securityTokenHandler;
 
         public JwtBuilder(
             IOptionsMonitor<JwtConfig> options,
@@ -28,6 +29,7 @@ namespace Sanakan.Api
             _systemClock = systemClock;
             var securityKey = new SymmetricSecurityKey(_encoding.GetBytes(_options.CurrentValue.Key));
             _signingCredentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+            _securityTokenHandler = new JwtSecurityTokenHandler();
         }
 
         public TokenData Build(TimeSpan expiresOn, params Claim[] claims)
@@ -44,7 +46,7 @@ namespace Sanakan.Api
 
             return new TokenData()
             {
-                Token = new JwtSecurityTokenHandler().WriteToken(token),
+                Token = _securityTokenHandler.WriteToken(token),
                 Expire = token.ValidTo
             };
         }

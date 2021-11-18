@@ -17,8 +17,35 @@ namespace Sanakan.DAL.Tests
         public async Task Should_Return_Card_By_Id()
         {
             var repository = ServiceProvider.GetRequiredService<ICardRepository>();
-            var actual = await repository.GetByIdAsync(1);
-            actual.Should().NotBeNull();
+            var result = await repository.GetByIdAsync(1);
+            result.Should().NotBeNull();
+        }
+
+        [TestMethod]
+        public async Task Should_Return_Card_By_Character_Id()
+        {
+            var repository = ServiceProvider.GetRequiredService<ICardRepository>();
+            var result = await repository.GetByCharacterIdAsync(1);
+            result.Should().NotBeNull();
+            result.Should().NotBeEmpty();
+        }
+
+        [TestMethod]
+        public async Task Should_Return_Card_By_GameDeck_Id()
+        {
+            var repository = ServiceProvider.GetRequiredService<ICardRepository>();
+            var result = await repository.GetByGameDeckIdAsync(1);
+            result.Should().NotBeNull();
+            result.Should().NotBeEmpty();
+        }
+
+        [TestMethod]
+        public async Task Should_Return_Card_By_Owner_Id()
+        {
+            var repository = ServiceProvider.GetRequiredService<ICardRepository>();
+            var result = await repository.GetByIdFirstOrLastOwnerAsync(1);
+            result.Should().NotBeNull();
+            result.Should().NotBeEmpty();
         }
     }
 }

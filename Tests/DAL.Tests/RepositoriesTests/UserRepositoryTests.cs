@@ -15,8 +15,33 @@ namespace Sanakan.DAL.Tests
         public async Task Should_Return_User_By_Discord_User_Id()
         {
             var repository = ServiceProvider.GetRequiredService<IUserRepository>();
-            var actual = await repository.GetByDiscordIdAsync(1);
-            actual.Should().NotBeNull();
+            var result = await repository.GetByDiscordIdAsync(1);
+            result.Should().NotBeNull();
+        }
+
+        [TestMethod]
+        public async Task Should_Return_User_By_Shinden_User_Id()
+        {
+            var repository = ServiceProvider.GetRequiredService<IUserRepository>();
+            var result = await repository.GetByShindenIdAsync(1);
+            result.Should().NotBeNull();
+        }
+
+        [TestMethod]
+        public async Task Should_Return_True()
+        {
+            var repository = ServiceProvider.GetRequiredService<IUserRepository>();
+            var result = await repository.ExistsByDiscordIdAsync(1);
+            result.Should().BeTrue();
+        }
+
+        [TestMethod]
+        public async Task Should_Return_User_By_Shinden_User_Id_Exclude_Discord_User_Id()
+        {
+            var repository = ServiceProvider.GetRequiredService<IUserRepository>();
+            var result = await repository.GetByShindenIdExcludeDiscordIdAsync(2, 4);
+            result.Should().NotBeNull();
+            result.Should().NotBeEmpty();
         }
     }
 }

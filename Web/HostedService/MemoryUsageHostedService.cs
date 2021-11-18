@@ -15,7 +15,7 @@ using Sanakan.DAL;
 
 namespace Sanakan.Web.HostedService
 {
-    public class MemoryUsageHostedService : BackgroundService
+    internal class MemoryUsageHostedService : BackgroundService
     {
         private readonly ILogger _logger;
         private readonly ISystemClock _systemClock;

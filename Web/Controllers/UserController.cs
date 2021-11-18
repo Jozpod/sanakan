@@ -48,11 +48,8 @@ namespace Sanakan.Web.Controllers
         private readonly IOptionsMonitor<SanakanConfiguration> _config;
         private readonly IUserRepository _userRepository;
         private readonly IBlockingPriorityQueue _blockingPriorityQueue;
-        private readonly ITransferAnalyticsRepository _transferAnalyticsRepository;
         private readonly IShindenClient _shindenClient;
         private readonly IDiscordClientAccessor _discordSocketClientAccessor;
-        private readonly ISystemClock _systemClock;
-        private readonly ICacheManager _cacheManager;
         private readonly IUserContext _userContext;
         private readonly IJwtBuilder _jwtBuilder;
         private readonly IRequestBodyReader _requestBodyReader;
@@ -61,11 +58,8 @@ namespace Sanakan.Web.Controllers
             IDiscordClientAccessor discordSocketClientAccessor,
             IOptionsMonitor<SanakanConfiguration> config,
             IUserRepository userRepository,
-            ITransferAnalyticsRepository transferAnalyticsRepository,
-            IShindenClient shClient,
+            IShindenClient shindenClient,
             ILogger<UserController> logger,
-            ISystemClock systemClock,
-            ICacheManager cacheManager,
             IUserContext userContext,
             IJwtBuilder jwtBuilder,
             IRequestBodyReader requestBodyReader)
@@ -73,11 +67,8 @@ namespace Sanakan.Web.Controllers
             _discordSocketClientAccessor = discordSocketClientAccessor;
             _config = config;
             _userRepository = userRepository;
-            _transferAnalyticsRepository = transferAnalyticsRepository;
             _logger = logger;
-            _shindenClient = shClient;
-            _systemClock = systemClock;
-            _cacheManager = cacheManager;
+            _shindenClient = shindenClient;
             _userContext = userContext;
             _jwtBuilder = jwtBuilder;
             _requestBodyReader = requestBodyReader;
@@ -87,7 +78,7 @@ namespace Sanakan.Web.Controllers
         /// Gets the user.
         /// </summary>
         /// <param name="discordUserId">The user identifier in Discord.</param>
-        [HttpGet("discord/{id}"), Authorize(Policy = AuthorizePolicies.Site)]
+        [HttpGet("discord/{discordUserId}"), Authorize(Policy = AuthorizePolicies.Site)]
         [ProducesResponseType(typeof(User), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetUserByDiscordIdAsync(ulong discordUserId)
         {
@@ -96,7 +87,7 @@ namespace Sanakan.Web.Controllers
         }
 
         /// <summary>
-        /// Find the user in Shinden.
+        /// Finds the user in Shinden.
         /// </summary>
         /// <param name="name">The name of the user</param>
         [HttpPost("find")]
@@ -151,7 +142,7 @@ namespace Sanakan.Web.Controllers
                 return ShindenNotFound(Strings.UserNotFound);
             }
 
-            TokenData tokenData = null;
+            TokenData? tokenData = null;
             
             if (_userContext.HasWebpageClaim())
             {
@@ -169,15 +160,15 @@ namespace Sanakan.Web.Controllers
         }
 
         /// <summary>
-        /// Pobieranie użytkownika bota z zmniejszoną ilością danych
+        /// Gets the basic details for given user.
         /// </summary>
-        /// <param name="id">The Shinden user identifier.</param>
-        [HttpGet("shinden/simple/{id}"), Authorize(Policy = AuthorizePolicies.Site)]
+        /// <param name="shindenUserId">The Shinden user identifier.</param>
+        [HttpGet("shinden/simple/{shindenUserId}"), Authorize(Policy = AuthorizePolicies.Site)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(UserWithToken), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetUserByShindenIdSimpleAsync(ulong id)
+        public async Task<IActionResult> GetUserByShindenIdSimpleAsync(ulong shindenUserId)
         {
-            var user = await _userRepository.GetByShindenIdAsync(id, new UserQueryOptions
+            var user = await _userRepository.GetByShindenIdAsync(shindenUserId, new UserQueryOptions
             {
                 IncludeGameDeck = true
             });
@@ -205,19 +196,19 @@ namespace Sanakan.Web.Controllers
         }
 
         /// <summary>
-        /// Zmienia użytkownikowi shindena nick
+        /// Updates the nickname for given user.
         /// </summary>
-        /// <param name="id">id użytkownika shindena</param>
-        /// <param name="nickname">ksywka użytkownika</param>
+        /// <param name="shindenUserId">The Shinden user identifier.</param>
+        /// <param name="nickname">The user nickname</param>
         /// <response code="404">User not found</response>
-        [HttpPost("shinden/{id}/nickname"), Authorize(Policy = AuthorizePolicies.Site)]
+        [HttpPost("shinden/{shindenUserId}/nickname"), Authorize(Policy = AuthorizePolicies.Site)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(UserWithToken), StatusCodes.Status200OK)]
         public async Task<IActionResult> ChangeNicknameShindenUserAsync(
-            ulong id,
+            ulong shindenUserId,
             [FromBody, Required]string nickname)
         {
-            var user = await _userRepository.GetByShindenIdAsync(id);
+            var user = await _userRepository.GetByShindenIdAsync(shindenUserId);
 
             if (user == null)
             {
@@ -228,24 +219,24 @@ namespace Sanakan.Web.Controllers
 
             if(client == null)
             {
-                return ShindenForbidden("Could not access discord client");
+                return ShindenForbidden(Strings.CannotAccessDiscord);
             }
 
-            var guild = await client.GetGuildAsync(Constants.ShindenDiscordGuildId);
+            var guild = await client.GetGuildAsync(_config.CurrentValue.Discord.MainGuild);
 
             if (guild == null)
             {
-                return ShindenNotFound("Guild not found!");
+                return ShindenNotFound(Strings.GuildNotFound);
             }
 
-            var userOnGuild = await guild.GetUserAsync(user.Id);
+            var guildUser = await guild.GetUserAsync(user.Id);
 
-            if (userOnGuild == null)
+            if (guildUser == null)
             {
                 return ShindenNotFound(Strings.UserNotFound);
             }
 
-            await userOnGuild.ModifyAsync(x => x.Nickname = nickname);
+            await guildUser.ModifyAsync(x => x.Nickname = nickname);
 
             return ShindenOk("User nickname changed!");
         }
@@ -267,14 +258,14 @@ namespace Sanakan.Web.Controllers
 
                 _logger.LogDebug(requestBody);
 
-                return ShindenInternalServerError("Model is Invalid!");
+                return ShindenInternalServerError(Strings.ModelIsInvalid);
             }
 
             var client = _discordSocketClientAccessor.Client;
 
             if (client == null)
             {
-                return ShindenForbidden("Could not access discord client");
+                return ShindenForbidden(Strings.CannotAccessDiscord);
             }
 
             var discordUser = await client.GetUserAsync(model.DiscordUserId);
@@ -295,7 +286,7 @@ namespace Sanakan.Web.Controllers
 
             if (searchUserResult.Value == null)
             {
-                return ShindenForbidden("Can't connect to shinden!");
+                return ShindenForbidden(Strings.CannotAccessShinden);
             }
 
             var firstMatch = searchUserResult.Value.First();

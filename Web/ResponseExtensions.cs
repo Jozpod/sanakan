@@ -58,20 +58,5 @@ namespace Sanakan.Web
         public static IActionResult ShindenInternalServerError(string str) => BaseResponse(str, StatusCodes.Status500InternalServerError);
         public static IActionResult ShindenServiceUnavailable(string str) => BaseResponse(str, StatusCodes.Status503ServiceUnavailable);
         public static IActionResult ShindenUnauthorized(string str) => BaseResponse(str, StatusCodes.Status401Unauthorized);
-
-        //public static IActionResult ToResponse(this string str, int Code = 200)
-        //{
-        //    return new ObjectResult(new { message = str, success = (Code >= 200 && Code < 300) }) { StatusCode = Code };
-        //}
-
-        //public static IActionResult ToResponseRich(this string str, ulong msgId)
-        //{
-        //    return new ObjectResult(new { message = str, success = true, id = msgId }) { StatusCode = 200 };
-        //}
-
-        //public static IActionResult ToResponseRich(this string str, List<ulong> msgId)
-        //{
-        //    return new ObjectResult(new { message = str, success = true, ids = msgId }) { StatusCode = 200 };
-        //}
     }
 }

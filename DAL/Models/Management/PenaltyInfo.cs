@@ -1,14 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 
 namespace Sanakan.DAL.Models.Management
 {
     /// <summary>
-    /// 
+    /// Describes exercised penalty on a given user caused by ToS/ToU violation.
     /// </summary>
     public class PenaltyInfo
     {
+        public PenaltyInfo()
+        {
+            Roles = new Collection<OwnedRole>();
+        }
+
         /// <summary>
         /// The unique identifier.
         /// </summary>
@@ -34,7 +40,11 @@ namespace Sanakan.DAL.Models.Management
         /// The type of penalty.
         /// </summary>
         public PenaltyType Type { get; set; }
-        public DateTime StartDate { get; set; }
+
+        /// <summary>
+        /// The datetime when penalty started.
+        /// </summary>
+        public DateTime StartedOn { get; set; }
 
         /// <summary>
         /// The time span of penalty applied to user on Discord.

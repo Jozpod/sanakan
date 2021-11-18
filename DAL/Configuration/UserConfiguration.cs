@@ -13,6 +13,9 @@ namespace Sanakan.DAL.Configuration
             builder.HasKey(e => e.Id);
 
             builder.HasIndex(b => b.ShindenId);
+
+            builder.HasCheckConstraint("CK_user_BackgroundProfileUri", "BackgroundProfileUri <> ''");
+            builder.HasCheckConstraint("CK_user_StatsReplacementProfileUri", "StatsReplacementProfileUri <> ''");
         }
 
         public void Configure(EntityTypeBuilder<UserStats> builder)

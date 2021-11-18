@@ -21,7 +21,7 @@ namespace Sanakan.DAL.Repositories.Abstractions
         Task<List<Card>> GetByCharacterIdAsync(ulong characterId, CardQueryOptions cardQueryOptions);
         Task<Card?> GetByIdAsync(ulong id);
         Task<Card?> GetByIdAsync(ulong id, CardQueryOptions cardQueryOptions);
-        Task<List<Card>> GetByIdFirstOrLastOwnerAsync(ulong id);
+        Task<List<Card>> GetByIdFirstOrLastOwnerAsync(ulong discordUserId);
         Task<int> CountByRarityAndSucceedingIdAsync(Rarity rarity, ulong wid);
         Task<List<Card>> GetByCharactersAndNotInUserGameDeckAsync(ulong userId, IEnumerable<ulong> characterIds);
         Task<List<Card>> GetByCharacterIdsAsync(IEnumerable<ulong> characterIds);

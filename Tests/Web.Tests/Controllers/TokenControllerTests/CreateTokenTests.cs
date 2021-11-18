@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -26,7 +27,8 @@ namespace Sanakan.Web.Tests.Controllers.TokenControllerTests
         public void Should_Return_Unauthorized()
         {
             var result = _controller.CreateToken(null);
-            result.Should().BeOfType<UnauthorizedResult>();
+            var objectResult = result.Should().BeOfType<ObjectResult>().Subject;
+            objectResult.StatusCode.Should().Be(StatusCodes.Status401Unauthorized);
         }
 
         [TestMethod]
@@ -40,7 +42,8 @@ namespace Sanakan.Web.Tests.Controllers.TokenControllerTests
                 });
 
             var result = _controller.CreateToken("test token");
-            result.Should().BeOfType<ForbidResult>();
+            var objectResult = result.Should().BeOfType<ObjectResult>().Subject;
+            objectResult.StatusCode.Should().Be(StatusCodes.Status403Forbidden);
         }
 
         [TestMethod]
@@ -57,7 +60,7 @@ namespace Sanakan.Web.Tests.Controllers.TokenControllerTests
                         new SanakanApiKey
                         {
                             Bearer = "test bearer",
-                            Key = "test key",
+                            Key = apiKey,
                         }
                     }
                 });
@@ -73,7 +76,7 @@ namespace Sanakan.Web.Tests.Controllers.TokenControllerTests
                 .Returns(expected);
 
             var result = _controller.CreateToken(apiKey);
-            var okObjectResult = result.Should().BeOfType<ObjectResult>().Subject;
+            var okObjectResult = result.Should().BeOfType<OkObjectResult>().Subject;
             okObjectResult.Value.Should().BeEquivalentTo(expected);
         }
     }

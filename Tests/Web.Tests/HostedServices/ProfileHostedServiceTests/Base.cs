@@ -1,5 +1,6 @@
 ﻿using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -15,7 +16,7 @@ namespace Sanakan.Web.Tests.HostedServices.ProfileHostedServiceTests
     [TestClass]
     public abstract class Base
     {
-        protected readonly ProfileHostedService _service;
+        protected readonly BackgroundService  _service;
         protected readonly Mock<IOptionsMonitor<DaemonsConfiguration>> _daemonsConfigurationMock = new(MockBehavior.Strict);
         protected readonly Mock<ISystemClock> _systemClockMock = new(MockBehavior.Strict);
         protected readonly Mock<IDiscordClientAccessor> _discordSocketClientAccessorMock = new(MockBehavior.Strict);
@@ -28,7 +29,7 @@ namespace Sanakan.Web.Tests.HostedServices.ProfileHostedServiceTests
             var serviceProvider = serviceCollection.BuildServiceProvider();
             var serviceScopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
 
-            _service = new(
+            _service = new ProfileHostedService(
                 NullLogger<ProfileHostedService>.Instance,
                 _systemClockMock.Object,
                 _discordSocketClientAccessorMock.Object,
