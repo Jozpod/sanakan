@@ -8,6 +8,9 @@ namespace Sanakan.DiscordBot
 {
     public interface IDiscordClientAccessor
     {
+        /// <inheritdoc cref="DiscordSocketClient.Latency"/>
+        int Latency { get; }
+
         /// <inheritdoc cref="DiscordSocketClient.LoginAsync"/>
         Task LoginAsync(TokenType tokenType, string token, bool validateToken = true);
 

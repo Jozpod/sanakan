@@ -291,12 +291,14 @@ namespace Sanakan.DiscordBot.Services
         private List<EmbedFieldBuilder> GetInfoUserFields(IGuildUser user)
         {
             var rolesSummary = new StringBuilder("Brak", 200);
-            if (user.RoleIds.Any())
+            var roleIds = user.RoleIds;
+
+            if (roleIds.Any())
             {
                 var guild = user.Guild;
                 var guildRoles = guild.Roles;
                 var userRoles = guildRoles
-                    .Join(user.RoleIds, pr => pr.Id, pr => pr, (src, dst) => src)
+                    .Join(roleIds, pr => pr.Id, pr => pr, (src, dst) => src)
                     .OrderByDescending(x => x.Position);
 
                 foreach (var item in userRoles)

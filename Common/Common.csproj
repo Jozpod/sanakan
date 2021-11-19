@@ -6,6 +6,7 @@
     <Nullable>enable</Nullable>
     <RootNamespace>Sanakan.Common</RootNamespace>
     <AssemblyName>Sanakan.Common</AssemblyName>
+    <Configurations>Debug;Release;Test</Configurations>
   </PropertyGroup>
 
   <ItemGroup>

@@ -21,6 +21,7 @@ using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot;
 using Sanakan.DiscordBot.Builder;
 using Sanakan.DiscordBot.Services;
+using Sanakan.DiscordBot.Services.Builder;
 using Sanakan.DiscordBot.Session.Builder;
 using Sanakan.DiscordBot.Supervisor;
 using Sanakan.Game.Builder;
@@ -128,10 +129,14 @@ namespace Sanakan
 
                 c.CustomSchemaIds(x => x.FullName);
             });
-            
+
+            services.AddWritableOption<SanakanConfiguration>();
+            services.AddDiscordBot();
             services.AddDiscordBotServices();
             services.AddSingleton(Encoding.UTF8);
             services.AddResourceManager();
+            services.AddImageResources();
+            services.AddFontResources();
             services.AddRandomNumberGenerator();
             services.AddFileSystem();
             services.AddSystemClock();
@@ -145,8 +150,6 @@ namespace Sanakan
             services.AddTimer();
             services.AddSupervisorServices();
             services.AddSessionManager();
-            services.AddImageResources();
-            services.AddFontResources();
             services.AddCache(Configuration.GetSection("Cache"));
             services.AddConfiguration(Configuration);
             services.AddSanakanDbContext(Configuration);

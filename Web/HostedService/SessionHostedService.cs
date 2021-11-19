@@ -141,12 +141,14 @@ namespace Sanakan.Web.HostedService
                 return;
             }
 
-            if (userMessage.Author.IsBot || userMessage.Author.IsWebhook)
+            var user = userMessage.Author;
+            
+            if (user.IsBotOrWebhook())
             {
                 return;
             }
 
-            var userSessions = _sessionManager.GetByOwnerId(message.Author.Id, SessionExecuteCondition.Message);
+            var userSessions = _sessionManager.GetByOwnerId(user.Id, SessionExecuteCondition.Message);
 
             if (!userSessions.Any())
             {
@@ -185,7 +187,7 @@ namespace Sanakan.Web.HostedService
                 return;
             }
 
-            if (reactionUser.IsBot || reactionUser.IsWebhook)
+            if (reactionUser.IsBotOrWebhook())
             {
                 return;
             }
@@ -248,7 +250,7 @@ namespace Sanakan.Web.HostedService
                 return;
             }
 
-            if (reactionUser.IsBot || reactionUser.IsWebhook)
+            if (reactionUser.IsBotOrWebhook())
             {
                 return;
             }

@@ -9,13 +9,17 @@ namespace Sanakan.DiscordBot
     internal class DiscordSocketClientAccessor : IDiscordClientAccessor
     {
         private readonly DiscordSocketClient _client;
+        private readonly object _syncRoot = new();
+
         public DiscordSocketClientAccessor(DiscordSocketClient client)
         {
             _client = client;
         }
 
-        private readonly object _syncRoot = new();
         public IDiscordClient? Client => _client;
+
+        public int Latency => _client.Latency;
+
         public Task LogoutAsync() => _client.LogoutAsync();
 
         public Task SetGameAsync(string name,

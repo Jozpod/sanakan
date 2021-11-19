@@ -9,10 +9,10 @@ namespace Sanakan.DAL.Models
         public int Number { get; set; }
 
         [StringLength(50)]
-        public string Content { get; set; }
+        public string Content { get; set; } = string.Empty;
 
         public ulong QuestionId { get; set; }
         [JsonIgnore]
-        public virtual Question Question { get; set; }
+        public virtual Question Question { get; set; } = new();
     }
 }

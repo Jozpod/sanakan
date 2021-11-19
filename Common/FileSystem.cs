@@ -6,6 +6,8 @@ namespace Sanakan.Common
 {
     internal class FileSystem : IFileSystem
     {
+        public FileStream Create(string path) => File.Create(path);
+
         public DirectoryInfo CreateDirectory(string path) => Directory.CreateDirectory(path);
 
         public void Delete(string path) => File.Delete(path);

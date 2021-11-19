@@ -12,6 +12,7 @@ using Sanakan.DAL.Models;
 using Sanakan.DAL.Models.Configuration;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.ShindenApi;
+using Sanakan.Tests.Shared;
 using Sanakan.Web.Controllers;
 using System;
 using System.Collections.Generic;
@@ -26,32 +27,6 @@ namespace Sanakan.Web.Tests.HostedServices.DiscordBotHostedServiceTests
     [TestClass]
     public class HandleDeletedMessageAsyncTests : Base
     {
-        public Cacheable<IMessage, ulong> Create(IMessage value, ulong id)
-        {
-            var bindingAttr = BindingFlags.NonPublic | BindingFlags.Instance;
-            var types = new[]{
-                    typeof(IMessage),
-                    typeof(ulong),
-                    typeof(bool),
-                    typeof(Func<Task<IMessage>>),
-                };
-
-            var cacheableCtor = typeof(Cacheable<IMessage, ulong>).GetConstructor(
-               bindingAttr,
-               null, types, null);
-
-            var parameters = new object[] {
-                value,
-                id,
-                true,
-                null
-            };
-
-            var cacheable = (Cacheable<IMessage, ulong>)cacheableCtor.Invoke(parameters);
-
-            return cacheable;
-        }
-
         [TestMethod]
         public async Task Should_Handle_Deleted_Message()
         {
@@ -68,7 +43,7 @@ namespace Sanakan.Web.Tests.HostedServices.DiscordBotHostedServiceTests
             var guildId = 1ul;
             var attachments = new Collection<IAttachment>();
             var guildConfig = new GuildOptions(guildId, 50);
-            var message = Create(messageMock.Object, 1ul);
+            var message = CacheableExtensions.CreateCacheable(messageMock.Object, 1ul);
 
             messageMock
                 .Setup(pr => pr.Author)

@@ -133,7 +133,7 @@ namespace Sanakan.Web.HostedService
         {
             var user = message.Author;
 
-            if (user.IsBot || user.IsWebhook)
+            if (user.IsBotOrWebhook())
             {
                 return;
             }
@@ -364,7 +364,7 @@ namespace Sanakan.Web.HostedService
 
         private async Task UserJoinedAsync(IGuildUser user)
         {
-            if (user.IsBot || user.IsWebhook)
+            if (user.IsBotOrWebhook())
             {
                 return;
             }
@@ -420,7 +420,7 @@ namespace Sanakan.Web.HostedService
 
         private async Task UserLeftAsync(IGuildUser user)
         {
-            if (user.IsBot || user.IsWebhook)
+            if (user.IsBotOrWebhook())
             {
                 return;
             }
@@ -467,8 +467,9 @@ namespace Sanakan.Web.HostedService
                 return;
             }
 
+            var user = newMessage.Author;
 
-            if (newMessage.Author.IsBot || newMessage.Author.IsWebhook)
+            if (user.IsBotOrWebhook())
             {
                 return;
             }
@@ -504,7 +505,7 @@ namespace Sanakan.Web.HostedService
             var message = cachedMessage.Value;
             var user = message.Author;
 
-            if (user.IsBot || user.IsWebhook)
+            if (user.IsBotOrWebhook())
             {
                 return;
             }

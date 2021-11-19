@@ -133,7 +133,7 @@ namespace Sanakan.Web.HostedService
                 return;
             }
 
-            if (user.IsBot || user.IsWebhook)
+            if (user.IsBotOrWebhook())
             {
                 return;
             }
@@ -189,12 +189,14 @@ namespace Sanakan.Web.HostedService
                 return;
             }
 
-            if (userMessage.Author.IsBot || userMessage.Author.IsWebhook)
+            var messageUser = userMessage.Author;
+
+            if (messageUser.IsBotOrWebhook())
             {
                 return;
             }
 
-            var user = userMessage.Author as IGuildUser;
+            var user = messageUser as IGuildUser;
 
             if (user == null)
             {

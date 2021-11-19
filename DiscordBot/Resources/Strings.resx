@@ -120,7 +120,7 @@
   <data name="BotInfo" xml:space="preserve">
     <value>**Sanakan ({0})**:
 
-**Czas działania**: `{0}`</value>
+**Czas działania**: `{1}`</value>
   </data>
   <data name="CanExecuteOnlyOnServer" xml:space="preserve">
     <value>To polecenie działa tylko z poziomu serwera.</value>

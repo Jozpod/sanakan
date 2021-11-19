@@ -49,12 +49,14 @@ namespace Sanakan.DiscordBot.Modules
     [Name("Debug"), Group("dev"), DontAutoLoad, RequireDev]
     public class DebugModule : SanakanModuleBase
     {
+        private readonly IFileSystem  _fileSystem;
+        private readonly IDiscordClientAccessor _discordClientAccessor;
+        private readonly IShindenClient _shindenClient;
         private readonly IWaifuService _waifuService;
-        private readonly IWritableOptions<SanakanConfiguration> _config;
         private readonly IBlockingPriorityQueue _blockingPriorityQueue;
         private readonly IHelperService _helperService;
-        private readonly IShindenClient _shindenClient;
         private readonly IImageProcessor _imageProcessor;
+        private readonly IWritableOptions<SanakanConfiguration> _config;
         private readonly IUserRepository _userRepository;
         private readonly ICardRepository _cardRepository;
         private readonly IQuestionRepository _questionRepository;
@@ -66,6 +68,8 @@ namespace Sanakan.DiscordBot.Modules
         private readonly ITaskManager _taskManager;
 
         public DebugModule(
+            IFileSystem fileSystem,
+            IDiscordClientAccessor discordClientAccessor,
             IShindenClient shindenClient,
             IBlockingPriorityQueue blockingPriorityQueue,
             IWaifuService waifuService,
@@ -81,6 +85,8 @@ namespace Sanakan.DiscordBot.Modules
             IRandomNumberGenerator randomNumberGenerator,
             ITaskManager taskManager)
         {
+            _fileSystem = fileSystem;
+            _discordClientAccessor = discordClientAccessor;
             _shindenClient = shindenClient;
             _blockingPriorityQueue = blockingPriorityQueue;
             _helperService = helperService;
@@ -148,9 +154,15 @@ namespace Sanakan.DiscordBot.Modules
         [Command("blacklist")]
         [Summary("dodaje/usuwa użytkownika do czarnej listy")]
         [Remarks("Karna")]
-        public async Task TransferCardAsync([Summary("użytkownik")]SocketGuildUser user)
+        public async Task TransferCardAsync([Summary("użytkownik")]IUser user)
         {
             var targetUser = await _userRepository.GetUserOrCreateAsync(user.Id);
+
+            if(targetUser == null)
+            {
+                await ReplyAsync("", embed: $"Nie znaleziono uzytkownika".ToEmbedMessage(EMType.Error).Build());
+                return;
+            }
 
             targetUser.IsBlacklisted = !targetUser.IsBlacklisted;
             await _userRepository.SaveChangesAsync();
@@ -1286,8 +1298,7 @@ namespace Sanakan.DiscordBot.Modules
         {
             await ReplyAsync("", embed: "To dobry czas by umrzeć.".ToEmbedMessage(EMType.Bot).Build());
             
-            var discordClient = (BaseDiscordClient)Context.Client;
-            await discordClient.LogoutAsync();
+            await _discordClientAccessor.LogoutAsync();
             await _taskManager.Delay(TimeSpan.FromMilliseconds(1500));
             Environment.Exit(0);
         }
@@ -1299,10 +1310,9 @@ namespace Sanakan.DiscordBot.Modules
         {
             await ReplyAsync("", embed: "To już czas?".ToEmbedMessage(EMType.Bot).Build());
             
-            var discordClient = (BaseDiscordClient)Context.Client;
-            await discordClient.LogoutAsync();
+            await _discordClientAccessor.LogoutAsync();
 
-            System.IO.File.Create("./updateNow");
+            using var _ = _fileSystem.Create("./updateNow");
             await _taskManager.Delay(TimeSpan.FromMilliseconds(1500));
             Environment.Exit(200);
         }

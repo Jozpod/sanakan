@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Sanakan.Tests.Shared</RootNamespace>
+    <AssemblyName>Sanakan.Tests.Shared</AssemblyName>
+    <Configurations>Debug;Release;Test</Configurations>
+  </PropertyGroup>
+
+  <ItemGroup>  
+    <PackageReference Include="Discord.Net" Version="2.4.0" />
+  </ItemGroup>
+</Project>

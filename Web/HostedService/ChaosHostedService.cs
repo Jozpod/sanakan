@@ -18,6 +18,7 @@ using Discord.WebSocket;
 using System.Linq;
 using Discord;
 using System.Collections.ObjectModel;
+using Sanakan.DiscordBot.Abstractions.Extensions;
 
 namespace Sanakan.Web.HostedService
 {
@@ -110,7 +111,9 @@ namespace Sanakan.Web.HostedService
                 return;
             }
 
-            if (userMessage.Author.IsBot || userMessage.Author.IsWebhook)
+            var user = userMessage.Author;
+            
+            if (user.IsBotOrWebhook())
             {
                 return;
             }

@@ -6,11 +6,11 @@
     <Nullable>enable</Nullable>
     <AssemblyName>Sanakan.TaskQueue</AssemblyName>
     <RootNamespace>Sanakan.TaskQueue</RootNamespace>
+    <Configurations>Debug;Release;Test</Configurations>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Discord.Net" Version="2.4.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.2" />
   </ItemGroup>
 
   <ItemGroup>

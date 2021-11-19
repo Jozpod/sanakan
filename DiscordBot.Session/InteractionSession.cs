@@ -40,11 +40,13 @@ namespace Sanakan.DiscordBot.Session
             IServiceProvider serviceProvider,
             CancellationToken cancellationToken = default);
 
+        /// <inheritdoc/>
         public void ResetExpiry()
         {
             _expiresOn = _expiresOn + _expiryPeriod;
         }
 
+        /// <inheritdoc/>
         public int CompareTo(InteractionSession? other)
         {
             if (_expiresOn > other._expiresOn)
@@ -60,6 +62,7 @@ namespace Sanakan.DiscordBot.Session
             return 0;
         }
 
+        /// <inheritdoc/>
         public virtual ValueTask DisposeAsync()
         {
             return ValueTask.CompletedTask;

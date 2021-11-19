@@ -365,7 +365,7 @@ namespace Sanakan.Web.HostedService
 
             var author = userMessage.Author;
 
-            if (author.IsBot || author.IsWebhook)
+            if (author.IsBotOrWebhook())
             {
                 return;
             };

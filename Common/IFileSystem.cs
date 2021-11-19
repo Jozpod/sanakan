@@ -11,6 +11,7 @@ namespace Sanakan.Common
     {
         /// <inheritdoc cref="File.Exists(string?)"/>
         bool Exists(string path);
+
         /// <inheritdoc cref="Directory.Exists(string?)"/>
         bool DirectoryExists(string path);
 
@@ -37,5 +38,8 @@ namespace Sanakan.Common
 
         /// <inheritdoc cref="File.WriteAllTextAsync(string, string, System.Threading.CancellationToken)"/>
         public Task WriteAllTextAsync(string physicalPath, string contents);
+
+        /// <see cref="File.Create(string)"/>
+        FileStream Create(string path);
     }
 }

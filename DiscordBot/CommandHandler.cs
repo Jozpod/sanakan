@@ -83,7 +83,9 @@ namespace Sanakan.DiscordBot
                 return;
             }
 
-            if (userMessage.Author.IsBot || userMessage.Author.IsWebhook)
+            var user = userMessage.Author;
+
+            if (user.IsBotOrWebhook())
             {
                 return;
             }

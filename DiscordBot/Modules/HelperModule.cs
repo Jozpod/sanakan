@@ -26,6 +26,7 @@ namespace Sanakan.DiscordBot.Modules
     [Name("Ogólne")]
     public class HelperModule : SanakanModuleBase
     {
+        private readonly IDiscordClientAccessor _discordClientAccessor;
         private readonly ISessionManager _sessionManager;
         private readonly IHelperService _helperService;
         private readonly ILogger _logger;
@@ -34,10 +35,12 @@ namespace Sanakan.DiscordBot.Modules
         private readonly ISystemClock _systemClock;
         private readonly IOperatingSystem _operatingSystem;
         private readonly IServiceProvider _serviceProvider;
+        private readonly TimeSpan _reportExpiry = TimeSpan.FromHours(3);
 
         public HelperModule(
-            IHelperService helperService,
+            IDiscordClientAccessor discordClientAccessor,
             ISessionManager sessionManager,
+            IHelperService helperService,
             ILogger<HelperModule> logger,
             IOptionsMonitor<DiscordConfiguration> config,
             IGuildConfigRepository guildConfigRepository,
@@ -45,6 +48,7 @@ namespace Sanakan.DiscordBot.Modules
             IOperatingSystem operatingSystem,
             IServiceProvider serviceProvider)
         {
+            _discordClientAccessor = discordClientAccessor;
             _sessionManager = sessionManager;
             _helperService = helperService;
             _logger = logger;
@@ -62,9 +66,9 @@ namespace Sanakan.DiscordBot.Modules
         public async Task GiveHelpAsync(
             [Summary("nazwa polecenia (opcjonalne)")][Remainder]string? command = null)
         {
-            var gUser = Context.User as IGuildUser;
+            var guildUser = Context.User as IGuildUser;
             
-            if (gUser == null)
+            if (guildUser == null)
             {
                 return;
             }
@@ -77,23 +81,24 @@ namespace Sanakan.DiscordBot.Modules
 
             try
             {
-                bool isAdmin = false;
-                bool isDev = false;
+                var isAdmin = false;
+                var isDev = false;
 
                 var prefix = _config.CurrentValue.Prefix;
+                var guild = Context.Guild;
 
-                if (Context.Guild != null)
+                if (guild != null)
                 {
-                    var gConfig = await _guildConfigRepository.GetCachedGuildFullConfigAsync(Context.Guild.Id);
+                    var gConfig = await _guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
                     if (gConfig?.Prefix != null)
                     {
                         prefix = gConfig.Prefix;
                     }
 
-                    isAdmin = gUser.RoleIds.Any(id => id == gConfig?.AdminRoleId)
-                            || gUser.GuildPermissions.Administrator;
+                    isAdmin = guildUser.RoleIds.Any(id => id == gConfig?.AdminRoleId)
+                            || guildUser.GuildPermissions.Administrator;
 
-                    isDev = _config.CurrentValue.AllowedToDebug.Any(x => x == gUser.Id);
+                    isDev = _config.CurrentValue.AllowedToDebug.Any(x => x == guildUser.Id);
                 }
 
                 await ReplyAsync(_helperService.GiveHelpAboutPublicCommand(command, prefix, isAdmin, isDev));
@@ -109,16 +114,18 @@ namespace Sanakan.DiscordBot.Modules
         [Alias("whois")]
         [Summary("wyświetla informacje o użytkowniku")]
         [Remarks("User"), RequireCommandChannel]
-        public async Task GiveUserInfoAsync([Summary("nazwa użytkownika (opcjonalne)")]SocketUser user = null)
+        public async Task GiveUserInfoAsync(
+            [Summary("nazwa użytkownika (opcjonalne)")]IUser? user = null)
         {
-            var usr = (user ?? Context.User) as SocketGuildUser;
-            if (usr == null)
+            var effectiveUser = (user ?? Context.User) as IGuildUser;
+
+            if (effectiveUser == null)
             {
                 await ReplyAsync("", embed: Strings.CanExecuteOnlyOnServer.ToEmbedMessage(EMType.Info).Build());
                 return;
             }
 
-            await ReplyAsync("", embed: (Embed)_helperService.GetInfoAboutUser(usr));
+            await ReplyAsync("", embed: (Embed)_helperService.GetInfoAboutUser(effectiveUser));
         }
 
         [Command("ping", RunMode = RunMode.Async)]
@@ -126,11 +133,18 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks(""), RequireCommandChannel]
         public async Task GivePingAsync()
         {
-            int latency = (Context.Client as BaseSocketClient).Latency;
+            int latency = _discordClientAccessor.Latency;
 
-            EMType type = EMType.Error;
-            if (latency < 400) type = EMType.Warning;
-            if (latency < 200) type = EMType.Success;
+            var type = EMType.Error;
+
+            if (latency < 400)
+            {
+                type = EMType.Warning;
+            }
+            if (latency < 200)
+            {
+                type = EMType.Success;
+            }
 
             await ReplyAsync("", embed: $"Pong! `{latency}ms`".ToEmbedMessage(type).Build());
         }
@@ -156,13 +170,13 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("wyświetla awatar użytkownika")]
         [Remarks("User"), RequireCommandChannel]
         public async Task ShowUserAvatarAsync(
-            [Summary("nazwa użytkownika (opcjonalne)")]SocketUser user = null)
+            [Summary("nazwa użytkownika (opcjonalne)")]IUser? user = null)
         {
-            var usr = (user ?? Context.User);
+            var effectiveUser = user ?? Context.User;
             var embed = new EmbedBuilder
             {
-                ImageUrl = usr.GetUserOrDefaultAvatarUrl(),
-                Author = new EmbedAuthorBuilder().WithUser(usr),
+                ImageUrl = effectiveUser.GetUserOrDefaultAvatarUrl(),
+                Author = new EmbedAuthorBuilder().WithUser(effectiveUser),
                 Color = EMType.Info.Color(),
             };
 
@@ -208,29 +222,31 @@ namespace Sanakan.DiscordBot.Modules
 
             await Context.Message.DeleteAsync();
 
-            var repMsg = await Context.Channel.GetMessageAsync(messageId);
-            if (repMsg == null)
+            var replyMessage = await Context.Channel.GetMessageAsync(messageId);
+            if (replyMessage == null)
             {
                 await ReplyAsync("", embed: "Nie odnaleziono wiadomości.".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
-            if (repMsg.Author.IsBot || repMsg.Author.IsWebhook)
+            var replyUser = replyMessage.Author;
+
+            if (replyUser.IsBotOrWebhook())
             {
                 await ReplyAsync("", embed: "Raportować bota? Bez sensu.".ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
 
-            if ((_systemClock.UtcNow - repMsg.CreatedAt.DateTime.ToLocalTime()).TotalHours > 3)
+            if ((_systemClock.UtcNow - replyMessage.CreatedAt.DateTime.ToLocalTime()) > _reportExpiry)
             {
                 await ReplyAsync("", embed: "Można raportować tylko wiadomości, które nie są starsze od 3h."
                     .ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
 
-            var discordUserId = repMsg.Author.Id;
+            var discordUserId = replyMessage.Author.Id;
 
-            if (repMsg.Author.Id == Context.User.Id)
+            if (replyMessage.Author.Id == Context.User.Id)
             {
                 var user = Context.User as SocketGuildUser;
                 if (user == null)
@@ -238,9 +254,9 @@ namespace Sanakan.DiscordBot.Modules
                     return;
                 }
 
-                var notifChannel = await Context.Guild.GetChannelAsync(config.NotificationChannelId);
-                var userRole = Context.Guild.GetRole(config.UserRoleId.Value);
-                var muteRole = Context.Guild.GetRole(config.MuteRoleId);
+                var notifChannel = (ITextChannel)await guild.GetChannelAsync(config.NotificationChannelId);
+                var userRole = guild.GetRole(config.UserRoleId.Value);
+                var muteRole = guild.GetRole(config.MuteRoleId);
 
                 if (muteRole == null)
                 {
@@ -257,9 +273,9 @@ namespace Sanakan.DiscordBot.Modules
                 var payload = new AcceptSession.AcceptSessionPayload
                 {
                     Bot = Context.Client.CurrentUser,
-                    NotifChannel = notifChannel as ITextChannel,
-                    MuteRole = muteRole as SocketRole,
-                    UserRole = userRole as SocketRole,
+                    NotifChannel = notifChannel,
+                    MuteRole = muteRole,
+                    UserRole = userRole,
                     User = user,
                 };
 
@@ -287,27 +303,27 @@ namespace Sanakan.DiscordBot.Modules
             await ReplyAsync("", embed: "Wysłano zgłoszenie.".ToEmbedMessage(EMType.Success).Build());
 
             var userName = $"{Context.User.Username}({Context.User.Id})";
-            var sendMsg = await raportChannel.SendMessageAsync($"{repMsg.GetJumpUrl()}", embed: "prep".ToEmbedMessage().Build());
+            var botMessage = await raportChannel.SendMessageAsync($"{replyMessage.GetJumpUrl()}", embed: "prep".ToEmbedMessage().Build());
 
             try
             {
-                await sendMsg.ModifyAsync(x => x.Embed = (Embed)_helperService.BuildRaportInfo(repMsg, userName, reason, sendMsg.Id));
+                await botMessage.ModifyAsync(x => x.Embed = (Embed)_helperService.BuildRaportInfo(replyMessage, userName, reason, botMessage.Id));
 
-                var rConfig = await _guildConfigRepository.GetGuildConfigOrCreateAsync(Context.Guild.Id);
+                var guildConfig = await _guildConfigRepository.GetGuildConfigOrCreateAsync(Context.Guild.Id);
 
                 var record = new Raport
                 {
-                    User = repMsg.Author.Id,
-                    Message = sendMsg.Id
+                    User = replyMessage.Author.Id,
+                    Message = botMessage.Id
                 };
 
-                rConfig.Raports.Add(record);
+                guildConfig.Raports.Add(record);
                 await _guildConfigRepository.SaveChangesAsync();
             }
             catch (Exception ex)
             {
                 _logger.LogError($"in raport: {ex}", ex);
-                await sendMsg.DeleteAsync();
+                await botMessage.DeleteAsync();
             }
         }
     }

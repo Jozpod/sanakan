@@ -20,7 +20,7 @@ namespace Sanakan.DiscordBot.Builder
 {
     public static class Extensions
     {
-        public static IServiceCollection AddDiscordBotServices(this IServiceCollection services)
+        public static IServiceCollection AddDiscordBot(this IServiceCollection services)
         {
             services.AddSingleton<ICommandService, CommandService>();
 

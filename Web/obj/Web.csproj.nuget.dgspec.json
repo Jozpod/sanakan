@@ -5,7 +5,7 @@
   },
   "projects": {
     "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\Common\\Common.csproj": {
-      "version": "1.0.0",
+      "version": "0.0.1",
       "restore": {
         "projectUniqueName": "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\Common\\Common.csproj",
         "projectName": "Sanakan.Common",
@@ -55,6 +55,10 @@
               "target": "Package",
               "version": "[5.0.0, )"
             },
+            "Microsoft.Extensions.DependencyInjection": {
+              "target": "Package",
+              "version": "[5.0.2, )"
+            },
             "Microsoft.Extensions.Hosting.Abstractions": {
               "target": "Package",
               "version": "[5.0.0, )"
@@ -66,6 +70,12 @@
             "Newtonsoft.Json": {
               "target": "Package",
               "version": "[13.0.1, )"
+            },
+            "StyleCop.Analyzers": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[1.2.0-beta.354, )"
             },
             "System.Text.Json": {
               "target": "Package",
@@ -92,7 +102,7 @@
       }
     },
     "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\DAL\\DAL.csproj": {
-      "version": "1.0.0",
+      "version": "0.0.1",
       "restore": {
         "projectUniqueName": "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\DAL\\DAL.csproj",
         "projectName": "Sanakan.DAL",
@@ -146,6 +156,10 @@
               "target": "Package",
               "version": "[5.0.11, )"
             },
+            "Microsoft.Extensions.DependencyInjection": {
+              "target": "Package",
+              "version": "[5.0.2, )"
+            },
             "Newtonsoft.Json": {
               "target": "Package",
               "version": "[13.0.1, )"
@@ -153,6 +167,12 @@
             "Pomelo.EntityFrameworkCore.MySql": {
               "target": "Package",
               "version": "[5.0.2, )"
+            },
+            "StyleCop.Analyzers": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[1.2.0-beta.354, )"
             }
           },
           "imports": [
@@ -175,7 +195,7 @@
       }
     },
     "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\DiscordBot.Abstractions\\DiscordBot.Abstractions.csproj": {
-      "version": "1.0.0",
+      "version": "0.0.1",
       "restore": {
         "projectUniqueName": "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\DiscordBot.Abstractions\\DiscordBot.Abstractions.csproj",
         "projectName": "Sanakan.DiscordBot.Abstractions",
@@ -227,6 +247,12 @@
             "Microsoft.Extensions.DependencyInjection": {
               "target": "Package",
               "version": "[5.0.2, )"
+            },
+            "StyleCop.Analyzers": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[1.2.0-beta.354, )"
             }
           },
           "imports": [
@@ -249,7 +275,7 @@
       }
     },
     "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\DiscordBot.Services\\DiscordBot.Services.csproj": {
-      "version": "1.0.0",
+      "version": "0.0.1",
       "restore": {
         "projectUniqueName": "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\DiscordBot.Services\\DiscordBot.Services.csproj",
         "projectName": "Sanakan.DiscordBot.Services",
@@ -322,6 +348,12 @@
             "SixLabors.ImageSharp.Drawing": {
               "target": "Package",
               "version": "[1.0.0-beta0006, )"
+            },
+            "StyleCop.Analyzers": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[1.2.0-beta.354, )"
             }
           },
           "imports": [
@@ -344,7 +376,7 @@
       }
     },
     "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\DiscordBot.Session\\DiscordBot.Session.csproj": {
-      "version": "1.0.0",
+      "version": "0.0.1",
       "restore": {
         "projectUniqueName": "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\DiscordBot.Session\\DiscordBot.Session.csproj",
         "projectName": "Sanakan.DiscordBot.Session",
@@ -405,6 +437,12 @@
             "Microsoft.Extensions.DependencyInjection": {
               "target": "Package",
               "version": "[5.0.2, )"
+            },
+            "StyleCop.Analyzers": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[1.2.0-beta.354, )"
             }
           },
           "imports": [
@@ -427,7 +465,7 @@
       }
     },
     "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\DiscordBot.Supervisor\\DiscordBot.Supervisor.csproj": {
-      "version": "1.0.0",
+      "version": "0.0.1",
       "restore": {
         "projectUniqueName": "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\DiscordBot.Supervisor\\DiscordBot.Supervisor.csproj",
         "projectName": "Sanakan.DiscordBot.Supervisor",
@@ -491,6 +529,12 @@
             "SixLabors.ImageSharp.Drawing": {
               "target": "Package",
               "version": "[1.0.0-beta0006, )"
+            },
+            "StyleCop.Analyzers": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[1.2.0-beta.354, )"
             }
           },
           "imports": [
@@ -513,7 +557,7 @@
       }
     },
     "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\DiscordBot\\DiscordBot.csproj": {
-      "version": "1.0.0",
+      "version": "0.0.1",
       "restore": {
         "projectUniqueName": "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\DiscordBot\\DiscordBot.csproj",
         "projectName": "Sanakan.DiscordBot",
@@ -589,6 +633,12 @@
             "SixLabors.ImageSharp.Drawing": {
               "target": "Package",
               "version": "[1.0.0-beta0006, )"
+            },
+            "StyleCop.Analyzers": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[1.2.0-beta.354, )"
             }
           },
           "imports": [
@@ -611,7 +661,7 @@
       }
     },
     "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\Game\\Game.csproj": {
-      "version": "1.0.0",
+      "version": "0.0.1",
       "restore": {
         "projectUniqueName": "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\Game\\Game.csproj",
         "projectName": "Sanakan.Game",
@@ -674,6 +724,12 @@
             "SixLabors.ImageSharp.Drawing": {
               "target": "Package",
               "version": "[1.0.0-beta0006, )"
+            },
+            "StyleCop.Analyzers": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[1.2.0-beta.354, )"
             }
           },
           "imports": [
@@ -743,6 +799,10 @@
               "target": "Package",
               "version": "[2.2.0, )"
             },
+            "Microsoft.Extensions.DependencyInjection": {
+              "target": "Package",
+              "version": "[5.0.2, )"
+            },
             "Microsoft.Extensions.Http": {
               "target": "Package",
               "version": "[5.0.0, )"
@@ -758,6 +818,12 @@
             "Newtonsoft.Json": {
               "target": "Package",
               "version": "[13.0.1, )"
+            },
+            "StyleCop.Analyzers": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[1.2.0-beta.354, )"
             },
             "System.Net.Http.Json": {
               "target": "Package",
@@ -784,7 +850,7 @@
       }
     },
     "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\TaskQueue\\TaskQueue.csproj": {
-      "version": "1.0.0",
+      "version": "0.0.1",
       "restore": {
         "projectUniqueName": "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\TaskQueue\\TaskQueue.csproj",
         "projectName": "Sanakan.TaskQueue",
@@ -842,6 +908,12 @@
             "Microsoft.Extensions.DependencyInjection": {
               "target": "Package",
               "version": "[5.0.2, )"
+            },
+            "StyleCop.Analyzers": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[1.2.0-beta.354, )"
             }
           },
           "imports": [
@@ -957,6 +1029,12 @@
             "Newtonsoft.Json": {
               "target": "Package",
               "version": "[13.0.1, )"
+            },
+            "StyleCop.Analyzers": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[1.2.0-beta.354, )"
             },
             "Swashbuckle.AspNetCore.SwaggerGen": {
               "target": "Package",

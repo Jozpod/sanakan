@@ -901,6 +901,15 @@
           "lib/netstandard2.0/SQLitePCLRaw.provider.dynamic_cdecl.dll": {}
         }
       },
+      "StyleCop.Analyzers/1.2.0-beta.354": {
+        "type": "package",
+        "dependencies": {
+          "StyleCop.Analyzers.Unstable": "1.2.0.354"
+        }
+      },
+      "StyleCop.Analyzers.Unstable/1.2.0.354": {
+        "type": "package"
+      },
       "System.Buffers/4.5.0": {
         "type": "package",
         "compile": {
@@ -1933,13 +1942,14 @@
           "lib/netstandard1.3/System.Xml.XmlSerializer.dll": {}
         }
       },
-      "Sanakan.Common/1.0.0": {
+      "Sanakan.Common/0.0.1": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v5.0",
         "dependencies": {
           "Microsoft.AspNetCore.Hosting.Abstractions": "2.2.0",
           "Microsoft.Extensions.Caching.Memory": "5.0.0",
           "Microsoft.Extensions.Configuration.Abstractions": "5.0.0",
+          "Microsoft.Extensions.DependencyInjection": "5.0.2",
           "Microsoft.Extensions.Hosting.Abstractions": "5.0.0",
           "Microsoft.Extensions.Options.ConfigurationExtensions": "5.0.0",
           "Newtonsoft.Json": "13.0.1",
@@ -1952,16 +1962,17 @@
           "bin/placeholder/Sanakan.Common.dll": {}
         }
       },
-      "Sanakan.DAL/1.0.0": {
+      "Sanakan.DAL/0.0.1": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v5.0",
         "dependencies": {
           "Microsoft.EntityFrameworkCore": "5.0.11",
           "Microsoft.EntityFrameworkCore.SqlServer": "5.0.11",
           "Microsoft.EntityFrameworkCore.Sqlite": "5.0.11",
+          "Microsoft.Extensions.DependencyInjection": "5.0.2",
           "Newtonsoft.Json": "13.0.1",
           "Pomelo.EntityFrameworkCore.MySql": "5.0.2",
-          "Sanakan.Common": "1.0.0"
+          "Sanakan.Common": "0.0.1"
         },
         "compile": {
           "bin/placeholder/Sanakan.DAL.dll": {}
@@ -1970,13 +1981,13 @@
           "bin/placeholder/Sanakan.DAL.dll": {}
         }
       },
-      "Sanakan.DiscordBot.Abstractions/1.0.0": {
+      "Sanakan.DiscordBot.Abstractions/0.0.1": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v5.0",
         "dependencies": {
           "Discord.Net": "2.4.0",
           "Microsoft.Extensions.DependencyInjection": "5.0.2",
-          "Sanakan.DAL": "1.0.0",
+          "Sanakan.DAL": "0.0.1",
           "Shinden.NET": "0.0.1"
         },
         "compile": {
@@ -1986,7 +1997,7 @@
           "bin/placeholder/Sanakan.DiscordBot.Abstractions.dll": {}
         }
       },
-      "Sanakan.DiscordBot.Services/1.0.0": {
+      "Sanakan.DiscordBot.Services/0.0.1": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v5.0",
         "dependencies": {
@@ -1994,10 +2005,10 @@
           "Humanizer.Core.pl": "2.11.10",
           "Microsoft.Extensions.DependencyInjection": "5.0.2",
           "Microsoft.Extensions.Options": "5.0.0",
-          "Sanakan.Common": "1.0.0",
-          "Sanakan.DAL": "1.0.0",
-          "Sanakan.DiscordBot.Abstractions": "1.0.0",
-          "Sanakan.TaskQueue": "1.0.0",
+          "Sanakan.Common": "0.0.1",
+          "Sanakan.DAL": "0.0.1",
+          "Sanakan.DiscordBot.Abstractions": "0.0.1",
+          "Sanakan.TaskQueue": "0.0.1",
           "Shinden.NET": "0.0.1",
           "SixLabors.ImageSharp.Drawing": "1.0.0-beta0006"
         },
@@ -2008,17 +2019,17 @@
           "bin/placeholder/Sanakan.DiscordBot.Services.dll": {}
         }
       },
-      "Sanakan.DiscordBot.Session/1.0.0": {
+      "Sanakan.DiscordBot.Session/0.0.1": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v5.0",
         "dependencies": {
           "Discord.Net": "2.4.0",
           "Microsoft.Extensions.DependencyInjection": "5.0.2",
-          "Sanakan.Common": "1.0.0",
-          "Sanakan.DAL": "1.0.0",
-          "Sanakan.DiscordBot.Abstractions": "1.0.0",
-          "Sanakan.DiscordBot.Services": "1.0.0",
-          "Sanakan.Game": "1.0.0"
+          "Sanakan.Common": "0.0.1",
+          "Sanakan.DAL": "0.0.1",
+          "Sanakan.DiscordBot.Abstractions": "0.0.1",
+          "Sanakan.DiscordBot.Services": "0.0.1",
+          "Sanakan.Game": "0.0.1"
         },
         "compile": {
           "bin/placeholder/Sanakan.DiscordBot.Session.dll": {}
@@ -2027,15 +2038,15 @@
           "bin/placeholder/Sanakan.DiscordBot.Session.dll": {}
         }
       },
-      "Sanakan.Game/1.0.0": {
+      "Sanakan.Game/0.0.1": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v5.0",
         "dependencies": {
           "Discord.Net": "2.4.0",
           "Microsoft.Extensions.DependencyInjection": "5.0.2",
           "Microsoft.Extensions.Options": "5.0.0",
-          "Sanakan.DAL": "1.0.0",
-          "Sanakan.DiscordBot.Abstractions": "1.0.0",
+          "Sanakan.DAL": "0.0.1",
+          "Sanakan.DiscordBot.Abstractions": "0.0.1",
           "Shinden.NET": "0.0.1",
           "SixLabors.ImageSharp.Drawing": "1.0.0-beta0006"
         },
@@ -2046,16 +2057,16 @@
           "bin/placeholder/Sanakan.Game.dll": {}
         }
       },
-      "Sanakan.TaskQueue/1.0.0": {
+      "Sanakan.TaskQueue/0.0.1": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v5.0",
         "dependencies": {
           "Discord.Net": "2.4.0",
           "Microsoft.Extensions.DependencyInjection": "5.0.2",
-          "Sanakan.Common": "1.0.0",
-          "Sanakan.DAL": "1.0.0",
-          "Sanakan.DiscordBot.Abstractions": "1.0.0",
-          "Sanakan.Game": "1.0.0"
+          "Sanakan.Common": "0.0.1",
+          "Sanakan.DAL": "0.0.1",
+          "Sanakan.DiscordBot.Abstractions": "0.0.1",
+          "Sanakan.Game": "0.0.1"
         },
         "compile": {
           "bin/placeholder/Sanakan.TaskQueue.dll": {}
@@ -2069,11 +2080,12 @@
         "framework": ".NETCoreApp,Version=v5.0",
         "dependencies": {
           "Microsoft.AspNetCore.WebUtilities": "2.2.0",
+          "Microsoft.Extensions.DependencyInjection": "5.0.2",
           "Microsoft.Extensions.Http": "5.0.0",
           "Microsoft.Extensions.Logging.Abstractions": "5.0.0",
           "Microsoft.Extensions.Options": "5.0.0",
           "Newtonsoft.Json": "13.0.1",
-          "Sanakan.Common": "1.0.0",
+          "Sanakan.Common": "0.0.1",
           "System.Net.Http.Json": "5.0.0"
         },
         "compile": {
@@ -3381,6 +3393,45 @@
         "lib/netstandard2.0/SQLitePCLRaw.provider.dynamic_cdecl.dll",
         "sqlitepclraw.provider.dynamic_cdecl.2.0.4.nupkg.sha512",
         "sqlitepclraw.provider.dynamic_cdecl.nuspec"
+      ]
+    },
+    "StyleCop.Analyzers/1.2.0-beta.354": {
+      "sha512": "oDSJNxnEvIzAQTkpkc/FnJP4dQ7TV6fHMsI+2ckU5DOaMiwiEfh1fawMsSqz2bCoNwbTt9lS6MgYvyVKujNJoA==",
+      "type": "package",
+      "path": "stylecop.analyzers/1.2.0-beta.354",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "LICENSE",
+        "THIRD-PARTY-NOTICES.txt",
+        "stylecop.analyzers.1.2.0-beta.354.nupkg.sha512",
+        "stylecop.analyzers.nuspec"
+      ]
+    },
+    "StyleCop.Analyzers.Unstable/1.2.0.354": {
+      "sha512": "/3RlM31XbJ02gaWh7dVumWOyMvGHswb/zygGJXd9oEJMRyyYc/HFJlAC5gBPxvi9cB4CMvIyyUTmZz5VLKwTvg==",
+      "type": "package",
+      "path": "stylecop.analyzers.unstable/1.2.0.354",
+      "hasTools": true,
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "LICENSE",
+        "THIRD-PARTY-NOTICES.txt",
+        "analyzers/dotnet/cs/StyleCop.Analyzers.CodeFixes.dll",
+        "analyzers/dotnet/cs/StyleCop.Analyzers.dll",
+        "analyzers/dotnet/cs/de-DE/StyleCop.Analyzers.resources.dll",
+        "analyzers/dotnet/cs/en-GB/StyleCop.Analyzers.resources.dll",
+        "analyzers/dotnet/cs/es-MX/StyleCop.Analyzers.resources.dll",
+        "analyzers/dotnet/cs/fr-FR/StyleCop.Analyzers.resources.dll",
+        "analyzers/dotnet/cs/pl-PL/StyleCop.Analyzers.resources.dll",
+        "analyzers/dotnet/cs/pt-BR/StyleCop.Analyzers.resources.dll",
+        "analyzers/dotnet/cs/ru-RU/StyleCop.Analyzers.resources.dll",
+        "rulesets/StyleCopAnalyzersDefault.ruleset",
+        "stylecop.analyzers.unstable.1.2.0.354.nupkg.sha512",
+        "stylecop.analyzers.unstable.nuspec",
+        "tools/install.ps1",
+        "tools/uninstall.ps1"
       ]
     },
     "System.Buffers/4.5.0": {
@@ -6748,37 +6799,37 @@
         "system.xml.xmlserializer.nuspec"
       ]
     },
-    "Sanakan.Common/1.0.0": {
+    "Sanakan.Common/0.0.1": {
       "type": "project",
       "path": "../Common/Common.csproj",
       "msbuildProject": "../Common/Common.csproj"
     },
-    "Sanakan.DAL/1.0.0": {
+    "Sanakan.DAL/0.0.1": {
       "type": "project",
       "path": "../DAL/DAL.csproj",
       "msbuildProject": "../DAL/DAL.csproj"
     },
-    "Sanakan.DiscordBot.Abstractions/1.0.0": {
+    "Sanakan.DiscordBot.Abstractions/0.0.1": {
       "type": "project",
       "path": "../DiscordBot.Abstractions/DiscordBot.Abstractions.csproj",
       "msbuildProject": "../DiscordBot.Abstractions/DiscordBot.Abstractions.csproj"
     },
-    "Sanakan.DiscordBot.Services/1.0.0": {
+    "Sanakan.DiscordBot.Services/0.0.1": {
       "type": "project",
       "path": "../DiscordBot.Services/DiscordBot.Services.csproj",
       "msbuildProject": "../DiscordBot.Services/DiscordBot.Services.csproj"
     },
-    "Sanakan.DiscordBot.Session/1.0.0": {
+    "Sanakan.DiscordBot.Session/0.0.1": {
       "type": "project",
       "path": "../DiscordBot.Session/DiscordBot.Session.csproj",
       "msbuildProject": "../DiscordBot.Session/DiscordBot.Session.csproj"
     },
-    "Sanakan.Game/1.0.0": {
+    "Sanakan.Game/0.0.1": {
       "type": "project",
       "path": "../Game/Game.csproj",
       "msbuildProject": "../Game/Game.csproj"
     },
-    "Sanakan.TaskQueue/1.0.0": {
+    "Sanakan.TaskQueue/0.0.1": {
       "type": "project",
       "path": "../TaskQueue/TaskQueue.csproj",
       "msbuildProject": "../TaskQueue/TaskQueue.csproj"
@@ -6795,13 +6846,14 @@
       "Humanizer.Core.pl >= 2.11.10",
       "Microsoft.Extensions.DependencyInjection >= 5.0.2",
       "Microsoft.Extensions.Options >= 5.0.0",
-      "Sanakan.Common >= 1.0.0",
-      "Sanakan.DAL >= 1.0.0",
-      "Sanakan.DiscordBot.Abstractions >= 1.0.0",
-      "Sanakan.DiscordBot.Session >= 1.0.0",
-      "Sanakan.TaskQueue >= 1.0.0",
+      "Sanakan.Common >= 0.0.1",
+      "Sanakan.DAL >= 0.0.1",
+      "Sanakan.DiscordBot.Abstractions >= 0.0.1",
+      "Sanakan.DiscordBot.Session >= 0.0.1",
+      "Sanakan.TaskQueue >= 0.0.1",
       "Shinden.NET >= 0.0.1",
-      "SixLabors.ImageSharp.Drawing >= 1.0.0-beta0006"
+      "SixLabors.ImageSharp.Drawing >= 1.0.0-beta0006",
+      "StyleCop.Analyzers >= 1.2.0-beta.354"
     ]
   },
   "packageFolders": {
@@ -6809,7 +6861,7 @@
     "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder": {}
   },
   "project": {
-    "version": "1.0.0",
+    "version": "0.0.1",
     "restore": {
       "projectUniqueName": "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\DiscordBot\\DiscordBot.csproj",
       "projectName": "Sanakan.DiscordBot",
@@ -6885,6 +6937,12 @@
           "SixLabors.ImageSharp.Drawing": {
             "target": "Package",
             "version": "[1.0.0-beta0006, )"
+          },
+          "StyleCop.Analyzers": {
+            "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+            "suppressParent": "All",
+            "target": "Package",
+            "version": "[1.2.0-beta.354, )"
           }
         },
         "imports": [

@@ -2,10 +2,9 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net5.0</TargetFramework>
-    <Nullable>enable</Nullable>
     <AssemblyName>Sanakan.DAL.MySql.Schema</AssemblyName>
     <RootNamespace>Sanakan.DAL.MySql.Schema</RootNamespace>
+    <Configurations>Debug;Release;Test</Configurations>
   </PropertyGroup>
 
   <ItemGroup>

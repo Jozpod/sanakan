@@ -13,6 +13,7 @@
     <PackageId>Shinden.NET</PackageId>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <RootNamespace>Sanakan.ShindenApi</RootNamespace>
+    <Configurations>Debug;Release;Test</Configurations>
 
   </PropertyGroup>
 

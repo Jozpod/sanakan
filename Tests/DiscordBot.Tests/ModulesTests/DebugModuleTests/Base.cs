@@ -15,6 +15,7 @@ using Discord.WebSocket;
 using System;
 using System.Linq;
 using Sanakan.Game.Services.Abstractions;
+using Sanakan.DiscordBot;
 
 namespace DiscordBot.ModulesTests.DebugModuleTests
 {
@@ -22,6 +23,8 @@ namespace DiscordBot.ModulesTests.DebugModuleTests
     public abstract class Base : TestBase
     {
         protected readonly DebugModule _module;
+        protected readonly Mock<IFileSystem> _fileSystemMock = new(MockBehavior.Strict);
+        protected readonly Mock<IDiscordClientAccessor> _discordClientAccessorMock = new(MockBehavior.Strict);
         protected readonly Mock<IShindenClient> _shindenClientMock = new(MockBehavior.Strict);
         protected readonly Mock<IBlockingPriorityQueue> _blockingPriorityQueueMock = new(MockBehavior.Strict);
         protected readonly Mock<IWaifuService> _waifuServiceMock = new(MockBehavior.Strict);
@@ -100,6 +103,8 @@ namespace DiscordBot.ModulesTests.DebugModuleTests
         public Base()
         {
             _module = new(
+                _fileSystemMock.Object,
+                _discordClientAccessorMock.Object,
                 _shindenClientMock.Object,
                 _blockingPriorityQueueMock.Object,
                 _waifuServiceMock.Object,

@@ -18,6 +18,7 @@ using Sanakan.Common;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Sanakan.DiscordBot.Session;
+using Sanakan.DiscordBot;
 
 namespace DiscordBot.ModulesTests.HelperModuleTests
 {
@@ -25,6 +26,7 @@ namespace DiscordBot.ModulesTests.HelperModuleTests
     public abstract class Base : TestBase
     {
         protected readonly HelperModule _module;
+        protected readonly Mock<IDiscordClientAccessor> _discordClientAccessorMock = new(MockBehavior.Strict);
         protected readonly Mock<IHelperService> _helperServiceMock = new(MockBehavior.Strict);
         protected readonly Mock<ISessionManager> _sessionManagerMock = new(MockBehavior.Strict);
         protected readonly Mock<IOptionsMonitor<DiscordConfiguration>> _discordConfigurationMock = new(MockBehavior.Strict);
@@ -39,8 +41,9 @@ namespace DiscordBot.ModulesTests.HelperModuleTests
             var serviceProvider = serviceCollection.BuildServiceProvider();
             
             _module = new(
-                _helperServiceMock.Object,
+                _discordClientAccessorMock.Object,
                 _sessionManagerMock.Object,
+                _helperServiceMock.Object,
                 NullLogger<HelperModule>.Instance,
                 _discordConfigurationMock.Object,
                 _guildConfigRepositoryMock.Object,

@@ -15,15 +15,15 @@ namespace Sanakan.ShindenApi.Models
         public long? TotalItems { get; set; }
 
         [JsonPropertyName("result_type")]
-        public string ResultType { get; set; }
+        public string ResultType { get; set; } = string.Empty;
 
         [JsonPropertyName("items")]
-        public List<SearchResultItem> Items { get; set; }
+        public List<SearchResultItem> Items { get; set; } = new();
     }
 
     public class Titles
     {
         [JsonPropertyName("1")]
-        public string The1 { get; set; }
+        public string The1 { get; set; } = string.Empty;
     }
 }

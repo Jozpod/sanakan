@@ -6,6 +6,7 @@
     <Nullable>enable</Nullable>
     <AssemblyName>Sanakan.DAL</AssemblyName>
     <RootNamespace>Sanakan.DAL</RootNamespace>
+    <Configurations>Debug;Release;Test</Configurations>
   </PropertyGroup>
 
   <ItemGroup>
