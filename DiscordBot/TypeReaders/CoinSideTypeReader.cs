@@ -1,6 +1,5 @@
 ﻿using Discord.Commands;
 using Sanakan.DiscordBot.Services;
-using Sanakan.Services;
 using System;
 using System.Threading.Tasks;
 

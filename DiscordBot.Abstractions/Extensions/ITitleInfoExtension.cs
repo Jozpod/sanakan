@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using Discord;
 using System;
-using Shinden.API;
 using System.Linq;
 using Sanakan.DiscordBot.Abstractions.Models;
 using Sanakan.ShindenApi.Models;

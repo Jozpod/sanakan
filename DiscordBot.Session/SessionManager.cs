@@ -1,22 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Sanakan.DiscordBot.Session
 {
     internal class SessionManager : ISessionManager
     {
-        private readonly ISet<InteractionSession> _sessions;
+        private readonly ISet<IInteractionSession> _sessions;
         public object SyncRoot { get; } = new object();
 
         public SessionManager()
         {
-            _sessions = new SortedSet<InteractionSession>();
+            _sessions = new SortedSet<IInteractionSession>();
         }
 
-        public bool Exists<T>(ulong discordUserId) where T : InteractionSession
+        public bool Exists<T>(ulong discordUserId)
+            where T : IInteractionSession
         {
             var exists = false;
             lock (SyncRoot)
@@ -26,7 +25,7 @@ namespace Sanakan.DiscordBot.Session
             return exists;
         }
 
-        public void Remove(InteractionSession session)
+        public void Remove(IInteractionSession session)
         {
             lock (SyncRoot)
             {
@@ -34,7 +33,7 @@ namespace Sanakan.DiscordBot.Session
             }
         }
 
-        public void Add(InteractionSession session)
+        public void Add(IInteractionSession session)
         {
             lock (SyncRoot)
             {
@@ -56,7 +55,7 @@ namespace Sanakan.DiscordBot.Session
             }
         }
 
-        public IEnumerable<InteractionSession> GetByOwnerId(ulong OwnerId, SessionExecuteCondition executeCondition)
+        public IEnumerable<IInteractionSession> GetByOwnerId(ulong OwnerId, SessionExecuteCondition executeCondition)
         {
             lock (SyncRoot)
             {
@@ -66,10 +65,9 @@ namespace Sanakan.DiscordBot.Session
 
                 return filtered;
             }
-            
         }
 
-        public IEnumerable<InteractionSession> GetExpired(DateTime dateTime)
+        public IEnumerable<IInteractionSession> GetExpired(DateTime dateTime)
         {
             lock (SyncRoot)
             {

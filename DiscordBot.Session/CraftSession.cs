@@ -1,6 +1,5 @@
 ﻿using Discord;
 using Discord.Commands;
-using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
 using Sanakan.Common;
 using Sanakan.Common.Cache;
@@ -12,7 +11,6 @@ using Sanakan.DiscordBot.Abstractions.Models;
 using Sanakan.Extensions;
 using Sanakan.Game.Models;
 using Sanakan.Game.Services.Abstractions;
-using Sanakan.Services.PocketWaifu;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -40,7 +38,8 @@ namespace Sanakan.DiscordBot.Session
         public CraftSession(
             ulong ownerId,
             DateTime createdOn,
-            CraftSessionPayload payload) : base(
+            CraftSessionPayload payload)
+            : base(
                 ownerId,
                 createdOn,
                 TimeSpan.FromMinutes(2),
@@ -55,6 +54,7 @@ namespace Sanakan.DiscordBot.Session
             IServiceProvider serviceProvider,
             CancellationToken cancellationToken = default)
         {
+            IsRunning = true;
             _serviceProvider = serviceProvider;
 
             if (_payload.PlayerInfo == null || _payload.Message == null)
@@ -64,7 +64,7 @@ namespace Sanakan.DiscordBot.Session
 
             await HandleMessageAsync(context);
             await HandleReactionAsync(context);
-            return; 
+            IsRunning = false;
         }
 
         private async Task HandleMessageAsync(SessionContext context)

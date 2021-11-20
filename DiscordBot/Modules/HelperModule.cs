@@ -1,7 +1,6 @@
 ﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Sanakan.Common;
@@ -15,9 +14,7 @@ using Sanakan.DiscordBot.Resources;
 using Sanakan.DiscordBot.Services.Abstractions;
 using Sanakan.DiscordBot.Session;
 using Sanakan.Preconditions;
-using Sanakan.TaskQueue;
 using System;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -313,8 +310,8 @@ namespace Sanakan.DiscordBot.Modules
 
                 var record = new Raport
                 {
-                    User = replyMessage.Author.Id,
-                    Message = botMessage.Id
+                    UserId = replyMessage.Author.Id,
+                    MessageId = botMessage.Id
                 };
 
                 guildConfig.Raports.Add(record);

@@ -7,7 +7,6 @@ using Sanakan.ShindenApi;
 using Microsoft.Extensions.Options;
 using Sanakan.Common.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
-using Sanakan.TaskQueue;
 using Sanakan.Game.Services.Abstractions;
 using Sanakan.DiscordBot.Session;
 

@@ -1,5 +1,4 @@
 ﻿using Discord;
-using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -11,7 +10,6 @@ using Sanakan.Common.Configuration;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot;
 using Sanakan.Web.HostedService;
-using Sanakan.Web.Tests.HostedServices;
 using System;
 using System.Threading;
 using System.Threading.Tasks;

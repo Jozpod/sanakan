@@ -6,7 +6,7 @@ using Sanakan.Web.Models;
 
 namespace Sanakan.DiscordBot.Models
 {
- 
+
     /// <summary>
     /// Wiadomośc Embed generowane przez discorda, jedno z pól opcjonalnych musi zostać sprecyzowane
     /// </summary>

@@ -1,16 +1,10 @@
-﻿using DiscordBot.Services;
-using Sanakan.DAL.Models;
-using Sanakan.Services;
+﻿using Sanakan.DAL.Models;
 using Sanakan.Services.PocketWaifu;
 using Sanakan.ShindenApi.Models;
-using Shinden.API;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.Primitives;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Sanakan.Game.Services.Abstractions

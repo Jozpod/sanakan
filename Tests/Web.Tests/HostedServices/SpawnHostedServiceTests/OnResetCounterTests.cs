@@ -1,34 +1,41 @@
 ﻿using Discord;
-using Discord.Commands;
-using FluentAssertions;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using Sanakan.Common;
-using Sanakan.Configuration;
-using Sanakan.DAL.Models;
-using Sanakan.DAL.Models.Configuration;
-using Sanakan.DAL.Repositories.Abstractions;
-using Sanakan.ShindenApi;
-using Sanakan.Web.Controllers;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
+using Sanakan.Web.HostedService;
 using System.Threading.Tasks;
+using System.Reflection;
+using Discord.WebSocket;
+using Sanakan.Tests.Shared;
+using Sanakan.DiscordBot;
+using Sanakan.DiscordBot.Session;
+using System;
+using Discord.Commands;
+using System.Threading;
+using Sanakan.Common;
 
 namespace Sanakan.Web.Tests.HostedServices.SpawnHostedServiceTests
 {
+    /// <summary>
+    /// Defines tests for <see cref="SpawnHostedService.OnResetCounter(object, TimerEventArgs)"/> event handler.
+    /// </summary>
     [TestClass]
     public class OnResetCounterTests : Base
     {
         [TestMethod]
         public async Task Should_Reset_Entries()
         {
+            var utcNow = DateTime.UtcNow;
+            
+            _systemClockMock
+                .Setup(pr => pr.UtcNow)
+                .Returns(utcNow)
+                .Verifiable();
+
             var cancellationTokenSource = new CancellationTokenSource();
             await _service.StartAsync(cancellationTokenSource.Token);
-            _fakeTimer.RaiseTickEvent();
+            _timerMock.Raise(pr => pr.Tick += null, null, new TimerEventArgs(null));
+
+            _systemClockMock.Verify();
         }
 
     }

@@ -1,22 +1,13 @@
 ﻿using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using Sanakan;
 using Sanakan.Common;
 using Sanakan.Common.Configuration;
-using Sanakan.Configuration;
-using Sanakan.DAL.Models;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.Game.Services.Abstractions;
 using Sanakan.ShindenApi;
 using Sanakan.TaskQueue;
-using Sanakan.TaskQueue.Messages;
-using Sanakan.Web;
 using Sanakan.Web.Controllers;
-using System;
-using System.Collections.Concurrent;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Sanakan.Web.Tests.Controllers.WaifuControllerTests
 {

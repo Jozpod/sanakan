@@ -1,18 +1,14 @@
 using Discord;
 using Discord.Commands;
-using Discord.WebSocket;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System.Threading.Tasks;
-using Discord.Rest;
-using System.IO;
 using Sanakan.Preconditions;
 using Microsoft.Extensions.DependencyInjection;
 using FluentAssertions;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DAL.Models.Configuration;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 
 namespace Sanakan.DiscordBot.Tests.PreconditionsTests
 {

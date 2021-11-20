@@ -180,7 +180,7 @@ namespace Sanakan.DAL.Models
                 return false;
             }
 
-            if (CalculateMaxTimeOnExpeditionInMinutes(karma, expedition) < 1)
+            if (CalculateMaxTimeOnExpedition(karma, expedition) < TimeSpan.FromMinutes(1))
             {
                 return false;
             }
@@ -218,7 +218,7 @@ namespace Sanakan.DAL.Models
         }
 
         public static bool IsKarmaNeutral(double karma) => karma > -10 && karma < 10;
-        public double CalculateMaxTimeOnExpeditionInMinutes(double karma, ExpeditionCardType expedition = ExpeditionCardType.None)
+        public TimeSpan CalculateMaxTimeOnExpedition(double karma, ExpeditionCardType expedition = ExpeditionCardType.None)
         {
             expedition = (expedition == ExpeditionCardType.None) ? Expedition : expedition;
             var perMinute = GetCostOfExpeditionPerMinute(expedition);
@@ -241,14 +241,20 @@ namespace Sanakan.DAL.Models
                 case ExpeditionCardType.LightExp:
                 case ExpeditionCardType.LightItems:
                 case ExpeditionCardType.LightItemWithExp:
-                    if (addOFK > 5) addOFK = 5;
+                    if (addOFK > 5)
+                    {
+                        addOFK = 5;
+                    }
                     break;
 
                 case ExpeditionCardType.DarkItems:
                 case ExpeditionCardType.DarkExp:
                 case ExpeditionCardType.DarkItemWithExp:
                     addOFK = -addOFK;
-                    if (addOFK > 10) addOFK = 10;
+                    if (addOFK > 10)
+                    {
+                        addOFK = 10;
+                    }
                     break;
 
                 default:
@@ -256,18 +262,25 @@ namespace Sanakan.DAL.Models
                 case ExpeditionCardType.UltimateMedium:
                 case ExpeditionCardType.UltimateHard:
                 case ExpeditionCardType.UltimateHardcore:
-                    return 0;
+                    return TimeSpan.Zero;
             }
 
             if (!HasImage())
             {
                 perMinute *= 2;
             }
+            
             param += affOffset + addOFK;
-            var t = param / perMinute;
-            if (t > 10080) t = 10080;
+            var time = param / perMinute;
+            
+            if (time > 10080)
+            {
+                time = 10080;
+            }
 
-            return (t < 0.1) ? 0.1 : t;
+            time = (time < 0.1) ? 0.1 : time;
+
+            return TimeSpan.FromMinutes(time);
         }
 
         public double GetCostOfExpeditionPerMinute(ExpeditionCardType expeditionCardType = ExpeditionCardType.None)

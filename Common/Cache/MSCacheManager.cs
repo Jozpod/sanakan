@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using Sanakan.Common.Configuration;
-using System;
 
 namespace Sanakan.Common
 {

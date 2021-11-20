@@ -3,7 +3,6 @@ using Moq;
 using Sanakan.Common;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.Web.Controllers;
-using System;
 
 namespace Sanakan.Web.Tests.Controllers.QuizControllerTests
 {

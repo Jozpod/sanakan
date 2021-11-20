@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Sanakan.ShindenApi
+﻿namespace Sanakan.ShindenApi
 {
     public class Result<T>
     {

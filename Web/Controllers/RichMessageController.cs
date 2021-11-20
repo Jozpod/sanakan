@@ -3,7 +3,6 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
-using Discord.WebSocket;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -14,8 +13,6 @@ using Sanakan.Common.Configuration;
 using Sanakan.Configuration;
 using Sanakan.DiscordBot;
 using Sanakan.DiscordBot.Models;
-using Sanakan.Extensions;
-using Sanakan.Web.Configuration;
 using Sanakan.Web.Models;
 using static Sanakan.Web.ResponseExtensions;
 

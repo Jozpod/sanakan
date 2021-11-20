@@ -13,12 +13,7 @@ using Sanakan.DiscordBot.Session.Builder;
 using Sanakan.Game.Builder;
 using Sanakan.ShindenApi.Builder;
 using Sanakan.TaskQueue.Builder;
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sanakan.DiscordBot.Tests.IntegrationTests

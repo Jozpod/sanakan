@@ -2,9 +2,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.Common.Configuration;
-using Sanakan.Configuration;
 using Sanakan.Web.Controllers;
-using System;
 
 namespace Sanakan.Web.Tests.Controllers.TokenControllerTests
 {

@@ -3,25 +3,18 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Sanakan.Common;
-using Sanakan.DAL.Models.Analytics;
 using System;
-using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using Sanakan.Configuration;
 using Sanakan.DAL.Repositories.Abstractions;
-using System.Collections.Generic;
 using Sanakan.DiscordBot;
-using Discord.WebSocket;
 using Sanakan.Common.Configuration;
 using System.Linq;
 using Sanakan.DiscordBot.Abstractions.Extensions;
 using Sanakan.DiscordBot.Abstractions.Models;
 using Discord;
-using Sanakan.Extensions;
 using Sanakan.DiscordBot.Services.Abstractions;
 using Sanakan.DiscordBot.Supervisor;
-using System.Collections;
 
 namespace Sanakan.Web.HostedService
 {
@@ -88,7 +81,7 @@ namespace Sanakan.Web.HostedService
             }
         }
 
-        private async void OnTick(object sender, TimerEventArgs e)
+        internal async void OnTick(object sender, TimerEventArgs e)
         {
             if (_isRunning)
             {
@@ -117,8 +110,8 @@ namespace Sanakan.Web.HostedService
 
         private string GetMessageContent(IUserMessage message)
         {
-            string content = message.Content;
-            if (string.IsNullOrEmpty(message.Content))
+            var content = message.Content;
+            if (string.IsNullOrEmpty(content))
             {
                 content = message?.Attachments?.FirstOrDefault()?.Filename ?? "embed";
             }
@@ -126,7 +119,7 @@ namespace Sanakan.Web.HostedService
             return content;
         }
 
-        private async Task UserJoinedAsync(IGuildUser user)
+        internal async Task UserJoinedAsync(IGuildUser user)
         {
             if (!_discordConfiguration.CurrentValue.FloodSpamSupervisionEnabled)
             {
@@ -138,7 +131,9 @@ namespace Sanakan.Web.HostedService
                 return;
             }
 
-            if (_discordConfiguration.CurrentValue.BlacklistedGuilds.Any(x => x == user.Guild.Id))
+            var guild = user.Guild;
+
+            if (_discordConfiguration.CurrentValue.BlacklistedGuilds.Any(x => x == guild.Id))
             {
                 return;
             }
@@ -147,7 +142,7 @@ namespace Sanakan.Web.HostedService
             var serviceProvider = serviceScope.ServiceProvider;
             var guildConfigRepository = serviceProvider.GetRequiredService<IGuildConfigRepository>();
 
-            var guildConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(user.Guild.Id);
+            var guildConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
 
             if (guildConfig == null)
             {
@@ -159,12 +154,11 @@ namespace Sanakan.Web.HostedService
                 return;
             }
 
-            var guild = user.Guild;
             var userIds = Enumerable.Empty<ulong>();
 
             lock (_syncRoot)
             {
-                userIds = _userJoinedGuildSupervisor.GetUsersToBanCauseRaid(user.Guild.Id, user.Username, user.Id);
+                userIds = _userJoinedGuildSupervisor.GetUsersToBanCauseRaid(guild.Id, user.Username, user.Id);
             }
             
             var usersToBan = await Task.WhenAll(userIds.Select(pr => guild.GetUserAsync(pr)));
@@ -175,7 +169,7 @@ namespace Sanakan.Web.HostedService
 
         }
 
-        private async Task HandleMessageAsync(IMessage message)
+        internal async Task HandleMessageAsync(IMessage message)
         {
             if (!_discordConfiguration.CurrentValue.FloodSpamSupervisionEnabled)
             {
@@ -203,7 +197,9 @@ namespace Sanakan.Web.HostedService
                 return;
             }
 
-            if (_discordConfiguration.CurrentValue.BlacklistedGuilds.Any(x => x == user.Guild.Id))
+            var guild = user.Guild;
+
+            if (_discordConfiguration.CurrentValue.BlacklistedGuilds.Any(x => x == guild.Id))
             {
                 return;
             }
@@ -212,7 +208,7 @@ namespace Sanakan.Web.HostedService
             var serviceProvider = serviceScope.ServiceProvider;
             var guildConfigRepository = serviceProvider.GetRequiredService<IGuildConfigRepository>();
 
-            var gConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(user.Guild.Id);
+            var gConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
 
             if (gConfig == null)
             {
@@ -227,34 +223,37 @@ namespace Sanakan.Web.HostedService
             var messageContent = GetMessageContent(userMessage);
             var adminRoleId = gConfig.AdminRoleId;
             var userRoleId = gConfig.UserRoleId;
+            var rolesId = user.RoleIds;
 
             if (adminRoleId.HasValue
-                && user.RoleIds.Contains(adminRoleId.Value))
+                && rolesId.Contains(adminRoleId.Value))
             {
                 return;
             }
 
-            if (gConfig.ChannelsWithoutSupervision.Any(x => x.Channel == message.Channel.Id))
+            var channel = message.Channel;
+
+            if (gConfig.ChannelsWithoutSupervision.Any(x => x.Channel == channel.Id))
             {
                 return;
             }
 
             var lessSeverePunishment = true;
 
-            var hasRole = user.RoleIds.Any(x => x == userRoleId
+            var hasRole = rolesId.Any(x => x == userRoleId
                 || x == gConfig.MuteRoleId)
                 || !userRoleId.HasValue;
 
             lessSeverePunishment &= hasRole;
 
-            var muteRole = user.Guild.GetRole(gConfig.MuteRoleId);
-            var userRole = user.Guild.GetRole(userRoleId.Value);
-            var notifChannel = (ITextChannel)await user.Guild.GetChannelAsync(gConfig.NotificationChannelId);
+            var muteRole = guild.GetRole(gConfig.MuteRoleId);
+            var userRole = userRoleId.HasValue ? guild.GetRole(userRoleId.Value) : null;
+            var notifyChannel = (ITextChannel)await guild.GetChannelAsync(gConfig.NotificationChannelId);
             var decision = SupervisorAction.None;
 
             lock (_syncRoot)
             {
-                decision = _userMessageSupervisor.MakeDecision(user.Guild.Id, user.Id, messageContent, lessSeverePunishment);
+                decision = _userMessageSupervisor.MakeDecision(guild.Id, user.Id, messageContent, lessSeverePunishment);
             }
 
             var moderatorService = serviceProvider.GetRequiredService<IModeratorService>();
@@ -262,7 +261,7 @@ namespace Sanakan.Web.HostedService
             switch (decision)
             {
                 case SupervisorAction.Warn:
-                    await message.Channel.SendMessageAsync("",
+                    await channel.SendMessageAsync("",
                         embed: $"{user.Mention} zaraz przekroczysz granicę!".ToEmbedMessage(EMType.Bot).Build());
                     break;
 
@@ -284,11 +283,11 @@ namespace Sanakan.Web.HostedService
                         userRole,
                         TimeSpan.FromDays(1),
                         "spam/flood");
-                    await moderatorService.NotifyAboutPenaltyAsync(user, notifChannel, info);
+                    await moderatorService.NotifyAboutPenaltyAsync(user, notifyChannel, info);
                     break;
 
                 case SupervisorAction.Ban:
-                    await user.Guild.AddBanAsync(user, 1, "Supervisor(ban) spam/flood");
+                    await guild.AddBanAsync(user, 1, "Supervisor(ban) spam/flood");
                     break;
 
                 default:

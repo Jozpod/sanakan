@@ -1,10 +1,6 @@
 using Discord;
-using Discord.Commands;
-using Discord.WebSocket;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Threading.Tasks;
-using System.Diagnostics;
-using System;
 using Moq;
 
 namespace DiscordBot.ModulesTests.ModerationModuleTests

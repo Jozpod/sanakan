@@ -1,11 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net5.0</TargetFrameworks>
-    <LangVersion>9.0</LangVersion>
-    <Nullable>enable</Nullable>
-    <Version>0.0.1</Version>
-    <Authors>Jotpe</Authors>
     <Copyright>Copyright 2021 © Jotpe. All rights reserved.</Copyright>
     <PackageTags>Shinden REST API .NET shinden.pl wrapper</PackageTags>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>

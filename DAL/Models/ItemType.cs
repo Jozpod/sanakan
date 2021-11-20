@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Sanakan.DAL.Models
 {
@@ -182,7 +179,7 @@ namespace Sanakan.DAL.Models
             }
         }
 
-        public static int Count(this ItemType type)
+        public static uint Count(this ItemType type)
         {
             switch (type)
             {
@@ -538,10 +535,12 @@ namespace Sanakan.DAL.Models
             }
         }
 
-        public static BoosterPack ToBoosterPack(this ItemType type)
+        public static BoosterPack? ToBoosterPack(this ItemType type)
         {
             if (!type.IsBoosterPack())
+            {
                 return null;
+            }
 
             return new BoosterPack
             {

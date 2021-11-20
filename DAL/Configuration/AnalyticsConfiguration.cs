@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Sanakan.DAL.Models.Analytics;
-using System;
 
 namespace Sanakan.DAL.Configuration
 {

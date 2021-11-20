@@ -1,10 +1,4 @@
-﻿using Discord;
-using DiscordBot.Services;
-using Sanakan.Common.Models;
-using Sanakan.DAL.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using Sanakan.DAL.Models;
 
 namespace Sanakan.Extensions
 {

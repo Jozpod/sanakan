@@ -13,10 +13,10 @@ namespace Sanakan.Tests.Shared
         {
             var bindingAttr = BindingFlags.NonPublic | BindingFlags.Instance;
             var types = new[]{
-                    typeof(IMessage),
-                    typeof(ulong),
+                    typeof(TEntity),
+                    typeof(TId),
                     typeof(bool),
-                    typeof(Func<Task<IMessage>>),
+                    typeof(Func<Task<TEntity>>),
                 };
 
             var cacheableCtor = typeof(Cacheable<TEntity, TId>).GetConstructor(

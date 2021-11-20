@@ -120,22 +120,72 @@ namespace Sanakan.DAL.Models.Configuration
         /// The number of Safari events which can happen during a day.
         /// </summary>
         public ulong SafariLimit { get; set; }
+
+        /// <summary>
+        /// Specifies whether supervision is enabled.
+        /// </summary>
         public bool SupervisionEnabled { get; set; }
+
+        /// <summary>
+        /// Specifies whether chaos mode is enabled.
+        /// </summary>
         public bool ChaosModeEnabled { get; set; }
 
+        /// <summary>
+        /// The prefix which is used by Discord bot.
+        /// </summary>
         [StringLength(10)]
         public string? Prefix { get; set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
+
         public virtual WaifuConfiguration? WaifuConfig { get; set; }
 
+        /// <summary>
+        /// The list of Discord channels.
+        /// </summary>
         public virtual ICollection<WithoutSupervisionChannel> ChannelsWithoutSupervision { get; set; }
+
+        /// <summary>
+        /// The list of Discord channels which are not moderated.
+        /// </summary>
         public virtual ICollection<WithoutMessageCountChannel> IgnoredChannels { get; set; }
+        
+        /// <summary>
+        /// The list of Discord channels which does not support experience gathering.
+        /// </summary>
         public virtual ICollection<WithoutExpChannel> ChannelsWithoutExperience { get; set; }
+
+        /// <summary>
+        /// The list of Discord channels.
+        /// </summary>
         public virtual ICollection<CommandChannel> CommandChannels { get; set; }
+
+        /// <summary>
+        /// The list of Discord roles.
+        /// </summary>
         public virtual ICollection<ModeratorRoles> ModeratorRoles { get; set; }
+
+        /// <summary>
+        /// The list of Discord roles.
+        /// </summary>
         public virtual ICollection<LevelRole> RolesPerLevel { get; set; }
+
+        /// <summary>
+        /// The list of Discord roles.
+        /// </summary>
         public virtual ICollection<SelfRole> SelfRoles { get; set; }
+
+        /// <summary>
+        /// The list of raports.
+        /// </summary>
         public virtual ICollection<Raport> Raports { get; set; }
+
+        /// <summary>
+        /// The list of lands.
+        /// </summary>
         public virtual ICollection<MyLand> Lands { get; set; }
     }
 }

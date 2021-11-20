@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Sanakan.DiscordBot.Services
+﻿namespace Sanakan.DiscordBot.Services
 {
     //public enum SlotMachineSlot : int
     //{

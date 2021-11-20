@@ -1,6 +1,5 @@
 ﻿using System;
 using Sanakan.DAL.Models;
-using Sanakan.Extensions;
 
 namespace Sanakan.Api.Models
 {
@@ -14,7 +13,7 @@ namespace Sanakan.Api.Models
             Card = card == null ? null : new CardFinalView(card);
             StartedOn = card.ExpeditionDate;
             ExpeditionType = card.Expedition.GetName();
-            MaxTime = card.CalculateMaxTimeOnExpeditionInMinutes(karma);
+            MaxTime = card.CalculateMaxTimeOnExpedition(karma).TotalMinutes;
         }
 
         /// <summary>

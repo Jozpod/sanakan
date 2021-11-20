@@ -1,12 +1,8 @@
 ﻿
 
 using Discord.Commands;
-using Sanakan.DiscordBot.Abstractions;
-using Sanakan.Extensions;
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using SearchResult = Discord.Commands.SearchResult;

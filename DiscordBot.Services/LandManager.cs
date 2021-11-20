@@ -2,11 +2,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
-using Discord.WebSocket;
 using Sanakan.DAL.Models.Configuration;
 using Sanakan.DiscordBot.Abstractions.Models;
 using Sanakan.DiscordBot.Services.Abstractions;
-using Sanakan.Extensions;
 
 namespace Sanakan.DiscordBot.Services
 {

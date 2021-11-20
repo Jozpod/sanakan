@@ -1,22 +1,14 @@
 ﻿using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.Api.Models;
-using Sanakan.Common;
 using Sanakan.Common.Configuration;
 using Sanakan.Configuration;
-using Sanakan.DAL.Models;
-using Sanakan.DAL.Repositories.Abstractions;
-using Sanakan.ShindenApi;
-using Sanakan.Web.Controllers;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
-using System.Threading.Tasks;
 
 namespace Sanakan.Web.Tests.Controllers.TokenControllerTests
 {

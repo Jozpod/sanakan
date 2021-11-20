@@ -1,19 +1,11 @@
 ﻿using Discord.Commands;
-using DiscordBot.Services;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using Sanakan.Common;
-using Sanakan.Common.Configuration;
 using Sanakan.DiscordBot.Services;
 using Sanakan.TypeReaders;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Sanakan.DiscordBot.Tests

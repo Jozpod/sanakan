@@ -3,18 +3,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Sanakan.Common;
-using Sanakan.DAL.Models.Analytics;
 using System;
-using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using Sanakan.Configuration;
-using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.Common.Configuration;
 using System.Collections.Generic;
-using Sanakan.TaskQueue;
 using Sanakan.DiscordBot;
-using Discord.WebSocket;
 using Discord;
 using System.Linq;
 using Discord.Commands;
@@ -82,7 +76,7 @@ namespace Sanakan.Web.HostedService
             }
         }
 
-        private void OnTick(object sender, TimerEventArgs e)
+        internal async void OnTick(object sender, TimerEventArgs e)
         {
             if (_isRunning)
             {
@@ -95,19 +89,33 @@ namespace Sanakan.Web.HostedService
 
             foreach (var expiredSession in expiredSessions)
             {
-                _sessionManager.Remove(expiredSession);
+                try
+                {
+                    if(expiredSession.IsRunning)
+                    {
+                        _logger.LogWarning("Expired session is still running. Owner: {0}, Type - {1}", expiredSession.OwnerId, expiredSession);
+                        continue;
+                    }
+
+                    _sessionManager.Remove(expiredSession);
+                    await expiredSession.DisposeAsync();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError("An error occured while removing expired sessions", ex);
+                }
             }
 
             _isRunning = false;
         }
 
-        private async Task RunSessions(IEnumerable<InteractionSession> sessions, SessionContext sessionPayload)
+        private async Task RunSessions(IEnumerable<IInteractionSession> sessions, SessionContext sessionPayload)
         {
             var utcNow = _systemClock.UtcNow;
 
             foreach (var session in sessions)
             {
-                if (!session.HasExpired(utcNow))
+                if (session.HasExpired(utcNow) && !session.IsRunning)
                 {
                     await session.DisposeAsync();
                     _sessionManager.Remove(session);
@@ -121,18 +129,20 @@ namespace Sanakan.Web.HostedService
                     case RunMode.Async:
                         await session.ExecuteAsync(sessionPayload, serviceProvider);
                         _sessionManager.Remove(session);
+                        await session.DisposeAsync();
                         break;
 
                     default:
                     case RunMode.Sync:
                         await session.ExecuteAsync(sessionPayload, serviceProvider);
                         _sessionManager.Remove(session);
+                        await session.DisposeAsync();
                         break;
                 }
             }
         }
 
-        private async Task HandleMessageAsync(IMessage message)
+        internal async Task HandleMessageAsync(IMessage message)
         {
             var userMessage = message as IUserMessage;
 
@@ -168,7 +178,7 @@ namespace Sanakan.Web.HostedService
             await RunSessions(userSessions, sessionPayload).ConfigureAwait(false);
         }
 
-        private async Task HandleReactionAddedAsync(
+        internal async Task HandleReactionAddedAsync(
             Cacheable<IUserMessage, ulong> userMessage,
             IMessageChannel channel,
             IReaction reaction)
@@ -199,13 +209,6 @@ namespace Sanakan.Web.HostedService
                 return;
             }
 
-            var client = _discordSocketClientAccessor.Client;
-            var socketUser = await client.GetUserAsync(userId.Value);
-            if (socketUser == null)
-            {
-                return;
-            }
-
             var message = await channel.GetMessageAsync(userMessage.Id);
             if (message == null)
             {
@@ -219,19 +222,21 @@ namespace Sanakan.Web.HostedService
                 return;
             }
 
+            var client = _discordSocketClientAccessor.Client;
+
             var sessionPayload = new SessionContext
             {
                 Client = client,
                 Channel = socketUserMessage.Channel,
                 Message = socketUserMessage,
-                User = socketUser,
+                User = reactionUser,
                 AddReaction = reaction,
             };
 
             await RunSessions(userSessions, sessionPayload).ConfigureAwait(false);
         }
 
-        private async Task HandleReactionRemovedAsync(
+        internal async Task HandleReactionRemovedAsync(
             Cacheable<IUserMessage, ulong> userMessage,
             IMessageChannel channel,
             IReaction reaction)
@@ -263,11 +268,6 @@ namespace Sanakan.Web.HostedService
             }
 
             var client = _discordSocketClientAccessor.Client;
-            var socketUser = await client.GetUserAsync(userId.Value);
-            if (socketUser == null)
-            {
-                return;
-            }
 
             var message = await channel.GetMessageAsync(userMessage.Id);
             if (message == null)
@@ -287,7 +287,7 @@ namespace Sanakan.Web.HostedService
                 Client = client,
                 Channel = socketUserMessage.Channel,
                 Message = socketUserMessage,
-                User = socketUser,
+                User = reactionUser,
                 RemoveReaction = reaction,
             };
 

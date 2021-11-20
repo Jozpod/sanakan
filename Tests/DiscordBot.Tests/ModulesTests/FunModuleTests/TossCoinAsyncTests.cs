@@ -1,13 +1,5 @@
-using Discord;
-using Discord.Commands;
-using Discord.WebSocket;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Threading.Tasks;
-using System.Diagnostics;
-using System;
-using Moq;
-using Sanakan.ShindenApi.Models;
-using Sanakan.DAL.Models;
 using Sanakan.DiscordBot.Services;
 
 namespace DiscordBot.ModulesTests.FunModuleTests

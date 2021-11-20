@@ -10,7 +10,6 @@ using Sanakan.Common.Extensions;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Models.Configuration;
 using Sanakan.DAL.Repositories.Abstractions;
-using Sanakan.DiscordBot;
 using Sanakan.DiscordBot.Abstractions;
 using Sanakan.DiscordBot.Abstractions.Extensions;
 using Sanakan.DiscordBot.Abstractions.Models;
@@ -19,9 +18,7 @@ using Sanakan.DiscordBot.Services;
 using Sanakan.DiscordBot.Services.Abstractions;
 using Sanakan.Extensions;
 using Sanakan.Preconditions;
-using Sanakan.Services;
 using Sanakan.ShindenApi;
-using Shinden;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -1750,7 +1747,7 @@ namespace Sanakan.DiscordBot.Modules
             var warnUser = durationStr == "warn";
             var guild = Context.Guild;
             var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(guild.Id);
-            var raport = config.Raports.FirstOrDefault(x => x.Message == discordMessageId);
+            var raport = config.Raports.FirstOrDefault(x => x.MessageId == discordMessageId);
 
             if (raport == null)
             {
@@ -1760,7 +1757,7 @@ namespace Sanakan.DiscordBot.Modules
 
             var invokingUser = Context.User as SocketGuildUser;
             var byWho = invokingUser.Nickname ?? invokingUser.Username;
-            var user = await Context.Guild.GetUserAsync(raport.User);
+            var user = await Context.Guild.GetUserAsync(raport.UserId);
             var notifyChannel = await guild.GetChannelAsync(config.NotificationChannelId) as IMessageChannel;
             var reportChannel = await guild.GetChannelAsync(config.RaportChannelId) as IMessageChannel;
             var userRole = guild.GetRole(config.UserRoleId.Value);
@@ -1784,7 +1781,7 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            var reportMessage = await reportChannel.GetMessageAsync(raport.Message);
+            var reportMessage = await reportChannel.GetMessageAsync(raport.MessageId);
 
             if(reportMessage == null)
             {

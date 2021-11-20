@@ -5,8 +5,16 @@ namespace Sanakan.DAL.Models.Configuration
     public class Raport
     {
         public ulong Id { get; set; }
-        public ulong User { get; set; }
-        public ulong Message { get; set; }
+
+        /// <summary>
+        /// The Discord user identifier.
+        /// </summary>
+        public ulong UserId { get; set; }
+
+        /// <summary>
+        /// The Discord message identifier.
+        /// </summary>
+        public ulong MessageId { get; set; }
 
         public ulong GuildOptionsId { get; set; }
 

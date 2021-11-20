@@ -4,14 +4,9 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.Api;
 using Sanakan.Common;
-using Sanakan.Configuration;
 using Sanakan.Web.Configuration;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Sanakan.Web.Test
 {

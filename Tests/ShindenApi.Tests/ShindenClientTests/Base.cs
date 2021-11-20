@@ -5,7 +5,6 @@ using Moq;
 using Moq.Protected;
 using Sanakan.Common;
 using Sanakan.Common.Configuration;
-using Sanakan.ShindenApi;
 using System;
 using System.Net;
 using System.Net.Http;

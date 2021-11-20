@@ -1,25 +1,21 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
 using Discord;
 using Discord.WebSocket;
-using DiscordBot.Services;
 using DiscordBot.Services.PocketWaifu;
 using Microsoft.Extensions.DependencyInjection;
 using Sanakan.Common;
 using Sanakan.Common.Cache;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Repositories.Abstractions;
-using Sanakan.DiscordBot;
 using Sanakan.DiscordBot.Abstractions.Extensions;
 using Sanakan.DiscordBot.Abstractions.Models;
 using Sanakan.Extensions;
 using Sanakan.Game.Extensions;
 using Sanakan.Game.Models;
-using Sanakan.Game.Services;
 using Sanakan.Game.Services.Abstractions;
 using Sanakan.Services.PocketWaifu.Fight;
 using Sanakan.ShindenApi;
@@ -1182,13 +1178,16 @@ namespace Sanakan.Game.Services
             if (!_fileSystem.Exists(imageLocation) || !_fileSystem.Exists(sImageLocation) || force)
             {
                 if (card.Id != 0)
+                {
                     imageUrl = await GenerateAndSaveCardAsync(card);
+                }
             }
             else
             {
                 imageUrl = imageLocation;
-                var hours = (_systemClock.UtcNow - _fileSystem.GetCreationTime(imageLocation)).TotalHours;
-                if (hours > 4)
+                var fileTime = _systemClock.UtcNow - _fileSystem.GetCreationTime(imageLocation);
+
+                if (fileTime > TimeSpan.FromHours(4))
                 {
                     imageUrl = await GenerateAndSaveCardAsync(card);
                 }
@@ -1230,7 +1229,7 @@ namespace Sanakan.Game.Services
             }
         }
 
-        public async Task<string> GetSafariViewAsync(SafariImage safariImage, Card card, ITextChannel trashChannel)
+        public async Task<string> GetSafariViewAsync(SafariImage safariImage, Card card, IMessageChannel trashChannel)
         {
             var safariImageType = SafariImageType.Truth;
             var imagePath = safariImageType.ToUri(safariImage.Index);
@@ -1256,7 +1255,7 @@ namespace Sanakan.Game.Services
             return message.Attachments.First().Url;
         }
 
-        public async Task<string> GetSafariViewAsync(SafariImage safariImage, ITextChannel trashChannel)
+        public async Task<string> SendAndGetSafariImageUrlAsync(SafariImage safariImage, IMessageChannel trashChannel)
         {
             var safariImageType = SafariImageType.Mystery;
             var imagePath = safariImageType.ToUri(safariImage.Index);
@@ -1281,10 +1280,11 @@ namespace Sanakan.Game.Services
             if (showStats)
             {
                 imageUrl = await GetCardUrlIfExistAsync(card, true);
+
                 if (imageUrl != null)
                 {
-                    var msg = await trashChannel.SendFileAsync(imageUrl);
-                    imageUrl = msg.Attachments.First().Url;
+                    var message = await trashChannel.SendFileAsync(imageUrl);
+                    imageUrl = message.Attachments.First().Url;
                 }
             }
             else
@@ -1476,16 +1476,18 @@ namespace Sanakan.Game.Services
             return allCards.Distinct().ToList();
         }
 
-        public Tuple<double, double> GetRealTimeOnExpeditionInMinutes(Card card, double karma)
+        public (TimeSpan, TimeSpan) GetRealTimeOnExpedition(Card card, double karma)
         {
-            var maxMinutes = card.CalculateMaxTimeOnExpeditionInMinutes(karma);
-            var realMin = (_systemClock.UtcNow - card.ExpeditionDate).TotalMinutes;
-            var durationMin = realMin;
+            var maximumTime = card.CalculateMaxTimeOnExpedition(karma);
+            var actualTime = _systemClock.UtcNow - card.ExpeditionDate;
+            var effectiveDuration = actualTime;
 
-            if (maxMinutes < durationMin)
-                durationMin = maxMinutes;
+            if (maximumTime < effectiveDuration)
+            {
+                effectiveDuration = maximumTime;
+            }
 
-            return new Tuple<double, double>(durationMin, realMin);
+            return (effectiveDuration, actualTime);
         }
 
         public double GetBaseItemsPerMinuteFromExpedition(ExpeditionCardType expedition, Rarity rarity)
@@ -1570,20 +1572,23 @@ namespace Sanakan.Game.Services
             return baseExp / 60d;
         }
 
+        private TimeSpan HalfAnHour = TimeSpan.FromMinutes(30);
+        private TimeSpan Hour = TimeSpan.FromHours(1);
+
         public string EndExpedition(User user, Card card, bool showStats = false)
         {
             var items = new Dictionary<string, int>();
 
-            var duration = GetRealTimeOnExpeditionInMinutes(card, user.GameDeck.Karma);
+            var duration = GetRealTimeOnExpedition(card, user.GameDeck.Karma);
             var baseExp = GetBaseExpPerMinuteFromExpedition(card.Expedition, card.Rarity);
             var baseItemsCnt = GetBaseItemsPerMinuteFromExpedition(card.Expedition, card.Rarity);
-            var multiplier = (duration.Item2 < 60) ? ((duration.Item2 < 30) ? 5d : 3d) : 1d;
+            var multiplier = (duration.Item2 < Hour) ? ((duration.Item2 < HalfAnHour) ? 5d : 3d) : 1d;
 
-            var totalExp = GetProgressiveValueFromExpedition(baseExp, duration.Item1, 15d);
-            var totalItemsCnt = (int) GetProgressiveValueFromExpedition(baseItemsCnt, duration.Item1, 25d);
+            var totalExp = GetProgressiveValueFromExpedition(baseExp, duration.Item1.TotalMinutes, 15d);
+            var totalItemsCnt = (int) GetProgressiveValueFromExpedition(baseItemsCnt, duration.Item1.TotalMinutes, 25d);
 
-            var karmaCost = card.GetKarmaCostInExpeditionPerMinute() * duration.Item1;
-            var affectionCost = card.GetCostOfExpeditionPerMinute() * duration.Item1 * multiplier;
+            var karmaCost = card.GetKarmaCostInExpeditionPerMinute() * duration.Item1.TotalMinutes;
+            var affectionCost = card.GetCostOfExpeditionPerMinute() * duration.Item1.TotalMinutes * multiplier;
 
             if (card.Curse == CardCurse.LoweredExperience)
             {
@@ -1592,15 +1597,15 @@ namespace Sanakan.Game.Services
 
             var reward = "";
             var allowItems = true;
-            if (duration.Item2 < 30)
+            if (duration.Item2 < HalfAnHour)
             {
                 reward = $"Wyprawa? Chyba po bułki do sklepu.\n\n";
                 affectionCost += 3.3;
             }
 
-            if (CheckEventInExpedition(card.Expedition, duration))
+            if (CheckEventInExpedition(card.Expedition, (duration.Item1.TotalMinutes, duration.Item2.TotalMinutes)))
             {
-                var @event = _eventsService.RandomizeEvent(card.Expedition, duration);
+                var @event = _eventsService.RandomizeEvent(card.Expedition, (duration.Item1.TotalMinutes, duration.Item2.TotalMinutes));
                 (allowItems, reward) = _eventsService.ExecuteEvent(@event, user, card, reward);
 
                 totalItemsCnt += _eventsService.GetMoreItems(@event);
@@ -1619,18 +1624,18 @@ namespace Sanakan.Game.Services
                 }
             }
 
-            if (duration.Item1 <= 3)
+            if (duration.Item1 <= TimeSpan.FromMinutes(3))
             {
                 totalItemsCnt = 0;
                 totalExp /= 2;
             }
 
-            if (duration.Item1 <= 1 || user.GameDeck.CanCreateDemon())
+            if (duration.Item1 <= TimeSpan.FromMinutes(1) || user.GameDeck.CanCreateDemon())
             {
                 karmaCost /= 2.5;
             }
 
-            if (duration.Item1 >= 2160 || user.GameDeck.CanCreateAngel())
+            if (duration.Item1 >= TimeSpan.FromHours(36) || user.GameDeck.CanCreateAngel())
             {
                 karmaCost *= 2.5;
             }
@@ -1677,7 +1682,7 @@ namespace Sanakan.Game.Services
             return reward;
         }
 
-        private bool CheckEventInExpedition(ExpeditionCardType expedition, Tuple<double, double> duration)
+        private bool CheckEventInExpedition(ExpeditionCardType expedition, (double, double) duration)
         {
             switch (expedition)
             {
@@ -1686,7 +1691,9 @@ namespace Sanakan.Game.Services
 
                 case ExpeditionCardType.ExtremeItemWithExp:
                     if (duration.Item1 > 60 || duration.Item2 > 600)
+                    {
                         return true;
+                    }
                     return !_randomNumberGenerator.TakeATry(5);
 
                 case ExpeditionCardType.LightItemWithExp:

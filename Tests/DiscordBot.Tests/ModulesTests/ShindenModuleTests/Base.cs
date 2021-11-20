@@ -2,7 +2,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot.Modules;
-using Sanakan.TaskQueue;
 using Sanakan.ShindenApi;
 using Sanakan.Common;
 using Sanakan.DiscordBot.Session;

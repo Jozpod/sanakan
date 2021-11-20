@@ -3,21 +3,15 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Sanakan.Common;
-using Sanakan.DAL.Models.Analytics;
 using System;
-using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using Sanakan.Configuration;
 using Sanakan.DAL.Repositories.Abstractions;
-using System.Collections.Concurrent;
 using Sanakan.DiscordBot;
 using Sanakan.Common.Configuration;
 using System.Collections.Generic;
-using Discord.WebSocket;
 using System.Linq;
 using Discord;
-using System.Collections.ObjectModel;
 using Sanakan.DiscordBot.Abstractions.Extensions;
 
 namespace Sanakan.Web.HostedService

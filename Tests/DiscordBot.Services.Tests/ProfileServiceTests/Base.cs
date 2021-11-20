@@ -1,12 +1,9 @@
-using Discord.WebSocket;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using Sanakan.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Sanakan.ShindenApi;
 using Sanakan.Common;
-using Sanakan.Game.Services;
 using Sanakan.DiscordBot.Services.Abstractions;
 using Sanakan.Game.Services.Abstractions;
 using Sanakan.DiscordBot.Services;

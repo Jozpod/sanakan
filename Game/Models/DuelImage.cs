@@ -1,5 +1,4 @@
 using Sanakan.Common;
-using System.IO;
 using System.Text.Json.Serialization;
 
 namespace Sanakan.Services.PocketWaifu

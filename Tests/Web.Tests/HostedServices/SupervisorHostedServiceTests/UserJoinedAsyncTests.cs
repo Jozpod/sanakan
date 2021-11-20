@@ -1,34 +1,91 @@
 ﻿using Discord;
-using Discord.Commands;
-using FluentAssertions;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using Sanakan.Common;
-using Sanakan.Configuration;
-using Sanakan.DAL.Models;
-using Sanakan.DAL.Models.Configuration;
-using Sanakan.DAL.Repositories.Abstractions;
-using Sanakan.ShindenApi;
-using Sanakan.Web.Controllers;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
+using Sanakan.Web.HostedService;
 using System.Threading.Tasks;
+using System.Reflection;
+using Discord.WebSocket;
+using Sanakan.Tests.Shared;
+using Sanakan.DiscordBot;
+using Sanakan.DiscordBot.Session;
+using System;
+using Discord.Commands;
+using System.Threading;
+using Sanakan.Common;
+using Sanakan.DAL.Models.Configuration;
+using System.Linq;
 
 namespace Sanakan.Web.Tests.HostedServices.SupervisorHostedServiceTests
 {
+    /// <summary>
+    /// Defines tests for <see cref="SupervisorHostedService.UserJoinedAsync(IGuildUser)"/> event handler.
+    /// </summary>
     [TestClass]
     public class UserJoinedAsyncTests : Base
     {
+         //var usersToBan = await Task.WhenAll(userIds.Select(pr => guild.GetUserAsync(pr)));
+         //   foreach (var userToBan in usersToBan)
+         //   {
+         //       await guild.AddBanAsync(user, 1, $"Supervisor(ban) raid/scam [{user.Nickname}]");
+         //   }
+
         [TestMethod]
-        public async Task Should_Exit_Not_User_Message()
+        public async Task Should_Verify_User_Join_Ban()
         {
+            var guildId = 1ul;
+            var userId = 1ul;
+            var username = "username";
+            var guildUserMock = new Mock<IGuildUser>(MockBehavior.Strict);
+            var guildMock = new Mock<IGuild>(MockBehavior.Strict);
+            var guildOptions = new GuildOptions(guildId, 50ul)
+            {
+                WaifuConfig = new WaifuConfiguration
+                {
+                    SpawnChannelId = 1ul,
+                    TrashSpawnChannelId = 1ul,
+                },
+                MuteRoleId = 1ul,
+            };
+            var userIds = Enumerable.Empty<ulong>();
+
+            guildUserMock
+                .Setup(pr => pr.Id)
+                .Returns(userId)
+                .Verifiable();
+
+            guildUserMock
+                .Setup(pr => pr.IsBot)
+                .Returns(false)
+                .Verifiable();
+
+            guildUserMock
+                .Setup(pr => pr.IsWebhook)
+                .Returns(false)
+                .Verifiable();
+
+            guildUserMock
+                .Setup(pr => pr.Username)
+                .Returns(username)
+                .Verifiable();
+
+            guildUserMock
+                .Setup(pr => pr.Guild)
+                .Returns(guildMock.Object)
+                .Verifiable();
+
+            _guildConfigRepositoryMock
+                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildId))
+                .ReturnsAsync(guildOptions);
+
+            _userJoinedGuildSupervisorMock
+                .Setup(pr => pr.GetUsersToBanCauseRaid(guildId, username, userId))
+                .Returns(userIds);
+
             var cancellationTokenSource = new CancellationTokenSource();
             await _service.StartAsync(cancellationTokenSource.Token);
-            _fakeTimer.RaiseTickEvent();
+
+            _discordClientAccessorMock.Raise(pr => pr.LoggedIn += null);
+            _discordClientAccessorMock.Raise(pr => pr.UserJoined += null, guildUserMock.Object);
         }
 
     }

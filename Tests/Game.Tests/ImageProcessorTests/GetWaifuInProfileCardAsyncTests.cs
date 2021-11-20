@@ -1,15 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
-using Sanakan.Common;
 using Sanakan.DAL.Models;
-using Sanakan.DiscordBot.Services;
-using Sanakan.ShindenApi;
-using Sanakan.Game.Services;
-using Shinden.API;
 using System;
-using System.Net.Http;
 using System.Threading.Tasks;
-using System.Collections.Generic;
 using FluentAssertions;
 
 namespace Sanakan.Game.Tests.ImageProcessorTests

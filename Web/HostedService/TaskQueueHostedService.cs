@@ -1,18 +1,10 @@
 ﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Sanakan.Common;
-using Sanakan.DAL.Models.Analytics;
 using System;
-using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using Sanakan.Configuration;
-using Sanakan.DAL.Repositories.Abstractions;
-using System.Collections.Concurrent;
-using Sanakan.TaskQueue.Messages;
-using Sanakan.Common.Configuration;
 using Sanakan.TaskQueue.MessageHandlers;
 using Sanakan.TaskQueue;
 

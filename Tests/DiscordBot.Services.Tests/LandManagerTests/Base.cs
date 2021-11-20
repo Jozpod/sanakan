@@ -1,7 +1,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Sanakan.DiscordBot.Services;
 using Sanakan.DiscordBot.Services.Abstractions;
-using Sanakan.Services;
 
 namespace DiscordBot.ServicesTests.LandManagerTests
 {

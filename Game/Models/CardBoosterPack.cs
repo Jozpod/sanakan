@@ -23,16 +23,16 @@ namespace Sanakan.Game.Models
         /// Wykluczone jakości z losowania, Gwarantowana ma wyższy priorytet
         /// </summary>
         public List<Rarity> RarityExcluded { get; set; }
-        
+
         /// <summary>
         /// Nazwa pakietu
         /// </summary>
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
         
         /// <summary>
-        /// Liczba kart w pakiecie (min. 1)
+        /// The amount of cards in bundle (min. 1)
         /// </summary>
-        public int Count { get; set; }
+        public uint Count { get; set; }
         
         /// <summary>
         /// Definuje jak będą losowane postacie do kart

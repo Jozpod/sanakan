@@ -1,32 +1,25 @@
-﻿using Microsoft.Extensions.Hosting;
+﻿using Discord;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Sanakan.Common;
-using Sanakan.DAL.Models.Analytics;
+using Sanakan.Common.Configuration;
+using Sanakan.DAL.Models;
+using Sanakan.DAL.Repositories.Abstractions;
+using Sanakan.DiscordBot;
+using Sanakan.DiscordBot.Abstractions;
+using Sanakan.DiscordBot.Abstractions.Extensions;
+using Sanakan.DiscordBot.Abstractions.Models;
+using Sanakan.Extensions;
+using Sanakan.Game.Services.Abstractions;
+using Sanakan.TaskQueue;
+using Sanakan.TaskQueue.Messages;
 using System;
-using System.Diagnostics;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Sanakan.Configuration;
-using Sanakan.DAL.Repositories.Abstractions;
-using System.Collections.Concurrent;
-using Sanakan.DiscordBot;
-using Sanakan.Common.Configuration;
-using System.Collections.Generic;
-using Discord.WebSocket;
-using System.Linq;
-using Discord;
-using Sanakan.TaskQueue;
-using Sanakan.DiscordBot.Abstractions;
-using Sanakan.Services.PocketWaifu;
-using Sanakan.DiscordBot.Abstractions.Models;
-using Sanakan.DAL.Models;
-using Sanakan.DiscordBot.Abstractions.Extensions;
-using Sanakan.Extensions;
-using Sanakan.ShindenApi.Models;
-using Sanakan.TaskQueue.Messages;
-using Sanakan.Game.Services.Abstractions;
 
 namespace Sanakan.Web.HostedService
 {
@@ -44,9 +37,8 @@ namespace Sanakan.Web.HostedService
         private readonly IWaifuService _waifuService;
         private readonly ITimer _timer;
         private readonly object _syncRoot = new object();
-
-        private IDictionary<ulong, Entry> ServerCounter;
-        private IDictionary<ulong, ulong> UserCounter;
+        private readonly IDictionary<ulong, Entry> _serverCounter;
+        private readonly IDictionary<ulong, ulong> _userCounter;
 
         public SpawnHostedService(
             IRandomNumberGenerator randomNumberGenerator,
@@ -74,11 +66,11 @@ namespace Sanakan.Web.HostedService
             _timer = timer;
             _discordSocketClientAccessor.LoggedIn += LoggedIn;
 
-            ServerCounter = new Dictionary<ulong, Entry>();
-            UserCounter = new Dictionary<ulong, ulong>();
+            _serverCounter = new Dictionary<ulong, Entry>();
+            _userCounter = new Dictionary<ulong, ulong>();
         }
 
-        internal class Entry
+        private class Entry
         {
             public ulong EventCount { get; set; }
             public DateTime ResetOn { get; set; }
@@ -104,14 +96,14 @@ namespace Sanakan.Web.HostedService
             }
         }
 
-        private void OnResetCounter(object sender, TimerEventArgs e)
+        internal void OnResetCounter(object sender, TimerEventArgs e)
         {
             var utcNow = _systemClock.UtcNow;
             var resetInterval = TimeSpan.FromDays(1);
 
             lock (_syncRoot)
             {
-                foreach (var entry in ServerCounter.Values)
+                foreach (var entry in _serverCounter.Values)
                 {
                     if (utcNow - entry.ResetOn > resetInterval)
                     {
@@ -123,6 +115,7 @@ namespace Sanakan.Web.HostedService
         }
 
         private async Task HandleGuildAsync(
+            ulong guildId,
             ITextChannel spawnChannel,
             ITextChannel trashChannel,
             ulong dailyLimit,
@@ -135,18 +128,17 @@ namespace Sanakan.Web.HostedService
                 return;
             }
 
-            var guildId = spawnChannel.GuildId;
             var effectiveLimit = 0ul;
 
             lock (_syncRoot)
             {
-                if (ServerCounter.TryGetValue(guildId, out var limit))
+                if (_serverCounter.TryGetValue(guildId, out var limit))
                 {
                     effectiveLimit = limit.EventCount;
                 }
                 else
                 {
-                    ServerCounter[guildId] = new Entry
+                    _serverCounter[guildId] = new Entry
                     {
                         ResetOn = _systemClock.UtcNow,
                         EventCount = 0,
@@ -165,38 +157,23 @@ namespace Sanakan.Web.HostedService
                     return;
                 }
 
-                ServerCounter[guildId].EventCount = effectiveLimit + 1;
+                _serverCounter[guildId].EventCount = effectiveLimit + 1;
             }
             
             await SpawnCardAsync(spawnChannel, trashChannel, mention, muteRole);
         }
 
-        //private Executable GetSafariExe(
-        //    EmbedBuilder embed,
-        //    IUserMessage msg,
-        //    Card newCard,
-        //    SafariImage pokeImage,
-        //    CharacterInfo character,
-        //    ITextChannel trashChannel,
-        //    IUser winner)
-        //{
-        //    return new Executable("safari", new Task<Task>(async () =>
-        //    {
-                
-        //    }));
-        //}
-
         private async Task SpawnCardAsync(
             ITextChannel spawnChannel,
             ITextChannel trashChannel,
             string mention,
-            IRole muteRole)
+            IRole? muteRole)
         {
             var character = await _waifuService.GetRandomCharacterAsync();
 
             if (character == null)
             {
-                _logger.LogInformation("In safari: bad shinden connection");
+                _logger.LogInformation("Could not retrieve safari image from Shinden.");
                 return;
             }
 
@@ -207,15 +184,17 @@ namespace Sanakan.Web.HostedService
 
             var pokeImage = await _waifuService.GetRandomSarafiImage();
             var time = _systemClock.UtcNow.AddMinutes(5);
+            var description = $"**Polowanie zakończy się o**: `{time.ToShortTimeString()}:{time.Second.ToString("00")}`";
+            var imageUrl = await _waifuService.SendAndGetSafariImageUrlAsync(pokeImage, trashChannel);
+
             var embed = new EmbedBuilder
             {
                 Color = EMType.Bot.Color(),
-                Description = $"**Polowanie zakończy się o**: `{time.ToShortTimeString()}:{time.Second.ToString("00")}`",
-                ImageUrl = await _waifuService.GetSafariViewAsync(pokeImage, trashChannel)
+                Description = description,
+                ImageUrl = imageUrl,
             };
 
             var message = await spawnChannel.SendMessageAsync(mention, embed: embed.Build());
-            //RunSafari(embed, message, newCard, pokeImage, character, trashChannel, muteRole);
 
             try
             {
@@ -230,8 +209,13 @@ namespace Sanakan.Web.HostedService
                 cancellationTokenSource.CancelAfter(TimeSpan.FromMinutes(1));
                 var cancellationToken = cancellationTokenSource.Token;
 
-                await Task.Run(async () =>
+                await Task.Run(
+                    async () =>
                 {
+                    using var serviceScope = _serviceScopeFactory.CreateScope();
+                    var serviceProvider = serviceScope.ServiceProvider;
+                    var userRepository = serviceProvider.GetRequiredService<IUserRepository>();
+
                     while (winner == null)
                     {
                         cancellationToken.ThrowIfCancellationRequested();
@@ -254,9 +238,6 @@ namespace Sanakan.Web.HostedService
                             }
                         }
 
-                        using var serviceScope = _serviceScopeFactory.CreateScope();
-                        var serviceProvider = serviceScope.ServiceProvider;
-                        var userRepository = serviceProvider.GetRequiredService<IUserRepository>();
                         var databaseUser = await userRepository.GetCachedFullUserAsync(selected.Id);
                         var gameDeck = databaseUser.GameDeck;
 
@@ -268,6 +249,7 @@ namespace Sanakan.Web.HostedService
                                 winner = selected;
                             }
                         }
+
                         users.Remove(selected);
                     }
                 }, cancellationToken);
@@ -308,10 +290,11 @@ namespace Sanakan.Web.HostedService
                 return;
             }
 
-            var author = message.Author;
+            var user = message.Author;
+            var userId = user.Id;
             var messageLength = GetMessageRealLength(message);
 
-            if (UserCounter.TryGetValue(author.Id, out var charactersTotal))
+            if (_userCounter.TryGetValue(userId, out var charactersTotal))
             {
                 charactersTotal += messageLength;
             }
@@ -320,41 +303,47 @@ namespace Sanakan.Web.HostedService
                 charactersTotal = messageLength;
             }
 
-            UserCounter[author.Id] = charactersTotal;
+            _userCounter[userId] = charactersTotal;
 
             if (charactersTotal > charactersNeeded)
             {
-                UserCounter[author.Id] = 0;
+                _userCounter[userId] = 0;
 
-                var guildUser = author as IGuildUser;
+                var guildUser = user as IGuildUser;
                 
-                _blockingPriorityQueue.TryEnqueue(new SpawnCardBundleMessage
+                var enqueued = _blockingPriorityQueue.TryEnqueue(new SpawnCardBundleMessage
                 {
-                    GuildId = guildUser?.Id,
-                    Mention = author.Mention,
-                    DiscordUserId = author.Id,
+                    GuildId = guildUser?.Guild?.Id,
+                    Mention = user.Mention,
+                    DiscordUserId = userId,
                     MessageChannel = message.Channel,
                 });
+
+                if(!enqueued)
+                {
+                    _logger.LogWarning("Could not enqueue message {0}", nameof(SpawnCardBundleMessage));
+                }
             }
         }
 
-        private ulong GetMessageRealLength(IUserMessage message)
+        private ulong GetMessageRealLength(IMessage message)
         {
             if (string.IsNullOrEmpty(message.Content))
             {
                 return 1;
             }
 
+            var content = message.Content;
             var emoteChars = (ulong)message.Tags.CountEmotesTextLength();
-            var linkChars = (ulong)message.Content.CountLinkTextLength();
-            var nonWhiteSpaceChars = (ulong)message.Content.Count(c => c != ' ');
-            var quotedChars = (ulong)message.Content.CountQuotedTextLength();
+            var linkChars = (ulong)content.CountLinkTextLength();
+            var nonWhiteSpaceChars = (ulong)content.Count(c => c != ' ');
+            var quotedChars = (ulong)content.CountQuotedTextLength();
             var charsThatMatters = nonWhiteSpaceChars - linkChars - emoteChars - quotedChars;
 
             return charsThatMatters < 1ul ? 1ul : charsThatMatters;
         }
 
-        private async Task HandleMessageAsync(IMessage message)
+        internal async Task HandleMessageAsync(IMessage message)
         {
             var userMessage = message as IUserMessage;
 
@@ -378,6 +367,7 @@ namespace Sanakan.Web.HostedService
             };
 
             var guildId = user.Guild.Id;
+            var guild = user.Guild;
 
             if (_discordConfiguration.CurrentValue.BlacklistedGuilds.Any(x => x == guildId))
             {
@@ -401,7 +391,11 @@ namespace Sanakan.Web.HostedService
                 HandleUserAsync(userMessage);
             }
 
-            var guild = user.Guild;
+            if(guildConfig.WaifuConfig == null)
+            {
+                return;
+            }
+
             var spawnChannelId = guildConfig.WaifuConfig.SpawnChannelId;
             var trashSpawnChannelId = guildConfig.WaifuConfig.TrashSpawnChannelId;
 
@@ -425,6 +419,7 @@ namespace Sanakan.Web.HostedService
             var muteRole = guild.GetRole(guildConfig.MuteRoleId);
 
             await HandleGuildAsync(
+                guildId,
                 spawnChannel,
                 trashSpawnChannel,
                 guildConfig.SafariLimit,

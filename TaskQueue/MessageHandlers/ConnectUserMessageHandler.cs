@@ -1,11 +1,7 @@
 ﻿using Sanakan.Common;
 using Sanakan.Common.Cache;
 using Sanakan.DAL.Repositories.Abstractions;
-using Sanakan.TaskQueue;
 using Sanakan.TaskQueue.Messages;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Sanakan.TaskQueue.MessageHandlers

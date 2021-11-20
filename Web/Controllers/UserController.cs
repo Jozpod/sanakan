@@ -1,27 +1,16 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
-using System.Security.Claims;
-using System.Text;
 using System.Threading.Tasks;
-using Discord.WebSocket;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 using Sanakan.Api.Models;
-using Sanakan.Common;
 using Sanakan.Common.Configuration;
-using Sanakan.Config;
 using Sanakan.Configuration;
 using Sanakan.DAL.Models;
-using Sanakan.DAL.Models.Analytics;
 using Sanakan.DAL.Repositories;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot;
@@ -32,9 +21,7 @@ using Sanakan.ShindenApi;
 using Sanakan.ShindenApi.Models;
 using Sanakan.TaskQueue;
 using Sanakan.TaskQueue.Messages;
-using Sanakan.Web.Configuration;
 using Sanakan.Web.Resources;
-using Shinden;
 using static Sanakan.Web.ResponseExtensions;
 
 namespace Sanakan.Web.Controllers

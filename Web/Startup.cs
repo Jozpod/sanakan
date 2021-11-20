@@ -1,5 +1,4 @@
-﻿using Discord.WebSocket;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -14,30 +13,18 @@ using Newtonsoft.Json.Serialization;
 using Sanakan.Common;
 using Sanakan.Common.Builder;
 using Sanakan.Common.Configuration;
-using Sanakan.Configuration;
 using Sanakan.DAL.Builder;
-using Sanakan.DAL.Repositories;
-using Sanakan.DAL.Repositories.Abstractions;
-using Sanakan.DiscordBot;
 using Sanakan.DiscordBot.Builder;
-using Sanakan.DiscordBot.Services;
 using Sanakan.DiscordBot.Services.Builder;
 using Sanakan.DiscordBot.Session.Builder;
 using Sanakan.DiscordBot.Supervisor;
 using Sanakan.Game.Builder;
-using Sanakan.Services;
-using Sanakan.Services.PocketWaifu;
-using Sanakan.ShindenApi;
 using Sanakan.ShindenApi.Builder;
 using Sanakan.TaskQueue.Builder;
 using Sanakan.Web;
 using Sanakan.Web.HostedService;
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Sanakan
 {

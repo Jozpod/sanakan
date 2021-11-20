@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Sanakan.Common;
+﻿using System.Linq;
 using Sanakan.DAL.Models;
-using Sanakan.DiscordBot;
 using Sanakan.DiscordBot.Abstractions;
 
 namespace Sanakan.Extensions

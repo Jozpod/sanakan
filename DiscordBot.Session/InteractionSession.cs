@@ -1,12 +1,11 @@
 ﻿using Discord.Commands;
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sanakan.DiscordBot.Session
 {
-    public abstract class InteractionSession : IComparable<InteractionSession>, IAsyncDisposable
+    public abstract class InteractionSession : IInteractionSession, IComparable<InteractionSession>
     {
         public ulong OwnerId { get; }
         private readonly DateTime _createdOn;
@@ -16,6 +15,7 @@ namespace Sanakan.DiscordBot.Session
         public Type Type { get; }
         public RunMode RunMode { get; }
         public SessionExecuteCondition SessionExecuteCondition { get; }
+        public bool IsRunning { get; set; }
 
         public InteractionSession(
             ulong ownerId,

@@ -1,14 +1,11 @@
-﻿using FluentAssertions;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Sanakan.Common.Builder;
 using Sanakan.Common.Configuration;
-using Sanakan.Configuration;
 using Sanakan.DAL.Builder;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Models.Configuration;
-using Sanakan.DAL.Repositories.Abstractions;
 using System;
 using System.IO;
 using System.Threading.Tasks;

@@ -1,20 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Discord.Commands;
-using Discord.WebSocket;
-using DiscordBot.Services;
-using DiscordBot.Services.PocketWaifu;
+﻿using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Sanakan.Common;
 using Sanakan.Common.Configuration;
 using Sanakan.Common.Models;
 using Sanakan.DAL.Models;
-using Sanakan.DiscordBot;
 using Sanakan.DiscordBot.Services;
 using Sanakan.Game.Models;
-using Sanakan.Services;
 
 namespace Sanakan.DiscordBot.Builder
 {

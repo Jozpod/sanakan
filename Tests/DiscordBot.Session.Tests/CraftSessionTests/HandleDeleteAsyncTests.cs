@@ -1,17 +1,6 @@
-﻿using Discord;
-using FluentAssertions;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
-using Sanakan.Common;
-using Sanakan.DAL.Repositories.Abstractions;
-using Sanakan.Game.Services.Abstractions;
-using System;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using static Sanakan.DiscordBot.Session.CraftSession;
 
 namespace Sanakan.DiscordBot.Session.Tests.CraftSessionTests
 {

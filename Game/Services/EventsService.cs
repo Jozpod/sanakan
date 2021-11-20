@@ -21,12 +21,13 @@ namespace Sanakan.Game.Services
             _systemClock = systemClock;
         }
 
-        private EventType CheckChanceBasedOnTime(ExpeditionCardType expedition, Tuple<double, double> duration)
+        private EventType CheckChanceBasedOnTime(ExpeditionCardType expedition, (double, double) duration)
         {
             switch (expedition)
             {
                 case ExpeditionCardType.ExtremeItemWithExp:
-                    if (duration.Item1 > 45 || duration.Item2 > 240)
+                    if (duration.Item1 > TimeSpan.FromMinutes(45).TotalMinutes 
+                        || duration.Item2 > TimeSpan.FromHours(4).TotalMinutes)
                     {
                         if (_randomNumberGenerator.TakeATry(2))
                         {
@@ -40,9 +41,10 @@ namespace Sanakan.Game.Services
             }
         }
 
-        public EventType RandomizeEvent(ExpeditionCardType expedition, Tuple<double, double> duration)
+        public EventType RandomizeEvent(ExpeditionCardType expedition, (double, double) duration)
         {
             var timeBased = CheckChanceBasedOnTime(expedition, duration);
+
             if (timeBased != EventType.None)
             {
                 return timeBased;
@@ -136,7 +138,8 @@ namespace Sanakan.Game.Services
                     card.Attack += randomValue;
 
                     if (card.Attack > max)
-                    { card.Attack = max;
+                    {
+                        card.Attack = max;
                     }
 
                     stringBuilder.AppendFormat("Wydarzenie: Zwiększenie ataku do {0}.\n", card.Attack);
@@ -256,14 +259,15 @@ namespace Sanakan.Game.Services
 
                 case EventType.LoseCard:
                 {
-                    user.GameDeck.Cards.Remove(card);
-                    stringBuilder.Append("Wydarzenie: Utrata karty.\n");
-                    message = stringBuilder.ToString();
-                }
-                    return (false, message);
+                        user.GameDeck.Cards.Remove(card);
+                        stringBuilder.Append("Wydarzenie: Utrata karty.\n");
+                        message = stringBuilder.ToString();
+                    }
+
+                return (false, message);
 
                 default:
-                    return (true, message);
+                return (true, message);
             }
 
             return (true, message);

@@ -1,5 +1,4 @@
 using Discord;
-using Discord.WebSocket;
 using Sanakan.DAL.Models;
 using System.Collections.Generic;
 

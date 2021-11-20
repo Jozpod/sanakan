@@ -8,7 +8,6 @@ using Sanakan.Common.Cache;
 using Sanakan.Common.Models;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Repositories.Abstractions;
-using Sanakan.DiscordBot;
 using Sanakan.DiscordBot.Abstractions;
 using Sanakan.DiscordBot.Abstractions.Extensions;
 using Sanakan.DiscordBot.Abstractions.Models;
@@ -19,7 +18,6 @@ using Sanakan.DiscordBot.Session;
 using Sanakan.Extensions;
 using Sanakan.Game.Models;
 using Sanakan.Preconditions;
-using Sanakan.TaskQueue;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -61,16 +59,16 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("wyświetla portfel użytkownika")]
         [Remarks("")]
         public async Task ShowWalletAsync(
-            [Summary("użytkownik (opcjonalne)")]IUser? socketUser = null)
+            [Summary("użytkownik (opcjonalne)")]IUser? user = null)
         {
-            var user = socketUser ?? Context.User;
+            var effectiveUser = user ?? Context.User;
 
-            if (user == null)
+            if (effectiveUser == null)
             {
                 return;
             }
 
-            var botuser = await _userRepository.GetCachedFullUserAsync(user.Id);
+            var botuser = await _userRepository.GetCachedFullUserAsync(effectiveUser.Id);
 
             if (botuser == null)
             {
@@ -80,7 +78,7 @@ namespace Sanakan.DiscordBot.Modules
 
             var parameters = new object[]
             {
-                user.Mention,
+                effectiveUser.Mention,
                 botuser?.ScCount,
                 botuser?.TcCount,
                 botuser?.AcCount,
@@ -214,16 +212,16 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("wyświetla statystyki użytkownika")]
         [Remarks("karna")]
         public async Task ShowUserStatsAsync(
-            [Summary("użytkownik (opcjonalne)")]SocketUser? socketUser = null)
+            [Summary("użytkownik (opcjonalne)")]IUser? user = null)
         {
-            var user = socketUser ?? Context.User;
+            var effectiveUser = user ?? Context.User;
 
-            if (user == null)
+            if (effectiveUser == null)
             {
                 return;
             }
             
-            var databaseUser = await _userRepository.GetCachedFullUserAsync(user.Id);
+            var databaseUser = await _userRepository.GetCachedFullUserAsync(effectiveUser.Id);
 
             if (databaseUser == null)
             {
@@ -235,7 +233,7 @@ namespace Sanakan.DiscordBot.Modules
 
             var parameters = new object[]
             {
-                user.Mention,
+                effectiveUser.Mention,
                 databaseUser.MessagesCount,
                 databaseUser.CommandsCount,
                 userStats.WastedTcOnCards,
@@ -266,16 +264,16 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("wyświetla ile pozostało punktów doświadczenia do następnego poziomu")]
         [Remarks("karna")]
         public async Task ShowHowMuchToLevelUpAsync(
-            [Summary("użytkownik(opcjonalne)")]SocketUser? socketUser = null)
+            [Summary("użytkownik(opcjonalne)")]IUser? socketUser = null)
         {
-            var user = socketUser ?? Context.User;
+            var effectiveUser = socketUser ?? Context.User;
             
-            if (user == null)
+            if (effectiveUser == null)
             {
                 return;
             }
 
-            var botuser = await _userRepository.GetByDiscordIdAsync(user.Id);
+            var botuser = await _userRepository.GetByDiscordIdAsync(effectiveUser.Id);
 
             if (botuser == null)
             {
@@ -283,7 +281,7 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            var content = $"{user.Mention} potrzebuje **{botuser.GetRemainingExp(botuser.Level + 1)}** punktów doświadczenia do następnego poziomu."
+            var content = $"{effectiveUser.Mention} potrzebuje **{botuser.GetRemainingExp(botuser.Level + 1)}** punktów doświadczenia do następnego poziomu."
                 .ToEmbedMessage(EMType.Info).Build();
             await ReplyAsync("", embed: content);
         }

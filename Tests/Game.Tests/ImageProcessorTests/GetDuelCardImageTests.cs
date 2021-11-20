@@ -1,21 +1,11 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
-using Sanakan.Common;
 using Sanakan.DAL.Models;
-using Sanakan.DiscordBot.Services;
-using Sanakan.ShindenApi;
-using Sanakan.Game.Services;
-using Shinden.API;
 using System;
-using System.Net.Http;
 using System.Threading.Tasks;
 using Sanakan.Services.PocketWaifu;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using FluentAssertions;
-using SixLabors.ImageSharp.Formats;
-using System.IO;
-using System.Security.Cryptography;
 
 namespace Sanakan.Game.Tests.ImageProcessorTests
 {
@@ -40,15 +30,7 @@ namespace Sanakan.Game.Tests.ImageProcessorTests
             var duelCardImage = _imageProcessor.GetDuelCardImage(duelInfo, duelImage, win, los);
             duelCardImage.Should().NotBeNull();
 
-            var sha256Hash = SHA256.Create();
-            var expectedBytes = await File.ReadAllBytesAsync("TestData/expected-duel-card.png");
-            var expectedHash = sha256Hash.ComputeHash(expectedBytes);
-
-            var actualStream = new MemoryStream();
-            duelCardImage.SaveAsPng(actualStream);
-            var actualHash = sha256Hash.ComputeHash(actualStream.ToArray());
-
-            Utils.CompareByteArrays(actualHash, expectedHash).Should().BeTrue();
+            await ShouldBeEqual("TestData/expected-duel-card.png", duelCardImage);
         }
     }
 }

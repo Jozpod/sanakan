@@ -1,13 +1,10 @@
 ﻿using Discord;
-using Discord.WebSocket;
 using DiscordBot.Services;
 using Sanakan.DAL.Models;
 using Sanakan.Game.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Sanakan.DiscordBot.Services.Abstractions

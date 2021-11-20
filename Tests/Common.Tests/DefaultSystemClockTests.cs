@@ -1,12 +1,9 @@
 ﻿using FluentAssertions;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Sanakan.Common;
 using Sanakan.Common.Builder;
 using System;
-using System.IO;
-using System.Threading.Tasks;
 
 namespace Sanakan.DAL.Tests
 {

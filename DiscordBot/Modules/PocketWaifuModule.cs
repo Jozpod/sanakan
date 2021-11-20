@@ -5,13 +5,11 @@ using DiscordBot.Services.PocketWaifu;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Sanakan.Common;
 using Sanakan.Common.Cache;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Repositories;
 using Sanakan.DAL.Repositories.Abstractions;
-using Sanakan.DiscordBot;
 using Sanakan.DiscordBot.Abstractions;
 using Sanakan.DiscordBot.Abstractions.Extensions;
 using Sanakan.DiscordBot.Abstractions.Models;
@@ -955,10 +953,10 @@ namespace Sanakan.DiscordBot.Modules
         [Alias("restart")]
         [Summary("restartuj kartę SSS na kartę E i dodaje stały bonus")]
         [Remarks("5412"), RequireWaifuCommandChannel]
-        public async Task ResetCardAsync([Summary("WID")]ulong id)
+        public async Task ResetCardAsync([Summary("WID")]ulong cardId)
         {
             var bUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
-            var card = bUser.GameDeck.Cards.FirstOrDefault(x => x.Id == id);
+            var card = bUser.GameDeck.Cards.FirstOrDefault(x => x.Id == cardId);
             var mention = Context.User.Mention;
 
             if (card == null)
@@ -3286,7 +3284,7 @@ namespace Sanakan.DiscordBot.Modules
                         card.GetShortString(true),
                         card.ExpeditionDate.ToString("dd/MM/yyyy HH:mm"),
                         card.Expedition.GetName("ej"),
-                        card.CalculateMaxTimeOnExpeditionInMinutes(botUser.GameDeck.Karma).ToString("F"),
+                        card.CalculateMaxTimeOnExpedition(botUser.GameDeck.Karma).TotalMinutes.ToString("F"),
                     };
 
                     return string.Format(Strings.OnJourney, parameters);
@@ -3392,7 +3390,7 @@ namespace Sanakan.DiscordBot.Modules
 
             _ = Task.Run(async () =>
             {
-                var max = thisCard.CalculateMaxTimeOnExpeditionInMinutes(botUser.GameDeck.Karma, expedition).ToString("F");
+                var max = thisCard.CalculateMaxTimeOnExpedition(botUser.GameDeck.Karma, expedition).TotalMinutes.ToString("F");
                 await ReplyAsync("", embed: $"{thisCard.GetString(false, false, true)} udała się na {expedition.GetName("ą")} wyprawę!\nZmęczy się za {max} min."
                     .ToEmbedMessage(EMType.Success)
                     .WithUser(Context.User).Build());
@@ -3470,15 +3468,15 @@ namespace Sanakan.DiscordBot.Modules
             }
 
             var randomEnemyUserId = _randomNumberGenerator.GetOneRandomFrom(pvpPlayersInRange).UserId;
-            var userEnemy = await _userRepository.GetUserOrCreateAsync(randomEnemyUserId);
+            var enemyUser = await _userRepository.GetUserOrCreateAsync(randomEnemyUserId);
             var discordClient = Context.Client;
-            var enemySocketUser = await discordClient.GetUserAsync(userEnemy.Id);
+            var discordEnemyUser = await discordClient.GetUserAsync(enemyUser.Id);
             
-            while (enemySocketUser == null)
+            while (discordEnemyUser == null)
             {
                 randomEnemyUserId = _randomNumberGenerator.GetOneRandomFrom(pvpPlayersInRange).UserId;
-                userEnemy = await _userRepository.GetUserOrCreateAsync(randomEnemyUserId);
-                enemySocketUser = await discordClient.GetUserAsync(userEnemy.Id);
+                enemyUser = await _userRepository.GetUserOrCreateAsync(randomEnemyUserId);
+                discordEnemyUser = await discordClient.GetUserAsync(enemyUser.Id);
             }
 
             var players = new List<PlayerInfo>
@@ -3491,9 +3489,9 @@ namespace Sanakan.DiscordBot.Modules
                     },
                     new PlayerInfo
                     {
-                        Cards = userEnemy.GameDeck.Cards.Where(x => x.Active).ToList(),
-                        DatabaseUser = userEnemy,
-                        User = enemySocketUser
+                        Cards = enemyUser.GameDeck.Cards.Where(x => x.Active).ToList(),
+                        DatabaseUser = enemyUser,
+                        User = discordEnemyUser
                     }
                 };
 
@@ -3520,13 +3518,13 @@ namespace Sanakan.DiscordBot.Modules
             }
             mission.Count(utcNow);
 
-            var info = duser.GameDeck.CalculatePVPParams(userEnemy.GameDeck, fightResult);
+            var info = duser.GameDeck.CalculatePVPParams(enemyUser.GameDeck, fightResult);
             await _userRepository.SaveChangesAsync();
 
             _ = Task.Run(async () =>
             {
                 var wStr = fight.Winner == null ? "Remis!" : $"Zwycięża {fight.Winner.User.Mention}!";
-                var content = $"⚔️ **Pojedynek**:\n{Context.User.Mention} vs. {enemySocketUser.Mention}\n\n{deathLog.ElipseTrimToLength(2000)}\n{wStr}\n{info}"
+                var content = $"⚔️ **Pojedynek**:\n{Context.User.Mention} vs. {discordEnemyUser.Mention}\n\n{deathLog.ElipseTrimToLength(2000)}\n{wStr}\n{info}"
                     .ToEmbedMessage(EMType.Bot).Build();
                 await ReplyAsync("", embed: content);
             });

@@ -1,5 +1,4 @@
 ﻿using Sanakan.DAL.Models;
-using System;
 
 namespace Sanakan.Game.Extensions
 {

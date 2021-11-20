@@ -3,18 +3,13 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Sanakan.Common;
-using Sanakan.DAL.Models.Analytics;
 using System;
-using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using Sanakan.Configuration;
 using Sanakan.DAL.Repositories.Abstractions;
-using System.Collections.Concurrent;
 using Sanakan.DiscordBot;
 using Sanakan.Common.Configuration;
 using Sanakan.DAL.Models;
-using Discord.WebSocket;
 using Discord;
 using System.Linq;
 using DiscordBot.Services;
@@ -61,8 +56,8 @@ namespace Sanakan.Web.HostedService
         private Task LoggedIn()
         {
             _timer.Start(
-                    _options.CurrentValue.ProfileDueTime,
-                    _options.CurrentValue.ProfilePeriod);
+                _options.CurrentValue.ProfileDueTime,
+                _options.CurrentValue.ProfilePeriod);
             return Task.CompletedTask;
         }
 
@@ -80,7 +75,7 @@ namespace Sanakan.Web.HostedService
             }
         }
 
-        private async void OnTick(object sender, TimerEventArgs e)
+        internal async void OnTick(object sender, TimerEventArgs e)
         {
             if (_isRunning)
             {
@@ -107,24 +102,36 @@ namespace Sanakan.Web.HostedService
                         continue;
                     }
 
-                    var guild = await client.GetGuildAsync(timeStatus.GuildId.Value);
+                    var guildId = timeStatus.GuildId.Value;
+
+                    var guild = await client.GetGuildAsync(guildId);
 
                     switch (timeStatus.Type)
                     {
                         case StatusType.Globals:
-                            var guildConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(timeStatus.GuildId.Value);
-                            await RemoveRoleAsync(guild, guildConfig?.GlobalEmotesRoleId ?? 0, timeStatus.UserId);
+                            var guildConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(guildId);
+                            var roleId = guildConfig?.GlobalEmotesRoleId;
+
+                            if(roleId.HasValue)
+                            {
+                                await RemoveRoleAsync(guild, roleId.Value, timeStatus.UserId);
+                            }
+
                             break;
 
                         case StatusType.Color:
                             var user = await guild.GetUserAsync(timeStatus.UserId);
-                            await RomoveUserColorAsync(user);
+                            await RemoveUserColorAsync(user, guild);
                             break;
 
                         default:
                             break;
                     }
                 }
+            }
+            catch (OperationCanceledException ex)
+            {
+                _logger.LogInformation("profile background service canceled");
             }
             catch (Exception ex)
             {
@@ -136,7 +143,7 @@ namespace Sanakan.Web.HostedService
             }
         }
 
-        public async Task RomoveUserColorAsync(IGuildUser user)
+        public async Task RemoveUserColorAsync(IGuildUser user, IGuild guild)
         {
             if (user == null)
             {
@@ -144,7 +151,6 @@ namespace Sanakan.Web.HostedService
             }
 
             var colors = FColorExtensions.FColors;
-            var guild = user.Guild;
 
             foreach (uint color in colors)
             {
@@ -157,7 +163,8 @@ namespace Sanakan.Web.HostedService
                     continue;
                 }
 
-                var members = (await guild.GetUsersAsync()).Where(x => x.RoleIds.Any(id => id == role.Id));
+                var members = (await guild.GetUsersAsync())
+                    .Where(x => x.RoleIds.Any(id => id == role.Id));
 
                 if (members.Count() == 1)
                 {

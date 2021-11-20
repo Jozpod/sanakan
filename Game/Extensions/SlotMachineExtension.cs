@@ -1,7 +1,6 @@
 ﻿using Sanakan.DAL.Models;
 using Sanakan.DiscordBot.Services;
 using Sanakan.Game.Models;
-using Sanakan.Services;
 using System;
 
 namespace Sanakan.Extensions

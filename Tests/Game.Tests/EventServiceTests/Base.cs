@@ -1,8 +1,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using Sanakan.Services.PocketWaifu;
 using Sanakan.Common;
-using Sanakan.ShindenApi;
 using Sanakan.Game.Services.Abstractions;
 using Sanakan.Game.Services;
 using System.Threading.Tasks;
@@ -26,10 +24,16 @@ namespace Sanakan.Game.Tests.EventServiceTests
         }
 
         [TestMethod]
-        public async Task Should_Return_More_Items()
+        public async Task Should_Return_Value()
         {
             var eventType = EventType.MoreItems;
+
+            _randomNumberGeneratorMock
+                .Setup(pr => pr.GetRandomValue(It.IsAny<int>(), It.IsAny<int>()))
+                .Returns(5);
+
             var items = _eventsService.GetMoreItems(eventType);
+
             items.Should().BeGreaterThan(2);
         }
     }

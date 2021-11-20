@@ -1,9 +1,7 @@
 ﻿using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Sanakan.DAL.Models;
 using Sanakan.DAL.Repositories.Abstractions;
-using System;
 using System.Threading.Tasks;
 
 namespace Sanakan.DAL.Tests

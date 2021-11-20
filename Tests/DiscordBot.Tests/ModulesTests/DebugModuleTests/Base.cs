@@ -5,15 +5,8 @@ using Sanakan.DiscordBot.Services.Abstractions;
 using Sanakan.DiscordBot.Modules;
 using Sanakan.TaskQueue;
 using Sanakan.ShindenApi;
-using Sanakan.Game.Services;
 using Sanakan.Common;
 using Sanakan.Common.Configuration;
-using Discord.Commands;
-using System.Reflection;
-using Discord;
-using Discord.WebSocket;
-using System;
-using System.Linq;
 using Sanakan.Game.Services.Abstractions;
 using Sanakan.DiscordBot;
 

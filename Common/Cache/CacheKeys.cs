@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Sanakan.Common.Cache
+﻿namespace Sanakan.Common.Cache
 {
     public static class CacheKeys
     {

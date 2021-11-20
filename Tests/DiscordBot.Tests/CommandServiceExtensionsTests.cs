@@ -1,12 +1,10 @@
 ﻿using Discord;
 using Discord.Commands;
-using Discord.Commands.Builders;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.DiscordBot.Extensions;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Sanakan.DiscordBot.Tests

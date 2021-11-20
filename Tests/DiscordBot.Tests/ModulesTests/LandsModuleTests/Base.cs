@@ -1,18 +1,7 @@
-using Discord;
-using Discord.Commands;
-using Discord.WebSocket;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using Sanakan.DAL.Models.Configuration;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot.Services.Abstractions;
-using System;
-using System.Linq;
-using System.Collections.Generic;
-using System.Reflection;
-using System.Threading.Tasks;
-using Discord.Rest;
-using System.IO;
 using Sanakan.DiscordBot.Modules;
 using Sanakan.Common;
 

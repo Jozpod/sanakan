@@ -3,7 +3,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.DiscordBot;
 using Sanakan.Web.Controllers;
-using System;
 using System.Threading.Tasks;
 
 namespace Sanakan.Web.Tests.Controllers.DebugControllerTests

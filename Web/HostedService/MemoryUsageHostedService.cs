@@ -9,7 +9,6 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Sanakan.DAL.Repositories.Abstractions;
-using Sanakan.Configuration;
 using Sanakan.Common.Configuration;
 using Sanakan.DAL;
 

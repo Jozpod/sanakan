@@ -2,11 +2,8 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.Common.Configuration;
-using Sanakan.Configuration;
 using Sanakan.DiscordBot.Services.Abstractions;
-using Sanakan.Services;
 using Sanakan.Web.Controllers;
-using System;
 using System.Threading.Tasks;
 
 namespace Sanakan.Web.Tests.Controllers.InfoControllerTests

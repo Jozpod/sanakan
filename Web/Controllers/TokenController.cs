@@ -7,9 +7,7 @@ using Sanakan.Api.Models;
 using Microsoft.AspNetCore.Http;
 using static Sanakan.Web.ResponseExtensions;
 using Microsoft.Extensions.Options;
-using Sanakan.Web.Configuration;
 using Sanakan.Web.Resources;
-using Sanakan.Configuration;
 using Sanakan.Common.Configuration;
 
 namespace Sanakan.Web.Controllers

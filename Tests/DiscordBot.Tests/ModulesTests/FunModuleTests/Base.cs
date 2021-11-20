@@ -1,21 +1,11 @@
-using Discord;
-using Discord.Commands;
-using Discord.WebSocket;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using System;
-using System.Linq;
-using System.Collections.Generic;
-using System.Reflection;
-using System.Threading.Tasks;
-using Discord.Rest;
-using System.IO;
 using Sanakan.DiscordBot.Modules;
 using Sanakan.Common;
 using Sanakan.DiscordBot.Services.Abstractions;
-using Sanakan.TaskQueue;
 using Microsoft.Extensions.DependencyInjection;
 using Sanakan.DiscordBot.Session;
+using Sanakan.Game.Services;
 
 namespace DiscordBot.ModulesTests.FunModuleTests
 {
@@ -28,6 +18,7 @@ namespace DiscordBot.ModulesTests.FunModuleTests
         protected readonly Mock<ICacheManager> _cacheManagerMock = new(MockBehavior.Strict);
         protected readonly Mock<ISystemClock> _systemClockMock = new(MockBehavior.Strict);
         protected readonly Mock<ITaskManager> _taskManagerMock = new(MockBehavior.Strict);
+        protected readonly Mock<SlotMachine> _slotMachineMock = new(MockBehavior.Strict);
 
         public Base()
         {
@@ -41,6 +32,7 @@ namespace DiscordBot.ModulesTests.FunModuleTests
                 _cacheManagerMock.Object,
                 _systemClockMock.Object,
                 serviceScopeFactory,
+                _slotMachineMock.Object,
                 _taskManagerMock.Object);
             Initialize(_module);
         }

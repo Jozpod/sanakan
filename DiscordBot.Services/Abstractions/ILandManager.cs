@@ -1,5 +1,4 @@
 ﻿using Discord;
-using Discord.WebSocket;
 using Sanakan.DAL.Models.Configuration;
 using System.Collections.Generic;
 using System.Threading.Tasks;

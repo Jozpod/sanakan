@@ -1,6 +1,4 @@
-using System.IO;
 using System.Text.Json.Serialization;
-using Sanakan.Common;
 
 namespace Sanakan.Game.Models
 {

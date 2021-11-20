@@ -1,11 +1,7 @@
 ﻿using Sanakan.DAL.Models;
 using Sanakan.Game.Models;
 using Sanakan.ShindenApi.Utilities;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Sanakan.Game.Extensions
 {

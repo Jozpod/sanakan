@@ -1,23 +1,4 @@
-﻿using Discord;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Sanakan.Common;
-using Sanakan.Common.Builder;
-using Sanakan.Common.Configuration;
-using Sanakan.DAL.Builder;
-using Sanakan.DiscordBot.Builder;
-using Sanakan.DiscordBot.Services.Builder;
-using Sanakan.DiscordBot.Session.Builder;
-using Sanakan.Game.Builder;
-using Sanakan.ShindenApi.Builder;
-using Sanakan.TaskQueue.Builder;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Threading;
 using System.Threading.Tasks;
 

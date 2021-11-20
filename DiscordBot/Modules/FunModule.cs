@@ -4,7 +4,6 @@ using Discord.WebSocket;
 using Sanakan.DAL.Models;
 using Sanakan.Extensions;
 using Sanakan.Preconditions;
-using Sanakan.Services.SlotMachine;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,18 +12,16 @@ using Sanakan.DiscordBot.Services;
 using Sanakan.Common;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot.Resources;
-using Sanakan.DiscordBot;
 using Microsoft.Extensions.DependencyInjection;
 using Sanakan.DiscordBot.Services.Abstractions;
 using Sanakan.DiscordBot.Abstractions.Extensions;
-using Sanakan.TaskQueue;
 using Sanakan.DiscordBot.Abstractions.Models;
 using Sanakan.Game.Models;
 using Sanakan.DiscordBot.Abstractions;
 using Humanizer;
-using Sanakan.DiscordBot.Modules;
 using Sanakan.Common.Cache;
 using Sanakan.DiscordBot.Session;
+using Sanakan.Game.Services;
 
 namespace Sanakan.DiscordBot.Modules
 {
@@ -50,6 +47,7 @@ namespace Sanakan.DiscordBot.Modules
             ICacheManager cacheManager,
             ISystemClock systemClock,
             IServiceScopeFactory serviceScopeFactory,
+            SlotMachine slotMachine,
             ITaskManager taskManager)
         {
             _sessionManager = session;
@@ -57,6 +55,7 @@ namespace Sanakan.DiscordBot.Modules
             _cacheManager = cacheManager;
             _systemClock = systemClock;
             _serviceScopeFactory = serviceScopeFactory;
+            _slotMachine = slotMachine;
             _taskManager = taskManager;
         }
 
@@ -360,9 +359,7 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            //new SlotWickedRandom()
             var win = _slotMachine.Play(botUser);
-            // var win = machine.Play(new SlotEqualRandom());
             botUser.ScCount += win - toPay;
 
             await _userRepository.SaveChangesAsync();

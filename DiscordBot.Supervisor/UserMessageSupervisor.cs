@@ -2,14 +2,12 @@
 using Microsoft.Extensions.Options;
 using Sanakan.Common;
 using Sanakan.Common.Configuration;
-using Sanakan.DiscordBot.Supervisor;
 using Sanakan.Extensions;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace Sanakan.DiscordBot.Supervisor
 {

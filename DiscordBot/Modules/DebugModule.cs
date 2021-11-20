@@ -2,8 +2,6 @@
 using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
-using System.Text.Json.Serialization;
 using Sanakan.Common;
 using Sanakan.Common.Configuration;
 using Sanakan.Common.Extensions;
@@ -11,26 +9,19 @@ using Sanakan.Configuration;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Repositories;
 using Sanakan.DAL.Repositories.Abstractions;
-using Sanakan.DiscordBot;
 using Sanakan.DiscordBot.Abstractions.Extensions;
 using Sanakan.DiscordBot.Abstractions.Models;
-using Sanakan.DiscordBot.Services;
 using Sanakan.DiscordBot.Services.Abstractions;
 using Sanakan.Extensions;
 using Sanakan.Game;
 using Sanakan.Game.Extensions;
-using Sanakan.Game.Services;
 using Sanakan.Preconditions;
 using Sanakan.ShindenApi;
 using Sanakan.ShindenApi.Utilities;
 using Sanakan.TaskQueue;
 using Sanakan.TaskQueue.Messages;
-using Shinden;
-using Shinden.API;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -39,7 +30,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Text.Json;
 using Sanakan.ShindenApi.Models;
-using Discord.Rest;
 using Sanakan.Common.Cache;
 using Sanakan.Game.Services.Abstractions;
 using Sanakan.Game.Models;
@@ -431,7 +421,7 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("przenosi kartę między użytkownikami")]
         [Remarks("User 41231 41232")]
         public async Task TransferUserCardAsync(
-            [Summary("użytkownik")]SocketUser user,
+            [Summary("użytkownik")]IUser user,
             [Summary("WIDs")]params ulong[] wids) => await TransferCardAsync(user.Id, wids);
 
         [Command("tranc"), Priority(1)]

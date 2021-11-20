@@ -1,34 +1,43 @@
 ﻿using Discord;
-using Discord.Commands;
-using FluentAssertions;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using Sanakan.Common;
-using Sanakan.Configuration;
-using Sanakan.DAL.Models;
-using Sanakan.DAL.Models.Configuration;
-using Sanakan.DAL.Repositories.Abstractions;
-using Sanakan.ShindenApi;
-using Sanakan.Web.Controllers;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
+using Sanakan.Web.HostedService;
 using System.Threading.Tasks;
+using System.Reflection;
+using Discord.WebSocket;
+using Sanakan.Tests.Shared;
+using Sanakan.DiscordBot;
+using Sanakan.DiscordBot.Session;
+using System;
+using Discord.Commands;
+using System.Threading;
+using Sanakan.Common;
 
 namespace Sanakan.Web.Tests.HostedServices.SupervisorHostedServiceTests
 {
+    /// <summary>
+    /// Defines tests for <see cref="SupervisorHostedService.OnTick(object, TimerEventArgs)"/> event handler.
+    /// </summary>
     [TestClass]
     public class OnTickTests : Base
     {
         [TestMethod]
-        public async Task Should_Exit_Not_User_Message()
+        public async Task Should_Reset_Supervisors()
         {
+            _userJoinedGuildSupervisorMock
+                .Setup(pr => pr.Refresh())
+                .Verifiable();
+
+            _userMessageSupervisorMock
+                .Setup(pr => pr.Refresh())
+                .Verifiable();
+
             var cancellationTokenSource = new CancellationTokenSource();
             await _service.StartAsync(cancellationTokenSource.Token);
-            _fakeTimer.RaiseTickEvent();
+            _timerMock.Raise(pr => pr.Tick += null, null, new TimerEventArgs(null));
+
+            _userJoinedGuildSupervisorMock.Verify();
+            _userMessageSupervisorMock.Verify();
         }
 
     }

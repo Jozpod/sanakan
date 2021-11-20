@@ -1,5 +1,4 @@
 ﻿using Discord;
-using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -8,7 +7,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.Common;
 using Sanakan.Common.Configuration;
-using Sanakan.Configuration;
 using Sanakan.DAL;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot;

@@ -1,12 +1,8 @@
 ﻿using Discord;
-using Sanakan.Api.Models;
 using Sanakan.Configuration;
 using Sanakan.DiscordBot.Abstractions.Models;
 using Sanakan.DiscordBot.Models;
 using Sanakan.Extensions;
-using Sanakan.Web.Models;
-using System;
-using System.Collections.Generic;
 
 namespace Sanakan.Web
 {

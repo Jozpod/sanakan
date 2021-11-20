@@ -4,14 +4,9 @@ using Microsoft.AspNetCore.Mvc;
 using Discord.Commands;
 using System.Linq;
 using System;
-using Sanakan.Services;
-using Sanakan.Config;
-using Sanakan.Extensions;
 using Sanakan.Api.Models;
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Http;
-using Sanakan.Web.Configuration;
-using Sanakan.Configuration;
 using Sanakan.DiscordBot.Services.Abstractions;
 using Sanakan.Common.Configuration;
 

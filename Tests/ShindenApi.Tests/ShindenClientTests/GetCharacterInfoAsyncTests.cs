@@ -1,20 +1,9 @@
 using FluentAssertions;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
-using Moq.Protected;
-using Sanakan.Common.Configuration;
-using Sanakan.ShindenApi;
 using Sanakan.ShindenApi.Models;
 using Sanakan.ShindenApi.Models.Enums;
-using Shinden.API;
-using System;
 using System.Collections.Generic;
-using System.Net;
 using System.Net.Http;
-using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sanakan.ShindenApi.Tests

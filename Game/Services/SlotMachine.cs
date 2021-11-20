@@ -1,11 +1,10 @@
 using System.Collections.Generic;
 using Sanakan.Common;
 using Sanakan.DAL.Models;
-using Sanakan.DiscordBot.Services;
 using Sanakan.Extensions;
 using Sanakan.Game.Models;
 
-namespace Sanakan.Services.SlotMachine
+namespace Sanakan.Game.Services
 {
     public class SlotMachine
     {
@@ -27,8 +26,8 @@ namespace Sanakan.Services.SlotMachine
 
         private string RowIsSelected(User user, int index)
         {
-            string nok = "✖";
-            string ok = "✔";
+            var nok = "✖";
+            var ok = "✔";
 
             switch (user.SMConfig.Rows)
             {
@@ -40,34 +39,44 @@ namespace Sanakan.Services.SlotMachine
                 case SlotMachineSelectedRows.r2:
                 {
                     if (index == 0 || index == 1)
+                    {
                         return ok;
+                    }
                     else
+                    {
                         return nok;
+                    }
                 }
 
                 case SlotMachineSelectedRows.r1:
                 default:
                 {
                     if (index == 1)
+                    {
                         return ok;
+                    }
                     else
+                    {
                         return nok;
+                    }
                 }
             }
         }
 
         public string Draw(User user)
         {
-            var m = new string[Rows];
+            var rows = new string[Rows];
 
-            for (int i = 0; i < Rows; i++)
+            for (var index = 0; index < Rows; index++)
             {
-                m[i] += RowIsSelected(user, i) + " ";               
-                for (int j = 0; j < Slots; j++)
-                    m[i] += Row[i, j].Icon(user.SMConfig.PsayMode > 0);
+                rows[index] += RowIsSelected(user, index) + " ";
+                for (var j = 0; j < Slots; j++)
+                {
+                    rows[index] += Row[index, j].Icon(user.SMConfig.PsayMode > 0);
+                }
             }
             
-            return string.Join("\n", m);
+            return string.Join("\n", rows);
         }
 
         public List<List<string>> DrawUCS(User user)
@@ -87,14 +96,16 @@ namespace Sanakan.Services.SlotMachine
 
         public long Play(User user)
         {
-            var lst = new List<SlotMachineWinSlots>();
+            var slots = new List<SlotMachineWinSlots>();
 
             Randomize();
-            var win = GetWin(user, ref lst);
-            UpdateStats(user, win, lst);
+            var win = GetWin(user, ref slots);
+            UpdateStats(user, win, slots);
 
-            if (user.SMConfig.PsayMode > 0) 
+            if (user.SMConfig.PsayMode > 0)
+            {
                 --user.SMConfig.PsayMode;
+            }
 
             return win;
         }
@@ -110,7 +121,9 @@ namespace Sanakan.Services.SlotMachine
                 user.Stats.IncomeInSc -= scLost;
             }
             else
+            {
                 user.Stats.IncomeInSc += win;
+            }
         }
 
         private long GetWin(User user, ref List<SlotMachineWinSlots> list)
@@ -137,7 +150,9 @@ namespace Sanakan.Services.SlotMachine
             for (int i = 0; i < Rows; i++)
             {
                 for (int j = 0; j < Slots; j++)
+                {
                     Row[i, j] = Next(0, SlotMachineSlot.max.Value()).ToSMS();
+                }
             }
         }
 
@@ -173,7 +188,9 @@ namespace Sanakan.Services.SlotMachine
                 if(ft == Row[index, i])
                 {
                     if (!broken)
+                    {
                         ++rt;
+                    }
                 }
                 else
                 {
@@ -187,11 +204,13 @@ namespace Sanakan.Services.SlotMachine
                 }
             }
             list.Add(ft.WinType(rt));
+            
             if (ft == SlotMachineSlot.q)
             {
                 user.SMConfig.PsayMode += ft.WinValue(rt);
                 return 0;
             }
+
             return ft.WinValue(rt, user.SMConfig.PsayMode > 0) * beat;
         }
     }

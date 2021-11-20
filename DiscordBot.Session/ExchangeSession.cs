@@ -4,22 +4,17 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Discord;
-using Discord.Commands;
-using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using Sanakan.Common;
 using Sanakan.Common.Cache;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Repositories.Abstractions;
-using Sanakan.DiscordBot;
 using Sanakan.DiscordBot.Abstractions;
 using Sanakan.DiscordBot.Abstractions.Extensions;
 using Sanakan.DiscordBot.Abstractions.Models;
 using Sanakan.Extensions;
 using Sanakan.Game.Extensions;
 using Sanakan.Game.Models;
-using Sanakan.Services.PocketWaifu;
 
 namespace Sanakan.DiscordBot.Session
 {
@@ -46,7 +41,8 @@ namespace Sanakan.DiscordBot.Session
         public ExchangeSession(
           ulong ownerId,
           DateTime createdOn,
-          ExchangeSessionPayload payload) : base(
+          ExchangeSessionPayload payload)
+            : base(
           ownerId,
           createdOn,
           TimeSpan.FromMinutes(2),
@@ -61,6 +57,7 @@ namespace Sanakan.DiscordBot.Session
            IServiceProvider serviceProvider,
            CancellationToken cancellationToken = default)
         {
+            IsRunning = true;
             _serviceProvider = serviceProvider;
 
             if (_payload.SourcePlayer == null || _payload.DestinationPlayer == null || _payload.Message == null)
@@ -70,7 +67,7 @@ namespace Sanakan.DiscordBot.Session
 
             await HandleMessageAsync(sessionContext);
             await HandleReactionAsync(sessionContext);
-            return;
+            IsRunning = false;
         }
 
         public Embed BuildEmbed()
@@ -104,20 +101,20 @@ namespace Sanakan.DiscordBot.Session
                 return;
             }
 
-            var cmd = context.Message?.Content?.ToLower();
-            if (cmd == null)
+            var command = context.Message?.Content?.ToLower();
+            if (command == null)
             {
                 return;
             }
 
-            var splitedCmd = cmd.Replace("\n", " ").Split(" ");
+            var splitedCmd = command.Replace("\n", " ").Split(" ");
             if (splitedCmd.Length < 2)
             {
                 return;
             }
 
-            var cmdType = splitedCmd[0];
-            if (cmdType == null)
+            var commandType = splitedCmd[0];
+            if (commandType == null)
             {
                 return;
             }
@@ -142,7 +139,7 @@ namespace Sanakan.DiscordBot.Session
                 return;
             }
 
-            if (cmdType.Contains("usuń") || cmdType.Contains("usun"))
+            if (commandType.Contains("usuń") || commandType.Contains("usun"))
             {
                 var WIDStr = splitedCmd?[1];
                 if (string.IsNullOrEmpty(WIDStr))
@@ -157,7 +154,7 @@ namespace Sanakan.DiscordBot.Session
                 }
                 ResetExpiry();
             }
-            else if (cmdType.Contains("dodaj"))
+            else if (commandType.Contains("dodaj"))
             {
                 var ids = new List<ulong>();
                 foreach (var WIDStr in splitedCmd)
@@ -181,15 +178,15 @@ namespace Sanakan.DiscordBot.Session
             }
         }
 
-        private async Task HandleAddAsync(PlayerInfo player, List<ulong> wid, IUserMessage message, PlayerInfo target)
+        private async Task HandleAddAsync(PlayerInfo player, IEnumerable<ulong> wids, IUserMessage message, PlayerInfo target)
         {
             bool error = false;
             bool added = false;
+            var gameDeckCards = player.DatabaseUser.GameDeck.Cards;
+            var cards = wids.Join(gameDeckCards, pr => pr, pr => pr.Id, (src, dst) => dst);
 
-            foreach (var id in wid)
+            foreach (var card in cards)
             {
-                var card = player.DatabaseUser.GameDeck.Cards.FirstOrDefault(x => x.Id == id);
-                
                 if (card == null)
                 {
                     error = true;

@@ -1,19 +1,15 @@
 ﻿using Discord;
-using Discord.WebSocket;
 using DiscordBot.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Sanakan.Common;
 using Sanakan.DAL.Models;
-using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot.Abstractions.Extensions;
-using Sanakan.DiscordBot.Services;
 using Sanakan.DiscordBot.Services.Abstractions;
 using Sanakan.Extensions;
 using Sanakan.Game.Extensions;
 using Sanakan.Game.Models;
-using Sanakan.Game.Services;
 using Sanakan.Game.Services.Abstractions;
 using Sanakan.ShindenApi;
 using SixLabors.Primitives;
@@ -21,7 +17,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sanakan.DiscordBot.Services

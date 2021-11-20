@@ -668,7 +668,6 @@
         "packagesPath": "C:\\Users\\jozefpodlecki\\.nuget\\packages\\",
         "outputPath": "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\ShindenApi\\obj\\",
         "projectStyle": "PackageReference",
-        "crossTargeting": true,
         "fallbackFolders": [
           "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
         ],

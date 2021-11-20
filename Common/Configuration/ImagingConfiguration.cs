@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace Sanakan.Common.Configuration
+﻿namespace Sanakan.Common.Configuration
 {
     public class ImagingConfiguration
     {

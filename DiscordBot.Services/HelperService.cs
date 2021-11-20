@@ -1,6 +1,5 @@
 ﻿using Discord;
 using Discord.Commands;
-using Discord.WebSocket;
 using Microsoft.Extensions.Options;
 using Sanakan.Common.Configuration;
 using Sanakan.DiscordBot.Abstractions.Extensions;

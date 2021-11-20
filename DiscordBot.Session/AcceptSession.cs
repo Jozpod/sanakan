@@ -1,14 +1,10 @@
 ﻿using Discord;
-using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
 using Sanakan.DiscordBot.Abstractions;
 using Sanakan.DiscordBot.Abstractions.Extensions;
 using Sanakan.DiscordBot.Abstractions.Models;
 using Sanakan.DiscordBot.Services.Abstractions;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -46,59 +42,67 @@ namespace Sanakan.DiscordBot.Session
             IServiceProvider serviceProvider,
             CancellationToken cancellationToken = default)
         {
-            if (_payload.Message == null)
+            try
             {
-                return;
-            }
+                IsRunning = true;
+                if (_payload.Message == null)
+                {
+                    return;
+                }
 
-            if (context.Message.Id != _payload.Message.Id)
+                if (context.Message.Id != _payload.Message.Id)
+                {
+                    return;
+                }
+
+                if (context.User.Id != OwnerId)
+                {
+                    return;
+                }
+
+                var userMessage = await _payload.Message.Channel.GetMessageAsync(_payload.Message.Id) as IUserMessage;
+
+                if (userMessage == null)
+                {
+                    return;
+                }
+
+                var reaction = context.AddReaction ?? context.RemoveReaction;
+
+                if (reaction.Emote.Equals(Emojis.DeclineEmote))
+                {
+                    return;
+                }
+
+                if (!reaction.Emote.Equals(Emojis.Checked))
+                {
+                    return;
+                }
+
+                var moderatorService = serviceProvider.GetRequiredService<IModeratorService>();
+
+                if (userMessage != null)
+                {
+                    await userMessage.DeleteAsync();
+                }
+
+                var reason = "Chciał to dostał :)";
+                var info = await moderatorService.MuteUserAsync(
+                    _payload.User,
+                    _payload.MuteRole,
+                    null,
+                    _payload.UserRole,
+                    _payload.Duration,
+                    reason);
+                await moderatorService.NotifyAboutPenaltyAsync(_payload.User, _payload.NotifChannel, info, "Sanakan");
+
+                var content = $"{_payload.User.Mention} został wyciszony.".ToEmbedMessage(EMType.Success).Build();
+                await _payload.Message.Channel.SendMessageAsync("", embed: content);
+            }
+            finally
             {
-                return;
+                IsRunning = false;
             }
-
-            if (context.User.Id != OwnerId)
-            {
-                return;
-            }
-
-            var userMessage = await _payload.Message.Channel.GetMessageAsync(_payload.Message.Id) as IUserMessage;
-
-            if (userMessage == null)
-            {
-                return;
-            }
-
-            var reaction = context.AddReaction ?? context.RemoveReaction;
-
-            if (reaction.Emote.Equals(Emojis.DeclineEmote))
-            {
-                return;
-            }
-
-            if (!reaction.Emote.Equals(Emojis.Checked))
-            {
-                return;
-            }
-
-            var moderatorService = serviceProvider.GetRequiredService<IModeratorService>();
-
-            if (userMessage != null)
-            {
-                await userMessage.DeleteAsync();
-            }
-
-            var reason = "Chciał to dostał :)";
-            var info = await moderatorService.MuteUserAsync(
-                _payload.User,
-                _payload.MuteRole,
-                null,
-                _payload.UserRole,
-                _payload.Duration,
-                reason);
-            await moderatorService.NotifyAboutPenaltyAsync(_payload.User, _payload.NotifChannel, info, "Sanakan");
-
-            var content = $"{_payload.User.Mention} został wyciszony.".ToEmbedMessage(EMType.Success).Build();
-            await _payload.Message.Channel.SendMessageAsync("", embed: content);
         }
     }
 }

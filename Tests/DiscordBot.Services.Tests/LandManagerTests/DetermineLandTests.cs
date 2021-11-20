@@ -1,12 +1,9 @@
 using Discord;
-using Discord.Commands;
-using Discord.WebSocket;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.DAL.Models.Configuration;
 using System.Linq;
-using System.Threading.Tasks;
 
 
 namespace DiscordBot.ServicesTests.LandManagerTests

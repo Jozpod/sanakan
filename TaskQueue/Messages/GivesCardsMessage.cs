@@ -1,5 +1,4 @@
 ﻿using Sanakan.DAL.Models;
-using Sanakan.Game.Models;
 using System.Collections.Generic;
 
 namespace Sanakan.TaskQueue.Messages

@@ -3,13 +3,11 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using Sanakan.Common;
 using Sanakan.Common.Configuration;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot;
 using Sanakan.ShindenApi;
 using Sanakan.Web.Controllers;
-using System;
 
 namespace Sanakan.Web.Tests.Controllers.UserControllerTests
 {
