@@ -28,13 +28,13 @@ namespace DiscordBot.ServicesTests.LandManagerTests
             {
                 expected,
             };
-            var roles = new[]
+            var roleIds = new[]
             {
-                roleMock.Object,
+                1ul,
             };
             var name = "test";
 
-            var result = _landManager.DetermineLand(lands, roles, name);
+            var result = _landManager.DetermineLand(lands, roleIds, name);
             result.Should().BeEquivalentTo(expected);
         }
 
@@ -42,7 +42,7 @@ namespace DiscordBot.ServicesTests.LandManagerTests
         public void Should_Return_Null()
         {
             var lands = Enumerable.Empty<MyLand>();
-            var roles = Enumerable.Empty<IRole>();
+            var roles = Enumerable.Empty<ulong>();
             var name = "test";
 
             var result = _landManager.DetermineLand(lands, roles, name);

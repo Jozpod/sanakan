@@ -21,18 +21,18 @@ namespace Sanakan.TaskQueue.Tests
         [TestMethod]
         public void Should_Limit_Queue()
         {
-            foreach (var message in Enumerable.Repeat(new OpenCardsMessage(), 100))
+            foreach (var message in Enumerable.Repeat(new GiveCardsMessage(), 100))
             {
                 _blockingPriorityQueue.TryEnqueue(message);
             }
-            _blockingPriorityQueue.TryEnqueue(new OpenCardsMessage()).Should().BeFalse();
+            _blockingPriorityQueue.TryEnqueue(new GiveCardsMessage()).Should().BeFalse();
         }
 
         [TestMethod]
         public void Should_Process_Messages()
         {
             var firstExpected = new ConnectUserMessage();
-            var secondExpected = new OpenCardsMessage();
+            var secondExpected = new GiveCardsMessage();
        
             var cancellationTokenSource = new CancellationTokenSource();
             cancellationTokenSource.CancelAfter(TimeSpan.FromSeconds(3));

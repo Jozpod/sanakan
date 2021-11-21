@@ -10,9 +10,11 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
+using Sanakan.Api;
 using Sanakan.Common;
 using Sanakan.Common.Builder;
 using Sanakan.Common.Configuration;
+using Sanakan.Daemon.Builder;
 using Sanakan.DAL.Builder;
 using Sanakan.DiscordBot.Builder;
 using Sanakan.DiscordBot.Services.Builder;
@@ -22,11 +24,10 @@ using Sanakan.Game.Builder;
 using Sanakan.ShindenApi.Builder;
 using Sanakan.TaskQueue.Builder;
 using Sanakan.Web;
-using Sanakan.Web.HostedService;
 using System.IO;
 using System.Text;
 
-namespace Sanakan
+namespace Sanakan.Web
 {
     public class Startup
     {
@@ -54,7 +55,7 @@ namespace Sanakan
                     ValidateIssuerSigningKey = true,
                     ValidIssuer = jwtConfiguration.Issuer,
                     ValidAudience = jwtConfiguration.Issuer,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtConfiguration.IssuerSigningKey))
+                    IssuerSigningKey = JwtBuilder.ToSecurityKey(jwtConfiguration.IssuerSigningKey),
                 };
             });
 
@@ -112,11 +113,14 @@ namespace Sanakan
                 {
                     c.IncludeXmlComments(filePath);
                 }
-                
 
                 c.CustomSchemaIds(x => x.FullName);
             });
 
+            services.AddHttpContextAccessor();
+            services.AddJwtBuilder();
+            services.AddRequestBodyReader();
+            services.AddUserContext();
             services.AddWritableOption<SanakanConfiguration>();
             services.AddDiscordBot();
             services.AddDiscordBotServices();
@@ -140,15 +144,7 @@ namespace Sanakan
             services.AddCache(Configuration.GetSection("Cache"));
             services.AddConfiguration(Configuration);
             services.AddSanakanDbContext(Configuration);
-            services.AddHostedService<TaskQueueHostedService>();
-            services.AddHostedService<MemoryUsageHostedService>();
-            services.AddHostedService<SessionHostedService>();
-            services.AddHostedService<ProfileHostedService>();
-            services.AddHostedService<SupervisorHostedService>();
-            services.AddHostedService<ModeratorHostedService>();
-            services.AddHostedService<SpawnHostedService>();
-            services.AddHostedService<ChaosHostedService>();
-            services.AddHostedService<DiscordBotHostedService>();
+            services.AddHostedServices();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

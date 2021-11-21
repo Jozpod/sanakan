@@ -62,7 +62,7 @@ namespace Sanakan.Web.Controllers
             _questionRepository.Add(question);
             await _questionRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(CacheKeys.Quiz);
+            _cacheManager.ExpireTag(CacheKeys.Quizes);
 
             return ShindenOk("Question added!");
         }
@@ -83,7 +83,7 @@ namespace Sanakan.Web.Controllers
                 _questionRepository.Remove(question);
                 await _questionRepository.SaveChangesAsync();
 
-                _cacheManager.ExpireTag(CacheKeys.Quiz);
+                _cacheManager.ExpireTag(CacheKeys.Quizes);
 
                 return ShindenOk("Question removed!");
             }

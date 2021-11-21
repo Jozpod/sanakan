@@ -270,8 +270,8 @@ namespace Sanakan.DiscordBot.Services
             {
                 foreach (var fightChannel in fightChannels)
                 {
-                    var channel = await guild.GetTextChannelAsync(fightChannel.Channel);
-                    var mention = channel?.Mention ?? fightChannel.Channel.ToString();
+                    var channel = await guild.GetTextChannelAsync(fightChannel.ChannelId);
+                    var mention = channel?.Mention ?? fightChannel.ChannelId.ToString();
                     stringBuilder.AppendFormat("{0}\n", mention);
                 }
             }

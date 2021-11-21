@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.Commands;
 using Microsoft.Extensions.DependencyInjection;
+using Sanakan.DAL.Models.Configuration;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot;
 using System;
@@ -21,24 +22,25 @@ namespace Sanakan.Preconditions
             var guildConfigRepository = services.GetRequiredService<IGuildConfigRepository>();
             var userRepository = services.GetRequiredService<IUserRepository>();
             var user = context.User as IGuildUser;
-            
+            var guild = context.Guild;
+
             if (user == null)
             {
                 return PreconditionResult.FromSuccess();
             }
 
-            var gConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(context.Guild.Id);
-            if (gConfig == null)
+            var guildConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
+
+            if (guildConfig == null)
             {
                 return PreconditionResult.FromSuccess();
             }
 
-            if (gConfig.CommandChannels == null)
-            {
-                return PreconditionResult.FromSuccess();
-            }
+            var commandChannels = guildConfig.CommandChannels
+                ?? Enumerable.Empty<CommandChannel>();
+            var channelId = context.Channel.Id;
 
-            if (gConfig.CommandChannels.Any(x => x.Channel == context.Channel.Id))
+            if (commandChannels.Any(x => x.Channel == channelId))
             {
                 return PreconditionResult.FromSuccess();
             }
@@ -48,26 +50,25 @@ namespace Sanakan.Preconditions
                 return PreconditionResult.FromSuccess();
             }
 
-            if (gConfig?.WaifuConfig?.CommandChannels != null)
+            var waifuCommandChannels = guildConfig.WaifuConfig?.CommandChannels
+               ?? Enumerable.Empty<WaifuCommandChannel>();
+
+            if (waifuCommandChannels.Any(x => x.Channel == channelId))
             {
-                if (gConfig.WaifuConfig.CommandChannels
-                    .Any(x => x.Channel == context.Channel.Id))
+                return PreconditionResult.FromSuccess();
+            }
+
+            var databaseUser = await userRepository.GetBaseUserAndDontTrackAsync(user.Id);
+
+            if (databaseUser != null)
+            {
+                if (databaseUser.Level >= _level)
                 {
                     return PreconditionResult.FromSuccess();
                 }
             }
 
-            var botUser = await userRepository.GetBaseUserAndDontTrackAsync(user.Id);
-
-            if (botUser != null)
-            {
-                if (botUser.Level >= _level)
-                {
-                    return PreconditionResult.FromSuccess();
-                }
-            }
-
-            var channel = await context.Guild.GetTextChannelAsync(gConfig.CommandChannels.First().Channel);
+            var channel = await context.Guild.GetTextChannelAsync(commandChannels.First().Channel);
             var result = new PreconditionErrorPayload();
             result.Message = $"To polecenie działa na kanale {channel?.Mention}, możesz użyć go tutaj po osiągnięciu {_level} poziomu.";
 

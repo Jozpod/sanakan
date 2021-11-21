@@ -65,7 +65,7 @@ namespace Sanakan.DiscordBot
         private async Task HandleCommandAsync(IMessage message)
         {
             var userMessage = message as IUserMessage;
-            
+
             if (userMessage == null)
             {
                 return;
@@ -188,7 +188,7 @@ namespace Sanakan.DiscordBot
                     break;
 
                 case CommandError.MultipleMatches:
-                    await channel.SendMessageAsync("", embed: "Dopasowano wielu użytkowników!"
+                    await channel.SendMessageAsync(embed: "Dopasowano wielu użytkowników!"
                         .ToEmbedMessage(EMType.Error).Build());
                     break;
 

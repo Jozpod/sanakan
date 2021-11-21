@@ -33,11 +33,11 @@ namespace Sanakan.DAL.Repositories
 
         public async Task<IEnumerable<PenaltyInfo>> GetCachedFullPenalties()
         {
-            var cached = _cacheManager.Get<IEnumerable<PenaltyInfo>>(CacheKeys.Muted);
+            var cacheResult = _cacheManager.Get<IEnumerable<PenaltyInfo>>(CacheKeys.Penalties);
 
-            if (cached != null)
+            if (cacheResult != null)
             {
-                return cached;
+                return cacheResult.Value;
             }
 
             var result = await _dbContext
@@ -48,26 +48,26 @@ namespace Sanakan.DAL.Repositories
                 .AsSplitQuery()
                 .ToListAsync();
 
-            _cacheManager.Add(CacheKeys.Muted, result);
+            _cacheManager.Add(CacheKeys.Penalties, result);
 
             return result;
         }
 
         public async Task<List<PenaltyInfo>> GetMutedPenaltiesAsync(ulong discordGuildId)
         {
-            var cached = _cacheManager.Get<List<PenaltyInfo>>(CacheKeys.Muted);
+            var cacheResult = _cacheManager.Get<List<PenaltyInfo>>(CacheKeys.Muted);
 
-            if (cached != null)
+            if (cacheResult != null)
             {
-                return cached;
+                return cacheResult.Value;
             }
 
             var list = await _dbContext
                 .Penalties
                 .Include(x => x.Roles)
-               .Where(x => x.GuildId == discordGuildId
-                   && x.Type == PenaltyType.Mute)
-               .ToListAsync();
+                .Where(x => x.GuildId == discordGuildId
+                    && x.Type == PenaltyType.Mute)
+                .ToListAsync();
 
             _cacheManager.Add(CacheKeys.Muted, list);
 

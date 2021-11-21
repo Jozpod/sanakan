@@ -1,14 +1,14 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System.Linq;
-using Microsoft.AspNetCore.Authorization;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using Sanakan.Api.Models;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
-using static Sanakan.Web.ResponseExtensions;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using Sanakan.Web.Resources;
+using Sanakan.Api.Models;
 using Sanakan.Common.Configuration;
+using Sanakan.Web.Resources;
+using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
+using System.Security.Claims;
+using static Sanakan.Web.ResponseExtensions;
 
 namespace Sanakan.Web.Controllers
 {
@@ -29,9 +29,9 @@ namespace Sanakan.Web.Controllers
         }
 
         /// <summary>
-        /// Creates json web token with website claim
+        /// Creates json web token with website claim.
         /// </summary>
-        /// <param name="apikey">API key</param>
+        /// <param name="apikey">API key.</param>
         [HttpPost, AllowAnonymous]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status403Forbidden)]
@@ -49,7 +49,6 @@ namespace Sanakan.Web.Controllers
             if (bearer == null)
             {
                 return ShindenForbidden(Strings.ApiKeyInvalid);
-                
             }
 
             var claims = new[]
@@ -58,7 +57,7 @@ namespace Sanakan.Web.Controllers
                     new Claim(RegisteredClaimNames.Player, "waifu_player"),
                 };
 
-            var tokenData = _jwtBuilder.Build(_config.CurrentValue.TokenExpiry, claims);
+            var tokenData = _jwtBuilder.Build(_config.CurrentValue.Jwt.TokenExpiry, claims);
             return Ok(tokenData);
         }
     }

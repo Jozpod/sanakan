@@ -15,15 +15,5 @@ namespace Sanakan.Common.Configuration
         /// The list of API keys.
         /// </summary>
         public List<SanakanApiKey> ApiKeys { get; set; } = new();
-
-        /// <summary>
-        /// The time span after JWT expires.
-        /// </summary>
-        public TimeSpan TokenExpiry { get; set; }
-
-        /// <summary>
-        /// The time span after JWT with user expires.
-        /// </summary>
-        public TimeSpan UserWithTokenExpiry { get; set; }
     }
 }

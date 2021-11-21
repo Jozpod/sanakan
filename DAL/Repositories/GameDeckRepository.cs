@@ -24,23 +24,20 @@ namespace Sanakan.DAL.Repositories
             _cacheManager = cacheManager;
         }
 
-        public const double MAX_DECK_POWER = 800;
-        public const double MIN_DECK_POWER = 200;
-
         public async Task<List<GameDeck>> GetCachedPlayersForPVP(ulong ignore = 1)
         {
-            var cached = _cacheManager.Get<List<GameDeck>>(CacheKeys.GameDecks);
+            var cacheResult = _cacheManager.Get<List<GameDeck>>(CacheKeys.GameDecks);
 
-            if (cached != null)
+            if (cacheResult != null)
             {
-                return cached;
+                return cacheResult.Value;
             }
 
             var result = await _dbContext
                 .GameDecks
                 .AsQueryable()
-                .Where(x => x.DeckPower > MIN_DECK_POWER
-                    && x.DeckPower < MAX_DECK_POWER
+                .Where(x => x.DeckPower > Constants.MinDeckPower
+                    && x.DeckPower < Constants.MaxDeckPower
                     && x.UserId != ignore)
                 .AsNoTracking()
                 .AsSplitQuery()
@@ -48,20 +45,21 @@ namespace Sanakan.DAL.Repositories
 
             _cacheManager.Add(CacheKeys.GameDecks, result, new MemoryCacheEntryOptions
             {
-                AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(2)
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(2),
             });
 
             return result;
         }
+
         public async Task<GameDeck> GetCachedUserGameDeckAsync(ulong userId)
         {
             var key = string.Format(CacheKeys.GameDeckUser, userId);
 
-            var cached = _cacheManager.Get<GameDeck>(key);
+            var cacheResult = _cacheManager.Get<GameDeck>(key);
 
-            if (cached != null)
+            if (cacheResult != null)
             {
-                return cached;
+                return cacheResult.Value;
             }
 
             var result = await _dbContext
@@ -76,6 +74,7 @@ namespace Sanakan.DAL.Repositories
 
             return result;
         }
+
         public Task<List<GameDeck>> GetByAnimeIdAsync(ulong animeId)
         {
             return _dbContext.GameDecks

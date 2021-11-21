@@ -22,14 +22,13 @@ using Humanizer;
 using Sanakan.Common.Cache;
 using Sanakan.DiscordBot.Session;
 using Sanakan.Game.Services;
+using Sanakan.Game.Services.Abstractions;
 
 namespace Sanakan.DiscordBot.Modules
 {
     [Name("Zabawy"), RequireUserRole]
     public class FunModule : SanakanModuleBase
     {
-        public const string PsyduckEmoji = "<:klasycznypsaj:482136878120828938>";
-        private readonly IModeratorService _moderatorService;
         private readonly ISessionManager _sessionManager;
         private readonly ICacheManager _cacheManager;
         private readonly IUserRepository _userRepository;
@@ -38,20 +37,22 @@ namespace Sanakan.DiscordBot.Modules
         private readonly ISystemClock _systemClock;
         private readonly IRandomNumberGenerator _randomNumberGenerator;
         private readonly IServiceScopeFactory _serviceScopeFactory;
-        private readonly SlotMachine _slotMachine;
+        private readonly ISlotMachine _slotMachine;
         private readonly ITaskManager _taskManager;
 
         public FunModule(
-            IModeratorService moderatorService,
+            IGuildConfigRepository guildConfigRepository,
+            IQuestionRepository questionRepository,
             ISessionManager session,
             ICacheManager cacheManager,
             ISystemClock systemClock,
             IServiceScopeFactory serviceScopeFactory,
-            SlotMachine slotMachine,
+            ISlotMachine slotMachine,
             ITaskManager taskManager)
         {
+            _guildConfigRepository = guildConfigRepository;
+            _questionRepository = questionRepository;
             _sessionManager = session;
-            _moderatorService = moderatorService;
             _cacheManager = cacheManager;
             _systemClock = systemClock;
             _serviceScopeFactory = serviceScopeFactory;
@@ -113,7 +114,7 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks("")]
         public async Task GiveMuteAsync()
         {
-            var user = Context.User as SocketGuildUser;
+            var user = Context.User as IGuildUser;
             
             if (user == null)
             {
@@ -138,7 +139,7 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            if (user.Roles.Contains(muteRole))
+            if (user.RoleIds.Contains(muteRole.Id))
             {
                 await ReplyAsync("", embed: $"{user.Mention} już jest wyciszony.".ToEmbedMessage(EMType.Error).Build());
                 return;
@@ -324,7 +325,7 @@ namespace Sanakan.DiscordBot.Modules
         public async Task PlayOnSlotMachineAsync(
             [Summary("typ (info - wyświetla informacje)")]string type = "game")
         {
-            var info = string.Format(Strings.GameInfo, PsyduckEmoji);
+            var info = string.Format(Strings.GameInfo, Emojis.PsyduckEmoji);
 
             foreach (var slotMachineSlot in SlotMachineSlotsExtensions.SlotMachineSlots)
             {
@@ -368,7 +369,7 @@ namespace Sanakan.DiscordBot.Modules
 
             _cacheManager.ExpireTag(CacheKeys.User(botUser.Id), CacheKeys.Users);
 
-            var psay = smConfig.PsayMode > 0 ? $"{PsyduckEmoji} " : " ";
+            var psay = smConfig.PsayMode > 0 ? $"{Emojis.PsyduckEmoji} " : " ";
             var beatValue = smConfig.Beat.Value();
             var multiplierValue = smConfig.Multiplier.Value();
 

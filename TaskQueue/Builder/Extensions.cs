@@ -20,7 +20,8 @@ namespace Sanakan.TaskQueue.Builder
             services.AddScoped<IMessageHandler<AddExperienceMessage>, AddExperienceMessageHandler>();
             services.AddScoped<IMessageHandler<SafariMessage>, SafariMessageHandler>();
             services.AddScoped<IMessageHandler<GiveCardsMessage>, GiveCardsMessageHandler>();
-            
+            services.AddScoped<IMessageHandler<GiveBoosterPackMessage>, GiveBoosterPackMessageHandler>();
+
             return services;
         }
     }

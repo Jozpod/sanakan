@@ -3,10 +3,11 @@ using Sanakan.Common;
 using Sanakan.DAL.Models;
 using Sanakan.Extensions;
 using Sanakan.Game.Models;
+using Sanakan.Game.Services.Abstractions;
 
 namespace Sanakan.Game.Services
 {
-    public class SlotMachine
+    public class SlotMachine : ISlotMachine
     {
         private readonly IRandomNumberGenerator _randomNumberGenerator;
         private const int Rows = 3;
@@ -72,7 +73,8 @@ namespace Sanakan.Game.Services
                 rows[index] += RowIsSelected(user, index) + " ";
                 for (var j = 0; j < Slots; j++)
                 {
-                    rows[index] += Row[index, j].Icon(user.SMConfig.PsayMode > 0);
+                    var icon = Row[index, j].Icon(user.SMConfig.PsayMode > 0);
+                    rows[index] += icon;
                 }
             }
             

@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.Commands;
 using Microsoft.Extensions.DependencyInjection;
+using Sanakan.DAL.Models.Configuration;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot;
 using Sanakan.DiscordBot.Resources;
@@ -18,25 +19,24 @@ namespace Sanakan.Preconditions
         {
             var guildConfigRepository = services.GetRequiredService<IGuildConfigRepository>();
             var user = context.User as IGuildUser;
-            
+            var guild = context.Guild;
+
             if (user == null)
             {
                 return PreconditionResult.FromSuccess();
             }
 
-            var gConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(context.Guild.Id);
+            var guildConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
 
-            if (gConfig == null)
+            if (guildConfig == null)
             {
                 return PreconditionResult.FromSuccess();
             }
 
-            if (gConfig.CommandChannels == null)
-            {
-                return PreconditionResult.FromSuccess();
-            }
+            var commandChannels = guildConfig.CommandChannels
+               ?? Enumerable.Empty<CommandChannel>();
 
-            if (gConfig.CommandChannels.Any(x => x.Channel == context.Channel.Id))
+            if (!commandChannels.Any() || commandChannels.Any(x => x.Channel == context.Channel.Id))
             {
                 return PreconditionResult.FromSuccess();
             }
@@ -46,15 +46,15 @@ namespace Sanakan.Preconditions
                 return PreconditionResult.FromSuccess();
             }
 
-            if (gConfig?.WaifuConfig?.CommandChannels != null)
+            var waifuCommandChannels = guildConfig.WaifuConfig?.CommandChannels
+                ?? Enumerable.Empty<WaifuCommandChannel>();
+
+            if (waifuCommandChannels.Any(x => x.Channel == context.Channel.Id))
             {
-                if (gConfig.WaifuConfig.CommandChannels.Any(x => x.Channel == context.Channel.Id))
-                {
-                    return PreconditionResult.FromSuccess();
-                }
+                return PreconditionResult.FromSuccess();
             }
 
-            var channel = await context.Guild.GetTextChannelAsync(gConfig.CommandChannels.First().Channel);
+            var channel = await guild.GetTextChannelAsync(commandChannels.First().Channel);
             var result = new PreconditionErrorPayload();
             result.Message = string.Format(Strings.RequiredChannel, channel?.Mention);
 

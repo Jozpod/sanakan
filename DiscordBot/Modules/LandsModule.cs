@@ -9,6 +9,7 @@ using Sanakan.DiscordBot.Services.Abstractions;
 using Sanakan.DiscordBot.Abstractions.Extensions;
 using Sanakan.DiscordBot.Abstractions.Models;
 using Sanakan.Common;
+using Discord;
 
 namespace Sanakan.DiscordBot.Modules
 {
@@ -38,7 +39,7 @@ namespace Sanakan.DiscordBot.Modules
         {
             var config = await _guildConfigRepository.GetCachedGuildFullConfigAsync(Context.Guild.Id);
 
-            var user = Context.User as SocketGuildUser;
+            var user = Context.User as IGuildUser;
 
             if (user == null)
             {
@@ -46,7 +47,7 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            var land = _landManager.DetermineLand(config.Lands, user.Roles, name);
+            var land = _landManager.DetermineLand(config.Lands, user.RoleIds, name);
 
             if (land == null)
             {
@@ -66,12 +67,12 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("dodaje użytkownika do krainy")]
         [Remarks("Karna Kotleciki")]
         public async Task AddPersonAsync(
-            [Summary("użytkownik")]SocketGuildUser userToAdd,
+            [Summary("użytkownik")] IGuildUser userToAdd,
             [Summary("nazwa krainy (opcjonalne)")][Remainder]string? name = null)
         {
             var config = await _guildConfigRepository.GetCachedGuildFullConfigAsync(Context.Guild.Id);
 
-            var user = Context.User as SocketGuildUser;
+            var user = Context.User as IGuildUser;
 
             if(user == null)
             {
@@ -79,7 +80,7 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            var land = _landManager.DetermineLand(config.Lands, user.Roles, name);
+            var land = _landManager.DetermineLand(config.Lands, user.RoleIds, name);
 
             if (land == null)
             {
@@ -95,7 +96,7 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            if (!userToAdd.Roles.Contains(role))
+            if (!userToAdd.RoleIds.Contains(role.Id))
             {
                 await userToAdd.AddRoleAsync(role);
             }
@@ -109,13 +110,13 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("usuwa użytkownika z krainy")]
         [Remarks("Karna")]
         public async Task RemovePersonAsync(
-            [Summary("użytkownik")]SocketGuildUser userToRemove,
+            [Summary("użytkownik")] IGuildUser userToRemove,
             [Summary("nazwa krainy (opcjonalne)")][Remainder]string? name = null)
         {
             var guild = Context.Guild;
             var config = await _guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
 
-            var user = Context.User as SocketGuildUser;
+            var user = Context.User as IGuildUser;
 
             if (user == null)
             {
@@ -123,7 +124,7 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            var land = _landManager.DetermineLand(config.Lands, user.Roles, name);
+            var land = _landManager.DetermineLand(config.Lands, user.RoleIds, name);
 
             if (land == null)
             {
@@ -138,7 +139,7 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            if (userToRemove.Roles.Contains(role))
+            if (userToRemove.RoleIds.Contains(role.Id))
             {
                 await userToRemove.RemoveRoleAsync(role);
             }

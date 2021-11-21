@@ -16,23 +16,33 @@ namespace Sanakan.DAL
             _created = false;
         }
 
-        public async Task EnsureCreatedAsync(CancellationToken stoppingToken = default)
+        public async Task EnsureDeletedAsync(CancellationToken stoppingToken = default)
+        {
+            using var serviceScope = _serviceScopeFactory.CreateScope();
+            var serviceProvider = serviceScope.ServiceProvider;
+            var sanakanDbContext = serviceProvider.GetRequiredService<SanakanDbContext>();
+            var databaseFacade = sanakanDbContext.Database;
+            await databaseFacade.EnsureDeletedAsync(stoppingToken);
+        }
+
+        public async Task<bool> EnsureCreatedAsync(CancellationToken stoppingToken = default)
         {
             await _semaphore.WaitAsync(stoppingToken);
 
             if (_created)
             {
-                return;
+                return !_created;
             }
 
             using var serviceScope = _serviceScopeFactory.CreateScope();
             var serviceProvider = serviceScope.ServiceProvider;
             var sanakanDbContext = serviceProvider.GetRequiredService<SanakanDbContext>();
             var databaseFacade = sanakanDbContext.Database;
-            await databaseFacade.EnsureCreatedAsync(stoppingToken);
-            _created = true;
+            _created = await databaseFacade.EnsureCreatedAsync(stoppingToken);
 
             _semaphore.Release();
+
+            return _created;
         }
     }
 }

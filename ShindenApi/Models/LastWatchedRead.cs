@@ -106,25 +106,25 @@ namespace Sanakan.ShindenApi.Models
         public string FinishDate { get; set; }
 
         [JsonPropertyName("finish_precision")]
-        public string FinishPrecision { get; set; }
+        public string? FinishPrecision { get; set; }
 
         [JsonPropertyName("mpaa_rating")]
-        public string MpaaRating { get; set; }
+        public string? MpaaRating { get; set; }
 
         [JsonPropertyName("cover_artifact_id")]
         public ulong TitleCoverId { get; set; }
 
         [JsonPropertyName("rating_graphics_sum")]
-        public string RatingGraphicsSum { get; set; }
+        public string? RatingGraphicsSum { get; set; }
 
         [JsonPropertyName("rating_graphics_cnt")]
-        public string RatingGraphicsCnt { get; set; }
+        public string? RatingGraphicsCnt { get; set; }
 
         [JsonPropertyName("rating_music_sum")]
-        public string RatingMusicSum { get; set; }
+        public string? RatingMusicSum { get; set; }
 
         [JsonPropertyName("rating_music_cnt")]
-        public string RatingMusicCnt { get; set; }
+        public string? RatingMusicCnt { get; set; }
 
         [JsonPropertyName("episodes")]
         public long EpisodesCount { get; set; }

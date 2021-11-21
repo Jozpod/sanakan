@@ -283,7 +283,7 @@ namespace Sanakan.DiscordBot.Modules
                     
                     if (result.Value == null)
                     {
-                        card.Unique = true;
+                        card.IsUnique = true;
                         throw new Exception($"Couldn't get card info!");
                     }
 
@@ -291,7 +291,7 @@ namespace Sanakan.DiscordBot.Modules
                     var pictureUrl = UrlHelpers.GetPersonPictureURL(characterInfo.PictureId.Value);
                     var hasImage = pictureUrl != UrlHelpers.GetPlaceholderImageURL();
 
-                    card.Unique = false;
+                    card.IsUnique = false;
                     card.Name = characterInfo.ToString();
                     card.ImageUrl = hasImage ? pictureUrl : null;
                     card.Title = characterInfo?.Relations?.OrderBy(x => x.CharacterId)
@@ -485,7 +485,7 @@ namespace Sanakan.DiscordBot.Modules
 
             if (thisCards.Count < 1)
             {
-                await ReplyAsync("", embed: "Nie odnaleziono kart!".ToEmbedMessage(EMType.Bot).Build());
+                await ReplyAsync(embed: "Nie odnaleziono kart!".ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
 
@@ -513,13 +513,13 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("ustawia podany poziom użytkownikowi")]
         [Remarks("Karna 1")]
         public async Task ChangeUserLevelAsync(
-            [Summary("użytkownik")]SocketGuildUser user,
+            [Summary("użytkownik")]IGuildUser user,
             [Summary("poziom")]ulong level)
         {
-            var bUser = await _userRepository.GetUserOrCreateAsync(user.Id);
+            var databaseUser = await _userRepository.GetUserOrCreateAsync(user.Id);
 
-            bUser.Level = level;
-            bUser.ExperienceCount = ExperienceUtils.CalculateExpForLevel(level);
+            databaseUser.Level = level;
+            databaseUser.ExperienceCount = ExperienceUtils.CalculateExpForLevel(level);
 
             await _userRepository.SaveChangesAsync();
 
@@ -532,7 +532,8 @@ namespace Sanakan.DiscordBot.Modules
         [Command("mkick", RunMode = RunMode.Async)]
         [Summary("wyrzuca użytkowników z serwera")]
         [Remarks("Jupson Moe")]
-        public async Task MultiKickAsync([Summary("użytkownicy")]params SocketGuildUser[] users)
+        public async Task MultiKickAsync(
+            [Summary("użytkownicy")]params IGuildUser[] users)
         {
             var count = 0;
 
@@ -552,7 +553,8 @@ namespace Sanakan.DiscordBot.Modules
         [Command("mban", RunMode = RunMode.Async)]
         [Summary("banuje użytkowników z serwera")]
         [Remarks("Jupson Moe")]
-        public async Task MultiBankAsync([Summary("użytkownicy")]params SocketGuildUser[] users)
+        public async Task MultiBankAsync(
+            [Summary("użytkownicy")]params IGuildUser[] users)
         {
             var count = 0;
 
@@ -572,9 +574,8 @@ namespace Sanakan.DiscordBot.Modules
         [Command("restore"), Priority(1)]
         [Summary("przenosi kartę na nowo do użytkownika")]
         [Remarks("Sniku")]
-        public async Task RestoreCardsAsync([Summary("użytkownik")]SocketGuildUser user)
+        public async Task RestoreCardsAsync([Summary("użytkownik")]IGuildUser user)
         {
-            var bUser = await _userRepository.GetUserOrCreateAsync(user.Id);
             var thisCards = await _cardRepository.GetByIdFirstOrLastOwnerAsync(user.Id);
 
             if (thisCards.Count < 1)
@@ -797,15 +798,15 @@ namespace Sanakan.DiscordBot.Modules
 
             if (question == null)
             {
-                await ReplyAsync("", embed: $"Zagadka o ID: `{id}` nie istnieje!".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync(embed: $"Zagadka o ID: `{id}` nie istnieje!".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
             _questionRepository.Remove(question);
             await _questionRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(CacheKeys.Quiz);
-            await ReplyAsync("", embed: $"Zagadka o ID: `{id}` została skasowana!".ToEmbedMessage(EMType.Success).Build());
+            _cacheManager.ExpireTag(CacheKeys.Quiz(id));
+            await ReplyAsync(embed: $"Zagadka o ID: `{id}` została skasowana!".ToEmbedMessage(EMType.Success).Build());
         }
 
         [Command("addq"), Priority(1)]
@@ -820,7 +821,7 @@ namespace Sanakan.DiscordBot.Modules
                 _questionRepository.Add(question);
                 await _questionRepository.SaveChangesAsync();
 
-                _cacheManager.ExpireTag(CacheKeys.Quiz);
+                _cacheManager.ExpireTag(CacheKeys.Quizes);
                 await ReplyAsync("", embed: $"Nowy zagadka dodana, jej ID to: `{question.Id}`".ToEmbedMessage(EMType.Success).Build());
             }
             catch (Exception)
@@ -982,29 +983,29 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks("")]
         public async Task ToggleDeveloperRoleAsync()
         {
-            var user = Context.User as SocketGuildUser;
+            var user = Context.User as IGuildUser;
 
             if (user == null)
             {
                 return;
             }
 
-            var devr = Context.Guild.Roles.FirstOrDefault(x => x.Name == "Developer");
+            var developerRole = Context.Guild.Roles.FirstOrDefault(x => x.Name == "Developer");
             
-            if (devr == null)
+            if (developerRole == null)
             {
                 return;
             }
 
-            if (user.Roles.Contains(devr))
+            if (user.RoleIds.Contains(developerRole.Id))
             {
-                await user.RemoveRoleAsync(devr);
+                await user.RemoveRoleAsync(developerRole);
                 await ReplyAsync("", embed: $"{user.Mention} stracił role deva."
                     .ToEmbedMessage(EMType.Success).Build());
             }
             else
             {
-                await user.AddRoleAsync(devr);
+                await user.AddRoleAsync(developerRole);
                 await ReplyAsync("", embed: $"{user.Mention} otrzymał role deva."
                     .ToEmbedMessage(EMType.Success).Build());
             }
@@ -1014,7 +1015,7 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("generuje przedmiot i daje go użytkownikowi")]
         [Remarks("User 2 1")]
         public async Task GenerateItemAsync(
-            [Summary("użytkownik")]SocketGuildUser user,
+            [Summary("użytkownik")]IGuildUser user,
             [Summary("przedmiot")]ItemType itemType,
             [Summary("liczba przedmiotów")]uint count = 1,
             [Summary("jakość przedmiotu")]Quality quality = Quality.Broken)
@@ -1054,8 +1055,6 @@ namespace Sanakan.DiscordBot.Modules
         {
             CharacterInfo character;
             Card card;
-
-            var test = Context.User as SocketGuildUser;
 
             if (characterId.HasValue) {
                 character = (await _shindenClient.GetCharacterInfoAsync(characterId.Value)).Value;
@@ -1129,7 +1128,7 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("zmienia SC użytkownika o podaną wartość")]
         [Remarks("Sniku 10000")]
         public async Task ChangeUserScAsync(
-            [Summary("użytkownik")]SocketGuildUser user,
+            [Summary("użytkownik")]IGuildUser user,
             [Summary("liczba SC")]long amount)
         {
             var botuser = await _userRepository.GetUserOrCreateAsync(user.Id);
@@ -1147,7 +1146,7 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("zmienia AC użytkownika o podaną wartość")]
         [Remarks("User 10000")]
         public async Task ChangeUserAcAsync(
-            [Summary("użytkownik")]SocketGuildUser user,
+            [Summary("użytkownik")] IGuildUser user,
             [Summary("liczba AC")]long amount)
         {
             var botuser = await _userRepository.GetUserOrCreateAsync(user.Id);
@@ -1164,7 +1163,7 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("zmienia TC użytkownika o podaną wartość")]
         [Remarks("User 10000")]
         public async Task ChangeUserTcAsync(
-            [Summary("użytkownik")]SocketGuildUser user,
+            [Summary("użytkownik")] IGuildUser user,
             [Summary("liczba TC")]long amount)
         {
             var botuser = await _userRepository.GetUserOrCreateAsync(user.Id);
@@ -1181,7 +1180,7 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("zmienia PC użytkownika o podaną wartość")]
         [Remarks("User 10000")]
         public async Task ChangeUserPcAsync(
-            [Summary("użytkownik")]SocketGuildUser user,
+            [Summary("użytkownik")] IGuildUser user,
             [Summary("liczba PC")]long amount)
         {
             var botuser = await _userRepository.GetUserOrCreateAsync(user.Id);
@@ -1198,7 +1197,7 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("zmienia CT użytkownika o podaną wartość")]
         [Remarks("User 10000")]
         public async Task ChangeUserCtAsync(
-            [Summary("użytkownik")]SocketGuildUser user,
+            [Summary("użytkownik")] IGuildUser user,
             [Summary("liczba CT")]long amount)
         {
             var botuser = await _userRepository.GetUserOrCreateAsync(user.Id);
@@ -1215,7 +1214,7 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("zmienia punkty doświadczenia użytkownika o podaną wartość")]
         [Remarks("User 10000")]
         public async Task ChangeUserExpAsync(
-            [Summary("użytkownik")]SocketGuildUser user,
+            [Summary("użytkownik")] IGuildUser user,
             [Summary("liczba punktów doświadczenia")]ulong amount)
         {
             var botuser = await _userRepository.GetUserOrCreateAsync(user.Id);
@@ -1232,7 +1231,7 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("zmienia liczbę punktów ostrzeżeń")]
         [Remarks("User 10000")]
         public async Task ChangeUserOstAsync(
-            [Summary("użytkownik")]SocketGuildUser user,
+            [Summary("użytkownik")] IGuildUser user,
             [Summary("liczba ostrzeżeń")]long amount)
         {
             var botuser = await _userRepository.GetUserOrCreateAsync(user.Id);

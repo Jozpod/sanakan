@@ -22,6 +22,7 @@ using Sanakan.Game.Models;
 using Sanakan.Common.Configuration;
 using Sanakan.TaskQueue;
 using Sanakan.Game.Services.Abstractions;
+using Sanakan.Common.Cache;
 
 namespace Sanakan.Web.Controllers
 {
@@ -524,7 +525,7 @@ namespace Sanakan.Web.Controllers
         }
 
         /// <summary>
-        /// Gives bundle of cards for given Discord user.
+        /// Gives bundle of cards to given Discord user.
         /// </summary>
         /// <param name="discordUserId">The user identifier in Discord.</param>
         /// <param name="boosterPacks">The bundle model.</param>
@@ -595,11 +596,11 @@ namespace Sanakan.Web.Controllers
             var packs = new List<BoosterPack>();
             foreach (var pack in boosterPacks)
             {
-                var rPack = pack.ToRealPack();
+                var realPack = pack.ToRealPack();
                 
-                if (rPack != null)
+                if (realPack != null)
                 {
-                    packs.Add(rPack);
+                    packs.Add(realPack);
                 }
             }
 
@@ -609,7 +610,7 @@ namespace Sanakan.Web.Controllers
             }
 
             var user = await _userRepository.GetCachedFullUserByShindenIdAsync(shindenUserId);
-            
+
             if (user == null)
             {
                 return ShindenNotFound(Strings.UserNotFound);
@@ -617,32 +618,17 @@ namespace Sanakan.Web.Controllers
 
             var discordUserId = user.Id;
 
-            _blockingPriorityQueue.TryEnqueue(new OpenCardsMessage
+            _blockingPriorityQueue.TryEnqueue(new GiveCardsMessage
             {
                 DiscordUserId = discordUserId,
+                BoosterPacks = packs,
             });
 
-            //var exe = new Executable($"api-packet u{discordId}", new Task<Task>(async () =>
-            //{
-            //    var botUser = await _userRepository.GetUserOrCreateAsync(discordId);
-
-            //    foreach (var pack in packs)
-            //    {
-            //        botUser.GameDeck.BoosterPacks.Add(pack);
-            //    }
-
-            //    await _userRepository.SaveChangesAsync();
-
-            //    _cacheManager.ExpireTag(new string[] { $"user-{botUser.Id}", "users" });
-            //}));
-
-            //await _executor.TryAdd(exe, TimeSpan.FromSeconds(1));
-
             TokenData tokenData = null;
-            
+
             if (_userContext.HasWebpageClaim())
             {
-                tokenData = _jwtBuilder.Build(_config.CurrentValue.UserWithTokenExpiry);
+                tokenData = _jwtBuilder.Build(_config.CurrentValue.Jwt.UserWithTokenExpiry);
             }
 
             var result = new UserWithToken()
@@ -658,8 +644,8 @@ namespace Sanakan.Web.Controllers
         /// <summary>
         /// Opens packet and add cards to user collection.
         /// </summary>
-        /// <param name="shindenUserId">The Shinden user identifier</param>
-        /// <param name="boosterPacks">Packet model</param>
+        /// <param name="shindenUserId">The Shinden user identifier.</param>
+        /// <param name="boosterPacks">The list of booster packs.</param>
         [HttpPost("shinden/{id}/boosterpack/open"), Authorize(Policy = AuthorizePolicies.Site)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status503ServiceUnavailable)]
@@ -679,10 +665,10 @@ namespace Sanakan.Web.Controllers
 
             foreach (var pack in boosterPacks)
             {
-                var rPack = pack.ToRealPack();
-                if (rPack != null)
+                var realPack = pack.ToRealPack();
+                if (realPack != null)
                 {
-                    packs.Add(rPack);
+                    packs.Add(realPack);
                 }
             }
 
@@ -716,46 +702,25 @@ namespace Sanakan.Web.Controllers
                 cards.AddRange(await _waifuService.OpenBoosterPackAsync(null, pack));
             }
 
-            _blockingPriorityQueue.TryEnqueue(new OpenCardsMessage
+            var enqueued = _blockingPriorityQueue.TryEnqueue(new GiveBoosterPackMessage
             {
                 DiscordUserId = discordUserId,
                 Cards = cards,
+                PackCount = packs.Count,
             });
 
-            //var exe = new Executable($"api-packet-open u{discordId}", new Task<Task>(async () =>
-            //{
-            //    var botUser = await _userRepository.GetUserOrCreateAsync(discordId);
-
-            //    botUser.Stats.OpenedBoosterPacks += packs.Count;
-
-            //    foreach (var card in cards)
-            //    {
-            //        card.Affection += botUser.GameDeck.AffectionFromKarma();
-            //        card.FirstIdOwner = botUser.Id;
-
-            //        botUser.GameDeck.Cards.Add(card);
-            //        botUser.GameDeck.RemoveCharacterFromWishList(card.CharacterId);
-            //    }
-
-            //    await _userRepository.SaveChangesAsync();
-
-            //    _cacheManager.ExpireTag(new string[] { $"user-{botUser.Id}", "users" });
-            //}));
-
-            //if (!await _executor.TryAdd(exe, TimeSpan.FromSeconds(1)))
-            //{
-            //    return ShindenServiceUnavailable("Command queue is full");
-            //}
-
-            //await exe.WaitAsync();
+            if(!enqueued)
+            {
+                return ShindenServiceUnavailable("Command queue is full");
+            }
 
             return Ok(cards);
         }
 
         /// <summary>
-        /// Opens user packet (requires authorization)
+        /// Opens user packet.
         /// </summary>
-        /// <param name="packNumber">numer pakietu</param>
+        /// <param name="packNumber">The bundle number.</param>
         [HttpPost("boosterpack/open/{packNumber}"), Authorize(Policy = AuthorizePolicies.Player)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status406NotAcceptable)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status404NotFound)]
@@ -773,80 +738,65 @@ namespace Sanakan.Web.Controllers
                 };
             }
 
-            var bPackName = "";
+            var boosterPackName = "";
             var cards = new List<Card>();
-            var botUserCh = await _userRepository.GetCachedFullUserAsync(discordId.Value);
+            var databaseUser = await _userRepository.GetCachedFullUserAsync(discordId.Value);
 
-            if (botUserCh == null)
+            if (databaseUser == null)
             {
                 return ShindenNotFound(Strings.UserNotFound);
             }
 
-            if (botUserCh.GameDeck.BoosterPacks.Count < packNumber || packNumber <= 0)
+            var gameDeck = databaseUser.GameDeck;
+            var boosterPacks = gameDeck.BoosterPacks;
+
+            if (boosterPacks.Count < packNumber || packNumber <= 0)
             {
                 return ShindenNotFound("Boosterpack not found!");
             }
 
-            var pack = botUserCh.GameDeck.BoosterPacks.ToArray()[packNumber - 1];
+            var pack = boosterPacks[packNumber - 1];
 
-            if (botUserCh.GameDeck.Cards.Count + pack.CardCount > botUserCh.GameDeck.MaxNumberOfCards)
+            if (gameDeck.Cards.Count + pack.CardCount > gameDeck.MaxNumberOfCards)
             {
                 return ShindenNotAcceptable("User has no space left in deck!");
             }
 
             cards = await _waifuService.OpenBoosterPackAsync(null, pack);
-            bPackName = pack.Name;
+            boosterPackName = pack.Name;
 
-            _blockingPriorityQueue.TryEnqueue(new OpenCardsMessage
+            databaseUser = await _userRepository.GetUserOrCreateAsync(discordId.Value);
+            gameDeck = databaseUser.GameDeck;
+            boosterPacks = gameDeck.BoosterPacks;
+            var boosterPack = boosterPacks[packNumber - 1];
+
+            if (boosterPack?.Name != boosterPackName)
+            {
+                return ShindenInternalServerError("Boosterpack already opened!");
+            }
+
+            boosterPacks.Remove(boosterPack);
+
+            if (boosterPack.CardSourceFromPack == CardSource.Activity || boosterPack.CardSourceFromPack == CardSource.Migration)
+            {
+                databaseUser.Stats.OpenedBoosterPacksActivity += 1;
+            }
+            else
+            {
+                databaseUser.Stats.OpenedBoosterPacks += 1;
+            }
+
+            _blockingPriorityQueue.TryEnqueue(new GiveBoosterPackMessage
             {
                 DiscordUserId = discordId.Value,
                 Cards = cards,
             });
 
-            //var exe = new Executable($"api-packet-open u{discordId}", new Task<Task>(async () =>
-            //{
-            //    var botUser = await _userRepository.GetUserOrCreateAsync(discordId.Value);
-
-            //    var bPack = botUser.GameDeck.BoosterPacks.ToArray()[packNumber - 1];
-            //    if (bPack?.Name != bPackName)
-            //    {
-            //        return ShindenInternalServerError("Boosterpack already opened!");
-            //    }
-
-            //    botUser.GameDeck.BoosterPacks.Remove(bPack);
-
-            //    if (bPack.CardSourceFromPack == CardSource.Activity || bPack.CardSourceFromPack == CardSource.Migration)
-            //    {
-            //        botUser.Stats.OpenedBoosterPacksActivity += 1;
-            //    }
-            //    else
-            //    {
-            //        botUser.Stats.OpenedBoosterPacks += 1;
-            //    }
-
-            //    foreach (var card in cards)
-            //    {
-            //        card.Affection += botUser.GameDeck.AffectionFromKarma();
-            //        card.FirstIdOwner = botUser.Id;
-
-            //        botUser.GameDeck.Cards.Add(card);
-            //        botUser.GameDeck.RemoveCharacterFromWishList(card.Character);
-            //    }
-
-            //    await _repository.SaveChangesAsync();
-
-            //    _cacheManager.ExpireTag(new string[] { $"user-{botUser.Id}", "users" });
-            //}));
-
-            //await _executor.TryAdd(exe, TimeSpan.FromSeconds(1));
-
-            //exe.Wait();
-
             return Ok(cards);
         }
 
         /// <summary>
-        /// Activates or deactivates card ( authorization required )
+        /// Activates or deactivates card.
         /// </summary>
         /// <param name="wid">The card identifier.</param>
         [HttpPut("deck/toggle/card/{wid}"), Authorize(Policy = AuthorizePolicies.Player)]

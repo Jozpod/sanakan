@@ -1062,7 +1062,7 @@ namespace Sanakan.DiscordBot.Modules
 
                 if (characterResult.Value == null)
                 {
-                    card.Unique = true;
+                    card.IsUnique = true;
                     throw new Exception($"Couldn't get card info!");
                 }
 
@@ -1071,7 +1071,7 @@ namespace Sanakan.DiscordBot.Modules
                 var hasImage = pictureUrl != UrlHelpers.GetPlaceholderImageURL();
                 var toString = $"{characterInfo.FirstName} {characterInfo.LastName}";
 
-                card.Unique = false;
+                card.IsUnique = false;
                 card.Name = characterInfo.ToString();
                 card.ImageUrl = hasImage ? pictureUrl : null;
                 card.Title = characterInfo?.Relations?
@@ -1100,46 +1100,47 @@ namespace Sanakan.DiscordBot.Modules
         {
             var bUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
             var card = bUser.GameDeck.Cards.FirstOrDefault(x => x.Id == id);
+            var mention = Context.User.Mention;
 
             if (card == null)
             {
-                await ReplyAsync("", embed: $"{Context.User.Mention} nie posiadasz takiej karty.".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync(embed: $"{mention} nie posiadasz takiej karty.".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
             if (card.Rarity == Rarity.SSS)
             {
-                await ReplyAsync("", embed: $"{Context.User.Mention} ta karta ma już najwyższy poziom.".ToEmbedMessage(EMType.Bot).Build());
+                await ReplyAsync(embed: $"{mention} ta karta ma już najwyższy poziom.".ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
 
             if (card.Expedition != ExpeditionCardType.None)
             {
-                await ReplyAsync("", embed: $"{Context.User.Mention} ta karta jest na wyprawie!".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync(embed: $"{mention} ta karta jest na wyprawie!".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
             if (card.UpgradesCount < 1)
             {
-                await ReplyAsync("", embed: $"{Context.User.Mention} ta karta nie ma już dostępnych ulepszeń.".ToEmbedMessage(EMType.Bot).Build());
+                await ReplyAsync(embed: $"{mention} ta karta nie ma już dostępnych ulepszeń.".ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
 
             if (card.ExperienceCount < card.ExpToUpgrade())
             {
-                await ReplyAsync("", embed: $"{Context.User.Mention} ta karta ma niewystarczającą ilość punktów doświadczenia. Wymagane {card.ExpToUpgrade().ToString("F")}.".ToEmbedMessage(EMType.Bot).Build());
+                await ReplyAsync(embed: $"{mention} ta karta ma niewystarczającą ilość punktów doświadczenia. Wymagane {card.ExpToUpgrade().ToString("F")}.".ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
 
             if (card.UpgradesCount < 5 && card.Rarity == Rarity.SS)
             {
-                await ReplyAsync("", embed: $"{Context.User.Mention} ta karta ma zbyt małą ilość ulepszeń.".ToEmbedMessage(EMType.Bot).Build());
+                await ReplyAsync(embed: $"{mention} ta karta ma zbyt małą ilość ulepszeń.".ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
 
             if (!card.CanGiveBloodOrUpgradeToSSS() && card.Rarity == Rarity.SS)
             {
-                await ReplyAsync("", embed: $"{Context.User.Mention} ta karta ma zbyt małą relację, aby ją ulepszyć.".ToEmbedMessage(EMType.Bot).Build());
+                await ReplyAsync(embed: $"{mention} ta karta ma zbyt małą relację, aby ją ulepszyć.".ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
 
@@ -1174,7 +1175,7 @@ namespace Sanakan.DiscordBot.Modules
 
             _cacheManager.ExpireTag(CacheKeys.User(bUser.Id), CacheKeys.Users);
 
-            await ReplyAsync("", embed: $"{Context.User.Mention} ulepszył kartę do: {card.GetString(false, false, true)}."
+            await ReplyAsync(embed: $"{mention} ulepszył kartę do: {card.GetString(false, false, true)}."
                 .ToEmbedMessage(EMType.Success).Build());
         }
 
@@ -1847,7 +1848,7 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks(""), RequireWaifuCommandChannel]
         public async Task OpenCageAsync([Summary("WID(opcjonalne)")]ulong wid = 0)
         {
-            var user = Context.User as SocketGuildUser;
+            var user = Context.User as IGuildUser;
             if (user == null)
             {
                 return;
@@ -2059,9 +2060,9 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("wyświetla obiekty dodane do listy życzeń")]
         [Remarks(""), RequireWaifuCommandChannel]
         public async Task ShowThingsOnWishlistAsync(
-            [Summary("użytkownik(opcjonalne)")]SocketGuildUser? socketGuildUser = null)
+            [Summary("użytkownik(opcjonalne)")] IGuildUser? guildUser = null)
         {
-            var user = (socketGuildUser ?? Context.User) as SocketGuildUser;
+            var user = (guildUser ?? Context.User) as IGuildUser;
             if (user == null)
             {
                 return;
@@ -2112,7 +2113,7 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks("User tak tak tak"), RequireWaifuCommandChannel]
         public async Task ShowWishlistAsync(
             [Summary("użytkownik (opcjonalne)")]
-            SocketGuildUser? socketGuildUser = null,
+            IGuildUser? guildUser = null,
             [Summary("czy pokazać ulubione (true/false) domyślnie ukryte, wymaga podania użytkownika")]
             bool showFavs = false,
             [Summary("czy pokazać niewymienialne (true/false) domyślnie pokazane")]
@@ -2120,7 +2121,7 @@ namespace Sanakan.DiscordBot.Modules
             [Summary("czy zamienić oznaczenia na nicki?")]
             bool showNames = false)
         {
-            var user = (socketGuildUser ?? Context.User) as SocketGuildUser;
+            var user = (guildUser ?? Context.User) as IGuildUser;
             
             if (user == null)
             {
@@ -2194,15 +2195,16 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("wyświetla pozycje z listy życzeń użytkownika zawierające tylko drugiego użytkownika")]
         [Remarks("User1 User2 tak tak tak"), RequireWaifuCommandChannel]
         public async Task ShowFilteredWishlistAsync(
-        [Summary("użytkownik do którego należy lista życzeń")]SocketGuildUser user,
-        [Summary("użytkownik po którym odbywa się filtracja (opcjonalne)")]SocketGuildUser? filterUser = null,
+        [Summary("użytkownik do którego należy lista życzeń")] IGuildUser user,
+        [Summary("użytkownik po którym odbywa się filtracja (opcjonalne)")] IGuildUser? filterUser = null,
         [Summary("czy pokazać ulubione (true/false) domyślnie ukryte, wymaga podania użytkownika")]
         bool showFavs = false,
         [Summary("czy pokazać niewymienialne (true/false) domyślnie pokazane")]
         bool showBlocked = true,
         [Summary("czy zamienić oznaczenia na nicki?")]bool showNames = false)
         {
-            var userf = (filterUser ?? Context.User) as SocketGuildUser;
+            var userf = (filterUser ?? Context.User) as IGuildUser;
+
             if (userf == null)
             {
                 return;
@@ -2536,13 +2538,13 @@ namespace Sanakan.DiscordBot.Modules
             var botuser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
             if (botuser.TcCount < tcCost)
             {
-                await ReplyAsync("", embed: $"{Context.User.Mention} nie posiadasz wystarczającej liczby TC!".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync(embed: $"{Context.User.Mention} nie posiadasz wystarczającej liczby TC!".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
             if (!imageUrl.IsURLToImage())
             {
-                await ReplyAsync("", embed: "Nie wykryto obrazka! Upewnij się, że podałeś poprawny adres!".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync(embed: "Nie wykryto obrazka! Upewnij się, że podałeś poprawny adres!".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
@@ -3692,9 +3694,11 @@ namespace Sanakan.DiscordBot.Modules
         [Alias("cpf")]
         [Summary("wyświetla profil PocketWaifu")]
         [Remarks("Karna"), RequireWaifuCommandChannel]
-        public async Task ShowProfileAsync([Summary("użytkownik (opcjonalne)")]SocketGuildUser? socketGuildUser = null)
+        public async Task ShowProfileAsync(
+            [Summary("użytkownik (opcjonalne)")] IGuildUser? guildUser = null)
         {
-            var user = (socketGuildUser ?? Context.User) as SocketGuildUser;
+            var user = (guildUser ?? Context.User) as IGuildUser;
+
             if (user == null)
             {
                 return;

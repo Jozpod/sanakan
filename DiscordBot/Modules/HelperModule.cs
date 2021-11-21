@@ -87,13 +87,14 @@ namespace Sanakan.DiscordBot.Modules
                 if (guild != null)
                 {
                     var gConfig = await _guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
+
                     if (gConfig?.Prefix != null)
                     {
                         prefix = gConfig.Prefix;
                     }
 
                     isAdmin = guildUser.RoleIds.Any(id => id == gConfig?.AdminRoleId)
-                            || guildUser.GuildPermissions.Administrator;
+                        || guildUser.GuildPermissions.Administrator;
 
                     isDev = _config.CurrentValue.AllowedToDebug.Any(x => x == guildUser.Id);
                 }
@@ -104,7 +105,6 @@ namespace Sanakan.DiscordBot.Modules
             {
                 await ReplyAsync("", embed: ex.Message.ToEmbedMessage(EMType.Error).Build());
             }
-            
         }
 
         [Command("ktoto", RunMode = RunMode.Async)]
@@ -128,7 +128,7 @@ namespace Sanakan.DiscordBot.Modules
         [Command("ping", RunMode = RunMode.Async)]
         [Summary("sprawdza opóźnienie między botem a serwerem")]
         [Remarks(""), RequireCommandChannel]
-        public async Task GivePingAsync()
+        public async Task GetPingAsync()
         {
             int latency = _discordClientAccessor.Latency;
 
@@ -150,7 +150,7 @@ namespace Sanakan.DiscordBot.Modules
         [Alias("serverinfo", "sinfo")]
         [Summary("wyświetla informacje o serwerze")]
         [Remarks(""), RequireCommandChannel]
-        public async Task GiveServerInfoAsync()
+        public async Task GetServerInfoAsync()
         {
             if (Context.Guild == null)
             {
@@ -236,7 +236,7 @@ namespace Sanakan.DiscordBot.Modules
 
             if ((_systemClock.UtcNow - replyMessage.CreatedAt.DateTime.ToLocalTime()) > _reportExpiry)
             {
-                await ReplyAsync("", embed: "Można raportować tylko wiadomości, które nie są starsze od 3h."
+                await ReplyAsync(embed: "Można raportować tylko wiadomości, które nie są starsze od 3h."
                     .ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
@@ -245,7 +245,7 @@ namespace Sanakan.DiscordBot.Modules
 
             if (replyMessage.Author.Id == Context.User.Id)
             {
-                var user = Context.User as SocketGuildUser;
+                var user = Context.User as IGuildUser;
                 if (user == null)
                 {
                     return;
@@ -257,13 +257,13 @@ namespace Sanakan.DiscordBot.Modules
 
                 if (muteRole == null)
                 {
-                    await ReplyAsync("", embed: "Rola wyciszająca nie jest ustawiona.".ToEmbedMessage(EMType.Bot).Build());
+                    await ReplyAsync(embed: "Rola wyciszająca nie jest ustawiona.".ToEmbedMessage(EMType.Bot).Build());
                     return;
                 }
 
-                if (user.Roles.Contains(muteRole))
+                if (user.RoleIds.Contains(muteRole.Id))
                 {
-                    await ReplyAsync("", embed: $"{user.Mention} już jest wyciszony.".ToEmbedMessage(EMType.Error).Build());
+                    await ReplyAsync(embed: $"{user.Mention} już jest wyciszony.".ToEmbedMessage(EMType.Error).Build());
                     return;
                 }
 

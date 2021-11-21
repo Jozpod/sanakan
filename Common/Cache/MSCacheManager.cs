@@ -1,6 +1,9 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
+using Sanakan.Common.Cache;
 using Sanakan.Common.Configuration;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 
 namespace Sanakan.Common
 {
@@ -9,6 +12,8 @@ namespace Sanakan.Common
         private readonly IMemoryCache _cache;
         private readonly MemoryCacheOptions _options;
         private readonly MemoryCacheEntryOptions _cacheEntryOptions;
+        private readonly IDictionary<string, ISet<string>> _cacheKeys;
+        private readonly object _syncRoot = new object();
 
         public MSCacheManager(IOptions<MSCacheManagerOptions> options)
         {
@@ -19,29 +24,60 @@ namespace Sanakan.Common
                 SlidingExpiration = options.Value.SlidingExpiration,
                 AbsoluteExpirationRelativeToNow = options.Value.AbsoluteExpirationRelativeToNow,
             };
+            _cacheKeys = new ConcurrentDictionary<string, ISet<string>>();
         }
 
-        public void Add<T>(string key, T entity)
+        public void Add<T>(string key, T entity, string? parentKey = null)
         {
-            _cache.Set(key, entity);
+            lock (_syncRoot)
+            {
+                if (parentKey != null)
+                {
+                    if (!_cacheKeys.TryGetValue(parentKey, out var subKeys))
+                    {
+                        subKeys = new HashSet<string>();
+                        _cacheKeys[parentKey] = subKeys;
+                    }
+
+                    subKeys.Add(key);
+                }
+
+                _cache.Set(key, entity);
+            }
         }
 
         public void Add<T>(string key, T entity, MemoryCacheEntryOptions memoryCacheEntryOptions)
         {
-            _cache.Set(key, entity, memoryCacheEntryOptions);
-        }
-
-        public void ExpireTag(params string[] tags)
-        {
-            foreach (var tag in tags)
+            lock (_syncRoot)
             {
-                _cache.Remove(tag);
+                _cache.Set(key, entity, memoryCacheEntryOptions);
             }
         }
 
-        public T? Get<T>(string key)
+        public void ExpireTag(params string[] cacheKeys)
         {
-            var item = _cache.Get<T>(key);
+            lock (_syncRoot)
+            {
+                foreach (var cacheKey in cacheKeys)
+                {
+                    if (_cacheKeys.TryGetValue(cacheKey, out var subKeys))
+                    {
+                        foreach (var subKey in subKeys)
+                        {
+                            _cache.Remove(subKey);
+                        }
+
+                        subKeys.Clear();
+                    }
+
+                    _cache.Remove(cacheKey);
+                }
+            }
+        }
+
+        public MemoryCacheEntry<T>? Get<T>(string key)
+        {
+            var item = _cache.Get<MemoryCacheEntry<T>>(key);
             return item;
         }
     }

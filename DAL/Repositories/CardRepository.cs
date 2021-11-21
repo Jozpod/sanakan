@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Sanakan.Common;
+using Sanakan.Common.Cache;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Repositories.Abstractions;
 using System;
@@ -21,6 +21,7 @@ namespace Sanakan.DAL.Repositories
             _dbContext = dbContext;
             _cacheManager = cacheManager;
         }
+
         public async Task<Card> GetCardAsync(ulong wid)
         {
             var result = await _dbContext

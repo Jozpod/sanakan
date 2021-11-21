@@ -9,6 +9,7 @@ using Sanakan.Common.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
 using Sanakan.Game.Services.Abstractions;
 using Sanakan.DiscordBot.Session;
+using Sanakan.Common.Cache;
 
 namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
 {

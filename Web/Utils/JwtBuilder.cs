@@ -7,27 +7,29 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Sanakan.Api.Models;
 using Sanakan.Common;
-using Sanakan.Web.Configuration;
+using Sanakan.Common.Configuration;
 
 namespace Sanakan.Api
 {
-    public class JwtBuilder : IJwtBuilder
+    internal class JwtBuilder : IJwtBuilder
     {
         private readonly Encoding _encoding;
-        private readonly IOptionsMonitor<JwtConfig> _options;
+        private readonly IOptionsMonitor<JwtConfiguration> _options;
         private readonly ISystemClock _systemClock;
         private readonly SigningCredentials _signingCredentials;
         private readonly SecurityTokenHandler _securityTokenHandler;
 
+        public static SecurityKey ToSecurityKey(string key) => new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
+
         public JwtBuilder(
-            IOptionsMonitor<JwtConfig> options,
+            IOptionsMonitor<JwtConfiguration> options,
             Encoding encoding,
             ISystemClock systemClock)
         {
             _options = options;
             _encoding = encoding;
             _systemClock = systemClock;
-            var securityKey = new SymmetricSecurityKey(_encoding.GetBytes(_options.CurrentValue.Key));
+            var securityKey = new SymmetricSecurityKey(_encoding.GetBytes(_options.CurrentValue.IssuerSigningKey));
             _signingCredentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
             _securityTokenHandler = new JwtSecurityTokenHandler();
         }

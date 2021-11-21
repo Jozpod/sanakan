@@ -1,6 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.Common;
+using Sanakan.Common.Cache;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.Game.Services.Abstractions;

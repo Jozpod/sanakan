@@ -24,6 +24,7 @@ namespace Sanakan.Preconditions
             var guildConfigRepository = services.GetRequiredService<IGuildConfigRepository>();
             var userRepository = services.GetRequiredService<IUserRepository>();
             var user = context.User as IGuildUser;
+            var guild = context.Guild;
 
             if (user == null)
             {
@@ -35,11 +36,11 @@ namespace Sanakan.Preconditions
                 return PreconditionResult.FromSuccess();
             }
 
-            var gConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(context.Guild.Id);
+            var gConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
 
             if (gConfig != null)
             {
-                var role = context.Guild.GetRole(gConfig.AdminRoleId.Value);
+                var role = guild.GetRole(gConfig.AdminRoleId.Value);
                 if (role != null)
                 {
                     if (user.RoleIds.Any(id => id == role.Id))

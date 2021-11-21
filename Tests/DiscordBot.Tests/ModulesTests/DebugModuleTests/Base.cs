@@ -9,6 +9,7 @@ using Sanakan.Common;
 using Sanakan.Common.Configuration;
 using Sanakan.Game.Services.Abstractions;
 using Sanakan.DiscordBot;
+using Sanakan.Common.Cache;
 
 namespace DiscordBot.ModulesTests.DebugModuleTests
 {

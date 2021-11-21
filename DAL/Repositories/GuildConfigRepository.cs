@@ -24,11 +24,11 @@ namespace Sanakan.DAL.Repositories
         {
             var key = CacheKeys.GuildConfig(guildId);
 
-            var cached = _cacheManager.Get<GuildOptions>(key);
+            var cacheResult = _cacheManager.Get<GuildOptions>(key);
 
-            if (cached != null)
+            if (cacheResult != null)
             {
-                return cached;
+                return cacheResult.Value;
             }
 
             var result = await _dbContext

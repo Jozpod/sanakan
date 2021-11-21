@@ -161,7 +161,7 @@
     </Rules>
 	
     <Rules AnalyzerId="StyleCop.Analyzers" RuleNamespace="StyleCop.Analyzers.DocumentationRules">
-        <Rule Id="SA1600"  Action="Warning" />          <!-- Elements should be documented -->
+        <Rule Id="SA1600"  Action="None" />          <!-- Elements should be documented -->
         <Rule Id="SA1601"  Action="Warning" />          <!-- Partial elements should be documented -->
         <Rule Id="SA1602"  Action="Warning" />          <!-- Enumeration items should be documented -->
         <Rule Id="SA1603"  Action="None" />             <!-- Documentation should contain valid XML -->
@@ -176,15 +176,15 @@
         <Rule Id="SA1612"  Action="Warning" />          <!-- Element parameter documentation should match element parameters -->
         <Rule Id="SA1613"  Action="Warning" />          <!-- Element parameter documentation should declare parameter name -->
         <Rule Id="SA1614"  Action="Warning" />          <!-- Element parameter documentation should have text -->
-        <Rule Id="SA1615"  Action="Warning" />          <!-- Element return value should be documented -->
-        <Rule Id="SA1616"  Action="Warning" />          <!-- Element return value documentation should have text -->
+        <Rule Id="SA1615"  Action="None" />          <!-- Element return value should be documented -->
+        <Rule Id="SA1616"  Action="None" />          <!-- Element return value documentation should have text -->
         <Rule Id="SA1617"  Action="Warning" />          <!-- Void return value should not be documented -->
         <Rule Id="SA1618"  Action="Warning" />          <!-- Generic type parameters should be documented -->
         <Rule Id="SA1619"  Action="Warning" />          <!-- Generic type parameters should be documented partial class -->
         <Rule Id="SA1620"  Action="Warning" />          <!-- Generic type parameter documentation should match type parameters -->
         <Rule Id="SA1621"  Action="Warning" />          <!-- Generic type parameter documentation should declare parameter name -->
         <Rule Id="SA1622"  Action="Warning" />          <!-- Generic type parameter documentation should have text -->
-        <Rule Id="SA1623"  Action="Warning" />          <!-- Property summary documentation should match accessors -->
+        <Rule Id="SA1623"  Action="None" />          <!-- Property summary documentation should match accessors -->
         <Rule Id="SA1624"  Action="Warning" />          <!-- Property summary documentation should omit accessor with restricted access -->
         <Rule Id="SA1625"  Action="Warning" />          <!-- Element documentation should not be copied and pasted -->
         <Rule Id="SA1626"  Action="Warning" />          <!-- Single-line comments should not use documentation style slashes -->

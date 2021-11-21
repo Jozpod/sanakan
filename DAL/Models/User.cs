@@ -66,8 +66,8 @@ namespace Sanakan.DAL.Models
                 {
                     Id = discordUserId,
                     ExperienceCount = 0,
-                    Level = ExpContainerLevel.Disabled
-                }
+                    Level = ExpContainerLevel.Disabled,
+                },
             };
             Stats = new UserStats
             {

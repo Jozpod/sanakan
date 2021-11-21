@@ -10,8 +10,8 @@ namespace Sanakan.DiscordBot.Services
 {
     internal class LandManager : ILandManager
     {
-        public MyLand? DetermineLand(IEnumerable<MyLand> lands, IEnumerable<IRole> roles, string? name)
-        {            
+        public MyLand? DetermineLand(IEnumerable<MyLand> lands, IEnumerable<ulong> roleIds, string? name)
+        {
             if (name != null)
             {
                 var land = lands.FirstOrDefault(x => x.Name == name);
@@ -21,7 +21,7 @@ namespace Sanakan.DiscordBot.Services
                     return null;
                 }
 
-                if(roles.Any(x => x.Id == land.ManagerId))
+                if(roleIds.Any(id => id == land.ManagerId))
                 {
                     return land;
                 }
@@ -29,14 +29,13 @@ namespace Sanakan.DiscordBot.Services
                 return null;
             }
 
-            var all = lands.Where(x => roles.Any(c => c.Id == x.ManagerId));
-            
+            var all = lands.Where(x => roleIds.Any(id => id == x.ManagerId));
+
             if (!all.Any())
             {
                 return null;
             }
-            
-            
+
             return all.First();
         }
 

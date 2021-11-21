@@ -21,16 +21,16 @@ namespace Sanakan.TaskQueue.MessageHandlers
 
         public async Task HandleAsync(GiveCardsMessage message)
         {
-            var botUser = await _userRepository.GetUserOrCreateAsync(message.DiscordUserId);
+            var databaseUser = await _userRepository.GetUserOrCreateAsync(message.DiscordUserId);
 
             foreach (var pack in message.BoosterPacks)
             {
-                botUser.GameDeck.BoosterPacks.Add(pack);
+                databaseUser.GameDeck.BoosterPacks.Add(pack);
             }
 
             await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(CacheKeys.User(botUser.Id), CacheKeys.Users);
+            _cacheManager.ExpireTag(CacheKeys.User(databaseUser.Id), CacheKeys.Users);
         }
     }
 }

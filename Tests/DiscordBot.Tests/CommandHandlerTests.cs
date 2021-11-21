@@ -7,6 +7,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.Common;
+using Sanakan.Common.Cache;
 using Sanakan.Common.Configuration;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot.Modules;

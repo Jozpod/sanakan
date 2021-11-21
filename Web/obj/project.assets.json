@@ -3007,6 +3007,7 @@
           "Microsoft.Extensions.Hosting.Abstractions": "5.0.0",
           "Microsoft.Extensions.Options.ConfigurationExtensions": "5.0.0",
           "Newtonsoft.Json": "13.0.1",
+          "System.Collections.Concurrent": "4.3.0",
           "System.Text.Json": "5.0.2"
         },
         "compile": {
@@ -3014,6 +3015,27 @@
         },
         "runtime": {
           "bin/placeholder/Sanakan.Common.dll": {}
+        }
+      },
+      "Sanakan.Daemon/0.0.1": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v5.0",
+        "dependencies": {
+          "Discord.Net": "2.4.0",
+          "Microsoft.Extensions.DependencyInjection": "5.0.2",
+          "Sanakan.Common": "0.0.1",
+          "Sanakan.DAL": "0.0.1",
+          "Sanakan.DiscordBot": "0.0.1",
+          "Sanakan.DiscordBot.Abstractions": "0.0.1",
+          "Sanakan.DiscordBot.Supervisor": "0.0.1",
+          "Sanakan.Game": "0.0.1",
+          "Sanakan.TaskQueue": "0.0.1"
+        },
+        "compile": {
+          "bin/placeholder/Sanakan.Daemon.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Sanakan.Daemon.dll": {}
         }
       },
       "Sanakan.DAL/0.0.1": {
@@ -9630,6 +9652,11 @@
       "path": "../Common/Common.csproj",
       "msbuildProject": "../Common/Common.csproj"
     },
+    "Sanakan.Daemon/0.0.1": {
+      "type": "project",
+      "path": "../Daemon/Daemon.csproj",
+      "msbuildProject": "../Daemon/Daemon.csproj"
+    },
     "Sanakan.DAL/0.0.1": {
       "type": "project",
       "path": "../DAL/DAL.csproj",
@@ -9689,6 +9716,7 @@
       "NReco.Logging.File >= 1.1.2",
       "Newtonsoft.Json >= 13.0.1",
       "Sanakan.Common >= 0.0.1",
+      "Sanakan.Daemon >= 0.0.1",
       "Sanakan.DiscordBot >= 0.0.1",
       "Sanakan.DiscordBot.Supervisor >= 0.0.1",
       "Sanakan.Game >= 0.0.1",
@@ -9732,6 +9760,9 @@
           "projectReferences": {
             "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\Common\\Common.csproj": {
               "projectPath": "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\Common\\Common.csproj"
+            },
+            "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\Daemon\\Daemon.csproj": {
+              "projectPath": "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\Daemon\\Daemon.csproj"
             },
             "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\DiscordBot.Supervisor\\DiscordBot.Supervisor.csproj": {
               "projectPath": "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\DiscordBot.Supervisor\\DiscordBot.Supervisor.csproj"

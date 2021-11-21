@@ -18,7 +18,7 @@ namespace Sanakan.Api.Models
             IsActive = card.Active;
             IsInCage = card.InCage;
             IsTradable = card.IsTradable;
-            IsUnique = card.Unique;
+            IsUnique = card.IsUnique;
             IsUltimate = card.FromFigure;
             ExpCnt = card.ExperienceCount;
             Affection = card.GetAffectionString();

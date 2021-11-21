@@ -85,7 +85,7 @@ namespace Sanakan.Game.Services
                     return list.OrderByDescending(x => x.GetDefenceWithBonus()).ToList();
 
                 case HaremType.Unique:
-                    return list.Where(x => x.Unique).ToList();
+                    return list.Where(x => x.IsUnique).ToList();
 
                 case HaremType.Cage:
                     return list.Where(x => x.InCage).ToList();
@@ -424,6 +424,7 @@ namespace Sanakan.Game.Services
             string specialCmd)
         {
             var itemsToBuy = GetItemsWithCostForShop(type);
+            var mention = discordUser.Mention;
             if (selectedItem <= 0)
             {
                 return GetShopView(itemsToBuy, GetShopName(type), GetShopCurrencyName(type));
@@ -431,7 +432,7 @@ namespace Sanakan.Game.Services
 
             if (selectedItem > itemsToBuy.Length)
             {
-                return $"{discordUser.Mention} nie odnaleznino takiego przedmiotu do zakupu.".ToEmbedMessage(EMType.Error).Build();
+                return $"{mention} nie odnaleznino takiego przedmiotu do zakupu.".ToEmbedMessage(EMType.Error).Build();
             }
 
             var thisItem = itemsToBuy[--selectedItem];
@@ -448,7 +449,7 @@ namespace Sanakan.Game.Services
             int itemCount = 0;
             if (!int.TryParse(specialCmd, out itemCount))
             {
-                return $"{discordUser.Mention} liczbę poproszę, a nie jakieś bohomazy.".ToEmbedMessage(EMType.Error).Build();
+                return $"{mention} liczbę poproszę, a nie jakieś bohomazy.".ToEmbedMessage(EMType.Error).Build();
             }
 
             ulong boosterPackTitleId = 0;
@@ -460,21 +461,21 @@ namespace Sanakan.Game.Services
                     {
                         itemCount = 0;
                     }
-                    
+
                     var animeMangaInfoResult = await _shindenClient.GetAnimeMangaInfoAsync((ulong)itemCount);
 
                     if (animeMangaInfoResult == null)
                     {
-                        return $"{discordUser.Mention} nie odnaleziono tytułu o podanym id.".ToEmbedMessage(EMType.Error).Build();
+                        return $"{mention} nie odnaleziono tytułu o podanym id.".ToEmbedMessage(EMType.Error).Build();
                     }
 
                     var animeMangaInfo = animeMangaInfoResult.Value.Title;
 
                     var charactersResult = await _shindenClient.GetCharactersAsync(animeMangaInfo.Description.DescriptionId);
-                    
+
                     if (charactersResult.Value == null)
                     {
-                        return $"{discordUser.Mention} nie odnaleziono postaci pod podanym tytułem.".ToEmbedMessage(EMType.Error).Build();
+                        return $"{mention} nie odnaleziono postaci pod podanym tytułem.".ToEmbedMessage(EMType.Error).Build();
                     }
 
                     var characters = charactersResult.Value;
@@ -486,7 +487,7 @@ namespace Sanakan.Game.Services
 
                     if (belowEightCharacters)
                     {
-                        return $"{discordUser.Mention} nie można kupić pakietu z tytułu z mniejszą liczbą postaci jak 8.".ToEmbedMessage(EMType.Error).Build();
+                        return $"{mention} nie można kupić pakietu z tytułu z mniejszą liczbą postaci jak 8.".ToEmbedMessage(EMType.Error).Build();
                     }
 
                     var title = HttpUtility.HtmlDecode(animeMangaInfo.Title);
@@ -501,13 +502,19 @@ namespace Sanakan.Game.Services
                 case ItemType.PreAssembledMegumin:
                     if (itemCount > 1)
                     {
-                        return $"{discordUser.Mention} można kupić tylko jeden taki przedmiot.".ToEmbedMessage(EMType.Error).Build();
+                        return $"{mention} można kupić tylko jeden taki przedmiot.".ToEmbedMessage(EMType.Error).Build();
                     }
-                    if (itemCount < 1) itemCount = 1;
+                    if (itemCount < 1)
+                    {
+                        itemCount = 1;
+                    }
                     break;
 
                 default:
-                    if (itemCount < 1) itemCount = 1;
+                    if (itemCount < 1)
+                    {
+                        itemCount = 1;
+                    }
                     break;
             }
 
@@ -522,7 +529,7 @@ namespace Sanakan.Game.Services
 
             if (!CheckIfUserCanBuy(type, databaseUser, realCost))
             {
-                return $"{discordUser.Mention} nie posiadasz wystarczającej liczby {GetShopCurrencyName(type)}!"
+                return $"{mention} nie posiadasz wystarczającej liczby {GetShopCurrencyName(type)}!"
                     .ToEmbedMessage(EMType.Error).Build();
             }
 
@@ -549,7 +556,7 @@ namespace Sanakan.Game.Services
             {
                 if (databaseUser.GameDeck.Figures.Any(x => x.PAS == thisItem.Item.Type.ToPASType()))
                 {
-                    return $"{discordUser.Mention} masz już taką figurkę.".ToEmbedMessage(EMType.Error).Build();
+                    return $"{mention} masz już taką figurkę.".ToEmbedMessage(EMType.Error).Build();
                 }
 
                 var figure = thisItem.Item.Type.ToPAFigure(_systemClock.UtcNow);
@@ -568,7 +575,10 @@ namespace Sanakan.Game.Services
                     inUserItem = thisItem.Item.Type.ToItem(itemCount, thisItem.Item.Quality);
                     databaseUser.GameDeck.Items.Add(inUserItem);
                 }
-                else inUserItem.Count += itemCount;
+                else
+                {
+                    inUserItem.Count += itemCount;
+                }
 
                 IncreaseMoneySpentOnCookies(type, databaseUser, realCost);
             }
@@ -579,7 +589,7 @@ namespace Sanakan.Game.Services
 
             _cacheManager.ExpireTag(CacheKeys.User(databaseUser.Id), CacheKeys.Users);
 
-            return $"{discordUser.Mention} zakupił: _{thisItem.Item.Name}{boosterPackTitleName}{count}_.".ToEmbedMessage(EMType.Success).Build();
+            return $"{mention} zakupił: _{thisItem.Item.Name}{boosterPackTitleName}{count}_.".ToEmbedMessage(EMType.Success).Build();
         }
 
         public double GetExpToUpgrade(Card toUp, Card toSac)
@@ -858,7 +868,9 @@ namespace Sanakan.Game.Services
             get
             {
                 if (EventEnabled && EventIds.Count > 0)
+                {
                     return EventIds;
+                }
 
                 return _ids;
             }
@@ -938,7 +950,7 @@ namespace Sanakan.Game.Services
                     list.Add(new EmbedBuilder()
                     {
                         Color = EMType.Info.Color(),
-                        Description = contentString.ElipseTrimToLength(2000)
+                        Description = contentString.ElipseTrimToLength(2000),
                     }.Build());
 
                     contentString = tempContentString;
@@ -949,7 +961,7 @@ namespace Sanakan.Game.Services
             list.Add(new EmbedBuilder()
             {
                 Color = EMType.Info.Color(),
-                Description = contentString.ElipseTrimToLength(2000)
+                Description = contentString.ElipseTrimToLength(2000),
             }.Build());
 
             return list;
@@ -963,7 +975,7 @@ namespace Sanakan.Game.Services
             var list = new List<Embed>();
             var characters = cards.GroupBy(x => x.CharacterId);
 
-            string contentString = "";
+            var contentString = "";
             foreach (var cardsG in characters)
             {
                 string tempContentString = $"\n**{cardsG.First().GetNameWithUrl()}**\n";
@@ -1047,10 +1059,10 @@ namespace Sanakan.Game.Services
         {
             var cardsFromPack = new List<Card>();
 
-            for (int i = 0; i < pack.CardCount; i++)
+            for (var index = 0; index < pack.CardCount; index++)
             {
                 CharacterInfo? characterInfo = null;
-                if (pack.Characters.Count > 0)
+                if (pack.Characters.Any())
                 {
                     var id = pack.Characters.First();
                     if (pack.Characters.Count > 1)
@@ -1103,14 +1115,13 @@ namespace Sanakan.Game.Services
                         characterInfo,
                         rarityList);
 
-                    if (pack.MinRarity != Rarity.E && i == pack.CardCount - 1)
+                    if (pack.MinRarity != Rarity.E && index == pack.CardCount - 1)
                     {
                         newCard = GenerateNewCard(
                             discordUserId,
                             characterInfo,
                             pack.MinRarity);
                     }
-                        
 
                     newCard.IsTradable = pack.IsCardFromPackTradable;
                     newCard.Source = pack.CardSourceFromPack;
@@ -1316,7 +1327,7 @@ namespace Sanakan.Game.Services
             }
 
             var imgUrls = $"[_obrazek_]({imageUrl})\n[_możesz zmienić obrazek tutaj_]({card.GetCharacterUrl()}/edit_crossroad)";
-            var ownerString = ((owner as SocketGuildUser)?.Nickname ?? owner?.Username) ?? "????";
+            var ownerString = ((owner as IGuildUser)?.Nickname ?? owner?.Username) ?? "????";
 
             return new EmbedBuilder
             {
@@ -1614,10 +1625,12 @@ namespace Sanakan.Game.Services
                     card.Dere = _randomNumberGenerator.GetOneRandomFrom(DereExtensions.ListOfDeres);
                     reward += $"{card.Dere}\n";
                 }
+
                 if (@event == EventType.LoseCard)
                 {
                     user.StoreExpIfPossible(totalExp);
                 }
+
                 if (@event == EventType.Fight && !allowItems)
                 {
                     totalExp /= 6;
@@ -1660,10 +1673,15 @@ namespace Sanakan.Game.Services
                         thisItem = newItem;
                         user.GameDeck.Items.Add(thisItem);
                     }
-                    else ++thisItem.Count;
+                    else
+                    {
+                        ++thisItem.Count;
+                    }
 
                     if (!items.ContainsKey(thisItem.Name))
+                    {
                         items.Add(thisItem.Name, 0);
+                    }
 
                     ++items[thisItem.Name];
                 }

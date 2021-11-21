@@ -20,7 +20,7 @@ namespace Sanakan.Extensions
             var metaData = new[]
             {
                 (card.Active, "☑️"),
-                (card.Unique, "💠"),
+                (card.IsUnique, "💠"),
                 (card.FromFigure, "🎖️"),
                 (!card.IsTradable, "⛔"),
                 (card.IsBroken, "💔"),

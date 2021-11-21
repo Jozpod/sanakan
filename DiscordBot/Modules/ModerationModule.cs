@@ -105,7 +105,7 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("usuwa wiadomości danego użytkownika")]
         [Remarks("karna"), RequireAdminRoleOrChannelPermission(ChannelPermission.ManageMessages)]
         public async Task DeleteUserMesegesAsync(
-            [Summary("użytkownik")]SocketGuildUser user)
+            [Summary("użytkownik")]IGuildUser user)
         {
             await Context.Message.DeleteAsync();
 
@@ -135,7 +135,7 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("banuje użytkownika")]
         [Remarks("karna"), RequireAdminRole, Priority(1)]
         public async Task BanUserAsync(
-            [Summary("użytkownik")]SocketGuildUser userToBan,
+            [Summary("użytkownik")] IGuildUser userToBan,
             [Summary("czas trwania w godzinach")]string durationStr,
             [Summary("powód (opcjonalne)")][Remainder]string reason = "nie podano")
         {
@@ -164,7 +164,7 @@ namespace Sanakan.DiscordBot.Modules
 
             var notifChannel = await Context.Guild.GetChannelAsync(config.NotificationChannelId);
 
-            var user = Context.User as SocketGuildUser;
+            var user = Context.User as IGuildUser;
             var info = await _moderatorService.BanUserAysnc(userToBan, duration, reason);
             var byWho = $"{user.Nickname ?? user.Username}";
             await _moderatorService.NotifyAboutPenaltyAsync(
@@ -181,7 +181,7 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("wycisza użytkownika")]
         [Remarks("karna"), RequireAdminRoleOrChannelPermission(ChannelPermission.ManageRoles), Priority(1)]
         public async Task MuteUserAsync(
-            [Summary("użytkownik")]SocketGuildUser user,
+            [Summary("użytkownik")]IGuildUser user,
             [Summary("czas trwania w d.hh:mm:ss | hh:mm:ss")]string durationStr,
             [Summary("powód (opcjonalne)")][Remainder]string reason = "nie podano")
         {
@@ -216,13 +216,13 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            if (user.Roles.Contains(muteRole))
+            if (user.RoleIds.Contains(muteRole.Id))
             {
                 await ReplyAsync("", embed: $"{user.Mention} już jest wyciszony.".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
-            var usr = Context.User as SocketGuildUser;
+            var usr = Context.User as IGuildUser;
             var info = await _moderatorService.MuteUserAsync(
                 user,
                 muteRole as SocketRole,
@@ -240,7 +240,7 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("wycisza moderatora")]
         [Remarks("karna"), RequireAdminRole, Priority(1)]
         public async Task MuteModUserAsync(
-            [Summary("użytkownik")]SocketGuildUser user,
+            [Summary("użytkownik")] IGuildUser user,
             [Summary("czas trwania hh:mm:ss")]string durationStr,
             [Summary("powód (opcjonalne)")][Remainder]string reason = "nie podano")
         {
@@ -283,18 +283,18 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            if (user.Roles.Contains(muteRole))
+            if (user.RoleIds.Contains(muteRole.Id))
             {
                 await ReplyAsync("", embed: $"{user.Mention} już jest wyciszony.".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
-            var usr = Context.User as SocketGuildUser;
+            var usr = Context.User as IGuildUser;
             var info = await _moderatorService.MuteUserAsync(
                 user,
-                muteRole as SocketRole,
-                muteModRole as SocketRole,
-                userRole as SocketRole,
+                muteRole,
+                muteModRole,
+                userRole,
                 duration,
                 reason,
                 config.ModeratorRoles);
@@ -307,7 +307,8 @@ namespace Sanakan.DiscordBot.Modules
         [Command("unmute")]
         [Summary("zdejmuje wyciszenie z użytkownika")]
         [Remarks("karna"), RequireAdminRoleOrChannelPermission(ChannelPermission.ManageRoles), Priority(1)]
-        public async Task UnmuteUserAsync([Summary("użytkownik")]SocketGuildUser user)
+        public async Task UnmuteUserAsync(
+            [Summary("użytkownik")]IGuildUser user)
         {
             var config = await _guildConfigRepository.GetCachedGuildFullConfigAsync(Context.Guild.Id);
             if (config == null)
@@ -324,7 +325,7 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            if (!user.Roles.Contains(muteRole))
+            if (!user.RoleIds.Contains(muteRole.Id))
             {
                 await ReplyAsync("", embed: $"{user.Mention} nie jest wyciszony.".ToEmbedMessage(EMType.Error).Build());
                 return;
@@ -944,21 +945,22 @@ namespace Sanakan.DiscordBot.Modules
         {
             var guildId = Context.Guild.Id;
             var channelName = Context.Channel.Name;
-            var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(Context.Guild.Id);
+            var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(guildId);
+            var channelId = Context.Channel.Id;
 
-            if (config.RaportChannelId == Context.Channel.Id)
+            if (config.RaportChannelId == channelId)
             {
                 await ReplyAsync("", embed: $"Kanał `{channelName}` już jest ustawiony jako kanał raportów."
                     .ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
 
-            config.RaportChannelId = Context.Channel.Id;
+            config.RaportChannelId = channelId;
             await _guildConfigRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(CacheKeys.GuildConfig(guildId));
 
-            await ReplyAsync("", embed: $"Ustawiono `{channelName}` jako kanał raportów."
+            await ReplyAsync(embed: $"Ustawiono `{channelName}` jako kanał raportów."
                 .ToEmbedMessage(EMType.Success).Build());
         }
 
@@ -969,20 +971,21 @@ namespace Sanakan.DiscordBot.Modules
         {
             var guildId = Context.Guild.Id;
             var channelName = Context.Channel.Name;
-            var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(Context.Guild.Id);
+            var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(guildId);
+            var channelId = Context.Channel.Id;
 
-            if (config.QuizChannelId == Context.Channel.Id)
+            if (config.QuizChannelId == channelId)
             {
-                await ReplyAsync("", embed: $"Kanał `{channelName}` już jest ustawiony jako kanał quizów.".ToEmbedMessage(EMType.Bot).Build());
+                await ReplyAsync(embed: $"Kanał `{channelName}` już jest ustawiony jako kanał quizów.".ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
 
-            config.QuizChannelId = Context.Channel.Id;
+            config.QuizChannelId = channelId;
             await _guildConfigRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(CacheKeys.GuildConfig(guildId));
 
-            await ReplyAsync("", embed: $"Ustawiono `{channelName}` jako kanał quizów.".ToEmbedMessage(EMType.Success).Build());
+            await ReplyAsync(embed: $"Ustawiono `{channelName}` jako kanał quizów.".ToEmbedMessage(EMType.Success).Build());
         }
 
         [Command("todoch")]
@@ -1232,7 +1235,7 @@ namespace Sanakan.DiscordBot.Modules
 
             var chan = config.WaifuConfig
                 .FightChannels
-                .FirstOrDefault(x => x.Channel == Context.Channel.Id);
+                .FirstOrDefault(x => x.ChannelId == Context.Channel.Id);
 
             if (chan != null)
             {
@@ -1247,7 +1250,7 @@ namespace Sanakan.DiscordBot.Modules
 
             chan = new WaifuFightChannel
             {
-                Channel = Context.Channel.Id
+                ChannelId = Context.Channel.Id
             };
             config.WaifuConfig.FightChannels.Add(chan);
             await _guildConfigRepository.SaveChangesAsync();
@@ -1504,7 +1507,7 @@ namespace Sanakan.DiscordBot.Modules
             [Summary("id kanału na serwerze")]ulong channelId)
         {
             var channel2Send = await Context.Guild.GetChannelAsync(channelId) as IMessageChannel;
-            var invokingUser = Context.User as SocketGuildUser;
+            var invokingUser = Context.User as IGuildUser;
 
             if (channel2Send == null)
             {
@@ -1755,7 +1758,7 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            var invokingUser = Context.User as SocketGuildUser;
+            var invokingUser = Context.User as IGuildUser;
             var byWho = invokingUser.Nickname ?? invokingUser.Username;
             var user = await Context.Guild.GetUserAsync(raport.UserId);
             var notifyChannel = await guild.GetChannelAsync(config.NotificationChannelId) as IMessageChannel;
@@ -1879,10 +1882,10 @@ namespace Sanakan.DiscordBot.Modules
             await _userRepository.SaveChangesAsync();
 
             var info = await _moderatorService.MuteUserAsync(
-                user as SocketGuildUser,
-                muteRole as SocketRole,
+                user,
+                muteRole,
                 null,
-                userRole as SocketRole,
+                userRole,
                 duration,
                 reason);
 

@@ -44,7 +44,6 @@ namespace Sanakan.DAL.Builder
             return services;
         }
 
-        
         public static IServiceCollection AddDatabaseFacade(this IServiceCollection services)
         {
             services.AddSingleton<IDatabaseFacade, DatabaseFacade>();

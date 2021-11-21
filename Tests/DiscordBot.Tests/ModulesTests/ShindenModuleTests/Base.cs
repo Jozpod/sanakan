@@ -5,6 +5,7 @@ using Sanakan.DiscordBot.Modules;
 using Sanakan.ShindenApi;
 using Sanakan.Common;
 using Sanakan.DiscordBot.Session;
+using Sanakan.Common.Cache;
 
 namespace DiscordBot.ModulesTests.ShindenModuleTests
 {

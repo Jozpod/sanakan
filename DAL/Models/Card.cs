@@ -54,7 +54,7 @@ namespace Sanakan.DAL.Models
             MarketValue = 1;
             Rarity = rarity;
             EnhanceCount = 0;
-            Unique = false;
+            IsUnique = false;
             InCage = false;
             RestartCount = 0;
             Active = false;
@@ -62,28 +62,44 @@ namespace Sanakan.DAL.Models
             ImageUrl = null;
             Health = 0;
             ExperienceCount = 0;
-    }
+        }
 
         public ulong Id { get; set; }
+
         public bool Active { get; set; }
+
         public bool InCage { get; set; }
+
         public bool IsTradable { get; set; }
+
         public double ExperienceCount { get; set; }
+
         public double Affection { get; set; }
+
         public int UpgradesCount { get; set; }
+
         public int RestartCount { get; set; }
+
         public Rarity Rarity { get; set; }
+
         public Rarity RarityOnStart { get; set; }
+
         public Dere Dere { get; set; }
+
         public int Defence { get; set; }
+
         public int Attack { get; set; }
+
         public int Health { get; set; }
 
         [StringLength(50)]
         [Required]
         public string Name { get; set; } = string.Empty;
+
         public ulong CharacterId { get; set; }
+
         public DateTime CreatedOn { get; set; }
+
         public CardSource Source { get; set; }
 
         [StringLength(50)]
@@ -104,27 +120,40 @@ namespace Sanakan.DAL.Models
         /// The Discord user identifier.
         /// </summary>
         public ulong? LastOwnerId { get; set; }
-        public bool Unique { get; set; }
+
+        public bool IsUnique { get; set; }
+
         public StarStyle StarStyle { get; set; }
 
         /// <summary>
         /// The URL to border image.
         /// </summary>
         public string? CustomBorderUrl { get; set; }
+
         public double MarketValue { get; set; }
+
         public CardCurse Curse { get; set; }
+
         public double CardPower { get; set; }
 
         public int EnhanceCount { get; set; }
+
         public bool FromFigure { get; set; }
+
         public Quality Quality { get; set; }
+
         public int AttackBonus { get; set; }
+
         public int HealthBonus { get; set; }
+
         public int DefenceBonus { get; set; }
+
         public Quality QualityOnStart { get; set; }
+
         public PreAssembledFigure PAS { get; set; }
 
         public ExpeditionCardType Expedition { get; set; }
+
         public DateTime ExpeditionDate { get; set; }
 
         public virtual ICollection<CardTag> TagList { get; set; }
@@ -140,6 +169,7 @@ namespace Sanakan.DAL.Models
         public virtual GameDeck GameDeck { get; set; }
 
         public bool CanGiveRing() => Affection >= 5;
+
         public bool CanGiveBloodOrUpgradeToSSS() => Affection >= 50;
 
         public bool IsBroken => Affection <= -50;
@@ -218,6 +248,7 @@ namespace Sanakan.DAL.Models
         }
 
         public static bool IsKarmaNeutral(double karma) => karma > -10 && karma < 10;
+
         public TimeSpan CalculateMaxTimeOnExpedition(double karma, ExpeditionCardType expedition = ExpeditionCardType.None)
         {
             expedition = (expedition == ExpeditionCardType.None) ? Expedition : expedition;
@@ -269,7 +300,7 @@ namespace Sanakan.DAL.Models
             {
                 perMinute *= 2;
             }
-            
+
             param += affOffset + addOFK;
             var time = param / perMinute;
             
@@ -308,6 +339,7 @@ namespace Sanakan.DAL.Models
         }
 
         public bool CanFightOnPvEGMwK() => Affection > -80;
+
         public bool HasNoNegativeEffectAfterBloodUsage() => Affection >= 4;
 
         public bool HasTag(string tag)

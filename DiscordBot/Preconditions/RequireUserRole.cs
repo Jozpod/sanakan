@@ -19,20 +19,21 @@ namespace Sanakan.Preconditions
         {
             var guildConfigRepository = services.GetRequiredService<IGuildConfigRepository>();
             var user = context.User as IGuildUser;
-            
+            var guild = context.Guild;
+
             if (user == null)
             {
                 return PreconditionResult.FromError(Strings.CanExecuteOnlyOnServer);
             }
 
-            var gConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(context.Guild.Id);
+            var guildConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
             
-            if (gConfig == null)
+            if (guildConfig == null)
             {
                 return PreconditionResult.FromSuccess();
             }
 
-            var role = context.Guild.GetRole(gConfig.UserRoleId.Value);
+            var role = guild.GetRole(guildConfig.UserRoleId.Value);
             
             if (role == null)
             {

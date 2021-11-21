@@ -8,10 +8,8 @@ namespace Sanakan.DAL.Configuration
     public class GameConfiguration : 
         IEntityTypeConfiguration<SlotMachineConfig>,
         IEntityTypeConfiguration<TimeStatus>,
-        IEntityTypeConfiguration<GameDeck>,
         IEntityTypeConfiguration<ExperienceContainer>,
         IEntityTypeConfiguration<Figure>,
-        IEntityTypeConfiguration<Card>,
         IEntityTypeConfiguration<Item>,
         IEntityTypeConfiguration<WishlistObject>,
         IEntityTypeConfiguration<BoosterPack>,
@@ -21,17 +19,8 @@ namespace Sanakan.DAL.Configuration
         IEntityTypeConfiguration<BoosterPackCharacter>,
         IEntityTypeConfiguration<RarityExcluded>,
         IEntityTypeConfiguration<GuildOptions>,
-        IEntityTypeConfiguration<WaifuConfiguration>,
-        IEntityTypeConfiguration<Raport>
+        IEntityTypeConfiguration<WaifuConfiguration>
     {
-        public void Configure(EntityTypeBuilder<Raport> builder)
-        {
-            builder.HasKey(e => e.Id);
-
-            builder.HasOne(e => e.GuildOptions)
-                .WithMany(g => g.Raports);
-        }
-
         public void Configure(EntityTypeBuilder<SlotMachineConfig> builder)
         {
             builder.HasKey(e => e.Id);
@@ -48,19 +37,6 @@ namespace Sanakan.DAL.Configuration
 
             builder.HasOne(pr => pr.User)
                 .WithMany(pr => pr.TimeStatuses);
-        }
-
-        public void Configure(EntityTypeBuilder<GameDeck> builder)
-        {
-            builder.HasKey(e => e.Id);
-            builder.HasIndex(e => e.DeckPower);
-
-            builder.HasCheckConstraint("CK_GameDeck_BackgroundImageUrl", "BackgroundImageUrl RLIKE'^http'");
-            builder.HasCheckConstraint("CK_GameDeck_ForegroundColor", "ForegroundColor RLIKE'^#[0-9]'");
-            builder.HasCheckConstraint("CK_GameDeck_ForegroundImageUrl", "ForegroundImageUrl RLIKE'^http'");
-
-            builder.HasOne(e => e.User)
-                .WithOne(u => u.GameDeck);
         }
 
         public void Configure(EntityTypeBuilder<ExperienceContainer> builder)
@@ -89,11 +65,6 @@ namespace Sanakan.DAL.Configuration
 
             builder.Property(pr => pr.ExpeditionDate)
                .HasColumnType("datetime(4)");
-
-            builder.HasCheckConstraint("CK_Card_Title", "Title <> '' OR Title IS NULL");
-            builder.HasCheckConstraint("CK_Card_ImageUrl", "ImageUrl <> '' OR ImageUrl IS NULL");
-            builder.HasCheckConstraint("CK_Card_CustomImageUrl", "CustomImageUrl <> '' OR CustomImageUrl IS NULL");
-            builder.HasCheckConstraint("CK_Card_CustomBorderUrl", "CustomBorderUrl <> '' OR CustomBorderUrl IS NULL");
             
             builder
                 .HasOne(e => e.GameDeck)

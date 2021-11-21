@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Sanakan.Common;
 using Sanakan.DiscordBot.Services;
+using Sanakan.Common.Cache;
 
 namespace DiscordBot.ServicesTests.ModeratorServiceTests
 {

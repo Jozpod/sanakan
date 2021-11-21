@@ -94,6 +94,27 @@ namespace Sanakan.DAL
             if (_config.CurrentValue.Provider == DatabaseProvider.MySql)
             {
                 modelBuilder.HasCharSet("utf8mb4", DelegationModes.ApplyToDatabases);
+
+                {
+                    var builder = modelBuilder.Entity<Card>();
+                    builder.HasCheckConstraint("CK_Card_Title", "Title <> '' OR Title IS NULL");
+                    builder.HasCheckConstraint("CK_Card_ImageUrl", "ImageUrl <> '' OR ImageUrl IS NULL");
+                    builder.HasCheckConstraint("CK_Card_CustomImageUrl", "CustomImageUrl <> '' OR CustomImageUrl IS NULL");
+                    builder.HasCheckConstraint("CK_Card_CustomBorderUrl", "CustomBorderUrl <> '' OR CustomBorderUrl IS NULL");
+                }
+
+                {
+                    var builder = modelBuilder.Entity<GameDeck>();
+                    builder.HasCheckConstraint("CK_GameDeck_BackgroundImageUrl", "BackgroundImageUrl RLIKE'^http'");
+                    builder.HasCheckConstraint("CK_GameDeck_ForegroundColor", "ForegroundColor RLIKE'^#[0-9]'");
+                    builder.HasCheckConstraint("CK_GameDeck_ForegroundImageUrl", "ForegroundImageUrl RLIKE'^http'");
+                }
+
+                {
+                    var builder = modelBuilder.Entity<User>();
+                    builder.HasCheckConstraint("CK_User_BackgroundProfileUri", "BackgroundProfileUri <> ''");
+                    builder.HasCheckConstraint("CK_User_StatsReplacementProfileUri", "StatsReplacementProfileUri <> ''");
+                }
             }
                 
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(SanakanDbContext).Assembly);

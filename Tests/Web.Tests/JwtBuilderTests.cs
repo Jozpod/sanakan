@@ -4,7 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.Api;
 using Sanakan.Common;
-using Sanakan.Web.Configuration;
+using Sanakan.Common.Configuration;
 using System;
 using System.Text;
 
@@ -14,16 +14,15 @@ namespace Sanakan.Web.Test
     public class JwtBuilderTests
     {
         private readonly IJwtBuilder _jwtBuilder;
-        private readonly Mock<IOptionsMonitor<JwtConfig>> _optionsMock = new(MockBehavior.Strict);
+        private readonly Mock<IOptionsMonitor<JwtConfiguration>> _optionsMock = new(MockBehavior.Strict);
         private readonly Encoding _encoding = Encoding.UTF8;
         private readonly Mock<ISystemClock> _systemClockMock = new(MockBehavior.Strict);
 
         public JwtBuilderTests()
         {
-            var options = new JwtConfig
+            var options = new JwtConfiguration
             {
-                Key = "qazxswedcvfrtgb1",
-                ExpiresOn = TimeSpan.FromMinutes(5),
+                IssuerSigningKey = "qazxswedcvfrtgb1",
                 Issuer = "test",
             };
 

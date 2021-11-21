@@ -3,21 +3,23 @@
 namespace Sanakan.Api.Models
 {
     /// <summary>
-    /// Podmoduł bota
+    /// Describes discord mod command sub module.
     /// </summary>
     public class SubModule
     {
         /// <summary>
-        /// Prefix poprzedzajacy polecenie
+        /// The command prefix.
         /// </summary>
-        public string Prefix { get; set; }
+        public string Prefix { get; set; } = string.Empty;
+
         /// <summary>
-        /// Aliasy prefixu
+        /// The prefix alias.
         /// </summary>
-        public List<string> PrefixAliases { get; set; }
+        public List<string> PrefixAliases { get; set; } = new();
+
         /// <summary>
-        /// Polecenia modułu
+        /// The module commands.
         /// </summary>
-        public List<Command> Commands { get; set; }
+        public List<Command> Commands { get; set; } = new();
     }
 }

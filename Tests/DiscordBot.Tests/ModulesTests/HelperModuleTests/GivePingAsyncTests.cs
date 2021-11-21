@@ -10,7 +10,7 @@ namespace DiscordBot.ModulesTests.HelperModuleTests
         [TestMethod]
         public async Task Should_Give_Bot_Info()
         {
-            await _module.GivePingAsync();
+            await _module.GetPingAsync();
         }
     }
 }

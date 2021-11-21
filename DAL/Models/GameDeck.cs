@@ -60,7 +60,7 @@ namespace Sanakan.DAL.Models
 
         public virtual ICollection<Card> Cards { get; set; }
         public virtual ICollection<Item> Items { get; set; }
-        public virtual ICollection<BoosterPack> BoosterPacks { get; set; }
+        public virtual IList<BoosterPack> BoosterPacks { get; set; }
         public virtual ICollection<CardPvPStats> PvPStats { get; set; }
         public virtual ICollection<WishlistObject> Wishes { get; set; }
 

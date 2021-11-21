@@ -4,6 +4,7 @@ namespace Sanakan.DiscordBot.Abstractions
 {
     public static class Emojis
     {
+        public const string PsyduckEmoji = "<:klasycznypsaj:482136878120828938>";
         public static Emoji Checked = new Emoji("✅");
         public static Emoji Zero = new Emoji("0⃣");
         public static Emoji One = new Emoji("1⃣");

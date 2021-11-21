@@ -133,7 +133,7 @@ namespace Sanakan.Web.Controllers
             
             if (_userContext.HasWebpageClaim())
             {
-                tokenData = _jwtBuilder.Build(_config.CurrentValue.SanakanApi.UserWithTokenExpiry);
+                tokenData = _jwtBuilder.Build(_config.CurrentValue.SanakanApi.Jwt.UserWithTokenExpiry);
             }
 
             var result = new UserWithToken()
@@ -169,7 +169,7 @@ namespace Sanakan.Web.Controllers
             
             if (_userContext.HasWebpageClaim())
             {
-                tokenData = _jwtBuilder.Build(_config.CurrentValue.SanakanApi.UserWithTokenExpiry);
+                tokenData = _jwtBuilder.Build(_config.CurrentValue.SanakanApi.Jwt.UserWithTokenExpiry);
             }
 
             var result = new UserWithToken()

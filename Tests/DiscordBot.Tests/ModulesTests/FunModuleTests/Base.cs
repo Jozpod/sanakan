@@ -6,6 +6,7 @@ using Sanakan.DiscordBot.Services.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Sanakan.DiscordBot.Session;
 using Sanakan.Game.Services;
+using Sanakan.Common.Cache;
 
 namespace DiscordBot.ModulesTests.FunModuleTests
 {

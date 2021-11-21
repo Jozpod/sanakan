@@ -70,13 +70,13 @@ namespace Sanakan.DAL.Repositories
 
         public async Task<User> GetCachedFullUserAsync(ulong shindenUserId)
         {
-            var key = $"user-{shindenUserId}";
+            var key = CacheKeys.User(shindenUserId);
 
-            var cached = _cacheManager.Get<User>(key);
+            var cacheResult = _cacheManager.Get<User>(key);
 
-            if (cached != null)
+            if (cacheResult != null)
             {
-                return cached;
+                return cacheResult.Value;
             }
 
             var result = await _dbContext.Users
@@ -120,11 +120,11 @@ namespace Sanakan.DAL.Repositories
         {
             var key = CacheKeys.User(shindenUserId);
 
-            var cached = _cacheManager.Get<User>(key);
+            var cacheResult = _cacheManager.Get<User>(key);
 
-            if (cached == null)
+            if (cacheResult != null)
             {
-                return cached;
+                return cacheResult.Value;
             }
 
             var result = await _dbContext.Users
@@ -166,11 +166,11 @@ namespace Sanakan.DAL.Repositories
 
         public async Task<List<User>> GetCachedAllUsersLiteAsync()
         {
-            var cached = _cacheManager.Get<List<User>>(CacheKeys.UsersLite);
+            var cacheResult = _cacheManager.Get<List<User>>(CacheKeys.UsersLite);
 
-            if (cached != null)
+            if (cacheResult != null)
             {
-                return cached;
+                return cacheResult.Value;
             }
 
             var result = await _dbContext.Users
@@ -227,22 +227,22 @@ namespace Sanakan.DAL.Repositories
                .AsSplitQuery()
                .FirstOrDefaultAsync();
 
-                if (user == null)
-                {
-                    user = new User(discordUserId, _systemClock.StartOfMonth);
-                    _dbContext.Users.Add(user);
-                }
+            if (user == null)
+            {
+                user = new User(discordUserId, _systemClock.StartOfMonth);
+                _dbContext.Users.Add(user);
+            }
 
-                return user;
+            return user;
         }
 
         public async Task<List<User>> GetCachedAllUsersAsync()
         {
-            var cached = _cacheManager.Get<List<User>>(CacheKeys.Users);
+            var cacheResult = _cacheManager.Get<List<User>>(CacheKeys.Users);
 
-            if (cached != null)
+            if (cacheResult != null)
             {
-                return cached;
+                return cacheResult.Value;
             }
 
             var result = await _dbContext.Users
@@ -294,9 +294,9 @@ namespace Sanakan.DAL.Repositories
         {
             var query = _dbContext
                 .Users
-               .AsQueryable()
-               .AsSplitQuery()
-               .Where(x => x.ShindenId == userShindenId);
+                .AsQueryable()
+                .AsSplitQuery()
+                .Where(x => x.ShindenId == userShindenId);
 
             if (userQueryOptions.IncludeGameDeck)
             {

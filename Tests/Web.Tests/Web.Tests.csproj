@@ -8,7 +8,20 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="appsettings.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="FluentAssertions" Version="6.1.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="5.0.12" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.9.4" />
     <PackageReference Include="Moq" Version="4.16.1" />
     <PackageReference Include="MSTest.TestAdapter" Version="2.2.3" />
@@ -17,7 +30,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Shared\Tests.Shared.csproj" />
+    <ProjectReference Include="..\Tests.Shared\Tests.Shared.csproj" />
     <ProjectReference Include="..\..\Web\Web.csproj" />
   </ItemGroup>
 

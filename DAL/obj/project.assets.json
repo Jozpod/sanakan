@@ -738,7 +738,7 @@
           "System.Threading.Tasks": "4.3.0"
         },
         "compile": {
-          "ref/netstandard1.3/_._": {}
+          "ref/netstandard1.3/System.Collections.Concurrent.dll": {}
         },
         "runtime": {
           "lib/netstandard1.3/System.Collections.Concurrent.dll": {}
@@ -1246,7 +1246,7 @@
           "Microsoft.NETCore.Targets": "1.1.0"
         },
         "compile": {
-          "ref/netstandard1.5/_._": {}
+          "ref/netstandard1.5/System.Runtime.dll": {}
         }
       },
       "System.Runtime.Caching/4.7.0": {
@@ -1563,7 +1563,7 @@
           "System.Runtime": "4.3.0"
         },
         "compile": {
-          "ref/netstandard1.3/_._": {}
+          "ref/netstandard1.3/System.Threading.Tasks.dll": {}
         }
       },
       "System.Threading.Tasks.Extensions/4.3.0": {
@@ -1707,6 +1707,7 @@
           "Microsoft.Extensions.Hosting.Abstractions": "5.0.0",
           "Microsoft.Extensions.Options.ConfigurationExtensions": "5.0.0",
           "Newtonsoft.Json": "13.0.1",
+          "System.Collections.Concurrent": "4.3.0",
           "System.Text.Json": "5.0.2"
         },
         "compile": {

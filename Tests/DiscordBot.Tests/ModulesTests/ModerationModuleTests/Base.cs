@@ -7,6 +7,7 @@ using Sanakan.ShindenApi;
 using Microsoft.Extensions.Options;
 using Sanakan.Common.Configuration;
 using Sanakan.Common;
+using Sanakan.Common.Cache;
 
 namespace DiscordBot.ModulesTests.ModerationModuleTests
 {

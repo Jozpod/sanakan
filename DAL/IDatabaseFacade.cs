@@ -5,6 +5,7 @@ namespace Sanakan.DAL
 {
     public interface IDatabaseFacade
     {
-        Task EnsureCreatedAsync(CancellationToken stoppingToken = default);
+        Task EnsureDeletedAsync(CancellationToken stoppingToken = default);
+        Task<bool> EnsureCreatedAsync(CancellationToken stoppingToken = default);
     }
 }

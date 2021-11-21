@@ -5,6 +5,7 @@ using Sanakan.Common;
 using Sanakan.ShindenApi;
 using Microsoft.Extensions.DependencyInjection;
 using Sanakan.Game.Services.Abstractions;
+using Sanakan.Common.Cache;
 
 namespace Sanakan.Game.Tests.WaifuServiceTests
 {

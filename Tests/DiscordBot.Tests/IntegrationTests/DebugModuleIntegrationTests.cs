@@ -1,4 +1,6 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using FluentAssertions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -7,18 +9,47 @@ namespace Sanakan.DiscordBot.Tests.IntegrationTests
     public partial class TestBase
     {
         [TestMethod]
-        public async Task Should_Run()
+        public async Task Should_Return_Latency()
         {
-            var guild = await _client.GetGuildAsync(_configuration.MainGuild);
-            var mainChannel = 910284207534796800ul;
+            var commandMessage = $"{Prefix}ping";
+            await Channel.SendMessageAsync(commandMessage);
 
-            var textChannel = await guild.GetTextChannelAsync(mainChannel);
-
-            var message = ".ktoto <@!363676687667429376>";
-            await textChannel.SendMessageAsync(".ktoto @Jotpe#5246");
-            //await textChannel.SendMessageAsync(".info");
-
-            await Task.Delay(Timeout.InfiniteTimeSpan);
+            var message = await WaitForMessageAsync();
+            message.Should().NotBeNull();
+            var embed = message.Embeds.FirstOrDefault();
+            embed.Should().NotBeNull();
+            embed.Description.Should().Contain("Pong");
         }
+
+        [TestMethod]
+        public async Task Should_Return_Info()
+        {
+            var commandMessage = $"{Prefix}info";
+            await Channel.SendMessageAsync(commandMessage);
+
+            var message = await WaitForMessageAsync();
+            message.Should().NotBeNull();
+            message.Content.Should().Contain("Czas działania");
+        }
+
+        [TestMethod]
+        public async Task Should_Return_User_Info()
+        {
+            var commandMessage = $"{Prefix}ktoto <@!{FakeUserId}>";
+            await Channel.SendMessageAsync(commandMessage);
+
+            var message = await WaitForMessageAsync();
+            message.Should().NotBeNull();
+            var embed = message.Embeds.FirstOrDefault();
+            embed.Should().NotBeNull();
+            embed.Fields.Should().HaveCount(7);
+        }
+
+        //[TestMethod]
+        //public async Task Should_Report_User()
+        //{
+        //    var commandMessage = $"{Prefix}report <@!{FakeUserId}> test";
+        //    await Channel.SendMessageAsync(commandMessage);
+        //}
     }
 }

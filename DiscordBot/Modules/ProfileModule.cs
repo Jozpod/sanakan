@@ -126,7 +126,7 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks("newsy"), RequireCommandChannel]
         public async Task AddRoleAsync([Summary("nazwa roli z wypisz role")]string name)
         {
-            var user = Context.User as SocketGuildUser;
+            var user = Context.User as IGuildUser;
             
             if (user == null)
             {
@@ -143,7 +143,7 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            if (!user.Roles.Contains(gRole))
+            if (!user.RoleIds.Contains(gRole.Id))
             {
                 await user.AddRoleAsync(gRole);
             }
@@ -158,7 +158,7 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks("newsy"), RequireCommandChannel]
         public async Task RemoveRoleAsync([Summary("nazwa roli z wypisz role")]string name)
         {
-            var user = Context.User as SocketGuildUser;
+            var user = Context.User as IGuildUser;
 
             if (user == null)
             {
@@ -167,17 +167,17 @@ namespace Sanakan.DiscordBot.Modules
 
             var config = await _guildConfigRepository.GetCachedGuildFullConfigAsync(Context.Guild.Id);
             var selfRole = config.SelfRoles.FirstOrDefault(x => x.Name == name);
-            var gRole = Context.Guild.GetRole(selfRole?.Role ?? 0);
+            var guildRole = Context.Guild.GetRole(selfRole?.Role ?? 0);
 
-            if (gRole == null)
+            if (guildRole == null)
             {
                 await ReplyAsync("", embed: $"Nie odnaleziono roli `{name}`".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
-            if (user.Roles.Contains(gRole))
+            if (user.RoleIds.Contains(guildRole.Id))
             {
-                await user.RemoveRoleAsync(gRole);
+                await user.RemoveRoleAsync(guildRole);
             }
 
             var content = $"{user.Mention} zdjęto role: `{name}`".ToEmbedMessage(EMType.Success).Build();
@@ -576,7 +576,8 @@ namespace Sanakan.DiscordBot.Modules
         public async Task AddGlobalEmotesAsync()
         {
             var cost = 1000;
-            var user = Context.User as SocketGuildUser;
+            var user = Context.User as IGuildUser;
+
             if (user == null)
             {
                 return;
@@ -609,7 +610,7 @@ namespace Sanakan.DiscordBot.Modules
                 botuser.TimeStatuses.Add(global);
             }
 
-            if (!user.Roles.Contains(gRole))
+            if (!user.RoleIds.Contains(gRole.Id))
             {
                 await user.AddRoleAsync(gRole);
             }
@@ -632,7 +633,7 @@ namespace Sanakan.DiscordBot.Modules
             [Summary("kolor z listy (none - lista)")]FColor color = FColor.None,
             [Summary("waluta (SC/TC)")]SCurrency currency = SCurrency.Tc)
         {
-            var user = Context.User as SocketGuildUser;
+            var user = Context.User as IGuildUser;
             
             if (user == null)
             {

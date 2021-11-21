@@ -9,7 +9,7 @@ namespace Sanakan.DAL.Models.Configuration
         /// <summary>
         /// Discord channel identifier where waifu fight.
         /// </summary>
-        public ulong Channel { get; set; }
+        public ulong ChannelId { get; set; }
 
         public ulong WaifuId { get; set; }
 

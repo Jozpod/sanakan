@@ -26,15 +26,16 @@ namespace Sanakan.DAL.Repositories
             var entity = await _dbContext.Questions.FindAsync(id);
             return entity;
         }
+
         public async Task<Question> GetCachedQuestionAsync(ulong id)
         {
-            var key = $"quiz-{id}";
+            var key = CacheKeys.Quiz(id);
 
-            var cached = _cacheManager.Get<Question>(key);
+            var cacheResult = _cacheManager.Get<Question>(key);
 
-            if (cached != null)
+            if (cacheResult != null)
             {
-                return cached;
+                return cacheResult.Value;
             }
 
             var result = await _dbContext
@@ -51,11 +52,11 @@ namespace Sanakan.DAL.Repositories
         }
         public async Task<List<Question>> GetCachedAllQuestionsAsync()
         {
-            var cached = _cacheManager.Get<List<Question>>(CacheKeys.Quiz);
+            var cacheResult = _cacheManager.Get<List<Question>>(CacheKeys.Quizes);
 
-            if (cached != null)
+            if (cacheResult != null)
             {
-                return cached;
+                return cacheResult.Value;
             }
 
             var result = await _dbContext
@@ -66,7 +67,7 @@ namespace Sanakan.DAL.Repositories
                 .AsSplitQuery()
                 .ToListAsync();
 
-            _cacheManager.Add(CacheKeys.Quiz, result);
+            _cacheManager.Add(CacheKeys.Quizes, result);
 
             return result;
         }

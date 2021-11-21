@@ -4,7 +4,7 @@ using System.Security.Claims;
 
 namespace Sanakan.Web
 {
-    public class UserContext : IUserContext
+    internal class UserContext : IUserContext
     {
         private readonly ClaimsPrincipal _user;
 

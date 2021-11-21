@@ -17,15 +17,15 @@ namespace Sanakan.Preconditions
             ICommandContext context, CommandInfo command, IServiceProvider services)
         {
             var guildConfigRepository = services.GetRequiredService<IGuildConfigRepository>();
+            var user = context.User as IGuildUser;
+            var guild = context.Guild;
 
-            var user = context.User as SocketGuildUser;
-            
             if (user == null)
             {
                 return PreconditionResult.FromError(Strings.CanExecuteOnlyOnServer);
             }
 
-            var gConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(context.Guild.Id);
+            var gConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
 
             if (gConfig == null)
             {
@@ -39,7 +39,7 @@ namespace Sanakan.Preconditions
                 return CheckPermissions(user.GuildPermissions);
             }
 
-            if (user.Roles.Any(x => x.Id == role.Id))
+            if (user.RoleIds.Any(id => id == role.Id))
             {
                 return PreconditionResult.FromSuccess();
             }

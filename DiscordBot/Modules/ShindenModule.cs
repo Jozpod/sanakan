@@ -245,7 +245,7 @@ namespace Sanakan.DiscordBot.Modules
             }
 
             var user = userResult.Value;
-            var userNameInDiscord = (Context.User as SocketGuildUser).Nickname ?? Context.User.Username;
+            var userNameInDiscord = (Context.User as IGuildUser).Nickname ?? Context.User.Username;
 
             if (!user.Name.Equals(userNameInDiscord))
             {

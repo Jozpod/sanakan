@@ -11,24 +11,26 @@ namespace Sanakan.Preconditions
 {
     public class RequireWaifuDuelChannel : PreconditionAttribute
     {
-        public async override Task<PreconditionResult> CheckPermissionsAsync(ICommandContext context, CommandInfo command, IServiceProvider services)
+        public async override Task<PreconditionResult> CheckPermissionsAsync(
+            ICommandContext context, CommandInfo command, IServiceProvider services)
         {
             var guildConfigRepository = services.GetRequiredService<IGuildConfigRepository>();
             var user = context.User as IGuildUser;
-            
+            var guild = context.Guild;
+
             if (user == null)
             {
                 return PreconditionResult.FromError(Strings.CanExecuteOnlyOnServer);
             }
 
-            var gConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(context.Guild.Id);
+            var guildConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
             
-            if (gConfig == null)
+            if (guildConfig == null)
             {
                 return PreconditionResult.FromSuccess();
             }
 
-            var duelChannelId = gConfig?.WaifuConfig?.DuelChannelId;
+            var duelChannelId = guildConfig?.WaifuConfig?.DuelChannelId;
 
             if (!duelChannelId.HasValue)
             {
@@ -45,7 +47,7 @@ namespace Sanakan.Preconditions
                 return PreconditionResult.FromSuccess();
             }
 
-            var channel = await context.Guild.GetTextChannelAsync(duelChannelId.Value);
+            var channel = await guild.GetTextChannelAsync(duelChannelId.Value);
 
             var result = new PreconditionErrorPayload();
             result.Message = string.Format(Strings.RequiredChannel, channel?.Mention);

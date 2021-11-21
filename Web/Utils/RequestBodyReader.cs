@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Sanakan.Web
 {
-    public class RequestBodyReader : IRequestBodyReader
+    internal class RequestBodyReader : IRequestBodyReader
     {
         private readonly Encoding _encoding;
         private readonly IHttpContextAccessor _httpContextAccessor;

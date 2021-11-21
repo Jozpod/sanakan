@@ -13,7 +13,7 @@ namespace Sanakan.Game.Builder
             services.AddSingleton<IImageProcessor, ImageProcessor>();
             services.AddSingleton<IWaifuService, WaifuService>();
             services.AddSingleton<IEventsService, EventsService>();
-            services.AddSingleton<SlotMachine>();
+            services.AddSingleton<ISlotMachine, SlotMachine>();
             return services;
         }
 

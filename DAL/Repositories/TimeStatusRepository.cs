@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Sanakan.Common;
+using Sanakan.Common.Cache;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Repositories.Abstractions;
 using System.Collections.Generic;
@@ -32,13 +32,21 @@ namespace Sanakan.DAL.Repositories
 
         public async Task<List<TimeStatus>> GetBySubTypeAsync()
         {
+            var cacheResult = _cacheManager.Get<List<TimeStatus>>(CacheKeys.TimeStatuses);
+
+            if(cacheResult != null)
+            {
+                return cacheResult.Value;
+            }
+
             var result = await _dbContext
                 .TimeStatuses
                 .AsNoTracking()
-                //.FromCache(new[] { "users" })
                 .Where(x => x.Type == StatusType.Color
                     || x.Type == StatusType.Globals)
                 .ToListAsync();
+
+            _cacheManager.Add(CacheKeys.TimeStatuses, result, CacheKeys.Users);
 
             return result;
         }

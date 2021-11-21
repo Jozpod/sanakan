@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Sanakan.Common.Cache;
 using Sanakan.Common.Configuration;
 using Sanakan.Configuration;
 using System.Collections.Generic;
@@ -11,6 +12,7 @@ namespace Sanakan.Common.Builder
         public static IServiceCollection AddConfiguration(this IServiceCollection services, IConfiguration configuration)
         {
             services.Configure<SanakanConfiguration>(configuration);
+            services.Configure<JwtConfiguration>(configuration.GetSection("SanakanApi:Jwt"));
             services.Configure<DaemonsConfiguration>(configuration.GetSection("Daemons"));
             services.Configure<DatabaseConfiguration>(configuration.GetSection("Database"));
             services.Configure<LocaleConfiguration>(configuration.GetSection("Locale"));
