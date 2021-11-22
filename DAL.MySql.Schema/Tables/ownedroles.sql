@@ -1,6 +1,6 @@
 CREATE TABLE `ownedroles` (
   `Id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `Role` bigint unsigned NOT NULL,
+  `RoleId` bigint unsigned NOT NULL,
   `PenaltyInfoId` bigint unsigned NOT NULL,
   PRIMARY KEY (`Id`),
   KEY `IX_OwnedRoles_PenaltyInfoId` (`PenaltyInfoId`),

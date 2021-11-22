@@ -34,7 +34,7 @@ namespace Sanakan.TaskQueue.MessageHandlers
             {
                 if (message?.ImageUrl != null)
                 {
-                    card.ImageUrl = message.ImageUrl;
+                    card.ImageUrl = new Uri(message.ImageUrl);
                 }
 
                 if (message?.CharacterName != null)

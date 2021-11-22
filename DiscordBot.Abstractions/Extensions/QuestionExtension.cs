@@ -47,6 +47,6 @@ namespace Sanakan.Extensions
             return emotes.ToArray();
         }
 
-        public static Discord.IEmote GetRightEmote(this Question question) => GetEmote(question.Answer);
+        public static Discord.IEmote GetRightEmote(this Question question) => GetEmote(question.AnswerNumber);
     }
 }

@@ -1310,7 +1310,7 @@ namespace Sanakan.DiscordBot.Modules
             var channelName = Context.Channel.Name;
             var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(guildId);
 
-            var chan = config.CommandChannels.FirstOrDefault(x => x.Channel == Context.Channel.Id);
+            var chan = config.CommandChannels.FirstOrDefault(x => x.ChannelId == Context.Channel.Id);
             if (chan != null)
             {
                 config.CommandChannels.Remove(chan);
@@ -1323,7 +1323,7 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            chan = new CommandChannel { Channel = Context.Channel.Id };
+            chan = new CommandChannel { ChannelId = Context.Channel.Id };
             config.CommandChannels.Add(chan);
             await _guildConfigRepository.SaveChangesAsync();
 

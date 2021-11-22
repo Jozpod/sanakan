@@ -40,12 +40,8 @@ namespace Sanakan.Preconditions
                 ?? Enumerable.Empty<CommandChannel>();
             var channelId = context.Channel.Id;
 
-            if (commandChannels.Any(x => x.Channel == channelId))
-            {
-                return PreconditionResult.FromSuccess();
-            }
-
-            if (user.GuildPermissions.Administrator)
+            if (commandChannels.Any(x => x.ChannelId == channelId)
+                || user.GuildPermissions.Administrator)
             {
                 return PreconditionResult.FromSuccess();
             }
@@ -68,7 +64,7 @@ namespace Sanakan.Preconditions
                 }
             }
 
-            var channel = await context.Guild.GetTextChannelAsync(commandChannels.First().Channel);
+            var channel = await context.Guild.GetTextChannelAsync(commandChannels.First().ChannelId);
             var result = new PreconditionErrorPayload();
             result.Message = $"To polecenie działa na kanale {channel?.Mention}, możesz użyć go tutaj po osiągnięciu {_level} poziomu.";
 

@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Sanakan.DiscordBot.Session;
 using Sanakan.Game.Services;
 using Sanakan.Common.Cache;
+using Sanakan.DAL.Repositories.Abstractions;
 
 namespace DiscordBot.ModulesTests.FunModuleTests
 {
@@ -14,6 +15,8 @@ namespace DiscordBot.ModulesTests.FunModuleTests
     public abstract class Base : TestBase
     {
         protected readonly FunModule _module;
+        protected readonly Mock<IGuildConfigRepository> _guildConfigRepositoryMock = new(MockBehavior.Strict);
+        protected readonly Mock<IQuestionRepository> _questionRepositoryMock = new(MockBehavior.Strict);
         protected readonly Mock<IModeratorService> _moderatorServiceMock = new(MockBehavior.Strict);
         protected readonly Mock<ISessionManager> _sessionManagerMock = new(MockBehavior.Strict);
         protected readonly Mock<ICacheManager> _cacheManagerMock = new(MockBehavior.Strict);
@@ -28,7 +31,8 @@ namespace DiscordBot.ModulesTests.FunModuleTests
             var serviceScopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
 
             _module = new(
-                _moderatorServiceMock.Object,
+                _guildConfigRepositoryMock.Object,
+                _questionRepositoryMock.Object,
                 _sessionManagerMock.Object,
                 _cacheManagerMock.Object,
                 _systemClockMock.Object,

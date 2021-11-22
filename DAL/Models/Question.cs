@@ -8,22 +8,32 @@ namespace Sanakan.DAL.Models
 {
     public class Question
     {
+        public Question()
+        {
+            Answers = new List<Answer>();
+        }
+
         public ulong Id { get; set; }
+
         public int Group { get; set; }
-        public int Answer { get; set; }
+
+        public int AnswerNumber { get; set; }
+
         public int PointsWin { get; set; }
+
         public int PointsLose { get; set; }
 
         [StringLength(100)]
         public string Content { get; set; } = string.Empty;
+
         public TimeSpan TimeToAnswer { get; set; }
 
         public virtual IList<Answer> Answers { get; set; }
 
-        public bool CheckAnswer(int ans) => Answer == ans;
+        public bool CheckAnswer(int answerNumber) => AnswerNumber == answerNumber;
 
         public string GetRightAnswer()
-            => $"Prawidłowa odpowiedź to: **{Answer}** - {Answers.First(x => x.Number == Answer).Content}";
+            => $"Prawidłowa odpowiedź to: **{AnswerNumber}** - {Answers.First(x => x.Number == AnswerNumber).Content}";
 
         public string Get()
         {
@@ -49,7 +59,7 @@ namespace Sanakan.DAL.Models
                 answer.Number = num;
             }
 
-            Answer = numbersColeration.First(x => x.Item2 == Answer).Item1;
+            AnswerNumber = numbersColeration.First(x => x.Item2 == AnswerNumber).Item1;
             Answers = Answers.OrderBy(x => x.Number).ToList();
         }
 

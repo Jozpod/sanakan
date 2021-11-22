@@ -105,11 +105,9 @@ namespace Sanakan.DAL.Models
         [StringLength(50)]
         public string? Title { get; set; }
 
-        [StringLength(50)]
-        public string? ImageUrl { get; set; }
+        public Uri? ImageUrl { get; set; }
 
-        [StringLength(50)]
-        public string? CustomImageUrl { get; set; }
+        public Uri? CustomImageUrl { get; set; }
         
         /// <summary>
         /// The Discord user identifier.
@@ -128,7 +126,7 @@ namespace Sanakan.DAL.Models
         /// <summary>
         /// The URL to border image.
         /// </summary>
-        public string? CustomBorderUrl { get; set; }
+        public Uri? CustomBorderUrl { get; set; }
 
         public double MarketValue { get; set; }
 
@@ -469,7 +467,8 @@ namespace Sanakan.DAL.Models
         }
 
         public bool HasImage() => GetImage() != null;
-        public string GetImage() => CustomImageUrl ?? ImageUrl;
+
+        public string? GetImage() => (CustomImageUrl ?? ImageUrl)?.ToString();
 
         public int GetAttackWithBonus()
         {

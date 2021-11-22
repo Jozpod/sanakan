@@ -44,7 +44,7 @@ namespace Sanakan.Web.Controllers
         /// </summary>
         /// <param name="questionId">The question identifier.</param>
         [HttpGet("question/{questionId}")]
-        [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Question), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetQuestionAsync(ulong questionId)
         {
             var result = await _questionRepository.GetCachedQuestionAsync(questionId);
@@ -52,11 +52,11 @@ namespace Sanakan.Web.Controllers
         }
 
         /// <summary>
-        /// Add new question
+        /// Add new question.
         /// </summary>
         /// <param name="question">The question content.</param>
         [HttpPost("question")]
-        [ProducesResponseType(typeof(Question), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status200OK)]
         public async Task<IActionResult> AddQuestionAsync([FromBody]Question question)
         {
             _questionRepository.Add(question);
@@ -73,7 +73,7 @@ namespace Sanakan.Web.Controllers
         /// <param name="id">The question identifier</param>
         [HttpDelete("question/{id}")]
         [ProducesResponseType(typeof(Question), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(Question), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status200OK)]
         public async Task<IActionResult> RemoveQuestionAsync(ulong id)
         {
             var question = await _questionRepository.GetByIdAsync(id);

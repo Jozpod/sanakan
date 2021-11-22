@@ -293,7 +293,7 @@ namespace Sanakan.DiscordBot.Modules
 
                     card.IsUnique = false;
                     card.Name = characterInfo.ToString();
-                    card.ImageUrl = hasImage ? pictureUrl : null;
+                    card.ImageUrl = hasImage ? new Uri(pictureUrl) : null;
                     card.Title = characterInfo?.Relations?.OrderBy(x => x.CharacterId)
                         .FirstOrDefault()?
                         .Title ?? "????";

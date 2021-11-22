@@ -34,7 +34,7 @@ namespace Sanakan.TaskQueue.MessageHandlers
             foreach (var card in cards)
             {
                 var pictureUrl = UrlHelpers.GetPersonPictureURL(message.PictureId);
-                card.ImageUrl = pictureUrl;
+                card.ImageUrl = new Uri(pictureUrl);
 
                 try
                 {

@@ -23,6 +23,7 @@ using Sanakan.Common.Configuration;
 using Sanakan.TaskQueue;
 using Sanakan.Game.Services.Abstractions;
 using Sanakan.Common.Cache;
+using System.Security.Claims;
 
 namespace Sanakan.Web.Controllers
 {
@@ -272,8 +273,8 @@ namespace Sanakan.Web.Controllers
                 ForegroundPosition = user.GameDeck.ForegroundPosition,
                 BackgroundPosition = user.GameDeck.BackgroundPosition,
                 ExchangeConditions = user.GameDeck.ExchangeConditions,
-                BackgroundImageUrl = user.GameDeck.BackgroundImageUrl,
-                ForegroundImageUrl = user.GameDeck.ForegroundImageUrl,
+                BackgroundImageUrl = user.GameDeck.BackgroundImageUrl.ToString(),
+                ForegroundImageUrl = user.GameDeck.ForegroundImageUrl.ToString(),
                 Expeditions = user.GameDeck.Cards.Where(x => x.Expedition != ExpeditionCardType.None).ToExpeditionView(user.GameDeck.Karma),
                 Waifu = waifu,
                 Gallery = user.GameDeck.
@@ -628,7 +629,13 @@ namespace Sanakan.Web.Controllers
 
             if (_userContext.HasWebpageClaim())
             {
-                tokenData = _jwtBuilder.Build(_config.CurrentValue.Jwt.UserWithTokenExpiry);
+                var claims = new[]
+                {
+                    new Claim(RegisteredNames.DiscordId, user.Id.ToString()),
+                    new Claim(RegisteredNames.Player, RegisteredNames.WaifuPlayer),
+                };
+
+                tokenData = _jwtBuilder.Build(_config.CurrentValue.Jwt.UserWithTokenExpiry, claims);
             }
 
             var result = new UserWithToken()

@@ -1,7 +1,7 @@
 CREATE TABLE `wishes` (
   `Id` bigint unsigned NOT NULL AUTO_INCREMENT,
   `ObjectId` bigint unsigned NOT NULL,
-  `ObjectName` varchar(100) NOT NULL,
+  `ObjectName` varchar(50) NOT NULL,
   `Type` int NOT NULL,
   `GameDeckId` bigint unsigned NOT NULL,
   PRIMARY KEY (`Id`),

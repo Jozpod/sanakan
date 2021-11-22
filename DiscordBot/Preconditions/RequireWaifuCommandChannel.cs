@@ -34,13 +34,10 @@ namespace Sanakan.Preconditions
 
             var commandChannels = guildConfig?.WaifuConfig?.CommandChannels
                 ?? Enumerable.Empty<WaifuCommandChannel>();
-            
-            if (commandChannels.Any() || commandChannels.Any(x => x.Channel == context.Channel.Id))
-            {
-                return PreconditionResult.FromSuccess();
-            }
 
-            if (user.GuildPermissions.Administrator)
+            if (!commandChannels.Any()
+                || commandChannels.Any(x => x.Channel == context.Channel.Id)
+                || user.GuildPermissions.Administrator)
             {
                 return PreconditionResult.FromSuccess();
             }

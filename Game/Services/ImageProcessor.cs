@@ -154,6 +154,7 @@ namespace Sanakan.Game.Services
                 CheckProfileImageSize(image, size, strech);
             }
 
+            // TO-DO Use stream
             image.SaveToPath(filePath);
         }
 
@@ -930,7 +931,7 @@ namespace Sanakan.Game.Services
                 return GenerateBorder(card);
             }
 
-            using var stream = await GetImageFromUrlAsync(card.CustomBorderUrl);
+            using var stream = await GetImageFromUrlAsync(card.CustomBorderUrl.ToString());
 
             if (stream == null)
             {

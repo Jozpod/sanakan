@@ -28,7 +28,7 @@ namespace Sanakan.Preconditions
             }
 
             var guildConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
-            
+
             if (guildConfig == null)
             {
                 return PreconditionResult.FromSuccess();
@@ -36,17 +36,16 @@ namespace Sanakan.Preconditions
 
             var channels = guildConfig?.WaifuConfig?.FightChannels ?? Enumerable.Empty<WaifuFightChannel>();
 
-            if (!channels.Any() || channels.Any(x => x.ChannelId == context.Channel.Id))
+            if (!channels.Any()
+                || channels.Any(x => x.ChannelId == context.Channel.Id)
+                || user.GuildPermissions.Administrator)
             {
                 return PreconditionResult.FromSuccess();
             }
 
-            if (user.GuildPermissions.Administrator)
-            {
-                return PreconditionResult.FromSuccess();
-            }
+            var channelId = channels.First().ChannelId;
 
-            var channel = await context.Guild.GetTextChannelAsync(channels.First().ChannelId);
+            var channel = await guild.GetTextChannelAsync(channelId);
             var result = new PreconditionErrorPayload();
             result.Message = string.Format(Strings.RequiredChannel, channel?.Mention);
 

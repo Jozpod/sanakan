@@ -597,7 +597,7 @@ namespace Sanakan.DiscordBot.Modules
                         await ReplyAsync("", embed: "Aby ustawić własny obrazek, karta musi posiadać wcześniej ustawiony główny (na stronie)!".ToEmbedMessage(EMType.Error).Build());
                         return;
                     }
-                    card.CustomImageUrl = itemsCountOrImageLinkOrStarType;
+                    card.CustomImageUrl = new Uri(itemsCountOrImageLinkOrStarType);
                     consumeItem = !card.FromFigure;
                     karmaChange += 0.001 * itemCount;
                     embed.Description += "Ustawiono nowy obrazek. Pamiętaj jednak, że dodanie nieodpowiedniego obrazka może skutkować skasowaniem karty!";
@@ -615,7 +615,7 @@ namespace Sanakan.DiscordBot.Modules
                         await ReplyAsync("", embed: "Aby ustawić ramkę, karta musi posiadać wcześniej ustawiony obrazek na stronie!".ToEmbedMessage(EMType.Error).Build());
                         return;
                     }
-                    card.CustomBorderUrl = itemsCountOrImageLinkOrStarType;
+                    card.CustomBorderUrl = new Uri(itemsCountOrImageLinkOrStarType);
                     karmaChange += 0.001 * itemCount;
                     embed.Description += "Ustawiono nowy obrazek jako ramkę. Pamiętaj jednak, że dodanie nieodpowiedniego obrazka może skutkować skasowaniem karty!";
                     _waifuService.DeleteCardImageIfExist(card);
@@ -1073,7 +1073,7 @@ namespace Sanakan.DiscordBot.Modules
 
                 card.IsUnique = false;
                 card.Name = characterInfo.ToString();
-                card.ImageUrl = hasImage ? pictureUrl : null;
+                card.ImageUrl = hasImage ? new Uri(pictureUrl) : null;
                 card.Title = characterInfo?.Relations?
                     .OrderBy(x => x.CharacterId)
                     .FirstOrDefault()?.Title ?? "????";
@@ -2508,18 +2508,18 @@ namespace Sanakan.DiscordBot.Modules
             var botuser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
             if (botuser.TcCount < tcCost)
             {
-                await ReplyAsync("", embed: $"{Context.User.Mention} nie posiadasz wystarczającej liczby TC!".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync(embed: $"{Context.User.Mention} nie posiadasz wystarczającej liczby TC!".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
             if (!imageUrl.IsURLToImage())
             {
-                await ReplyAsync("", embed: "Nie wykryto obrazka! Upewnij się, że podałeś poprawny adres!".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync(embed: "Nie wykryto obrazka! Upewnij się, że podałeś poprawny adres!".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
             botuser.TcCount -= tcCost;
-            botuser.GameDeck.ForegroundImageUrl = imageUrl;
+            botuser.GameDeck.ForegroundImageUrl = new Uri(imageUrl);
 
             await _userRepository.SaveChangesAsync();
 
@@ -2536,9 +2536,11 @@ namespace Sanakan.DiscordBot.Modules
             var tcCost = 2000;
 
             var botuser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
+            var mention = Context.User.Mention;
+
             if (botuser.TcCount < tcCost)
             {
-                await ReplyAsync(embed: $"{Context.User.Mention} nie posiadasz wystarczającej liczby TC!".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync(embed: $"{mention} nie posiadasz wystarczającej liczby TC!".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
@@ -2549,11 +2551,11 @@ namespace Sanakan.DiscordBot.Modules
             }
 
             botuser.TcCount -= tcCost;
-            botuser.GameDeck.BackgroundImageUrl = imageUrl;
+            botuser.GameDeck.BackgroundImageUrl = new Uri(imageUrl);
 
             await _userRepository.SaveChangesAsync();
 
-            await ReplyAsync("", embed: $"Zmieniono tło na stronie waifu użytkownika: {Context.User.Mention}!".ToEmbedMessage(EMType.Success).Build());
+            await ReplyAsync(embed: $"Zmieniono tło na stronie waifu użytkownika: {mention}!".ToEmbedMessage(EMType.Success).Build());
         }
 
         [Command("pozycja tła strony")]
@@ -3279,7 +3281,8 @@ namespace Sanakan.DiscordBot.Modules
             
 
             var expStrs = cardsOnExpedition
-                .Select(card => {
+                .Select(card => 
+                {
 
                     var parameters = new object[]
                     {

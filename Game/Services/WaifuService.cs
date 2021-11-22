@@ -660,7 +660,7 @@ namespace Sanakan.Game.Services
 
             if (hasImage)
             {
-                card.ImageUrl = pictureUrl;
+                card.ImageUrl = new Uri(pictureUrl);
             }
 
             card.Health = RandomizeHealth(_randomNumberGenerator, card);

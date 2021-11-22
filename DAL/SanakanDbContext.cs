@@ -5,6 +5,7 @@ using Sanakan.DAL.Models;
 using Sanakan.DAL.Models.Analytics;
 using Sanakan.DAL.Models.Configuration;
 using Sanakan.DAL.Models.Management;
+using System;
 
 namespace Sanakan.DAL
 {
@@ -97,27 +98,58 @@ namespace Sanakan.DAL
 
                 {
                     var builder = modelBuilder.Entity<Card>();
-                    builder.HasCheckConstraint("CK_Card_Title", "Title <> '' OR Title IS NULL");
-                    builder.HasCheckConstraint("CK_Card_ImageUrl", "ImageUrl <> '' OR ImageUrl IS NULL");
-                    builder.HasCheckConstraint("CK_Card_CustomImageUrl", "CustomImageUrl <> '' OR CustomImageUrl IS NULL");
-                    builder.HasCheckConstraint("CK_Card_CustomBorderUrl", "CustomBorderUrl <> '' OR CustomBorderUrl IS NULL");
+
+                    builder.Property(pr => pr.ImageUrl)
+                        .HasMaxLength(50)
+                        .HasConversion(pr => pr == null ? null : pr.ToString(), pr => pr == null ? null : new Uri(pr));
+
+                    builder.Property(pr => pr.CustomImageUrl)
+                        .HasMaxLength(50)
+                        .HasConversion(pr => pr == null ? null : pr.ToString(), pr => pr == null ? null : new Uri(pr));
+
+                    builder.Property(pr => pr.CustomBorderUrl)
+                        .HasMaxLength(50)
+                        .HasConversion(pr => pr == null ? null : pr.ToString(), pr => pr == null ? null : new Uri(pr));
+
+                    builder.HasCheckConstraint($"CK_{nameof(Card)}_{nameof(Card.Title)}", NotEmptyStringConstraint(nameof(Card.Title)));
+                    builder.HasCheckConstraint($"CK_{nameof(Card)}_{nameof(Card.ImageUrl)}", NullableUrlConstraint(nameof(Card.ImageUrl)));
+                    builder.HasCheckConstraint($"CK_{nameof(Card)}_{nameof(Card.CustomImageUrl)}", NullableUrlConstraint(nameof(Card.CustomImageUrl)));
+                    builder.HasCheckConstraint($"CK_{nameof(Card)}_{nameof(Card.CustomBorderUrl)}", NullableUrlConstraint(nameof(Card.CustomBorderUrl)));
                 }
 
                 {
                     var builder = modelBuilder.Entity<GameDeck>();
-                    builder.HasCheckConstraint("CK_GameDeck_BackgroundImageUrl", "BackgroundImageUrl RLIKE'^http'");
-                    builder.HasCheckConstraint("CK_GameDeck_ForegroundColor", "ForegroundColor RLIKE'^#[0-9]'");
-                    builder.HasCheckConstraint("CK_GameDeck_ForegroundImageUrl", "ForegroundImageUrl RLIKE'^http'");
+
+                    builder.Property(pr => pr.BackgroundImageUrl)
+                       .HasMaxLength(50)
+                       .HasConversion(pr => pr == null ? null : pr.ToString(), pr => pr == null ? null : new Uri(pr));
+
+                    builder.Property(pr => pr.ForegroundImageUrl)
+                       .HasMaxLength(50)
+                       .HasConversion(pr => pr == null ? null : pr.ToString(), pr => pr == null ? null : new Uri(pr));
+
+                    builder.HasCheckConstraint($"CK_{nameof(GameDeck)}_{nameof(GameDeck.BackgroundImageUrl)}", NullableUrlConstraint(nameof(GameDeck.BackgroundImageUrl)));
+                    builder.HasCheckConstraint($"CK_{nameof(GameDeck)}_{nameof(GameDeck.ForegroundColor)}", NullableColor(nameof(GameDeck.ForegroundColor)));
+                    builder.HasCheckConstraint($"CK_{nameof(GameDeck)}_{nameof(GameDeck.ForegroundImageUrl)}", NullableUrlConstraint(nameof(GameDeck.ForegroundImageUrl)));
                 }
 
                 {
                     var builder = modelBuilder.Entity<User>();
-                    builder.HasCheckConstraint("CK_User_BackgroundProfileUri", "BackgroundProfileUri <> ''");
-                    builder.HasCheckConstraint("CK_User_StatsReplacementProfileUri", "StatsReplacementProfileUri <> ''");
+                    builder.HasCheckConstraint($"CK_{nameof(User)}_{nameof(User.BackgroundProfileUri)}", NotEmptyStringConstraint(nameof(User.BackgroundProfileUri)));
+                    builder.HasCheckConstraint($"CK_{nameof(User)}_{nameof(User.StatsReplacementProfileUri)}", NotEmptyStringConstraint(nameof(User.StatsReplacementProfileUri)));
                 }
             }
                 
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(SanakanDbContext).Assembly);
+        }
+
+        public string NullableColor(string property) => $"{property} REGEXP '^#([a-f0-9]{{3}}){{1,2}}$' OR {property} IS NULL";
+
+        public string NotEmptyStringConstraint(string property) => $"TRIM({property}) <> '' OR {property} IS NULL";
+
+        public string NullableUrlConstraint(string property)
+        {
+            return $"{property} REGEXP '^https?' OR {property} IS NULL";
         }
     }
 }

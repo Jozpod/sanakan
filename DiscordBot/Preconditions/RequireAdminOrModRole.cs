@@ -23,43 +23,46 @@ namespace Sanakan.Preconditions
             {
                 return PreconditionResult.FromError(Strings.CanExecuteOnlyOnServer);
             }
-     
-            var gConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
-            
-            if (gConfig == null)
+
+            var guildPermissions = user.GuildPermissions;
+
+            var guildConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
+
+            if (guildConfig == null)
             {
-                return await CheckPermissionsAsync(user.GuildPermissions);
+                return CheckPermissions(guildPermissions);
             }
 
-            if (gConfig.ModeratorRoles.Any(x => user.RoleIds.Any(id => id == x.RoleId)))
+            var roleIds = user.RoleIds;
+
+            if (guildConfig.ModeratorRoles.Any(x => roleIds.Any(id => id == x.RoleId)))
             {
                 return PreconditionResult.FromSuccess();
             }
 
-            if(!gConfig.AdminRoleId.HasValue)
-            {
-                var result = new PreconditionErrorPayload();
-                result.Message = "No admin role configured";
+            var adminRole = guildConfig.AdminRoleId;
 
-                return PreconditionResult.FromError(result.Serialize());
+            if (!adminRole.HasValue)
+            {
+                return CheckPermissions(guildPermissions);
             }
-                
-            var role = guild.GetRole(gConfig.AdminRoleId.Value);
-            
+
+            var role = guild.GetRole(adminRole.Value);
+
             if (role == null)
             {
-                return await CheckPermissionsAsync(user.GuildPermissions);
+                return CheckPermissions(guildPermissions);
             }
 
-            if (user.RoleIds.Any(id => id == role.Id))
+            if (roleIds.Any(id => id == role.Id))
             {
                 return PreconditionResult.FromSuccess();
             }
 
-            return await CheckPermissionsAsync(user.GuildPermissions);
+            return CheckPermissions(guildPermissions);
         }
 
-        private async Task<PreconditionResult> CheckPermissionsAsync(GuildPermissions guildPermissions)
+        private PreconditionResult CheckPermissions(GuildPermissions guildPermissions)
         {
             if (guildPermissions.Administrator)
             {

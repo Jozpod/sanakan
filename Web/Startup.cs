@@ -8,12 +8,11 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using Newtonsoft.Json.Converters;
-using Newtonsoft.Json.Serialization;
 using Sanakan.Api;
 using Sanakan.Common;
 using Sanakan.Common.Builder;
 using Sanakan.Common.Configuration;
+using Sanakan.Common.Converters;
 using Sanakan.Daemon.Builder;
 using Sanakan.DAL.Builder;
 using Sanakan.DiscordBot.Builder;
@@ -24,6 +23,8 @@ using Sanakan.Game.Builder;
 using Sanakan.ShindenApi.Builder;
 using Sanakan.TaskQueue.Builder;
 using Sanakan.Web;
+using System;
+using System.Globalization;
 using System.IO;
 using System.Text;
 
@@ -44,6 +45,13 @@ namespace Sanakan.Web
                 .GetSection("SanakanApi:Jwt")
                 .Get<JwtConfiguration>();
 
+            var localeConfiguration = Configuration
+                .GetSection("Locale")
+                .Get<LocaleConfiguration>();
+
+            CultureInfo.DefaultThreadCurrentCulture = localeConfiguration.Language;
+            CultureInfo.DefaultThreadCurrentUICulture = localeConfiguration.Language;
+
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(opt =>
             {
@@ -61,30 +69,32 @@ namespace Sanakan.Web
 
             services.AddAuthorization(op =>
             {
-                op.AddPolicy(RegisteredClaimNames.Player, policy =>
+                op.AddPolicy(RegisteredNames.Player, policy =>
                 {
                     policy.AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme);
                     policy.RequireAuthenticatedUser();
 
-                    policy.RequireAssertion(context => context.User.HasClaim(c => c.Type == RegisteredClaimNames.Player
-                        && c.Value == RegisteredClaimNames.WaifuPlayer));
+                    policy.RequireAssertion(context => context.User.HasClaim(c => c.Type == RegisteredNames.Player
+                        && c.Value == RegisteredNames.WaifuPlayer));
                 });
 
-                op.AddPolicy(RegisteredClaimNames.Site, policy =>
+                op.AddPolicy(RegisteredNames.Site, policy =>
                 {
                     policy.AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme);
                     policy.RequireAuthenticatedUser();
 
-                    policy.RequireAssertion(context => !context.User.HasClaim(c => c.Type == RegisteredClaimNames.Player));
+                    policy.RequireAssertion(context => !context.User.HasClaim(c => c.Type == RegisteredNames.Player));
                 });
             });
 
             services.AddControllers()
-                .AddNewtonsoftJson(o => o.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore)
-                .AddNewtonsoftJson(o => o.SerializerSettings.Converters.Add(new StringEnumConverter { NamingStrategy = new CamelCaseNamingStrategy() }));
+                .AddJsonOptions(options =>
+                {
+                    options.JsonSerializerOptions.Converters.Add(new TimeSpanConverter());
+                });
             services.AddCors(options =>
             {
-                options.AddPolicy("AllowEverything", builder =>
+                options.AddPolicy(RegisteredNames.AllowEverything, builder =>
                 {
                     builder.AllowAnyOrigin();
                     builder.AllowAnyHeader();
@@ -150,10 +160,10 @@ namespace Sanakan.Web
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             app.UseSwagger();
-            app.UseCors("AllowEverything");
-            app.UseForwardedHeaders(new ForwardedHeadersOptions {
-                ForwardedHeaders = ForwardedHeaders.XForwardedFor 
-                    | ForwardedHeaders.XForwardedProto
+            app.UseCors(RegisteredNames.AllowEverything);
+            app.UseForwardedHeaders(new ForwardedHeadersOptions
+            {
+                ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto,
             });
             app.UseStaticFiles();
             app.UseRouting();

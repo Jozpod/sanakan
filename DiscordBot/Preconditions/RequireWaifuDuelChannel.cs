@@ -24,7 +24,7 @@ namespace Sanakan.Preconditions
             }
 
             var guildConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
-            
+
             if (guildConfig == null)
             {
                 return PreconditionResult.FromSuccess();
@@ -32,17 +32,9 @@ namespace Sanakan.Preconditions
 
             var duelChannelId = guildConfig?.WaifuConfig?.DuelChannelId;
 
-            if (!duelChannelId.HasValue)
-            {
-                return PreconditionResult.FromSuccess();
-            }
-
-            if (duelChannelId == context.Channel.Id)
-            {
-                return PreconditionResult.FromSuccess();
-            }
-
-            if (user.GuildPermissions.Administrator)
+            if (!duelChannelId.HasValue
+                || duelChannelId == context.Channel.Id
+                || user.GuildPermissions.Administrator)
             {
                 return PreconditionResult.FromSuccess();
             }

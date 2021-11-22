@@ -164,7 +164,9 @@ namespace Sanakan.DAL.Models
 
         [StringLength(50)]
         public string StatsReplacementProfileUri { get; set; }
+
         public ulong MessagesCount { get; set; }
+
         public ulong CommandsCount { get; set; }
 
         /// <summary>

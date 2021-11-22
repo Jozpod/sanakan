@@ -5,9 +5,14 @@ namespace Sanakan.DAL.Models.Configuration
     public class CommandChannel
     {
         public ulong Id { get; set; }
-        public ulong Channel { get; set; }
+
+        /// <summary>
+        /// Discord channel identifier where user send commands.
+        /// </summary>
+        public ulong ChannelId { get; set; }
 
         public ulong GuildOptionsId { get; set; }
+
         [JsonIgnore]
         public virtual GuildOptions GuildOptions { get; set; }
     }

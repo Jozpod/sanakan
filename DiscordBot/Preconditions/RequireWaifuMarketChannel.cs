@@ -33,22 +33,14 @@ namespace Sanakan.Preconditions
             var waifuConfig = guildConfig?.WaifuConfig;
             var marketChannelId = waifuConfig?.MarketChannelId;
 
-            if (!marketChannelId.HasValue)
+            if (!marketChannelId.HasValue
+                || marketChannelId == context.Channel.Id
+                || user.GuildPermissions.Administrator)
             {
                 return PreconditionResult.FromSuccess();
             }
 
-            if (marketChannelId == context.Channel.Id)
-            {
-                return PreconditionResult.FromSuccess();
-            }
-
-            if (user.GuildPermissions.Administrator)
-            {
-                return PreconditionResult.FromSuccess();
-            }
-
-            var channel = await context.Guild.GetTextChannelAsync(marketChannelId.Value);
+            var channel = await guild.GetTextChannelAsync(marketChannelId.Value);
 
             var result = new PreconditionErrorPayload();
             result.Message = string.Format(Strings.RequiredChannel, channel?.Mention);

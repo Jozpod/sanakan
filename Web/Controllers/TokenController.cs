@@ -38,7 +38,7 @@ namespace Sanakan.Web.Controllers
         [ProducesResponseType(typeof(TokenData), StatusCodes.Status200OK)]
         public IActionResult CreateToken([FromBody]string? apikey = null)
         {
-            if (apikey == null)
+            if (string.IsNullOrEmpty(apikey))
             {
                 return ShindenUnauthorized(Strings.ApiKeyNotProvided);
             }
@@ -54,7 +54,6 @@ namespace Sanakan.Web.Controllers
             var claims = new[]
                 {
                     new Claim(JwtRegisteredClaimNames.Website, bearer),
-                    new Claim(RegisteredClaimNames.Player, "waifu_player"),
                 };
 
             var tokenData = _jwtBuilder.Build(_config.CurrentValue.Jwt.TokenExpiry, claims);

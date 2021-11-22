@@ -25,14 +25,23 @@ namespace Sanakan.Preconditions
                 return PreconditionResult.FromError(Strings.CanExecuteOnlyOnServer);
             }
 
-            var gConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
+            var guildPermissions = user.GuildPermissions;
 
-            if (gConfig == null)
+            var guildConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
+
+            if (guildConfig == null)
             {
-                return CheckPermissions(user.GuildPermissions);
+                return CheckPermissions(guildPermissions);
             }
 
-            var role = context.Guild.GetRole(gConfig.AdminRoleId.Value);
+            var adminRoleId = guildConfig.AdminRoleId;
+
+            if (!adminRoleId.HasValue)
+            {
+                return CheckPermissions(guildPermissions);
+            }
+
+            var role = guild.GetRole(adminRoleId.Value);
 
             if (role == null)
             {
@@ -44,7 +53,7 @@ namespace Sanakan.Preconditions
                 return PreconditionResult.FromSuccess();
             }
 
-            return CheckPermissions(user.GuildPermissions);
+            return CheckPermissions(guildPermissions);
         }
 
         private PreconditionResult CheckPermissions(GuildPermissions guildPermissions)

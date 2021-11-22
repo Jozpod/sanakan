@@ -745,7 +745,7 @@ namespace Sanakan.ShindenApi
             if (!response.IsSuccessStatusCode)
             {
                 return new Result<LogInResult>();
-            }            
+            }
 
             var result = await response.Content.ReadFromJsonAsync<LogInResult>(_jsonSerializerOptions);
             _credentials = new Credentials

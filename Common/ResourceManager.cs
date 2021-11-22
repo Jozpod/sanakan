@@ -24,7 +24,8 @@ namespace Sanakan.Common
 
         public static void Add(Assembly assembly, string resourcePath)
         {
-            _assemblyDict.Add(resourcePath, assembly);
+            // TO-DO Find better way to populate assembly resources.
+            _assemblyDict.TryAdd(resourcePath, assembly);
         }
 
         public ValueTask<T?> ReadFromJsonAsync<T>(string path)

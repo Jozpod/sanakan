@@ -5,10 +5,15 @@ using Sanakan.Common;
 using Sanakan.Common.Builder;
 using Sanakan.Common.Configuration;
 using Sanakan.DAL.Builder;
+using Sanakan.DAL.Models;
+using Sanakan.DAL.Models.Configuration;
+using Sanakan.DAL.Models.Management;
+using Sanakan.DAL.Repositories.Abstractions;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -28,6 +33,7 @@ namespace Sanakan.DAL.MySql.Schema
             var configurationRoot = builder.Build();
 
             serviceCollection.AddOptions();
+            serviceCollection.AddSystemClock();
             serviceCollection.AddSanakanDbContext(configurationRoot);
             serviceCollection.AddSingleton(configurationRoot);
             serviceCollection.AddCache(configurationRoot.GetSection("Cache"));
@@ -40,85 +46,120 @@ namespace Sanakan.DAL.MySql.Schema
             var dbContext = serviceProvider.GetRequiredService<SanakanDbContext>();
             var databaseFacade = dbContext.Database;
             await databaseFacade.EnsureCreatedAsync();
-            using var connection = databaseFacade.GetDbConnection();
+            var connection = databaseFacade.GetDbConnection();
             await connection.OpenAsync();
-            
-            var tableNames = await GetTableNamesAsync(connection);
+
+            var tableNames = await Utils.GetTableNamesAsync(connection);
 
             var path = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..\\..\\..\\"));
             var tablesFolder = Path.Combine(path, "Tables");
-            
-            if(!fileSystem.DirectoryExists(tablesFolder))
+
+            if (!fileSystem.DirectoryExists(tablesFolder))
             {
                 fileSystem.CreateDirectory(tablesFolder);
             }
 
             var stringBuilder = new StringBuilder(1000);
 
-            foreach(var tableName in tableNames)
+            //foreach (var tableName in tableNames)
+            //{
+            //    var tableDefinition = await Utils.GetTableDefinitionAsync(connection, tableName);
+            //    var filePath = Path.Combine(tablesFolder, $"{tableName}.sql");
+
+            //    var tableIndexes = await Utils.GetTableIndexesAsync(connection, tableName);
+
+            //    stringBuilder.AppendLine(tableDefinition);
+
+            //    foreach (var tableIndex in tableIndexes)
+            //    {
+            //        stringBuilder.AppendLine(tableIndex);
+            //    }
+
+            //    await fileSystem.WriteAllTextAsync(filePath, stringBuilder.ToString());
+            //    stringBuilder.Clear();
+            //}
+
+            await PopulateTestDataAsync(dbContext);
+
+            var userRepository = serviceProvider.GetRequiredService<IUserRepository>();
+            var cardRepository = serviceProvider.GetRequiredService<ICardRepository>();
+            var guildConfigRepository = serviceProvider.GetRequiredService<IGuildConfigRepository>();
+            var penaltyInfoRepository = serviceProvider.GetRequiredService<IPenaltyInfoRepository>();
+
+            await Utils.TruncateGeneralLogAsync(connection);
+            await Utils.ToggleGeneralLogAsync(connection, "ON");
+
+            var discordUser = await userRepository.GetByDiscordIdAsync(1ul);
+            await Utils.StubSelectAsync(connection);
+            var shindenUser = await userRepository.GetByShindenIdAsync(1ul);
+            await Utils.StubSelectAsync(connection);
+            var card = await cardRepository.GetCardsByCharacterIdAsync(1ul);
+            await Utils.StubSelectAsync(connection);
+            var guildConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(1ul);
+            await Utils.StubSelectAsync(connection);
+            var penalties = await penaltyInfoRepository.GetByGuildIdAsync(1ul);
+            await Utils.StubSelectAsync(connection);
+
+            var repositoryMethods = new[]
             {
-                var tableDefinition = await GetTableDefinitionAsync(connection, tableName);
-                var filePath = Path.Combine(tablesFolder, $"{tableName}.sql");
+                $"{nameof(IUserRepository)}_{nameof(IUserRepository.GetByDiscordIdAsync)}",
+                $"{nameof(IUserRepository)}_{nameof(IUserRepository.GetByShindenIdAsync)}",
+                $"{nameof(ICardRepository)}_{nameof(ICardRepository.GetCardsByCharacterIdAsync)}",
+                $"{nameof(IGuildConfigRepository)}_{nameof(IGuildConfigRepository.GetCachedGuildFullConfigAsync)}",
+                $"{nameof(IPenaltyInfoRepository)}_{nameof(IPenaltyInfoRepository.GetByGuildIdAsync)}",
+            };
 
-                var indexes = await GetTableIndexesAsync(connection, tableName);
+            await connection.CloseAsync();
+            connection = databaseFacade.GetDbConnection();
+            await connection.OpenAsync();
+            await Utils.ToggleGeneralLogAsync(connection, "OFF");
 
-                stringBuilder.AppendLine(tableDefinition);
+            var queriesFolder = Path.Combine(path, "Queries");
+            var queries = await Utils.GetLastQueriesAsync(connection);
 
-                foreach (var index in indexes)
-                {
-                    stringBuilder.AppendLine(index);
-                }
-
-                await fileSystem.WriteAllTextAsync(filePath, stringBuilder.ToString());
-                stringBuilder.Clear();
+            foreach (var (repositoryMethod, query) in Enumerable.Zip(repositoryMethods, queries))
+            {
+                var filePath = Path.Combine(queriesFolder, $"{repositoryMethod}.sql");
+                await fileSystem.WriteAllTextAsync(filePath, query);
             }
 
+            await connection.CloseAsync();
             await databaseFacade.EnsureDeletedAsync();
         }
 
-        public static async Task<string> GetTableDefinitionAsync(DbConnection connection, string tableName)
+        public static async Task PopulateTestDataAsync(SanakanDbContext dbContext)
         {
-            var command = connection.CreateCommand();
-            command.CommandText = string.Format(Queries.TableDefinition, tableName);
-
-            using var reader = await command.ExecuteReaderAsync();
-            await reader.ReadAsync();
-
-            var text = reader.GetString(1);
-            
-            return text;
-        }
-
-        public static async Task<List<string>> GetTableIndexesAsync(DbConnection connection, string tableName)
-        {
-            var command = connection.CreateCommand();
-            command.CommandText = string.Format(Queries.IndexesForTable, tableName);
-
-            using var reader = await command.ExecuteReaderAsync();
-            var list = new List<string>();
-
-            while (await reader.ReadAsync())
+            var user1 = new User(1, DateTime.UtcNow);
+            var user2 = new User(2, DateTime.UtcNow);
+            user2.ShindenId = 1ul;
+            var guildConfig = new GuildOptions(1, 50);
+            var card = new Card(
+            1, "test card", "test card",
+            10, 20, Rarity.A,
+            Dere.Bodere, DateTime.UtcNow);
+            var penalty = new PenaltyInfo
             {
-                list.Add(reader.GetString(0));
-            }
+                UserId = 1ul,
+                Reason = "test",
+                GuildId = 1ul,
+                Type = PenaltyType.Ban,
+                StartedOn = DateTime.UtcNow,
+                Duration = TimeSpan.FromMinutes(10),
+            };
 
-            return list;
-        }
+            dbContext.Users.Add(user1);
+            dbContext.Users.Add(user2);
+            await dbContext.SaveChangesAsync();
 
-        public static async Task<List<string>> GetTableNamesAsync(DbConnection connection)
-        {
-            var command = connection.CreateCommand();
-            command.CommandText = Queries.TablesInDatabase;
+            dbContext.Guilds.Add(guildConfig);
+            await dbContext.SaveChangesAsync();
 
-            using var reader = await command.ExecuteReaderAsync();
-            var list = new List<string>();
-            
-            while (await reader.ReadAsync())
-            {
-                list.Add(reader.GetString(0));
-            }
+            card.GameDeckId = user1.GameDeck.Id;
+            dbContext.Cards.Add(card);
+            await dbContext.SaveChangesAsync();
 
-            return list;
+            dbContext.Penalties.Add(penalty);
+            await dbContext.SaveChangesAsync();
         }
     }
 }

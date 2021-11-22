@@ -43,7 +43,15 @@ namespace Sanakan.Common
             Tick?.Invoke(this, new TimerEventArgs(state));
         }
 
-        public void Stop() => _timer.Change(Timeout.Infinite, Timeout.Infinite);
+        public void Stop()
+        {
+            if(_timer == null)
+            {
+                return;
+            }
+
+            _timer.Change(Timeout.Infinite, Timeout.Infinite);
+        }
 
         public event TimerEventHandler? Tick;
     }

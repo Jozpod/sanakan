@@ -26,8 +26,8 @@ namespace Sanakan.Extensions
                 (card.IsBroken, "💔"),
                 (card.InCage, "🔒"),
                 (card.Expedition != ExpeditionCardType.None, "✈️"),
-                (!string.IsNullOrEmpty(card.CustomImageUrl), "🖼️"),
-                (!string.IsNullOrEmpty(card.CustomBorderUrl), "✂️"),
+                (card.CustomImageUrl != null, "🖼️"),
+                (card.CustomBorderUrl != null, "✂️"),
                 (value == MarketValue.Low, "♻️"),
                 (value == MarketValue.High, "💰")
             };

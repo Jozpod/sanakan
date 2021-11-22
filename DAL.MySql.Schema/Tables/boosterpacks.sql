@@ -1,7 +1,7 @@
 CREATE TABLE `boosterpacks` (
   `Id` bigint unsigned NOT NULL AUTO_INCREMENT,
   `Name` varchar(50) NOT NULL,
-  `TitleId` bigint unsigned NOT NULL,
+  `TitleId` bigint unsigned DEFAULT NULL,
   `CardCount` int NOT NULL,
   `MinRarity` int NOT NULL,
   `IsCardFromPackTradable` tinyint(1) NOT NULL,

@@ -12,6 +12,9 @@ using System.Collections.Generic;
 
 namespace Sanakan.DiscordBot.Tests.PreconditionsTests
 {
+    /// <summary>
+    /// Defines tests for <see cref="RequireAdminOrModRole.CheckPermissionsAsync(ICommandContext, CommandInfo, System.IServiceProvider)"/> event handler.
+    /// </summary>
     [TestClass]
     public class RequireAdminOrModRoleTests
     {
@@ -30,27 +33,6 @@ namespace Sanakan.DiscordBot.Tests.PreconditionsTests
             serviceCollection.AddSingleton(_guildConfigRepositoryMock.Object);
             _serviceProvider = serviceCollection.BuildServiceProvider();
 
-            _preconditionAttribute = new();
-        }
-
-        [TestMethod]
-        public async Task Should_Return_Success_Moderator_Role()
-        {
-            var roleId = 1ul;
-            var userId = 1ul;
-            var guildConfig = new GuildOptions(1, 50)
-            {
-                ModeratorRoles = new List<ModeratorRoles>
-                {
-                    new ModeratorRoles
-                    {
-                        RoleId = roleId,
-                    }
-                }
-            };
-
-            var roleIds = new List<ulong> { roleId }.AsReadOnly();
-
             _commandContextMock
                 .Setup(pr => pr.User)
                 .Returns(_guildUserMock.Object);
@@ -63,17 +45,76 @@ namespace Sanakan.DiscordBot.Tests.PreconditionsTests
                 .Setup(pr => pr.Guild)
                 .Returns(_guildMock.Object);
 
+            _preconditionAttribute = new();
+        }
+
+        [TestMethod]
+        public async Task Should_Return_Success_Moderator_Role()
+        {
+            var roleId = 1ul;
+            var guildConfig = new GuildOptions(1, 50)
+            {
+                ModeratorRoles = new List<ModeratorRoles>
+                {
+                    new ModeratorRoles
+                    {
+                        RoleId = roleId,
+                    },
+                },
+            };
+            var roleIds = new List<ulong> { roleId }.AsReadOnly();
+
             _guildMock
                 .Setup(pr => pr.Id)
                 .Returns(guildConfig.Id);
+
+            _guildConfigRepositoryMock
+                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildConfig.Id))
+                .ReturnsAsync(guildConfig);
 
             _guildUserMock
                 .Setup(pr => pr.RoleIds)
                 .Returns(roleIds);
 
+            _guildUserMock
+                .Setup(pr => pr.GuildPermissions)
+                .Returns(new GuildPermissions(administrator: false));
+
+            var result = await _preconditionAttribute.CheckPermissionsAsync(_commandContextMock.Object, null, _serviceProvider);
+            result.IsSuccess.Should().BeTrue();
+        }
+
+        [TestMethod]
+        public async Task Should_Return_Success_Admin_Role()
+        {
+            var roleId = 1ul;
+            var guildConfig = new GuildOptions(1, 50);
+            guildConfig.AdminRoleId = roleId;
+            var roleIds = new List<ulong> { roleId }.AsReadOnly();
+
+            _guildMock
+                .Setup(pr => pr.Id)
+                .Returns(guildConfig.Id);
+
             _guildConfigRepositoryMock
                 .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildConfig.Id))
                 .ReturnsAsync(guildConfig);
+
+            _guildUserMock
+                .Setup(pr => pr.RoleIds)
+                .Returns(roleIds);
+
+            _guildMock
+                .Setup(pr => pr.GetRole(roleId))
+                .Returns(_roleMock.Object);
+
+            _roleMock
+                .Setup(pr => pr.Id)
+                .Returns(roleId);
+
+            _guildUserMock
+                .Setup(pr => pr.GuildPermissions)
+                .Returns(new GuildPermissions(administrator: false));
 
             var result = await _preconditionAttribute.CheckPermissionsAsync(_commandContextMock.Object, null, _serviceProvider);
             result.IsSuccess.Should().BeTrue();
@@ -82,12 +123,17 @@ namespace Sanakan.DiscordBot.Tests.PreconditionsTests
         [TestMethod]
         public async Task Should_Return_Error_Only_Server()
         {
+            _commandContextMock
+                 .Setup(pr => pr.User)
+                 .Returns(null as IUser);
+
             var result = await _preconditionAttribute.CheckPermissionsAsync(_commandContextMock.Object, null, _serviceProvider);
             result.IsSuccess.Should().BeFalse();
+            result.ErrorReason.Should().NotBeNullOrEmpty();
         }
 
         [TestMethod]
-        public async Task Should_Return_Error_No_Permission()
+        public async Task Should_Return_Error_No_Role_Not_Admin()
         {
             var roleId = 1ul;
             var userId = 1ul;
@@ -95,16 +141,11 @@ namespace Sanakan.DiscordBot.Tests.PreconditionsTests
             {
                 AdminRoleId = roleId,
             };
-
             var roleIds = new List<ulong> { roleId }.AsReadOnly();
 
-            _commandContextMock
-                .Setup(pr => pr.User)
-                .Returns(_guildUserMock.Object);
-
-            _commandContextMock
-                .Setup(pr => pr.Guild)
-                .Returns(_guildMock.Object);
+            _guildConfigRepositoryMock
+                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildConfig.Id))
+                .ReturnsAsync(guildConfig);
 
             _guildMock
                 .Setup(pr => pr.Id)
@@ -112,18 +153,72 @@ namespace Sanakan.DiscordBot.Tests.PreconditionsTests
 
             _guildMock
                 .Setup(pr => pr.GetRole(roleId))
-                .Returns(_roleMock.Object);
+                .Returns(null as IRole);
 
             _guildUserMock
                 .Setup(pr => pr.RoleIds)
                 .Returns(roleIds);
 
+            _guildUserMock
+                .Setup(pr => pr.GuildPermissions)
+                .Returns(new GuildPermissions(administrator: false));
+
+            var result = await _preconditionAttribute.CheckPermissionsAsync(_commandContextMock.Object, null, _serviceProvider);
+            result.IsSuccess.Should().BeFalse();
+            result.ErrorReason.Should().NotBeNullOrEmpty();
+        }
+
+        [TestMethod]
+        public async Task Should_Return_Error_No_Configured_Role_Not_Admin()
+        {
+            var roleId = 1ul;
+            var userId = 1ul;
+            var guildConfig = new GuildOptions(1, 50);
+            var roleIds = new List<ulong>();
+
             _guildConfigRepositoryMock
                 .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildConfig.Id))
                 .ReturnsAsync(guildConfig);
 
+            _guildMock
+                .Setup(pr => pr.Id)
+                .Returns(guildConfig.Id);
+
+            _guildUserMock
+                .Setup(pr => pr.RoleIds)
+                .Returns(roleIds);
+
+            _guildUserMock
+                .Setup(pr => pr.GuildPermissions)
+                .Returns(new GuildPermissions(administrator: false));
+
             var result = await _preconditionAttribute.CheckPermissionsAsync(_commandContextMock.Object, null, _serviceProvider);
             result.IsSuccess.Should().BeFalse();
+            result.ErrorReason.Should().NotBeNullOrEmpty();
+        }
+
+        [TestMethod]
+        public async Task Should_Return_Error_No_Guild_Not_Admin()
+        {
+            var guildId = 1ul;
+            var userId = 1ul;
+            var guildConfig = null as GuildOptions;
+
+            _guildMock
+                .Setup(pr => pr.Id)
+                .Returns(guildId);
+
+            _guildConfigRepositoryMock
+                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildId))
+                .ReturnsAsync(guildConfig);
+
+            _guildUserMock
+                .Setup(pr => pr.GuildPermissions)
+                .Returns(new GuildPermissions(administrator: false));
+
+            var result = await _preconditionAttribute.CheckPermissionsAsync(_commandContextMock.Object, null, _serviceProvider);
+            result.IsSuccess.Should().BeFalse();
+            result.ErrorReason.Should().NotBeNullOrEmpty();
         }
     }
 }

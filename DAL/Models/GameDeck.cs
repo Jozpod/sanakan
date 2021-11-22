@@ -33,29 +33,39 @@ namespace Sanakan.DAL.Models
         public bool WishlistIsPrivate { get; set; }
 
         public long PVPCoins { get; set; }
+
         public double DeckPower { get; set; }
+
         public long PVPWinStreak { get; set; }
+
         public long GlobalPVPRank { get; set; }
+
         public long SeasonalPVPRank { get; set; }
+
         public double MatchMakingRatio { get; set; }
+
         public ulong PVPDailyGamesPlayed { get; set; }
+
         public DateTime PVPSeasonBeginDate { get; set; }
 
         [StringLength(50)]
         public string? ExchangeConditions { get; set; }
 
         [StringLength(50)]
-        public string? BackgroundImageUrl { get; set; }
+        public Uri? BackgroundImageUrl { get; set; }
 
         [StringLength(50)]
-        public string? ForegroundImageUrl { get; set; }
+        public Uri? ForegroundImageUrl { get; set; }
 
         [StringLength(50)]
         public string? ForegroundColor { get; set; }
+
         public int ForegroundPosition { get; set; }
+
         public int BackgroundPosition { get; set; }
 
         public long MaxNumberOfCards { get; set; }
+
         public int CardsInGallery { get; set; }
 
         public virtual ICollection<Card> Cards { get; set; }

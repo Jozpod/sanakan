@@ -222,8 +222,8 @@ namespace Sanakan.DiscordBot.Services
             {
                 foreach (var commandChannel in commandChannels)
                 {
-                    var channel = await guild.GetTextChannelAsync(commandChannel.Channel);
-                    var mention = channel?.Mention ?? commandChannel.Channel.ToString();
+                    var channel = await guild.GetTextChannelAsync(commandChannel.ChannelId);
+                    var mention = channel?.Mention ?? commandChannel.ChannelId.ToString();
                     stringBuilder.AppendFormat("{0}\n", mention);
                 }
             }
@@ -516,7 +516,9 @@ namespace Sanakan.DiscordBot.Services
                 var first = message.Attachments.First();
 
                 if (first.Url.IsURLToImage())
+                {
                     image = first.Url;
+                }
             }
 
             return new EmbedBuilder
@@ -623,7 +625,6 @@ namespace Sanakan.DiscordBot.Services
                 Type = PenaltyType.Ban,
                 StartedOn = _systemClock.UtcNow,
                 Duration = duration,
-                Roles = new List<OwnedRole>(),
             };
 
             penaltyInfoRepository.Add(penalty);
@@ -653,7 +654,6 @@ namespace Sanakan.DiscordBot.Services
                 Type = PenaltyType.Mute,
                 StartedOn = _systemClock.UtcNow,
                 Duration = duration,
-                Roles = new List<OwnedRole>(),
             };
 
             if (userRole != null)

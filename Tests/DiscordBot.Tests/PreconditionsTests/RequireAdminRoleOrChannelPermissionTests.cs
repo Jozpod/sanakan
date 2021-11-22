@@ -8,6 +8,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Sanakan.DiscordBot.Tests.PreconditionsTests
 {
+    /// <summary>
+    /// Defines tests for <see cref="RequireAdminRoleOrChannelPermission.CheckPermissionsAsync(ICommandContext, CommandInfo, System.IServiceProvider)"/> event handler.
+    /// </summary>
     [TestClass]
     public class RequireAdminRoleOrChannelPermissionTests
     {

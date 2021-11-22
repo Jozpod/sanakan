@@ -27,25 +27,24 @@ namespace Sanakan.Preconditions
             }
 
             var guildConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
-            
+
             if (guildConfig == null)
             {
                 return PreconditionResult.FromSuccess();
             }
 
-            var role = guild.GetRole(guildConfig.UserRoleId.Value);
-            
-            if (role == null)
+            var userRoleId = guildConfig.UserRoleId;
+
+            if (!userRoleId.HasValue)
             {
                 return PreconditionResult.FromSuccess();
             }
 
-            if (user.RoleIds.Any(id => id == role.Id))
-            {
-                return PreconditionResult.FromSuccess();
-            }
+            var role = guild.GetRole(userRoleId.Value);
 
-            if (user.GuildPermissions.Administrator)
+            if (role == null
+                || user.RoleIds.Any(id => id == role.Id)
+                || user.GuildPermissions.Administrator)
             {
                 return PreconditionResult.FromSuccess();
             }

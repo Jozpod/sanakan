@@ -21,7 +21,7 @@ namespace Sanakan.Web.Tests.Controllers.QuizControllerTests
                 {
                     Id = 1,
                     Content = "test",
-                    Answer = 1,
+                    AnswerNumber = 1,
                     PointsWin = 10,
                     PointsLose = 10,
                     TimeToAnswer = TimeSpan.FromMinutes(1),
