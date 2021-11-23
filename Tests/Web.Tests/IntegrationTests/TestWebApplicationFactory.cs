@@ -1,6 +1,9 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Sanakan.ShindenApi;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,6 +16,11 @@ namespace Sanakan.Web.Tests.IntegrationTests
     {
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
+            builder.ConfigureTestServices(services =>
+            {
+                services.AddSingleton<IShindenClient, FakeShindenClient>();
+            });
+
             builder.ConfigureAppConfiguration(config =>
             {
                 var configurationBuilder = new ConfigurationBuilder()

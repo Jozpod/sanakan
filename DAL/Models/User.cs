@@ -183,7 +183,9 @@ namespace Sanakan.DAL.Models
         public long WarningsCount { get; set; }
 
         public virtual UserStats Stats { get; set; }
+
         public virtual GameDeck GameDeck { get; set; }
+
         public virtual SlotMachineConfig SMConfig { get; set; }
 
         public virtual ICollection<TimeStatus> TimeStatuses { get; set; }

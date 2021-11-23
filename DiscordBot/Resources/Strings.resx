@@ -125,6 +125,18 @@
   <data name="CanExecuteOnlyOnServer" xml:space="preserve">
     <value>To polecenie działa tylko z poziomu serwera.</value>
   </data>
+  <data name="CardNotFound" xml:space="preserve">
+    <value>Nie odnaleziono karty.</value>
+  </data>
+  <data name="CardsNotFound" xml:space="preserve">
+    <value>{0} nie odnaleziono kart.</value>
+  </data>
+  <data name="CardsUpdated" xml:space="preserve">
+    <value>Zaktualizowano {0} kart.</value>
+  </data>
+  <data name="ErrorOccurred" xml:space="preserve">
+    <value>Coś poszło nie tak: {0}</value>
+  </data>
   <data name="GameInfo" xml:space="preserve">
     <value>**Info:**
 
@@ -135,6 +147,9 @@
 
 
 3-5x{0} - tryb psaja (podwójne wygrane)</value>
+  </data>
+  <data name="NoSafariImage" xml:space="preserve">
+    <value>Nie znaleziono obrazkow safari</value>
   </data>
   <data name="OnJourney" xml:space="preserve">
     <value>{0}:
@@ -187,6 +202,9 @@ Traci siły po {3} min.</value>
 **Pakiety otwarte**:
 **-Aktywność**: {11}
 **-Inne**: {12}</value>
+  </data>
+  <data name="ProvideTags" xml:space="preserve">
+    <value>{0} musisz sprecyzować tag!</value>
   </data>
   <data name="RequiredChannel" xml:space="preserve">
     <value>To polecenie działa na kanale {0}</value>
@@ -286,6 +304,12 @@ Rzędy / `1`, `2`, `3`</value>
 **Mnożnik:** `x{4}`
 
 **Wygrana:** `{5} SC`</value>
+  </data>
+  <data name="UserNoCards" xml:space="preserve">
+    <value>{0} nie masz żadnych kart.</value>
+  </data>
+  <data name="UserNotFound" xml:space="preserve">
+    <value>Nie znaleziono uzytkownika.</value>
   </data>
   <data name="UserQuestsProgress" xml:space="preserve">
     <value>**Dzienne misje:**

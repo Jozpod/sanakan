@@ -185,7 +185,7 @@ namespace Sanakan.DiscordBot.Tests.PreconditionsTests
 
             var result = await _preconditionAttribute.CheckPermissionsAsync(_commandContextMock.Object, null, _serviceProvider);
             result.IsSuccess.Should().BeTrue();
-            
+
             _commandContextMock.Verify();
         }
     }

@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Sanakan.Game.Services.Abstractions;
 using Sanakan.DiscordBot.Session;
 using Sanakan.Common.Cache;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
 {
@@ -32,6 +33,14 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
 
         public Base()
         {
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton(_guildConfigRepositoryMock.Object);
+            serviceCollection.AddSingleton(_gameDeckRepositoryMock.Object);
+            serviceCollection.AddSingleton(_userRepositoryMock.Object);
+            serviceCollection.AddSingleton(_cardRepositoryMock.Object);
+            var serviceProvider = serviceCollection.BuildServiceProvider();
+            var serviceScopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
+
             _module = new(
                 _waifuServiceMock.Object,
                 _shindenClientMock.Object,
@@ -39,12 +48,9 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
                 _sessionManagerMock.Object,
                 _cacheManagerMock.Object,
                 _randomNumberGeneratorMock.Object,
-                _guildConfigRepositoryMock.Object,
-                _gameDeckRepositoryMock.Object,
-                _userRepositoryMock.Object,
-                _cardRepositoryMock.Object,
                 _systemClockMock.Object,
-                _taskManagerMock.Object);
+                _taskManagerMock.Object,
+                serviceScopeFactory);
             Initialize(_module);
         }
     }

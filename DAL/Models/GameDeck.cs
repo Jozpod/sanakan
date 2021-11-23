@@ -140,7 +140,10 @@ namespace Sanakan.DAL.Models
             foreach (var rarity in RarityExtensions.Rarities)
             {
                 var count = Cards.Count(x => x.Rarity == rarity);
-                if (count > 0) stats += $"**{rarity.ToString().ToUpper()}**: {count} ";
+                if (count > 0)
+                {
+                    stats += $"**{rarity.ToString().ToUpper()}**: {count} ";
+                }
             }
 
             return stats;

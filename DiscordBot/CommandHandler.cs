@@ -51,9 +51,10 @@ namespace Sanakan.DiscordBot
         public async Task InitializeAsync()
         {
             var client = _discordSocketClientAccessor.Client;
-
-            _helperService.AddPublicModuleInfo(await _commandService
-                .AddModulesAsync(typeof(CommandHandler).Assembly, _serviceProvider));
+  
+            var modules = await _commandService
+                .AddModulesAsync(typeof(CommandHandler).Assembly, _serviceProvider);
+            _helperService.AddPublicModuleInfo(modules);
 
             _helperService.AddPrivateModuleInfo(
                 ("Moderacja", await _commandService.AddModuleAsync<DiscordBot.Modules.ModerationModule>(_serviceProvider)),

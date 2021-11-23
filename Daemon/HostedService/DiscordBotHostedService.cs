@@ -108,14 +108,14 @@ namespace Sanakan.Daemon.HostedService
                 await _discordSocketClientAccessor.SetGameAsync($"{configuration.Prefix}pomoc");
                 await _discordSocketClientAccessor.Client.StartAsync();
                 stoppingToken.ThrowIfCancellationRequested();
-                
+
                 await _commandHandler.InitializeAsync();
-                
+
                 stoppingToken.ThrowIfCancellationRequested();
 
                 await _taskManager.Delay(Timeout.InfiniteTimeSpan, stoppingToken);
             }
-            catch (InvalidOperationException)
+            catch (InvalidOperationException ex)
             {
                 _logger.LogInformation("The discord client stopped");
             }

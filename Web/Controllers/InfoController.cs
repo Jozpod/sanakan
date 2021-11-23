@@ -38,10 +38,11 @@ namespace Sanakan.Web.Controllers
         {
             try
             {
+                var modules = _helperService.GetPublicModules();
                 var result = new Commands
                 {
                     Prefix = _config.CurrentValue.Prefix,
-                    Modules = GetInfoAboutModules(_helperService.GetPublicModules()),
+                    Modules = GetInfoAboutModules(modules),
                 };
 
                 return Ok(result);

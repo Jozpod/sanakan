@@ -1319,11 +1319,12 @@ namespace Sanakan.Game.Services
 
         public async Task<Embed> BuildCardViewAsync(Card card, ITextChannel trashChannel, IUser owner)
         {
-            string imageUrl = await GetCardUrlIfExistAsync(card, true);
+            var imageUrl = await GetCardUrlIfExistAsync(card, true);
+
             if (imageUrl != null)
             {
-                var msg = await trashChannel.SendFileAsync(imageUrl);
-                imageUrl = msg.Attachments.First().Url;
+                var message = await trashChannel.SendFileAsync(imageUrl);
+                imageUrl = message.Attachments.First().Url;
             }
 
             var imgUrls = $"[_obrazek_]({imageUrl})\n[_możesz zmienić obrazek tutaj_]({card.GetCharacterUrl()}/edit_crossroad)";

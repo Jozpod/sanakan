@@ -20,6 +20,7 @@ using Sanakan.Game.Services.Abstractions;
 using System.Text;
 using Sanakan.Common.Cache;
 using Sanakan.DiscordBot.Session;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Sanakan.DiscordBot.Modules
 {
@@ -40,21 +41,32 @@ namespace Sanakan.DiscordBot.Modules
         private readonly ISystemClock _systemClock;
         private readonly IImageProcessor _imageProcessor;
         private readonly ITaskManager _taskManager;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
+        private readonly IServiceScope _serviceScope;
 
         public ShindenModule(
             IShindenClient shindenClient,
             ISessionManager sessionManager,
             ICacheManager cacheManager,
-            IUserRepository userRepository,
             ISystemClock systemClock,
-            ITaskManager taskManager)
+            ITaskManager taskManager,
+            IServiceScopeFactory serviceScopeFactory)
         {
             _shindenClient = shindenClient;
             _sessionManager = sessionManager;
             _cacheManager = cacheManager;
-            _userRepository = userRepository;
             _systemClock = systemClock;
             _taskManager = taskManager;
+            _serviceScopeFactory = serviceScopeFactory;
+
+            _serviceScope = _serviceScopeFactory.CreateScope();
+            var serviceProvider = _serviceScope.ServiceProvider;
+            _userRepository = serviceProvider.GetRequiredService<IUserRepository>();
+        }
+
+        public override void Dispose()
+        {
+            _serviceScope.Dispose();
         }
 
         [Command("odcinki", RunMode = RunMode.Async)]

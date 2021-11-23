@@ -3,6 +3,7 @@ using Discord.Commands;
 using Discord.WebSocket;
 using DiscordBot.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Sanakan.Common;
 using Sanakan.Common.Cache;
 using Sanakan.Common.Models;
@@ -35,23 +36,32 @@ namespace Sanakan.DiscordBot.Modules
         private readonly IGameDeckRepository _gameDeckRepository;
         private readonly IUserRepository _userRepository;
         private readonly ISystemClock _systemClock;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
+        private readonly IServiceScope _serviceScope;
 
         public ProfileModule(
             IProfileService prof,
             ISessionManager sessionManager,
             ICacheManager cacheManager,
-            IGuildConfigRepository guildConfigRepository,
-            IGameDeckRepository gameDeckRepository,
-            IUserRepository userRepository,
-            ISystemClock systemClock)
+            ISystemClock systemClock,
+            IServiceScopeFactory serviceScopeFactory)
         {
             _profileService = prof;
             _sessionManager = sessionManager;
             _cacheManager = cacheManager;
-            _guildConfigRepository = guildConfigRepository;
-            _gameDeckRepository = gameDeckRepository;
-            _userRepository = userRepository;
             _systemClock = systemClock;
+            _serviceScopeFactory = serviceScopeFactory;
+
+            _serviceScope = _serviceScopeFactory.CreateScope();
+            var serviceProvider = _serviceScope.ServiceProvider;
+            _guildConfigRepository = serviceProvider.GetRequiredService<IGuildConfigRepository>();
+            _gameDeckRepository = serviceProvider.GetRequiredService<IGameDeckRepository>();
+            _userRepository = serviceProvider.GetRequiredService<IUserRepository>();
+        }
+
+        public override void Dispose()
+        {
+            _serviceScope.Dispose();
         }
 
         [Command("portfel", RunMode = RunMode.Async)]

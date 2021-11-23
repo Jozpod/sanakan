@@ -2,6 +2,7 @@
 using Discord.Commands;
 using Discord.WebSocket;
 using DiscordBot.Services;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Sanakan.Common;
 using Sanakan.Common.Cache;
@@ -40,6 +41,8 @@ namespace Sanakan.DiscordBot.Modules
         private readonly ISystemClock _systemClock;
         private readonly IRandomNumberGenerator _randomNumberGenerator;
         private readonly ITaskManager _taskManager;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
+        private readonly IServiceScope _serviceScope;
 
         public ModerationModule(
             IOptionsMonitor<DiscordConfiguration> config,
@@ -49,10 +52,9 @@ namespace Sanakan.DiscordBot.Modules
             IShindenClient shindenClient,
             ICacheManager cacheManager,
             ISystemClock systemClock,
-            IUserRepository userRepository,
-            IGuildConfigRepository guildConfigRepository,
             IRandomNumberGenerator randomNumberGenerator,
-            ITaskManager taskManager)
+            ITaskManager taskManager,
+            IServiceScopeFactory serviceScopeFactory)
         {
             _profileService = profileService;
             _helperService = helperService;
@@ -61,10 +63,18 @@ namespace Sanakan.DiscordBot.Modules
             _config = config;
             _cacheManager = cacheManager;
             _systemClock = systemClock;
-            _userRepository = userRepository;
-            _guildConfigRepository = guildConfigRepository;
             _randomNumberGenerator = randomNumberGenerator;
             _taskManager = taskManager;
+            _serviceScopeFactory = serviceScopeFactory;
+
+            _serviceScope = _serviceScopeFactory.CreateScope();
+            var serviceProvider = _serviceScope.ServiceProvider;
+            _userRepository = serviceProvider.GetRequiredService<IUserRepository>();
+        }
+
+        public override void Dispose()
+        {
+            _serviceScope.Dispose();
         }
 
         [Command("kasuj", RunMode = RunMode.Async)]

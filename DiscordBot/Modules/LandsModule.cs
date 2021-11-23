@@ -10,6 +10,7 @@ using Sanakan.DiscordBot.Abstractions.Extensions;
 using Sanakan.DiscordBot.Abstractions.Models;
 using Sanakan.Common;
 using Discord;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Sanakan.DiscordBot.Modules
 {
@@ -19,15 +20,26 @@ namespace Sanakan.DiscordBot.Modules
         private readonly ILandManager _landManager;
         private readonly IGuildConfigRepository _guildConfigRepository;
         private readonly ITaskManager _taskManager;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
+        private readonly IServiceScope _serviceScope;
 
         public LandsModule(
             ILandManager landManager,
-            IGuildConfigRepository guildConfigRepository,
-            ITaskManager taskManager)
+            ITaskManager taskManager,
+            IServiceScopeFactory serviceScopeFactory)
         {
             _landManager = landManager;
-            _guildConfigRepository = guildConfigRepository;
             _taskManager = taskManager;
+            _serviceScopeFactory = serviceScopeFactory;
+
+            _serviceScope = _serviceScopeFactory.CreateScope();
+            var serviceProvider = _serviceScope.ServiceProvider;
+            _guildConfigRepository = serviceProvider.GetRequiredService<IGuildConfigRepository>();
+        }
+
+        public override void Dispose()
+        {
+            _serviceScope.Dispose();
         }
 
         [Command("ludność", RunMode = RunMode.Async)]

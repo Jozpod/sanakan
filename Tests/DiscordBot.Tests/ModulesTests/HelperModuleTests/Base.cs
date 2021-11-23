@@ -30,18 +30,19 @@ namespace DiscordBot.ModulesTests.HelperModuleTests
         public Base()
         {
             var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton(_guildConfigRepositoryMock.Object);
             var serviceProvider = serviceCollection.BuildServiceProvider();
-            
+            var serviceScopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
+
             _module = new(
                 _discordClientAccessorMock.Object,
                 _sessionManagerMock.Object,
                 _helperServiceMock.Object,
                 NullLogger<HelperModule>.Instance,
                 _discordConfigurationMock.Object,
-                _guildConfigRepositoryMock.Object,
                 _systemClockMock.Object,
                 _operatingSystemMock.Object,
-                serviceProvider);
+                serviceScopeFactory);
             Initialize(_module);
         }
     }

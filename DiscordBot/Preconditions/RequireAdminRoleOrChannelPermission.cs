@@ -28,7 +28,7 @@ namespace Sanakan.Preconditions
             {
                 return PreconditionResult.FromError(Strings.CanExecuteOnlyOnServer);
             }
-            
+
             var channel = context.Channel as IGuildChannel;
 
             if (channel == null)
@@ -37,14 +37,21 @@ namespace Sanakan.Preconditions
             }
 
             var guildConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
-            
+
             if (guildConfig == null)
             {
                 return CheckUser(user, channel);
             }
 
-            var role = guild.GetRole(guildConfig.AdminRoleId.Value);
-            
+            var adminRoleId = guildConfig.AdminRoleId;
+
+            if (!adminRoleId.HasValue)
+            {
+                return CheckUser(user, channel);
+            }
+
+            var role = guild.GetRole(adminRoleId.Value);
+
             if (role == null)
             {
                 return CheckUser(user, channel);
@@ -64,7 +71,7 @@ namespace Sanakan.Preconditions
             {
                 return PreconditionResult.FromSuccess();
             }
-            
+
             if (user.GetPermissions(channel).Has(_permission))
             {
                 return PreconditionResult.FromSuccess();

@@ -21,24 +21,26 @@ namespace DiscordBot.ModulesTests.FunModuleTests
         protected readonly Mock<ISessionManager> _sessionManagerMock = new(MockBehavior.Strict);
         protected readonly Mock<ICacheManager> _cacheManagerMock = new(MockBehavior.Strict);
         protected readonly Mock<ISystemClock> _systemClockMock = new(MockBehavior.Strict);
-        protected readonly Mock<ITaskManager> _taskManagerMock = new(MockBehavior.Strict);
+        protected readonly Mock<IRandomNumberGenerator> _randomNumberGeneratorMock = new(MockBehavior.Strict);
         protected readonly Mock<SlotMachine> _slotMachineMock = new(MockBehavior.Strict);
+        protected readonly Mock<ITaskManager> _taskManagerMock = new(MockBehavior.Strict);
 
         public Base()
         {
             var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton(_guildConfigRepositoryMock.Object);
+            serviceCollection.AddSingleton(_questionRepositoryMock.Object);
             var serviceProvider = serviceCollection.BuildServiceProvider();
             var serviceScopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
 
             _module = new(
-                _guildConfigRepositoryMock.Object,
-                _questionRepositoryMock.Object,
                 _sessionManagerMock.Object,
                 _cacheManagerMock.Object,
                 _systemClockMock.Object,
-                serviceScopeFactory,
+                _randomNumberGeneratorMock.Object,
                 _slotMachineMock.Object,
-                _taskManagerMock.Object);
+                _taskManagerMock.Object,
+                serviceScopeFactory);
             Initialize(_module);
         }
     }

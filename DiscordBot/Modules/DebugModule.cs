@@ -33,6 +33,8 @@ using Sanakan.ShindenApi.Models;
 using Sanakan.Common.Cache;
 using Sanakan.Game.Services.Abstractions;
 using Sanakan.Game.Models;
+using Sanakan.DiscordBot.Resources;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Sanakan.DiscordBot.Modules
 {
@@ -56,6 +58,8 @@ namespace Sanakan.DiscordBot.Modules
         private readonly IResourceManager _resourceManager;
         private readonly IRandomNumberGenerator _randomNumberGenerator;
         private readonly ITaskManager _taskManager;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
+        private readonly IServiceScope _serviceScope;
 
         public DebugModule(
             IFileSystem fileSystem,
@@ -66,14 +70,12 @@ namespace Sanakan.DiscordBot.Modules
             IHelperService helperService,
             IImageProcessor imageProcessor,
             IWritableOptions<SanakanConfiguration> config,
-            IUserRepository userRepository,
-            ICardRepository cardRepository,
-            IGuildConfigRepository guildConfigRepository,
             ISystemClock systemClock,
             ICacheManager cacheManager,
             IResourceManager resourceManager,
             IRandomNumberGenerator randomNumberGenerator,
-            ITaskManager taskManager)
+            ITaskManager taskManager,
+            IServiceScopeFactory serviceScopeFactory)
         {
             _fileSystem = fileSystem;
             _discordClientAccessor = discordClientAccessor;
@@ -82,15 +84,25 @@ namespace Sanakan.DiscordBot.Modules
             _helperService = helperService;
             _config = config;
             _waifuService = waifuService;
-            _guildConfigRepository = guildConfigRepository;
-            _userRepository = userRepository;
-            _cardRepository = cardRepository;
             _systemClock = systemClock;
             _cacheManager = cacheManager;
             _resourceManager = resourceManager;
             _randomNumberGenerator = randomNumberGenerator;
             _imageProcessor = imageProcessor;
             _taskManager = taskManager;
+            _serviceScopeFactory = serviceScopeFactory;
+
+            _serviceScope = _serviceScopeFactory.CreateScope();
+            var serviceProvider = _serviceScope.ServiceProvider;
+            _guildConfigRepository = serviceProvider.GetRequiredService<IGuildConfigRepository>();
+            _userRepository = serviceProvider.GetRequiredService<IUserRepository>();
+            _cardRepository = serviceProvider.GetRequiredService<ICardRepository>();
+            _questionRepository = serviceProvider.GetRequiredService<IQuestionRepository>();
+        }
+
+        public override void Dispose()
+        {
+            _serviceScope.Dispose();
         }
 
         [Command("poke", RunMode = RunMode.Async)]
@@ -104,7 +116,7 @@ namespace Sanakan.DiscordBot.Modules
 
                 if(images == null)
                 {
-                    await ReplyAsync("", embed: $"Nie znaleziono obrazkow safari".ToEmbedMessage(EMType.Error).Build());
+                    await ReplyAsync(embed: Strings.NoSafariImage.ToEmbedMessage(EMType.Error).Build());
                     return;
                 }
 
@@ -117,7 +129,8 @@ namespace Sanakan.DiscordBot.Modules
             }
             catch (Exception ex)
             {
-                await ReplyAsync("", embed: $"Coś poszło nie tak: {ex.Message}".ToEmbedMessage(EMType.Error).Build());
+                var message = string.Format(Strings.ErrorOccurred, ex.Message);
+                await ReplyAsync(embed: message.ToEmbedMessage(EMType.Error).Build());
             }
         }
 
@@ -150,7 +163,7 @@ namespace Sanakan.DiscordBot.Modules
 
             if(targetUser == null)
             {
-                await ReplyAsync("", embed: $"Nie znaleziono uzytkownika".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync(embed: Strings.UserNotFound.ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
@@ -160,7 +173,7 @@ namespace Sanakan.DiscordBot.Modules
             var discordUserId = Context.User.Id;
             _cacheManager.ExpireTag(CacheKeys.User(discordUserId), CacheKeys.Users);
 
-            await ReplyAsync("", embed: $"{user.Mention} - blacklist: {targetUser.IsBlacklisted}".ToEmbedMessage(EMType.Success).Build());
+            await ReplyAsync(embed: $"{user.Mention} - blacklist: {targetUser.IsBlacklisted}".ToEmbedMessage(EMType.Success).Build());
         }
 
         [Command("rmsg", RunMode = RunMode.Async)]
@@ -271,7 +284,8 @@ namespace Sanakan.DiscordBot.Modules
 
             if (!cards.Any())
             {
-                await ReplyAsync("", embed: $"{Context.User.Mention} nie odnaleziono kart.".ToEmbedMessage(EMType.Error).Build());
+                var message = string.Format(Strings.CardsNotFound, Context.User.Mention);
+                await ReplyAsync(embed: message.ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
@@ -284,7 +298,9 @@ namespace Sanakan.DiscordBot.Modules
                     if (result.Value == null)
                     {
                         card.IsUnique = true;
-                        throw new Exception($"Couldn't get card info!");
+                        //throw new Exception($"Couldn't get card info!");
+                        await ReplyAsync(embed: $"Zaktualizowano {cards.Count} kart.".ToEmbedMessage(EMType.Error).Build());
+                        return;
                     }
 
                     var characterInfo = result.Value;
@@ -307,7 +323,7 @@ namespace Sanakan.DiscordBot.Modules
 
             _cacheManager.ExpireTag(CacheKeys.Users);
 
-            await ReplyAsync("", embed: $"Zaktualizowano {cards.Count} kart.".ToEmbedMessage(EMType.Success).Build());
+            await ReplyAsync(embed: $"Zaktualizowano {cards.Count} kart.".ToEmbedMessage(EMType.Success).Build());
         }
 
         [Command("rozdajm", RunMode = RunMode.Async)]
@@ -1102,7 +1118,7 @@ namespace Sanakan.DiscordBot.Modules
 
             if (card == null)
             {
-                await ReplyAsync("", embed: "W bazie nie ma takiej karty!".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync(embed: Strings.CardNotFound.ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 

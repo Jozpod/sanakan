@@ -10,6 +10,7 @@ using Sanakan.Common.Configuration;
 using Sanakan.Game.Services.Abstractions;
 using Sanakan.DiscordBot;
 using Sanakan.Common.Cache;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace DiscordBot.ModulesTests.DebugModuleTests
 {
@@ -96,6 +97,13 @@ namespace DiscordBot.ModulesTests.DebugModuleTests
 
         public Base()
         {
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton(_userRepositoryMock.Object);
+            serviceCollection.AddSingleton(_cardRepositoryMock.Object);
+            serviceCollection.AddSingleton(_guildConfigRepository.Object);
+            var serviceProvider = serviceCollection.BuildServiceProvider();
+            var serviceScopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
+
             _module = new(
                 _fileSystemMock.Object,
                 _discordClientAccessorMock.Object,
@@ -105,14 +113,12 @@ namespace DiscordBot.ModulesTests.DebugModuleTests
                 _helperServiceMock.Object,
                 _imageProcessorMock.Object,
                 _sanakanConfigurationMock.Object,
-                _userRepositoryMock.Object,
-                _cardRepositoryMock.Object,
-                _guildConfigRepository.Object,
                 _systemClockMock.Object,
                 _cacheManagerMock.Object,
                 _resourceManagerMock.Object,
                 _randomNumberGeneratorMock.Object,
-                _taskManagerMock.Object);
+                _taskManagerMock.Object,
+                serviceScopeFactory);
             Initialize(_module);
             //var discordSocketClientMock = new Mock<DiscordSocketClient>(MockBehavior.Strict);
             //var socketGlobalUser = CreateSocketGlobalUser(discordSocketClientMock.Object, 1);

@@ -63,7 +63,7 @@ namespace Sanakan.DiscordBot.Resources {
         /// <summary>
         ///   Looks up a localized string similar to **Sanakan ({0})**:
         ///
-        ///**Czas działania**: `{0}`.
+        ///**Czas działania**: `{1}`.
         /// </summary>
         internal static string BotInfo {
             get {
@@ -81,6 +81,42 @@ namespace Sanakan.DiscordBot.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Nie odnaleziono karty..
+        /// </summary>
+        internal static string CardNotFound {
+            get {
+                return ResourceManager.GetString("CardNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} nie odnaleziono kart..
+        /// </summary>
+        internal static string CardsNotFound {
+            get {
+                return ResourceManager.GetString("CardsNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Zaktualizowano {0} kart..
+        /// </summary>
+        internal static string CardsUpdated {
+            get {
+                return ResourceManager.GetString("CardsUpdated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Coś poszło nie tak: {0}.
+        /// </summary>
+        internal static string ErrorOccurred {
+            get {
+                return ResourceManager.GetString("ErrorOccurred", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to **Info:**
         ///
         ///✖ - nieaktywny rząd
@@ -94,6 +130,15 @@ namespace Sanakan.DiscordBot.Resources {
         internal static string GameInfo {
             get {
                 return ResourceManager.GetString("GameInfo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Nie znaleziono obrazkow safari.
+        /// </summary>
+        internal static string NoSafariImage {
+            get {
+                return ResourceManager.GetString("NoSafariImage", resourceCulture);
             }
         }
         
@@ -164,6 +209,15 @@ namespace Sanakan.DiscordBot.Resources {
         internal static string ProfileUserStats {
             get {
                 return ResourceManager.GetString("ProfileUserStats", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} musisz sprecyzować tag!.
+        /// </summary>
+        internal static string ProvideTags {
+            get {
+                return ResourceManager.GetString("ProvideTags", resourceCulture);
             }
         }
         
@@ -291,6 +345,24 @@ namespace Sanakan.DiscordBot.Resources {
         internal static string SlotMachineResult {
             get {
                 return ResourceManager.GetString("SlotMachineResult", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} nie masz żadnych kart..
+        /// </summary>
+        internal static string UserNoCards {
+            get {
+                return ResourceManager.GetString("UserNoCards", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Nie znaleziono uzytkownika..
+        /// </summary>
+        internal static string UserNotFound {
+            get {
+                return ResourceManager.GetString("UserNotFound", resourceCulture);
             }
         }
         

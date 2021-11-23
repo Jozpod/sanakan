@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Sanakan.Common;
@@ -31,8 +32,9 @@ namespace Sanakan.DiscordBot.Modules
         private readonly IGuildConfigRepository _guildConfigRepository;
         private readonly ISystemClock _systemClock;
         private readonly IOperatingSystem _operatingSystem;
-        private readonly IServiceProvider _serviceProvider;
         private readonly TimeSpan _reportExpiry = TimeSpan.FromHours(3);
+        private readonly IServiceScopeFactory _serviceScopeFactory;
+        private readonly IServiceScope _serviceScope;
 
         public HelperModule(
             IDiscordClientAccessor discordClientAccessor,
@@ -40,20 +42,27 @@ namespace Sanakan.DiscordBot.Modules
             IHelperService helperService,
             ILogger<HelperModule> logger,
             IOptionsMonitor<DiscordConfiguration> config,
-            IGuildConfigRepository guildConfigRepository,
             ISystemClock systemClock,
             IOperatingSystem operatingSystem,
-            IServiceProvider serviceProvider)
+            IServiceScopeFactory serviceScopeFactory)
         {
             _discordClientAccessor = discordClientAccessor;
             _sessionManager = sessionManager;
             _helperService = helperService;
             _logger = logger;
             _config = config;
-            _guildConfigRepository = guildConfigRepository;
             _systemClock = systemClock;
             _operatingSystem = operatingSystem;
-            _serviceProvider = serviceProvider;
+            _serviceScopeFactory = serviceScopeFactory;
+
+            _serviceScope = _serviceScopeFactory.CreateScope();
+            var serviceProvider = _serviceScope.ServiceProvider;
+            _guildConfigRepository = serviceProvider.GetRequiredService<IGuildConfigRepository>();
+        }
+
+        public override void Dispose()
+        {
+            _serviceScope.Dispose();
         }
 
         [Command("pomoc", RunMode = RunMode.Async)]
@@ -64,12 +73,12 @@ namespace Sanakan.DiscordBot.Modules
             [Summary("nazwa polecenia (opcjonalne)")][Remainder]string? command = null)
         {
             var guildUser = Context.User as IGuildUser;
-            
+
             if (guildUser == null)
             {
                 return;
             }
-            
+
             if (command == null)
             {
                 await ReplyAsync(_helperService.GivePublicHelp());
@@ -204,16 +213,18 @@ namespace Sanakan.DiscordBot.Modules
         {
             var guild = Context.Guild;
             var config = await _guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
+
             if (config == null)
             {
-                await ReplyAsync("", embed: "Serwer nie jest jeszcze skonfigurowany.".ToEmbedMessage(EMType.Bot).Build());
+                await ReplyAsync(embed: "Serwer nie jest jeszcze skonfigurowany.".ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
 
             var raportChannel = (ITextChannel) await guild.GetChannelAsync(config.RaportChannelId);
+
             if (raportChannel == null)
             {
-                await ReplyAsync("", embed: "Serwer nie ma skonfigurowanych raportów.".ToEmbedMessage(EMType.Bot).Build());
+                await ReplyAsync(embed: "Serwer nie ma skonfigurowanych raportów.".ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
 
@@ -222,7 +233,7 @@ namespace Sanakan.DiscordBot.Modules
             var replyMessage = await Context.Channel.GetMessageAsync(messageId);
             if (replyMessage == null)
             {
-                await ReplyAsync("", embed: "Nie odnaleziono wiadomości.".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync(embed: "Nie odnaleziono wiadomości.".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
@@ -230,7 +241,7 @@ namespace Sanakan.DiscordBot.Modules
 
             if (replyUser.IsBotOrWebhook())
             {
-                await ReplyAsync("", embed: "Raportować bota? Bez sensu.".ToEmbedMessage(EMType.Bot).Build());
+                await ReplyAsync(embed: "Raportować bota? Bez sensu.".ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
 
@@ -280,13 +291,13 @@ namespace Sanakan.DiscordBot.Modules
 
                 if(_sessionManager.Exists<AcceptSession>(discordUserId))
                 {
-                    await ReplyAsync("", embed: $"?????????".ToEmbedMessage(EMType.Error).Build());
+                    await ReplyAsync(embed: $"?????????".ToEmbedMessage(EMType.Error).Build());
                     return;
                 }
 
                 _sessionManager.Remove(session);
 
-                var userMessage = await ReplyAsync("", embed: $"{user.Mention} raportujesz samego siebie? Może pomogę! Na pewno chcesz muta?"
+                var userMessage = await ReplyAsync(embed: $"{user.Mention} raportujesz samego siebie? Może pomogę! Na pewno chcesz muta?"
                     .ToEmbedMessage(EMType.Error).Build());
 
                 await userMessage.AddReactionsAsync(new IEmote[] { Emojis.Checked, Emojis.DeclineEmote });
@@ -297,7 +308,7 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            await ReplyAsync("", embed: "Wysłano zgłoszenie.".ToEmbedMessage(EMType.Success).Build());
+            await ReplyAsync(embed: "Wysłano zgłoszenie.".ToEmbedMessage(EMType.Success).Build());
 
             var userName = $"{Context.User.Username}({Context.User.Id})";
             var botMessage = await raportChannel.SendMessageAsync($"{replyMessage.GetJumpUrl()}", embed: "prep".ToEmbedMessage().Build());

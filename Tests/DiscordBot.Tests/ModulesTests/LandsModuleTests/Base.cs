@@ -4,6 +4,7 @@ using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot.Services.Abstractions;
 using Sanakan.DiscordBot.Modules;
 using Sanakan.Common;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace DiscordBot.ModulesTests.LandsModuleTests
 {
@@ -17,10 +18,15 @@ namespace DiscordBot.ModulesTests.LandsModuleTests
 
         public Base()
         {
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton(_guildConfigRepositoryMock.Object);
+            var serviceProvider = serviceCollection.BuildServiceProvider();
+            var serviceScopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
+
             _module = new(
                 _landManagerMock.Object,
-                _guildConfigRepositoryMock.Object,
-                _taskManagerMock.Object);
+                _taskManagerMock.Object,
+                serviceScopeFactory);
             Initialize(_module);
         }
 

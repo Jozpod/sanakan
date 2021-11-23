@@ -8,6 +8,7 @@ using Microsoft.Extensions.Options;
 using Sanakan.Common.Configuration;
 using Sanakan.Common;
 using Sanakan.Common.Cache;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace DiscordBot.ModulesTests.ModerationModuleTests
 {
@@ -29,6 +30,12 @@ namespace DiscordBot.ModulesTests.ModerationModuleTests
 
         public Base()
         {
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton(_userRepositoryMock.Object);
+            serviceCollection.AddSingleton(_guildConfigRepositoryMock.Object);
+            var serviceProvider = serviceCollection.BuildServiceProvider();
+            var serviceScopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
+
             _discordConfigurationMock
                 .Setup(pr => pr.CurrentValue)
                 .Returns(new DiscordConfiguration
@@ -44,10 +51,9 @@ namespace DiscordBot.ModulesTests.ModerationModuleTests
                 _shindenClientMock.Object,
                 _cacheManagerMock.Object,
                 _systemClockMock.Object,
-                _userRepositoryMock.Object,
-                _guildConfigRepositoryMock.Object,
                 _randomNumberGeneratorMock.Object,
-                _taskManagerMock.Object);
+                _taskManagerMock.Object,
+                serviceScopeFactory);
             Initialize(_module);
         }
     }

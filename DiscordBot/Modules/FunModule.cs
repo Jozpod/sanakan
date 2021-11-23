@@ -36,28 +36,38 @@ namespace Sanakan.DiscordBot.Modules
         private readonly IQuestionRepository _questionRepository;
         private readonly ISystemClock _systemClock;
         private readonly IRandomNumberGenerator _randomNumberGenerator;
-        private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly ISlotMachine _slotMachine;
         private readonly ITaskManager _taskManager;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
+        private readonly IServiceScope _serviceScope;
 
         public FunModule(
-            IGuildConfigRepository guildConfigRepository,
-            IQuestionRepository questionRepository,
             ISessionManager session,
             ICacheManager cacheManager,
             ISystemClock systemClock,
-            IServiceScopeFactory serviceScopeFactory,
+            IRandomNumberGenerator randomNumberGenerator,
             ISlotMachine slotMachine,
-            ITaskManager taskManager)
+            ITaskManager taskManager,
+            IServiceScopeFactory serviceScopeFactory)
         {
-            _guildConfigRepository = guildConfigRepository;
-            _questionRepository = questionRepository;
             _sessionManager = session;
             _cacheManager = cacheManager;
             _systemClock = systemClock;
-            _serviceScopeFactory = serviceScopeFactory;
+            _randomNumberGenerator = randomNumberGenerator;
             _slotMachine = slotMachine;
             _taskManager = taskManager;
+            _serviceScopeFactory = serviceScopeFactory;
+
+            _serviceScope = _serviceScopeFactory.CreateScope();
+            var serviceProvider = _serviceScope.ServiceProvider;
+            _guildConfigRepository = serviceProvider.GetRequiredService<IGuildConfigRepository>();
+            _userRepository = serviceProvider.GetRequiredService<IUserRepository>();
+            _questionRepository = serviceProvider.GetRequiredService<IQuestionRepository>();
+        }
+
+        public override void Dispose()
+        {
+            _serviceScope.Dispose();
         }
 
         [Command("drobne")]

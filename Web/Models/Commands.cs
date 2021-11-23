@@ -4,17 +4,16 @@ namespace Sanakan.Api.Models
 {
     /// <summary>
     /// Encapsulates all discord bot commands.
-    /// Wszystkie publiczne polecenia bota
     /// </summary>
     public class Commands
     {
         /// <summary>
-        /// Prefix bota
+        /// The bot prefix.
         /// </summary>
         public string Prefix { get; set; }
 
         /// <summary>
-        /// Moduły
+        /// The list of modules.
         /// </summary>
         public List<Module> Modules { get; set; }
     }

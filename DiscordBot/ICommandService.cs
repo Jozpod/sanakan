@@ -10,9 +10,13 @@ namespace Sanakan.DiscordBot
     public interface ICommandService
     {
         Task<ModuleInfo> AddModuleAsync<T>(IServiceProvider services);
+
         Task<IEnumerable<ModuleInfo>> AddModulesAsync(Assembly assembly, IServiceProvider services);
+
         void AddTypeReader<T>(TypeReader reader);
+
         SearchResult Search(string input);
+
         SearchResult Search(ICommandContext context, int argPos);
     }
 }

@@ -127,6 +127,10 @@ namespace Sanakan.DiscordBot.Tests.PreconditionsTests
                 .Setup(pr => pr.GuildPermissions)
                 .Returns(new GuildPermissions(administrator: false));
 
+            _guildUserMock
+                .Setup(pr => pr.GetPermissions(It.IsAny<IGuildChannel>()))
+                .Returns(ChannelPermissions.None);
+
             var result = await _preconditionAttribute.CheckPermissionsAsync(_commandContextMock.Object, null, _serviceProvider);
             result.IsSuccess.Should().BeFalse();
             result.ErrorReason.Should().NotBeNullOrEmpty();

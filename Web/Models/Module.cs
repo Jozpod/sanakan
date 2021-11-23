@@ -3,17 +3,18 @@
 namespace Sanakan.Api.Models
 {
     /// <summary>
-    /// Moduł bota
+    /// Describees bot module.
     /// </summary>
     public class Module
     {
         /// <summary>
-        /// Nazwa modułu
+        /// The name of module.
         /// </summary>
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
+
         /// <summary>
-        /// Podmoduły
+        /// The list of sub modules.
         /// </summary>
-        public List<SubModule> SubModules { get; set; }
+        public IList<SubModule> SubModules { get; set; }
     }
 }

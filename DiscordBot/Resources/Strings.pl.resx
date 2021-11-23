@@ -124,4 +124,7 @@ Mnożnik / `1`, `2`, `3`
 Stawka / `1`, `10`, `100`
 Rzędy / `1`, `2`, `3`</value>
   </data>
+  <data name="UserNotFound" xml:space="preserve">
+    <value>Nie znaleziono uzytkownika.</value>
+  </data>
 </root>

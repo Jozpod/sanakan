@@ -4,6 +4,7 @@ using Discord.WebSocket;
 using DiscordBot.Services.PocketWaifu;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Sanakan.Common;
 using Sanakan.Common.Cache;
@@ -43,10 +44,12 @@ namespace Sanakan.DiscordBot.Modules
         private readonly IGameDeckRepository _gameDeckRepository;
         private readonly IUserRepository _userRepository;
         private readonly ICardRepository _cardRepository;
-        private readonly IRandomNumberGenerator _randomNumberGenerator;
         private readonly IGuildConfigRepository _guildConfigRepository;
+        private readonly IRandomNumberGenerator _randomNumberGenerator;
         private readonly ISystemClock _systemClock;
         private readonly ITaskManager _taskManager;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
+        private readonly IServiceScope _serviceScope;
 
         public PocketWaifuModule(
             IWaifuService waifuService,
@@ -55,25 +58,31 @@ namespace Sanakan.DiscordBot.Modules
             ISessionManager sessionManager,
             ICacheManager cacheManager,
             IRandomNumberGenerator randomNumberGenerator,
-            IGuildConfigRepository guildConfigRepository,
-            IGameDeckRepository gameDeckRepository,
-            IUserRepository userRepository,
-            ICardRepository cardRepository,
             ISystemClock systemClock,
-            ITaskManager taskManager)
+            ITaskManager taskManager,
+            IServiceScopeFactory serviceScopeFactory)
         {
             _waifuService = waifuService;
             _logger = logger;
             _shindenClient = shindenClient;
             _sessionManager = sessionManager;
             _cacheManager = cacheManager;
-            _gameDeckRepository = gameDeckRepository;
-            _userRepository = userRepository;
-            _cardRepository = cardRepository;
             _randomNumberGenerator = randomNumberGenerator;
-            _guildConfigRepository = guildConfigRepository;
             _systemClock = systemClock;
             _taskManager = taskManager;
+            _serviceScopeFactory = serviceScopeFactory;
+
+            _serviceScope = _serviceScopeFactory.CreateScope();
+            var serviceProvider = _serviceScope.ServiceProvider;
+            _guildConfigRepository = serviceProvider.GetRequiredService<IGuildConfigRepository>();
+            _gameDeckRepository = serviceProvider.GetRequiredService<IGameDeckRepository>();
+            _userRepository = serviceProvider.GetRequiredService<IUserRepository>();
+            _cardRepository = serviceProvider.GetRequiredService<ICardRepository>();
+        }
+
+        public override void Dispose()
+        {
+            _serviceScope.Dispose();
         }
 
         [Command("harem", RunMode = RunMode.Async)]
@@ -97,14 +106,17 @@ namespace Sanakan.DiscordBot.Modules
 
             if (type == HaremType.Tag && tag == null)
             {
-                await ReplyAsync("", embed: $"{userMention} musisz sprecyzować tag!".ToEmbedMessage(EMType.Error).Build());
+                var message = string.Format(Strings.ProvideTags, userMention);
+                await ReplyAsync(embed: message.ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
             var user = await _userRepository.GetCachedFullUserAsync(Context.User.Id);
+            
             if (user?.GameDeck?.Cards?.Count() < 1)
             {
-                await ReplyAsync("", embed: $"{userMention} nie masz żadnych kart.".ToEmbedMessage(EMType.Error).Build());
+                var message = string.Format(Strings.ProvideTags, userMention);
+                await ReplyAsync(embed: message.ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
@@ -3715,14 +3727,38 @@ namespace Sanakan.DiscordBot.Modules
             }
 
             var cards = databaseUser.GameDeck.Cards;
-            var sssCnt = cards.Count(x => x.Rarity == Rarity.SSS);
-            var ssCnt = cards.Count(x => x.Rarity == Rarity.SS);
-            var sCnt = cards.Count(x => x.Rarity == Rarity.S);
-            var aCnt = cards.Count(x => x.Rarity == Rarity.A);
-            var bCnt = cards.Count(x => x.Rarity == Rarity.B);
-            var cCnt = cards.Count(x => x.Rarity == Rarity.C);
-            var dCnt = cards.Count(x => x.Rarity == Rarity.D);
-            var eCnt = cards.Count(x => x.Rarity == Rarity.E);
+            var cardRarityStats = new CardRarityStats();
+
+            foreach (var card in cards)
+            {
+                switch (card.Rarity)
+                {
+                    case Rarity.A:
+                        cardRarityStats.A++;
+                        break;
+                    case Rarity.B:
+                        cardRarityStats.B++;
+                        break;
+                    case Rarity.C:
+                        cardRarityStats.C++;
+                        break;
+                    case Rarity.D:
+                        cardRarityStats.D++;
+                        break;
+                    case Rarity.E:
+                        cardRarityStats.E++;
+                        break;
+                    case Rarity.S:
+                        cardRarityStats.S++;
+                        break;
+                    case Rarity.SS:
+                        cardRarityStats.SS++;
+                        break;
+                    case Rarity.SSS:
+                        cardRarityStats.SSS++;
+                        break;
+                }
+            }
 
             var gameDeck = databaseUser.GameDeck;
 
@@ -3747,9 +3783,9 @@ namespace Sanakan.DiscordBot.Modules
             var globalString = $"{rankName} ({gameDeck.GlobalPVPRank})";
 
             var sssString = "";
-            if (sssCnt > 0)
+            if (cardRarityStats.SSS > 0)
             {
-                sssString = $"**SSS**: {sssCnt} ";
+                sssString = $"**SSS**: {cardRarityStats.SSS} ";
             }
 
             var userStats = databaseUser.Stats;
@@ -3768,13 +3804,13 @@ namespace Sanakan.DiscordBot.Modules
                 gameDeck.Karma.ToString("F"),
                 gameDeck.Cards.Count,
                 sssString,
-                ssCnt,
-                sCnt,
-                aCnt,
-                bCnt,
-                cCnt,
-                dCnt,
-                eCnt,
+                cardRarityStats.SS,
+                cardRarityStats.S,
+                cardRarityStats.A,
+                cardRarityStats.B,
+                cardRarityStats.C,
+                cardRarityStats.D,
+                cardRarityStats.E,
                 aPvp,
                 wPvp,
                 globalString,

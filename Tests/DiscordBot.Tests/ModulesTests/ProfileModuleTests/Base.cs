@@ -6,6 +6,7 @@ using Sanakan.DiscordBot.Modules;
 using Sanakan.Common;
 using Sanakan.DiscordBot.Session;
 using Sanakan.Common.Cache;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace DiscordBot.ModulesTests.ProfileModuleTests
 {
@@ -23,14 +24,19 @@ namespace DiscordBot.ModulesTests.ProfileModuleTests
 
         public Base()
         {
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton(_guildConfigRepositoryMock.Object);
+            serviceCollection.AddSingleton(_gameDeckRepositoryMock.Object);
+            serviceCollection.AddSingleton(_userRepositoryMock.Object);
+            var serviceProvider = serviceCollection.BuildServiceProvider();
+            var serviceScopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
+
             _module = new(
                 _profileServiceMock.Object,
                 _sessionManagerMock.Object,
                 _cacheManagerMock.Object,
-                _guildConfigRepositoryMock.Object,
-                _gameDeckRepositoryMock.Object,
-                _userRepositoryMock.Object,
-                _systemClockMock.Object);
+                _systemClockMock.Object,
+                serviceScopeFactory);
             Initialize(_module);
         }
     }
