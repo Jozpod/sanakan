@@ -70,6 +70,7 @@ namespace Sanakan.DiscordBot.Modules
             _serviceScope = _serviceScopeFactory.CreateScope();
             var serviceProvider = _serviceScope.ServiceProvider;
             _userRepository = serviceProvider.GetRequiredService<IUserRepository>();
+            _guildConfigRepository = serviceProvider.GetRequiredService<IGuildConfigRepository>();
         }
 
         public override void Dispose()
@@ -1174,6 +1175,7 @@ namespace Sanakan.DiscordBot.Modules
         public async Task SetDuelWaifuChannelAsync()
         {
             var guildId = Context.Guild.Id;
+            var channelId = Context.Channel.Id;
             var channelName = Context.Channel.Name;
             var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(guildId);
 
@@ -1182,14 +1184,14 @@ namespace Sanakan.DiscordBot.Modules
                 config.WaifuConfig = new WaifuConfiguration();
             }
 
-            if (config.WaifuConfig.DuelChannelId == Context.Channel.Id)
+            if (config.WaifuConfig.DuelChannelId == channelId)
             {
                 await ReplyAsync("", embed: $"Kanał `{channelName}` już jest ustawiony jako kanał pojedynków waifu."
                     .ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
 
-            config.WaifuConfig.DuelChannelId = Context.Channel.Id;
+            config.WaifuConfig.DuelChannelId = channelId;
             await _guildConfigRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(CacheKeys.GuildConfig(guildId));
@@ -1915,14 +1917,17 @@ namespace Sanakan.DiscordBot.Modules
             {
                 var info = _helperService.GivePrivateHelp("Moderacja");
                 await ReplyAsync(info);
+                return;
             }
 
             try
             {
+                var guild = Context.Guild;
                 var prefix = _config.CurrentValue.Prefix;
-                if (Context.Guild != null)
+
+                if (guild != null)
                 {
-                    var gConfig = await _guildConfigRepository.GetCachedGuildFullConfigAsync(Context.Guild.Id);
+                    var gConfig = await _guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
 
                     if (gConfig?.Prefix != null)
                     {

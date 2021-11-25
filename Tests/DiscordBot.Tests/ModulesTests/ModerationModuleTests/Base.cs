@@ -40,7 +40,7 @@ namespace DiscordBot.ModulesTests.ModerationModuleTests
                 .Setup(pr => pr.CurrentValue)
                 .Returns(new DiscordConfiguration
                 {
-
+                    Prefix = ".",
                 });
 
             _module = new(

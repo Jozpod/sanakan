@@ -140,5 +140,14 @@ namespace Sanakan.Web.Resources {
                 return ResourceManager.GetString("UserNotFound", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Users not found.
+        /// </summary>
+        internal static string UsersNotFound {
+            get {
+                return ResourceManager.GetString("UsersNotFound", resourceCulture);
+            }
+        }
     }
 }

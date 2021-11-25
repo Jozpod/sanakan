@@ -22,22 +22,14 @@ namespace Sanakan.Web.Tests.IntegrationTests
     /// <summary>
     /// Defines tests for <see cref="WaifuController"/>.
     /// </summary>
-    [TestClass]
-    public class WaifuControllerTests : TestBase
+    public partial class TestBase
     {
-        private static readonly JsonSerializerOptions _jsonSerializerOptions;
-
-        static WaifuControllerTests()
-        {
-            _jsonSerializerOptions = new JsonSerializerOptions();
-            _jsonSerializerOptions.Converters.Add(new TimeSpanConverter());
-        }
-
         [TestMethod]
-        public async Task Should_Return_Commands()
+        public async Task Should_Return_User_Cards()
         {
-            var commands = await _client.GetFromJsonAsync<Commands>("api/info/commands");
-            commands.Should().NotBeNull();
+            var characterId = 1ul;
+            var userIds = await _client.GetFromJsonAsync<IEnumerable<ulong>>($"api/waifu/users/owning/character/{characterId}");
+            userIds.Should().NotBeNull();
         }
     }
 }

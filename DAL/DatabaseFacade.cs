@@ -31,6 +31,7 @@ namespace Sanakan.DAL
 
             if (_created)
             {
+                _semaphore.Release();
                 return !_created;
             }
 

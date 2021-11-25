@@ -8,8 +8,8 @@ namespace Sanakan.Common.Cache
 
         MemoryCacheEntry<T>? Get<T>(string key);
 
-        void Add<T>(string key, T entity, string? parentKey = null);
+        void Add<T>(string key, T value, string? parentKey = null);
 
-        void Add<T>(string key, T entity, MemoryCacheEntryOptions memoryCacheEntryOptions);
+        void Add<T>(string key, T value, MemoryCacheEntryOptions memoryCacheEntryOptions);
     }
 }

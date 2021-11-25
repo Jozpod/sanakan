@@ -27,7 +27,7 @@ namespace Sanakan.Common
             _cacheKeys = new ConcurrentDictionary<string, ISet<string>>();
         }
 
-        public void Add<T>(string key, T entity, string? parentKey = null)
+        public void Add<T>(string key, T value, string? parentKey = null)
         {
             lock (_syncRoot)
             {
@@ -42,7 +42,12 @@ namespace Sanakan.Common
                     subKeys.Add(key);
                 }
 
-                _cache.Set(key, entity);
+                var entry = new MemoryCacheEntry<T>
+                {
+                    Value = value,
+                };
+
+                _cache.Set(key, entry);
             }
         }
 

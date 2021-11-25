@@ -17,8 +17,7 @@ namespace Sanakan.Web.Tests.IntegrationTests
     /// <summary>
     /// Defines tests for <see cref="TokenController"/>.
     /// </summary>
-    [TestClass]
-    public class TokenControllerTests : TestBase
+    public partial class TestBase
     {
         [TestMethod]
         public async Task Should_Unauthorize()

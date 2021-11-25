@@ -22,17 +22,8 @@ namespace Sanakan.Web.Tests.IntegrationTests
     /// <summary>
     /// Defines tests for <see cref="InfoController"/>.
     /// </summary>
-    [TestClass]
-    public class InfoControllerTests : TestBase
+    public partial class TestBase
     {
-        private static readonly JsonSerializerOptions _jsonSerializerOptions;
-
-        static InfoControllerTests()
-        {
-            _jsonSerializerOptions = new JsonSerializerOptions();
-            _jsonSerializerOptions.Converters.Add(new TimeSpanConverter());
-        }
-
         [TestMethod]
         public async Task Should_Return_Commands()
         {

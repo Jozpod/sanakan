@@ -22,25 +22,8 @@ namespace Sanakan.Web.Tests.IntegrationTests
     /// <summary>
     /// Defines tests for <see cref="QuizController"/>.
     /// </summary>
-    [TestClass]
-    public class QuizControllerTests : TestBase
+    public partial class TestBase
     {
-        private static readonly JsonSerializerOptions _jsonSerializerOptions;
-
-        static QuizControllerTests()
-        {
-            _jsonSerializerOptions = new JsonSerializerOptions();
-            _jsonSerializerOptions.Converters.Add(new TimeSpanConverter());
-        }
-
-        public async Task AuthorizeAsync()
-        {
-            var apiKey = "test key";
-            var response = await _client.PostAsJsonAsync("api/token", apiKey);
-            var tokenData = await response.Content.ReadFromJsonAsync<TokenData>();
-            _client.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Bearer", tokenData.Token);
-        }
 
         [TestMethod]
         public async Task Should_Add_Question()

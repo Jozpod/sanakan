@@ -114,7 +114,7 @@ namespace Sanakan.DiscordBot.Modules
             {
                 var images = await _resourceManager.ReadFromJsonAsync<List<SafariImage>>(Paths.PokeList);
 
-                if(images == null)
+                if (images == null)
                 {
                     await ReplyAsync(embed: Strings.NoSafariImage.ToEmbedMessage(EMType.Error).Build());
                     return;
@@ -122,10 +122,12 @@ namespace Sanakan.DiscordBot.Modules
 
                 var character = (await _shindenClient.GetCharacterInfoAsync(2)).Value;
                 var channel = (ITextChannel)Context.Channel;
+                var card = _waifuService.GenerateNewCard(null, character);
 
                 _ = await _waifuService.GetSafariViewAsync(
                     images[imageIndex],
-                    _waifuService.GenerateNewCard(null, character), channel);
+                    card,
+                    channel);
             }
             catch (Exception ex)
             {
@@ -247,7 +249,7 @@ namespace Sanakan.DiscordBot.Modules
         [Command("r2msg", RunMode = RunMode.Async)]
         [Summary("dodaje reakcje do wiadomości")]
         [Remarks("15188451644 101155483 825724399512453140 <:Redpill:455880209711759400>")]
-        public async Task AddReactionToMsgOnChannelInGuildAsync(
+        public async Task AddReactionToMessageOnChannelInGuildAsync(
             [Summary("id serwera")]ulong guildId,
             [Summary("id kanału")]ulong channelId,
             [Summary("id wiadomości")]ulong messageId,
@@ -291,32 +293,28 @@ namespace Sanakan.DiscordBot.Modules
 
             foreach (var card in cards)
             {
-                try
+                var result = await _shindenClient.GetCharacterInfoAsync(card.CharacterId);
+
+                if (result.Value == null)
                 {
-                    var result = await _shindenClient.GetCharacterInfoAsync(card.CharacterId);
-                    
-                    if (result.Value == null)
-                    {
-                        card.IsUnique = true;
-                        //throw new Exception($"Couldn't get card info!");
-                        await ReplyAsync(embed: $"Zaktualizowano {cards.Count} kart.".ToEmbedMessage(EMType.Error).Build());
-                        return;
-                    }
-
-                    var characterInfo = result.Value;
-                    var pictureUrl = UrlHelpers.GetPersonPictureURL(characterInfo.PictureId.Value);
-                    var hasImage = pictureUrl != UrlHelpers.GetPlaceholderImageURL();
-
-                    card.IsUnique = false;
-                    card.Name = characterInfo.ToString();
-                    card.ImageUrl = hasImage ? new Uri(pictureUrl) : null;
-                    card.Title = characterInfo?.Relations?.OrderBy(x => x.CharacterId)
-                        .FirstOrDefault()?
-                        .Title ?? "????";
-
-                    _waifuService.DeleteCardImageIfExist(card);
+                    card.IsUnique = true;
+                    await _cardRepository.SaveChangesAsync();
+                    await ReplyAsync(embed: $"Couldn't get card info!.".ToEmbedMessage(EMType.Error).Build());
+                    return;
                 }
-                catch (Exception) { }
+
+                var characterInfo = result.Value;
+                var pictureUrl = UrlHelpers.GetPersonPictureURL(characterInfo.PictureId.Value);
+                var hasImage = pictureUrl != UrlHelpers.GetPlaceholderImageURL();
+
+                card.IsUnique = false;
+                card.Name = characterInfo.ToString();
+                card.ImageUrl = hasImage ? new Uri(pictureUrl) : null;
+                card.Title = characterInfo?.Relations?.OrderBy(x => x.CharacterId)
+                    .FirstOrDefault()?
+                    .Title ?? "????";
+
+                _waifuService.DeleteCardImageIfExist(card);
             }
 
             await _cardRepository.SaveChangesAsync();
@@ -1355,7 +1353,7 @@ namespace Sanakan.DiscordBot.Modules
             var thisRM = config.RMConfig
                 .FirstOrDefault(x => x.Type == type
                     && x.GuildId == guildId);
-            
+
             if (thisRM == null)
             {
                 thisRM = new RichMessageConfig

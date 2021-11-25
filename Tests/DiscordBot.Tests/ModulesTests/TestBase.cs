@@ -14,6 +14,9 @@ namespace DiscordBot.ModulesTests
         protected readonly Mock<IMessageChannel> _messageChannelMock = new(MockBehavior.Strict);
         protected readonly Mock<IUserMessage> _userMessageMock = new(MockBehavior.Strict);
         protected readonly Mock<IUser> _userMock = new(MockBehavior.Strict);
+        protected readonly Mock<IGuild> _guildMock = new(MockBehavior.Strict);
+        protected readonly Mock<IDiscordClient> _discordClientMock = new(MockBehavior.Strict);
+        protected Mock<ITextChannel> _textChannelMock;
 
         protected void SetContext(SanakanModuleBase moduleBase)
         {
@@ -28,12 +31,22 @@ namespace DiscordBot.ModulesTests
             SetContext(moduleBase);
 
             _commandContextMock
+                .Setup(pr => pr.Client)
+                .Returns(_discordClientMock.Object);
+
+            _textChannelMock = _messageChannelMock.As<ITextChannel>();
+
+            _commandContextMock
                 .Setup(pr => pr.Channel)
                 .Returns(_messageChannelMock.Object);
 
             _commandContextMock
                 .Setup(pr => pr.User)
                 .Returns(_userMock.Object);
+
+            _commandContextMock
+                .Setup(pr => pr.Guild)
+                .Returns(_guildMock.Object);
 
             _messageChannelMock
                 .Setup(pr => pr.SendMessageAsync(

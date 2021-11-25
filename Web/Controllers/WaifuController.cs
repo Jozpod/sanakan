@@ -68,7 +68,7 @@ namespace Sanakan.Web.Controllers
         }
 
         /// <summary>
-        /// Gets the list of user which contain character card.
+        /// Gets the list of user identifiers which contain character card.
         /// </summary>
         /// <param name="id">The shinden user identifier.</param>
         [HttpGet("users/owning/character/{id}"), Authorize(Policy = AuthorizePolicies.Site)]
@@ -83,7 +83,7 @@ namespace Sanakan.Web.Controllers
                 return Ok(shindenIds);
             }
 
-            return ShindenNotFound("Users not found");
+            return ShindenNotFound(Strings.UsersNotFound);
         }
 
         /// <summary>
@@ -99,7 +99,7 @@ namespace Sanakan.Web.Controllers
 
             if (user == null)
             {
-                return ShindenNotFound("User not found");
+                return ShindenNotFound(Strings.UserNotFound);
             }
 
             var result = user.GameDeck.Cards;
@@ -108,7 +108,7 @@ namespace Sanakan.Web.Controllers
         }
 
         /// <summary>
-        /// Pobiera x kart z przefiltrowanej listy użytkownika
+        /// Pobiera x kart z przefiltrowanej listy użytkownika.
         /// </summary>
         /// <param name="id">The user identifier</param>
         /// <param name="offset">offset</param>
