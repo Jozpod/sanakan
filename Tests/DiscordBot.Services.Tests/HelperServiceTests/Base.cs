@@ -11,10 +11,17 @@ namespace DiscordBot.ServicesTests.HelperServiceTests
     public abstract class Base
     {
         protected readonly IHelperService _helperService;
-        protected readonly Mock<OptionsMonitor<DiscordConfiguration>> _discordConfigurationMock = new(MockBehavior.Strict);
+        protected readonly Mock<IOptionsMonitor<DiscordConfiguration>> _discordConfigurationMock = new(MockBehavior.Strict);
 
         public Base()
         {
+            _discordConfigurationMock
+                .Setup(pr => pr.CurrentValue)
+                .Returns(new DiscordConfiguration
+                {
+
+                });
+
             _helperService = new HelperService(
                 _discordConfigurationMock.Object);
         }

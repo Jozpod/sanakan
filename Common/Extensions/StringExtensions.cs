@@ -9,22 +9,21 @@ namespace Sanakan.Extensions
     public static class StringExtension
     {
         private static Regex _hexRegex = new ("^#(?:[0-9a-fA-F]{3}){1,2}$", RegexOptions.Compiled);
-        public static Regex? CommandRegex;
+        private static Regex? _commandRegex;
         private static Regex _linkRegex = new ("(http|ftp|https)://[\\w-]+(\\.[\\w-]+)+([\\w.,@?^=%&:/~+#-]*[\\w@?^=%&/~+#-])?", RegexOptions.Compiled);
         private static Regex _quotedTextLengthRegex = new(@"(^>[ ][^\n]*\n)|(\n>[ ][^\n]*\n)|(\n>[ ][^\n]*$)", RegexOptions.Compiled);
         private static Regex _isEmotikunEmoteRegex = new(@"\B-\w+", RegexOptions.Compiled);
         private static Regex _replaceUrlRegex = new (@"\[url=['""]?([^\['""]+)['""]?\]([^\[]+)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         private static readonly string[] _bbCodes =
-      {
+        {
             "list", "quote", "code", "spoiler", "chk", "size", "color", "bg", "center", "right",
             "left", "font", "align", "mail", "img", "small", "sub", "sup", "p", "gvideo", "bull",
             "copyright", "registered", "tm", "indent", "iframe", "url", "youtube", "i", "b", "s",
             "u", "color", "size"
         };
-        private static Regex _replaceBBCodesRegex = new($@"\[/?({string.Join('|', _bbCodes)})(=[^\]]*)?\]", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-       
+        private static Regex _replaceBBCodesRegex = new($@"\[/?({string.Join('|', _bbCodes)})(=[^\]]*)?\]", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         public static string ElipseTrimToLength(this string str, int length)
         {
@@ -91,31 +90,35 @@ namespace Sanakan.Extensions
         public static string GetQMarksIfEmpty(this string s)
         {
             if (string.IsNullOrEmpty(s))
+            {
                 return "??";
+            }
 
             if (string.IsNullOrWhiteSpace(s))
+            {
                 return "??";
+            }
 
             return s;
         }
-
-      
 
         public static bool IsEmotikunEmote(this string message) => _isEmotikunEmoteRegex.Matches(message).Count > 0;
 
         public static int CountQuotedTextLength(this string message) => _quotedTextLengthRegex.Matches(message).Sum(x => x.Length);
 
         public static int CountLinkTextLength(this string message) => _linkRegex.Matches(message).Sum(x => x.Length);
+
         public static bool IsHexTriplet(this string message) => _hexRegex.IsMatch(message);
+
         public static bool IsCommand(this DiscordConfiguration sanakanConfiguration, string message)
         {
-            if (CommandRegex == null)
+            if (_commandRegex == null)
             {
                 var prefix = sanakanConfiguration.Prefix.Replace(".", @"\.").Replace("?", @"\?");
-                CommandRegex = new Regex($@"^{prefix}\w+", RegexOptions.Compiled);
+                _commandRegex = new Regex($@"^{prefix}\w+", RegexOptions.Compiled);
             }
 
-            return CommandRegex.Matches(message).Count > 0;
+            return _commandRegex.Matches(message).Count > 0;
         }
     }
 }

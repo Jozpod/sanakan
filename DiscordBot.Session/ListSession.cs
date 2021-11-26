@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Discord;
+using Sanakan.DAL.Models;
 using Sanakan.DiscordBot.Abstractions;
 using Sanakan.Extensions;
 
@@ -11,6 +14,8 @@ namespace Sanakan.DiscordBot.Session
     public class ListSession<T> : InteractionSession
     {
         private readonly ListSessionPayload _payload;
+        private static readonly StringBuilder _stringBuilder = new StringBuilder(500);
+
         public class ListSessionPayload
         {
             public bool Enumerable { get; set; }
@@ -36,28 +41,73 @@ namespace Sanakan.DiscordBot.Session
             _payload = payload;
         }
 
+        public string CardToString(Card card)
+        {
+            var marks = new[]
+            {
+                card.InCage ? "[C]" : "",
+                card.Active ? "[A]" : "",
+                card.IsUnique ? (card.FromFigure ? "[F]" : "[U]") : "",
+                card.Expedition != ExpeditionCardType.None ? "[W]" : "",
+                card.IsBroken ? "[B]" : (card.IsUnusable ? "[N]" : ""),
+            };
+
+            var mark = marks.Any(x => x != "") ? $"**{string.Join("", marks)}** " : "";
+            return $"{mark}{card.GetString(false, false, true)}";
+        }
+
         public Embed BuildPage(int page)
         {
             int firstItem = page * _payload.ItemsPerPage;
             int lastItem = (_payload.ItemsPerPage - 1) + (page * _payload.ItemsPerPage);
-            bool toMuch = lastItem >= _payload.ListItems.Count;
+            var exceededList = lastItem >= _payload.ListItems.Count;
+            var embed = _payload.Embed;
 
-            _payload.Embed.Footer = new EmbedFooterBuilder().WithText($"{_payload.CurrentPage + 1} z {MaxPage()}");
-            var itemsOnPage = _payload.ListItems.GetRange(firstItem, toMuch ? (_payload.ListItems.Count - firstItem) : _payload.ItemsPerPage);
+            var footerText = $"{_payload.CurrentPage + 1} z {MaxPage()}";
+            embed.Footer = new EmbedFooterBuilder().WithText(footerText);
+            var itemsOnPage = _payload.ListItems.GetRange(firstItem, exceededList ? (_payload.ListItems.Count - firstItem) : _payload.ItemsPerPage);
 
-            string pageString = "";
-            for (int i = 0; i < itemsOnPage.Count; i++)
+            lock (_stringBuilder)
             {
-                string enumerable = _payload.Enumerable ? $"**{(i + 1) + (page * _payload.ItemsPerPage)}**: " : "";
-                pageString += $"{enumerable}{itemsOnPage[i]}\n";
-            }
+                for (var i = 0; i < itemsOnPage.Count; i++)
+                {
+                    var item = itemsOnPage[i];
+                    var formattedItem = string.Empty;
 
-            _payload.Embed.Description = pageString.ElipseTrimToLength(1800);
+                    if (item is Card card)
+                    {
+                        formattedItem = CardToString(card);
+                    }
+                    else
+                    {
+                        formattedItem = item.ToString();
+                    }
+
+                    if (_payload.Enumerable)
+                    {
+                        var index = (i + 1) + (page * _payload.ItemsPerPage);
+                        _stringBuilder.AppendFormat("**{0}**: {1}\n", index, formattedItem);
+                    }
+                    else
+                    {
+                        _stringBuilder.AppendFormat("{0}\n", formattedItem);
+                    }
+                }
+
+                embed.Description = _stringBuilder.ToString().ElipseTrimToLength(1800);
+                _stringBuilder.Clear();
+            }
 
             return _payload.Embed.Build();
         }
 
-        private int MaxPage() => (((_payload.ListItems.Count % 10) == 0) ? (_payload.ListItems.Count / 10) : ((_payload.ListItems.Count / 10) + 1));
+        private int MaxPage()
+        {
+            var listItems = _payload.ListItems;
+            var count = listItems.Count;
+
+            return ((count % 10) == 0) ? (count / 10) : ((count / 10) + 1);
+        }
 
         private int MaxPageReal() => MaxPage() - 1;
 
@@ -66,12 +116,14 @@ namespace Sanakan.DiscordBot.Session
             IServiceProvider serviceProvider,
             CancellationToken cancellationToken = default)
         {
-            if (context.Message.Id != _payload.Message.Id)
+            var message = _payload.Message;
+
+            if (context.Message.Id != message.Id)
             {
                 return;
             }
 
-            var userMessage = await _payload.Message.Channel.GetMessageAsync(_payload.Message.Id) as IUserMessage;
+            var userMessage = await message.Channel.GetMessageAsync(message.Id) as IUserMessage;
 
             if (userMessage == null)
             {
@@ -79,27 +131,31 @@ namespace Sanakan.DiscordBot.Session
             }
 
             var reaction = context.AddReaction ?? context.RemoveReaction;
+            var emote = reaction.Emote;
 
-            if (reaction.Emote.Equals(Emojis.LeftwardsArrow))
+            if (emote.Equals(Emojis.LeftwardsArrow))
             {
                 if (--_payload.CurrentPage < 0)
                 {
                     _payload.CurrentPage = MaxPageReal();
                 }
-                await userMessage.ModifyAsync(x => x.Embed = BuildPage(_payload.CurrentPage));
+
+                var embed = BuildPage(_payload.CurrentPage);
+                await userMessage.ModifyAsync(x => x.Embed = embed);
 
                 ResetExpiry();
                 return;
             }
-            
-            if (reaction.Emote.Equals(Emojis.RightwardsArrow))
+
+            if (emote.Equals(Emojis.RightwardsArrow))
             {
                 if (++_payload.CurrentPage > MaxPageReal())
                 {
                     _payload.CurrentPage = 0;
                 }
 
-                await userMessage.ModifyAsync(x => x.Embed = BuildPage(_payload.CurrentPage));
+                var embed = BuildPage(_payload.CurrentPage);
+                await userMessage.ModifyAsync(x => x.Embed = embed);
 
                 ResetExpiry();
             }

@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Sanakan.Common;
 using Sanakan.Common.Configuration;
@@ -8,6 +9,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Sanakan.DiscordBot.Supervisor
 {
@@ -20,10 +23,11 @@ namespace Sanakan.DiscordBot.Supervisor
         private readonly IFileSystem _fileSystem;
         private readonly IDictionary<string, UserEntry> _entries;
         private readonly IFileSystemWatcher _fileSystemWatcher;
-        private IEnumerable<string> _disallowedUrls;
+        private Task<string[]> _disallowedUrls;
         private readonly TimeSpan _messageExpiry;
         private readonly TimeSpan _timeIntervalBetweenMessages;
         private readonly Regex _urlsRegex;
+        private readonly SemaphoreSlim _semaphore = new(1, 1);
 
         public UserMessageSupervisor(
             ILogger<UserMessageSupervisor> logger,
@@ -31,7 +35,8 @@ namespace Sanakan.DiscordBot.Supervisor
             IOptionsMonitor<SupervisorConfiguration> supervisorConfiguration,
             ISystemClock systemClock,
             IFileSystem fileSystem,
-            IFileSystemWatcherFactory fileSystemWatcherFactory)
+            IFileSystemWatcherFactory fileSystemWatcherFactory,
+            IHostEnvironment hostEnvironment)
         {
             _logger = logger;
             _discordConfiguration = discordConfiguration;
@@ -45,12 +50,12 @@ namespace Sanakan.DiscordBot.Supervisor
             var fileName = "disallowed-urls.txt";
             _fileSystemWatcher = fileSystemWatcherFactory.Create(new FileSystemWatcherOptions
             {
-                Path = Path.GetDirectoryName(typeof(UserMessageSupervisor).Assembly.Location),
+                Path = hostEnvironment.ContentRootPath,
                 Filter = fileName,
             });
             _fileSystemWatcher.Changed += UrlsChanged;
 
-            _disallowedUrls = _fileSystem.ReadAllLinesAsync(fileName).GetAwaiter().GetResult();
+            _disallowedUrls = _fileSystem.ReadAllLinesAsync(fileName);
             _messageExpiry = supervisorConfiguration.CurrentValue.MessageExpiry;
             _timeIntervalBetweenMessages = supervisorConfiguration.CurrentValue.TimeIntervalBetweenMessages;
         }
@@ -59,13 +64,14 @@ namespace Sanakan.DiscordBot.Supervisor
         {
             try
             {
-                _disallowedUrls = await _fileSystem.ReadAllLinesAsync(eventArgs.Name);
+                await _semaphore.WaitAsync();
+                _disallowedUrls = _fileSystem.ReadAllLinesAsync(eventArgs.Name);
+                _semaphore.Release();
             }
             catch (Exception ex)
             {
                 _logger.LogError("Error occurred while updating urls", ex);
             }
-           
         }
 
         internal class MessageEntry
@@ -83,11 +89,16 @@ namespace Sanakan.DiscordBot.Supervisor
             public DateTime ModifiedOn { get; set; }
         }
 
-        public SupervisorAction MakeDecision(ulong guildId, ulong userId, string content, bool lessSeverePunishment)
+        public async Task<SupervisorAction> MakeDecisionAsync(ulong guildId, ulong userId, string content, bool lessSeverePunishment)
         {
+            var hasDisallowedUrl = false;
+
+            await _semaphore.WaitAsync();
+            hasDisallowedUrl = (await _disallowedUrls).Any(pr => content.Contains(content));
+            _semaphore.Release();
+
             var key = $"{guildId}-{userId}";
             var hasUrlsInMessage = _urlsRegex.Matches(content).Select(x => x.Value).Any();
-            var hasDisallowedUrl = _disallowedUrls.Any(pr => content.Contains(content));
             hasDisallowedUrl &= hasUrlsInMessage;
             var utcNow = _systemClock.UtcNow;
             var messageKey = content.GetHashCode();
@@ -107,7 +118,7 @@ namespace Sanakan.DiscordBot.Supervisor
 
                 if (userEntry.Messages.TryGetValue(messageKey, out messageEntry))
                 {
-                    if(utcNow - messageEntry.ReceivedOn > _messageExpiry)
+                    if (utcNow - messageEntry.ReceivedOn > _messageExpiry)
                     {
                         messageEntry.ReceivedOn = utcNow;
                         messageEntry.OccurenceCount = 0;
@@ -172,7 +183,7 @@ namespace Sanakan.DiscordBot.Supervisor
                 messageLimit += commandLimit;
             }
 
-            if(!lessSeverePunishment)
+            if (!lessSeverePunishment)
             {
                 userMessageLimit -= 2;
                 messageLimit -= 2;

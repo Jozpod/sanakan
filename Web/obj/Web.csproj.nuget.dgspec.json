@@ -1123,7 +1123,11 @@
             },
             "Swashbuckle.AspNetCore.SwaggerGen": {
               "target": "Package",
-              "version": "[5.6.3, )"
+              "version": "[6.2.3, )"
+            },
+            "Swashbuckle.AspNetCore.SwaggerUI": {
+              "target": "Package",
+              "version": "[6.2.3, )"
             },
             "System.IdentityModel.Tokens.Jwt": {
               "target": "Package",

@@ -251,10 +251,8 @@ namespace Sanakan.Daemon.HostedService
             var notifyChannel = (ITextChannel)await guild.GetChannelAsync(gConfig.NotificationChannelId);
             var decision = SupervisorAction.None;
 
-            lock (_syncRoot)
-            {
-                decision = _userMessageSupervisor.MakeDecision(guild.Id, user.Id, messageContent, lessSeverePunishment);
-            }
+            // TO-DO Lock
+            decision = await _userMessageSupervisor.MakeDecisionAsync(guild.Id, user.Id, messageContent, lessSeverePunishment);
 
             var moderatorService = serviceProvider.GetRequiredService<IModeratorService>();
 

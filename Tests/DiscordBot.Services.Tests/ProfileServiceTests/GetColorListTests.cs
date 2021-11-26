@@ -5,9 +5,13 @@ using Sanakan.DAL.Models;
 using System.Collections.Generic;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
+using Sanakan.DiscordBot.Services.Abstractions;
 
 namespace DiscordBot.ServicesTests.ProfileServiceTests
 {
+    /// <summary>
+    /// Defines tests for <see cref="IProfileService.GetColorList(SCurrency)"/> method.
+    /// </summary>
     [TestClass]
     public class GetColorListTests : Base
     {

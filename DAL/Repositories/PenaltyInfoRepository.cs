@@ -53,7 +53,7 @@ namespace Sanakan.DAL.Repositories
             return result;
         }
 
-        public async Task<List<PenaltyInfo>> GetMutedPenaltiesAsync(ulong discordGuildId)
+        public async Task<IEnumerable<PenaltyInfo>> GetMutedPenaltiesAsync(ulong discordGuildId)
         {
             var cacheResult = _cacheManager.Get<List<PenaltyInfo>>(CacheKeys.Muted);
 

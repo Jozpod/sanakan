@@ -95,8 +95,8 @@ namespace Sanakan.Daemon.Tests.HostedServices.SupervisorHostedServiceTests
                 .ReturnsAsync(guildOptions);
 
             _userMessageSupervisorMock
-                .Setup(pr => pr.MakeDecision(guildId, userId, content, true))
-                .Returns(SupervisorAction.Mute)
+                .Setup(pr => pr.MakeDecisionAsync(guildId, userId, content, true))
+                .ReturnsAsync(SupervisorAction.Mute)
                 .Verifiable();
 
             guildMock
@@ -208,8 +208,8 @@ namespace Sanakan.Daemon.Tests.HostedServices.SupervisorHostedServiceTests
                 .ReturnsAsync(guildOptions);
 
             _userMessageSupervisorMock
-                .Setup(pr => pr.MakeDecision(guildId, userId, content, true))
-                .Returns(SupervisorAction.Ban)
+                .Setup(pr => pr.MakeDecisionAsync(guildId, userId, content, true))
+                .ReturnsAsync(SupervisorAction.Ban)
                 .Verifiable();
 
             guildMock

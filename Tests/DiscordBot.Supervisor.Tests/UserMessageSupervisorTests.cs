@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -7,9 +8,13 @@ using Sanakan.Common;
 using Sanakan.Common.Configuration;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Sanakan.DiscordBot.Supervisor.Tests
 {
+    /// <summary>
+    /// Defines tests for <see cref="IUserMessageSupervisor"/> class.
+    /// </summary>
     [TestClass]
     public class UserMessageSupervisorTests
     {
@@ -19,8 +24,9 @@ namespace Sanakan.DiscordBot.Supervisor.Tests
         private readonly Mock<ISystemClock> _systemClockMock = new(MockBehavior.Strict);
         private readonly Mock<IFileSystem> _fileSystemMock = new(MockBehavior.Strict);
         private readonly Mock<IFileSystemWatcherFactory> _fileSystemWatcherFactoryMock = new(MockBehavior.Strict);
-        private readonly FakeFileSystemWatcher _fileSystemWatcher = new();
-        
+        private readonly Mock<IFileSystemWatcher>  _fileSystemWatcherMock = new(MockBehavior.Strict);
+        private readonly Mock<IHostEnvironment> _hostEnvironmentMock = new(MockBehavior.Strict);
+
         public UserMessageSupervisorTests()
         {
             _supervisorConfigurationMock
@@ -31,6 +37,10 @@ namespace Sanakan.DiscordBot.Supervisor.Tests
                     MessageLimit = 6,
                     MessageCommandLimit = 2,
                 });
+
+            _hostEnvironmentMock
+                .Setup(pr => pr.ContentRootPath)
+                .Returns("path");
 
             _discordConfigurationMock
                .Setup(pr => pr.CurrentValue)
@@ -45,7 +55,7 @@ namespace Sanakan.DiscordBot.Supervisor.Tests
 
             _fileSystemWatcherFactoryMock
                 .Setup(pr => pr.Create(It.IsAny<FileSystemWatcherOptions>()))
-                .Returns(_fileSystemWatcher);
+                .Returns(_fileSystemWatcherMock.Object);
 
             _systemClockMock
                 .Setup(pr => pr.UtcNow)
@@ -57,11 +67,12 @@ namespace Sanakan.DiscordBot.Supervisor.Tests
                 _supervisorConfigurationMock.Object,
                 _systemClockMock.Object,
                 _fileSystemMock.Object,
-                _fileSystemWatcherFactoryMock.Object);
+                _fileSystemWatcherFactoryMock.Object,
+                _hostEnvironmentMock.Object);
         }
 
         [TestMethod]
-        public void Should_Return_Ban_Decision()
+        public async Task Should_Return_Ban_Decision()
         {
             var guildId = 1ul;
             var userId = 1ul;
@@ -69,18 +80,18 @@ namespace Sanakan.DiscordBot.Supervisor.Tests
 
             foreach (var message in messages.Take(10))
             {
-                var decision = _userMessageSupervisor.MakeDecision(guildId, userId, message, false);
+                var decision = await _userMessageSupervisor.MakeDecisionAsync(guildId, userId, message, false);
                 decision.Should().Be(SupervisorAction.None);
             }
             {
                 var message = messages.Last();
-                var decision = _userMessageSupervisor.MakeDecision(guildId, userId, message, false);
+                var decision = await _userMessageSupervisor.MakeDecisionAsync(guildId, userId, message, false);
                 decision.Should().Be(SupervisorAction.Ban);
             }
         }
 
         [TestMethod]
-        public void Should_Return_Mute_Decision()
+        public async Task Should_Return_Mute_Decision()
         {
             var guildId = 1ul;
             var userId = 1ul;
@@ -88,18 +99,18 @@ namespace Sanakan.DiscordBot.Supervisor.Tests
 
             foreach (var message in messages.Take(12))
             {
-                var decision = _userMessageSupervisor.MakeDecision(guildId, userId, message, true);
+                var decision = await _userMessageSupervisor.MakeDecisionAsync(guildId, userId, message, true);
             }
             {
                 var message = messages.Last();
-                var decision = _userMessageSupervisor.MakeDecision(guildId, userId, message, true);
+                var decision = await _userMessageSupervisor.MakeDecisionAsync(guildId, userId, message, true);
                 decision.Should().Be(SupervisorAction.Mute);
             }
         }
 
 
         [TestMethod]
-        public void Should_Return_Warn_Decision()
+        public async Task Should_Return_Warn_Decision()
         {
             var guildId = 1ul;
             var userId = 1ul;
@@ -107,12 +118,12 @@ namespace Sanakan.DiscordBot.Supervisor.Tests
 
             foreach (var message in messages.Take(11))
             {
-                var decision = _userMessageSupervisor.MakeDecision(guildId, userId, message, true);
+                var decision = await _userMessageSupervisor.MakeDecisionAsync(guildId, userId, message, true);
                 decision.Should().Be(SupervisorAction.None);
             }
             {
                 var message = messages.Last();
-                var decision = _userMessageSupervisor.MakeDecision(guildId, userId, message, true);
+                var decision = await _userMessageSupervisor.MakeDecisionAsync(guildId, userId, message, true);
                 decision.Should().Be(SupervisorAction.Warn);
             }
         }

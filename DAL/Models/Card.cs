@@ -460,9 +460,15 @@ namespace Sanakan.DAL.Models
         public MarketValue GetThreeStateMarketValue()
         {
             if (MarketValue < 0.3)
+            {
                 return Models.MarketValue.Low;
+            }
+
             if (MarketValue > 2.8)
+            {
                 return Models.MarketValue.High;
+            }
+
             return Models.MarketValue.Normal;
         }
 

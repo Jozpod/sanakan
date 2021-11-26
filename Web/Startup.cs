@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Versioning;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using Sanakan.Api;
 using Sanakan.Common;
@@ -23,6 +24,7 @@ using Sanakan.Game.Builder;
 using Sanakan.ShindenApi.Builder;
 using Sanakan.TaskQueue.Builder;
 using Sanakan.Web;
+using Sanakan.Web.Swagger;
 using System;
 using System.Globalization;
 using System.IO;
@@ -107,24 +109,32 @@ namespace Sanakan.Web
                 o.DefaultApiVersion = new ApiVersion(1, 0);
                 o.ApiVersionReader = new HeaderApiVersionReader("x-api-version");
             });
-            services.AddSwaggerGen(c =>
+            services.AddSwaggerGen(options =>
             {
-                c.SwaggerDoc("v2", new OpenApiInfo
+                options.OperationFilter<AuthorizationOperationFilter>();
+                options.SwaggerDoc("v1", new OpenApiInfo
                 {
                     Title = "Sanakan API",
                     Version = "1.0",
-                    Description = "Autentykacja następuje poprzez dopasowanie tokenu przesłanego w ciele zapytania `api/token`, a następnie wysyłania w nagłowku `Authorization` z przedrostkiem `Bearer` otrzymanego w zwrocie tokena."
-                        + "\n\nDocelowa wersja api powinna zostać przesłana pod nagówkiem `x-api-version`, w przypadku jej nie podania zapytania są interpretowane jako wysłane do wersji `1.0`.",
+                    Description = @"Autentykacja następuje poprzez dopasowanie tokenu przesłanego w ciele zapytania `api/token`, a następnie wysyłania w nagłowku `Authorization` z przedrostkiem `Bearer` otrzymanego w zwrocie tokena.
+
+Docelowa wersja api powinna zostać przesłana pod nagówkiem `x-api-version`, w przypadku jej nie podania zapytania są interpretowane jako wysłane do wersji `1.0`.",
+                });
+
+                options.MapType(typeof(TimeSpan), () => new OpenApiSchema
+                {
+                    Type = "string",
+                    Example = new OpenApiString("00:00:00")
                 });
 
                 var filePath = Path.Combine(System.AppContext.BaseDirectory, "Sanakan.xml");
 
                 if (File.Exists(filePath))
                 {
-                    c.IncludeXmlComments(filePath);
+                    options.IncludeXmlComments(filePath);
                 }
 
-                c.CustomSchemaIds(x => x.FullName);
+                options.CustomSchemaIds(x => x.FullName);
             });
 
             services.AddHttpContextAccessor();
@@ -159,7 +169,7 @@ namespace Sanakan.Web
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            app.UseSwagger();
+            app.UseDeveloperExceptionPage();
             app.UseCors(RegisteredNames.AllowEverything);
             app.UseForwardedHeaders(new ForwardedHeadersOptions
             {
@@ -169,9 +179,18 @@ namespace Sanakan.Web
             app.UseRouting();
             app.UseAuthentication();
             app.UseAuthorization();
-            app.UseEndpoints(endpoints =>
+            app.UseEndpoints(pr =>
             {
-                endpoints.MapControllers();
+                pr.MapControllers();
+            });
+            app.UseSwagger();
+            app.UseSwaggerUI(options =>
+            {
+                options.DocumentTitle = "Sanakan API";
+                options.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
+                options.RoutePrefix = string.Empty;
+                options.DefaultModelsExpandDepth(-1);
+                options.InjectStylesheet("/swagger-theme.css");
             });
         }
     }

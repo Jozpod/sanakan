@@ -476,34 +476,41 @@ namespace Sanakan.DiscordBot.Services
 
         public async Task<Embed> GetMutedListAsync(ICommandContext context)
         {
-            var mutedList = "Brak";
+            var stringBuilder = new StringBuilder("Brak", 100);
             using var serviceScope = _serviceScopeFactory.CreateScope();
             var serviceProvider = serviceScope.ServiceProvider;
             var penaltyInfoRepository = serviceProvider.GetRequiredService<IPenaltyInfoRepository>();
 
-            var penaltyList = await penaltyInfoRepository.GetMutedPenaltiesAsync(context.Guild.Id);
             var guild = context.Guild;
+            var penaltyList = await penaltyInfoRepository.GetMutedPenaltiesAsync(guild.Id);
 
             if (penaltyList.Any())
             {
-                mutedList = "";
+                stringBuilder.Clear();
                 foreach (var penalty in penaltyList)
                 {
                     var endDate = penalty.StartedOn + penalty.Duration;
                     var name = (await guild.GetUserAsync(penalty.UserId))?.Mention;
-                    
+
                     if (name is null)
                     {
                         continue;
                     }
 
-                    mutedList += $"{name} [DO: {endDate.ToShortDateString()} {endDate.ToShortTimeString()}] - {penalty.Reason}\n";
+                    stringBuilder.AppendFormat(
+                        "{0} [DO: {1} {2}] - {3}\n",
+                        name,
+                        endDate.ToShortDateString(),
+                        endDate.ToShortTimeString(),
+                        penalty.Reason);
                 }
             }
 
+            var result = stringBuilder.ToString().ElipseTrimToLength(1900);
+
             return new EmbedBuilder
             {
-                Description = $"**Wyciszeni**:\n\n{mutedList.ElipseTrimToLength(1900)}",
+                Description = $"**Wyciszeni**:\n\n{result}",
                 Color = EMType.Bot.Color(),
             }.Build();
         }
@@ -549,7 +556,7 @@ namespace Sanakan.DiscordBot.Services
                 user.Guild.Id,
                 PenaltyType.Mute);
 
-            await UnmuteUserGuildAsync(user, muteRole, muteModRole, penalty?.Roles);
+            await UnmuteUserGuildAsync(user, muteRole, muteModRole, penalty?.Roles ?? Enumerable.Empty<OwnedRole>());
             await RemovePenaltyFromDb(penalty);
         }
 
@@ -577,6 +584,7 @@ namespace Sanakan.DiscordBot.Services
             IEnumerable<OwnedRole> roles)
         {
             var roleIds = user.RoleIds;
+            var guild = user.Guild;
 
             if (muteRole != null)
             {
@@ -598,7 +606,7 @@ namespace Sanakan.DiscordBot.Services
             {
                 foreach (var role in roles)
                 {
-                    var socketRole = user.Guild.GetRole(role.RoleId);
+                    var socketRole = guild.GetRole(role.RoleId);
 
                     if (socketRole != null && !roleIds.Contains(socketRole.Id))
                     {
@@ -616,12 +624,13 @@ namespace Sanakan.DiscordBot.Services
             using var serviceScope = _serviceScopeFactory.CreateScope();
             var serviceProvider = serviceScope.ServiceProvider;
             var penaltyInfoRepository = serviceProvider.GetRequiredService<IPenaltyInfoRepository>();
+            var guild = user.Guild;
 
             var penalty = new PenaltyInfo
             {
                 UserId = user.Id,
                 Reason = reason,
-                GuildId = user.Guild.Id,
+                GuildId = guild.Id,
                 Type = PenaltyType.Ban,
                 StartedOn = _systemClock.UtcNow,
                 Duration = duration,
@@ -632,7 +641,7 @@ namespace Sanakan.DiscordBot.Services
 
             _cacheManager.ExpireTag(CacheKeys.Muted);
 
-            await user.Guild.AddBanAsync(user, 0, reason);
+            await guild.AddBanAsync(user, 0, reason);
 
             return penalty;
         }
@@ -655,10 +664,11 @@ namespace Sanakan.DiscordBot.Services
                 StartedOn = _systemClock.UtcNow,
                 Duration = duration,
             };
+            var roleIds = user.RoleIds;
 
             if (userRole != null)
             {
-                if (user.RoleIds.Contains(userRole.Id))
+                if (roleIds.Contains(userRole.Id))
                 {
                     await user.RemoveRoleAsync(userRole);
                     penaltyInfo.Roles.Add(new OwnedRole
@@ -672,11 +682,11 @@ namespace Sanakan.DiscordBot.Services
             {
                 foreach (var modRole in modRoles)
                 {
-                    var roleId = user.RoleIds
+                    var roleId = roleIds
                         .Select(pr => (ulong?)pr)
                         .FirstOrDefault(id => id == modRole.RoleId);
 
-                    if(!roleId.HasValue)
+                    if (!roleId.HasValue)
                     {
                         continue;
                     }
@@ -689,17 +699,17 @@ namespace Sanakan.DiscordBot.Services
                 }
             }
 
-            if (!user.RoleIds.Contains(muteRole.Id))
+            if (muteRole != null && !roleIds.Contains(muteRole.Id))
             {
                 await user.AddRoleAsync(muteRole);
             }
 
             if (muteModRole != null)
             {
-                if (!user.RoleIds.Contains(muteModRole.Id))
+                if (!roleIds.Contains(muteModRole.Id))
                 {
                     await user.AddRoleAsync(muteModRole);
-                }   
+                }
             }
 
             using var serviceScope = _serviceScopeFactory.CreateScope();

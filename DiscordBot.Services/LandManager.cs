@@ -39,7 +39,7 @@ namespace Sanakan.DiscordBot.Services
             return all.First();
         }
 
-        public async Task<List<Embed>> GetMembersList(MyLand land, IGuild guild)
+        public async Task<IEnumerable<Embed>> GetMembersList(MyLand land, IGuild guild)
         {
             var embedList = new List<Embed>();
             var temp = $"**Członkowie**: *{land.Name}*\n\n";

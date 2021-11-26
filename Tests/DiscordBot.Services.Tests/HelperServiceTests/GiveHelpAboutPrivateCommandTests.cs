@@ -1,21 +1,25 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Sanakan.DiscordBot.Services.Abstractions;
 
 namespace DiscordBot.ServicesTests.HelperServiceTests
 {
+    /// <summary>
+    /// Defines tests for <see cref="IHelperService.GiveHelpAboutPrivateCommand(string, string, string, bool)"/> method.
+    /// </summary>
     [TestClass]
     public class GiveHelpAboutPrivateCommandTests : Base
     {
         [TestMethod]
-        public async Task Should_Return_Success()
+        public async Task Should_Return_Private_Command_Info()
         {
             var module = "module";
             var command = "command";
             var prefix = ".";
 
             var result = _helperService.GiveHelpAboutPrivateCommand(module, command, prefix);
-            result.Should().NotBeEmpty();
+            result.Should().BeEmpty();
         }
     }
 }

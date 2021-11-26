@@ -1,0 +1,121 @@
+﻿body {
+    background: #131516;
+    color: #8E50A7;
+}
+
+.swagger-ui .info .title {
+    color: #8E50A7;
+}
+
+.info {
+    color: #8E50A7;
+}
+
+.topbar-wrapper img {
+    content: url('avatar.webp');
+}
+
+.swagger-ui .opblock-tag {
+    color: #B4A4BA;
+}
+
+.swagger-ui .topbar .download-url-wrapper .select-label select {
+    background: #8E50A8;
+    color: white;
+    border-color: white;
+    cursor: pointer;
+}
+
+.swagger-ui table tbody tr td,
+.swagger-ui table tbody tr td div,
+.swagger-ui table thead tr th {
+    color: white !important;
+}
+
+.swagger-ui .info hgroup.main a {
+    color: #B4A4BA;
+}
+
+.swagger-ui .btn.execute {
+    color: white;
+    background: #8E50A8;
+    border-color: #8E50A8;
+}
+
+.renderedMarkdown p {
+    line-height: 1.6;
+}
+
+.swagger-ui .btn {
+    color: white;
+    border-color: white;
+}
+
+.swagger-ui .opblock .opblock-section-header h4 {
+    color: white;
+}
+
+.swagger-ui .prop-format {
+
+}
+
+.swagger-ui .opblock.opblock-post .tab-header .tab-item.active h4 span:after {
+    background: #8E50A8;
+}
+
+.swagger-ui .response-control-media-type__accept-message {
+    color: #B4A4BA;
+}
+
+.swagger-ui .markdown code, .swagger-ui .renderedMarkdown code {
+    color: white;
+    background: #8E50A8;
+}
+
+.swagger-ui .info .title small.version-stamp {
+    background: #B4A4BA;
+}
+
+
+.swagger-ui .info li, .swagger-ui .info p, .swagger-ui .info table {
+    color: white;
+    font-size: 20px;
+}
+
+.tablinks {
+    color: white;
+}
+
+.swagger-ui .response-col_status,
+.swagger-ui .response-col_description,
+.swagger-ui .response-col_links {
+    color: white;
+}
+
+.swagger-ui .opblock-description-wrapper p, .swagger-ui .opblock-external-docs-wrapper p,
+.swagger-ui .opblock-title_normal p {
+    color: white;
+}
+
+.swagger-ui .opblock.opblock-get,
+.swagger-ui .opblock.opblock-post,
+.swagger-ui .opblock.opblock-put,
+.swagger-ui .opblock.opblock-delete {
+    border-color: #8E50A8;
+}
+
+.swagger-ui .opblock .opblock-section-header {
+    background: #B4A4BA;
+}
+
+.swagger-ui .opblock .opblock-summary-path,
+.swagger-ui .opblock .opblock-summary-description {
+    color: white;
+}
+
+.swagger-ui .opblock.opblock-get .opblock-summary-method,
+.swagger-ui .opblock.opblock-delete .opblock-summary-method,
+.swagger-ui .opblock.opblock-put .opblock-summary-method,
+.swagger-ui .opblock.opblock-post .opblock-summary-method {
+    background: #8E50A8;
+}

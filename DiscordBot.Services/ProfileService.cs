@@ -233,7 +233,7 @@ namespace Sanakan.DiscordBot.Services
                 .Join(discordUser.RoleIds, pr => pr.Id, pr => pr, (src, dst) => src);
 
             var roleColor = roles.OrderByDescending(x => x.Position)
-                .FirstOrDefault()?.Color ?? Discord.Color.DarkerGrey;
+                .FirstOrDefault()?.Color ?? Color.DarkerGrey;
 
             using var image = await _imageProcessor.GetUserProfileAsync(
                 isConnected ? user : null,

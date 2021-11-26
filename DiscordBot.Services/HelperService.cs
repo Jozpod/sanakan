@@ -85,7 +85,10 @@ namespace Sanakan.DiscordBot.Services
 
         public string? GiveHelpAboutPrivateCommand(string moduleName, string command, string prefix, bool throwEx = true)
         {
-            var info = _privateModulesInfo[moduleName];
+            if (!_privateModulesInfo.TryGetValue(moduleName, out var info))
+            {
+                return string.Empty;
+            }
 
             var thisCommands = info.Commands.FirstOrDefault(x => x.Name == command);
 
@@ -308,6 +311,7 @@ namespace Sanakan.DiscordBot.Services
                     {
                         continue;
                     }
+
                     rolesSummary.AppendFormat("{0}\n", item.Mention);
                 }
             }
@@ -352,7 +356,7 @@ namespace Sanakan.DiscordBot.Services
                 },
                 new EmbedFieldBuilder
                 {
-                    Name = $"Role[{user.RoleIds.Count - 1}]",
+                    Name = $"Role[{roleIds.Count - 1}]",
                     Value = rolesSummary.ToString(),
                     IsInline = false
                 }
@@ -362,9 +366,11 @@ namespace Sanakan.DiscordBot.Services
         public async Task<IEmbed> GetInfoAboutServerAsync(IGuild guild)
         {
             var author = new EmbedAuthorBuilder().WithName(guild.Name);
-            if (guild.IconUrl != null)
+            var iconUrl = guild.IconUrl;
+
+            if (iconUrl != null)
             {
-                author.WithIconUrl(guild.IconUrl);
+                author.WithIconUrl(iconUrl);
             }
 
             var fields = await GetInfoGuildFieldsAsync(guild);
@@ -376,9 +382,9 @@ namespace Sanakan.DiscordBot.Services
                 Author = author,
             };
 
-            if (guild.IconUrl != null)
+            if (iconUrl != null)
             {
-                embed.WithThumbnailUrl(guild.IconUrl);
+                embed.WithThumbnailUrl(iconUrl);
             }
 
             return embed.Build();
@@ -386,19 +392,21 @@ namespace Sanakan.DiscordBot.Services
 
         private async Task<List<EmbedFieldBuilder>> GetInfoGuildFieldsAsync(IGuild guild)
         {
-            var roles = new StringBuilder(100);
+            var guildId = guild.Id;
+            var stringBuilder = new StringBuilder(100);
             var owner = await guild.GetOwnerAsync();
             var users = await guild.GetUsersAsync();
             var channels = await guild.GetChannelsAsync();
             var textChannelsCount = channels.OfType<ITextChannel>().Count();
             var voiceChannelsCount = channels.OfType<IVoiceChannel>().Count();
+            var roles = guild.Roles;
 
-            foreach (var item in guild.Roles.OrderByDescending(x => x.Position))
+            foreach (var item in roles.OrderByDescending(x => x.Position))
             {
-                var isEveryone = item.Id == guild.Id;
+                var isEveryone = item.Id == guildId;
                 if (isEveryone && !ulong.TryParse(item.Name, out var id))
                 {
-                    roles.AppendFormat("{0} ", item.Mention);
+                    stringBuilder.AppendFormat("{0} ", item.Mention);
                 }
             }
 
@@ -407,7 +415,7 @@ namespace Sanakan.DiscordBot.Services
                 new EmbedFieldBuilder
                 {
                     Name = "Id",
-                    Value = guild.Id,
+                    Value = guildId,
                     IsInline = true
                 },
                 new EmbedFieldBuilder
@@ -442,8 +450,8 @@ namespace Sanakan.DiscordBot.Services
                 },
                 new EmbedFieldBuilder
                 {
-                    Name = $"Role[{guild.Roles.Count}]",
-                    Value = roles.ToString().ElipseTrimToLength(EmbedFieldBuilder.MaxFieldValueLength),
+                    Name = $"Role[{roles.Count}]",
+                    Value = stringBuilder.ToString().ElipseTrimToLength(EmbedFieldBuilder.MaxFieldValueLength),
                     IsInline = false
                 }
             };
@@ -471,12 +479,15 @@ namespace Sanakan.DiscordBot.Services
 
         public IEmbed BuildRaportInfo(IMessage message, string reportAuthor, string reason, ulong reportId)
         {
-            string attach = "brak";
+            var attach = "brak";
+
             if (message.Attachments.Count > 0)
             {
                 attach = "";
-                foreach (var att in message.Attachments)
-                    attach += $"{att.Url}\n";
+                foreach (var attachment in message.Attachments)
+                {
+                    attach += $"{attachment.Url}\n";
+                }
             }
 
             return new EmbedBuilder

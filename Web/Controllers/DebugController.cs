@@ -24,7 +24,7 @@ namespace Sanakan.Web.Controllers
         }
 
         /// <summary>
-        /// Logouts discord client bot
+        /// Logouts discord client bot.
         /// </summary>
         [HttpPost("kill"), Authorize(Policy = AuthorizePolicies.Site)]
         [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]

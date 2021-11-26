@@ -1,20 +1,26 @@
 using Discord;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Threading.Tasks;
-using System;
 using Moq;
-using Sanakan.ShindenApi.Models;
 using Sanakan.DAL.Models;
+using System.Threading.Tasks;
+using Sanakan.DiscordBot.Modules;
+using Discord;
+using Sanakan.Configuration;
+using Sanakan.Common.Configuration;
+using System;
+using Sanakan.ShindenApi.Models;
 using System.Threading;
 
 namespace DiscordBot.ModulesTests.DebugModuleTests
 {
+    /// <summary>
+    /// Defines tests for <see cref="DebugModule.GenerateCardAsync(IGuildUser, ulong?, Rarity)"/> method.
+    /// </summary>
     [TestClass]
     public class GenerateCardAsyncTests : Base
     {
-        
         [TestMethod]
-        public async Task Should_Send_Message()
+        public async Task Should_Generate_Card_And_Send_Message()
         {
             var guildUserMock = new Mock<IGuildUser>(MockBehavior.Strict);
             var mentionableMock = new Mock<IMentionable>(MockBehavior.Strict);

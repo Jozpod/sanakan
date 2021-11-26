@@ -64,6 +64,7 @@ namespace Sanakan.Extensions
 
             return result.ToString();
         }
+
         public static string GetString(
             this Card card,
             bool withoutId = false,
@@ -78,8 +79,11 @@ namespace Sanakan.Extensions
 
             return $"{idStr} {name} **{card.GetCardRealRarity()}** {card.GetCardParams(showBaseHp, allowZero)} {upgradeCount}";
         }
+
         public static string GetCharacterUrl(this Card card) => UrlHelpers.GetCharacterURL(card.CharacterId);
+
         public static string GetNameWithUrl(this Card card) => $"[{card.Name}]({card.GetCharacterUrl()})";
+
         public static string GetDesc(this Card card)
         {
             var tags = string.Join(" ", card.TagList.Select(x => x.Name));
