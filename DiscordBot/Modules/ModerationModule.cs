@@ -860,7 +860,7 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            land = new MyLand
+            land = new UserLand
             {
                 ManagerId = manager.Id,
                 UnderlingId = underling.Id,

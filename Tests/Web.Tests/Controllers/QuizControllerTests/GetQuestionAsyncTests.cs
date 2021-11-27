@@ -5,9 +5,13 @@ using Moq;
 using Sanakan.DAL.Models;
 using System;
 using System.Threading.Tasks;
+using Sanakan.Web.Controllers;
 
 namespace Sanakan.Web.Tests.Controllers.QuizControllerTests
 {
+    /// <summary>
+    /// Defines tests for <see cref="QuizController.GetQuestionsAsync"/> method.
+    /// </summary>
     [TestClass]
     public class GetQuestionAsyncTests : Base
     {

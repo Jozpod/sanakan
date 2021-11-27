@@ -106,6 +106,15 @@ namespace Sanakan.Web.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The appropriate claim was not found.
+        /// </summary>
+        internal static string ClaimNotFound {
+            get {
+                return ResourceManager.GetString("ClaimNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Guild not found!.
         /// </summary>
         internal static string GuildNotFound {

@@ -32,20 +32,26 @@ namespace Sanakan.Extensions
             return stream;
         }
 
-        public static string SaveToPath<T>(this Image<T> img, string path) where T : struct, IPixel<T>
+        public static string SaveToPath<T>(this Image<T> image, string path, Common.IFileSystem fileSystem)
+            where T : struct, IPixel<T>
         {
             var extension = path.Split(".").Last().ToLower();
             var encoder = (extension == "png") ? _pngEncoder : _jpgEncoder;
-            img.Save(path, encoder);
+            var fileStream = fileSystem.OpenWrite(path);
+            image.Save(fileStream, encoder);
+
             return path;
         }
 
-        public static string SaveToPath<T>(this Image<T> img, string path, int width, int height = 0) where T : struct, IPixel<T>
+        public static string SaveToPath<T>(this Image<T> image, string path, int width, Common.IFileSystem fileSystem, int height = 0)
+            where T : struct, IPixel<T>
         {
             var extension = path.Split(".").Last().ToLower();
             var encoder = (extension == "png") ? _pngEncoder : _jpgEncoder;
-            img.Mutate(x => x.Resize(new Size(width, height)));
-            img.Save(path, encoder);
+            image.Mutate(x => x.Resize(new Size(width, height)));
+            var fileStream = fileSystem.OpenWrite(path);
+            image.Save(fileStream, encoder);
+
             return path;
         }
 

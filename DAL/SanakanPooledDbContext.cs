@@ -50,7 +50,7 @@ namespace Sanakan.DAL
         public DbSet<WithoutExpChannel> WithoutExpChannels { get; set; }
         public DbSet<WithoutMessageCountChannel> IgnoredChannels { get; set; }
         public DbSet<WithoutSupervisionChannel> WithoutSupervisionChannels { get; set; }
-        public DbSet<MyLand> MyLands { get; set; }
+        public DbSet<UserLand> MyLands { get; set; }
         public DbSet<WaifuConfiguration> Waifus { get; set; }
         public DbSet<Raport> Raports { get; set; }
         public DbSet<WaifuCommandChannel> WaifuCommandChannels { get; set; }

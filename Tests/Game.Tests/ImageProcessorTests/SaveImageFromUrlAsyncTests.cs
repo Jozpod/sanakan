@@ -1,8 +1,12 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using FluentAssertions;
+using Sanakan.Game.Services.Abstractions;
 
 namespace Sanakan.Game.Tests.ImageProcessorTests
 {
+    /// <summary>
+    /// Defines tests for <see cref="IImageProcessor.SaveImageFromUrlAsync(string, string)"/> method.
+    /// </summary>
     [TestClass]
     public class SaveImageFromUrlAsyncTests : Base
     {

@@ -7,7 +7,9 @@ using Sanakan.Common.Configuration;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot;
 using Sanakan.ShindenApi;
+using Sanakan.TaskQueue;
 using Sanakan.Web.Controllers;
+using System;
 
 namespace Sanakan.Web.Tests.Controllers.UserControllerTests
 {
@@ -19,6 +21,7 @@ namespace Sanakan.Web.Tests.Controllers.UserControllerTests
         protected readonly Mock<IDiscordClient> _discordClientMock = new(MockBehavior.Strict);
         protected readonly Mock<IOptionsMonitor<SanakanConfiguration>> _sanakanConfigurationMock = new(MockBehavior.Strict);
         protected readonly Mock<IUserRepository> _userRepositoryMock = new(MockBehavior.Strict);
+        protected readonly Mock<IBlockingPriorityQueue> _blockingPriorityQueueMock = new(MockBehavior.Strict);
         protected readonly Mock<IShindenClient> _shindenClientMock = new(MockBehavior.Strict);
         protected readonly Mock<IUserContext> _userContextMock = new(MockBehavior.Strict);
         protected readonly Mock<IJwtBuilder> _jwtBuilderMock = new(MockBehavior.Strict);
@@ -32,6 +35,13 @@ namespace Sanakan.Web.Tests.Controllers.UserControllerTests
                 Discord = new DiscordConfiguration
                 {
                     MainGuild = 1ul,
+                },
+                SanakanApi = new ApiConfiguration
+                {
+                    Jwt = new JwtConfiguration
+                    {
+                        UserWithTokenExpiry = TimeSpan.FromMinutes(30),
+                    }
                 }
             };
             _sanakanConfigurationMock
@@ -46,6 +56,7 @@ namespace Sanakan.Web.Tests.Controllers.UserControllerTests
                 _discordSocketClientAccessorMock.Object,
                 _sanakanConfigurationMock.Object,
                 _userRepositoryMock.Object,
+                _blockingPriorityQueueMock.Object,
                 _shindenClientMock.Object,
                 NullLogger<UserController>.Instance,
                 _userContextMock.Object,

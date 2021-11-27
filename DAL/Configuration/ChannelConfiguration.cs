@@ -8,7 +8,7 @@ namespace Sanakan.DAL.Configuration
     public class ChannelConfiguration : 
         IEntityTypeConfiguration<WithoutExpChannel>,
         IEntityTypeConfiguration<WithoutSupervisionChannel>,
-        IEntityTypeConfiguration<MyLand>,
+        IEntityTypeConfiguration<UserLand>,
         IEntityTypeConfiguration<WaifuCommandChannel>,
         IEntityTypeConfiguration<WaifuFightChannel>,
         IEntityTypeConfiguration<CommandChannel>,
@@ -37,7 +37,7 @@ namespace Sanakan.DAL.Configuration
                 .WithMany(g => g.ChannelsWithoutSupervision);
         }
 
-        public void Configure(EntityTypeBuilder<MyLand> builder)
+        public void Configure(EntityTypeBuilder<UserLand> builder)
         {
             builder.HasKey(e => e.Id);
 

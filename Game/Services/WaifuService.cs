@@ -174,59 +174,6 @@ namespace Sanakan.Game.Services
             return rarityChances.Last().Rarity;
         }
 
-        public ItemType RandomizeItemFromBlackMarket()
-        {
-            var num = _randomNumberGenerator.GetRandomValue(1000);
-            if (num < 2) return ItemType.IncreaseExpSmall;
-            if (num < 12) return ItemType.BetterIncreaseUpgradeCnt;
-            if (num < 25) return ItemType.IncreaseUpgradeCount;
-            if (num < 70) return ItemType.AffectionRecoveryGreat;
-            if (num < 120) return ItemType.AffectionRecoveryBig;
-            if (num < 180) return ItemType.CardParamsReRoll;
-            if (num < 250) return ItemType.DereReRoll;
-            if (num < 780) return ItemType.AffectionRecoveryNormal;
-            return ItemType.AffectionRecoverySmall;
-        }
-
-        public ItemType RandomizeItemFromMarket()
-        {
-            var num = _randomNumberGenerator.GetRandomValue(1000);
-            if (num < 2) return ItemType.IncreaseExpSmall;
-            if (num < 15) return ItemType.IncreaseUpgradeCount;
-            if (num < 80) return ItemType.AffectionRecoveryBig;
-            if (num < 145) return ItemType.CardParamsReRoll;
-            if (num < 230) return ItemType.DereReRoll;
-            if (num < 480) return ItemType.AffectionRecoveryNormal;
-            return ItemType.AffectionRecoverySmall;
-        }
-
-        public Quality RandomizeItemQualityFromMarket()
-        {
-            var num = _randomNumberGenerator.GetRandomValue(10000);
-            if (num < 5) return Quality.Sigma;
-            if (num < 20) return Quality.Lambda;
-            if (num < 60) return Quality.Zeta;
-            if (num < 200) return Quality.Delta;
-            if (num < 500) return Quality.Gamma;
-            if (num < 1000) return Quality.Beta;
-            if (num < 2000) return Quality.Alpha;
-            return Quality.Broken;
-        }
-
-        public Quality RandomizeItemQualityFromExpedition()
-        {
-            var num = _randomNumberGenerator.GetRandomValue(100000);
-            if (num < 5) return Quality.Omega;
-            if (num < 50) return Quality.Sigma;
-            if (num < 200) return Quality.Lambda;
-            if (num < 600) return Quality.Zeta;
-            if (num < 2000) return Quality.Delta;
-            if (num < 5000) return Quality.Gamma;
-            if (num < 10000) return Quality.Beta;
-            if (num < 20000) return Quality.Alpha;
-            return Quality.Broken;
-        }
-
         public ItemWithCost[] GetItemsWithCost()
         {
             return new ItemWithCost[]
@@ -916,10 +863,10 @@ namespace Sanakan.Game.Services
             return response.Value;
         }
 
-        public async Task<string> GetWaifuProfileImageAsync(Card card, IMessageChannel trashCh)
+        public async Task<string> GetWaifuProfileImageUrlAsync(Card card, IMessageChannel trashChannel)
         {
             var uri = await GenerateAndSaveCardAsync(card, CardImageType.Profile);
-            var userMessage = await trashCh.SendFileAsync(uri);
+            var userMessage = await trashChannel.SendFileAsync(uri);
             var attachment = userMessage.Attachments.FirstOrDefault();
             return attachment.Url;
         }
@@ -1140,11 +1087,11 @@ namespace Sanakan.Game.Services
             var pImageLocation = $"{Paths.CardsInProfiles}/{card.Id}.png";
 
             using var image = await _imageProcessor.GetWaifuCardImageAsync(card);
-            image.SaveToPath(imageLocation, 300);
-            image.SaveToPath(sImageLocation, 133);
+            image.SaveToPath(imageLocation, 300, _fileSystem);
+            image.SaveToPath(sImageLocation, 133, _fileSystem);
 
             using var cardImage = await _imageProcessor.GetWaifuInProfileCardAsync(card);
-            cardImage.SaveToPath(pImageLocation, 380);
+            cardImage.SaveToPath(pImageLocation, 380, _fileSystem);
 
             switch (type)
             {
@@ -1300,7 +1247,7 @@ namespace Sanakan.Game.Services
             }
             else
             {
-                imageUrl = await GetWaifuProfileImageAsync(card, trashChannel);
+                imageUrl = await GetWaifuProfileImageUrlAsync(card, trashChannel);
             }
 
             var ownerString = ((owner as IGuildUser)?.Nickname ?? owner?.Username) ?? "????";
@@ -1764,7 +1711,8 @@ namespace Sanakan.Game.Services
             var quality = Quality.Broken;
             if (expedition.HasDifferentQualitiesOnExpedition())
             {
-                quality = RandomizeItemQualityFromExpedition();
+                var number = _randomNumberGenerator.GetRandomValue(100000);
+                quality = QualityExtensions.RandomizeItemQualityFromExpedition(number);
             }
 
             switch (_randomNumberGenerator.GetRandomValue(10000))

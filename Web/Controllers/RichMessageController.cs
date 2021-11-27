@@ -48,7 +48,7 @@ namespace Sanakan.Web.Controllers
 
             var client = _client.Client;
 
-            if(client == null)
+            if (client == null)
             {
                 return ShindenInternalServerError("Cannot access discord client.");
             }
@@ -187,7 +187,7 @@ namespace Sanakan.Web.Controllers
                 }
 
                 var guild = await client.GetGuildAsync(richMessageConfig.GuildId);
-                
+
                 if (guild == null)
                 {
                     continue;
@@ -205,6 +205,7 @@ namespace Sanakan.Web.Controllers
                 if (mention.Value)
                 {
                     var role = guild.GetRole(richMessageConfig.RoleId);
+
                     if (role != null)
                     {
                         mentionContent = role.Mention;
@@ -219,7 +220,7 @@ namespace Sanakan.Web.Controllers
                 }
             }
 
-            if (messageList.Count == 0)
+            if (!messageList.Any())
             {
                 return ShindenBadRequest("Message not send!");
             }

@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace Sanakan.DAL.Models.Configuration
 {
-    public class MyLand
+    public class UserLand
     {
         public ulong Id { get; set; }
 

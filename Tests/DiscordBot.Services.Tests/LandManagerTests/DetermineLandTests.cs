@@ -4,10 +4,14 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.DAL.Models.Configuration;
 using System.Linq;
-
+using Sanakan.DiscordBot.Services.Abstractions;
+using System.Collections.Generic;
 
 namespace DiscordBot.ServicesTests.LandManagerTests
 {
+    /// <summary>
+    /// Defines tests for <see cref="ILandManager.DetermineLand(IEnumerable{UserLand}, IEnumerable{ulong}, string?)"/> method.
+    /// </summary>
     [TestClass]
     public class DetermineLandTests : Base
     {
@@ -19,7 +23,7 @@ namespace DiscordBot.ServicesTests.LandManagerTests
                 .Setup(pr => pr.Id)
                 .Returns(1);
 
-            var expected = new MyLand
+            var expected = new UserLand
             {
                 Name = "test",
                 ManagerId = 1,
@@ -41,7 +45,7 @@ namespace DiscordBot.ServicesTests.LandManagerTests
         [TestMethod]
         public void Should_Return_Null()
         {
-            var lands = Enumerable.Empty<MyLand>();
+            var lands = Enumerable.Empty<UserLand>();
             var roles = Enumerable.Empty<ulong>();
             var name = "test";
 

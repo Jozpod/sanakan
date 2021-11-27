@@ -170,7 +170,7 @@ namespace Sanakan.DiscordBot.Services
         {
             var stringBuilder = new StringBuilder("**Krainy:**\n\n", 500);
             var guild = context.Guild;
-            var lands = config.Lands ?? Enumerable.Empty<MyLand>();
+            var lands = config.Lands ?? Enumerable.Empty<UserLand>();
 
             if (lands.Any())
             {

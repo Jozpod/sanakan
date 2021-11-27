@@ -1,9 +1,13 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Sanakan.Game.Services.Abstractions;
 
 namespace Sanakan.Game.Tests
 {
+    /// <summary>
+    /// Defines tests for <see cref="IImageProcessor.GetLevelUpBadgeAsync(string, ulong, string, Discord.Color)"/> method.
+    /// </summary>
     [TestClass]
     public class GetLevelUpBadgeAsyncTests : Base
     {

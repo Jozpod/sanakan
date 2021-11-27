@@ -45,6 +45,7 @@ namespace Sanakan.Web.Controllers
             IDiscordClientAccessor discordSocketClientAccessor,
             IOptionsMonitor<SanakanConfiguration> config,
             IUserRepository userRepository,
+            IBlockingPriorityQueue blockingPriorityQueue,
             IShindenClient shindenClient,
             ILogger<UserController> logger,
             IUserContext userContext,
@@ -54,8 +55,9 @@ namespace Sanakan.Web.Controllers
             _discordSocketClientAccessor = discordSocketClientAccessor;
             _config = config;
             _userRepository = userRepository;
-            _logger = logger;
+            _blockingPriorityQueue = blockingPriorityQueue;
             _shindenClient = shindenClient;
+            _logger = logger;
             _userContext = userContext;
             _jwtBuilder = jwtBuilder;
             _requestBodyReader = requestBodyReader;
@@ -147,7 +149,7 @@ namespace Sanakan.Web.Controllers
         }
 
         /// <summary>
-        /// Gets the basic details for given user.
+        /// Gets the basic details for given user and token.
         /// </summary>
         /// <param name="shindenUserId">The Shinden user identifier.</param>
         [HttpGet("shinden/simple/{shindenUserId}"), Authorize(Policy = AuthorizePolicies.Site)]
@@ -166,7 +168,7 @@ namespace Sanakan.Web.Controllers
             }
 
             TokenData tokenData = null;
-            
+
             if (_userContext.HasWebpageClaim())
             {
                 tokenData = _jwtBuilder.Build(_config.CurrentValue.SanakanApi.Jwt.UserWithTokenExpiry);
@@ -256,7 +258,7 @@ namespace Sanakan.Web.Controllers
             }
 
             var discordUser = await client.GetUserAsync(model.DiscordUserId);
-            
+
             if (discordUser == null)
             {
                 return ShindenNotFound(Strings.UserNotFound);
@@ -330,11 +332,16 @@ namespace Sanakan.Web.Controllers
                 return ShindenUnauthorized("This account is already linked!");
             }
 
-            _blockingPriorityQueue.TryEnqueue(new ConnectUserMessage
+            var enqueued = _blockingPriorityQueue.TryEnqueue(new ConnectUserMessage
             {
                 DiscordUserId = model.DiscordUserId,
                 ShindenUserId = shindenUser.Id.Value,
             });
+
+            if (!enqueued)
+            {
+                return ShindenInternalServerError("Coud not enqueue task");
+            }
 
             return ShindenOk("User connected!");
         }
@@ -357,11 +364,16 @@ namespace Sanakan.Web.Controllers
                 return ShindenNotFound(Strings.UserNotFound);
             }
 
-            _blockingPriorityQueue.TryEnqueue(new TransferTCMessage
+            var enqueued = _blockingPriorityQueue.TryEnqueue(new TransferTCMessage
             {
                 DiscordUserId = discordUserId,
                 Amount = amount
             });
+
+            if (!enqueued)
+            {
+                return ShindenInternalServerError("Coud not enqueue task");
+            }
 
             return ShindenOk("TC added!");
         }

@@ -1526,14 +1526,16 @@ namespace Sanakan.DiscordBot.Modules
         public async Task GoToMarketAsync([Summary("WID")]ulong wid)
         {
             var botuser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
-            if (botuser.GameDeck.IsMarketDisabled())
+            var gameDeck = botuser.GameDeck;
+
+            if (gameDeck.IsMarketDisabled())
             {
                 await ReplyAsync("", embed: $"{Context.User.Mention} wszyscy na twój widok się rozbiegli, nic dziś nie zdziałasz."
                     .ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
-            var card = botuser.GameDeck.Cards.FirstOrDefault(x => x.Id == wid);
+            var card = gameDeck.Cards.FirstOrDefault(x => x.Id == wid);
             if (card == null)
             {
                 await ReplyAsync("", embed: $"{Context.User.Mention} nie posiadasz takiej karty."
@@ -1588,26 +1590,38 @@ namespace Sanakan.DiscordBot.Modules
             }
             mission.Count(utcNow);
 
-            int nextMarket = 20 - (int)(botuser.GameDeck.Karma / 100);
-            if (nextMarket > 22) nextMarket = 22;
-            if (nextMarket < 4) nextMarket = 4;
-
-            if (botuser.GameDeck.Karma >= 3000)
+            int nextMarket = 20 - (int)(gameDeck.Karma / 100);
+            if (nextMarket > 22)
             {
-                int tK = (int)(botuser.GameDeck.Karma - 2000) / 1000;
+                nextMarket = 22;
+            }
+            if (nextMarket < 4)
+            {
+                nextMarket = 4;
+            }
+
+            if (gameDeck.Karma >= 3000)
+            {
+                int tK = (int)(gameDeck.Karma - 2000) / 1000;
                 nextMarket -= tK;
 
                 if (nextMarket < 1)
                     nextMarket = 1;
             }
 
-            int itemCnt = 1 + (int)(card.Affection / 15);
-            itemCnt += (int)(botuser.GameDeck.Karma / 180);
-            if (itemCnt > 10) itemCnt = 10;
-            if (itemCnt < 1) itemCnt = 1;
+            int itemCount = 1 + (int)(card.Affection / 15);
+            itemCount += (int)(gameDeck.Karma / 180);
+            if (itemCount > 10) itemCount = 10;
+            if (itemCount < 1) itemCount = 1;
 
-            if (card.CanGiveRing()) ++itemCnt;
-            if (botuser.GameDeck.CanCreateAngel()) ++itemCnt;
+            if (card.CanGiveRing())
+            {
+                ++itemCount;
+            }
+            if (gameDeck.CanCreateAngel())
+            {
+                ++itemCount;
+            }
 
             market.EndsOn = _systemClock.UtcNow.AddHours(nextMarket);
             card.Affection += 0.1;
@@ -1615,16 +1629,19 @@ namespace Sanakan.DiscordBot.Modules
             _ = card.CalculateCardPower();
 
             var reward = "";
-            for (int i = 0; i < itemCnt; i++)
+            for (int i = 0; i < itemCount; i++)
             {
-                var itmType = _waifuService.RandomizeItemFromMarket();
-                var itmQu = Quality.Broken;
-                if (itmType.HasDifferentQualities())
+                var number = _randomNumberGenerator.GetRandomValue(1000);
+                var itemType = ItemTypeExtensions.RandomizeItemFromMarket(number);
+
+                var itemQuality = Quality.Broken;
+                if (itemType.HasDifferentQualities())
                 {
-                    itmQu = _waifuService.RandomizeItemQualityFromMarket();
+                    number = _randomNumberGenerator.GetRandomValue(10000);
+                    itemQuality = QualityExtensions.RandomizeItemQualityFromMarket(number);
                 }
 
-                var item = itmType.ToItem(1, itmQu);
+                var item = itemType.ToItem(1, itemQuality);
                 var thisItem = botuser.GameDeck.Items.FirstOrDefault(x => x.Type == item.Type && x.Quality == item.Quality);
                 if (thisItem == null)
                 {
@@ -1655,15 +1672,17 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks("2145"), RequireWaifuCommandChannel]
         public async Task GoToBlackMarketAsync([Summary("WID")]ulong wid)
         {
-            var botuser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
-            if (botuser.GameDeck.IsBlackMarketDisabled())
+            var databaseUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
+            var gameDeck = databaseUser.GameDeck;
+
+            if (gameDeck.IsBlackMarketDisabled())
             {
                 await ReplyAsync("", embed: $"{Context.User.Mention} halo koleżko, to nie miejsce dla Ciebie!"
                     .ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
-            var card = botuser.GameDeck.Cards.FirstOrDefault(x => x.Id == wid);
+            var card = gameDeck.Cards.FirstOrDefault(x => x.Id == wid);
             if (card == null)
             {
                 await ReplyAsync("", embed: $"{Context.User.Mention} nie posiadasz takiej karty."
@@ -1684,11 +1703,11 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            var market = botuser.TimeStatuses.FirstOrDefault(x => x.Type == StatusType.Market);
+            var market = databaseUser.TimeStatuses.FirstOrDefault(x => x.Type == StatusType.Market);
             if (market == null)
             {
                 market = new TimeStatus(StatusType.Market);
-                botuser.TimeStatuses.Add(market);
+                databaseUser.TimeStatuses.Add(market);
             }
 
             var utcNow = _systemClock.UtcNow;
@@ -1702,42 +1721,42 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            var mission = botuser.TimeStatuses
+            var mission = databaseUser.TimeStatuses
                 .FirstOrDefault(x => x.Type == StatusType.DMarket);
 
             if (mission == null)
             {
                 mission = new TimeStatus(StatusType.DMarket);
-                botuser.TimeStatuses.Add(mission);
+                databaseUser.TimeStatuses.Add(mission);
             }
             mission.Count(utcNow);
 
-            int nextMarket = 20 + (int)(botuser.GameDeck.Karma / 100);
+            int nextMarket = 20 + (int)(gameDeck.Karma / 100);
             if (nextMarket > 22) nextMarket = 22;
             if (nextMarket < 4) nextMarket = 4;
 
-            if (botuser.GameDeck.Karma <= -3000)
+            if (gameDeck.Karma <= -3000)
             {
-                int tK = (int)(botuser.GameDeck.Karma + 2000) / 1000;
+                int tK = (int)(gameDeck.Karma + 2000) / 1000;
                 nextMarket += tK;
 
                 if (nextMarket < 1)
                     nextMarket = 1;
             }
 
-            int itemCnt = 1 + (int)(card.Affection / 15);
-            itemCnt -= (int)(botuser.GameDeck.Karma / 180);
-            if (itemCnt > 10) itemCnt = 10;
-            if (itemCnt < 1) itemCnt = 1;
+            int itemCount = 1 + (int)(card.Affection / 15);
+            itemCount -= (int)(gameDeck.Karma / 180);
+            if (itemCount > 10) itemCount = 10;
+            if (itemCount < 1) itemCount = 1;
 
             if (card.CanGiveBloodOrUpgradeToSSS())
             {
-                ++itemCnt;
+                ++itemCount;
             }
 
-            if (botuser.GameDeck.CanCreateDemon())
+            if (gameDeck.CanCreateDemon())
             {
-                ++itemCnt;
+                ++itemCount;
             }
 
             market.EndsOn = _systemClock.UtcNow.AddHours(nextMarket);
@@ -1746,30 +1765,36 @@ namespace Sanakan.DiscordBot.Modules
             _ = card.CalculateCardPower();
 
             string reward = "";
-            for (int i = 0; i < itemCnt; i++)
+            for (var i = 0; i < itemCount; i++)
             {
-                var itmType = _waifuService.RandomizeItemFromBlackMarket();
-                var itmQu = Quality.Broken;
-                if (itmType.HasDifferentQualities())
+                var number = _randomNumberGenerator.GetRandomValue(1000);
+                var itemType = ItemTypeExtensions.RandomizeItemFromBlackMarket(number);
+
+                var itemQuality = Quality.Broken;
+                if (itemType.HasDifferentQualities())
                 {
-                    itmQu = _waifuService.RandomizeItemQualityFromMarket();
+                    number = _randomNumberGenerator.GetRandomValue(10000);
+                    itemQuality = QualityExtensions.RandomizeItemQualityFromMarket(number);
                 }
 
-                var item = itmType.ToItem(1, itmQu);
-                var thisItem = botuser.GameDeck.Items.FirstOrDefault(x => x.Type == item.Type && x.Quality == item.Quality);
+                var item = itemType.ToItem(1, itemQuality);
+                var thisItem = gameDeck.Items.FirstOrDefault(x => x.Type == item.Type && x.Quality == item.Quality);
                 if (thisItem == null)
                 {
                     thisItem = item;
-                    botuser.GameDeck.Items.Add(thisItem);
+                    gameDeck.Items.Add(thisItem);
                 }
-                else ++thisItem.Count;
+                else
+                {
+                    ++thisItem.Count;
+                }
 
                 reward += $"+{item.Name}\n";
             }
 
             await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(CacheKeys.User(botuser.Id), CacheKeys.Users);
+            _cacheManager.ExpireTag(CacheKeys.User(databaseUser.Id), CacheKeys.Users);
 
             await ReplyAsync("", embed: $"{Context.User.Mention} udało Ci się zdobyć:\n\n{reward}".ToEmbedMessage(EMType.Success).Build());
         }
@@ -1782,38 +1807,40 @@ namespace Sanakan.DiscordBot.Modules
             [Summary("WID(do ulepszenia)")]ulong idToUpgrade,
             [Summary("WID kart(do poświęcenia)")]params ulong[] idsToSacrifice)
         {
+            var mention = Context.User.Mention;
+
             if (idsToSacrifice.Any(x => x == idToUpgrade))
             {
-                await ReplyAsync("", embed: $"{Context.User.Mention} podałeś ten sam WID do ulepszenia i zniszczenia."
+                await ReplyAsync("", embed: $"{mention} podałeś ten sam WID do ulepszenia i zniszczenia."
                     .ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
-            var bUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
-            var cardToUp = bUser.GameDeck.Cards.FirstOrDefault(x => x.Id == idToUpgrade);
-            var cardsToSac = bUser.GameDeck.Cards.Where(x => idsToSacrifice.Any(c => c == x.Id)).ToList();
+            var databaseUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
+            var cardToUp = databaseUser.GameDeck.Cards.FirstOrDefault(x => x.Id == idToUpgrade);
+            var cardsToSacrifice = databaseUser.GameDeck.Cards.Where(x => idsToSacrifice.Any(c => c == x.Id)).ToList();
 
-            if (cardsToSac.Count < 1 || cardToUp == null)
+            if (cardsToSacrifice.Count < 1 || cardToUp == null)
             {
-                await ReplyAsync("", embed: $"{Context.User.Mention} nie posiadasz takiej karty.".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync("", embed: $"{mention} nie posiadasz takiej karty.".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
             if (cardToUp.InCage)
             {
-                await ReplyAsync("", embed: $"{Context.User.Mention} ta karta znajduje się w klatce.".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync("", embed: $"{mention} ta karta znajduje się w klatce.".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
             if (cardToUp.Expedition != ExpeditionCardType.None)
             {
-                await ReplyAsync("", embed: $"{Context.User.Mention} ta karta jest na wyprawie!".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync("", embed: $"{mention} ta karta jest na wyprawie!".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
             double totalExp = 0;
             var broken = new List<Card>();
-            foreach (var card in cardsToSac)
+            foreach (var card in cardsToSacrifice)
             {
                 if (card.IsBroken 
                     || card.InCage 
@@ -1825,15 +1852,15 @@ namespace Sanakan.DiscordBot.Modules
                     continue;
                 }
 
-                ++bUser.Stats.SacrificedCardsCount;
-                bUser.GameDeck.Karma -= 0.28;
+                ++databaseUser.Stats.SacrificedCardsCount;
+                databaseUser.GameDeck.Karma -= 0.28;
 
-                var exp = _waifuService.GetExpToUpgrade(cardToUp, card);
+                var experience = _waifuService.GetExpToUpgrade(cardToUp, card);
                 cardToUp.Affection += 0.07;
-                cardToUp.ExperienceCount += exp;
-                totalExp += exp;
+                cardToUp.ExperienceCount += experience;
+                totalExp += experience;
 
-                bUser.GameDeck.Cards.Remove(card);
+                databaseUser.GameDeck.Cards.Remove(card);
                 _waifuService.DeleteCardImageIfExist(card);
             }
 
@@ -1841,16 +1868,16 @@ namespace Sanakan.DiscordBot.Modules
 
             await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(CacheKeys.User(bUser.Id), CacheKeys.Users);
+            _cacheManager.ExpireTag(CacheKeys.User(databaseUser.Id), CacheKeys.Users);
 
-            if (cardsToSac.Count > broken.Count)
+            if (cardsToSacrifice.Count > broken.Count)
             {
-                await ReplyAsync("", embed: $"{Context.User.Mention} ulepszył kartę: {cardToUp.GetString(false, false, true)} o {totalExp.ToString("F")} exp.".ToEmbedMessage(EMType.Success).Build());
+                await ReplyAsync("", embed: $"{mention} ulepszył kartę: {cardToUp.GetString(false, false, true)} o {totalExp.ToString("F")} exp.".ToEmbedMessage(EMType.Success).Build());
             }
 
             if (broken.Count > 0)
             {
-                await ReplyAsync("", embed: $"{Context.User.Mention} nie udało się poświęcić {broken.Count} kart.".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync("", embed: $"{mention} nie udało się poświęcić {broken.Count} kart.".ToEmbedMessage(EMType.Error).Build());
             }
         }
 
@@ -1866,8 +1893,9 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            var bUser = await _userRepository.GetUserOrCreateAsync(user.Id);
-            var cardsInCage = bUser.GameDeck.Cards.Where(x => x.InCage);
+            var databaseUser = await _userRepository.GetUserOrCreateAsync(user.Id);
+            var cardsInCage = databaseUser.GameDeck.Cards.Where(x => x.InCage);
+            var gameDeck = databaseUser.GameDeck;
 
             var cntIn = cardsInCage.Count();
             if (cntIn < 1)
@@ -1878,7 +1906,7 @@ namespace Sanakan.DiscordBot.Modules
 
             if (wid == 0)
             {
-                bUser.GameDeck.Karma += 0.01;
+                gameDeck.Karma += 0.01;
 
                 foreach (var card in cardsInCage)
                 {
@@ -1912,19 +1940,24 @@ namespace Sanakan.DiscordBot.Modules
                     return;
                 }
 
-                bUser.GameDeck.Karma -= 0.1;
+                gameDeck.Karma -= 0.1;
                 thisCard.InCage = false;
                 cntIn = 1;
 
                 var span = _systemClock.UtcNow - thisCard.CreatedOn;
-                if (span.TotalDays > 5) thisCard.Affection -= (int)span.TotalDays * 0.1;
+                if (span.TotalDays > 5)
+                {
+                    thisCard.Affection -= (int)span.TotalDays * 0.1;
+                }
 
                 _ = thisCard.CalculateCardPower();
 
                 foreach (var card in cardsInCage)
                 {
                     if (card.Id != thisCard.Id)
+                    {
                         card.Affection -= 0.3;
+                    }
 
                     _ = card.CalculateCardPower();
                 }
@@ -1932,7 +1965,7 @@ namespace Sanakan.DiscordBot.Modules
 
             await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(CacheKeys.User(bUser.Id), CacheKeys.Users);
+            _cacheManager.ExpireTag(CacheKeys.User(databaseUser.Id), CacheKeys.Users);
 
             await ReplyAsync("", embed: $"{user.Mention} wyciągnął {cntIn} kart z klatki.".ToEmbedMessage(EMType.Success).Build());
         }
@@ -2623,7 +2656,7 @@ namespace Sanakan.DiscordBot.Modules
 
             if (count < 1)
             {
-                await ReplyAsync("", embed: $"{Context.User.Mention} obecny limit to: {bUser.GameDeck.CardsInGallery}.".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync("", embed: $"{Context.User.Mention} obecny limit to: {bUser.GameDeck.CardsInGalleryCount}.".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
@@ -2634,13 +2667,13 @@ namespace Sanakan.DiscordBot.Modules
             }
 
             bUser.TcCount -= cost;
-            bUser.GameDeck.CardsInGallery += 5 * (int)count;
+            bUser.GameDeck.CardsInGalleryCount += 5 * (int)count;
 
             await _userRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(CacheKeys.User(bUser.Id), CacheKeys.Users);
 
-            await ReplyAsync("", embed: $"{Context.User.Mention} powiększył swój limit kart w galerii do {bUser.GameDeck.CardsInGallery}.".ToEmbedMessage(EMType.Success).Build());
+            await ReplyAsync("", embed: $"{Context.User.Mention} powiększył swój limit kart w galerii do {bUser.GameDeck.CardsInGalleryCount}.".ToEmbedMessage(EMType.Success).Build());
         }
 
         [Command("wymień na kule")]
@@ -3836,7 +3869,7 @@ namespace Sanakan.DiscordBot.Modules
                     var config = await _guildConfigRepository.GetCachedGuildFullConfigAsync(Context.Guild.Id);
                     var channel = (IMessageChannel)await Context.Guild.GetChannelAsync(config.WaifuConfig.TrashCommandsChannelId.Value);
 
-                    embed.WithImageUrl(await _waifuService.GetWaifuProfileImageAsync(tChar, channel));
+                    embed.WithImageUrl(await _waifuService.GetWaifuProfileImageUrlAsync(tChar, channel));
                     embed.WithFooter(new EmbedFooterBuilder().WithText($"{tChar.Name}"));
                 }
             }

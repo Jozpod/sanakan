@@ -34,6 +34,26 @@ namespace DiscordBot.ModulesTests.ShindenModuleTests
                 }
             };
 
+            var animeMangaInfoResult = new Result<AnimeMangaInfo>
+            {
+                Value = new AnimeMangaInfo
+                {
+                    Title = new TitleEntry
+                    {
+                        FinishDate = DateTime.UtcNow,
+                        Title = "test",
+                        Description = new AnimeMangaInfoDescription
+                        {
+                            OtherDescription = "test",
+                        },
+                        TitleOther = new List<TitleOther>
+                        {
+
+                        }
+                    }
+                }
+            };
+
             _sessionManagerMock
                 .Setup(pr => pr.Exists<SearchSession>(userId))
                 .Returns(false);
@@ -48,26 +68,7 @@ namespace DiscordBot.ModulesTests.ShindenModuleTests
 
             _shindenClientMock
                 .Setup(pr => pr.GetAnimeMangaInfoAsync(searchObject.TitleId))
-                .ReturnsAsync(new Result<AnimeMangaInfo>
-                {
-                    Value = new AnimeMangaInfo
-                    {
-                        Title = new TitleEntry
-                        {
-                            FinishDate = DateTime.UtcNow,
-                            Title = "test",
-                            Description = new AnimeMangaInfoDescription
-                            {
-                                OtherDescription = "test",
-                            },
-                            TitleOther = new List<TitleOther>
-                            {
-                                
-                            }
-                        }
-                    }
-                });
-            
+                .ReturnsAsync(animeMangaInfoResult);
 
             _systemClockMock
                 .Setup(pr => pr.UtcNow)

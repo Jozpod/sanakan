@@ -8,47 +8,47 @@ namespace Sanakan.Web
 {
     public static class RichMessageExtension
     {
-        public static Embed ToEmbed(this RichMessage msg)
+        public static Embed ToEmbed(this RichMessage message)
         {
             var embed = new EmbedBuilder
             {
-                Url = msg.Url ?? "",
-                Title = (msg.Title ?? "").ElipseTrimToLength(EmbedBuilder.MaxTitleLength),
-                Timestamp = msg.Timestamp,
-                ImageUrl = msg.ImageUrl ?? "",
-                Color = msg.MessageType.ToColor(),
-                Description = (msg.Description ?? "").ConvertBBCodeToMarkdown().ElipseTrimToLength(1800),
-                ThumbnailUrl = msg.ThumbnailUrl ?? "",
+                Url = message.Url ?? "",
+                Title = (message.Title ?? "").ElipseTrimToLength(EmbedBuilder.MaxTitleLength),
+                Timestamp = message.Timestamp,
+                ImageUrl = message.ImageUrl ?? "",
+                Color = message.MessageType.ToColor(),
+                Description = (message.Description ?? "").ConvertBBCodeToMarkdown().ElipseTrimToLength(1800),
+                ThumbnailUrl = message.ThumbnailUrl ?? "",
             };
 
-            if (msg.ImageUrl != null)
+            if (message.ImageUrl != null)
             {
-                embed.Description = embed.Description.Replace(msg.ImageUrl, "");
+                embed.Description = embed.Description.Replace(message.ImageUrl, "");
             }
 
-            if (msg.Author != null)
+            if (message.Author != null)
             {
                 embed.Author = new EmbedAuthorBuilder
                 {
-                    IconUrl = msg.Author.ImageUrl ?? "",
-                    Url = msg.Author.NameUrl ?? "",
-                    Name = (msg.Author.Name ?? "").ElipseTrimToLength(EmbedAuthorBuilder.MaxAuthorNameLength),
+                    IconUrl = message.Author.ImageUrl ?? "",
+                    Url = message.Author.NameUrl ?? "",
+                    Name = (message.Author.Name ?? "").ElipseTrimToLength(EmbedAuthorBuilder.MaxAuthorNameLength),
                 };
             }
 
-            if (msg.Footer != null)
+            if (message.Footer != null)
             {
                 embed.Footer = new EmbedFooterBuilder
                 {
-                    IconUrl = msg.Footer.ImageUrl ?? "",
-                    Text = (msg.Footer.Text ?? "").ElipseTrimToLength(EmbedFooterBuilder.MaxFooterTextLength),
+                    IconUrl = message.Footer.ImageUrl ?? "",
+                    Text = (message.Footer.Text ?? "").ElipseTrimToLength(EmbedFooterBuilder.MaxFooterTextLength),
                 };
             }
 
-            if (msg.Fields != null)
+            if (message.Fields != null)
             {
                 int index = 0;
-                foreach (var field in msg.Fields)
+                foreach (var field in message.Fields)
                 {
                     if (++index >= EmbedBuilder.MaxFieldCount) break;
 

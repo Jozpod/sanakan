@@ -9,9 +9,13 @@ using Sanakan.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Security.Claims;
+using Sanakan.Web.Controllers;
 
 namespace Sanakan.Web.Tests.Controllers.TokenControllerTests
 {
+    /// <summary>
+    /// Defines tests for <see cref="TokenController.CreateToken(string?)"/> method.
+    /// </summary>
     [TestClass]
     public class CreateTokenTests : Base
     {

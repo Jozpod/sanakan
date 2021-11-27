@@ -3,9 +3,13 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using Sanakan.ShindenApi.Models;
 using FluentAssertions;
+using Sanakan.Game.Services.Abstractions;
 
 namespace Sanakan.Game.Tests
 {
+    /// <summary>
+    /// Defines tests for <see cref="IImageProcessor.GetSiteStatisticAsync(UserInfo, Discord.Color, List{LastWatchedRead}?, List{LastWatchedRead}?)"/> method.
+    /// </summary>
     [TestClass]
     public class GetSiteStatisticAsyncTests : Base
     {

@@ -59,6 +59,7 @@ namespace Sanakan.DAL.Repositories
 
             return result;
         }
+
         public Task<User?> GetBaseUserAndDontTrackAsync(ulong discordUserId)
         {
             return _dbContext.Users

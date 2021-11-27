@@ -6,9 +6,13 @@ using Moq;
 using Sanakan.DAL.Models;
 using System;
 using System.Threading.Tasks;
+using Sanakan.Web.Controllers;
 
 namespace Sanakan.Web.Tests.Controllers.UserControllerTests
 {
+    /// <summary>
+    /// Defines tests for <see cref="UserController.ChangeNicknameShindenUserAsync(ulong, string)"/> method.
+    /// </summary>
     [TestClass]
     public class ChangeNicknameShindenUserAsyncTests : Base
     {

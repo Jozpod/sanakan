@@ -3,9 +3,15 @@ using Moq;
 using Sanakan.DAL.Models;
 using System;
 using System.Threading.Tasks;
+using Sanakan.Web.Controllers;
+using FluentAssertions;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Sanakan.Web.Tests.Controllers.WaifuControllerTests
 {
+    /// <summary>
+    /// Defines tests for <see cref="WaifuController.GetUserCardsAsync(ulong)"/> method.
+    /// </summary>
     [TestClass]
     public class GetUserCardsAsync : Base
     {
@@ -21,6 +27,8 @@ namespace Sanakan.Web.Tests.Controllers.WaifuControllerTests
                 .ReturnsAsync(expected);
 
             var result = await _controller.GetUserCardsAsync(shindenUserId);
+            var okObjectResult = result.Should().BeOfType<ObjectResult>().Subject;
+            okObjectResult.Value.Should().NotBeNull();
         }
 
         [TestMethod]
@@ -36,6 +44,8 @@ namespace Sanakan.Web.Tests.Controllers.WaifuControllerTests
                 .ReturnsAsync(expected);
 
             var result = await _controller.GetUserCardsAsync(shindenUserId);
+            var okObjectResult = result.Should().BeOfType<OkObjectResult>().Subject;
+            okObjectResult.Value.Should().NotBeNull();
         }
     }
 }

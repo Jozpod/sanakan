@@ -3,19 +3,19 @@
 namespace Sanakan.Api.Models
 {
     /// <summary>
-    /// Profil użytkownika na stronie
+    /// Describes user profile in a website.
     /// </summary>
     public class UserSiteProfile
     {
         /// <summary>
-        /// Liczba posaidanych kart z podziałem na jakość
+        /// The aggregated number of cards grouped by rarity.
         /// </summary>
-        public Dictionary<string, long> CardsCount { get; set; }
+        public IDictionary<string, long> CardsCount { get; set; }
 
         /// <summary>
-        /// Waluty jakie użytkownik posiada
+        /// The wallet content.
         /// </summary>
-        public Dictionary<string, long> Wallet { get; set; }
+        public IDictionary<string, long> Wallet { get; set; }
 
         /// <summary>
         /// Waifu
@@ -38,14 +38,14 @@ namespace Sanakan.Api.Models
         public List<string> TagList { get; set; }
 
         /// <summary>
-        /// warunki wymiany z użytkownikiem
+        /// User exchange rules.
         /// </summary>
         public string ExchangeConditions { get; set; }
 
         /// <summary>
-        /// Tytuł użytkownika z gry
+        /// The user title.
         /// </summary>
-        public string UserTitle { get; set; }
+        public string? UserTitle { get; set; }
 
         /// <summary>
         /// Pozycja obrazku tła profilu użytkownika

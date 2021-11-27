@@ -6,7 +6,7 @@ namespace Sanakan.Common
 {
     internal class FileSystem : IFileSystem
     {
-        public FileStream Create(string path) => File.Create(path);
+        public Stream Create(string path) => File.Create(path);
 
         public DirectoryInfo CreateDirectory(string path) => Directory.CreateDirectory(path);
 
@@ -21,6 +21,8 @@ namespace Sanakan.Common
         public Stream Open(string path, FileMode fileMode) => File.Open(path, fileMode);
 
         public Stream OpenRead(string path) => File.OpenRead(path);
+
+        public Stream OpenWrite(string path) => File.OpenWrite(path);
 
         public Task<string[]> ReadAllLinesAsync(string path) => File.ReadAllLinesAsync(path);
 

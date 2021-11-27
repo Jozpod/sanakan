@@ -5,13 +5,16 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Sanakan.Web.Controllers;
 
 namespace Sanakan.Web.Tests.Controllers.WaifuControllerTests
 {
+    /// <summary>
+    /// Defines tests for <see cref="WaifuController.GetUsersOwningCharacterCardAsync(ulong)"/> method.
+    /// </summary>
     [TestClass]
     public class GetUsersOwningCharacterCardAsyncTests : Base
     {
-        
         [TestMethod]
         public async Task Should_Return_NotFound()
         {

@@ -20,10 +20,5 @@ namespace Sanakan.Web.Tests.Controllers.QuizControllerTests
                 _questionRepositoryMock.Object,
                 _cacheManagerMock.Object);
         }
-
-        [TestMethod]
-        public void TestMethod1()
-        {
-        }
     }
 }

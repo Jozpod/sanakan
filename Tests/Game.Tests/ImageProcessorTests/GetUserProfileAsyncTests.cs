@@ -5,9 +5,13 @@ using System.Threading.Tasks;
 using Sanakan.ShindenApi.Models;
 using Sanakan.Common.Models;
 using FluentAssertions;
+using Sanakan.Game.Services.Abstractions;
 
 namespace Sanakan.Game.Tests.ImageProcessorTests
 {
+    /// <summary>
+    /// Defines tests for <see cref="IImageProcessor.GetUserProfileAsync(UserInfo?, User, string, long, string, Discord.Color)"/> method.
+    /// </summary>
     [TestClass]
     public class GetUserProfileAsyncTests : Base
     {

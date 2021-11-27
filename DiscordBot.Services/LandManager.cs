@@ -10,7 +10,7 @@ namespace Sanakan.DiscordBot.Services
 {
     internal class LandManager : ILandManager
     {
-        public MyLand? DetermineLand(IEnumerable<MyLand> lands, IEnumerable<ulong> roleIds, string? name)
+        public UserLand? DetermineLand(IEnumerable<UserLand> lands, IEnumerable<ulong> roleIds, string? name)
         {
             if (name != null)
             {
@@ -39,7 +39,7 @@ namespace Sanakan.DiscordBot.Services
             return all.First();
         }
 
-        public async Task<IEnumerable<Embed>> GetMembersList(MyLand land, IGuild guild)
+        public async Task<IEnumerable<Embed>> GetMembersList(UserLand land, IGuild guild)
         {
             var embedList = new List<Embed>();
             var temp = $"**Członkowie**: *{land.Name}*\n\n";

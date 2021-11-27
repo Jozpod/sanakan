@@ -12,7 +12,7 @@ using System.Linq;
 namespace Sanakan.DiscordBot.Session.Tests
 {
     /// <summary>
-    /// Defines tests for <see cref="ListSession"/> class.
+    /// Defines tests for <see cref="ListSession{T}"/> class.
     /// </summary>
     [TestClass]
     public class ListSessionTests

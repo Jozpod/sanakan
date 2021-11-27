@@ -5,9 +5,13 @@ using Moq;
 using Sanakan.ShindenApi;
 using Sanakan.ShindenApi.Models;
 using System.Threading.Tasks;
+using Sanakan.Web.Controllers;
 
 namespace Sanakan.Web.Tests.Controllers.UserControllerTests
 {
+    /// <summary>
+    /// Defines tests for <see cref="UserController.GetUserByShindenIdSimpleAsync(ulong)"/> method.
+    /// </summary>
     [TestClass]
     public class GetShindenUsernameByShindenIdTests : Base
     {

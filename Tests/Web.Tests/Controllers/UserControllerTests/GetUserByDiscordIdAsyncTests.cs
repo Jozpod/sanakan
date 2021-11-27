@@ -5,15 +5,19 @@ using Moq;
 using Sanakan.DAL.Models;
 using System;
 using System.Threading.Tasks;
+using Sanakan.Web.Controllers;
 
 namespace Sanakan.Web.Tests.Controllers.UserControllerTests
 {
+    /// <summary>
+    /// Defines tests for <see cref="UserController.GetUserByDiscordIdAsync(ulong)"/> method.
+    /// </summary>
     [TestClass]
     public class GetUserByDiscordIdAsyncTests : Base
     {
 
         [TestMethod]
-        public async Task Should_Return_Ok()
+        public async Task Should_Return_Ok_With_User_Payload()
         {
             var discordUserId = 0ul;
             var user = new User(discordUserId, DateTime.UtcNow);

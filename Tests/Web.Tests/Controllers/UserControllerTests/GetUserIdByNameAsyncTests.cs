@@ -2,9 +2,17 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Threading.Tasks;
+using Sanakan.Web.Controllers;
+using System.Collections.Generic;
+using Sanakan.ShindenApi.Models;
+using Moq;
+using Sanakan.ShindenApi;
 
 namespace Sanakan.Web.Tests.Controllers.UserControllerTests
 {
+    /// <summary>
+    /// Defines tests for <see cref="UserController.GetUserIdByNameAsync(string)"/> method.
+    /// </summary>
     [TestClass]
     public class GetUserIdByNameAsyncTests : Base
     {
@@ -12,8 +20,25 @@ namespace Sanakan.Web.Tests.Controllers.UserControllerTests
         public async Task Should_Change_Nickname()
         {
             var name = "test";
+            var userSearchResults = new Result<List<UserSearchResult>>
+            {
+                Value = new List<UserSearchResult>
+                {
+                    new UserSearchResult
+                    {
+                        Id = 1ul,
+                        Avatar = "test",
+                        Name = "test",
+                    },
+                },
+            };
+
+            _shindenClientMock
+                .Setup(pr => pr.SearchUserAsync(name))
+                .ReturnsAsync(userSearchResults);
+
             var result = await _controller.GetUserIdByNameAsync(name);
-            var okObjectResult = result.Should().BeOfType<ObjectResult>().Subject;
+            var okObjectResult = result.Should().BeOfType<OkObjectResult>().Subject;
             okObjectResult.Value.Should().NotBeNull();
         }
     }

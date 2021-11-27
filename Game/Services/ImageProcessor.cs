@@ -154,8 +154,7 @@ namespace Sanakan.Game.Services
                 CheckProfileImageSize(image, size, strech);
             }
 
-            // TO-DO Use stream
-            image.SaveToPath(filePath);
+            image.SaveToPath(filePath, _fileSystem);
         }
 
         public async Task<Image<Rgba32>> GetUserProfileAsync(

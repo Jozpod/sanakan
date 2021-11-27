@@ -132,6 +132,9 @@
   <data name="CardNotFound" xml:space="preserve">
     <value>Card not found</value>
   </data>
+  <data name="ClaimNotFound" xml:space="preserve">
+    <value>The appropriate claim was not found</value>
+  </data>
   <data name="GuildNotFound" xml:space="preserve">
     <value>Guild not found!</value>
   </data>

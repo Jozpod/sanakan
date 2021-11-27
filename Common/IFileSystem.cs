@@ -17,13 +17,13 @@ namespace Sanakan.Common
 
         /// <inheritdoc cref="Directory.CreateDirectory(string)"/>
         DirectoryInfo CreateDirectory(string path);
-        
+
         /// <inheritdoc cref="File.Delete(string)"/>
         void Delete(string path);
 
         /// <inheritdoc cref="File.GetCreationTime(string)"/>
         DateTime GetCreationTime(string path);
-        
+
         /// <inheritdoc cref="File.ReadAllTextAsync(string, System.Threading.CancellationToken)"/>
         Task<string> ReadAllTextAsync(string path);
 
@@ -39,7 +39,10 @@ namespace Sanakan.Common
         /// <inheritdoc cref="File.WriteAllTextAsync(string, string, System.Threading.CancellationToken)"/>
         public Task WriteAllTextAsync(string physicalPath, string contents);
 
-        /// <see cref="File.Create(string)"/>
-        FileStream Create(string path);
+        /// <inheritdoc cref="File.OpenWrite(string)"/>
+        Stream OpenWrite(string path);
+
+        /// <inheritdoc cref="File.Create(string)"/>
+        Stream Create(string path);
     }
 }

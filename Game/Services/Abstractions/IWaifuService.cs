@@ -22,12 +22,6 @@ namespace Sanakan.Game.Services.Abstractions
 
         double GetExpToUpgrade(Card toUp, Card toSac);
 
-        ItemType RandomizeItemFromMarket();
-
-        Quality RandomizeItemQualityFromMarket();
-
-        ItemType RandomizeItemFromBlackMarket();
-
         Embed GetActiveList(IEnumerable<Card> list);
 
         string EndExpedition(User user, Card card, bool showStats = false);
@@ -44,7 +38,7 @@ namespace Sanakan.Game.Services.Abstractions
         
         Embed GetItemList(IUser user, List<Item> items);
 
-        Task<string> GetWaifuProfileImageAsync(Card card, IMessageChannel trashCh);
+        Task<string> GetWaifuProfileImageUrlAsync(Card card, IMessageChannel trashCh);
         
         
         List<Card> GetListInRightOrder(IEnumerable<Card> list, HaremType type, string tag);

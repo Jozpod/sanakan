@@ -19,7 +19,7 @@ namespace Sanakan.DAL.Models.Configuration
             RolesPerLevel = new Collection<LevelRole>();
             SelfRoles = new Collection<SelfRole>();
             Raports = new Collection<Raport>();
-            Lands = new Collection<MyLand>();
+            Lands = new Collection<UserLand>();
         }
 
         public GuildOptions(ulong id, ulong safariLimit)
@@ -34,7 +34,7 @@ namespace Sanakan.DAL.Models.Configuration
             RolesPerLevel = new Collection<LevelRole>();
             SelfRoles = new Collection<SelfRole>();
             Raports = new Collection<Raport>();
-            Lands = new Collection<MyLand>();
+            Lands = new Collection<UserLand>();
         }
 
         /// <summary>
@@ -186,6 +186,6 @@ namespace Sanakan.DAL.Models.Configuration
         /// <summary>
         /// The list of lands.
         /// </summary>
-        public virtual ICollection<MyLand> Lands { get; set; }
+        public virtual ICollection<UserLand> Lands { get; set; }
     }
 }

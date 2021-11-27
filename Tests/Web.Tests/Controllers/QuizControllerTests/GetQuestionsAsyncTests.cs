@@ -6,9 +6,13 @@ using Sanakan.DAL.Models;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Sanakan.Web.Controllers;
 
 namespace Sanakan.Web.Tests.Controllers.QuizControllerTests
 {
+    /// <summary>
+    /// Defines tests for <see cref="QuizController.GetQuestionAsync(ulong)"/> method.
+    /// </summary>
     [TestClass]
     public class GetQuestionsAsyncTests : Base
     {

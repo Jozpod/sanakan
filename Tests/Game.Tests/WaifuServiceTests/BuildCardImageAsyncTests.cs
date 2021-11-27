@@ -6,11 +6,15 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using FluentAssertions;
 using Discord;
+using Sanakan.Game.Services.Abstractions;
 
 namespace Sanakan.Game.Tests.WaifuServiceTests
 {
+    /// <summary>
+    /// Defines tests for <see cref="IWaifuService.BuildCardImageAsync(Card, ITextChannel, IUser, bool)"/> method.
+    /// </summary>
     [TestClass]
-    public class SaveImageFromUrlAsyncTests : Base
+    public class BuildCardImageAsyncTests : Base
     {
         [TestMethod]
         public async Task Should_Return_Embed()
@@ -47,8 +51,7 @@ namespace Sanakan.Game.Tests.WaifuServiceTests
                     It.IsAny<bool>(),
                     It.IsAny<AllowedMentions>(),
                     It.IsAny<MessageReference>()))
-                .ReturnsAsync(userMessageMock.Object)
-                .Verifiable();
+                .ReturnsAsync(userMessageMock.Object);
 
             userMessageMock
                 .Setup(pr => pr.Attachments)
@@ -61,12 +64,11 @@ namespace Sanakan.Game.Tests.WaifuServiceTests
             guildUserMock
                 .Setup(pr => pr.Nickname)
                 .Returns("nickname");
-            
+
             var embed = await _waifuService.BuildCardImageAsync(
                 card, channelMock.Object, guildUserMock.Object, true);
             embed.Should().NotBeNull();
-
-            channelMock.Verify();
+            embed.Description.Should().NotBeNullOrEmpty();
         }
     }
 }

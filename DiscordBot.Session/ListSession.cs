@@ -98,7 +98,7 @@ namespace Sanakan.DiscordBot.Session
                 _stringBuilder.Clear();
             }
 
-            return _payload.Embed.Build();
+            return embed.Build();
         }
 
         private int MaxPage()

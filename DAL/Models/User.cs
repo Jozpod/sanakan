@@ -44,7 +44,7 @@ namespace Sanakan.DAL.Models
                 ItemsDropped = 0,
                 GlobalPVPRank = 0,
                 SeasonalPVPRank = 0,
-                CardsInGallery = Constants.CardsInGallery,
+                CardsInGalleryCount = Constants.CardsInGallery,
                 MatchMakingRatio = 0,
                 ForegroundColor = null,
                 ForegroundPosition = 0,

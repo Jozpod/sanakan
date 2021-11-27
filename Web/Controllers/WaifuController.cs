@@ -220,17 +220,13 @@ namespace Sanakan.Web.Controllers
                 return ShindenNotFound("User not found");
             }
 
-            var tagList = new List<string>();
-            var tags = user.GameDeck.Cards
-                .Where(x => x.TagList != null)
-                .Select(x => x.TagList.Select(c => c.Name));
-            
-            foreach (var tag in tags)
-            {
-                tagList.AddRange(tag);
-            }
-
             var gameDeck = user.GameDeck;
+
+            var tagList = gameDeck.Cards
+                .SelectMany(x => x.TagList.Select(c => c.Name))
+                .Distinct()
+                .ToList();
+
             var cards = gameDeck.Cards;
             var cardCount = new Dictionary<string, long>();
             foreach (var card in cards)
@@ -248,40 +244,43 @@ namespace Sanakan.Web.Controllers
 
             var wallet = new Dictionary<string, long>
                 {
-                    {"PC", user.GameDeck.PVPCoins},
-                    {"CT", user.GameDeck.CTCount},
+                    {"PC", gameDeck.PVPCoins},
+                    {"CT", gameDeck.CTCount},
                     {"AC", user.AcCount},
                     {"TC", user.TcCount},
                     {"SC", user.ScCount},
                 };
 
-            var waifuCard = user.GameDeck.Cards.Where(x => x.CharacterId == user.GameDeck
-                .FavouriteWaifuId)
-                .OrderBy(x => x.Rarity).ThenByDescending(x => x.Quality)
+            var waifuCard = cards
+                .Where(x => x.CharacterId == gameDeck.FavouriteWaifuId)
+                .OrderBy(x => x.Rarity)
+                    .ThenByDescending(x => x.Quality)
                 .FirstOrDefault();
 
             var waifu = waifuCard == null ? null : new CardFinalView(waifuCard);
+
+            var gallery = gameDeck.Cards
+                .Where(x => x.HasTag("galeria"))
+                .Take(gameDeck.CardsInGalleryCount)
+                .OrderBy(x => x.Rarity)
+                .ThenByDescending(x => x.Quality).ToView();
 
             var result = new UserSiteProfile()
             {
                 Wallet = wallet,
                 CardsCount = cardCount,
-                Karma = user.GameDeck.Karma,
-                TagList = tagList.Distinct().ToList(),
-                UserTitle = user.GameDeck.GetUserNameStatus(),
-                ForegroundColor = user.GameDeck.ForegroundColor,
-                ForegroundPosition = user.GameDeck.ForegroundPosition,
-                BackgroundPosition = user.GameDeck.BackgroundPosition,
-                ExchangeConditions = user.GameDeck.ExchangeConditions,
-                BackgroundImageUrl = user.GameDeck.BackgroundImageUrl.ToString(),
-                ForegroundImageUrl = user.GameDeck.ForegroundImageUrl.ToString(),
-                Expeditions = user.GameDeck.Cards.Where(x => x.Expedition != ExpeditionCardType.None).ToExpeditionView(user.GameDeck.Karma),
+                Karma = gameDeck.Karma,
+                TagList = tagList,
+                UserTitle = gameDeck.GetUserNameStatus(),
+                ForegroundColor = gameDeck.ForegroundColor,
+                ForegroundPosition = gameDeck.ForegroundPosition,
+                BackgroundPosition = gameDeck.BackgroundPosition,
+                ExchangeConditions = gameDeck.ExchangeConditions,
+                BackgroundImageUrl = gameDeck.BackgroundImageUrl?.ToString(),
+                ForegroundImageUrl = gameDeck.ForegroundImageUrl?.ToString(),
+                Expeditions = cards.Where(x => x.Expedition != ExpeditionCardType.None).ToExpeditionView(gameDeck.Karma),
                 Waifu = waifu,
-                Gallery = user.GameDeck.
-                Cards.Where(x => x.HasTag("galeria"))
-                .Take(user.GameDeck.CardsInGallery)
-                .OrderBy(x => x.Rarity)
-                .ThenByDescending(x => x.Quality).ToView()
+                Gallery = gallery,
             };
 
             return Ok(result);
@@ -447,14 +446,16 @@ namespace Sanakan.Web.Controllers
                 return ShindenNotFound(Strings.UserNotFound);
             }
 
-            if (user.GameDeck.Wishes.Count < 1)
+            var gameDeck = user.GameDeck;
+
+            if (gameDeck.Wishes.Count < 1)
             {
                 return ShindenNotFound("Wishlist not found!");
             }
 
-            var characterIds = user.GameDeck.GetCharactersWishList();
-            var titleIds = user.GameDeck.GetTitlesWishList();
-            var cardsId = user.GameDeck.GetCardsWishList();
+            var characterIds = gameDeck.GetCharactersWishList();
+            var titleIds = gameDeck.GetTitlesWishList();
+            var cardsId = gameDeck.GetCardsWishList();
 
             var allCards = new List<Card>();
 
@@ -467,7 +468,7 @@ namespace Sanakan.Web.Controllers
                         IncludeTagList = true,
                         AsNoTracking = true,
                     });
-             
+
                 allCards.AddRange(cards);
             }
 
@@ -477,6 +478,7 @@ namespace Sanakan.Web.Controllers
                 titleIds,
                 allCards,
                 user.GameDeck.Cards);
+
             return Ok(result);
         }
 
@@ -739,14 +741,12 @@ namespace Sanakan.Web.Controllers
 
             if (!discordId.HasValue)
             {
-                return new ObjectResult("The appropriate claim was not found")
+                return new ObjectResult(Strings.ClaimNotFound)
                 {
                     StatusCode = StatusCodes.Status403Forbidden,
                 };
             }
 
-            var boosterPackName = "";
-            var cards = new List<Card>();
             var databaseUser = await _userRepository.GetCachedFullUserAsync(discordId.Value);
 
             if (databaseUser == null)
@@ -769,8 +769,8 @@ namespace Sanakan.Web.Controllers
                 return ShindenNotAcceptable("User has no space left in deck!");
             }
 
-            cards = await _waifuService.OpenBoosterPackAsync(null, pack);
-            boosterPackName = pack.Name;
+            var cards = await _waifuService.OpenBoosterPackAsync(null, pack);
+            var boosterPackName = pack.Name;
 
             databaseUser = await _userRepository.GetUserOrCreateAsync(discordId.Value);
             gameDeck = databaseUser.GameDeck;
@@ -816,24 +816,24 @@ namespace Sanakan.Web.Controllers
 
             if (!discordId.HasValue)
             {
-                return ShindenForbidden("The appropriate claim was not found");
+                return ShindenForbidden(Strings.ClaimNotFound);
             }
 
-            var botUserCh = await _userRepository.GetCachedFullUserAsync(discordId.Value);
+            var databaseUser = await _userRepository.GetCachedFullUserAsync(discordId.Value);
 
-            if (botUserCh == null)
+            if (databaseUser == null)
             {
                 return ShindenNotFound(Strings.UserNotFound);
             }
 
-            var thisCardCh = botUserCh.GameDeck.Cards.FirstOrDefault(x => x.Id == wid);
+            var card = databaseUser.GameDeck.Cards.FirstOrDefault(x => x.Id == wid);
 
-            if (thisCardCh == null)
+            if (card == null)
             {
                 return ShindenNotFound(Strings.CardNotFound);
             }
 
-            if (thisCardCh.InCage)
+            if (card.InCage)
             {
                 return ShindenForbidden("Card is in cage!");
             }

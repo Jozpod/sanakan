@@ -3,9 +3,13 @@ using Sanakan.DAL.Models;
 using System;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Sanakan.Game.Services.Abstractions;
 
 namespace Sanakan.Game.Tests.ImageProcessorTests
 {
+    /// <summary>
+    /// Defines tests for <see cref="IImageProcessor.GetWaifuInProfileCardAsync(Card)"/> method.
+    /// </summary>
     [TestClass]
     public class GetWaifuInProfileCardAsyncTests : Base
     {

@@ -6,9 +6,13 @@ using Sanakan.Services.PocketWaifu;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using FluentAssertions;
+using Sanakan.Game.Services.Abstractions;
 
 namespace Sanakan.Game.Tests.ImageProcessorTests
 {
+    /// <summary>
+    /// Defines tests for <see cref="IImageProcessor.GetDuelCardImage(DuelInfo, DuelImage, Image{Rgba32}, Image{Rgba32})"/> method.
+    /// </summary>
     [TestClass]
     public class GetDuelCardImageTests : Base
     {

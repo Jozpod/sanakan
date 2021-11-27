@@ -33,6 +33,7 @@ namespace Sanakan.ShindenApi
         private class Credentials
         {
             public string Username { get; set; } = string.Empty;
+
             public string Password { get; set; } = string.Empty;
         }
 
@@ -42,14 +43,17 @@ namespace Sanakan.ShindenApi
             IOptionsMonitor<ShindenApiConfiguration> options,
             ISystemClock systemClock,
             ILogger<ShindenClient> logger)
-        {            
+        {
             _httpClient = httpClient;
             _cookieContainer = cookieContainer;
             _options = options;
             _systemClock = systemClock;
             _logger = logger;
             _expiresOn = DateTime.MinValue;
-            _jsonSerializerOptions = new JsonSerializerOptions();
+            _jsonSerializerOptions = new JsonSerializerOptions()
+            {
+                NumberHandling = JsonNumberHandling.AllowReadingFromString,
+            };
             _jsonSerializerOptions.Converters.Add(new GenderConverter());
             _jsonSerializerOptions.Converters.Add(new LanguageConverter());
             _jsonSerializerOptions.Converters.Add(new MpaaRatingConverter());
@@ -62,17 +66,19 @@ namespace Sanakan.ShindenApi
             _jsonSerializerOptions.Converters.Add(new EpisodeTypeConverter());
             _jsonSerializerOptions.Converters.Add(new IllustrationTypeConverter());
             _jsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+            _jsonSerializerOptions.Converters.Add(new IllustrationConverter());
         }
 
         private async Task TryRenewSessionAsync()
         {
             if (_expiresOn < _systemClock.UtcNow)
             {
-                if(_credentials == null)
+                if (_credentials == null)
                 {
                     return;
                 }
-                var result = await LoginAsync(_credentials.Username, _credentials.Password);
+
+                var _ = await LoginAsync(_credentials.Username, _credentials.Password);
             }
         }
 
@@ -255,6 +261,34 @@ namespace Sanakan.ShindenApi
             var result = await response.Content.ReadFromJsonAsync<AnimeMangaInfo>(_jsonSerializerOptions);
 
             return new Result<AnimeMangaInfo>()
+            {
+                Value = result
+            };
+        }
+
+        public async Task<Result<IllustrationInfo>> GetIllustrationInfoAsync(ulong titleId)
+        {
+            await TryRenewSessionAsync();
+
+            var queryData = new Dictionary<string, string>()
+            {
+                { "api_key", _options.CurrentValue.Token },
+                { "lang", "pl" },
+                { "decode", 1.ToString() },
+            };
+
+            var query = QueryHelpers.AddQueryString($"title/{titleId}/info", queryData);
+
+            var response = await _httpClient.GetAsync(query);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return new Result<IllustrationInfo>();
+            }
+
+            var result = await response.Content.ReadFromJsonAsync<IllustrationInfo>(_jsonSerializerOptions);
+
+            return new Result<IllustrationInfo>()
             {
                 Value = result
             };
