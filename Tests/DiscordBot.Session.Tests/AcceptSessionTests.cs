@@ -6,6 +6,9 @@ using static Sanakan.DiscordBot.Session.AcceptSession;
 
 namespace Sanakan.DiscordBot.Session.Tests
 {
+    /// <summary>
+    /// Defines tests for <see cref="AcceptSession"/> class.
+    /// </summary>
     [TestClass]
     public class AcceptSessionTests
     {

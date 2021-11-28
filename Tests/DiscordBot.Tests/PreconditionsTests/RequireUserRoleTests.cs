@@ -13,7 +13,7 @@ using FluentAssertions;
 namespace Sanakan.DiscordBot.Tests.PreconditionsTests
 {
     /// <summary>
-    /// Defines tests for <see cref="RequireUserRole.CheckPermissionsAsync(ICommandContext, CommandInfo, System.IServiceProvider)"/> event handler.
+    /// Defines tests for <see cref="RequireUserRole.CheckPermissionsAsync(ICommandContext, CommandInfo, System.IServiceProvider)"/> method.
     /// </summary>
     [TestClass]
     public class RequireUserRoleTests

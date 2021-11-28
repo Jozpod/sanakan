@@ -246,8 +246,8 @@ namespace Sanakan.DiscordBot.Services
             {
                 foreach (var waifuCommandChannel in waifuCommandChannels)
                 {
-                    var channel = await guild.GetTextChannelAsync(waifuCommandChannel.Channel);
-                    var mention = channel?.Mention ?? waifuCommandChannel.Channel.ToString();
+                    var channel = await guild.GetTextChannelAsync(waifuCommandChannel.ChannelId);
+                    var mention = channel?.Mention ?? waifuCommandChannel.ChannelId.ToString();
                     stringBuilder.AppendFormat("{0}\n", mention);
                 }
             }
@@ -606,11 +606,11 @@ namespace Sanakan.DiscordBot.Services
             {
                 foreach (var role in roles)
                 {
-                    var socketRole = guild.GetRole(role.RoleId);
+                    var discordRole = guild.GetRole(role.RoleId);
 
-                    if (socketRole != null && !roleIds.Contains(socketRole.Id))
+                    if (discordRole != null && !roleIds.Contains(discordRole.Id))
                     {
-                        await user.AddRoleAsync(socketRole.Id);
+                        await user.AddRoleAsync(discordRole.Id);
                     }
                 }
             }
@@ -619,7 +619,7 @@ namespace Sanakan.DiscordBot.Services
         public async Task<PenaltyInfo> BanUserAysnc(
             IGuildUser user,
             TimeSpan duration,
-            string reason = "nie podano")
+            string reason = Constants.NoReason)
         {
             using var serviceScope = _serviceScopeFactory.CreateScope();
             var serviceProvider = serviceScope.ServiceProvider;
@@ -652,7 +652,7 @@ namespace Sanakan.DiscordBot.Services
             IRole? muteModRole,
             IRole? userRole,
             TimeSpan duration,
-            string reason = "nie podano",
+            string reason = Constants.NoReason,
             IEnumerable<ModeratorRoles>? modRoles = null)
         {
             var penaltyInfo = new PenaltyInfo

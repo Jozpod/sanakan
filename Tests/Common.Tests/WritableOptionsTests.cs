@@ -14,8 +14,11 @@ using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace Sanakan.DAL.Tests
+namespace Sanakan.Common.Tests
 {
+    /// <summary>
+    /// Defines tests for <see cref="WritableOptions"/> class.
+    /// </summary>
     [TestClass]
     public class WritableOptionsTests
     {

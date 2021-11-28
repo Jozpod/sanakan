@@ -18,17 +18,11 @@ using System.Linq;
 namespace Sanakan.Daemon.Tests.HostedServices.SupervisorHostedServiceTests
 {
     /// <summary>
-    /// Defines tests for <see cref="SupervisorHostedService.UserJoinedAsync(IGuildUser)"/> event handler.
+    /// Defines tests for <see cref="SupervisorHostedService.UserJoinedAsync(IGuildUser)"/> method.
     /// </summary>
     [TestClass]
     public class UserJoinedAsyncTests : Base
     {
-         //var usersToBan = await Task.WhenAll(userIds.Select(pr => guild.GetUserAsync(pr)));
-         //   foreach (var userToBan in usersToBan)
-         //   {
-         //       await guild.AddBanAsync(user, 1, $"Supervisor(ban) raid/scam [{user.Nickname}]");
-         //   }
-
         [TestMethod]
         public async Task Should_Verify_User_Join_Ban()
         {

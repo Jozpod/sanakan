@@ -4,6 +4,9 @@ using System.Threading.Tasks;
 
 namespace Sanakan.DiscordBot.Session.Tests.CraftSessionTests
 {
+    /// <summary>
+    /// Defines tests for <see cref="CraftSession.HandleAddAsync"/> method.
+    /// </summary>
     [TestClass]
     public class HandleAddAsyncTests : Base
     {

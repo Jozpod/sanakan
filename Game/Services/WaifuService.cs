@@ -7,8 +7,10 @@ using Discord;
 using Discord.WebSocket;
 using DiscordBot.Services.PocketWaifu;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Sanakan.Common;
 using Sanakan.Common.Cache;
+using Sanakan.Common.Configuration;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot.Abstractions.Extensions;
@@ -27,6 +29,7 @@ namespace Sanakan.Game.Services
 {
     internal class WaifuService : IWaifuService
     {
+        private readonly IOptionsMonitor<DiscordConfiguration> _discordConfiguration;
         private readonly IEventsService _eventsService;
         private readonly IImageProcessor _imageProcessor;
         private readonly IFileSystem _fileSystem;
@@ -39,6 +42,7 @@ namespace Sanakan.Game.Services
         private readonly IServiceScopeFactory _serviceScopeFactory;
 
         public WaifuService(
+            IOptionsMonitor<DiscordConfiguration> discordConfiguration,
             IEventsService eventsService,
             IImageProcessor imageProcessor,
             IFileSystem fileSystem,
@@ -50,6 +54,7 @@ namespace Sanakan.Game.Services
             ITaskManager taskManager,
             IServiceScopeFactory serviceScopeFactory)
         {
+            _discordConfiguration = discordConfiguration;
             _eventsService = eventsService;
             _imageProcessor = imageProcessor;
             _fileSystem = fileSystem;
@@ -150,12 +155,12 @@ namespace Sanakan.Game.Services
                 return RarityExtensions.Random(value);
             }
 
-            var rarityChances = Game.Constants.RarityChances.ToList();
+            var rarityChances = Constants.RarityChances.ToList();
 
-            var excludedList = Game.Constants.RarityChances
+            var excludedList = Constants.RarityChances
                 .Where(x => rarityExcluded.Any(c => c == x.Rarity))
                 .ToList();
-            
+
             foreach (var excluded in excludedList)
             {
                 rarityChances.Remove(excluded);
@@ -172,121 +177,6 @@ namespace Sanakan.Game.Services
             }
 
             return rarityChances.Last().Rarity;
-        }
-
-        public ItemWithCost[] GetItemsWithCost()
-        {
-            return new ItemWithCost[]
-            {
-                new ItemWithCost(3,     ItemType.AffectionRecoverySmall.ToItem()),
-                new ItemWithCost(14,    ItemType.AffectionRecoveryNormal.ToItem()),
-                new ItemWithCost(109,   ItemType.AffectionRecoveryBig.ToItem()),
-                new ItemWithCost(29,    ItemType.DereReRoll.ToItem()),
-                new ItemWithCost(79,    ItemType.CardParamsReRoll.ToItem()),
-                new ItemWithCost(1099,  ItemType.IncreaseUpgradeCount.ToItem()),
-                new ItemWithCost(69,    ItemType.ChangeCardImage.ToItem()),
-                new ItemWithCost(999,   ItemType.SetCustomImage.ToItem()),
-                new ItemWithCost(659,   ItemType.SetCustomBorder.ToItem()),
-                new ItemWithCost(149,   ItemType.ChangeStarType.ToItem()),
-                new ItemWithCost(99,    ItemType.RandomBoosterPackSingleE.ToItem()),
-                new ItemWithCost(999,   ItemType.BigRandomBoosterPackE.ToItem()),
-                new ItemWithCost(1199,  ItemType.RandomTitleBoosterPackSingleE.ToItem()),
-                new ItemWithCost(199,   ItemType.RandomNormalBoosterPackB.ToItem()),
-                new ItemWithCost(499,   ItemType.RandomNormalBoosterPackA.ToItem()),
-                new ItemWithCost(899,   ItemType.RandomNormalBoosterPackS.ToItem()),
-                new ItemWithCost(1299,  ItemType.RandomNormalBoosterPackSS.ToItem()),
-            };
-        }
-
-        public ItemWithCost[] GetItemsWithCostForPVP()
-        {
-            return new ItemWithCost[]
-            {
-                new ItemWithCost(169,    ItemType.AffectionRecoveryNormal.ToItem()),
-                new ItemWithCost(1699,   ItemType.IncreaseExpBig.ToItem()),
-                new ItemWithCost(1699,   ItemType.CheckAffection.ToItem()),
-                new ItemWithCost(16999,  ItemType.IncreaseUpgradeCount.ToItem()),
-                new ItemWithCost(46999,  ItemType.BetterIncreaseUpgradeCnt.ToItem()),
-                new ItemWithCost(4699,   ItemType.ChangeCardImage.ToItem()),
-                new ItemWithCost(269999, ItemType.SetCustomImage.ToItem()),
-            };
-        }
-
-        public ItemWithCost[] GetItemsWithCostForActivityShop()
-        {
-            return new ItemWithCost[]
-            {
-                new ItemWithCost(6,     ItemType.AffectionRecoveryBig.ToItem()),
-                new ItemWithCost(65,    ItemType.IncreaseExpBig.ToItem()),
-                new ItemWithCost(500,   ItemType.IncreaseUpgradeCount.ToItem()),
-                new ItemWithCost(1800,  ItemType.SetCustomImage.ToItem()),
-                new ItemWithCost(150,   ItemType.RandomBoosterPackSingleE.ToItem()),
-                new ItemWithCost(1500,  ItemType.BigRandomBoosterPackE.ToItem()),
-            };
-        }
-
-        public ItemWithCost[] GetItemsWithCostForShop(ShopType type)
-        {
-            switch (type)
-            {
-                case ShopType.Activity:
-                    return GetItemsWithCostForActivityShop();
-
-                case ShopType.Pvp:
-                    return GetItemsWithCostForPVP();
-
-                case ShopType.Normal:
-                default:
-                    return GetItemsWithCost();
-            }
-        }
-
-        public CardSource GetBoosterpackSource(ShopType type)
-        {
-            switch (type)
-            {
-                case ShopType.Activity:
-                    return CardSource.ActivityShop;
-
-                case ShopType.Pvp:
-                    return CardSource.PvpShop;
-
-                default:
-                case ShopType.Normal:
-                    return CardSource.Shop;
-            }
-        }
-
-        public string GetShopName(ShopType type)
-        {
-            switch (type)
-            {
-                case ShopType.Activity:
-                    return "Kiosk";
-
-                case ShopType.Pvp:
-                    return "Koszary";
-
-                case ShopType.Normal:
-                default:
-                    return "Sklepik";
-            }
-        }
-
-        public string GetShopCurrencyName(ShopType type)
-        {
-            switch (type)
-            {
-                case ShopType.Activity:
-                    return "AC";
-
-                case ShopType.Pvp:
-                    return "PC";
-
-                case ShopType.Normal:
-                default:
-                    return "TC";
-            }
         }
 
         public void IncreaseMoneySpentOnCookies(ShopType type, User user, int cost)
@@ -365,16 +255,16 @@ namespace Sanakan.Game.Services
         }
 
         public async Task<Embed> ExecuteShopAsync(
-            ShopType type,
+            ShopType shopType,
             IUser discordUser,
             int selectedItem,
-            string specialCmd)
+            string specialCommand)
         {
-            var itemsToBuy = GetItemsWithCostForShop(type);
+            var itemsToBuy = shopType.GetItemsWithCostForShop();
             var mention = discordUser.Mention;
             if (selectedItem <= 0)
             {
-                return GetShopView(itemsToBuy, GetShopName(type), GetShopCurrencyName(type));
+                return GetShopView(itemsToBuy, shopType.GetShopName(), shopType.GetShopCurrencyName());
             }
 
             if (selectedItem > itemsToBuy.Length)
@@ -384,7 +274,8 @@ namespace Sanakan.Game.Services
 
             var thisItem = itemsToBuy[--selectedItem];
             var item = thisItem.Item;
-            if (specialCmd == "info")
+
+            if (specialCommand == "info")
             {
                 return new EmbedBuilder
                 {
@@ -394,7 +285,7 @@ namespace Sanakan.Game.Services
             }
 
             int itemCount = 0;
-            if (!int.TryParse(specialCmd, out itemCount))
+            if (!int.TryParse(specialCommand, out itemCount))
             {
                 return $"{mention} liczbę poproszę, a nie jakieś bohomazy.".ToEmbedMessage(EMType.Error).Build();
             }
@@ -468,21 +359,20 @@ namespace Sanakan.Game.Services
             var realCost = itemCount * thisItem.Cost;
             var count = (itemCount > 1) ? $" x{itemCount}" : "";
 
-
             using var serviceScope = _serviceScopeFactory.CreateScope();
             var serviceProvider = serviceScope.ServiceProvider;
             var userRepository = serviceProvider.GetRequiredService<IUserRepository>();
             var databaseUser = await userRepository.GetUserOrCreateAsync(discordUser.Id);
 
-            if (!CheckIfUserCanBuy(type, databaseUser, realCost))
+            if (!CheckIfUserCanBuy(shopType, databaseUser, realCost))
             {
-                return $"{mention} nie posiadasz wystarczającej liczby {GetShopCurrencyName(type)}!"
+                return $"{mention} nie posiadasz wystarczającej liczby {shopType.GetShopCurrencyName()}!"
                     .ToEmbedMessage(EMType.Error).Build();
             }
 
             if (thisItem.Item.Type.IsBoosterPack())
             {
-                for (int i = 0; i < itemCount; i++)
+                for (var i = 0; i < itemCount; i++)
                 {
                     var booster = thisItem.Item.Type.ToBoosterPack();
                     if (boosterPackTitleId != 0)
@@ -492,7 +382,7 @@ namespace Sanakan.Game.Services
                     }
                     if (booster != null)
                     {
-                        booster.CardSourceFromPack = GetBoosterpackSource(type);
+                        booster.CardSourceFromPack = shopType.GetBoosterpackSource();
                         databaseUser.GameDeck.BoosterPacks.Add(booster);
                     }
                 }
@@ -509,7 +399,7 @@ namespace Sanakan.Game.Services
                 var figure = thisItem.Item.Type.ToPAFigure(_systemClock.UtcNow);
                 if (figure != null) databaseUser.GameDeck.Figures.Add(figure);
 
-                IncreaseMoneySpentOnCards(type, databaseUser, realCost);
+                IncreaseMoneySpentOnCards(shopType, databaseUser, realCost);
             }
             else
             {
@@ -527,10 +417,10 @@ namespace Sanakan.Game.Services
                     inUserItem.Count += itemCount;
                 }
 
-                IncreaseMoneySpentOnCookies(type, databaseUser, realCost);
+                IncreaseMoneySpentOnCookies(shopType, databaseUser, realCost);
             }
 
-            RemoveMoneyFromUser(type, databaseUser, realCost);
+            RemoveMoneyFromUser(shopType, databaseUser, realCost);
 
             await userRepository.SaveChangesAsync();
 
@@ -544,7 +434,9 @@ namespace Sanakan.Game.Services
             double rExp = 30f / 5f;
 
             if (toUp.CharacterId == toSac.CharacterId)
+            {
                 rExp *= 10f;
+            }
 
             var sacVal = (int) toSac.Rarity;
             var upVal = (int) toUp.Rarity;
@@ -553,15 +445,23 @@ namespace Sanakan.Game.Services
             if (diff < 0)
             {
                 diff = -diff;
-                for (int i = 0; i < diff; i++) rExp /= 2;
+                for (int i = 0; i < diff; i++)
+                {
+                    rExp /= 2;
+                }
             }
             else if (diff > 0)
             {
-                for (int i = 0; i < diff; i++) rExp *= 1.5;
+                for (int i = 0; i < diff; i++)
+                {
+                    rExp *= 1.5;
+                }
             }
 
             if (toUp.Curse == CardCurse.LoweredExperience || toSac.Curse == CardCurse.LoweredExperience)
+            {
                 rExp /= 5;
+            }
 
             return rExp;
         }
@@ -1305,7 +1205,7 @@ namespace Sanakan.Game.Services
         public async Task<IEnumerable<Embed>> GetContentOfWishlist(List<ulong> cardsId, List<ulong> charactersId, List<ulong> titlesId)
         {
             var contentTable = new List<string>();
-            
+
             if (cardsId.Any())
             {
                 contentTable.Add($"**Karty:** {string.Join(", ", cardsId)}");
@@ -1352,7 +1252,7 @@ namespace Sanakan.Game.Services
                         url = UrlHelpers.GetMangaURL(id);
                     }
 
-                     contentTable.Add($"**T[{id}]** [{title}]({url})");
+                    contentTable.Add($"**T[{id}]** [{title}]({url})");
                 }
                 else
                 {
@@ -1362,9 +1262,9 @@ namespace Sanakan.Game.Services
 
             string temp = "";
             var content = new List<Embed>();
-            for (int i = 0; i < contentTable.Count; i++)
+            for (var i = 0; i < contentTable.Count; i++)
             {
-                if (temp.Length + contentTable[i].Length > 2000)
+                if (temp.Length + contentTable[i].Length > _discordConfiguration.CurrentValue.MaxMessageLength)
                 {
                     content.Add(new EmbedBuilder()
                     {
@@ -1373,7 +1273,10 @@ namespace Sanakan.Game.Services
                     }.Build());
                     temp = contentTable[i];
                 }
-                else temp += $"\n{contentTable[i]}";
+                else
+                {
+                    temp += $"\n{contentTable[i]}";
+                }
             }
 
             content.Add(new EmbedBuilder()

@@ -35,9 +35,10 @@ namespace Sanakan.Preconditions
 
             var commandChannels = guildConfig.CommandChannels
                ?? Enumerable.Empty<CommandChannel>();
+            var channelId = context.Channel.Id;
 
             if (!commandChannels.Any()
-                || commandChannels.Any(x => x.ChannelId == context.Channel.Id)
+                || commandChannels.Any(x => x.ChannelId == channelId)
                 || user.GuildPermissions.Administrator)
             {
                 return PreconditionResult.FromSuccess();
@@ -46,7 +47,7 @@ namespace Sanakan.Preconditions
             var waifuCommandChannels = guildConfig.WaifuConfig?.CommandChannels
                 ?? Enumerable.Empty<WaifuCommandChannel>();
 
-            if (waifuCommandChannels.Any(x => x.Channel == context.Channel.Id))
+            if (waifuCommandChannels.Any(x => x.ChannelId == channelId))
             {
                 return PreconditionResult.FromSuccess();
             }

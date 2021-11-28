@@ -50,7 +50,7 @@ namespace Sanakan.Preconditions
             var waifuCommandChannels = guildConfig.WaifuConfig?.CommandChannels
                ?? Enumerable.Empty<WaifuCommandChannel>();
 
-            if (waifuCommandChannels.Any(x => x.Channel == channelId))
+            if (waifuCommandChannels.Any(x => x.ChannelId == channelId))
             {
                 return PreconditionResult.FromSuccess();
             }

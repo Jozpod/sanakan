@@ -4,8 +4,11 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Sanakan.Common;
 using Sanakan.Common.Builder;
 
-namespace Sanakan.DAL.Tests
+namespace Sanakan.Common.Tests
 {
+    /// <summary>
+    /// Defines tests for <see cref="IRandomNumberGenerator"/> class.
+    /// </summary>
     [TestClass]
     public class RandomNumberGeneratorTests
     {

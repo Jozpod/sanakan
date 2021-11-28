@@ -52,6 +52,11 @@ namespace Sanakan.Common.Configuration
         public ICollection<ulong> BlacklistedGuilds { get; set; } = new Collection<ulong>();
 
         /// <summary>
+        /// Gets or sets the maximum discord message length.
+        /// </summary>
+        public uint MaxMessageLength { get; set; }
+
+        /// <summary>
         /// Gets or sets whether or not all users should be downloaded as guilds come available.
         /// </summary>
         public bool AlwaysDownloadUsers { get; set; }

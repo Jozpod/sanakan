@@ -134,6 +134,15 @@ namespace Sanakan.DiscordBot.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Dopasowano wielu użytkowników!.
+        /// </summary>
+        internal static string MatchedMultipleUsers {
+            get {
+                return ResourceManager.GetString("MatchedMultipleUsers", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Nie znaleziono obrazkow safari.
         /// </summary>
         internal static string NoSafariImage {

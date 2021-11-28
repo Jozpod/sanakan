@@ -15,13 +15,21 @@ namespace Sanakan.DiscordBot.Session
         private readonly AcceptSessionPayload _payload;
         public class AcceptSessionPayload
         {
-            public IMessage Message { get; set; }
+            public ulong MessageId { get; set; }
+
+            public IMessageChannel Channel { get; set; }
+
             public IUser Bot { get; set; }
+
             public TimeSpan Duration { get; set; }
+
             public IRole UserRole { get; set; }
+
             public IRole MuteRole { get; set; }
+
             public IGuildUser User { get; set; }
-            public ITextChannel NotifChannel { get; set; }
+
+            public ITextChannel NotifyChannel { get; set; }
         }
 
         public AcceptSession(
@@ -45,22 +53,18 @@ namespace Sanakan.DiscordBot.Session
             try
             {
                 IsRunning = true;
-                if (_payload.Message == null)
+
+                if (context.Message.Id != _payload.MessageId)
                 {
                     return;
                 }
 
-                if (context.Message.Id != _payload.Message.Id)
+                if (context.UserId != OwnerId)
                 {
                     return;
                 }
 
-                if (context.User.Id != OwnerId)
-                {
-                    return;
-                }
-
-                var userMessage = await _payload.Message.Channel.GetMessageAsync(_payload.Message.Id) as IUserMessage;
+                var userMessage = await _payload.Channel.GetMessageAsync(_payload.MessageId) as IUserMessage;
 
                 if (userMessage == null)
                 {
@@ -94,10 +98,10 @@ namespace Sanakan.DiscordBot.Session
                     _payload.UserRole,
                     _payload.Duration,
                     reason);
-                await moderatorService.NotifyAboutPenaltyAsync(_payload.User, _payload.NotifChannel, info, "Sanakan");
+                await moderatorService.NotifyAboutPenaltyAsync(_payload.User, _payload.NotifyChannel, info, "Sanakan");
 
                 var content = $"{_payload.User.Mention} został wyciszony.".ToEmbedMessage(EMType.Success).Build();
-                await _payload.Message.Channel.SendMessageAsync("", embed: content);
+                await _payload.Channel.SendMessageAsync("", embed: content);
             }
             finally
             {

@@ -6,11 +6,16 @@ using Sanakan.Preconditions;
 using Microsoft.Extensions.DependencyInjection;
 using Sanakan.DAL.Repositories.Abstractions;
 using Discord;
+using FluentAssertions;
+using Sanakan.DAL.Models.Configuration;
+using System.Collections.Generic;
+using Sanakan.DAL.Models;
+using System;
 
 namespace Sanakan.DiscordBot.Tests.PreconditionsTests
 {
     /// <summary>
-    /// Defines tests for <see cref="RequireAnyCommandChannel.CheckPermissionsAsync(ICommandContext, CommandInfo, System.IServiceProvider)"/> event handler.
+    /// Defines tests for <see cref="RequireAnyCommandChannel.CheckPermissionsAsync(ICommandContext, CommandInfo, System.IServiceProvider)"/> method.
     /// </summary>
     [TestClass]
     public class RequireAnyCommandChannelTests
@@ -40,22 +45,141 @@ namespace Sanakan.DiscordBot.Tests.PreconditionsTests
             _preconditionAttribute = new();
         }
 
-        [TestMethod]
-        public async Task Should_Return_Success()
+        public void SetupUserAndGuildConfig(GuildOptions? guildConfig)
         {
-            var serviceCollection = new ServiceCollection();
-            var serviceProvider = serviceCollection.BuildServiceProvider();
+            var guildId = guildConfig?.Id ?? 1ul;
 
-            var result = await _preconditionAttribute.CheckPermissionsAsync(_commandContextMock.Object, null, serviceProvider);
+            _commandContextMock
+                .Setup(pr => pr.User)
+                .Returns(_guildUserMock.Object)
+                .Verifiable();
+
+            _guildConfigRepositoryMock
+                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildId))
+                .ReturnsAsync(guildConfig)
+                .Verifiable();
+        }
+
+        public void SetupTextChannel(ulong channelId)
+        {
+            _commandContextMock
+                .Setup(pr => pr.Channel)
+                .Returns(_textChannelMock.Object)
+                .Verifiable();
+
+            _textChannelMock
+                .Setup(pr => pr.Id)
+                .Returns(channelId);
+
+            _textChannelMock
+                .Setup(pr => pr.Mention)
+                .Returns("test channel");
         }
 
         [TestMethod]
-        public async Task Should_Return_Error_Only_Server()
+        public async Task Should_Return_Success_Not_Guild_User()
         {
-            var serviceCollection = new ServiceCollection();
-            var serviceProvider = serviceCollection.BuildServiceProvider();
+            _commandContextMock
+                .Setup(pr => pr.User)
+                .Returns(null as IUser)
+                .Verifiable();
 
-            var result = await _preconditionAttribute.CheckPermissionsAsync(_commandContextMock.Object, null, serviceProvider);
+            var result = await _preconditionAttribute.CheckPermissionsAsync(_commandContextMock.Object, null, _serviceProvider);
+            result.IsSuccess.Should().BeTrue();
+        }
+
+        [TestMethod]
+        public async Task Should_Return_Success_No_Guild()
+        {
+            var guildConfig = null as GuildOptions;
+            SetupUserAndGuildConfig(guildConfig);
+
+            var result = await _preconditionAttribute.CheckPermissionsAsync(_commandContextMock.Object, null, _serviceProvider);
+            result.IsSuccess.Should().BeTrue();
+        }
+
+        [TestMethod]
+        public async Task Should_Return_Success_No_Channels()
+        {
+            var guildConfig = new GuildOptions(1, 50);
+            SetupUserAndGuildConfig(guildConfig);
+            SetupTextChannel(1ul);
+
+            var result = await _preconditionAttribute.CheckPermissionsAsync(_commandContextMock.Object, null, _serviceProvider);
+            result.IsSuccess.Should().BeTrue();
+        }
+
+        [TestMethod]
+        public async Task Should_Return_Success_Channel_Exists()
+        {
+            var guildConfig = new GuildOptions(1, 50);
+            var channelId = 1ul;
+            guildConfig.CommandChannels = new List<CommandChannel>
+            {
+                new CommandChannel
+                {
+                    ChannelId = channelId,
+                },
+            };
+
+            SetupUserAndGuildConfig(guildConfig);
+            SetupTextChannel(channelId);
+
+            var result = await _preconditionAttribute.CheckPermissionsAsync(_commandContextMock.Object, null, _serviceProvider);
+            result.IsSuccess.Should().BeTrue();
+        }
+
+        [TestMethod]
+        public async Task Should_Return_Success_Administrator()
+        {
+            var guildConfig = new GuildOptions(1, 50);
+            var channelId = 1ul;
+            guildConfig.CommandChannels = new List<CommandChannel>();
+
+            SetupUserAndGuildConfig(guildConfig);
+            SetupTextChannel(2ul);
+
+            _guildUserMock
+                .Setup(pr => pr.GuildPermissions)
+                .Returns(new GuildPermissions(administrator: true));
+
+            var result = await _preconditionAttribute.CheckPermissionsAsync(_commandContextMock.Object, null, _serviceProvider);
+            result.IsSuccess.Should().BeTrue();
+        }
+
+        [TestMethod]
+        public async Task Should_Return_Error()
+        {
+            var user = new User(1ul, DateTime.UtcNow);
+            var channelId = 1ul;
+            var guildConfig = new GuildOptions(1, 50);
+            guildConfig.CommandChannels = new List<CommandChannel>()
+            {
+                new CommandChannel()
+                {
+                    ChannelId = channelId,
+                }
+            };
+
+            SetupUserAndGuildConfig(guildConfig);
+            SetupTextChannel(2ul);
+
+            _guildUserMock
+                .Setup(pr => pr.GuildPermissions)
+                .Returns(new GuildPermissions(administrator: false));
+
+            _guildUserMock
+                .Setup(pr => pr.Id)
+                .Returns(user.Id);
+
+            _guildMock
+                .Setup(pr => pr.GetTextChannelAsync(channelId, CacheMode.AllowDownload, null))
+                .ReturnsAsync(_textChannelMock.Object)
+                .Verifiable();
+
+            var result = await _preconditionAttribute.CheckPermissionsAsync(_commandContextMock.Object, null, _serviceProvider);
+            result.IsSuccess.Should().BeFalse();
+            result.ErrorReason.Should().NotBeNullOrEmpty();
         }
     }
 }

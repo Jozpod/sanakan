@@ -148,6 +148,9 @@
 
 3-5x{0} - tryb psaja (podwójne wygrane)</value>
   </data>
+  <data name="MatchedMultipleUsers" xml:space="preserve">
+    <value>Dopasowano wielu użytkowników!</value>
+  </data>
   <data name="NoSafariImage" xml:space="preserve">
     <value>Nie znaleziono obrazkow safari</value>
   </data>

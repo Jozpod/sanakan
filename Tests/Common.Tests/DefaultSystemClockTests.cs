@@ -5,7 +5,7 @@ using Sanakan.Common;
 using Sanakan.Common.Builder;
 using System;
 
-namespace Sanakan.DAL.Tests
+namespace Sanakan.Common.Tests
 {
     [TestClass]
     public class DefaultSystemClockTests

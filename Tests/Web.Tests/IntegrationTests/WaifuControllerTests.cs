@@ -16,6 +16,7 @@ using Sanakan.DAL.Models;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using Sanakan.Common.Converters;
+using Sanakan.DAL.Repositories;
 
 namespace Sanakan.Web.Tests.IntegrationTests
 {
@@ -24,12 +25,47 @@ namespace Sanakan.Web.Tests.IntegrationTests
     /// </summary>
     public partial class TestBase
     {
+        /// <summary>
+        /// Defines test for <see cref="WaifuController.GetUserIdsOwningCharacterCardAsync(ulong)"/> method.
+        /// </summary>
         [TestMethod]
-        public async Task Should_Return_User_Cards()
+        public async Task Should_Return_User_Ids()
         {
             var characterId = 1ul;
             var userIds = await _client.GetFromJsonAsync<IEnumerable<ulong>>($"api/waifu/users/owning/character/{characterId}");
             userIds.Should().NotBeNull();
+        }
+
+        /// <summary>
+        /// Defines test for <see cref="WaifuController.GetUserCardsAsync(ulong)"/> method.
+        /// </summary>
+        [TestMethod]
+        public async Task Should_Return_User_Cards()
+        {
+            var shindenUserId = 1ul;
+            var cards = await _client.GetFromJsonAsync<IEnumerable<Card>>($"user/{shindenUserId}/cards");
+            cards.Should().NotBeNull();
+        }
+
+        /// <summary>
+        /// Defines test for <see cref="WaifuController.GetUsersCardsByShindenIdWithOffsetAndFilterAsync(ulong, uint, uint, DAL.Repositories.CardsQueryFilter)"/> method.
+        /// </summary>
+        [TestMethod]
+        public async Task Should_Return_Filtered_User_Cards()
+        {
+            var shindenUserId = 1ul;
+            var offset = 0;
+            var count = 0;
+            var filter = new CardsQueryFilter
+            {
+
+            };
+            var response = await _client.PostAsJsonAsync($"user/{shindenUserId}/cards/{offset}/{count}", filter);
+            response.EnsureSuccessStatusCode();
+            var result = await response.Content.ReadFromJsonAsync<FilteredCards>();
+            result.Should().NotBeNull();
+            result.TotalCards.Should().Be(1);
+            result.Cards.Should().NotBeEmpty();
         }
     }
 }

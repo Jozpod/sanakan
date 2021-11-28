@@ -13,7 +13,7 @@ using System.Collections.Generic;
 namespace Sanakan.DiscordBot.Tests.PreconditionsTests
 {
     /// <summary>
-    /// Defines tests for <see cref="RequireAdminRole.CheckPermissionsAsync(ICommandContext, CommandInfo, System.IServiceProvider)"/> event handler.
+    /// Defines tests for <see cref="RequireAdminRole.CheckPermissionsAsync(ICommandContext, CommandInfo, System.IServiceProvider)"/> method.
     /// </summary>
     [TestClass]
     public class RequireAdminRoleTests

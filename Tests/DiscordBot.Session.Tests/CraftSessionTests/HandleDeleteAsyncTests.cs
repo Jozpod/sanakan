@@ -4,6 +4,9 @@ using System.Threading.Tasks;
 
 namespace Sanakan.DiscordBot.Session.Tests.CraftSessionTests
 {
+    /// <summary>
+    /// Defines tests for <see cref="CraftSession.HandleDeleteAsync"/> method.
+    /// </summary>
     [TestClass]
     public class HandleDeleteAsyncTests : Base
     {

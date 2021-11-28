@@ -243,7 +243,7 @@ namespace Sanakan.DiscordBot.Session
                 return;
             }
 
-            var discordUserId = _payload.PlayerInfo.User.Id;
+            var discordUserId = _payload.PlayerInfo.DiscordId;
 
             if (reaction.Emote.Equals(Emojis.DeclineEmote))
             {
@@ -323,7 +323,7 @@ namespace Sanakan.DiscordBot.Session
                     .ToEmbedMessage(EMType.Success).Build());
             }
 
-            cacheManager.ExpireTag(CacheKeys.User(_payload.PlayerInfo.User.Id), CacheKeys.Users);
+            cacheManager.ExpireTag(CacheKeys.User(_payload.PlayerInfo.DiscordId), CacheKeys.Users);
         }
 
         public Embed BuildEmbed()

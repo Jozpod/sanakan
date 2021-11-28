@@ -49,16 +49,20 @@ namespace Sanakan.Web.Tests.IntegrationTests
             _databaseFacade = serviceProvider.GetRequiredService<IDatabaseFacade>();
             var dbContext = serviceProvider.GetRequiredService<SanakanDbContext>();
 
-            await _databaseFacade.EnsureCreatedAsync();
+            var created = await _databaseFacade.EnsureCreatedAsync();
 
-            var testUser = new User(1ul, DateTime.UtcNow);
-            var card = new Card(1ul, "title", "name", 100, 50, Rarity.A, Dere.Bodere, DateTime.UtcNow);
+            if (created)
+            {
+                var testUser = new User(1ul, DateTime.UtcNow);
+                testUser.ShindenId = 1ul;
+                var card = new Card(1ul, "title", "name", 100, 50, Rarity.A, Dere.Bodere, DateTime.UtcNow);
 
-            dbContext.Users.Add(testUser);
-            await dbContext.SaveChangesAsync();
+                dbContext.Users.Add(testUser);
+                await dbContext.SaveChangesAsync();
 
-            testUser.GameDeck.Cards.Add(card);
-            await dbContext.SaveChangesAsync();
+                testUser.GameDeck.Cards.Add(card);
+                await dbContext.SaveChangesAsync();
+            }
 
             await AuthorizeAsync();
         }

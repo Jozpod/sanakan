@@ -2,9 +2,13 @@
 using Sanakan.DAL.Models;
 using FluentAssertions;
 using Sanakan.Game.Models;
+using Sanakan.Game.Services.Abstractions;
 
 namespace Sanakan.Game.Tests.EventServiceTests
 {
+    /// <summary>
+    /// Defines tests for <see cref="IEventsService.RandomizeEvent(ExpeditionCardType, (double, double))"/> method.
+    /// </summary>
     [TestClass]
     public class RandomizeEventTests : Base
     {

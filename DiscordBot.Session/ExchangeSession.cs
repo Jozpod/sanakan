@@ -72,10 +72,11 @@ namespace Sanakan.DiscordBot.Session
 
         public Embed BuildEmbed()
         {
+            var description = $"{_payload.Name}\n\n{_payload.SourcePlayer.CustomString}\n\n{_payload.DestinationPlayer.CustomString}\n\n{_payload.Tips}".ElipseTrimToLength(2000);
             return new EmbedBuilder
             {
                 Color = EMType.Warning.Color(),
-                Description = $"{_payload.Name}\n\n{_payload.SourcePlayer.CustomString}\n\n{_payload.DestinationPlayer.CustomString}\n\n{_payload.Tips}".ElipseTrimToLength(2000)
+                Description = description,
             }.Build();
         }
 
@@ -107,13 +108,13 @@ namespace Sanakan.DiscordBot.Session
                 return;
             }
 
-            var splitedCmd = command.Replace("\n", " ").Split(" ");
-            if (splitedCmd.Length < 2)
+            var splitedCommand = command.Replace("\n", " ").Split(" ");
+            if (splitedCommand.Length < 2)
             {
                 return;
             }
 
-            var commandType = splitedCmd[0];
+            var commandType = splitedCommand[0];
             if (commandType == null)
             {
                 return;
@@ -122,18 +123,21 @@ namespace Sanakan.DiscordBot.Session
             PlayerInfo? thisPlayer = null;
             PlayerInfo? targetPlayer = null;
 
-            var socketUserMessage = context.Message;
+            var userMessage = context.Message;
+            var user = context.User;
 
-            if (context.User.Id == _payload.SourcePlayer.User.Id)
+            if (user.Id == _payload.SourcePlayer.DiscordId)
             {
                 thisPlayer = _payload.SourcePlayer;
                 targetPlayer = _payload.DestinationPlayer;
             }
-            if (context.User.Id == _payload.DestinationPlayer.User.Id)
+
+            if (user.Id == _payload.DestinationPlayer.DiscordId)
             {
                 thisPlayer = _payload.DestinationPlayer;
                 targetPlayer = _payload.SourcePlayer;
             }
+
             if (thisPlayer == null)
             {
                 return;
@@ -141,23 +145,23 @@ namespace Sanakan.DiscordBot.Session
 
             if (commandType.Contains("usuń") || commandType.Contains("usun"))
             {
-                var WIDStr = splitedCmd?[1];
+                var WIDStr = splitedCommand?[1];
                 if (string.IsNullOrEmpty(WIDStr))
                 {
-                    await socketUserMessage.AddReactionAsync(Emojis.CrossMark);
+                    await userMessage.AddReactionAsync(Emojis.CrossMark);
                     return;
                 }
 
                 if (ulong.TryParse(WIDStr, out var WID))
                 {
-                    await HandleDeleteAsync(thisPlayer, WID, socketUserMessage);
+                    await HandleDeleteAsync(thisPlayer, WID, userMessage);
                 }
                 ResetExpiry();
             }
             else if (commandType.Contains("dodaj"))
             {
                 var ids = new List<ulong>();
-                foreach (var WIDStr in splitedCmd)
+                foreach (var WIDStr in splitedCommand)
                 {
                     if (ulong.TryParse(WIDStr, out var WID))
                     {
@@ -167,11 +171,11 @@ namespace Sanakan.DiscordBot.Session
 
                 if (ids.Any())
                 {
-                    await HandleAddAsync(thisPlayer, ids, socketUserMessage, targetPlayer);
+                    await HandleAddAsync(thisPlayer, ids, userMessage, targetPlayer);
                 }
                 else
                 {
-                    await socketUserMessage.AddReactionAsync(Emojis.CrossMark);
+                    await userMessage.AddReactionAsync(Emojis.CrossMark);
                 }
 
                 ResetExpiry();
@@ -184,6 +188,7 @@ namespace Sanakan.DiscordBot.Session
             bool added = false;
             var gameDeckCards = player.DatabaseUser.GameDeck.Cards;
             var cards = wids.Join(gameDeckCards, pr => pr, pr => pr.Id, (src, dst) => dst);
+            var targetGamedeck = target.DatabaseUser.GameDeck;
 
             foreach (var card in cards)
             {
@@ -211,20 +216,22 @@ namespace Sanakan.DiscordBot.Session
                     continue;
                 }
 
-                if (card.Dere == Dere.Yami && target.DatabaseUser.GameDeck.IsGood())
+                if (card.Dere == Dere.Yami && targetGamedeck.IsGood())
                 {
                     error = true;
                     continue;
                 }
 
-                if (card.Dere == Dere.Raito && target.DatabaseUser.GameDeck.IsEvil())
+                if (card.Dere == Dere.Raito && targetGamedeck.IsEvil())
                 {
                     error = true;
                     continue;
                 }
 
                 if (player.Cards.Any(x => x.Id == card.Id))
+                {
                     continue;
+                }
 
                 if (card.FromFigure)
                 {
@@ -234,7 +241,7 @@ namespace Sanakan.DiscordBot.Session
                         continue;
                     }
 
-                    if (target.DatabaseUser.GameDeck.Cards
+                    if (targetGamedeck.Cards
                         .Any(x => x.FromFigure && x.CharacterId == card.CharacterId))
                     {
                         error = true;
@@ -259,9 +266,10 @@ namespace Sanakan.DiscordBot.Session
                 await message.AddReactionAsync(Emojis.CrossMark);
             }
 
-            if (await _payload.Message.Channel.GetMessageAsync(_payload.Message.Id) is IUserMessage msg)
+            if (await _payload.Message.Channel.GetMessageAsync(_payload.Message.Id) is IUserMessage userMessage)
             {
-                await msg.ModifyAsync(x => x.Embed = BuildEmbed());
+                var embed = BuildEmbed();
+                await userMessage.ModifyAsync(x => x.Embed = embed);
             }
         }
 
@@ -283,20 +291,21 @@ namespace Sanakan.DiscordBot.Session
 
             await message.AddReactionAsync(Emojis.OutboxTray);
 
-            if (await _payload.Message.Channel.GetMessageAsync(_payload.Message.Id) is IUserMessage msg)
+            if (await _payload.Message.Channel.GetMessageAsync(_payload.Message.Id) is IUserMessage userMessage)
             {
-                await msg.ModifyAsync(x => x.Embed = BuildEmbed());
+                await userMessage.ModifyAsync(x => x.Embed = BuildEmbed());
             }
         }
 
         public string BuildProposition(PlayerInfo player)
         {
+            var mention = player.Mention;
             if (player.Cards.Count > 12)
             {
-                return $"{player.User.Mention} oferuje:\n\n**[{player.Cards.Count}]** kart";
+                return $"{mention} oferuje:\n\n**[{player.Cards.Count}]** kart";
             }
 
-            return $"{player.User.Mention} oferuje:\n{string.Join("\n", player.Cards.Select(x => x.GetString(false, false, true)))}";
+            return $"{mention} oferuje:\n{string.Join("\n", player.Cards.Select(x => x.GetString(false, false, true)))}";
         }
 
         private async Task HandleReactionAsync(SessionContext context)
@@ -339,12 +348,12 @@ namespace Sanakan.DiscordBot.Session
         private async Task HandleReactionInAdd(IReaction reaction, IUserMessage userMessage)
         {
             var userId = reaction.GetUserId();
-            if (reaction.Emote.Equals(Emojis.OneEmote) && userId == _payload.SourcePlayer.User.Id)
+            if (reaction.Emote.Equals(Emojis.OneEmote) && userId == _payload.SourcePlayer.DiscordId)
             {
                 _payload.SourcePlayer.Accepted = true;
                 ResetExpiry();
             }
-            else if (reaction.Emote.Equals(Emojis.TwoEmote) && userId == _payload.DestinationPlayer.User.Id)
+            else if (reaction.Emote.Equals(Emojis.TwoEmote) && userId == _payload.DestinationPlayer.DiscordId)
             {
                 _payload.DestinationPlayer.Accepted = true;
                 ResetExpiry();
@@ -353,7 +362,7 @@ namespace Sanakan.DiscordBot.Session
             if (_payload.SourcePlayer.Accepted && _payload.DestinationPlayer.Accepted)
             {
                 _payload.State = ExchangeStatus.AcceptSourcePlayer;
-                _payload.Tips = $"{_payload.SourcePlayer.User.Mention} daj {Emojis.Checked} aby zaakceptować, lub {Emojis.DeclineEmote} aby odrzucić.";
+                _payload.Tips = $"{_payload.SourcePlayer.Mention} daj {Emojis.Checked} aby zaakceptować, lub {Emojis.DeclineEmote} aby odrzucić.";
 
                 await userMessage.RemoveAllReactionsAsync();
                 await userMessage.ModifyAsync(x => x.Embed = BuildEmbed());
@@ -370,7 +379,7 @@ namespace Sanakan.DiscordBot.Session
             var userRepository = _serviceProvider.GetRequiredService<IUserRepository>();
             var userId = reaction.GetUserId();
 
-            if (userId != player.User.Id)
+            if (userId != player.DiscordId)
             {
                 return;
             }
@@ -382,7 +391,7 @@ namespace Sanakan.DiscordBot.Session
                     messageChannel = true;
                     ResetExpiry();
                     _payload.State = ExchangeStatus.AcceptDestinationPlayer;
-                    _payload.Tips = $"{_payload.DestinationPlayer.User.Mention} daj {Emojis.Checked} aby zaakceptować, lub {Emojis.DeclineEmote} aby odrzucić.";
+                    _payload.Tips = $"{_payload.DestinationPlayer.Mention} daj {Emojis.Checked} aby zaakceptować, lub {Emojis.DeclineEmote} aby odrzucić.";
                 }
                 else if (_payload.State == ExchangeStatus.AcceptDestinationPlayer)
                 {
@@ -394,8 +403,8 @@ namespace Sanakan.DiscordBot.Session
                         return;
                     }
 
-                    var sourceUser = await userRepository.GetUserOrCreateAsync(_payload.SourcePlayer.User.Id);
-                    var user2 = await userRepository.GetUserOrCreateAsync(_payload.DestinationPlayer.User.Id);
+                    var sourceUser = await userRepository.GetUserOrCreateAsync(_payload.SourcePlayer.DiscordId);
+                    var user2 = await userRepository.GetUserOrCreateAsync(_payload.DestinationPlayer.DiscordId);
 
                     double avgValueP1 = _payload.SourcePlayer.Cards.Sum(x => x.MarketValue) / ((_payload.SourcePlayer.Cards.Count == 0) ? 1 : _payload.SourcePlayer.Cards.Count);
                     double avgValueP2 = _payload.DestinationPlayer.Cards.Sum(x => x.MarketValue) / ((_payload.DestinationPlayer.Cards.Count == 0) ? 1 : _payload.DestinationPlayer.Cards.Count);
@@ -475,7 +484,9 @@ namespace Sanakan.DiscordBot.Session
                         card.Affection -= 1.5;
 
                         if (card.ExperienceCount > 1)
+                        {
                             card.ExperienceCount *= 0.3;
+                        }
 
                         var valueDiff = card.MarketValue - exchangeRateP2;
                         var changed = card.MarketValue + valueDiff * 0.8;
@@ -508,15 +519,15 @@ namespace Sanakan.DiscordBot.Session
                     _payload.State = ExchangeStatus.End;
 
                     _cacheManager.ExpireTag(
-                        CacheKeys.User(_payload.SourcePlayer.User.Id),
-                        CacheKeys.User(_payload.DestinationPlayer.User.Id),
+                        CacheKeys.User(_payload.SourcePlayer.DiscordId),
+                        CacheKeys.User(_payload.DestinationPlayer.DiscordId),
                         CacheKeys.Users);
                 }
             }
             else if (reaction.Emote.Equals(Emojis.DeclineEmote) && _payload.State != ExchangeStatus.End)
             {
                 ResetExpiry();
-                _payload.Tips = $"{player.User.Mention} odrzucił propozycje wymiany!";
+                _payload.Tips = $"{player.Mention} odrzucił propozycje wymiany!";
                 messageChannel = true;
             }
 
@@ -526,18 +537,18 @@ namespace Sanakan.DiscordBot.Session
             }
         }
 
-        private async Task DisposeAction()
+        public override async ValueTask DisposeAsync()
         {
             if (_payload.Message == null)
             {
                 return;
             }
 
-            if (await _payload.Message.Channel.GetMessageAsync(_payload.Message.Id) is IUserMessage msg)
+            if (await _payload.Message.Channel.GetMessageAsync(_payload.Message.Id) is IUserMessage userMessage)
             {
                 try
                 {
-                    await msg.RemoveAllReactionsAsync();
+                    await userMessage.RemoveAllReactionsAsync();
                 }
                 catch (Exception) { }
             }

@@ -59,7 +59,7 @@ namespace Sanakan.DiscordBot
         /// <inheritdoc cref="DiscordSocketClient.Disconnected"/>
         event Func<Exception, Task> Disconnected;
 
-        ///<inheritdoc cref="DiscordSocketClient.Disconnected"/>
+        ///<inheritdoc cref="CommandContext"/>
         ICommandContext GetCommandContext(IUserMessage message);
     }
 }

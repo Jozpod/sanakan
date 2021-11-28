@@ -4,9 +4,13 @@ using Moq;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Sanakan.Daemon.HostedService;
 
 namespace Sanakan.Daemon.Tests.HostedServices.DiscordBotHostedServiceTests
 {
+    /// <summary>
+    /// Defines tests for <see cref="DiscordBotHostedService.DisconnectedAsync"/> event handler.
+    /// </summary>
     [TestClass]
     public class DisconnectedAsyncTests : Base
     {

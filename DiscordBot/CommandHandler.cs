@@ -10,6 +10,7 @@ using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot.Abstractions.Extensions;
 using Sanakan.DiscordBot.Abstractions.Models;
 using Sanakan.DiscordBot.Extensions;
+using Sanakan.DiscordBot.Resources;
 using Sanakan.DiscordBot.Services.Abstractions;
 using System;
 using System.Linq;
@@ -22,9 +23,10 @@ namespace Sanakan.DiscordBot
         private readonly IDiscordClientAccessor _discordSocketClientAccessor;
         private readonly IHelperService _helperService;
         private readonly ICommandService _commandService;
+        private readonly IOptionsMonitor<DiscordConfiguration> _config;
         private readonly ILogger _logger;
         private readonly ISystemClock _systemClock;
-        private readonly IOptionsMonitor<DiscordConfiguration> _config;
+        private readonly IResourceManager _resourceManager;
         private readonly IServiceProvider _serviceProvider;
         private readonly IServiceScopeFactory _serviceScopeFactory;
 
@@ -35,6 +37,7 @@ namespace Sanakan.DiscordBot
             IOptionsMonitor<DiscordConfiguration> config,
             ILogger<CommandHandler> logger,
             ISystemClock systemClock,
+            IResourceManager resourceManager,
             IServiceProvider serviceProvider,
             IServiceScopeFactory scopeFactory)
         {
@@ -44,6 +47,7 @@ namespace Sanakan.DiscordBot
             _config = config;
             _logger = logger;
             _systemClock = systemClock;
+            _resourceManager = resourceManager;
             _serviceProvider = serviceProvider;
             _serviceScopeFactory = scopeFactory;
         }
@@ -51,14 +55,14 @@ namespace Sanakan.DiscordBot
         public async Task InitializeAsync()
         {
             var client = _discordSocketClientAccessor.Client;
-  
+
             var modules = await _commandService
                 .AddModulesAsync(typeof(CommandHandler).Assembly, _serviceProvider);
             _helperService.AddPublicModuleInfo(modules);
 
             _helperService.AddPrivateModuleInfo(
-                ("Moderacja", await _commandService.AddModuleAsync<DiscordBot.Modules.ModerationModule>(_serviceProvider)),
-                ("Debug", await _commandService.AddModuleAsync<DiscordBot.Modules.DebugModule>(_serviceProvider)));
+                (PrivateModules.Moderation, await _commandService.AddModuleAsync<Modules.ModerationModule>(_serviceProvider)),
+                (PrivateModules.Debug, await _commandService.AddModuleAsync<Modules.DebugModule>(_serviceProvider)));
 
             _discordSocketClientAccessor.MessageReceived += HandleCommandAsync;
         }
@@ -90,16 +94,17 @@ namespace Sanakan.DiscordBot
             }
 
             var guild = guildUser.Guild;
+            var guildId = guild.Id;
             var client = _discordSocketClientAccessor.Client;
             var channel = (IMessageChannel)await client.GetChannelAsync(userMessage.Channel.Id);
 
             using var serviceScope = _serviceScopeFactory.CreateScope();
             var guildConfigRepository = serviceScope.ServiceProvider.GetRequiredService<IGuildConfigRepository>();
-            var gConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
+            var guildConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(guildId);
 
-            if (gConfig?.Prefix != null)
+            if (guildConfig?.Prefix != null)
             {
-                prefix = gConfig.Prefix;
+                prefix = guildConfig.Prefix;
             }
 
             var argumentPosition = 0;
@@ -109,14 +114,15 @@ namespace Sanakan.DiscordBot
                 return;
             }
 
-            var isDev = config.AllowedToDebug.Any(x => x == guildUser.Id);
+            var userId = guildUser.Id;
+            var isDev = config.AllowedToDebug.Any(x => x == userId);
             var isOnBlacklist = config.BlacklistedGuilds.Any(x => x == guild.Id);
 
             if (isOnBlacklist && !isDev)
             {
                 return;
             }
-            
+
             var context = _discordSocketClientAccessor.GetCommandContext(userMessage);
 
             var searchResult = await _commandService
@@ -129,15 +135,16 @@ namespace Sanakan.DiscordBot
             }
 
             var command = searchResult.Command;
+            var commandInfo = command.Match.Command;
+            var commandName = commandInfo.Name;
 
-
-            _logger.LogInformation($"Running command: u{guildUser.Id} {command.Match.Command.Name}");
+            _logger.LogInformation($"Running command: u{userId} {commandName}");
 
             string? param = null;
 
             try
             {
-                var paramStart = argumentPosition + searchResult.Command.Match.Command.Name.Length;
+                var paramStart = argumentPosition + commandName.Length;
                 var content = userMessage.Content;
                 var textBigger = content.Length > paramStart;
                 param = textBigger ? content.Substring(paramStart) : null;
@@ -146,9 +153,9 @@ namespace Sanakan.DiscordBot
 
             var record = new CommandsAnalytics
             {
-                CommandName = command.Match.Command.Name,
-                GuildId = guild.Id,
-                UserId = guildUser.Id,
+                CommandName = commandName,
+                GuildId = guildId,
+                UserId = userId,
                 Date = _systemClock.UtcNow,
                 CommandParameters = param,
             };
@@ -158,7 +165,7 @@ namespace Sanakan.DiscordBot
             commandsAnalyticsRepository.Add(record);
             await commandsAnalyticsRepository.SaveChangesAsync();
 
-            switch (command.Match.Command.RunMode)
+            switch (commandInfo.RunMode)
             {
                 case RunMode.Async:
                     await command.ExecuteAsync(_serviceProvider);
@@ -183,14 +190,17 @@ namespace Sanakan.DiscordBot
                 return;
             }
 
+            Embed embed;
+
             switch (discordResult.Error)
             {
                 case CommandError.UnknownCommand:
                     break;
 
                 case CommandError.MultipleMatches:
-                    await channel.SendMessageAsync(embed: "Dopasowano wielu użytkowników!"
-                        .ToEmbedMessage(EMType.Error).Build());
+                    embed = Strings.MatchedMultipleUsers
+                        .ToEmbedMessage(EMType.Error).Build();
+                    await channel.SendMessageAsync(embed: embed);
                     break;
 
                 case CommandError.ParseFailed:
@@ -201,6 +211,7 @@ namespace Sanakan.DiscordBot
                         var command = searchResult.Commands.First().Command;
                         await channel.SendMessageAsync(_helperService.GetCommandInfo(command, prefix));
                     }
+
                     break;
 
                 case CommandError.UnmetPrecondition:
@@ -213,12 +224,23 @@ namespace Sanakan.DiscordBot
                         embedBuilder.WithDescription(result.Message);
                     }
 
-                    if (result.ImageUrl != null)
+                    if (result.ImageUrl == null)
                     {
-                        embedBuilder.WithImageUrl(result.ImageUrl);
+                        embed = embedBuilder.Build();
+                        await channel.SendMessageAsync("", embed: embed);
+                    }
+                    else
+                    {
+                        var stream = _resourceManager.GetResourceStream(result.ImageUrl);
+                        var fileName = "image.png";
+
+                        embed = embedBuilder
+                            .WithImageUrl($"attachment://{fileName}")
+                            .Build();
+
+                        await channel.SendFileAsync(stream, fileName, embed: embed);
                     }
 
-                    await channel.SendMessageAsync("", embed: embedBuilder.Build());
                     break;
 
                 default:

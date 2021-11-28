@@ -161,7 +161,7 @@ namespace Sanakan.DiscordBot.Modules
             var acceptPayload = new AcceptSession.AcceptSessionPayload
             {
                 Bot = Context.Client.CurrentUser,
-                NotifChannel = (ITextChannel)notifChannel,
+                NotifyChannel = (ITextChannel)notifChannel,
                 MuteRole = muteRole,
                 UserRole = userRole,
                 User = user,
@@ -172,13 +172,14 @@ namespace Sanakan.DiscordBot.Modules
             _sessionManager.Remove(session);
 
             var content = $"{user.Mention} na pewno chcesz muta?".ToEmbedMessage(EMType.Error).Build();
-            var msg = await ReplyAsync("", embed: content);
-            await msg.AddReactionsAsync(new IEmote[] {
+            var replyMessage = await ReplyAsync("", embed: content);
+            await replyMessage.AddReactionsAsync(new IEmote[] {
                 Emojis.Checked,
                 Emojis.DeclineEmote
             });
 
-            acceptPayload.Message = msg;
+            acceptPayload.MessageId = replyMessage.Id;
+            acceptPayload.Channel = replyMessage.Channel;
 
             _sessionManager.Add(session);
         }

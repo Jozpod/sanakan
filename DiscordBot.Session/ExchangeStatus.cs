@@ -2,9 +2,9 @@
 {
     public enum ExchangeStatus
     {
-        Add,
-        AcceptSourcePlayer,
-        AcceptDestinationPlayer,
-        End
+        Add = 0,
+        AcceptSourcePlayer = 1,
+        AcceptDestinationPlayer = 2,
+        End = 3
     }
 }

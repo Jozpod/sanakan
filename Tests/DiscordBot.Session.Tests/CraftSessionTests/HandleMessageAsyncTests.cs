@@ -3,8 +3,11 @@ using System.Threading.Tasks;
 
 namespace Sanakan.DiscordBot.Session.Tests.CraftSessionTests
 {
+    /// <summary>
+    /// Defines tests for <see cref="CraftSession.HandleMessageAsyncTests"/> method.
+    /// </summary>
     [TestClass]
-    public class HandleMessageAsync : Base
+    public class HandleMessageAsyncTests : Base
     {
 
         [TestMethod]
@@ -25,7 +28,7 @@ namespace Sanakan.DiscordBot.Session.Tests.CraftSessionTests
 
         [TestMethod]
         public async Task Should_Exit_When_Same_Message()
-        {   
+        {
             var context = new SessionContext
             {
                 Message = _userMessageMock.Object,

@@ -6,7 +6,7 @@ using Sanakan.Common.Builder;
 using System.Threading.Tasks;
 using Sanakan.Extensions;
 
-namespace Sanakan.DAL.Tests
+namespace Sanakan.Common.Tests
 {
     /// <summary>
     /// Defines tests for <see cref="StringExtension"/> class.
@@ -14,16 +14,22 @@ namespace Sanakan.DAL.Tests
     [TestClass]
     public class StringExtensionTests
     {
-        [TestMethod]
-        public async Task Should_Return_True()
+        /// <summary>
+        /// Defines tests for <see cref="StringExtension.IsHexTriplet(string)"/> class.
+        /// </summary>
+        public class IsHexTripletTests
         {
-            "#FFFFFF".IsHexTriplet().Should().BeTrue();
-        }
+            [TestMethod]
+            public async Task Should_Return_True()
+            {
+                "#FFFFFF".IsHexTriplet().Should().BeTrue();
+            }
 
-        [TestMethod]
-        public async Task False()
-        {
-            "test".IsHexTriplet().Should().BeFalse();
+            [TestMethod]
+            public async Task False()
+            {
+                "test".IsHexTriplet().Should().BeFalse();
+            }
         }
     }
 }

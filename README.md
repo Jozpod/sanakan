@@ -2,7 +2,26 @@
 
 # Sanakan #
 
+[![Build status](https://img.shields.io/appveyor/build/Jozpod/sanakan)](https://ci.appveyor.com/project/jozpod/sanakan/branch/master) 
+[![CodeFactor](https://img.shields.io/codefactor/grade/github/Jozpod/sanakan/master)](https://www.codefactor.io/repository/github/jozpod/sanakan)
+[![License](https://img.shields.io/github/license/Jozpod/sanakan)](https://github.com/Jozpod/sanakan/blob/master/LICENSE)
 
+Sanakan is .net solution which provides Discord bot, web API, and background services.
+
+The Discord bot powers Pocked Waifu game tailored for Shinden discord server and it also contains
+helpful commands for moderation, game events and access to Shinden API.
+
+API allows rudimentary bot control, can connect discord user to discord platform, retrieve basic user details and provides utility methods for Pocket Waifu game.
+
+Currently there are few background services which do following things
+- Probe memory usage
+- Periodically check if penalty applied to user has expired and if so unbans/unmutes him.
+- Detect spam/flood/raid
+- Process task queue
+- Manage discord sessions established between bot and user
+- Run Pocket Waifu events ( i.e. Safari Image hunt, Chaos, Experience progression, Timestatus change )
+
+It was forked and refactored from [MrZnake/sanakan](https://github.com/MrZnake/sanakan).
 
 ## Tech Stack
 
@@ -20,7 +39,48 @@
 dotnet run
 ```
 
-## Options
+### Discord Configuration ###
+
+Invite bot to your server
+
+Discord invite template.
+
+```
+https://discord.com/api/oauth2/authorize?client_id=<client_id>&permissions=<permissions>&scope=<scope>
+```
+
+The next step is channel, role configuration.
+
+For example to set trash spawn waifu channel one needs to invoke following command in a intended channel.
+
+> ℹ️   The default command prefix is *.*
+
+> ⚠️  This command requires guild administrator permission.
+
+```
+.mod tsafarich
+```
+
+See commands section below for list of available commands.
+
+## Commands ##
+
+### Moderation ###
+|                   Command                    | Example |             Description             | Permissions requried |
+| :---------------------------------------: | :-------: | :----------------------------------- | ----------- |
+| **[`kasuj`](#kasuj)** | `.mod kasuj {Number}` | Deletes messages. | Configured **Admin role**, **Moderator role**, **Guild Administrator** or **Manage Messages** permission |
+| **[`kasuju`](#kasuju)** | `.mod kasuju {Number}` | Deletes user messages. | Configured **Admin role**, **Moderator role**, **Guild Administrator** or **Manage Messages** permission |
+| **[`ban`](#ban)** | `.mod ban {User} {String\TimeSpan} {String}` | Bans user. | Configured **Admin role**, **Moderator role** or **Guild Administrator** |
+| **[`mute`](#mute)** | `.mod mute {User} {String\TimeSpan} {String}` | Mutes user. | Configured **Admin role**, **Moderator role** or **Guild Administrator** |
+| **[`mute mod`](#mutemod)** | `.mod mute mod {User} {String\TimeSpan} {String}` | Mutes user with moderator role. | Configured **Admin role** or **Guild Administrator** |
+| **[`unmute`](#unmute)** | `.mod unmute {User}` | Unmutes user. | Configured **Admin role**, **Guild Administrator** or or **Manage Roles** permission |
+| **[`show muted`](#showmuted)** | `.mod show muted` | Gets muted users. | Configured **Admin role**, **Guild Administrator** or or **Manage Roles** permission |
+| **[`prefix`](#prefix)** | `.mod prefix {String}` | Sets command prefix. | Configured **Admin role** or **Guild Administrator** |
+| **[`welcome`](#welcome)** | `.mod welcome {String}` | Sets welcome message which is displayed when user joins the guild. | Configured **Admin role** or **Guild Administrator** |
+| **[`welcomepw`](#welcomepw)** | `.mod welcomepw {String}` | Sets welcome private message. | Configured **Admin role** or **Guild Administrator** |
+| **[`goodbye`](#goodbye)** | `.mod goodbye {String}` | Sets goodbye message which is displayed when user leaves the guild. | Configured **Admin role** or **Guild Administrator** |
+
+## App Configuration ##
 ### Locale
 |                   Name                    |         Type         |                 Default                 | Description                                                       |
 | :---------------------------------------: | :------------------: | :-------------------------------------: | :---------------------------------------------------------------- |
@@ -131,7 +191,3 @@ dotnet run
 | **[`GuildId`](#GuildId)**  | `{Number}` | `` |  The list of 3rd party API Keys which will be provided with JWT. |
 | **[`ChannelId`](#ChannelId)**  | `{Number}` | `` |  The list of 3rd party API Keys which will be provided with JWT. |
 | **[`Type`](#Type)**  | `{String}` | `` |  The list of 3rd party API Keys which will be provided with JWT. |
-
-### Runtime configuration ###
-
-Invite bot to your server and setup it with `.mod` commands, `.mod h` will list all moderation commands.

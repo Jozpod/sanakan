@@ -10,7 +10,7 @@ using Sanakan.Web.Controllers;
 namespace Sanakan.Web.Tests.Controllers.WaifuControllerTests
 {
     /// <summary>
-    /// Defines tests for <see cref="WaifuController.GetUsersOwningCharacterCardAsync(ulong)"/> method.
+    /// Defines tests for <see cref="WaifuController.GetUserIdsOwningCharacterCardAsync(ulong)"/> method.
     /// </summary>
     [TestClass]
     public class GetUsersOwningCharacterCardAsyncTests : Base
@@ -25,7 +25,7 @@ namespace Sanakan.Web.Tests.Controllers.WaifuControllerTests
                 .Setup(pr => pr.GetUserShindenIdsByHavingCharacterAsync(userId))
                 .ReturnsAsync(expected);
 
-            var result = await _controller.GetUsersOwningCharacterCardAsync(userId);
+            var result = await _controller.GetUserIdsOwningCharacterCardAsync(userId);
             var okObjectResult = result.Should().BeOfType<ObjectResult>().Subject;
             okObjectResult.StatusCode.Should().Be(StatusCodes.Status404NotFound);
         }
@@ -40,7 +40,7 @@ namespace Sanakan.Web.Tests.Controllers.WaifuControllerTests
                 .Setup(pr => pr.GetUserShindenIdsByHavingCharacterAsync(userId))
                 .ReturnsAsync(expected);
 
-            var result = await _controller.GetUsersOwningCharacterCardAsync(userId);
+            var result = await _controller.GetUserIdsOwningCharacterCardAsync(userId);
             var okObjectResult = result.Should().BeOfType<OkObjectResult>().Subject;
             okObjectResult.Value.Should().Be(expected);
         }

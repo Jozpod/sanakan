@@ -1,7 +1,10 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Discord;
+using Microsoft.Extensions.Options;
+using Sanakan.Common.Configuration;
 using Sanakan.DAL.Models.Configuration;
 using Sanakan.DiscordBot.Abstractions.Models;
 using Sanakan.DiscordBot.Services.Abstractions;
@@ -10,6 +13,13 @@ namespace Sanakan.DiscordBot.Services
 {
     internal class LandManager : ILandManager
     {
+        private readonly IOptionsMonitor<DiscordConfiguration> _discordConfiguration;
+
+        public LandManager(IOptionsMonitor<DiscordConfiguration> discordConfiguration)
+        {
+            _discordConfiguration = discordConfiguration;
+        }
+
         public UserLand? DetermineLand(IEnumerable<UserLand> lands, IEnumerable<ulong> roleIds, string? name)
         {
             if (name != null)
@@ -41,30 +51,36 @@ namespace Sanakan.DiscordBot.Services
 
         public async Task<IEnumerable<Embed>> GetMembersList(UserLand land, IGuild guild)
         {
+            var maxMessageLength = _discordConfiguration.CurrentValue.MaxMessageLength;
             var embedList = new List<Embed>();
-            var temp = $"**Członkowie**: *{land.Name}*\n\n";
+            var stringBuilder = new StringBuilder($"**Członkowie**: *{land.Name}*\n\n", 200);
             var users = await guild.GetUsersAsync(CacheMode.CacheOnly);
 
             var underlings = users.Where(x => x.RoleIds.Any(r => r == land.UnderlingId));
 
             foreach (var user in underlings)
             {
-                if (temp.Length + user.Mention.Length > 2000)
+                var messageLength = stringBuilder.Length + user.Mention.Length;
+
+                if (messageLength > maxMessageLength)
                 {
                     embedList.Add(new EmbedBuilder()
                     {
                         Color = EMType.Info.Color(),
-                        Description = temp
+                        Description = stringBuilder.ToString(),
                     }.Build());
-                    temp = $"{user.Mention}\n";
+                    stringBuilder.AppendFormat("{0}\n", user.Mention);
                 }
-                else temp += $"{user.Mention}\n";
+                else
+                {
+                    stringBuilder.AppendFormat("{0}\n", user.Mention);
+                }
             }
 
             embedList.Add(new EmbedBuilder()
             {
                 Color = EMType.Info.Color(),
-                Description = temp
+                Description = stringBuilder.ToString()
             }.Build());
 
             return embedList;

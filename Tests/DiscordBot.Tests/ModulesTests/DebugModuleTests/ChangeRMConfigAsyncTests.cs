@@ -31,7 +31,7 @@ namespace DiscordBot.ModulesTests.DebugModuleTests
 
             _sanakanConfigurationMock
                 .Setup(pr => pr.UpdateAsync(It.IsAny<Action<SanakanConfiguration>>()))
-                .Returns(Task.CompletedTask)
+                .ReturnsAsync(true)
                 .Verifiable();
 
             await _module.ChangeRMConfigAsync(richMessageType, channelId, roleId, save);

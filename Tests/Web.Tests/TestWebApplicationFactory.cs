@@ -4,13 +4,8 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Sanakan.ShindenApi;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Sanakan.Web.Tests.IntegrationTests
+namespace Sanakan.Web.Tests
 {
     public class TestWebApplicationFactory : WebApplicationFactory<Startup>
     {

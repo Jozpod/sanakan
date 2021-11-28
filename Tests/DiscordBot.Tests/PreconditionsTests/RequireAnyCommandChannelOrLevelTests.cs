@@ -15,7 +15,7 @@ using System;
 namespace Sanakan.DiscordBot.Tests.PreconditionsTests
 {
     /// <summary>
-    /// Defines tests for <see cref="RequireAnyCommandChannelOrLevel.CheckPermissionsAsync(ICommandContext, CommandInfo, System.IServiceProvider)"/> event handler.
+    /// Defines tests for <see cref="RequireAnyCommandChannelOrLevel.CheckPermissionsAsync(ICommandContext, CommandInfo, System.IServiceProvider)"/> method.
     /// </summary>
     [TestClass]
     public class RequireAnyCommandChannelOrLevelTests
@@ -86,9 +86,6 @@ namespace Sanakan.DiscordBot.Tests.PreconditionsTests
 
             var result = await _preconditionAttribute.CheckPermissionsAsync(_commandContextMock.Object, null, _serviceProvider);
             result.IsSuccess.Should().BeTrue();
-
-            _commandContextMock.Verify();
-            _guildConfigRepositoryMock.Verify();
         }
 
         [TestMethod]
@@ -101,8 +98,6 @@ namespace Sanakan.DiscordBot.Tests.PreconditionsTests
 
             var result = await _preconditionAttribute.CheckPermissionsAsync(_commandContextMock.Object, null, _serviceProvider);
             result.IsSuccess.Should().BeTrue();
-
-            _commandContextMock.Verify();
         }
 
         [TestMethod]
@@ -114,8 +109,6 @@ namespace Sanakan.DiscordBot.Tests.PreconditionsTests
 
             var result = await _preconditionAttribute.CheckPermissionsAsync(_commandContextMock.Object, null, _serviceProvider);
             result.IsSuccess.Should().BeTrue();
-
-            _guildConfigRepositoryMock.Verify();
         }
 
         [TestMethod]
@@ -136,8 +129,6 @@ namespace Sanakan.DiscordBot.Tests.PreconditionsTests
 
             var result = await _preconditionAttribute.CheckPermissionsAsync(_commandContextMock.Object, null, _serviceProvider);
             result.IsSuccess.Should().BeTrue();
-
-            _guildConfigRepositoryMock.Verify();
         }
 
         [TestMethod]
@@ -156,8 +147,6 @@ namespace Sanakan.DiscordBot.Tests.PreconditionsTests
 
             var result = await _preconditionAttribute.CheckPermissionsAsync(_commandContextMock.Object, null, _serviceProvider);
             result.IsSuccess.Should().BeTrue();
-
-            _guildConfigRepositoryMock.Verify();
         }
 
         [TestMethod]
@@ -192,8 +181,6 @@ namespace Sanakan.DiscordBot.Tests.PreconditionsTests
 
             var result = await _preconditionAttribute.CheckPermissionsAsync(_commandContextMock.Object, null, _serviceProvider);
             result.IsSuccess.Should().BeTrue();
-
-            _guildConfigRepositoryMock.Verify();
         }
 
         [TestMethod]
@@ -233,8 +220,6 @@ namespace Sanakan.DiscordBot.Tests.PreconditionsTests
             var result = await _preconditionAttribute.CheckPermissionsAsync(_commandContextMock.Object, null, _serviceProvider);
             result.IsSuccess.Should().BeFalse();
             result.ErrorReason.Should().NotBeNullOrEmpty();
-
-            _guildConfigRepositoryMock.Verify();
         }
     }
 }

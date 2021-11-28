@@ -23,6 +23,7 @@ using Sanakan.ShindenApi;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace Sanakan.DiscordBot.Modules
@@ -85,7 +86,9 @@ namespace Sanakan.DiscordBot.Modules
         public async Task DeleteMesegesAsync([Summary("liczba wiadomości")]int count)
         {
             if (count < 1)
+            {
                 return;
+            }
 
             await Context.Message.DeleteAsync();
 
@@ -128,7 +131,7 @@ namespace Sanakan.DiscordBot.Modules
             }
 
             var enumerable = await channel.GetMessagesAsync().FlattenAsync();
-            var userMessages = enumerable.Where(x => x.Author == user);
+            var userMessages = enumerable.Where(x => x.Author.Id == user.Id);
             try
             {
                 await channel.DeleteMessagesAsync(userMessages).ConfigureAwait(false);
@@ -148,7 +151,7 @@ namespace Sanakan.DiscordBot.Modules
         public async Task BanUserAsync(
             [Summary("użytkownik")] IGuildUser userToBan,
             [Summary("czas trwania w godzinach")]string durationStr,
-            [Summary("powód (opcjonalne)")][Remainder]string reason = "nie podano")
+            [Summary("powód (opcjonalne)")][Remainder]string reason = Constants.NoReason)
         {
             Embed content;
 
@@ -194,7 +197,7 @@ namespace Sanakan.DiscordBot.Modules
         public async Task MuteUserAsync(
             [Summary("użytkownik")]IGuildUser user,
             [Summary("czas trwania w d.hh:mm:ss | hh:mm:ss")]string durationStr,
-            [Summary("powód (opcjonalne)")][Remainder]string reason = "nie podano")
+            [Summary("powód (opcjonalne)")][Remainder]string reason = Constants.NoReason)
         {
             if (string.IsNullOrEmpty(durationStr))
             {
@@ -236,9 +239,9 @@ namespace Sanakan.DiscordBot.Modules
             var usr = Context.User as IGuildUser;
             var info = await _moderatorService.MuteUserAsync(
                 user,
-                muteRole as SocketRole,
+                muteRole,
                 null,
-                userRole as SocketRole,
+                userRole,
                 duration,
                 reason);
             await _moderatorService.NotifyAboutPenaltyAsync(user, notifChannel, info, $"{usr.Nickname ?? usr.Username}");
@@ -253,7 +256,7 @@ namespace Sanakan.DiscordBot.Modules
         public async Task MuteModUserAsync(
             [Summary("użytkownik")] IGuildUser user,
             [Summary("czas trwania hh:mm:ss")]string durationStr,
-            [Summary("powód (opcjonalne)")][Remainder]string reason = "nie podano")
+            [Summary("powód (opcjonalne)")][Remainder]string reason = Constants.NoReason)
         {
             if (string.IsNullOrEmpty(durationStr))
             {
@@ -276,8 +279,7 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            
-            var notifChannel = guild.GetChannelAsync(config.NotificationChannelId) as ITextChannel;
+            var notificationChannel = guild.GetChannelAsync(config.NotificationChannelId) as ITextChannel;
             var muteModRole = guild.GetRole(config.ModMuteRoleId);
             var userRole = guild.GetRole(config.UserRoleId.Value);
             var muteRole = guild.GetRole(config.MuteRoleId);
@@ -310,7 +312,7 @@ namespace Sanakan.DiscordBot.Modules
                 reason,
                 config.ModeratorRoles);
 
-            await _moderatorService.NotifyAboutPenaltyAsync(user, notifChannel, info, $"{usr.Nickname ?? usr.Username}");
+            await _moderatorService.NotifyAboutPenaltyAsync(user, notificationChannel, info, $"{usr.Nickname ?? usr.Username}");
 
             await ReplyAsync("", embed: $"{user.Mention} został wyciszony.".ToEmbedMessage(EMType.Success).Build());
         }
@@ -344,8 +346,8 @@ namespace Sanakan.DiscordBot.Modules
 
             await _moderatorService.UnmuteUserAsync(
                 user,
-                muteRole as SocketRole,
-                muteModRole as SocketRole);
+                muteRole,
+                muteModRole);
 
             await ReplyAsync("", embed: $"{user.Mention} już nie jest wyciszony.".ToEmbedMessage(EMType.Success).Build());
         }
@@ -356,7 +358,7 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks(""), RequireAdminRoleOrChannelPermission(ChannelPermission.ManageRoles)]
         public async Task ShowMutedUsersAsync()
         {
-            var mutedList = await _moderatorService.GetMutedListAsync(Context as SocketCommandContext);
+            var mutedList = await _moderatorService.GetMutedListAsync(Context);
             await ReplyAsync("", embed: mutedList);
         }
 
@@ -394,7 +396,7 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            if (messsage.Length > 2000)
+            if (messsage.Length > _config.CurrentValue.MaxMessageLength)
             {
                 await ReplyAsync("", embed: $"**Wiadomość jest za długa!".ToEmbedMessage(EMType.Error).Build());
                 return;
@@ -426,7 +428,7 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            if (messsage.Length > 2000)
+            if (messsage.Length > _config.CurrentValue.MaxMessageLength)
             {
                 await ReplyAsync("", embed: $"**Wiadomość jest za długa!".ToEmbedMessage(EMType.Error).Build());
                 return;
@@ -456,7 +458,7 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            if (messsage.Length > 2000)
+            if (messsage.Length > _config.CurrentValue.MaxMessageLength)
             {
                 await ReplyAsync("", embed: $"**Wiadomość jest za długa!".ToEmbedMessage(EMType.Error).Build());
                 return;
@@ -475,22 +477,27 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks(""), RequireAdminRoleOrChannelPermission(ChannelPermission.ManageRoles)]
         public async Task ShowRolesAsync()
         {
-            string tmg = "";
-            var msg = new List<String>();
+            var stringBuilder = new StringBuilder(2100);
+            var roles = Context.Guild.Roles;
+            var messages = new List<string>(roles.Count);
 
-            foreach(var item in Context.Guild.Roles)
+            foreach (var role in roles)
             {
-                string mg = tmg + $"{item.Mention} `{item.Mention}`\n";
-                if ((mg.Length) > 2000)
-                {
-                    msg.Add(tmg);
-                    tmg = "";
-                }
-                tmg += $"{item.Mention} `{item.Mention}`\n";
-            }
-            msg.Add(tmg);
+                var mention = role.Mention;
+                stringBuilder.AppendFormat("{0} `{1}`\n", mention, mention);
 
-            foreach (var content in msg)
+                if (stringBuilder.Length > _config.CurrentValue.MaxMessageLength)
+                {
+                    messages.Add(stringBuilder.ToString());
+                    stringBuilder.Clear();
+                }
+
+                stringBuilder.AppendFormat("{0} `{1}`\n", mention, mention);
+            }
+
+            messages.Add(stringBuilder.ToString());
+
+            foreach (var content in messages)
             {
                 await ReplyAsync("", embed: content.ToEmbedMessage(EMType.Bot).Build());
             }
@@ -525,7 +532,7 @@ namespace Sanakan.DiscordBot.Modules
         [Command("adminr")]
         [Summary("ustawia role administratora")]
         [Remarks("34125343243432"), RequireAdminRole]
-        public async Task SetAdminRoleAsync([Summary("id roli")]SocketRole role)
+        public async Task SetAdminRoleAsync([Summary("id roli")]IRole role)
         {
             var guildId = Context.Guild.Id;
 
@@ -553,7 +560,7 @@ namespace Sanakan.DiscordBot.Modules
         [Command("userr")]
         [Summary("ustawia role użytkownika")]
         [Remarks("34125343243432"), RequireAdminRole]
-        public async Task SetUserRoleAsync([Summary("id roli")]SocketRole role)
+        public async Task SetUserRoleAsync([Summary("id roli")] IRole role)
         {
             var guildId = Context.Guild.Id;
 
@@ -581,7 +588,7 @@ namespace Sanakan.DiscordBot.Modules
         [Command("muter")]
         [Summary("ustawia role wyciszająca użytkownika")]
         [Remarks("34125343243432"), RequireAdminRole]
-        public async Task SetMuteRoleAsync([Summary("id roli")]SocketRole role)
+        public async Task SetMuteRoleAsync([Summary("id roli")] IRole role)
         {
             var guildId = Context.Guild.Id;
 
@@ -609,7 +616,7 @@ namespace Sanakan.DiscordBot.Modules
         [Command("mutemodr")]
         [Summary("ustawia role wyciszająca moderatora")]
         [Remarks("34125343243432"), RequireAdminRole]
-        public async Task SetMuteModRoleAsync([Summary("id roli")]SocketRole role)
+        public async Task SetMuteModRoleAsync([Summary("id roli")] IRole role)
         {
             var guildId = Context.Guild.Id;
 
@@ -666,7 +673,7 @@ namespace Sanakan.DiscordBot.Modules
         [Command("waifur")]
         [Summary("ustawia role waifu")]
         [Remarks("34125343243432"), RequireAdminRole]
-        public async Task SetWaifuRoleAsync([Summary("id roli")]SocketRole role)
+        public async Task SetWaifuRoleAsync([Summary("id roli")]IRole role)
         {
             var guildId = Context.Guild.Id;
 
@@ -694,7 +701,7 @@ namespace Sanakan.DiscordBot.Modules
         [Command("modr")]
         [Summary("ustawia role moderatora")]
         [Remarks("34125343243432"), RequireAdminRole]
-        public async Task SetModRoleAsync([Summary("id roli")]SocketRole role)
+        public async Task SetModRoleAsync([Summary("id roli")]IRole role)
         {
             var guildId = Context.Guild.Id;
 
@@ -730,7 +737,9 @@ namespace Sanakan.DiscordBot.Modules
         [Command("addur")]
         [Summary("dodaje nową rolę na poziom")]
         [Remarks("34125343243432 130"), RequireAdminRole]
-        public async Task SetUselessRoleAsync([Summary("id roli")]SocketRole role, [Summary("poziom")]uint level)
+        public async Task SetUselessRoleAsync(
+            [Summary("id roli")]IRole role,
+            [Summary("poziom")]uint level)
         {
             var guildId = Context.Guild.Id;
 
@@ -770,7 +779,9 @@ namespace Sanakan.DiscordBot.Modules
         [Command("selfrole")]
         [Summary("dodaje/usuwa role do automatycznego zarządzania")]
         [Remarks("34125343243432 newsy"), RequireAdminRole]
-        public async Task SetSelfRoleAsync([Summary("id roli")]SocketRole role, [Summary("nazwa")][Remainder]string name = null)
+        public async Task SetSelfRoleAsync(
+            [Summary("id roli")]IRole role,
+            [Summary("nazwa")][Remainder]string? name = null)
         {
             var guildId = Context.Guild.Id;
 
@@ -782,10 +793,11 @@ namespace Sanakan.DiscordBot.Modules
 
             var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(guildId);
 
-            var rol = config.SelfRoles.FirstOrDefault(x => x.Role == role.Id);
-            if (rol != null)
+            var selfRole = config.SelfRoles.FirstOrDefault(x => x.Role == role.Id);
+
+            if (selfRole != null)
             {
-                config.SelfRoles.Remove(rol);
+                config.SelfRoles.Remove(selfRole);
                 await _guildConfigRepository.SaveChangesAsync();
 
                 _cacheManager.ExpireTag(CacheKeys.GuildConfig(guildId));
@@ -800,11 +812,11 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            rol = new SelfRole {
+            selfRole = new SelfRole {
                 Role = role.Id,
                 Name = name
             };
-            config.SelfRoles.Add(rol);
+            config.SelfRoles.Add(selfRole);
             await _guildConfigRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(CacheKeys.GuildConfig(guildId));
@@ -883,15 +895,16 @@ namespace Sanakan.DiscordBot.Modules
             var guildId = Context.Guild.Id;
             var channelName = Context.Channel.Name;
             var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(guildId);
+            var channelId = Context.Channel.Id;
 
-            if (config.LogChannelId == Context.Channel.Id)
+            if (config.LogChannelId == channelId)
             {
                 await ReplyAsync("", embed: $"Kanał `{channelName}` już jest ustawiony jako kanał logowania usuniętych wiadomości."
                     .ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
 
-            config.LogChannelId = Context.Channel.Id;
+            config.LogChannelId = channelId;
             await _guildConfigRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(CacheKeys.GuildConfig(guildId));
@@ -908,15 +921,16 @@ namespace Sanakan.DiscordBot.Modules
             var guildId = Context.Guild.Id;
             var channelName = Context.Channel.Name;
             var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(guildId);
+            var channelId = Context.Channel.Id;
 
-            if (config.GreetingChannelId == Context.Channel.Id)
+            if (config.GreetingChannelId == channelId)
             {
                 await ReplyAsync("", embed: $"Kanał `{channelName}` już jest ustawiony jako kanał witania nowych użytkowników."
                     .ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
 
-            config.GreetingChannelId = Context.Channel.Id;
+            config.GreetingChannelId = channelId;
             await _guildConfigRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(CacheKeys.GuildConfig(guildId));
@@ -932,15 +946,16 @@ namespace Sanakan.DiscordBot.Modules
             var guildId = Context.Guild.Id;
             var channelName = Context.Channel.Name;
             var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(guildId);
+            var channelId = Context.Channel.Id;
 
-            if (config.NotificationChannelId == Context.Channel.Id)
+            if (config.NotificationChannelId == channelId)
             {
                 await ReplyAsync("", embed: $"Kanał `{channelName}` już jest ustawiony jako kanał powiadomień o karach."
                     .ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
-            
-            config.NotificationChannelId = Context.Channel.Id;
+
+            config.NotificationChannelId = channelId;
             await _guildConfigRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(CacheKeys.GuildConfig(guildId));
@@ -1007,15 +1022,16 @@ namespace Sanakan.DiscordBot.Modules
             var guildId = Context.Guild.Id;
             var channelName = Context.Channel.Name; 
             var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(guildId);
+            var channelId = Context.Channel.Id;
 
-            if (config.ToDoChannelId == Context.Channel.Id)
+            if (config.ToDoChannelId == channelId)
             {
                 await ReplyAsync("", embed: $"Kanał `{channelName}` już jest ustawiony jako kanał todo."
                     .ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
 
-            config.ToDoChannelId = Context.Channel.Id;
+            config.ToDoChannelId = channelId;
             await _guildConfigRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(CacheKeys.GuildConfig(guildId));
@@ -1086,7 +1102,7 @@ namespace Sanakan.DiscordBot.Modules
             var guildId = Context.Guild.Id;
             var channelName = Context.Channel.Name;
             var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(guildId);
-            
+
             if (config.WaifuConfig == null)
             {
                 config.WaifuConfig = new WaifuConfiguration();
@@ -1286,7 +1302,7 @@ namespace Sanakan.DiscordBot.Modules
                 config.WaifuConfig = new WaifuConfiguration();
             }
 
-            var chan = config.WaifuConfig.CommandChannels.FirstOrDefault(x => x.Channel == Context.Channel.Id);
+            var chan = config.WaifuConfig.CommandChannels.FirstOrDefault(x => x.ChannelId == Context.Channel.Id);
 
             if (chan != null)
             {
@@ -1302,7 +1318,7 @@ namespace Sanakan.DiscordBot.Modules
 
             chan = new WaifuCommandChannel
             {
-                Channel = Context.Channel.Id
+                ChannelId = Context.Channel.Id
             };
             config.WaifuConfig.CommandChannels.Add(chan);
             await _guildConfigRepository.SaveChangesAsync();
@@ -1728,10 +1744,10 @@ namespace Sanakan.DiscordBot.Modules
             [Summary("nazwy graczy")]params string[] players)
         {
             var numbers = Enumerable.Range(1, players.Count()).ToList();
-            var pairs = new List<Tuple<string, int>>();
             var playerList = players.ToList();
+            var stringBuilder = new StringBuilder("**Numerki**:\n\n", 500);
 
-            while (playerList.Count > 0)
+            while (playerList.Any())
             {
                 var player = _randomNumberGenerator.GetOneRandomFrom(playerList);
                 playerList.Remove(player);
@@ -1739,10 +1755,10 @@ namespace Sanakan.DiscordBot.Modules
                 var number = _randomNumberGenerator.GetOneRandomFrom(numbers);
                 numbers.Remove(number);
 
-                pairs.Add(new Tuple<string, int>(player, number));
+                stringBuilder.AppendFormat("{0} - {1}", player, number);
             }
 
-            var content = $"**Numerki**:\n\n{string.Join("\n", pairs.Select(x => $"{x.Item1} - {x.Item2}"))}"
+            var content = stringBuilder.ToString()
                 .ElipseTrimToLength(2000)
                 .ToEmbedMessage(EMType.Success)
                 .Build();
@@ -1915,7 +1931,7 @@ namespace Sanakan.DiscordBot.Modules
         {
             if (command == null)
             {
-                var info = _helperService.GivePrivateHelp("Moderacja");
+                var info = _helperService.GivePrivateHelp(PrivateModules.Moderation);
                 await ReplyAsync(info);
                 return;
             }
@@ -1935,7 +1951,9 @@ namespace Sanakan.DiscordBot.Modules
                     }
                 }
 
-                await ReplyAsync(_helperService.GiveHelpAboutPrivateCommand("Moderacja", command, prefix));
+                var commandInfo = _helperService.GiveHelpAboutPrivateCommand(PrivateModules.Moderation, command, prefix);
+
+                await ReplyAsync(commandInfo);
             }
             catch (Exception ex)
             {

@@ -5,6 +5,9 @@ using System.Threading.Tasks;
 
 namespace Sanakan.DiscordBot.Session.Tests
 {
+    /// <summary>
+    /// Defines tests for <see cref="SessionManager"/> class.
+    /// </summary>
     [TestClass]
     public class SessionManagerTests
     {

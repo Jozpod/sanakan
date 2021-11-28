@@ -173,7 +173,7 @@ namespace Sanakan.DiscordBot.Services
 
             if (isAdmin)
             {
-                var info = GiveHelpAboutPrivateCommand("Moderacja", command, prefix, false);
+                var info = GiveHelpAboutPrivateCommand(PrivateModules.Moderation, command, prefix, false);
                 if (!string.IsNullOrEmpty(info))
                 {
                     return info;
@@ -182,7 +182,7 @@ namespace Sanakan.DiscordBot.Services
 
             if (isDev)
             {
-                var info = GiveHelpAboutPrivateCommand("Debug", command, prefix, false);
+                var info = GiveHelpAboutPrivateCommand(PrivateModules.Debug, command, prefix, false);
                 if (!string.IsNullOrEmpty(info))
                 {
                     return info;

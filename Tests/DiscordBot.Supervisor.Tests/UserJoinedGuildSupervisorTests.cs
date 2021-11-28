@@ -11,6 +11,9 @@ using System.Threading.Tasks;
 
 namespace Sanakan.DiscordBot.Supervisor.Tests
 {
+    /// <summary>
+    /// Defines tests for <see cref="IUserJoinedGuildSupervisor"/> class.
+    /// </summary>
     [TestClass]
     public class UserJoinedGuildSupervisorTests
     {

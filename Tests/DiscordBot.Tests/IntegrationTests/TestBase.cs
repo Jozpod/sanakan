@@ -35,6 +35,9 @@ namespace Sanakan.DiscordBot.Tests.IntegrationTests
         private static SemaphoreSlim _semaphore = new SemaphoreSlim(0);
         private static IUserMessage? LastMessage = null;
         private static ulong ChannelId = 910284207534796800ul;
+
+        private static IGuild Guild;
+
         private static ITextChannel Channel;
         private static ulong FakeUserId = 910284425655386172;
         private static string Prefix = ".";
@@ -92,8 +95,8 @@ namespace Sanakan.DiscordBot.Tests.IntegrationTests
 
             FakeUserClient = await SetupFakeUserBot();
             await Task.Delay(2000);
-            var guild = FakeUserClient.GetGuild(_configuration.MainGuild);
-            Channel = guild.GetTextChannel(ChannelId);
+            Guild = FakeUserClient.GetGuild(_configuration.MainGuild);
+            Channel = await Guild.GetTextChannelAsync(ChannelId);
             FakeUser = FakeUserClient.CurrentUser;
             FakeUserId = FakeUser.Id;
             FakeUserClient.MessageReceived += MessageReceivedAsync;

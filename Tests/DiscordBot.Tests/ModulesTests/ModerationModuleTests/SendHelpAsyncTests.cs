@@ -1,6 +1,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.DAL.Models.Configuration;
+using Sanakan.DiscordBot;
 using System.Threading.Tasks;
 
 namespace DiscordBot.ModulesTests.ModerationModuleTests
@@ -15,7 +16,7 @@ namespace DiscordBot.ModulesTests.ModerationModuleTests
             var guildOption = new GuildOptions(guildId, 50);
 
             _helperServiceMock
-                .Setup(pr => pr.GivePrivateHelp("Moderacja"))
+                .Setup(pr => pr.GivePrivateHelp(PrivateModules.Moderation))
                 .Returns("test info")
                 .Verifiable();
 
@@ -40,7 +41,7 @@ namespace DiscordBot.ModulesTests.ModerationModuleTests
                 .ReturnsAsync(guildOption);
 
             _helperServiceMock
-                .Setup(pr => pr.GiveHelpAboutPrivateCommand("Moderacja", command, It.IsAny<string>(), true))
+                .Setup(pr => pr.GiveHelpAboutPrivateCommand(PrivateModules.Moderation, command, It.IsAny<string>(), true))
                 .Returns("test info")
                 .Verifiable();
 

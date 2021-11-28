@@ -22,7 +22,7 @@ namespace Sanakan.DiscordBot.Session.Tests
         private readonly Mock<IUserMessage> _userMessageMock = new (MockBehavior.Strict);
         private readonly Mock<IMessageChannel> _messageChannelMock = new (MockBehavior.Strict);
         private readonly Mock<IReaction> _reactionMock = new (MockBehavior.Strict);
-        private ServiceProvider _serviceProvider;
+        private readonly ServiceProvider _serviceProvider;
 
         public ListSessionTests()
         {

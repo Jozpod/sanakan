@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Sanakan.Common.Converters;
 using System;
@@ -9,8 +10,10 @@ using System.Threading.Tasks;
 
 namespace Sanakan.Common
 {
-    public class WritableOptions<T> : IWritableOptions<T> where T : class, new()
+    internal class WritableOptions<T> : IWritableOptions<T> 
+        where T : class, new()
     {
+        private readonly ILogger _logger;
         private readonly IHostEnvironment _environment;
         private readonly IFileSystem _fileSystem;
         private readonly IOptionsMonitor<T> _options;
@@ -19,12 +22,14 @@ namespace Sanakan.Common
         private readonly JsonSerializerOptions _jsonSerializerOptions;
 
         public WritableOptions(
+            ILogger<WritableOptions<T>> logger,
             IHostEnvironment environment,
             IFileSystem fileSystem,
             IOptionsMonitor<T> options,
             IConfigurationRoot configuration,
             string file)
         {
+            _logger = logger;
             _environment = environment;
             _fileSystem = fileSystem;
             _options = options;
@@ -40,19 +45,28 @@ namespace Sanakan.Common
         public T Value => _options.CurrentValue;
         public T Get(string name) => _options.Get(name);
 
-        public async Task UpdateAsync(Action<T> applyChanges)
+        public async Task<bool> UpdateAsync(Action<T> applyChanges)
         {
             var fileProvider = _environment.ContentRootFileProvider;
             var fileInfo = fileProvider.GetFileInfo(_file);
             var physicalPath = fileInfo.PhysicalPath;
 
-            using var stream = _fileSystem.Open(physicalPath, FileMode.OpenOrCreate);
-            var configuration = await JsonSerializer.DeserializeAsync<T>(stream, _jsonSerializerOptions);
-            applyChanges(configuration);
+            try
+            {
+                using var stream = _fileSystem.Open(physicalPath, FileMode.OpenOrCreate);
+                var configuration = await JsonSerializer.DeserializeAsync<T>(stream, _jsonSerializerOptions);
+                applyChanges(configuration);
 
-            stream.Seek(0, SeekOrigin.Begin);
-            await JsonSerializer.SerializeAsync(stream, configuration, _jsonSerializerOptions);
-            _configuration.Reload();
+                stream.Seek(0, SeekOrigin.Begin);
+                await JsonSerializer.SerializeAsync(stream, configuration, _jsonSerializerOptions);
+                _configuration.Reload();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Could not update {typeof(T)} configuration");
+                return false;
+            }
         }
     }
 }

@@ -310,7 +310,7 @@ namespace Sanakan.Daemon.HostedService
                 _userCounter[userId] = 0;
 
                 var guildUser = user as IGuildUser;
-                
+
                 var enqueued = _blockingPriorityQueue.TryEnqueue(new SpawnCardBundleMessage
                 {
                     GuildId = guildUser?.Guild?.Id,

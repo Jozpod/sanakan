@@ -69,7 +69,7 @@ namespace Sanakan.DAL.Repositories
                 .FirstOrDefaultAsync(x => x.Id == discordUserId);
         }
 
-        public async Task<User> GetCachedFullUserAsync(ulong shindenUserId)
+        public async Task<User?> GetCachedFullUserAsync(ulong shindenUserId)
         {
             var key = CacheKeys.User(shindenUserId);
 

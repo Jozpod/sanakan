@@ -5,9 +5,13 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Sanakan.Daemon.HostedService;
 
 namespace Sanakan.Daemon.Tests.HostedServices.DiscordBotHostedServiceTests
 {
+    /// <summary>
+    /// Defines tests for <see cref="DiscordBotHostedService.ExecuteAsync"/> method.
+    /// </summary>
     [TestClass]
     public class ExecuteAsyncTests : Base
     {

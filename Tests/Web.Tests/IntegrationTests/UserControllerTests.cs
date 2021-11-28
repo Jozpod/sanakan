@@ -16,6 +16,7 @@ using Sanakan.DAL.Models;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using Sanakan.Common.Converters;
+using Sanakan.ShindenApi.Models;
 
 namespace Sanakan.Web.Tests.IntegrationTests
 {
@@ -25,15 +26,29 @@ namespace Sanakan.Web.Tests.IntegrationTests
     public partial class TestBase
     {
 
+        /// <summary>
+        /// Defines test for <see cref="UserController.GetUserByDiscordIdAsync(ulong)"/> method.
+        /// </summary>
         [TestMethod]
         public async Task Should_Return_Discord_User()
         {
-            await Task.Delay(TimeSpan.FromSeconds(5));
             var discordUserId = 1ul;
-            await AuthorizeAsync();
 
             var user = await _client.GetFromJsonAsync<User>($"api/user/discord/{discordUserId}");
             user.Should().NotBeNull();
+        }
+
+        /// <summary>
+        /// Defines test for <see cref="UserController.GetUserIdByNameAsync(string)"/> method.
+        /// </summary>
+        [TestMethod]
+        public async Task Should_Find_Shinden_User()
+        {
+            var response = await _client.PostAsJsonAsync($"api/user/find", "user");
+            response.EnsureSuccessStatusCode();
+            var users = await response.Content.ReadFromJsonAsync<IEnumerable<UserSearchResult>>();
+            users.Should().NotBeNull();
+            users.Should().HaveCount(1);
         }
     }
 }

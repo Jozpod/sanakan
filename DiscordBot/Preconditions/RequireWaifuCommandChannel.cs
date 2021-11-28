@@ -36,13 +36,13 @@ namespace Sanakan.Preconditions
                 ?? Enumerable.Empty<WaifuCommandChannel>();
 
             if (!commandChannels.Any()
-                || commandChannels.Any(x => x.Channel == context.Channel.Id)
+                || commandChannels.Any(x => x.ChannelId == context.Channel.Id)
                 || user.GuildPermissions.Administrator)
             {
                 return PreconditionResult.FromSuccess();
             }
 
-            var channel = await guild.GetTextChannelAsync(commandChannels.First().Channel);
+            var channel = await guild.GetTextChannelAsync(commandChannels.First().ChannelId);
 
             var result = new PreconditionErrorPayload();
             result.Message = string.Format(Strings.RequiredChannel, channel?.Mention);

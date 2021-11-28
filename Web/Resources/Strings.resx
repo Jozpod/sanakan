@@ -144,6 +144,11 @@
   <data name="NoSpaceInDeck" xml:space="preserve">
     <value>User has no space left in deck</value>
   </data>
+  <data name="SwaggerDescription" xml:space="preserve">
+    <value>Autentykacja następuje poprzez dopasowanie tokenu przesłanego w ciele zapytania `api/token`, a następnie wysyłania w nagłowku `Authorization` z przedrostkiem `Bearer` otrzymanego w zwrocie tokena.
+
+Docelowa wersja api powinna zostać przesłana pod nagówkiem `x-api-version`, w przypadku jej nie podania zapytania są interpretowane jako wysłane do wersji `1.0`</value>
+  </data>
   <data name="UserNotFound" xml:space="preserve">
     <value>User not found</value>
   </data>

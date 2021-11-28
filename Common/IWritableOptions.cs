@@ -6,6 +6,6 @@ namespace Sanakan.Common
 {
     public interface IWritableOptions<out T> : IOptions<T> where T : class, new()
     {
-        Task UpdateAsync(Action<T> applyChanges);
+        Task<bool> UpdateAsync(Action<T> applyChanges);
     }
 }

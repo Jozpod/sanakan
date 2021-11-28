@@ -24,6 +24,7 @@ using Sanakan.Game.Builder;
 using Sanakan.ShindenApi.Builder;
 using Sanakan.TaskQueue.Builder;
 using Sanakan.Web;
+using Sanakan.Web.Resources;
 using Sanakan.Web.Swagger;
 using System;
 using System.Globalization;
@@ -116,9 +117,7 @@ namespace Sanakan.Web
                 {
                     Title = "Sanakan API",
                     Version = "1.0",
-                    Description = @"Autentykacja następuje poprzez dopasowanie tokenu przesłanego w ciele zapytania `api/token`, a następnie wysyłania w nagłowku `Authorization` z przedrostkiem `Bearer` otrzymanego w zwrocie tokena.
-
-Docelowa wersja api powinna zostać przesłana pod nagówkiem `x-api-version`, w przypadku jej nie podania zapytania są interpretowane jako wysłane do wersji `1.0`.",
+                    Description = Strings.SwaggerDescription,
                 });
 
                 options.MapType(typeof(TimeSpan), () => new OpenApiSchema

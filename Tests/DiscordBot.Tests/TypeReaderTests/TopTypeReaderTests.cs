@@ -60,7 +60,7 @@ namespace Sanakan.DiscordBot.Tests
         [DataRow("cardsp", TopType.CardsPower)]
         [DataRow("karma", TopType.Karma)]
         [DataRow("karma+", TopType.Karma)]
-        [DataRow("+karma", TopType.PvpSeason)]
+        [DataRow("+karma", TopType.Karma)]
         [DataRow("karma-", TopType.KarmaNegative)]
         [DataRow("-karma", TopType.KarmaNegative)]
         [DataRow("pvp", TopType.Pvp)]

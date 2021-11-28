@@ -5,10 +5,14 @@ namespace Sanakan.DAL.Models.Configuration
     public class WaifuCommandChannel
     {
         public ulong Id { get; set; }
-        public ulong Channel { get; set; }
+
+        /// <summary>
+        /// The Discord channel where user can invoke commands.
+        /// </summary>
+        public ulong ChannelId { get; set; }
 
         public ulong WaifuId { get; set; }
-        
+
         [JsonIgnore]
         public virtual WaifuConfiguration Waifu { get; set; }
     }

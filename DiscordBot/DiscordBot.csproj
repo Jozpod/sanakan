@@ -13,9 +13,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Resources\ManWaggingFinger.gif" />
-    <EmbeddedResource Include="Resources\WomenMagnifyingGlass.gif" />
-    <EmbeddedResource Include="Resources\YouHaveNoPowerHere.gif" />
+    <EmbeddedResource Include="Resources\Pictures\ManWaggingFinger.gif" />
+    <EmbeddedResource Include="Resources\Pictures\WomenMagnifyingGlass.gif" />
+    <EmbeddedResource Include="Resources\Pictures\YouHaveNoPowerHere.gif" />
   </ItemGroup>
 
   <ItemGroup>

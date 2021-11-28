@@ -4,11 +4,9 @@ using Sanakan.ShindenApi.Models.Enums;
 using Shinden.API;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
-namespace Sanakan.Web.Tests.IntegrationTests
+namespace Sanakan.Web.Tests
 {
     public class FakeShindenClient : IShindenClient
     {
@@ -63,6 +61,11 @@ namespace Sanakan.Web.Tests.IntegrationTests
         }
 
         public Task<Result<List<FavCharacter>>> GetFavouriteCharactersAsync(ulong userId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Result<IllustrationInfo>> GetIllustrationInfoAsync(ulong titleId)
         {
             throw new NotImplementedException();
         }
@@ -154,7 +157,17 @@ namespace Sanakan.Web.Tests.IntegrationTests
 
         public Task<Result<List<UserSearchResult>>> SearchUserAsync(string nick)
         {
-            throw new NotImplementedException();
+            var result = new Result<List<UserSearchResult>>
+            {
+                Value = new List<UserSearchResult>
+                {
+                    new UserSearchResult
+                    {
+                        Id = 1ul,
+                    },
+                }
+            };
+            return Task.FromResult(result);
         }
     }
 }

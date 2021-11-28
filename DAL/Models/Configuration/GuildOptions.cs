@@ -107,13 +107,13 @@ namespace Sanakan.DAL.Models.Configuration
         /// </summary>
         public ulong GreetingChannelId { get; set; }
 
-        [StringLength(50)]
+        [StringLength(2000)]
         public string? WelcomeMessage { get; set; }
-        
-        [StringLength(50)]
+
+        [StringLength(2000)]
         public string? WelcomeMessagePM { get; set; }
 
-        [StringLength(50)]
+        [StringLength(2000)]
         public string? GoodbyeMessage { get; set; }
 
         /// <summary>

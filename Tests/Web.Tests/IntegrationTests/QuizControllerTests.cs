@@ -20,11 +20,13 @@ using Sanakan.Common.Converters;
 namespace Sanakan.Web.Tests.IntegrationTests
 {
     /// <summary>
-    /// Defines tests for <see cref="QuizController"/>.
+    /// Defines tests for <see cref="QuizController"/> class.
     /// </summary>
     public partial class TestBase
     {
-
+        /// <summary>
+        /// Defines test for <see cref="QuizController.AddQuestionAsync(Question)"/> method.
+        /// </summary>
         [TestMethod]
         public async Task Should_Add_Question()
         {

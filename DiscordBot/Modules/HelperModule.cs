@@ -281,7 +281,7 @@ namespace Sanakan.DiscordBot.Modules
                 var payload = new AcceptSession.AcceptSessionPayload
                 {
                     Bot = Context.Client.CurrentUser,
-                    NotifChannel = notifChannel,
+                    NotifyChannel = notifChannel,
                     MuteRole = muteRole,
                     UserRole = userRole,
                     User = user,
@@ -302,7 +302,8 @@ namespace Sanakan.DiscordBot.Modules
 
                 await userMessage.AddReactionsAsync(new IEmote[] { Emojis.Checked, Emojis.DeclineEmote });
 
-                payload.Message = userMessage;
+                payload.MessageId = userMessage.Id;
+                payload.Channel = userMessage.Channel;
 
                 _sessionManager.Add(session);
                 return;

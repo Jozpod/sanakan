@@ -3214,7 +3214,8 @@ namespace Sanakan.DiscordBot.Modules
 
             payload.SourcePlayer = new PlayerInfo
             {
-                User = sourceUser,
+                DiscordId = sourceUser.Id,
+                Mention = sourceUser.Mention,
                 DatabaseUser = duser1,
                 Accepted = false,
                 CustomString = "",
@@ -3223,7 +3224,8 @@ namespace Sanakan.DiscordBot.Modules
 
             payload.DestinationPlayer = new PlayerInfo
             {
-                User = destinationUser,
+                DiscordId = destinationUser.Id,
+                Mention = destinationUser.Mention,
                 DatabaseUser = duser2,
                 Accepted = false,
                 CustomString = "",
@@ -3246,8 +3248,8 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks(""), RequireWaifuCommandChannel]
         public async Task CraftCardAsync()
         {
-            var discordUser = Context.User as SocketGuildUser;
-            
+            var discordUser = Context.User as IGuildUser;
+
             if (discordUser == null)
             {
                 return;
@@ -3280,7 +3282,8 @@ namespace Sanakan.DiscordBot.Modules
             {
                 PlayerInfo = new PlayerInfo
                 {
-                    User = discordUser,
+                    DiscordId = discordUser.Id,
+                    Mention = discordUser.Mention,
                     DatabaseUser = databaseUser,
                     Accepted = false,
                     CustomString = "",
@@ -3453,29 +3456,32 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks(""), RequireWaifuDuelChannel]
         public async Task MakeADuelAsync()
         {
-            var duser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
-            if (duser.GameDeck.NeedToSetDeckAgain())
+            var databaseUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
+            var gameDeck = databaseUser.GameDeck;
+            var mention = Context.User.Mention;
+
+            if (gameDeck.NeedToSetDeckAgain())
             {
-                await ReplyAsync("", embed: $"{Context.User.Mention} musisz na nowo ustawić swóją talie!".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync("", embed: $"{mention} musisz na nowo ustawić swóją talie!".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
-            var canFight = duser.GameDeck.CanFightPvP();
+            var canFight = gameDeck.CanFightPvP();
             if (canFight != DeckPowerStatus.Ok)
             {
                 var err = (canFight == DeckPowerStatus.TooLow) ? "słabą" : "silną";
-                await ReplyAsync("", embed: $"{Context.User.Mention} masz zbyt {err} talie ({duser.GameDeck.GetDeckPower().ToString("F")})."
+                await ReplyAsync("", embed: $"{mention} masz zbyt {err} talie ({gameDeck.GetDeckPower().ToString("F")})."
                     .ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
-            var pvpDailyMax = duser.TimeStatuses
+            var pvpDailyMax = databaseUser.TimeStatuses
                 .FirstOrDefault(x => x.Type == StatusType.Pvp);
 
             if (pvpDailyMax == null)
             {
                 pvpDailyMax = new TimeStatus(StatusType.Pvp);
-                duser.TimeStatuses.Add(pvpDailyMax);
+                databaseUser.TimeStatuses.Add(pvpDailyMax);
             }
 
             var utcNow = _systemClock.UtcNow;
@@ -3483,37 +3489,37 @@ namespace Sanakan.DiscordBot.Modules
             if (!pvpDailyMax.IsActive(utcNow))
             {
                 pvpDailyMax.EndsOn = utcNow.Date.AddHours(3).AddDays(1);
-                duser.GameDeck.PVPDailyGamesPlayed = 0;
+                gameDeck.PVPDailyGamesPlayed = 0;
             }
 
-            if (duser.GameDeck.ReachedDailyMaxPVPCount())
+            if (gameDeck.ReachedDailyMaxPVPCount())
             {
-                await ReplyAsync("", embed: $"{Context.User.Mention} dziś już nie możesz rozegrać pojedynku.".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync("", embed: $"{mention} dziś już nie możesz rozegrać pojedynku.".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
-            if ((utcNow - duser.GameDeck.PVPSeasonBeginDate.AddMonths(1)).TotalSeconds > 1)
+            if ((utcNow - gameDeck.PVPSeasonBeginDate.AddMonths(1)).TotalSeconds > 1)
             {
-                duser.GameDeck.PVPSeasonBeginDate = new DateTime(
-                    _systemClock.UtcNow.Year,
-                    _systemClock.UtcNow.Month,
+                gameDeck.PVPSeasonBeginDate = new DateTime(
+                    utcNow.Year,
+                    utcNow.Month,
                     1);
-                duser.GameDeck.SeasonalPVPRank = 0;
+                gameDeck.SeasonalPVPRank = 0;
             }
 
-            var allPvpPlayers = await _gameDeckRepository.GetCachedPlayersForPVP(duser.Id);
+            var allPvpPlayers = await _gameDeckRepository.GetCachedPlayersForPVP(databaseUser.Id);
 
             if (allPvpPlayers.Count < 10)
             {
-                await ReplyAsync("", embed: $"{Context.User.Mention} zbyt mała liczba graczy ma utworzoną poprawną talię!".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync("", embed: $"{mention} zbyt mała liczba graczy ma utworzoną poprawną talię!".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
             double toLong = 1;
-            var pvpPlayersInRange = allPvpPlayers.Where(x => x.IsNearMatchMakingRatio(duser.GameDeck)).ToList();
+            var pvpPlayersInRange = allPvpPlayers.Where(x => x.IsNearMatchMakingRatio(gameDeck)).ToList();
             for (double mrr = 0.5; pvpPlayersInRange.Count < 10; mrr += (0.5 * toLong))
             {
-                pvpPlayersInRange = allPvpPlayers.Where(x => x.IsNearMatchMakingRatio(duser.GameDeck, mrr)).ToList();
+                pvpPlayersInRange = allPvpPlayers.Where(x => x.IsNearMatchMakingRatio(gameDeck, mrr)).ToList();
                 toLong += 0.5;
             }
 
@@ -3521,7 +3527,7 @@ namespace Sanakan.DiscordBot.Modules
             var enemyUser = await _userRepository.GetUserOrCreateAsync(randomEnemyUserId);
             var discordClient = Context.Client;
             var discordEnemyUser = await discordClient.GetUserAsync(enemyUser.Id);
-            
+
             while (discordEnemyUser == null)
             {
                 randomEnemyUserId = _randomNumberGenerator.GetOneRandomFrom(pvpPlayersInRange).UserId;
@@ -3529,19 +3535,23 @@ namespace Sanakan.DiscordBot.Modules
                 discordEnemyUser = await discordClient.GetUserAsync(enemyUser.Id);
             }
 
+            var user = Context.User;
+
             var players = new List<PlayerInfo>
                 {
                     new PlayerInfo
                     {
-                        Cards = duser.GameDeck.Cards.Where(x => x.Active).ToList(),
-                        User = Context.User,
-                        DatabaseUser = duser
+                        Cards = gameDeck.Cards.Where(x => x.Active).ToList(),
+                        DiscordId = user.Id,
+                        Mention = user.Mention,
+                        DatabaseUser = databaseUser
                     },
                     new PlayerInfo
                     {
                         Cards = enemyUser.GameDeck.Cards.Where(x => x.Active).ToList(),
                         DatabaseUser = enemyUser,
-                        User = discordEnemyUser
+                        DiscordId = discordEnemyUser.Id,
+                        Mention = discordEnemyUser.Mention,
                     }
                 };
 
@@ -3550,31 +3560,35 @@ namespace Sanakan.DiscordBot.Modules
 
             var fightResult = FightResult.Lose;
             if (fight.Winner == null)
+            {
                 fightResult = FightResult.Draw;
-            else if (fight.Winner.User.Id == duser.Id)
+            }
+            else if (fight.Winner.DiscordId == databaseUser.Id)
+            {
                 fightResult = FightResult.Win;
+            }
 
-            duser.GameDeck.PvPStats.Add(new CardPvPStats
+            gameDeck.PvPStats.Add(new CardPvPStats
             {
                 Type = FightType.NewVersus,
                 Result = fightResult
             });
 
-            var mission = duser.TimeStatuses.FirstOrDefault(x => x.Type == StatusType.DPvp);
+            var mission = databaseUser.TimeStatuses.FirstOrDefault(x => x.Type == StatusType.DPvp);
             if (mission == null)
             {
                 mission = new TimeStatus(StatusType.DPvp);
-                duser.TimeStatuses.Add(mission);
+                databaseUser.TimeStatuses.Add(mission);
             }
             mission.Count(utcNow);
 
-            var info = duser.GameDeck.CalculatePVPParams(enemyUser.GameDeck, fightResult);
+            var info = gameDeck.CalculatePVPParams(enemyUser.GameDeck, fightResult);
             await _userRepository.SaveChangesAsync();
 
             _ = Task.Run(async () =>
             {
-                var wStr = fight.Winner == null ? "Remis!" : $"Zwycięża {fight.Winner.User.Mention}!";
-                var content = $"⚔️ **Pojedynek**:\n{Context.User.Mention} vs. {discordEnemyUser.Mention}\n\n{deathLog.ElipseTrimToLength(2000)}\n{wStr}\n{info}"
+                var wStr = fight.Winner == null ? "Remis!" : $"Zwycięża {fight.Winner.Mention}!";
+                var content = $"⚔️ **Pojedynek**:\n{mention} vs. {discordEnemyUser.Mention}\n\n{deathLog.ElipseTrimToLength(2000)}\n{wStr}\n{info}"
                     .ToEmbedMessage(EMType.Bot).Build();
                 await ReplyAsync("", embed: content);
             });
@@ -3587,13 +3601,16 @@ namespace Sanakan.DiscordBot.Modules
         public async Task SetProfileWaifuAsync([Summary("WID")]ulong wid)
         {
             var databaseUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
+            var mention = Context.User.Mention;
+            var gameDeck = databaseUser.GameDeck;
+            var cards = gameDeck.Cards;
 
             if (wid == 0)
             {
-                if (databaseUser.GameDeck.FavouriteWaifuId.HasValue)
+                if (gameDeck.FavouriteWaifuId.HasValue)
                 {
-                    var prevWaifus = databaseUser.GameDeck.Cards
-                        .Where(x => x.CharacterId == databaseUser.GameDeck.FavouriteWaifuId);
+                    var prevWaifus = cards
+                        .Where(x => x.CharacterId == gameDeck.FavouriteWaifuId);
 
                     foreach (var card in prevWaifus)
                     {
@@ -3601,62 +3618,63 @@ namespace Sanakan.DiscordBot.Modules
                         _ = card.CalculateCardPower();
                     }
 
-                    databaseUser.GameDeck.FavouriteWaifuId = null;
+                    gameDeck.FavouriteWaifuId = null;
                     await _userRepository.SaveChangesAsync();
                 }
 
-                await ReplyAsync("", embed: $"{Context.User.Mention} zresetował ulubioną karte.".ToEmbedMessage(EMType.Success).Build());
+                await ReplyAsync("", embed: $"{mention} zresetował ulubioną karte.".ToEmbedMessage(EMType.Success).Build());
                 return;
             }
 
-            var thisCard = databaseUser.GameDeck.Cards.FirstOrDefault(x => x.Id == wid && !x.InCage);
+            var thisCard = cards.FirstOrDefault(x => x.Id == wid && !x.InCage);
 
             if (thisCard == null)
             {
-                await ReplyAsync("", embed: $"{Context.User.Mention} nie posiadasz takiej karty lub znajduje się ona w klatce!"
+                await ReplyAsync("", embed: $"{mention} nie posiadasz takiej karty lub znajduje się ona w klatce!"
                     .ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
-            if (databaseUser.GameDeck.FavouriteWaifuId == thisCard.CharacterId)
+            if (gameDeck.FavouriteWaifuId == thisCard.CharacterId)
             {
-                await ReplyAsync("", embed: $"{Context.User.Mention} masz już ustawioną tą postać!"
+                await ReplyAsync("", embed: $"{mention} masz już ustawioną tą postać!"
                     .ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
-            var allPrevWaifus = databaseUser.GameDeck.Cards.Where(x => x.CharacterId == databaseUser.GameDeck.FavouriteWaifuId);
+            var allPrevWaifus = cards.Where(x => x.CharacterId == gameDeck.FavouriteWaifuId);
             foreach (var card in allPrevWaifus)
             {
                 card.Affection -= 5;
                 _ = card.CalculateCardPower();
             }
 
-            databaseUser.GameDeck.FavouriteWaifuId = thisCard.CharacterId;
+            gameDeck.FavouriteWaifuId = thisCard.CharacterId;
             await _userRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(CacheKeys.User(databaseUser.Id), CacheKeys.Users);
 
-            await ReplyAsync("", embed: $"{Context.User.Mention} ustawił {thisCard.Name} jako ulubioną postać.".ToEmbedMessage(EMType.Success).Build());
+            await ReplyAsync("", embed: $"{mention} ustawił {thisCard.Name} jako ulubioną postać.".ToEmbedMessage(EMType.Success).Build());
         }
 
         [Command("ofiaruj")]
         [Alias("doante")]
         [Summary("ofiaruj trzy krople swojej krwi, aby przeistoczyć kartę w anioła lub demona (wymagany odpowiedni poziom karmy)")]
         [Remarks("451"), RequireWaifuCommandChannel]
-        public async Task ChangeCardAsync([Summary("WID")]ulong wid)
+        public async Task ChangeCardAsync([Summary("WID")] ulong wid)
         {
-            var bUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
+            var databaseUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
+            var gameDeck = databaseUser.GameDeck;
             var mention = Context.User.Mention;
 
-            if (!bUser.GameDeck.CanCreateDemon() && !bUser.GameDeck.CanCreateAngel())
+            if (!gameDeck.CanCreateDemon() && !gameDeck.CanCreateAngel())
             {
                 await ReplyAsync("", embed: $"{mention} nie jesteś zły, ani dobry - po prostu nijaki."
                     .ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
-            var thisCard = bUser.GameDeck.Cards.FirstOrDefault(x => x.Id == wid);
+            var thisCard = gameDeck.Cards.FirstOrDefault(x => x.Id == wid);
             if (thisCard == null)
             {
                 await ReplyAsync("", embed: $"{mention} nie odnaleziono karty.".ToEmbedMessage(EMType.Error).Build());
@@ -3675,7 +3693,7 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            var blood = bUser.GameDeck.Items.FirstOrDefault(x => x.Type == ItemType.BetterIncreaseUpgradeCnt);
+            var blood = gameDeck.Items.FirstOrDefault(x => x.Type == ItemType.BetterIncreaseUpgradeCnt);
             if (blood == null)
             {
                 await ReplyAsync("", embed: $"{mention} o dziwo nie posiadasz kropli swojej krwi.".ToEmbedMessage(EMType.Error).Build());
@@ -3688,10 +3706,16 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            if (blood.Count > 3) blood.Count -= 3;
-            else bUser.GameDeck.Items.Remove(blood);
+            if (blood.Count > 3)
+            {
+                blood.Count -= 3;
+            }
+            else
+            {
+                gameDeck.Items.Remove(blood);
+            }
 
-            if (bUser.GameDeck.CanCreateDemon())
+            if (gameDeck.CanCreateDemon())
             {
                 if (thisCard.Dere == Dere.Yami)
                 {
@@ -3702,15 +3726,15 @@ namespace Sanakan.DiscordBot.Modules
                 if (thisCard.Dere == Dere.Raito)
                 {
                     thisCard.Dere = Dere.Yato;
-                    bUser.Stats.YatoUpgrades += 1;
+                    databaseUser.Stats.YatoUpgrades += 1;
                 }
                 else
                 {
                     thisCard.Dere = Dere.Yami;
-                    bUser.Stats.YamiUpgrades += 1;
+                    databaseUser.Stats.YamiUpgrades += 1;
                 }
             }
-            else if (bUser.GameDeck.CanCreateAngel())
+            else if (gameDeck.CanCreateAngel())
             {
                 if (thisCard.Dere == Dere.Raito)
                 {
@@ -3721,17 +3745,17 @@ namespace Sanakan.DiscordBot.Modules
                 if (thisCard.Dere == Dere.Yami)
                 {
                     thisCard.Dere = Dere.Yato;
-                    bUser.Stats.YatoUpgrades += 1;
+                    databaseUser.Stats.YatoUpgrades += 1;
                 }
                 else
                 {
                     thisCard.Dere = Dere.Raito;
-                    bUser.Stats.RaitoUpgrades += 1;
+                    databaseUser.Stats.RaitoUpgrades += 1;
                 }
             }
 
             await _userRepository.SaveChangesAsync();
-            _cacheManager.ExpireTag(CacheKeys.User(bUser.Id), CacheKeys.Users);
+            _cacheManager.ExpireTag(CacheKeys.User(databaseUser.Id), CacheKeys.Users);
 
             await ReplyAsync("", embed: $"{mention} nowy charakter to {thisCard.Dere}".ToEmbedMessage(EMType.Success).Build());
         }

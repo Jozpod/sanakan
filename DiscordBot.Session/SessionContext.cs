@@ -6,7 +6,7 @@ namespace Sanakan.DiscordBot.Session
     {
         public IMessageChannel Channel { get; set; }
 
-        public IUser User { get; set; }
+        public ulong UserId { get; set; }
 
         public IUserMessage Message { get; set; }
 

@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Logging;
 
 namespace Sanakan.Common
 {
@@ -11,13 +12,15 @@ namespace Sanakan.Common
             this IServiceCollection services,
             string file = "appsettings.json") where T : class, new()
         {
-            services.AddTransient<IWritableOptions<T>>(provider =>
+            services.AddTransient<IWritableOptions<T>>(serviceProvider =>
             {
-                var configuration = (IConfigurationRoot)provider.GetRequiredService<IConfiguration>();
-                var environment = provider.GetService<IHostEnvironment>();
-                var options = provider.GetService<IOptionsMonitor<T>>();
-                var fileSystem = provider.GetRequiredService<IFileSystem>();
+                var configuration = (IConfigurationRoot)serviceProvider.GetRequiredService<IConfiguration>();
+                var logger = serviceProvider.GetService<ILogger<WritableOptions<T>>>();
+                var environment = serviceProvider.GetService<IHostEnvironment>();
+                var options = serviceProvider.GetService<IOptionsMonitor<T>>();
+                var fileSystem = serviceProvider.GetRequiredService<IFileSystem>();
                 return new WritableOptions<T>(
+                    logger,
                     environment,
                     fileSystem,
                     options,

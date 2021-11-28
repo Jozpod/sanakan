@@ -142,6 +142,17 @@ namespace Sanakan.Web.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Autentykacja następuje poprzez dopasowanie tokenu przesłanego w ciele zapytania `api/token`, a następnie wysyłania w nagłowku `Authorization` z przedrostkiem `Bearer` otrzymanego w zwrocie tokena.
+        ///
+        ///Docelowa wersja api powinna zostać przesłana pod nagówkiem `x-api-version`, w przypadku jej nie podania zapytania są interpretowane jako wysłane do wersji `1.0`.
+        /// </summary>
+        internal static string SwaggerDescription {
+            get {
+                return ResourceManager.GetString("SwaggerDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to User not found.
         /// </summary>
         internal static string UserNotFound {

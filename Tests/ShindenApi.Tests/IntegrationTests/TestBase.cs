@@ -38,11 +38,11 @@ namespace Sanakan.ShindenApi.Tests.IntegrationTests
             _shindenClient = serviceProvider.GetRequiredService<IShindenClient>();
         }
 
-        //[TestMethod]
-        //public async Task Should_Log_In()
-        //{
-        //    var result = await _shindenClient.LoginAsync("test", "test");
-        //    result.Value.Should().NotBeNull();
-        //}
+        [TestMethod]
+        public async Task Should_Log_In()
+        {
+            var result = await _shindenClient.LoginAsync("test", "test");
+            result.Value.Should().BeNull();
+        }
     }
 }

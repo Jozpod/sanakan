@@ -4,9 +4,13 @@ using Sanakan.DAL.Models;
 using System;
 using FluentAssertions;
 using Sanakan.Game.Models;
+using Sanakan.Game.Services.Abstractions;
 
 namespace Sanakan.Game.Tests.EventServiceTests
 {
+    /// <summary>
+    /// Defines tests for <see cref="IEventsService.ExecuteEvent(EventType, User, Card, string)"/> method.
+    /// </summary>
     [TestClass]
     public class ExecuteEventTests : Base
     {

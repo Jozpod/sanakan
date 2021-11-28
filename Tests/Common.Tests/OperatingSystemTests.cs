@@ -5,8 +5,11 @@ using Sanakan.Common;
 using Sanakan.Common.Builder;
 using System.Threading.Tasks;
 
-namespace Sanakan.DAL.Tests
+namespace Sanakan.Common.Tests
 {
+    /// <summary>
+    /// Defines tests for <see cref="IOperatingSystem.GetCurrentProcess"/> method.
+    /// </summary>
     [TestClass]
     public class OperatingSystemTests
     {

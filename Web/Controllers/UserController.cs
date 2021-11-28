@@ -91,7 +91,7 @@ namespace Sanakan.Web.Controllers
                 return ShindenNotFound(Strings.UserNotFound);
             }
 
-            return Ok(searchUserResult);
+            return Ok(searchUserResult.Value);
         }
 
         /// <summary>
