@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Sanakan.Common;
+using Sanakan.Common.Builder;
 using Sanakan.Game.Services;
 using Sanakan.Game.Services.Abstractions;
 
@@ -17,14 +18,14 @@ namespace Sanakan.Game.Builder
             return services;
         }
 
-        public static IServiceCollection AddFontResources(this IServiceCollection services)
+        public static ResourceManagerBuilder AddFontResources(this ResourceManagerBuilder builder)
         {
             var assembly = typeof(Extensions).Assembly;
-            ResourceManager.Add(assembly, Resources.DigitalFont);
-            ResourceManager.Add(assembly, Resources.LatoBoldFont);
-            ResourceManager.Add(assembly, Resources.LatoLightfont);
-            ResourceManager.Add(assembly, Resources.LatoRegularfont);
-            return services;
+            builder.AssemblyResourceMap.Add(Resources.DigitalFont, assembly);
+            builder.AssemblyResourceMap.Add(Resources.LatoBoldFont, assembly);
+            builder.AssemblyResourceMap.Add(Resources.LatoLightfont, assembly);
+            builder.AssemblyResourceMap.Add(Resources.LatoRegularfont, assembly);
+            return builder;
         }
     }
 }

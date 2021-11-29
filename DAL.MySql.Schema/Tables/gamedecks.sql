@@ -20,12 +20,17 @@ CREATE TABLE `gamedecks` (
   `ForegroundPosition` int NOT NULL,
   `BackgroundPosition` int NOT NULL,
   `MaxNumberOfCards` bigint NOT NULL,
-  `CardsInGallery` int NOT NULL,
+  `CardsInGalleryCount` int NOT NULL,
   `UserId` bigint unsigned NOT NULL,
   PRIMARY KEY (`Id`),
   UNIQUE KEY `IX_GameDecks_UserId` (`UserId`),
   KEY `IX_GameDecks_DeckPower` (`DeckPower`),
-  CONSTRAINT `FK_GameDecks_Users_UserId` FOREIGN KEY (`UserId`) REFERENCES `users` (`Id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+  KEY `IX_GameDecks_WishlistIsPrivate` (`WishlistIsPrivate`),
+  CONSTRAINT `FK_GameDecks_Users_UserId` FOREIGN KEY (`UserId`) REFERENCES `users` (`Id`) ON DELETE CASCADE,
+  CONSTRAINT `CK_GameDeck_BackgroundImageUrl` CHECK ((regexp_like(`BackgroundImageUrl`,_utf8mb4'^https?') or (`BackgroundImageUrl` is null))),
+  CONSTRAINT `CK_GameDeck_ForegroundColor` CHECK ((regexp_like(`ForegroundColor`,_utf8mb4'^#([a-f0-9]{3}){1,2}$') or (`ForegroundColor` is null))),
+  CONSTRAINT `CK_GameDeck_ForegroundImageUrl` CHECK ((regexp_like(`ForegroundImageUrl`,_utf8mb4'^https?') or (`ForegroundImageUrl` is null)))
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
 ALTER TABLE gamedecks ADD INDEX IX_GameDecks_DeckPower USING BTREE(DeckPower);
 ALTER TABLE gamedecks ADD UNIQUE INDEX IX_GameDecks_UserId USING BTREE(UserId);
+ALTER TABLE gamedecks ADD INDEX IX_GameDecks_WishlistIsPrivate USING BTREE(WishlistIsPrivate);

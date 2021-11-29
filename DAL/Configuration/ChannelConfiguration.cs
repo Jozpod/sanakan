@@ -5,7 +5,7 @@ using Sanakan.DAL.Models.Configuration;
 
 namespace Sanakan.DAL.Configuration
 {
-    public class ChannelConfiguration : 
+    public class ChannelConfiguration :
         IEntityTypeConfiguration<WithoutExpChannel>,
         IEntityTypeConfiguration<WithoutSupervisionChannel>,
         IEntityTypeConfiguration<UserLand>,
@@ -14,11 +14,6 @@ namespace Sanakan.DAL.Configuration
         IEntityTypeConfiguration<CommandChannel>,
         IEntityTypeConfiguration<WithoutMessageCountChannel>
     {
-        public void Configure(EntityTypeBuilder<Answer> builder)
-        {
-         
-        }
-
         public void Configure(EntityTypeBuilder<WithoutExpChannel> builder)
         {
             builder.HasKey(e => e.Id);

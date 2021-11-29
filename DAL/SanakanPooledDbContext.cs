@@ -52,7 +52,7 @@ namespace Sanakan.DAL
         public DbSet<WithoutSupervisionChannel> WithoutSupervisionChannels { get; set; }
         public DbSet<UserLand> MyLands { get; set; }
         public DbSet<WaifuConfiguration> Waifus { get; set; }
-        public DbSet<Raport> Raports { get; set; }
+        public DbSet<Report> Raports { get; set; }
         public DbSet<WaifuCommandChannel> WaifuCommandChannels { get; set; }
         public DbSet<WaifuFightChannel> WaifuFightChannels { get; set; }
         #endregion

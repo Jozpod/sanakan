@@ -2,9 +2,13 @@ using Discord;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Threading.Tasks;
 using Moq;
+using Sanakan.DiscordBot.Modules;
 
 namespace DiscordBot.ModulesTests.FunModuleTests
 {
+    /// <summary>
+    /// Defines tests for <see cref="FunModule.GiveUserScAsync(IGuildUser, uint)"/> method.
+    /// </summary>
     [TestClass]
     public class GiveUserScAsyncTests : Base
     {

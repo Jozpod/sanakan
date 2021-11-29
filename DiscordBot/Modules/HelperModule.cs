@@ -112,7 +112,7 @@ namespace Sanakan.DiscordBot.Modules
             }
             catch (Exception ex)
             {
-                await ReplyAsync("", embed: ex.Message.ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync(embed: ex.Message.ToEmbedMessage(EMType.Error).Build());
             }
         }
 
@@ -127,11 +127,13 @@ namespace Sanakan.DiscordBot.Modules
 
             if (effectiveUser == null)
             {
-                await ReplyAsync("", embed: Strings.CanExecuteOnlyOnServer.ToEmbedMessage(EMType.Info).Build());
+                await ReplyAsync(embed: Strings.CanExecuteOnlyOnServer.ToEmbedMessage(EMType.Info).Build());
                 return;
             }
 
-            await ReplyAsync("", embed: (Embed)_helperService.GetInfoAboutUser(effectiveUser));
+            var embed = (Embed)_helperService.GetInfoAboutUser(effectiveUser);
+
+            await ReplyAsync(embed: embed);
         }
 
         [Command("ping", RunMode = RunMode.Async)]
@@ -152,7 +154,7 @@ namespace Sanakan.DiscordBot.Modules
                 type = EMType.Success;
             }
 
-            await ReplyAsync("", embed: $"Pong! `{latency}ms`".ToEmbedMessage(type).Build());
+            await ReplyAsync(embed: $"Pong! `{latency}ms`".ToEmbedMessage(type).Build());
         }
 
         [Command("serwerinfo", RunMode = RunMode.Async)]
@@ -161,14 +163,16 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks(""), RequireCommandChannel]
         public async Task GetServerInfoAsync()
         {
-            if (Context.Guild == null)
+            var guild = Context.Guild;
+
+            if (guild == null)
             {
                 await ReplyAsync("", embed: Strings.CanExecuteOnlyOnServer.ToEmbedMessage(EMType.Info).Build());
                 return;
             }
 
-            var embed = (Embed)await _helperService.GetInfoAboutServerAsync(Context.Guild);
-            await ReplyAsync("", embed: embed);
+            var embed = (Embed)await _helperService.GetInfoAboutServerAsync(guild);
+            await ReplyAsync(embed: embed);
         }
 
         [Command("awatar", RunMode = RunMode.Async)]
@@ -179,14 +183,15 @@ namespace Sanakan.DiscordBot.Modules
             [Summary("nazwa użytkownika (opcjonalne)")]IUser? user = null)
         {
             var effectiveUser = user ?? Context.User;
-            var embed = new EmbedBuilder
+            var embedBuilder = new EmbedBuilder
             {
                 ImageUrl = effectiveUser.GetUserOrDefaultAvatarUrl(),
                 Author = new EmbedAuthorBuilder().WithUser(effectiveUser),
                 Color = EMType.Info.Color(),
             };
 
-            await ReplyAsync("", embed: embed.Build());
+            var embed = embedBuilder.Build();
+            await ReplyAsync(embed: embed);
         }
 
         [Command("info", RunMode = RunMode.Async)]
@@ -196,7 +201,7 @@ namespace Sanakan.DiscordBot.Modules
         {
             using var process = _operatingSystem.GetCurrentProcess();
             var time = _systemClock.UtcNow - process.StartTime;
-            var version = typeof(HelperModule).Assembly.GetName().Version;
+            var version = _helperService.GetVersion();
             var timeHumanized = time.ToString(@"d'd 'hh\:mm\:ss");
             var info = string.Format(Strings.BotInfo, version, timeHumanized);
 
@@ -245,7 +250,9 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            if ((_systemClock.UtcNow - replyMessage.CreatedAt.DateTime.ToLocalTime()) > _reportExpiry)
+            var utcNow = _systemClock.UtcNow;
+
+            if ((utcNow - replyMessage.CreatedAt.DateTime.ToLocalTime()) > _reportExpiry)
             {
                 await ReplyAsync(embed: "Można raportować tylko wiadomości, które nie są starsze od 3h."
                     .ToEmbedMessage(EMType.Bot).Build());
@@ -253,16 +260,19 @@ namespace Sanakan.DiscordBot.Modules
             }
 
             var discordUserId = replyMessage.Author.Id;
+            var user = Context.User;
+            Embed embed;
 
-            if (replyMessage.Author.Id == Context.User.Id)
+            if (replyMessage.Author.Id == user.Id)
             {
-                var user = Context.User as IGuildUser;
-                if (user == null)
+                var guildUser = user as IGuildUser;
+
+                if (guildUser == null)
                 {
                     return;
                 }
 
-                var notifChannel = (ITextChannel)await guild.GetChannelAsync(config.NotificationChannelId);
+                var notificationChannel = (ITextChannel)await guild.GetChannelAsync(config.NotificationChannelId);
                 var userRole = guild.GetRole(config.UserRoleId.Value);
                 var muteRole = guild.GetRole(config.MuteRoleId);
 
@@ -272,33 +282,34 @@ namespace Sanakan.DiscordBot.Modules
                     return;
                 }
 
-                if (user.RoleIds.Contains(muteRole.Id))
+                if (guildUser.RoleIds.Contains(muteRole.Id))
                 {
-                    await ReplyAsync(embed: $"{user.Mention} już jest wyciszony.".ToEmbedMessage(EMType.Error).Build());
+                    await ReplyAsync(embed: $"{guildUser.Mention} już jest wyciszony.".ToEmbedMessage(EMType.Error).Build());
                     return;
                 }
 
                 var payload = new AcceptSession.AcceptSessionPayload
                 {
                     Bot = Context.Client.CurrentUser,
-                    NotifyChannel = notifChannel,
+                    NotifyChannel = notificationChannel,
                     MuteRole = muteRole,
                     UserRole = userRole,
-                    User = user,
+                    User = guildUser,
                 };
 
-                var session = new AcceptSession(user.Id, _systemClock.UtcNow, payload);
+                var session = new AcceptSession(guildUser.Id, utcNow, payload);
 
-                if(_sessionManager.Exists<AcceptSession>(discordUserId))
+                if (_sessionManager.Exists<AcceptSession>(discordUserId))
                 {
                     await ReplyAsync(embed: $"?????????".ToEmbedMessage(EMType.Error).Build());
                     return;
                 }
 
                 _sessionManager.Remove(session);
+                embed = $"{guildUser.Mention} raportujesz samego siebie? Może pomogę! Na pewno chcesz muta?"
+                    .ToEmbedMessage(EMType.Error).Build();
 
-                var userMessage = await ReplyAsync(embed: $"{user.Mention} raportujesz samego siebie? Może pomogę! Na pewno chcesz muta?"
-                    .ToEmbedMessage(EMType.Error).Build());
+                var userMessage = await ReplyAsync(embed: embed);
 
                 await userMessage.AddReactionsAsync(new IEmote[] { Emojis.Checked, Emojis.DeclineEmote });
 
@@ -311,16 +322,18 @@ namespace Sanakan.DiscordBot.Modules
 
             await ReplyAsync(embed: "Wysłano zgłoszenie.".ToEmbedMessage(EMType.Success).Build());
 
-            var userName = $"{Context.User.Username}({Context.User.Id})";
-            var botMessage = await raportChannel.SendMessageAsync($"{replyMessage.GetJumpUrl()}", embed: "prep".ToEmbedMessage().Build());
+            var userName = $"{user.Username}({user.Id})";
+            embed = "prep".ToEmbedMessage().Build();
+            var botMessage = await raportChannel.SendMessageAsync(replyMessage.GetJumpUrl(), embed: embed);
 
             try
             {
-                await botMessage.ModifyAsync(x => x.Embed = (Embed)_helperService.BuildRaportInfo(replyMessage, userName, reason, botMessage.Id));
+                embed = (Embed)_helperService.BuildRaportInfo(replyMessage, userName, reason, botMessage.Id);
+                await botMessage.ModifyAsync(x => x.Embed = embed);
 
-                var guildConfig = await _guildConfigRepository.GetGuildConfigOrCreateAsync(Context.Guild.Id);
+                var guildConfig = await _guildConfigRepository.GetGuildConfigOrCreateAsync(guild.Id);
 
-                var record = new Raport
+                var record = new Report
                 {
                     UserId = replyMessage.Author.Id,
                     MessageId = botMessage.Id

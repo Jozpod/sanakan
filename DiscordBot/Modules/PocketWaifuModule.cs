@@ -2935,6 +2935,7 @@ namespace Sanakan.DiscordBot.Modules
         {
             var botUser = await _userRepository.GetCachedFullUserAsync(Context.User.Id);
             var active = botUser.GameDeck.Cards.Where(x => x.Active).ToList();
+            var mention = Context.User.Mention;
 
             if (wid == 0)
             {
@@ -2950,11 +2951,11 @@ namespace Sanakan.DiscordBot.Modules
                     await dm.SendMessageAsync("", embed: _waifuService.GetActiveList(active));
                     await dm.CloseAsync();
 
-                    await ReplyAsync("", embed: $"{Context.User.Mention} lista poszła na PW!".ToEmbedMessage(EMType.Success).Build());
+                    await ReplyAsync("", embed: $"{mention} lista poszła na PW!".ToEmbedMessage(EMType.Success).Build());
                 }
                 catch (Exception)
                 {
-                    await ReplyAsync("", embed: $"{Context.User.Mention} nie można wysłać do Ciebie PW!".ToEmbedMessage(EMType.Error).Build());
+                    await ReplyAsync("", embed: $"{mention} nie można wysłać do Ciebie PW!".ToEmbedMessage(EMType.Error).Build());
                 }
 
                 return;
@@ -2965,13 +2966,13 @@ namespace Sanakan.DiscordBot.Modules
 
             if (thisCard == null)
             {
-                await ReplyAsync("", embed: $"{Context.User.Mention} nie odnaleziono karty.".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync("", embed: $"{mention} nie odnaleziono karty.".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
             if (thisCard.InCage)
             {
-                await ReplyAsync("", embed: $"{Context.User.Mention} ta karta znajduje się w klatce.".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync("", embed: $"{mention} ta karta znajduje się w klatce.".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
@@ -2995,7 +2996,7 @@ namespace Sanakan.DiscordBot.Modules
 
             var message = thisCard.Active ? "aktywował: " : "dezaktywował: ";
             var power = $"**Moc talii**: {bUser.GameDeck.DeckPower.ToString("F")}";
-            await ReplyAsync("", embed: $"{Context.User.Mention} {message}{thisCard.GetString(false, false, true)}\n\n{power}".ToEmbedMessage(EMType.Success).Build());
+            await ReplyAsync("", embed: $"{mention} {message}{thisCard.GetString(false, false, true)}\n\n{power}".ToEmbedMessage(EMType.Success).Build());
         }
 
         [Command("kto", RunMode = RunMode.Async)]

@@ -10,6 +10,9 @@ using System.Threading.Tasks;
 
 namespace Sanakan.DiscordBot.Tests
 {
+    /// <summary>
+    /// Defines tests for <see cref="ConfigTypeReader.ReadAsync(ICommandContext, string, IServiceProvider)"/> method.
+    /// </summary>
     [TestClass]
     public class ConfigTypeReaderTests
     {

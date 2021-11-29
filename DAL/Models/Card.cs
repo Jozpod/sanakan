@@ -159,7 +159,7 @@ namespace Sanakan.DAL.Models
         public virtual CardArenaStats ArenaStats { get; set; }
 
         /// <summary>
-        /// The Discord user identifier.
+        /// The Discord user identifier and foreign key reference to <see cref="User"/>.
         /// </summary>
         public ulong GameDeckId { get; set; }
 

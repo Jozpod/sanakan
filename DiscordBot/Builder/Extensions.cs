@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Sanakan.Common;
+using Sanakan.Common.Builder;
 using Sanakan.Common.Configuration;
 using Sanakan.Common.Models;
 using Sanakan.DAL.Models;
@@ -45,13 +46,13 @@ namespace Sanakan.DiscordBot.Builder
             commandService.AddTypeReader<bool>(new TypeReaders.BoolTypeReader());
         }
 
-        public static IServiceCollection AddImageResources(this IServiceCollection services)
+        public static ResourceManagerBuilder AddImageResources(this ResourceManagerBuilder builder)
         {
             var assembly = typeof(Extensions).Assembly;
-            ResourceManager.Add(assembly, ImageResources.ManWaggingFinger);
-            ResourceManager.Add(assembly, ImageResources.WomenMagnifyingGlass);
-            ResourceManager.Add(assembly, ImageResources.YouHaveNoPowerHere);
-            return services;
+            builder.AssemblyResourceMap.Add(ImageResources.ManWaggingFinger, assembly);
+            builder.AssemblyResourceMap.Add(ImageResources.WomenMagnifyingGlass, assembly);
+            builder.AssemblyResourceMap.Add(ImageResources.YouHaveNoPowerHere, assembly);
+            return builder;
         }
     }
 }

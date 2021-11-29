@@ -1,8 +1,12 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Threading.Tasks;
+using Sanakan.DiscordBot.Modules;
 
 namespace DiscordBot.ModulesTests.HelperModuleTests
 {
+    /// <summary>
+    /// Defines tests for <see cref="HelperModule.GiveHelpAsync(string?)"/> method.
+    /// </summary>
     [TestClass]
     public class GiveHelpAsyncTests : Base
     {

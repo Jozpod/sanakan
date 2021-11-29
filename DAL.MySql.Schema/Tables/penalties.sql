@@ -4,11 +4,11 @@ CREATE TABLE `penalties` (
   `GuildId` bigint unsigned NOT NULL,
   `Reason` varchar(100) DEFAULT NULL,
   `Type` int NOT NULL,
-  `StartDate` datetime(6) NOT NULL,
+  `StartedOn` datetime(6) NOT NULL,
   `Duration` time(6) NOT NULL,
   PRIMARY KEY (`Id`),
   KEY `IX_Penalties_GuildId` (`GuildId`),
   KEY `IX_Penalties_UserId` (`UserId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
 ALTER TABLE penalties ADD INDEX IX_Penalties_GuildId USING BTREE(GuildId);
 ALTER TABLE penalties ADD INDEX IX_Penalties_UserId USING BTREE(UserId);

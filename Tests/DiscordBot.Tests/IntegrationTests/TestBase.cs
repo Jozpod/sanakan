@@ -71,9 +71,9 @@ namespace Sanakan.DiscordBot.Tests.IntegrationTests
             services.AddOperatingSystem();
             services.AddFileSystem();
             services.AddRandomNumberGenerator();
-            services.AddResourceManager();
-            services.AddImageResources();
-            services.AddFontResources();
+            services.AddResourceManager()
+                .AddImageResources()
+                .AddFontResources();
             services.AddShindenApi();
             services.AddGameServices();
             services.AddDiscordBot();

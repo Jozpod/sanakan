@@ -124,15 +124,15 @@ namespace Sanakan.DiscordBot.Session
             PlayerInfo? targetPlayer = null;
 
             var userMessage = context.Message;
-            var user = context.User;
+            var userId = context.UserId;
 
-            if (user.Id == _payload.SourcePlayer.DiscordId)
+            if (userId == _payload.SourcePlayer.DiscordId)
             {
                 thisPlayer = _payload.SourcePlayer;
                 targetPlayer = _payload.DestinationPlayer;
             }
 
-            if (user.Id == _payload.DestinationPlayer.DiscordId)
+            if (userId == _payload.DestinationPlayer.DiscordId)
             {
                 thisPlayer = _payload.DestinationPlayer;
                 targetPlayer = _payload.SourcePlayer;

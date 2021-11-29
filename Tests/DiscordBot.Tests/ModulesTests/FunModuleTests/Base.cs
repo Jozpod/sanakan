@@ -16,6 +16,7 @@ namespace DiscordBot.ModulesTests.FunModuleTests
     {
         protected readonly FunModule _module;
         protected readonly Mock<IGuildConfigRepository> _guildConfigRepositoryMock = new(MockBehavior.Strict);
+        protected readonly Mock<IUserRepository> _userRepositoryMock = new(MockBehavior.Strict);
         protected readonly Mock<IQuestionRepository> _questionRepositoryMock = new(MockBehavior.Strict);
         protected readonly Mock<IModeratorService> _moderatorServiceMock = new(MockBehavior.Strict);
         protected readonly Mock<ISessionManager> _sessionManagerMock = new(MockBehavior.Strict);
@@ -29,6 +30,7 @@ namespace DiscordBot.ModulesTests.FunModuleTests
         {
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddSingleton(_guildConfigRepositoryMock.Object);
+            serviceCollection.AddSingleton(_userRepositoryMock.Object);
             serviceCollection.AddSingleton(_questionRepositoryMock.Object);
             var serviceProvider = serviceCollection.BuildServiceProvider();
             var serviceScopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();

@@ -15,7 +15,9 @@ namespace Sanakan.DAL.Models
         }
 
         public ulong Id { get; set; }
+
         public StatusType Type { get; set; }
+
         public DateTime? EndsOn { get; set; }
 
         /// <summary>
@@ -23,9 +25,11 @@ namespace Sanakan.DAL.Models
         /// The acquired daily card bundles before <see cref="EndsOn"/>.
         /// </summary>
         public ulong IntegerValue { get; set; }
+
         public bool BooleanValue { get; set; }
 
         public ulong? GuildId { get; set; }
+
         public ulong UserId { get; set; }
 
         [JsonIgnore]

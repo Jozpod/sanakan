@@ -76,14 +76,16 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks(""), RequireCommandChannel]
         public async Task GiveDailyScAsync()
         {
-            var botuser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
-            
-            var timeStatus = botuser.TimeStatuses.FirstOrDefault(x => x.Type == StatusType.Daily);
-            
+            var databaseUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
+            var mention = Context.User.Mention;
+            var timeStatuses = databaseUser.TimeStatuses;
+            var timeStatus = timeStatuses.FirstOrDefault(x => x.Type == StatusType.Daily);
+            var statusType = StatusType.Daily;
+
             if (timeStatus == null)
             {
-                timeStatus = new TimeStatus(StatusType.Daily);
-                botuser.TimeStatuses.Add(timeStatus);
+                timeStatus = new TimeStatus(statusType);
+                databaseUser.TimeStatuses.Add(timeStatus);
             }
 
             var utcNow = _systemClock.UtcNow;
@@ -92,30 +94,30 @@ namespace Sanakan.DiscordBot.Modules
             {
                 var remainingTime = timeStatus.RemainingTime(utcNow);
                 var remainingTimeFriendly = remainingTime.Humanize(4);
-                var content = $"{Context.User.Mention} następne drobne możesz otrzymać dopiero za {remainingTimeFriendly}!"
+                var content = $"{mention} następne drobne możesz otrzymać dopiero za {remainingTimeFriendly}!"
                     .ToEmbedMessage(EMType.Error).Build();
                 await ReplyAsync("", embed: content);
                 return;
             }
 
-            var mission = botuser.TimeStatuses
-                .FirstOrDefault(x => x.Type == StatusType.WDaily);
-            
+            statusType = StatusType.WDaily;
+            var mission = timeStatuses
+                .FirstOrDefault(x => x.Type == statusType);
+
             if (mission == null)
             {
-                mission = new TimeStatus(StatusType.WDaily);
-                botuser.TimeStatuses.Add(mission);
+                mission = new TimeStatus(statusType);
+                databaseUser.TimeStatuses.Add(mission);
             }
 
-
-            timeStatus.EndsOn = _systemClock.UtcNow.AddHours(20);
-            botuser.ScCount += 100;
+            timeStatus.EndsOn = utcNow.AddHours(20);
+            databaseUser.ScCount += 100;
 
             await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(CacheKeys.User(botuser.Id));
+            _cacheManager.ExpireTag(CacheKeys.User(databaseUser.Id));
 
-            await ReplyAsync("", embed: $"{Context.User.Mention} łap drobne na waciki!".ToEmbedMessage(EMType.Success).Build());
+            await ReplyAsync("", embed: $"{mention} łap drobne na waciki!".ToEmbedMessage(EMType.Success).Build());
         }
 
         [Command("chce muta", RunMode = RunMode.Async)]

@@ -7,9 +7,15 @@ using Sanakan.ShindenApi;
 using System.Collections.Generic;
 using Sanakan.ShindenApi.Models.Enums;
 using Sanakan.DiscordBot.Session;
+using Sanakan.DiscordBot.Modules;
+using Discord;
+using Moq;
 
 namespace DiscordBot.ModulesTests.ShindenModuleTests
 {
+    /// <summary>
+    /// Defines tests for <see cref="ShindenModule.SearchAnimeAsync(string)"/> method.
+    /// </summary>
     [TestClass]
     public class SearchAnimeAsyncTests : Base
     {

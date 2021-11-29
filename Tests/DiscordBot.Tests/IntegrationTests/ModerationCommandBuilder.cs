@@ -9,6 +9,9 @@ using Sanakan.DiscordBot.Services;
 
 namespace Sanakan.DiscordBot.Tests.IntegrationTests
 {
+    /// <summary>
+    /// Provides methods to build commands in <see cref="ModerationModule"/>.
+    /// </summary>
     public static class ModerationCommandBuilder
     {
         /// <summary>

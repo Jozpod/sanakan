@@ -144,9 +144,9 @@ namespace Sanakan.Web
             services.AddDiscordBot();
             services.AddDiscordBotServices();
             services.AddSingleton(Encoding.UTF8);
-            services.AddResourceManager();
-            services.AddImageResources();
-            services.AddFontResources();
+            services.AddResourceManager()
+                .AddImageResources()
+                .AddFontResources();
             services.AddRandomNumberGenerator();
             services.AddFileSystem();
             services.AddSystemClock();

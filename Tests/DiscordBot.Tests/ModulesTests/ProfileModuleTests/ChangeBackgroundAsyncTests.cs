@@ -5,9 +5,15 @@ using Sanakan.DAL.Models;
 using Moq;
 using Sanakan.DiscordBot.Services;
 using System.Threading;
+using Sanakan.DiscordBot.Modules;
+using Discord;
+using Moq;
 
 namespace DiscordBot.ModulesTests.ProfileModuleTests
 {
+    /// <summary>
+    /// Defines tests for <see cref="ProfileModule.ChangeBackgroundAsync(string, SCurrency)"/> method.
+    /// </summary>
     [TestClass]
     public class ChangeBackgroundAsyncTests : Base
     {

@@ -5,9 +5,9 @@ using Sanakan.DAL.Models.Configuration;
 
 namespace Sanakan.DAL.Configuration
 {
-    public class RaportConfiguration : IEntityTypeConfiguration<Raport>
+    public class RaportConfiguration : IEntityTypeConfiguration<Report>
     {
-        public void Configure(EntityTypeBuilder<Raport> builder)
+        public void Configure(EntityTypeBuilder<Report> builder)
         {
             builder.HasKey(e => e.Id);
 

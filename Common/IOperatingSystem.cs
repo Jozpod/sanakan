@@ -2,6 +2,9 @@
 
 namespace Sanakan.Common
 {
+    /// <summary>
+    /// Provides an abstraction for operating system methods.
+    /// </summary>
     public interface IOperatingSystem
     {
         /// <inheritdoc cref="Process.GetCurrentProcess"/>

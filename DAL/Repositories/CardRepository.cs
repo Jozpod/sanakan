@@ -189,7 +189,6 @@ namespace Sanakan.DAL.Repositories
                 .Where(x => characterIds.Contains(x.CharacterId))
                 .AsNoTracking()
                 .ToListAsync();
-                //.FromCacheAsync(new[] { "users" });
         }
 
         public Task<List<Card>> GetByCharactersAndNotInUserGameDeckAsync(ulong userId, IEnumerable<ulong> characterIds)

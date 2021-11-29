@@ -3,9 +3,13 @@ using Moq;
 using Sanakan.DAL.Models.Configuration;
 using Sanakan.DiscordBot;
 using System.Threading.Tasks;
+using Sanakan.DiscordBot.Modules;
 
 namespace DiscordBot.ModulesTests.ModerationModuleTests
 {
+    /// <summary>
+    /// Defines tests for <see cref="ModerationModule.SendHelpAsync(string?)"/> method.
+    /// </summary>
     [TestClass]
     public class SendHelpAsyncTests : Base
     {

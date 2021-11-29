@@ -18,7 +18,7 @@ namespace Sanakan.DAL.Models.Configuration
             ModeratorRoles = new Collection<ModeratorRoles>();
             RolesPerLevel = new Collection<LevelRole>();
             SelfRoles = new Collection<SelfRole>();
-            Raports = new Collection<Raport>();
+            Raports = new Collection<Report>();
             Lands = new Collection<UserLand>();
         }
 
@@ -33,7 +33,7 @@ namespace Sanakan.DAL.Models.Configuration
             ModeratorRoles = new Collection<ModeratorRoles>();
             RolesPerLevel = new Collection<LevelRole>();
             SelfRoles = new Collection<SelfRole>();
-            Raports = new Collection<Raport>();
+            Raports = new Collection<Report>();
             Lands = new Collection<UserLand>();
         }
 
@@ -181,7 +181,7 @@ namespace Sanakan.DAL.Models.Configuration
         /// <summary>
         /// The list of raports.
         /// </summary>
-        public virtual ICollection<Raport> Raports { get; set; }
+        public virtual ICollection<Report> Raports { get; set; }
 
         /// <summary>
         /// The list of lands.

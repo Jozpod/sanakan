@@ -5,7 +5,7 @@ using Sanakan.DAL.Models.Management;
 
 namespace Sanakan.DAL.Configuration
 {
-    public class AnswerConfiguration : 
+    public class ModerationConfiguration :
         IEntityTypeConfiguration<SelfRole>,
         IEntityTypeConfiguration<LevelRole>,
         IEntityTypeConfiguration<ModeratorRoles>,

@@ -69,8 +69,9 @@ namespace Sanakan.DAL.Repositories
                 .Include(x => x.Cards)
                 .AsNoTracking()
                 .AsSplitQuery()
-                //.FromCacheAsync(new string[] { $"user-{userId}", "users" }))
                 .FirstOrDefaultAsync();
+
+            _cacheManager.Add(key, result, CacheKeys.User(userId));
 
             return result;
         }

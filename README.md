@@ -80,6 +80,40 @@ See commands section below for list of available commands.
 | **[`welcomepw`](#welcomepw)** | `.mod welcomepw {String}` | Sets welcome private message. | Configured **Admin role** or **Guild Administrator** |
 | **[`goodbye`](#goodbye)** | `.mod goodbye {String}` | Sets goodbye message which is displayed when user leaves the guild. | Configured **Admin role** or **Guild Administrator** |
 
+### Fun ###
+|                   Command                    | Example |             Description             | Permissions requried |
+| :---------------------------------------: | :-------: | :----------------------------------- | ----------- |
+| **[`daily`](#daily)** | `.daily` | Deletes messages. | Configured **Admin role**, **Moderator role**, **Guild Administrator** or **Manage Messages** permission |
+
+### Helper ###
+|                   Command                    | Example |             Description             | Permissions requried |
+| :---------------------------------------: | :-------: | :----------------------------------- | ----------- |
+| **[`daily`](#daily)** | `.daily` | Deletes messages. | Configured **Admin role**, **Moderator role**, **Guild Administrator** or **Manage Messages** permission |
+
+### Lands ###
+|                   Command                    | Example |             Description             | Permissions requried |
+| :---------------------------------------: | :-------: | :----------------------------------- | ----------- |
+| **[`daily`](#daily)** | `.daily` | Deletes messages. | Configured **Admin role**, **Moderator role**, **Guild Administrator** or **Manage Messages** permission |
+
+### Pocket Waifu ###
+|                   Command                    | Example |             Description             | Permissions requried |
+| :---------------------------------------: | :-------: | :----------------------------------- | ----------- |
+| **[`daily`](#daily)** | `.daily` | Deletes messages. | Configured **Admin role**, **Moderator role**, **Guild Administrator** or **Manage Messages** permission |
+
+### Profile ###
+|                   Command                    | Example |             Description             | Permissions requried |
+| :---------------------------------------: | :-------: | :----------------------------------- | ----------- |
+| **[`daily`](#daily)** | `.daily` | Deletes messages. | Configured **Admin role**, **Moderator role**, **Guild Administrator** or **Manage Messages** permission |
+
+### Shinden ###
+|                   Command                    | Example |             Description             | Permissions requried |
+| :---------------------------------------: | :-------: | :----------------------------------- | ----------- |
+| **[`daily`](#daily)** | `.daily` | Deletes messages. | Configured **Admin role**, **Moderator role**, **Guild Administrator** or **Manage Messages** permission |
+
+### Debug ###
+|                   Command                    | Example |             Description             | Permissions requried |
+| :---------------------------------------: | :-------: | :----------------------------------- | ----------- |
+| **[`daily`](#daily)** | `.daily` | Deletes messages. | Configured **Admin role**, **Moderator role**, **Guild Administrator** or **Manage Messages** permission |
 ## App Configuration ##
 ### Locale
 |                   Name                    |         Type         |                 Default                 | Description                                                       |

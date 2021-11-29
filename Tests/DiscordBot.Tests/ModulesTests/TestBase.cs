@@ -4,6 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System.Reflection;
 using Sanakan.DiscordBot.Modules;
+using System;
 
 namespace DiscordBot.ModulesTests
 {
@@ -47,6 +48,17 @@ namespace DiscordBot.ModulesTests
             _commandContextMock
                 .Setup(pr => pr.Guild)
                 .Returns(_guildMock.Object);
+        }
+
+        protected void SetupSendMessage(Action<string, Embed> action = null)
+        {
+            Action<string, bool, Embed, RequestOptions, AllowedMentions, MessageReference> defaultAction = (
+                text,
+                isTTS,
+                embed,
+                options,
+                allowedMentions,
+                messageReference) => action?.Invoke(text, embed);
 
             _messageChannelMock
                 .Setup(pr => pr.SendMessageAsync(
@@ -56,6 +68,7 @@ namespace DiscordBot.ModulesTests
                     It.IsAny<RequestOptions>(),
                     It.IsAny<AllowedMentions>(),
                     It.IsAny<MessageReference>()))
+                .Callback(action)
                 .ReturnsAsync(_userMessageMock.Object);
         }
     }

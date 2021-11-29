@@ -1,9 +1,16 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Sanakan.DiscordBot;
 using System.Threading.Tasks;
+using Sanakan.DiscordBot.Modules;
+using Discord;
+using Moq;
+using Sanakan.DiscordBot.Services;
 
 namespace DiscordBot.ModulesTests.ModerationModuleTests
 {
+    /// <summary>
+    /// Defines tests for <see cref="ModerationModule.ShowConfigAsync(ConfigType)"/> method.
+    /// </summary>
     [TestClass]
     public class ShowConfigAsyncTests : Base
     {

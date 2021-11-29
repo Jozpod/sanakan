@@ -2,14 +2,18 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Threading.Tasks;
 using System;
 using Sanakan.DAL.Models;
+using Sanakan.DiscordBot.Modules;
+using Discord;
 using Moq;
 
 namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
 {
+    /// <summary>
+    /// Defines tests for <see cref="PocketWaifuModule.AddToWishlistAsync(WishlistObjectType, ulong)"/> method.
+    /// </summary>
     [TestClass]
     public class AddToWishlistAsyncTests : Base
     {
-        
         [TestMethod]
         public async Task Should_Add_To_Wish_List()
         {

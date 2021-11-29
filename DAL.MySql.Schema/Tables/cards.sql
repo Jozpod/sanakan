@@ -22,9 +22,9 @@ CREATE TABLE `cards` (
   `CustomImageUrl` varchar(50) DEFAULT NULL,
   `FirstOwnerId` bigint unsigned DEFAULT NULL,
   `LastOwnerId` bigint unsigned DEFAULT NULL,
-  `Unique` tinyint(1) NOT NULL,
+  `IsUnique` tinyint(1) NOT NULL,
   `StarStyle` int NOT NULL,
-  `CustomBorder` longtext,
+  `CustomBorderUrl` varchar(50) DEFAULT NULL,
   `MarketValue` double NOT NULL,
   `Curse` int NOT NULL,
   `CardPower` double NOT NULL,
@@ -44,8 +44,12 @@ CREATE TABLE `cards` (
   KEY `IX_Cards_CharacterId` (`CharacterId`),
   KEY `IX_Cards_GameDeckId` (`GameDeckId`),
   KEY `IX_Cards_Title` (`Title`),
-  CONSTRAINT `FK_Cards_GameDecks_GameDeckId` FOREIGN KEY (`GameDeckId`) REFERENCES `gamedecks` (`Id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+  CONSTRAINT `FK_Cards_GameDecks_GameDeckId` FOREIGN KEY (`GameDeckId`) REFERENCES `gamedecks` (`Id`) ON DELETE CASCADE,
+  CONSTRAINT `CK_Card_CustomBorderUrl` CHECK ((regexp_like(`CustomBorderUrl`,_utf8mb4'^https?') or (`CustomBorderUrl` is null))),
+  CONSTRAINT `CK_Card_CustomImageUrl` CHECK ((regexp_like(`CustomImageUrl`,_utf8mb4'^https?') or (`CustomImageUrl` is null))),
+  CONSTRAINT `CK_Card_ImageUrl` CHECK ((regexp_like(`ImageUrl`,_utf8mb4'^https?') or (`ImageUrl` is null))),
+  CONSTRAINT `CK_Card_Title` CHECK (((trim(`Title`) <> _utf8mb4'') or (`Title` is null)))
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
 ALTER TABLE cards ADD INDEX IX_Cards_Active USING BTREE(Active);
 ALTER TABLE cards ADD INDEX IX_Cards_CharacterId USING BTREE(CharacterId);
 ALTER TABLE cards ADD INDEX IX_Cards_GameDeckId USING BTREE(GameDeckId);

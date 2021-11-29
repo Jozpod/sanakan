@@ -96,7 +96,7 @@ FROM (
 INNER JOIN `LevelRoles` AS `l` ON `t`.`Id` = `l`.`GuildOptionsId`
 ORDER BY `t`.`Id`, `t`.`Id0`
 
-SELECT `w0`.`Id`, `w0`.`Channel`, `w0`.`WaifuId`, `t`.`Id`, `t`.`Id0`
+SELECT `w0`.`Id`, `w0`.`ChannelId`, `w0`.`WaifuId`, `t`.`Id`, `t`.`Id0`
 FROM (
     SELECT `g`.`Id`, `w`.`Id` AS `Id0`
     FROM `Guilds` AS `g`

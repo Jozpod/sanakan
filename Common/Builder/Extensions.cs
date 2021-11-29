@@ -4,6 +4,7 @@ using Sanakan.Common.Cache;
 using Sanakan.Common.Configuration;
 using Sanakan.Configuration;
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace Sanakan.Common.Builder
 {
@@ -58,10 +59,22 @@ namespace Sanakan.Common.Builder
             return services;
         }
 
-        public static IServiceCollection AddResourceManager(this IServiceCollection services)
+        public static ResourceManagerBuilder AddResourceManager(this IServiceCollection services)
         {
-            services.AddSingleton<IResourceManager, ResourceManager>();
-            return services;
+            var builder = new ResourceManagerBuilder
+            {
+                AssemblyResourceMap = new Dictionary<string, Assembly>(),
+            };
+
+            services.AddSingleton<IResourceManager>((serviceProvider) =>
+            {
+                var fileSystem = serviceProvider.GetRequiredService<IFileSystem>();
+                return new ResourceManager(
+                    builder.AssemblyResourceMap,
+                    fileSystem);
+            });
+
+            return builder;
         }
 
         public static IServiceCollection AddTimer(this IServiceCollection services)

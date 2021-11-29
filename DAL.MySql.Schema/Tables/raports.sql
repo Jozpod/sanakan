@@ -1,7 +1,7 @@
 CREATE TABLE `raports` (
   `Id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `User` bigint unsigned NOT NULL,
-  `Message` bigint unsigned NOT NULL,
+  `UserId` bigint unsigned NOT NULL,
+  `MessageId` bigint unsigned NOT NULL,
   `GuildOptionsId` bigint unsigned NOT NULL,
   PRIMARY KEY (`Id`),
   KEY `IX_Raports_GuildOptionsId` (`GuildOptionsId`),

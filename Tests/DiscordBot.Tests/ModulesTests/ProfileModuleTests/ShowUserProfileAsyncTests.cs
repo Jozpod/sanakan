@@ -5,9 +5,13 @@ using System;
 using Sanakan.DAL.Models;
 using Moq;
 using System.Collections.Generic;
+using Sanakan.DiscordBot.Modules;
 
 namespace DiscordBot.ModulesTests.ProfileModuleTests
 {
+    /// <summary>
+    /// Defines tests for <see cref="ProfileModule.ShowUserProfileAsync(IGuildUser?)"/> method.
+    /// </summary>
     [TestClass]
     public class ShowUserProfileAsyncTests : Base
     {

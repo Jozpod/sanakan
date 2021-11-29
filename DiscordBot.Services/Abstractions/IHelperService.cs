@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Discord.Commands;
+using System;
 
 namespace Sanakan.DiscordBot.Services.Abstractions
 {
@@ -28,5 +29,7 @@ namespace Sanakan.DiscordBot.Services.Abstractions
         IEmbed BuildRaportInfo(IMessage message, string reportAuthor, string reason, ulong reportId);
 
         string GiveHelpAboutPublicCommand(string command, string prefix, bool isAdmin = false, bool isDev = false);
+
+        Version GetVersion();
     }
 }

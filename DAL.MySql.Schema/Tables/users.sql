@@ -12,13 +12,15 @@ CREATE TABLE `users` (
   `StatsReplacementProfileUri` varchar(50) NOT NULL,
   `MessagesCount` bigint unsigned NOT NULL,
   `CommandsCount` bigint unsigned NOT NULL,
-  `MeasureDate` datetime(6) NOT NULL,
+  `MeasuredOn` datetime(6) NOT NULL,
   `MessagesCountAtDate` bigint unsigned NOT NULL,
   `CharacterCountFromDate` bigint unsigned NOT NULL,
   `ShowWaifuInProfile` tinyint(1) NOT NULL,
   `WarningsCount` bigint NOT NULL,
   PRIMARY KEY (`Id`),
-  KEY `IX_Users_ShindenId` (`ShindenId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+  KEY `IX_Users_ShindenId` (`ShindenId`),
+  CONSTRAINT `CK_User_BackgroundProfileUri` CHECK (((trim(`BackgroundProfileUri`) <> _utf8mb4'') or (`BackgroundProfileUri` is null))),
+  CONSTRAINT `CK_User_StatsReplacementProfileUri` CHECK (((trim(`StatsReplacementProfileUri`) <> _utf8mb4'') or (`StatsReplacementProfileUri` is null)))
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
 ALTER TABLE users ADD INDEX IX_Users_ShindenId USING BTREE(ShindenId);
 ALTER TABLE users ADD UNIQUE INDEX USER USING HASH(USER);

@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Sanakan.DAL.Models;
-using Sanakan.DAL.Models.Configuration;
 
 namespace Sanakan.DAL.Configuration
 {
@@ -9,11 +8,12 @@ namespace Sanakan.DAL.Configuration
     {
         public void Configure(EntityTypeBuilder<GameDeck> builder)
         {
-            builder.HasKey(e => e.Id);
-            builder.HasIndex(e => e.DeckPower);
+            builder.HasKey(pr => pr.Id);
+            builder.HasIndex(pr => pr.DeckPower);
+            builder.HasIndex(pr => pr.WishlistIsPrivate);
 
-            builder.HasOne(e => e.User)
-                .WithOne(u => u.GameDeck);
+            builder.HasOne(pr => pr.User)
+                .WithOne(pr => pr.GameDeck);
         }
     }
 }

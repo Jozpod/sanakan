@@ -1,7 +1,7 @@
 CREATE TABLE `questions` (
   `Id` bigint unsigned NOT NULL AUTO_INCREMENT,
   `Group` int NOT NULL,
-  `Answer` int NOT NULL,
+  `AnswerNumber` int NOT NULL,
   `PointsWin` int NOT NULL,
   `PointsLose` int NOT NULL,
   `Content` varchar(100) NOT NULL,

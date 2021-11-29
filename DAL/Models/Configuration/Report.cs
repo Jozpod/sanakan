@@ -2,7 +2,10 @@
 
 namespace Sanakan.DAL.Models.Configuration
 {
-    public class Raport
+    /// <summary>
+    /// Describes report sent by user to further moderation.
+    /// </summary>
+    public class Report
     {
         public ulong Id { get; set; }
 

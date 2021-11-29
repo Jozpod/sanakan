@@ -25,8 +25,8 @@ namespace Sanakan.Common.Tests
         {
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddFileSystem();
-            serviceCollection.AddResourceManager();
-            serviceCollection.AddImageResources();
+            serviceCollection.AddResourceManager()
+                .AddImageResources();
             _serviceProvider = serviceCollection.BuildServiceProvider();
             _resourceManager = _serviceProvider.GetRequiredService<IResourceManager>();
         }

@@ -21,7 +21,7 @@ namespace DiscordBot.ModulesTests.DebugModuleTests
     public class GeneratePokeImageAsyncTests : Base
     {
         [TestMethod]
-        public async Task Should_Generate_Image_And_Reply()
+        public async Task Should_Generate_Image()
         {
             var card = new Card(1ul, "title", "name", 100, 50, Rarity.E, Dere.Bodere, DateTime.UtcNow);
             var safariImage = new SafariImage();
@@ -58,8 +58,6 @@ namespace DiscordBot.ModulesTests.DebugModuleTests
 
             var imageIndex = 0;
             await _module.GeneratePokeImageAsync(imageIndex);
-
-            _waifuServiceMock.Verify();
         }
     }
 }

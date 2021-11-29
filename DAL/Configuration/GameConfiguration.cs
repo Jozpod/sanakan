@@ -7,11 +7,9 @@ namespace Sanakan.DAL.Configuration
 {
     public class GameConfiguration : 
         IEntityTypeConfiguration<SlotMachineConfig>,
-        IEntityTypeConfiguration<TimeStatus>,
         IEntityTypeConfiguration<ExperienceContainer>,
         IEntityTypeConfiguration<Figure>,
         IEntityTypeConfiguration<Item>,
-        IEntityTypeConfiguration<WishlistObject>,
         IEntityTypeConfiguration<BoosterPack>,
         IEntityTypeConfiguration<CardPvPStats>,
         IEntityTypeConfiguration<CardTag>,
@@ -28,15 +26,6 @@ namespace Sanakan.DAL.Configuration
             builder.HasOne(e => e.User)
                 .WithOne(u => u.SMConfig);
 
-        }
-
-        public void Configure(EntityTypeBuilder<TimeStatus> builder)
-        {
-            builder.HasKey(pr => pr.Id);
-            builder.HasIndex(pr => pr.Type);
-
-            builder.HasOne(pr => pr.User)
-                .WithMany(pr => pr.TimeStatuses);
         }
 
         public void Configure(EntityTypeBuilder<ExperienceContainer> builder)
@@ -81,16 +70,6 @@ namespace Sanakan.DAL.Configuration
 
             builder.HasOne(e => e.GameDeck)
                 .WithMany(d => d.Items);
-        }
-
-        public void Configure(EntityTypeBuilder<WishlistObject> builder)
-        {
-            builder.HasKey(e => e.Id);
-
-            builder.HasOne(e => e.GameDeck)
-                .WithMany(d => d.Wishes);
-
-            builder.HasIndex(pr => new { pr.Type, pr.ObjectId });
         }
 
         public void Configure(EntityTypeBuilder<BoosterPack> builder)

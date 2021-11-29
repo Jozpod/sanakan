@@ -12,7 +12,7 @@ namespace Sanakan.DAL.MySql.Schema
         public static async Task StubSelectAsync(DbConnection connection)
         {
             var command = connection.CreateCommand();
-            command.CommandText = "SELECT 1";
+            command.CommandText = "SELECT 12345679";
             await command.ExecuteNonQueryAsync();
         }
 
@@ -41,15 +41,23 @@ namespace Sanakan.DAL.MySql.Schema
                     dataOffset += bytesRead;
                 }
 
-                if (query.Contains("SET GLOBAL"))
+                if (query.Contains("SET GLOBAL")
+                    || query.Contains("SET NAMES utf8mb4")
+                    || query.Contains("root@localhost on SanakanDBSchema"))
                 {
                     continue;
                 }
 
-                if (query.Contains("SELECT 1"))
+                if (query.Contains("SELECT 12345679"))
                 {
                     query = stringBuilder.ToString();
                     stringBuilder.Clear();
+
+                    if (string.IsNullOrEmpty(query))
+                    {
+                        continue;
+                    }
+
                     queries.Add(query);
                 }
                 else

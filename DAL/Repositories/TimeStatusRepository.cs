@@ -34,7 +34,7 @@ namespace Sanakan.DAL.Repositories
         {
             var cacheResult = _cacheManager.Get<List<TimeStatus>>(CacheKeys.TimeStatuses);
 
-            if(cacheResult != null)
+            if (cacheResult != null)
             {
                 return cacheResult.Value;
             }

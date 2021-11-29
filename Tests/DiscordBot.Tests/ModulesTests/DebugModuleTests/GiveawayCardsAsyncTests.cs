@@ -1,8 +1,12 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Threading.Tasks;
+using Sanakan.DiscordBot.Modules;
 
 namespace DiscordBot.ModulesTests.DebugModuleTests
 {
+    /// <summary>
+    /// Defines tests for <see cref="DebugModule.GiveawayCardsAsync(ulong, uint, uint)"/> method.
+    /// </summary>
     [TestClass]
     public class GiveawayCardsAsyncTests : Base
     {

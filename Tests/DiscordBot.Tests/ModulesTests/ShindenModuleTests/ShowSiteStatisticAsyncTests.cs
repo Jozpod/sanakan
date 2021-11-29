@@ -2,9 +2,14 @@ using Discord;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Threading.Tasks;
 using Moq;
+using Sanakan.DiscordBot.Modules;
+using Discord;
 
 namespace DiscordBot.ModulesTests.ShindenModuleTests
 {
+    /// <summary>
+    /// Defines tests for <see cref="ShindenModule.ShowSiteStatisticAsync(IGuildUser?)"/> method.
+    /// </summary>
     [TestClass]
     public class ShowSiteStatisticAsyncTests : Base
     {

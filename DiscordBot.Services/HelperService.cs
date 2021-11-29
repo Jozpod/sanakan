@@ -5,6 +5,7 @@ using Sanakan.Common.Configuration;
 using Sanakan.DiscordBot.Abstractions.Extensions;
 using Sanakan.DiscordBot.Abstractions.Models;
 using Sanakan.DiscordBot.Services.Abstractions;
+using Sanakan.DiscordBot.Services.Models;
 using Sanakan.Extensions;
 using System;
 using System.Collections.Generic;
@@ -197,7 +198,7 @@ namespace Sanakan.DiscordBot.Services
             var moduleInfos = new List<SanakanModuleInfo>();
             foreach (var item in modules)
             {
-                var mInfo = new SanakanModuleInfo()
+                var moduleInfo = new SanakanModuleInfo()
                 {
                     Name = item.Name,
                     Modules = new List<SanakanSubModuleInfo>()
@@ -205,48 +206,55 @@ namespace Sanakan.DiscordBot.Services
 
                 if (moduleInfos.Any(x => x.Name.Equals(item.Name)))
                 {
-                    mInfo = moduleInfos.First(x => x.Name.Equals(item.Name));
+                    moduleInfo = moduleInfos.First(x => x.Name.Equals(item.Name));
                 }
-                else moduleInfos.Add(mInfo);
+                else
+                {
+                    moduleInfos.Add(moduleInfo);
+                }
 
+                var moduleCommands = new HashSet<string>();
                 var sanakanSubModuleInfo = new SanakanSubModuleInfo()
                 {
                     Prefix = GetModGroupPrefix(item, false),
-                    Commands = new List<string>()
+                    Commands = moduleCommands,
                 };
 
                 foreach (var command in item.Commands)
                 {
-                    if (!string.IsNullOrEmpty(command.Name))
+                    if (string.IsNullOrEmpty(command.Name))
                     {
-                        sanakanSubModuleInfo.Commands.Add("`" + command.Name + "`");
+                        continue;
                     }
-                }
-                    
 
-                mInfo.Modules.Add(sanakanSubModuleInfo);
+                    var name = $"`{command.Name}`";
+                    moduleCommands.Add(name);
+                }
+
+                moduleInfo.Modules.Add(sanakanSubModuleInfo);
             }
+
             return moduleInfos;
         }
 
         private SanakanSubModuleInfo GetInfoAboutModule(ModuleInfo module)
         {
+            var moduleCommands = new HashSet<string>();
             var sanakanSubModuleInfo = new SanakanSubModuleInfo()
             {
                 Prefix = module.Name,
-                Commands = new List<string>()
+                Commands = moduleCommands,
             };
 
             foreach (var commands in module.Commands)
             {
-                if (!string.IsNullOrEmpty(commands.Name))
+                if (string.IsNullOrEmpty(commands.Name))
                 {
-                    var name = "`" + commands.Name + "`";
-                    if (!sanakanSubModuleInfo.Commands.Contains(name))
-                    {
-                        sanakanSubModuleInfo.Commands.Add(name);
-                    }
+                    continue;
                 }
+
+                var name = $"`{commands.Name}`";
+                moduleCommands.Add(name);
             }
 
             return sanakanSubModuleInfo;
@@ -264,19 +272,8 @@ namespace Sanakan.DiscordBot.Services
                 }
                 prefix = att;
             }
+
             return prefix;
-        }
-
-        private struct SanakanModuleInfo
-        {
-            public string Name { get; set; }
-            public List<SanakanSubModuleInfo> Modules { get; set; }
-        }
-
-        private struct SanakanSubModuleInfo
-        {
-            public string Prefix { get; set; }
-            public List<string> Commands { get; set; }
         }
 
         public IEmbed GetInfoAboutUser(IGuildUser user)
@@ -531,5 +528,7 @@ namespace Sanakan.DiscordBot.Services
                 }
             }.Build();
         }
+
+        public Version GetVersion() => typeof(HelperService).Assembly.GetName().Version;
     }
 }

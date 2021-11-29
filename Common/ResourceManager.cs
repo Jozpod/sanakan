@@ -7,25 +7,20 @@ using System.Collections.Generic;
 
 namespace Sanakan.Common
 {
-    public class ResourceManager : IResourceManager
+    /// <summary>
+    /// Implements simple wrapper for retrieving resources from assembly.
+    /// </summary>
+    internal class ResourceManager : IResourceManager
     {
-        private static readonly IDictionary<string, Assembly> _assemblyDict;
+        private readonly IDictionary<string, Assembly> _assemblyResourceMap;
         private readonly IFileSystem _fileSystem;
 
-        public ResourceManager(IFileSystem fileSystem)
+        public ResourceManager(
+            IDictionary<string, Assembly> assemblyResourceMap,
+            IFileSystem fileSystem)
         {
+            _assemblyResourceMap = assemblyResourceMap;
             _fileSystem = fileSystem;
-        }
-
-        static ResourceManager()
-        {
-            _assemblyDict = new Dictionary<string, Assembly>();
-        }
-
-        public static void Add(Assembly assembly, string resourcePath)
-        {
-            // TO-DO Find better way to populate assembly resources.
-            _assemblyDict.TryAdd(resourcePath, assembly);
         }
 
         public ValueTask<T?> ReadFromJsonAsync<T>(string path)
@@ -36,7 +31,7 @@ namespace Sanakan.Common
 
         public Stream GetResourceStream(string resourcePath)
         {
-            var assembly = _assemblyDict[resourcePath];
+            var assembly = _assemblyResourceMap[resourcePath];
 
             return assembly.GetManifestResourceStream(resourcePath)
                 ?? throw new Exception($"Could not find resource: {resourcePath}");
