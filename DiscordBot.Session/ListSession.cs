@@ -65,7 +65,9 @@ namespace Sanakan.DiscordBot.Session
 
             var footerText = $"{_payload.CurrentPage + 1} z {MaxPage()}";
             embed.Footer = new EmbedFooterBuilder().WithText(footerText);
-            var itemsOnPage = _payload.ListItems.GetRange(firstItem, exceededList ? (_payload.ListItems.Count - firstItem) : _payload.ItemsPerPage);
+            var count = exceededList ? (_payload.ListItems.Count - firstItem) : _payload.ItemsPerPage;
+            var itemsOnPage = _payload.ListItems
+                .GetRange(firstItem, count);
 
             lock (_stringBuilder)
             {

@@ -13,6 +13,7 @@ namespace Sanakan.Extensions
             string name = nameAsUrl ? card.GetNameWithUrl() : card.Name;
             return $"**[{card.Id}]** {name} **{card.GetCardRealRarity()}**";
         }
+
         public static string GetStatusIcons(this Card card)
         {
             var value = card.GetThreeStateMarketValue();
@@ -34,7 +35,7 @@ namespace Sanakan.Extensions
 
             foreach (var (flag, icon) in metaData)
             {
-                if(flag)
+                if (flag)
                 {
                     result.AppendFormat("{0} ", icon);
                 }

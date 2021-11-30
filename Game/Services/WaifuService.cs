@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 using Discord;
@@ -40,6 +41,8 @@ namespace Sanakan.Game.Services
         private readonly IResourceManager _resourceManager;
         private readonly ITaskManager _taskManager;
         private readonly IServiceScopeFactory _serviceScopeFactory;
+        private TimeSpan HalfAnHour = TimeSpan.FromMinutes(30);
+        private TimeSpan Hour = TimeSpan.FromHours(1);
 
         public WaifuService(
             IOptionsMonitor<DiscordConfiguration> discordConfiguration,
@@ -290,9 +293,11 @@ namespace Sanakan.Game.Services
                 return $"{mention} liczbę poproszę, a nie jakieś bohomazy.".ToEmbedMessage(EMType.Error).Build();
             }
 
-            ulong boosterPackTitleId = 0;
+            var boosterPackTitleId = 0ul;
             var boosterPackTitleName = "";
-            switch (thisItem.Item.Type)
+            var itemType = thisItem.Item.Type;
+
+            switch (itemType)
             {
                 case ItemType.RandomTitleBoosterPackSingleE:
                     if (itemCount < 0)
@@ -342,10 +347,12 @@ namespace Sanakan.Game.Services
                     {
                         return $"{mention} można kupić tylko jeden taki przedmiot.".ToEmbedMessage(EMType.Error).Build();
                     }
+
                     if (itemCount < 1)
                     {
                         itemCount = 1;
                     }
+
                     break;
 
                 default:
@@ -363,6 +370,7 @@ namespace Sanakan.Game.Services
             var serviceProvider = serviceScope.ServiceProvider;
             var userRepository = serviceProvider.GetRequiredService<IUserRepository>();
             var databaseUser = await userRepository.GetUserOrCreateAsync(discordUser.Id);
+            var gameDeck = databaseUser.GameDeck;
 
             if (!CheckIfUserCanBuy(shopType, databaseUser, realCost))
             {
@@ -370,11 +378,11 @@ namespace Sanakan.Game.Services
                     .ToEmbedMessage(EMType.Error).Build();
             }
 
-            if (thisItem.Item.Type.IsBoosterPack())
+            if (itemType.IsBoosterPack())
             {
                 for (var i = 0; i < itemCount; i++)
                 {
-                    var booster = thisItem.Item.Type.ToBoosterPack();
+                    var booster = itemType.ToBoosterPack();
                     if (boosterPackTitleId != 0)
                     {
                         booster.TitleId = boosterPackTitleId;
@@ -383,34 +391,37 @@ namespace Sanakan.Game.Services
                     if (booster != null)
                     {
                         booster.CardSourceFromPack = shopType.GetBoosterpackSource();
-                        databaseUser.GameDeck.BoosterPacks.Add(booster);
+                        gameDeck.BoosterPacks.Add(booster);
                     }
                 }
 
                 databaseUser.Stats.WastedPuzzlesOnCards += realCost;
             }
-            else if (thisItem.Item.Type.IsPreAssembledFigure())
+            else if (itemType.IsPreAssembledFigure())
             {
-                if (databaseUser.GameDeck.Figures.Any(x => x.PAS == thisItem.Item.Type.ToPASType()))
+                if (gameDeck.Figures.Any(x => x.PAS == itemType.ToPASType()))
                 {
                     return $"{mention} masz już taką figurkę.".ToEmbedMessage(EMType.Error).Build();
                 }
 
-                var figure = thisItem.Item.Type.ToPAFigure(_systemClock.UtcNow);
-                if (figure != null) databaseUser.GameDeck.Figures.Add(figure);
+                var figure = itemType.ToPAFigure(_systemClock.UtcNow);
+                if (figure != null)
+                {
+                    gameDeck.Figures.Add(figure);
+                }
 
                 IncreaseMoneySpentOnCards(shopType, databaseUser, realCost);
             }
             else
             {
-                var inUserItem = databaseUser.GameDeck.Items
-                    .FirstOrDefault(x => x.Type == thisItem.Item.Type
+                var inUserItem = gameDeck.Items
+                    .FirstOrDefault(x => x.Type == itemType
                         && x.Quality == thisItem.Item.Quality);
 
                 if (inUserItem == null)
                 {
-                    inUserItem = thisItem.Item.Type.ToItem(itemCount, thisItem.Item.Quality);
-                    databaseUser.GameDeck.Items.Add(inUserItem);
+                    inUserItem = itemType.ToItem(itemCount, thisItem.Item.Quality);
+                    gameDeck.Items.Add(inUserItem);
                 }
                 else
                 {
@@ -546,8 +557,16 @@ namespace Sanakan.Game.Services
             var relMax = relNew + (range * 8 / 100);
 
             var nAtk = _randomNumberGenerator.GetRandomValue(relMin, relMax + 1);
-            if (nAtk > newMax) nAtk = newMax;
-            if (nAtk < newMin) nAtk = newMin;
+
+            if (nAtk > newMax)
+            {
+                nAtk = newMax;
+            }
+
+            if (nAtk < newMin)
+            {
+                nAtk = newMin;
+            }
 
             return nAtk;
         }
@@ -567,8 +586,15 @@ namespace Sanakan.Game.Services
             var relMax = relNew + (range * 8 / 100);
 
             var nDef = _randomNumberGenerator.GetRandomValue(relMin, relMax + 1);
-            if (nDef > newMax) nDef = newMax;
-            if (nDef < newMin) nDef = newMin;
+            if (nDef > newMax)
+            {
+                nDef = newMax;
+            }
+
+            if (nDef < newMin)
+            {
+                nDef = newMin;
+            }
 
             return nDef;
         }
@@ -696,21 +722,30 @@ namespace Sanakan.Game.Services
 
         public Embed GetActiveList(IEnumerable<Card> list)
         {
+            var footer = $"MOC {list.Sum(x => x.CalculateCardPower()).ToString("F")}";
+            var stringBuilder = new StringBuilder("**Twoje aktywne karty to**:\n\n", 50);
             var embed = new EmbedBuilder()
             {
                 Color = EMType.Info.Color(),
-                Footer = new EmbedFooterBuilder().WithText($"MOC {list.Sum(x => x.CalculateCardPower()).ToString("F")}"),
-                Description = "**Twoje aktywne karty to**:\n\n",
+                Footer = new EmbedFooterBuilder().WithText(footer),
             };
 
-            foreach(var card in list)
-                embed.Description += $"**P:** {card.CardPower.ToString("F")} {card.GetString(false, false, true)}\n";
+            foreach (var card in list)
+            {
+                var cardPower = card.CardPower.ToString("F");
+                var cardInfo = card.GetString(false, false, true);
+                stringBuilder.AppendFormat("**P:** {0} {1}\n", cardPower, cardInfo);
+            }
+
+            embed.Description = stringBuilder.ToString();
 
             return embed.Build();
         }
 
         private List<ulong> _ids = new ();
+        
         public bool EventEnabled { get; set; }
+
         public List<ulong> Ids {
             get
             {
@@ -735,7 +770,7 @@ namespace Sanakan.Game.Services
             if (isNeedForUpdate)
             {
                 var charactersResult = await _shindenClient.GetAllCharactersFromAnimeAsync();
-                
+
                 if (charactersResult.Value == null)
                 {
                     return null;
@@ -893,12 +928,14 @@ namespace Sanakan.Game.Services
             }.Build();
         }
 
-        public Embed GetItemList(IUser user, List<Item> items)
+        public Embed GetItemList(IUser user, IEnumerable<Item> items)
         {
+            var description = $"{user.Mention} twoje przedmioty:\n\n{items.ToItemList().ElipseTrimToLength(1900)}";
+
             return new EmbedBuilder
             {
                 Color = EMType.Info.Color(),
-                Description = $"{user.Mention} twoje przedmioty:\n\n{items.ToItemList().ElipseTrimToLength(1900)}"
+                Description = description,
             }.Build();
         }
 
@@ -1015,14 +1052,13 @@ namespace Sanakan.Game.Services
 
             try
             {
-                if (_fileSystem.Exists(imageLocation))
-                    _fileSystem.Delete(imageLocation);
-
-                if (_fileSystem.Exists(sImageLocation))
-                    _fileSystem.Delete(sImageLocation);
-
-                if (_fileSystem.Exists(pImageLocation))
-                    _fileSystem.Delete(pImageLocation);
+                foreach (var filePath in new[] { imageLocation, sImageLocation, pImageLocation })
+                {
+                    if (_fileSystem.Exists(filePath))
+                    {
+                        _fileSystem.Delete(filePath);
+                    }
+                }
             }
             catch (Exception) {}
         }
@@ -1133,7 +1169,7 @@ namespace Sanakan.Game.Services
             IUser owner,
             bool showStats)
         {
-            string? imageUrl = null;
+            string? imageUrl;
 
             if (showStats)
             {
@@ -1434,9 +1470,6 @@ namespace Sanakan.Game.Services
             return baseExp / 60d;
         }
 
-        private TimeSpan HalfAnHour = TimeSpan.FromMinutes(30);
-        private TimeSpan Hour = TimeSpan.FromHours(1);
-
         public string EndExpedition(User user, Card card, bool showStats = false)
         {
             var items = new Dictionary<string, int>();
@@ -1693,9 +1726,9 @@ namespace Sanakan.Game.Services
             }
         }
 
-        public void SetEventIds(List<ulong> ids)
+        public void SetEventIds(IEnumerable<ulong> ids)
         {
-            
+            Ids = ids.ToList();
         }
     }
 }

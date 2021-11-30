@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using Sanakan.Common;
 
 namespace Sanakan.DAL.Models
 {
@@ -216,7 +217,7 @@ namespace Sanakan.DAL.Models
             switch (expedition)
             {
                 case ExpeditionCardType.ExtremeItemWithExp:
-                    return !FromFigure && !HasTag("ulubione");
+                    return !FromFigure && !HasTag(Tags.Favourite);
 
                 case ExpeditionCardType.NormalItemWithExp:
                     return !FromFigure;

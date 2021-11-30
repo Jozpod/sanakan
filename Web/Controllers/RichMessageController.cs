@@ -180,7 +180,8 @@ namespace Sanakan.Web.Controllers
                     }
 
                     var dmChannel = await user.GetOrCreateDMChannelAsync();
-                    var privateMessage = await dmChannel.SendMessageAsync("", embed: message.ToEmbed());
+                    var embed = message.ToEmbed();
+                    var privateMessage = await dmChannel.SendMessageAsync(embed: embed);
 
                     messageList.Add(privateMessage.Id);
                     continue;

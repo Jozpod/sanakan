@@ -19,6 +19,7 @@ namespace Sanakan.DiscordBot.Services.Builder
                 });
             });
 
+            services.AddSingleton<IEventIdsImporter, EventIdsImporter>();
             services.AddSingleton<ILandManager, LandManager>();
             services.AddSingleton<IModeratorService, ModeratorService>();
             services.AddSingleton<IProfileService, ProfileService>();

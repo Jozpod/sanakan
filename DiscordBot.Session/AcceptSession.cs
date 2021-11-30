@@ -64,7 +64,8 @@ namespace Sanakan.DiscordBot.Session
                     return;
                 }
 
-                var userMessage = await _payload.Channel.GetMessageAsync(_payload.MessageId) as IUserMessage;
+                var channel = _payload.Channel;
+                var userMessage = await channel.GetMessageAsync(_payload.MessageId) as IUserMessage;
 
                 if (userMessage == null)
                 {
@@ -101,7 +102,7 @@ namespace Sanakan.DiscordBot.Session
                 await moderatorService.NotifyAboutPenaltyAsync(_payload.User, _payload.NotifyChannel, info, "Sanakan");
 
                 var content = $"{_payload.User.Mention} został wyciszony.".ToEmbedMessage(EMType.Success).Build();
-                await _payload.Channel.SendMessageAsync("", embed: content);
+                await channel.SendMessageAsync(embed: content);
             }
             finally
             {

@@ -79,16 +79,16 @@ namespace Sanakan.DiscordBot.Modules
 
             if (response.Value == null)
             {
-                await ReplyAsync("", embed: "Nie udało się pobrać listy odcinków.".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync(embed: "Nie udało się pobrać listy odcinków.".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
-            
+
             var episodes = response.Value;
             var user = Context.User;
 
             if (episodes?.Count > 0)
             {
-                var message = await ReplyAsync("", embed: "Lista poszła na PW!".ToEmbedMessage(EMType.Success).Build());
+                var message = await ReplyAsync(embed: "Lista poszła na PW!".ToEmbedMessage(EMType.Success).Build());
 
                 try
                 {
@@ -154,7 +154,7 @@ namespace Sanakan.DiscordBot.Modules
             {
                 var content = GetResponseFromSearchCode(System.Net.HttpStatusCode.BadRequest)
                     .ToEmbedMessage(EMType.Error).Build();
-                await ReplyAsync("", embed: content);
+                await ReplyAsync(embed: content);
                 return;
             }
 
@@ -203,13 +203,13 @@ namespace Sanakan.DiscordBot.Modules
 
             if (botUser == null)
             {
-                await ReplyAsync("", embed: "Ta osoba nie ma profilu bota.".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync(embed: "Ta osoba nie ma profilu bota.".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
             if (!botUser.ShindenId.HasValue)
             {
-                await ReplyAsync("", embed: "Ta osoba nie połączyła konta bota z kontem na stronie.".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync(embed: "Ta osoba nie połączyła konta bota z kontem na stronie.".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
@@ -217,7 +217,7 @@ namespace Sanakan.DiscordBot.Modules
                 
             if (stream == null)
             {
-                await ReplyAsync("", embed: $"Brak połączenia z Shindenem!".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync(embed: $"Brak połączenia z Shindenem!".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
@@ -235,11 +235,11 @@ namespace Sanakan.DiscordBot.Modules
             switch (ParseUrlToShindenId(url, out var shindenId))
             {
                 case UrlParsingError.InvalidUrl:
-                    await ReplyAsync("", embed: "Wygląda na to, że podałeś niepoprawny link.".ToEmbedMessage(EMType.Error).Build());
+                    await ReplyAsync(embed: "Wygląda na to, że podałeś niepoprawny link.".ToEmbedMessage(EMType.Error).Build());
                     return;
 
                 case UrlParsingError.InvalidUrlForum:
-                    await ReplyAsync("", embed: "Wygląda na to, że podałeś link do forum zamiast strony.".ToEmbedMessage(EMType.Error).Build());
+                    await ReplyAsync(embed: "Wygląda na to, że podałeś link do forum zamiast strony.".ToEmbedMessage(EMType.Error).Build());
                     return;
 
                 default:
@@ -251,8 +251,8 @@ namespace Sanakan.DiscordBot.Modules
 
             if (userResult.Value == null)
             {
-                await ReplyAsync("", embed: $"Wystapil blad podczas polaczenia konta".ToEmbedMessage(EMType.Error).Build());
-                //await ReplyAsync("", embed: $"Brak połączenia z Shindenem! ({response.Code})".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync(embed: $"Wystapil blad podczas polaczenia konta".ToEmbedMessage(EMType.Error).Build());
+                //await ReplyAsync(embed: $"Brak połączenia z Shindenem! ({response.Code})".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
@@ -261,13 +261,13 @@ namespace Sanakan.DiscordBot.Modules
 
             if (!user.Name.Equals(userNameInDiscord))
             {
-                await ReplyAsync("", embed: "Wykryto próbę podszycia się. Nieładnie!".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync(embed: "Wykryto próbę podszycia się. Nieładnie!".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
             if (await _userRepository.ExistsByShindenIdAsync(shindenId))
             {
-                await ReplyAsync("", embed: "Wygląda na to, że ktoś już połączył się z tym kontem.".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync(embed: "Wygląda na to, że ktoś już połączył się z tym kontem.".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
@@ -278,7 +278,7 @@ namespace Sanakan.DiscordBot.Modules
 
             _cacheManager.ExpireTag(CacheKeys.User(botuser.Id));
 
-            await ReplyAsync("", embed: "Konta zostały połączone.".ToEmbedMessage(EMType.Success).Build());
+            await ReplyAsync(embed: "Konta zostały połączone.".ToEmbedMessage(EMType.Success).Build());
             return;
             
         }

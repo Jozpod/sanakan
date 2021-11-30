@@ -167,7 +167,7 @@ namespace Sanakan.DiscordBot.Modules
 
             if (guild == null)
             {
-                await ReplyAsync("", embed: Strings.CanExecuteOnlyOnServer.ToEmbedMessage(EMType.Info).Build());
+                await ReplyAsync(embed: Strings.CanExecuteOnlyOnServer.ToEmbedMessage(EMType.Info).Build());
                 return;
             }
 

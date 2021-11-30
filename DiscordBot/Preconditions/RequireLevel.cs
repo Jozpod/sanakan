@@ -36,16 +36,21 @@ namespace Sanakan.Preconditions
                 return PreconditionResult.FromSuccess();
             }
 
-            var gConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
+            var guildConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
 
-            if (gConfig != null)
+            if (guildConfig != null)
             {
-                var role = guild.GetRole(gConfig.AdminRoleId.Value);
-                if (role != null)
+                var adminRole = guildConfig.AdminRoleId;
+
+                if (adminRole.HasValue)
                 {
-                    if (user.RoleIds.Any(id => id == role.Id))
+                    var role = guild.GetRole(adminRole.Value);
+                    if (role != null)
                     {
-                        return PreconditionResult.FromSuccess();
+                        if (user.RoleIds.Any(id => id == role.Id))
+                        {
+                            return PreconditionResult.FromSuccess();
+                        }
                     }
                 }
             }

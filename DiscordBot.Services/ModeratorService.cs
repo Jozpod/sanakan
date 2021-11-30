@@ -455,7 +455,9 @@ namespace Sanakan.DiscordBot.Services
             };
 
             if (channel != null)
-                await channel.SendMessageAsync("", embed: embed.Build());
+            {
+                await channel.SendMessageAsync(embed: embed.Build());
+            }
 
             try
             {

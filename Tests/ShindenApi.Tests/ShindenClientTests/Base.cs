@@ -22,7 +22,7 @@ namespace Sanakan.ShindenApi.Tests
         protected readonly Mock<IOptionsMonitor<ShindenApiConfiguration>> _options = new(MockBehavior.Strict);
         protected readonly Mock<ISystemClock> _systemClockMock = new(MockBehavior.Strict);
         protected readonly Mock<HttpClientHandler> _httpClientHandlerMock = new(MockBehavior.Strict);
-        private readonly Assembly _assembly;
+        private readonly Assembly _assembly = typeof(Base).Assembly;
         private const string _resourcePath = "Sanakan.ShindenApi.Tests.TestData.{0}";
         protected HttpClient _httpClient;
 
@@ -49,7 +49,6 @@ namespace Sanakan.ShindenApi.Tests
             _httpClientHandlerMock.Object.CookieContainer = _cookieContainer;
             _httpClient = new HttpClient(_httpClientHandlerMock.Object);
             _httpClient.BaseAddress = new Uri("https://test.com");
-            _assembly = Assembly.GetExecutingAssembly();
 
             _options
                 .Setup(pr => pr.CurrentValue)

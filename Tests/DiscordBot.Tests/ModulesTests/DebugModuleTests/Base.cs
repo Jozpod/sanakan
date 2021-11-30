@@ -21,6 +21,7 @@ namespace DiscordBot.ModulesTests.DebugModuleTests
     public abstract class Base : TestBase
     {
         protected readonly DebugModule _module;
+        protected readonly Mock<IEventIdsImporter> eventIdsImporterMock = new(MockBehavior.Strict);
         protected readonly Mock<IFileSystem> _fileSystemMock = new(MockBehavior.Strict);
         protected readonly Mock<IDiscordClientAccessor> _discordClientAccessorMock = new(MockBehavior.Strict);
         protected readonly Mock<IShindenClient> _shindenClientMock = new(MockBehavior.Strict);
@@ -54,6 +55,7 @@ namespace DiscordBot.ModulesTests.DebugModuleTests
                 .Returns(new SanakanConfiguration());
 
             _module = new(
+                eventIdsImporterMock.Object,
                 _fileSystemMock.Object,
                 _discordClientAccessorMock.Object,
                 _shindenClientMock.Object,
@@ -69,10 +71,6 @@ namespace DiscordBot.ModulesTests.DebugModuleTests
                 _taskManagerMock.Object,
                 serviceScopeFactory);
             Initialize(_module);
-            //var discordSocketClientMock = new Mock<DiscordSocketClient>(MockBehavior.Strict);
-            //var socketGlobalUser = CreateSocketGlobalUser(discordSocketClientMock.Object, 1);
-            //var socketGuild = CreateSocketGuild(discordSocketClientMock.Object, 1);
-            //var socketGuildUser = CreateSocketGuildUser(socketGuild, socketGlobalUser);
         }
     }
 }

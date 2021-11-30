@@ -111,7 +111,9 @@ namespace Sanakan.DAL.Repositories
                 if (filter.FilterTagsMethod == FilterTagsMethodType.And)
                 {
                     foreach (var iTag in filter.IncludeTags)
+                    {
                         result = result.Where(x => x.HasTag(iTag)).ToList();
+                    }
                 }
                 else
                 {

@@ -260,7 +260,7 @@ namespace Sanakan.Web.Controllers
             var waifu = waifuCard == null ? null : new CardFinalView(waifuCard);
 
             var gallery = gameDeck.Cards
-                .Where(x => x.HasTag("galeria"))
+                .Where(x => x.HasTag(Tags.Gallery))
                 .Take(gameDeck.CardsInGalleryCount)
                 .OrderBy(x => x.Rarity)
                 .ThenByDescending(x => x.Quality).ToView();

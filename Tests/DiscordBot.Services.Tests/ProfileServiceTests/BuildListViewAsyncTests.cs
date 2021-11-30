@@ -7,11 +7,12 @@ using Sanakan.Game.Models;
 using Sanakan.DAL.Models;
 using System;
 using Sanakan.DiscordBot.Services.Abstractions;
+using System.Collections.Generic;
 
 namespace DiscordBot.ServicesTests.ProfileServiceTests
 {
     /// <summary>
-    /// Defines tests for <see cref="IProfileService.BuildListViewAsync(System.Collections.Generic.IEnumerable{User}, TopType, IGuild)"/> method.
+    /// Defines tests for <see cref="IProfileService.BuildListViewAsync(IEnumerable{User}, TopType, IGuild)"/> method.
     /// </summary>
     [TestClass]
     public class BuildListViewAsyncTests : Base

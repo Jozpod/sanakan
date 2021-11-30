@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -299,12 +300,21 @@ namespace Sanakan.Web.Controllers
                 var oldUsers = await _userRepository
                     .GetByShindenIdExcludeDiscordIdAsync(shindenUser.Id.Value, model.DiscordUserId);
 
+                var stringBuilder = new StringBuilder();
+
+                stringBuilder.AppendFormat(
+                    "Potencjalne multikonto:\nDID: {0}\nSID: {1}\nSN: {2}\n\noDID: ",
+                    model.DiscordUserId,
+                    shindenUser.Id.Value,
+                    shindenUser.Name);
+
                 if (oldUsers.Any())
                 {
                     var rmcs = _config
                         .CurrentValue
                         .RMConfig
                         .Where(x => x.Type == RichMessageType.AdminNotify);
+
                     foreach (var rmc in rmcs)
                     {
                         var guild = await client.GetGuildAsync(rmc.GuildId);
@@ -314,18 +324,24 @@ namespace Sanakan.Web.Controllers
                         }
 
                         var channel = await guild.GetTextChannelAsync(rmc.ChannelId);
+
                         if (channel == null)
                         {
                             continue;
                         }
 
+                        foreach (var user in oldUsers)
+                        {
+                            stringBuilder.AppendFormat(",{0}", user.Id);
+                        }
+
                         var users = string.Join(",", oldUsers.Select(x => x.Id));
 
-                        var content = ($"Potencjalne multikonto:\nDID: {model.DiscordUserId}\nSID: {shindenUser.Id.Value}\n"
-                            + $"SN: {shindenUser.Name}\n\noDID: {users}").ElipseTrimToLength(2000)
+                        var content = stringBuilder.ToString()
+                            .ElipseTrimToLength(2000)
                             .ToEmbedMessage(EMType.Error).Build();
 
-                        await channel.SendMessageAsync("", embed: content);
+                        await channel.SendMessageAsync(embed: content);
                     }
                 }
 

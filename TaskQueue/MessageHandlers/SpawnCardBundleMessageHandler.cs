@@ -72,14 +72,13 @@ namespace Sanakan.TaskQueue.MessageHandlers
 
             var content = $"{message.Mention} otrzymał pakiet losowych kart.".ToEmbedMessage(EMType.Bot).Build();
 
-            await message.MessageChannel
-                .SendMessageAsync("", embed: content);
+            await message.MessageChannel.SendMessageAsync(embed: content);
 
             var record = new UserAnalytics
             {
                 Value = 1,
                 UserId = message.DiscordUserId,
-                MeasuredOn = _systemClock.UtcNow,
+                MeasuredOn = utcNow,
                 GuildId = message.GuildId ?? 0,
                 Type = UserAnalyticsEventType.Pack
             };

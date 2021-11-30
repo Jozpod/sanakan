@@ -86,7 +86,7 @@ namespace Sanakan.DAL.Models
                 ReleasedCards = 0,
                 TurnamentsWon = 0,
                 UpgradedToSSS = 0,
-                UnleashedCards = 0,
+                UnleashedCardsCount = 0,
                 SacrificedCardsCount = 0,
                 DestroyedCardsCount = 0,
                 WastedTcOnCards = 0,

@@ -26,37 +26,36 @@ namespace Sanakan.Game.Services.Abstractions
 
         string EndExpedition(User user, Card card, bool showStats = false);
 
-        int GetDefenceAfterLevelUp(Rarity oldRarity, int oldDef);
+        int GetDefenceAfterLevelUp(Rarity oldRarity, int oldDefence);
 
-        int GetAttactAfterLevelUp(Rarity oldRarity, int oldAtk);
+        int GetAttactAfterLevelUp(Rarity oldRarity, int oldAttack);
 
         bool EventState { get; set; }
 
-        void SetEventIds(List<ulong> ids);
+        void SetEventIds(IEnumerable<ulong> ids);
 
         Task<CharacterInfo> GetRandomCharacterAsync();
-        
-        Embed GetItemList(IUser user, List<Item> items);
+
+        Embed GetItemList(IUser user, IEnumerable<Item> items);
 
         Task<string> GetWaifuProfileImageUrlAsync(Card card, IMessageChannel trashCh);
-        
-        
+
         List<Card> GetListInRightOrder(IEnumerable<Card> list, HaremType type, string tag);
 
         Task<List<Card>> OpenBoosterPackAsync(ulong? discordUserId, BoosterPack pack);
-        
+
         Task<string> GetSafariViewAsync(SafariImage info, Card card, IMessageChannel trashChannel);
-        
+
         Task<string> SendAndGetSafariImageUrlAsync(SafariImage info, IMessageChannel trashChannel); // GetSafariViewAsync
 
         Task<Embed> BuildCardImageAsync(Card card, ITextChannel trashChannel, IUser owner, bool showStats);
-        
+
         Task<Embed> BuildCardViewAsync(Card card, ITextChannel trashChannel, IUser owner);
         
         FightHistory MakeFightAsync(List<PlayerInfo> players, bool oneCard = false);
         
         string GetDeathLog(FightHistory fight, List<PlayerInfo> players);
-        
+
         Embed GetShopView(ItemWithCost[] items, string name = "Sklepik", string currency = "TC");
 
         Task<IEnumerable<Embed>> GetWaifuFromCharacterSearchResult(
@@ -64,23 +63,24 @@ namespace Sanakan.Game.Services.Abstractions
             IEnumerable<Card> cards,
             IDiscordClient client,
             bool mention);
-        
+
         Task<IEnumerable<Embed>> GetWaifuFromCharacterTitleSearchResult(
             IEnumerable<Card> cards,
             IDiscordClient client,
             bool mention);
-        
+
         Task<Embed> ExecuteShopAsync(
             ShopType type,
             IUser discordUser,
             int selectedItem,
-            string specialCmd);
+            string specialCommand);
+
         Task<SafariImage?> GetRandomSarafiImage();
-        
+
         void DeleteCardImageIfExist(Card card);
-        
+
         Task<string> GenerateAndSaveCardAsync(Card card, CardImageType type = CardImageType.Normal);
-        
+
         Task<IEnumerable<Embed>> GetContentOfWishlist(
             List<ulong> cardsId,
             List<ulong> charactersId,

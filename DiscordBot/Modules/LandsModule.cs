@@ -43,7 +43,7 @@ namespace Sanakan.DiscordBot.Modules
         }
 
         [Command("ludność", RunMode = RunMode.Async)]
-        [Alias("ludnosc", "ludnośc", "ludnosć", "people")]
+        [Alias("ludnosc", "ludnośc", "ludnosć", "people", "population")]
         [Summary("wyświetla użytkowników należących do krainy")]
         [Remarks("Kotleciki")]
         public async Task ShowPeopleAsync(
@@ -55,7 +55,7 @@ namespace Sanakan.DiscordBot.Modules
 
             if (user == null)
             {
-                await ReplyAsync("", embed: "Nie odnaleziono uzytkownika!".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync(embed: "Nie odnaleziono uzytkownika!".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
@@ -63,13 +63,13 @@ namespace Sanakan.DiscordBot.Modules
 
             if (land == null)
             {
-                await ReplyAsync("", embed: "Nie zarządzasz żadną krainą.".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync(embed: "Nie zarządzasz żadną krainą.".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
             foreach (var embed in await _landManager.GetMembersList(land, Context.Guild))
             {
-                await ReplyAsync("", embed: embed);
+                await ReplyAsync(embed: embed);
                 await _taskManager.Delay(TimeSpan.FromSeconds(2));
             }
         }
@@ -88,7 +88,7 @@ namespace Sanakan.DiscordBot.Modules
 
             if(user == null)
             {
-                await ReplyAsync("", embed: "Nie odnaleziono uzytkownika!".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync(embed: "Nie odnaleziono uzytkownika!".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
@@ -96,7 +96,7 @@ namespace Sanakan.DiscordBot.Modules
 
             if (land == null)
             {
-                await ReplyAsync("", embed: "Nie zarządzasz żadną krainą.".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync(embed: "Nie zarządzasz żadną krainą.".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
@@ -104,7 +104,7 @@ namespace Sanakan.DiscordBot.Modules
 
             if (role == null)
             {
-                await ReplyAsync("", embed: "Nie odnaleziono roli członka!".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync(embed: "Nie odnaleziono roli członka!".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
@@ -114,7 +114,7 @@ namespace Sanakan.DiscordBot.Modules
             }
 
             var content = $"{userToAdd.Mention} dołącza do `{land.Name}`.".ToEmbedMessage(EMType.Success).Build();
-            await ReplyAsync("", embed: content);
+            await ReplyAsync(embed: content);
         }
 
         [Command("kraina usuń", RunMode = RunMode.Async)]
@@ -132,7 +132,7 @@ namespace Sanakan.DiscordBot.Modules
 
             if (user == null)
             {
-                await ReplyAsync("", embed: "Nie odnaleziono uzytkownika!".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync(embed: "Nie odnaleziono uzytkownika!".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
@@ -140,14 +140,14 @@ namespace Sanakan.DiscordBot.Modules
 
             if (land == null)
             {
-                await ReplyAsync("", embed: "Nie zarządzasz żadną krainą.".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync(embed: "Nie zarządzasz żadną krainą.".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
             var role = guild.GetRole(land.UnderlingId);
             if (role == null)
             {
-                await ReplyAsync("", embed: "Nie odnaleziono roli członka!".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync(embed: "Nie odnaleziono roli członka!".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
@@ -157,7 +157,7 @@ namespace Sanakan.DiscordBot.Modules
             }
 
             var content = $"{userToRemove.Mention} odchodzi z `{land.Name}`.".ToEmbedMessage(EMType.Success).Build();
-            await ReplyAsync("", embed: content);
+            await ReplyAsync(embed: content);
         }
     }
 }

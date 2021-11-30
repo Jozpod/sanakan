@@ -9,12 +9,12 @@ namespace Sanakan.Extensions
 
         private static readonly StringBuilder _stringBuilder = new (200);
 
-        public static string ToItemList(this IEnumerable<Item> list)
+        public static string ToItemList(this IEnumerable<Item> itemList)
         {
             _stringBuilder.Clear();
 
             var index = 0;
-            foreach (var item in list)
+            foreach (var item in itemList)
             {
                 _stringBuilder.AppendFormat("**[{0}]** {1} x{2}\n", index + 1, item.Name, item.Count);
                 index++;

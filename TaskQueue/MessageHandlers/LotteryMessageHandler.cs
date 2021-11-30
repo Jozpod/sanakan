@@ -44,7 +44,7 @@ namespace Sanakan.TaskQueue.MessageHandlers
             }
 
             var loteryCards = user.GameDeck.Cards;
-            
+
             if (!loteryCards.Any())
             {
                 await userMessage.ModifyAsync(x => x.Embed = "Nie odnaleziono kart do rozdania!".ToEmbedMessage(EMType.Error).Build());
@@ -112,7 +112,7 @@ namespace Sanakan.TaskQueue.MessageHandlers
 
                 if (dmChannel != null)
                 {
-                    await dmChannel.SendMessageAsync("", embed: privateEmbed.Build());
+                    await dmChannel.SendMessageAsync(embed: privateEmbed.Build());
                 }
             }
             catch (Exception) { }

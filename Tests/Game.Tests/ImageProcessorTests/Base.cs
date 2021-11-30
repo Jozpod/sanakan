@@ -44,8 +44,8 @@ namespace Sanakan.Game.Tests
             serviceCollection.AddGameServices();
             serviceCollection.AddFileSystem();
             serviceCollection.AddConfiguration(configurationRoot);
-            serviceCollection.AddResourceManager();
-            serviceCollection.AddFontResources();
+            serviceCollection.AddResourceManager()
+                .AddFontResources();
             serviceCollection.AddSingleton(httpClient);
             serviceCollection.AddSingleton(_httpClientFactoryMock.Object);
             var serviceProvider = serviceCollection.BuildServiceProvider();

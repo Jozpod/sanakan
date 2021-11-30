@@ -22,6 +22,7 @@ using Sanakan.Preconditions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace Sanakan.DiscordBot.Modules
@@ -82,7 +83,7 @@ namespace Sanakan.DiscordBot.Modules
 
             if (botuser == null)
             {
-                await ReplyAsync("", embed: "Ta osoba nie ma profilu bota.".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync(embed: "Ta osoba nie ma profilu bota.".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
@@ -102,7 +103,7 @@ namespace Sanakan.DiscordBot.Modules
                 .ToEmbedMessage(EMType.Info)
                 .Build();
 
-            await ReplyAsync("", embed: content);
+            await ReplyAsync(embed: content);
         }
 
         [Command("subskrypcje", RunMode = RunMode.Async)]
@@ -111,23 +112,28 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks(""), RequireCommandChannel]
         public async Task ShowSubsAsync()
         {
-            var botuser = await _userRepository.GetCachedFullUserAsync(Context.User.Id);
-            var timeStatuses = botuser.TimeStatuses.Where(x => x.Type.IsSubType());
+            var databaseUser = await _userRepository.GetCachedFullUserAsync(Context.User.Id);
+            var timeStatuses = databaseUser.TimeStatuses.Where(x => x.Type.IsSubType());
 
-            string subs = "brak";
+            var stringBuilder = new StringBuilder($"**Subskrypcje** {Context.User.Mention}:\n\n", 50);
+            var utcNow = _systemClock.UtcNow;
 
             if (timeStatuses.Any())
             {
-                subs = "";
-                var utcNow = _systemClock.UtcNow;
                 foreach (var timeStatus in timeStatuses)
                 {
-                    subs += $"{timeStatus.ToView(utcNow)}\n";
+                    stringBuilder.AppendFormat("{0}\n", timeStatus.ToView(utcNow));
                 }
             }
+            else
+            {
+                stringBuilder.Append("brak");
+            }
 
-            var content = $"**Subskrypcje** {Context.User.Mention}:\n\n{subs.ElipseTrimToLength(1950)}".ToEmbedMessage(EMType.Info).Build();
-            await ReplyAsync("", embed: content);
+            var embed = stringBuilder.ToString().ElipseTrimToLength(1950)
+                .ToEmbedMessage(EMType.Info)
+                .Build();
+            await ReplyAsync(embed: embed);
         }
 
         [Command("przyznaj role", RunMode = RunMode.Async)]
@@ -137,7 +143,7 @@ namespace Sanakan.DiscordBot.Modules
         public async Task AddRoleAsync([Summary("nazwa roli z wypisz role")]string name)
         {
             var user = Context.User as IGuildUser;
-            
+
             if (user == null)
             {
                 return;
@@ -149,7 +155,7 @@ namespace Sanakan.DiscordBot.Modules
 
             if (gRole == null)
             {
-                await ReplyAsync("", embed: $"Nie odnaleziono roli `{name}`".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync(embed: $"Nie odnaleziono roli `{name}`".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
@@ -159,7 +165,7 @@ namespace Sanakan.DiscordBot.Modules
             }
 
             var content = $"{user.Mention} przyznano role: `{name}`".ToEmbedMessage(EMType.Success).Build();
-            await ReplyAsync("", embed: content);
+            await ReplyAsync(embed: content);
         }
 
         [Command("zdejmij role", RunMode = RunMode.Async)]
@@ -181,7 +187,7 @@ namespace Sanakan.DiscordBot.Modules
 
             if (guildRole == null)
             {
-                await ReplyAsync("", embed: $"Nie odnaleziono roli `{name}`".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync(embed: $"Nie odnaleziono roli `{name}`".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
@@ -191,7 +197,7 @@ namespace Sanakan.DiscordBot.Modules
             }
 
             var content = $"{user.Mention} zdjęto role: `{name}`".ToEmbedMessage(EMType.Success).Build();
-            await ReplyAsync("", embed: content);
+            await ReplyAsync(embed: content);
         }
 
         [Command("wypisz role", RunMode = RunMode.Async)]
@@ -199,18 +205,19 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks(""), RequireCommandChannel]
         public async Task ShowRolesAsync()
         {
-            var config = await _guildConfigRepository.GetCachedGuildFullConfigAsync(Context.Guild.Id);
+            var guild = Context.Guild;
+            var config = await _guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
 
             if (config.SelfRoles.Count < 1)
             {
-                await ReplyAsync("", embed: "Nie odnaleziono roli.".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync(embed: "Nie odnaleziono roli.".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
             string stringRole = "";
             foreach (var selfRole in config.SelfRoles)
             {
-                var gRole = Context.Guild.GetRole(selfRole?.Role ?? 0);
+                var gRole = guild.GetRole(selfRole?.Role ?? 0);
                 stringRole += $" `{selfRole.Name}` ";
             }
 
@@ -235,7 +242,7 @@ namespace Sanakan.DiscordBot.Modules
 
             if (databaseUser == null)
             {
-                await ReplyAsync("", embed: "Ta osoba nie ma profilu bota.".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync(embed: "Ta osoba nie ma profilu bota.".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
@@ -266,7 +273,7 @@ namespace Sanakan.DiscordBot.Modules
                 Description = summary.ElipseTrimToLength(1950),
             };
 
-            await ReplyAsync("", embed: embed.Build());
+            await ReplyAsync(embed: embed.Build());
         }
 
         [Command("idp", RunMode = RunMode.Async)]
@@ -277,23 +284,23 @@ namespace Sanakan.DiscordBot.Modules
             [Summary("użytkownik(opcjonalne)")]IUser? socketUser = null)
         {
             var effectiveUser = socketUser ?? Context.User;
-            
+
             if (effectiveUser == null)
             {
                 return;
             }
 
-            var botuser = await _userRepository.GetByDiscordIdAsync(effectiveUser.Id);
+            var databaseUser = await _userRepository.GetByDiscordIdAsync(effectiveUser.Id);
 
-            if (botuser == null)
+            if (databaseUser == null)
             {
-                await ReplyAsync("", embed: "Ta osoba nie ma profilu bota.".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync(embed: "Ta osoba nie ma profilu bota.".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
-            var content = $"{effectiveUser.Mention} potrzebuje **{botuser.GetRemainingExp(botuser.Level + 1)}** punktów doświadczenia do następnego poziomu."
+            var embed = $"{effectiveUser.Mention} potrzebuje **{databaseUser.GetRemainingExp(databaseUser.Level + 1)}** punktów doświadczenia do następnego poziomu."
                 .ToEmbedMessage(EMType.Info).Build();
-            await ReplyAsync("", embed: content);
+            await ReplyAsync(embed: embed);
         }
 
         [Command("topka", RunMode = RunMode.Async)]
@@ -312,7 +319,7 @@ namespace Sanakan.DiscordBot.Modules
             var session = new ListSession<string>(discordUserId, _systemClock.UtcNow, payload, SessionExecuteCondition.ReactionAdded);
             _sessionManager.RemoveIfExists<ListSession<string>>(discordUserId);
 
-            var building = await ReplyAsync("", embed: $"🔨 Trwa budowanie topki...".ToEmbedMessage(EMType.Bot).Build());
+            var building = await ReplyAsync(embed: $"🔨 Trwa budowanie topki...".ToEmbedMessage(EMType.Bot).Build());
             var users = await _userRepository.GetCachedAllUsersAsync();
             var topUsers = _profileService.GetTopUsers(users, topType, _systemClock.UtcNow);
             payload.ListItems = await _profileService.BuildListViewAsync(topUsers, topType, Context.Guild);
@@ -324,7 +331,7 @@ namespace Sanakan.DiscordBot.Modules
             };
 
             await building.DeleteAsync();
-            var message = await ReplyAsync("", embed: session.BuildPage(0));
+            var message = await ReplyAsync(embed: session.BuildPage(0));
             await message.AddReactionsAsync(new[] {
                 Emojis.LeftwardsArrow,
                 Emojis.RightwardsArrow,
@@ -352,7 +359,7 @@ namespace Sanakan.DiscordBot.Modules
             var content = $"Podgląd waifu w profilu {Context.User.Mention} został {result}."
                 .ToEmbedMessage(EMType.Success).Build();
 
-            await ReplyAsync("", embed: content);
+            await ReplyAsync(embed: content);
         }
 
         [Command("profil", RunMode = RunMode.Async)]
@@ -370,21 +377,22 @@ namespace Sanakan.DiscordBot.Modules
             }
 
             var allUsers = await _userRepository.GetCachedAllUsersLiteAsync();
-            var botUser = allUsers.FirstOrDefault(x => x.Id == user.Id);
+            var databaseUser = allUsers.FirstOrDefault(x => x.Id == user.Id);
 
-            if (botUser == null)
+            if (databaseUser == null)
             {
-                await ReplyAsync("", embed: "Ta osoba nie ma profilu bota.".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync(embed: "Ta osoba nie ma profilu bota.".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
-            botUser.GameDeck = await _gameDeckRepository.GetCachedUserGameDeckAsync(user.Id);
+            databaseUser.GameDeck = await _gameDeckRepository.GetCachedUserGameDeckAsync(user.Id);
             var topPosition = allUsers
                 .OrderByDescending(x => x.ExperienceCount)
                 .ToList()
-                .IndexOf(botUser) + 1;
+                .IndexOf(databaseUser) + 1;
+
             using var stream = await _profileService
-                .GetProfileImageAsync(user, botUser, topPosition);
+                .GetProfileImageAsync(user, databaseUser, topPosition);
 
             await Context.Channel.SendFileAsync(stream, $"{user.Id}.png");
         }
@@ -396,9 +404,9 @@ namespace Sanakan.DiscordBot.Modules
         public async Task ShowUserQuestsProgressAsync(
             [Summary("czy odebrać nagrody?")]bool claimGifts = false)
         {
-            var botuser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
-            var weeklyQuests = botuser.CreateOrGetAllWeeklyQuests();
-            var dailyQuests = botuser.CreateOrGetAllDailyQuests();
+            var databaseUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
+            var weeklyQuests = databaseUser.CreateOrGetAllWeeklyQuests();
+            var dailyQuests = databaseUser.CreateOrGetAllDailyQuests();
             var utcNow = _systemClock.UtcNow;
             
             if (claimGifts)
@@ -409,14 +417,14 @@ namespace Sanakan.DiscordBot.Modules
                 {
                     if (dailyQuest.CanClaim(utcNow))
                     {
-                        dailyQuest.Claim(botuser);
+                        dailyQuest.Claim(databaseUser);
                         rewards.Add(dailyQuest.Type.GetRewardString());
                     }
                 }
 
                 if (!allClaimedBefore && dailyQuests.Count(x => x.IsClaimed(utcNow)) == dailyQuests.Count)
                 {
-                    botuser.AcCount += 10;
+                    databaseUser.AcCount += 10;
                     rewards.Add("10 AC");
                 }
 
@@ -424,21 +432,21 @@ namespace Sanakan.DiscordBot.Modules
                 {
                     if (weeklyQuest.CanClaim(utcNow))
                     {
-                        weeklyQuest.Claim(botuser);
+                        weeklyQuest.Claim(databaseUser);
                         rewards.Add(weeklyQuest.Type.GetRewardString());
                     }
                 }
 
                 if (rewards.Any())
                 {
-                    _cacheManager.ExpireTag(CacheKeys.User(botuser.Id), CacheKeys.Users);
+                    _cacheManager.ExpireTag(CacheKeys.User(databaseUser.Id), CacheKeys.Users);
 
-                    await ReplyAsync("", embed: $"**Odebrane nagrody:**\n\n{string.Join("\n", rewards)}".ToEmbedMessage(EMType.Success).WithUser(Context.User).Build());
+                    await ReplyAsync(embed: $"**Odebrane nagrody:**\n\n{string.Join("\n", rewards)}".ToEmbedMessage(EMType.Success).WithUser(Context.User).Build());
                     await _userRepository.SaveChangesAsync();
                     return;
                 }
 
-                await ReplyAsync("", embed: "Nie masz nic do odebrania.".ToEmbedMessage(EMType.Error).WithUser(Context.User).Build());
+                await ReplyAsync(embed: "Nie masz nic do odebrania.".ToEmbedMessage(EMType.Error).WithUser(Context.User).Build());
                 return;
             }
 
@@ -451,7 +459,7 @@ namespace Sanakan.DiscordBot.Modules
             var content = string.Format(Strings.UserQuestsProgress, parameters)
                 .ToEmbedMessage(EMType.Bot)
                 .WithUser(Context.User).Build();
-            await ReplyAsync("", embed: content);
+            await ReplyAsync(embed: content);
         }
 
         [Command("styl")]
@@ -470,12 +478,12 @@ namespace Sanakan.DiscordBot.Modules
 
             if (botuser.ScCount < scCost && currency == SCurrency.Sc)
             {
-                await ReplyAsync("", embed: $"{mention} nie posiadasz wystarczającej liczby SC!".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync(embed: $"{mention} nie posiadasz wystarczającej liczby SC!".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
             if (botuser.TcCount < tcCost && currency == SCurrency.Tc)
             {
-                await ReplyAsync("", embed: $"{mention} nie posiadasz wystarczającej liczby TC!".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync(embed: $"{mention} nie posiadasz wystarczającej liczby TC!".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
@@ -492,10 +500,10 @@ namespace Sanakan.DiscordBot.Modules
                     }
                     else if (saveResult == SaveResult.BadUrl)
                     {
-                        await ReplyAsync("", embed: "Nie wykryto obrazka! Upewnij się, że podałeś poprawny adres!".ToEmbedMessage(EMType.Error).Build());
+                        await ReplyAsync(embed: "Nie wykryto obrazka! Upewnij się, że podałeś poprawny adres!".ToEmbedMessage(EMType.Error).Build());
                         return;
                     }
-                    await ReplyAsync("", embed: "Coś poszło nie tak, prawdopodobnie nie mam uprawnień do zapisu!".ToEmbedMessage(EMType.Error).Build());
+                    await ReplyAsync(embed: "Coś poszło nie tak, prawdopodobnie nie mam uprawnień do zapisu!".ToEmbedMessage(EMType.Error).Build());
                     return;
 
                 default:
@@ -517,7 +525,7 @@ namespace Sanakan.DiscordBot.Modules
             _cacheManager.ExpireTag(CacheKeys.User(botuser.Id), CacheKeys.Users);
 
             var content = $"Zmieniono styl profilu użytkownika: {mention}!".ToEmbedMessage(EMType.Success).Build();
-            await ReplyAsync("", embed: content);
+            await ReplyAsync(embed: content);
         }
 
         [Command("tło")]
@@ -535,12 +543,12 @@ namespace Sanakan.DiscordBot.Modules
             var botuser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
             if (botuser.ScCount < scCost && currency == SCurrency.Sc)
             {
-                await ReplyAsync("", embed: $"{mention} nie posiadasz wystarczającej liczby SC!".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync(embed: $"{mention} nie posiadasz wystarczającej liczby SC!".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
             if (botuser.TcCount < tcCost && currency == SCurrency.Tc)
             {
-                await ReplyAsync("", embed: $"{mention} nie posiadasz wystarczającej liczby TC!".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync(embed: $"{mention} nie posiadasz wystarczającej liczby TC!".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
@@ -553,12 +561,12 @@ namespace Sanakan.DiscordBot.Modules
             }
             else if (saveResult == SaveResult.BadUrl)
             {
-                await ReplyAsync("", embed: "Nie wykryto obrazka! Upewnij się, że podałeś poprawny adres!".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync(embed: "Nie wykryto obrazka! Upewnij się, że podałeś poprawny adres!".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
             else
             {
-                await ReplyAsync("", embed: "Coś poszło nie tak, prawdopodobnie nie mam uprawnień do zapisu!".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync(embed: "Coś poszło nie tak, prawdopodobnie nie mam uprawnień do zapisu!".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
@@ -576,7 +584,7 @@ namespace Sanakan.DiscordBot.Modules
             _cacheManager.ExpireTag(CacheKeys.User(botuser.Id), CacheKeys.Users);
 
             var content = $"Zmieniono tło profilu użytkownika: {mention}!".ToEmbedMessage(EMType.Success).Build();
-            await ReplyAsync("", embed: content);
+            await ReplyAsync(embed: content);
         }
 
         [Command("globalki")]
@@ -593,31 +601,33 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            var botuser = await _userRepository.GetUserOrCreateAsync(user.Id);
-            if (botuser.TcCount < cost)
+            var databaseUser = await _userRepository.GetUserOrCreateAsync(user.Id);
+            if (databaseUser.TcCount < cost)
             {
-                await ReplyAsync("", embed: $"{user.Mention} nie posiadasz wystarczającej liczby TC!".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync(embed: $"{user.Mention} nie posiadasz wystarczającej liczby TC!".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
-            var gConfig = await _guildConfigRepository.GetCachedGuildFullConfigAsync(Context.Guild.Id);
-            var gRole = Context.Guild.GetRole(gConfig.GlobalEmotesRoleId);
+            var guild = Context.Guild;
+            var guildConfig = await _guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
+            var gRole = guild.GetRole(guildConfig.GlobalEmotesRoleId);
+
             if (gRole == null)
             {
-                await ReplyAsync("", embed: "Serwer nie ma ustawionej roli globalnych emotek.".ToEmbedMessage(EMType.Bot).Build());
+                await ReplyAsync(embed: "Serwer nie ma ustawionej roli globalnych emotek.".ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
 
-            var guildid = Context.Guild.Id;
+            var guildid = guild.Id;
 
-            var global = botuser.TimeStatuses
+            var global = databaseUser.TimeStatuses
                 .FirstOrDefault(x => x.Type == StatusType.Globals 
                     && x.GuildId == guildid);
 
             if (global == null)
             {
                 global = new TimeStatus(StatusType.Globals, guildid);
-                botuser.TimeStatuses.Add(global);
+                databaseUser.TimeStatuses.Add(global);
             }
 
             if (!user.RoleIds.Contains(gRole.Id))
@@ -626,13 +636,13 @@ namespace Sanakan.DiscordBot.Modules
             }
 
             global.EndsOn = global.EndsOn.Value.AddMonths(1);
-            botuser.TcCount -= cost;
+            databaseUser.TcCount -= cost;
 
             await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(CacheKeys.User(botuser.Id));
+            _cacheManager.ExpireTag(CacheKeys.User(databaseUser.Id));
 
-            await ReplyAsync("", embed: $"{user.Mention} wykupił miesiąc globalnych emotek!".ToEmbedMessage(EMType.Success).Build());
+            await ReplyAsync(embed: $"{user.Mention} wykupił miesiąc globalnych emotek!".ToEmbedMessage(EMType.Success).Build());
         }
 
         [Command("kolor")]
@@ -662,7 +672,7 @@ namespace Sanakan.DiscordBot.Modules
 
             if (points < color.Price(currency))
             {
-                await ReplyAsync("", embed: $"{user.Mention} nie posiadasz wystarczającej liczby {currency.ToString().ToUpper()}!".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync(embed: $"{user.Mention} nie posiadasz wystarczającej liczby {currency.ToString().ToUpper()}!".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
@@ -700,7 +710,7 @@ namespace Sanakan.DiscordBot.Modules
 
                 if (!await _profileService.SetUserColorAsync(user, adminRoleId, color))
                 {
-                    await ReplyAsync("", embed: $"Coś poszło nie tak!".ToEmbedMessage(EMType.Error).Build());
+                    await ReplyAsync(embed: $"Coś poszło nie tak!".ToEmbedMessage(EMType.Error).Build());
                     return;
                 }
 
@@ -718,7 +728,7 @@ namespace Sanakan.DiscordBot.Modules
 
             _cacheManager.ExpireTag(CacheKeys.User(botuser.Id), CacheKeys.Users);
 
-            await ReplyAsync("", embed: $"{user.Mention} wykupił kolor!".ToEmbedMessage(EMType.Success).Build());
+            await ReplyAsync(embed: $"{user.Mention} wykupił kolor!".ToEmbedMessage(EMType.Success).Build());
         }
     }
 }

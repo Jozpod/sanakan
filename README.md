@@ -66,7 +66,7 @@ See commands section below for list of available commands.
 ## Commands ##
 
 ### Moderation ###
-|                   Command                    | Example |             Description             | Permissions requried |
+|                   Command                    | Example |             Description             | Permissions required |
 | :---------------------------------------: | :-------: | :----------------------------------- | ----------- |
 | **[`kasuj`](#kasuj)** | `.mod kasuj {Number}` | Deletes messages. | Configured **Admin role**, **Moderator role**, **Guild Administrator** or **Manage Messages** permission |
 | **[`kasuju`](#kasuju)** | `.mod kasuju {Number}` | Deletes user messages. | Configured **Admin role**, **Moderator role**, **Guild Administrator** or **Manage Messages** permission |
@@ -81,39 +81,146 @@ See commands section below for list of available commands.
 | **[`goodbye`](#goodbye)** | `.mod goodbye {String}` | Sets goodbye message which is displayed when user leaves the guild. | Configured **Admin role** or **Guild Administrator** |
 
 ### Fun ###
-|                   Command                    | Example |             Description             | Permissions requried |
+|                   Command                    | Example |             Description             | Permissions required |
 | :---------------------------------------: | :-------: | :----------------------------------- | ----------- |
 | **[`daily`](#daily)** | `.daily` | Deletes messages. | Configured **Admin role**, **Moderator role**, **Guild Administrator** or **Manage Messages** permission |
 
 ### Helper ###
-|                   Command                    | Example |             Description             | Permissions requried |
+|                   Command                    | Example |             Description             | Permissions required |
 | :---------------------------------------: | :-------: | :----------------------------------- | ----------- |
-| **[`daily`](#daily)** | `.daily` | Deletes messages. | Configured **Admin role**, **Moderator role**, **Guild Administrator** or **Manage Messages** permission |
+| **[`help`](#help)** | `.help` | Displays the list of commands. | Command channel if configured or **Guild Administrator** permission |
+| **[`whois`](#whois)** | `.whois` | Displays basic discord user information. | Command channel if configured or **Guild Administrator** permission |
+| **[`ping`](#ping)** | `.ping` | Gets the estimated round-trip latency, in milliseconds, to the gateway server. | Command channel if configured or **Guild Administrator** permission |
+| **[`serverinfo`](#serverinfo)** | `.serverinfo` | Gets basic discord server info. | Command channel if configured or **Guild Administrator** permission |
+| **[`avatar`](#avatar)** | `.avatar` | Gets discord user avatar. | Command channel if configured or **Guild Administrator** permission |
+| **[`info`](#info)** | `.info` | Gets basic bot information. | Command channel if configured or **Guild Administrator** permission |
+| **[`report`](#report)** | `.report` | Reports the discord message. | User role if configured or **Guild Administrator** permission |
 
 ### Lands ###
-|                   Command                    | Example |             Description             | Permissions requried |
+|                   Command                    | Example |             Description             | Permissions required |
 | :---------------------------------------: | :-------: | :----------------------------------- | ----------- |
-| **[`daily`](#daily)** | `.daily` | Deletes messages. | Configured **Admin role**, **Moderator role**, **Guild Administrator** or **Manage Messages** permission |
+| **[`population`](#population)** | `.population` | None |
+| **[`land add`](#landadd)** | `.land add` | Add user to land. | None |
+| **[`land remove`](#landremove)** | `.land remove` | Removed user from land. | None |
 
 ### Pocket Waifu ###
-|                   Command                    | Example |             Description             | Permissions requried |
+|                   Command                    | Example |             Description             | Permissions required |
 | :---------------------------------------: | :-------: | :----------------------------------- | ----------- |
-| **[`daily`](#daily)** | `.daily` | Deletes messages. | Configured **Admin role**, **Moderator role**, **Guild Administrator** or **Manage Messages** permission |
+| **[`cards`](#cards)** | `.cards` | Displays cards owned by user. | Waifu command channel if configured or **Guild Administrator** permission |
+| **[`items`](#items)** | `.items` | Displays item/items in user game deck. | Waifu command channel if configured or **Guild Administrator** permission |
+| **[`card image`](#cardimage)** | `.card image` | Displays card image. | (Waifu) command channel if configured, level 40 or **Guild Administrator** permission |
+| **[`card-`](#card-)** | `.card-` | Command channel if configured, level 40 or or **Guild Administrator** permission |
+| **[`card`](#card)** | `.card` | Displays card details. | (Waifu) command channel if configured, level 40 or **Guild Administrator** permission |
+| **[`pvp shop`](#pvpshop)** | `.pvp shop` | Opens Pvp shop which allows user to list the items or buy one. | (Waifu) command channel if configured or **Guild Administrator** permission |
+| **[`ac shop`](#acshop)** | `.ac shop` | Opens Activity shop which allows user to list the items or buy one. | (Waifu) command channel if configured or **Guild Administrator** permission |
+| **[`shop`](#shop)** | `.shop` | Opens Normal shop which allows user to list the items or buy one. | (Waifu) command channel if configured or **Guild Administrator** permission |
+| **[`use`](#use)** | `.use` | Consumes the item. | (Waifu) command channel if configured or **Guild Administrator** permission |
+| **[`booster`](#booster)** | `.booster` | Lists the card bundles  or consume card bundles (max 20). | (Waifu) command channel if configured or **Guild Administrator** permission |
+| **[`reset`](#reset)** | `.reset` | Resets SSS card. | (Waifu) command channel if configured or **Guild Administrator** permission |
+| **[`update`](#update)** | `.update` | Updates the card details from Shinden platform. | (Waifu) command channel if configured or **Guild Administrator** permission |
+| **[`upgrade`](#upgrade)** | `.upgrade` | Upgrades the card. | (Waifu) command channel if configured or **Guild Administrator** permission |
+| **[`release`](#release)** | `.release` | Releases the card. | (Waifu) command channel if configured or **Guild Administrator** permission |
+| **[`destroy`](#destroy)** | `.destroy` | Destroys the card. | (Waifu) command channel if configured or **Guild Administrator** permission |
+| **[`chest`](#chest)** | `.chest` | Transfers experience from chest to the card. | (Waifu) command channel if configured or **Guild Administrator** permission |
+| **[`make chest`](#makechest)** | `.make chest` | Creates the experience chest. | (Waifu) command channel if configured or **Guild Administrator** permission |
+| **[`free card`](#freecard)** | `.free card` | Gets free daily card. | (Waifu) command channel if configured or **Guild Administrator** permission |
+| **[`market`](#market)** | `.market` | Goes to market. | (Waifu) command channel if configured or **Guild Administrator** permission |
+| **[`black market`](#blackmarket)** | `.black market` | Goes to black market. | (Waifu) command channel if configured or **Guild Administrator** permission |
+| **[`sacrifice`](#sacrifice)** | `.sacrifice` | Sacrifices the card. | (Waifu) command channel if configured or **Guild Administrator** permission |
+| **[`cage`](#cage)** | `.cage` | Opens the cage with card(s). | (Waifu) command channel if configured or **Guild Administrator** permission |
+| **[`wadd`](#wadd)** | `.wadd` | Adds card/anime/manga/character to wishlist. | (Waifu) command channel if configured or **Guild Administrator** permission |
+| **[`wishlist view`](#wishlistview)** | `.wishlist view` | Toggles the hidden wishlist option. | (Waifu) command channel if configured or **Guild Administrator** permission |
+| **[`on wishlist`](#on wishlist)** | `.on wishlist {User?}` | Displays content of wishlist. | (Waifu) command channel if configured or **Guild Administrator** permission |
+| **[`wishlist`](#wishlist)** | `.wishlist` | Displays user wishlist. | (Waifu) command channel if configured or **Guild Administrator** permission |
+| **[`wishlistf`](#wishlistf)** | `.wishlistf` | Compares the wishlist between users. | (Waifu) command channel if configured or **Guild Administrator** permission |
+| **[`who wants`](#whowants)** | `.who wants {Number} {Boolean?}` | Looks up wishlists which contain given card. | (Waifu) command channel if configured or **Guild Administrator** permission |
+| **[`who wants anime`](#whowantsanime)** | `.who wants anime {Number} {Boolean?}` | Displays user wishlist. | (Waifu) command channel if configured or **Guild Administrator** permission |
+| **[`unleash`](#unleash)** | `.unleash` | Makes card tradeable. Costs TC. | (Waifu) command channel if configured or **Guild Administrator** permission |
+| **[`card limit`](#cardlimit)** | `.card limit` | Increases the card slot limit. | (Waifu) command channel if configured or **Guild Administrator** permission |
+| **[`site color`](#site color)** | `.site color` | Changes main theme color of profile. Costs 500 TC. | (Waifu) command channel if configured or **Guild Administrator** permission |
+| **[`site foreground`](#site foreground)** | `.site foreground` | Changes foreground image of profile. Costs 500 TC. | (Waifu) command channel if configured or **Guild Administrator** permission |
+| **[`site background`](#sitebackground)** | `.site background` | Changes background image of profile. Costs 2000 TC. | (Waifu) command channel if configured or **Guild Administrator** permission |
+| **[`site background position`](#sitebackgroundposition)** | `.site background position` | Changes background image position. | (Waifu) command channel if configured or **Guild Administrator** permission |
+| **[`site foreground position`](#siteforegroundposition)** | `.site foreground position` | Changes foreground image position. | (Waifu) command channel if configured or **Guild Administrator** permission |
+| **[``](#)** | `.` | . | (Waifu) command channel if configured or **Guild Administrator** permission |
+| **[``](#)** | `.` | . | (Waifu) command channel if configured or **Guild Administrator** permission |
+| **[``](#)** | `.` | . | (Waifu) command channel if configured or **Guild Administrator** permission |
+| **[``](#)** | `.` | . | (Waifu) command channel if configured or **Guild Administrator** permission |
+| **[``](#)** | `.` | . | (Waifu) command channel if configured or **Guild Administrator** permission |
+| **[``](#)** | `.` | . | (Waifu) command channel if configured or **Guild Administrator** permission |
+| **[``](#)** | `.` | . | (Waifu) command channel if configured or **Guild Administrator** permission |
+| **[``](#)** | `.` | . | (Waifu) command channel if configured or **Guild Administrator** permission |
+| **[``](#)** | `.` | . | (Waifu) command channel if configured or **Guild Administrator** permission |
 
 ### Profile ###
-|                   Command                    | Example |             Description             | Permissions requried |
+|                   Command                    | Example |             Description             | Permissions required |
 | :---------------------------------------: | :-------: | :----------------------------------- | ----------- |
-| **[`daily`](#daily)** | `.daily` | Deletes messages. | Configured **Admin role**, **Moderator role**, **Guild Administrator** or **Manage Messages** permission |
+| **[`wallet`](#wallet)** | `.wallet` | Shows user wallet. | None |
+| **[`sub`](#sub)** | `.sub` | Displays current user subscriptions. | Command channel if configured or **Guild Administrator** permission |
+| **[`add role`](#addrole)** | `.add role {String}` | Grants user given role. | Command channel if configured or **Guild Administrator** permission |
+| **[`remove role`](#removerole)** | `.remove role {String}` | Removes given role. | Command channel if configured or **Guild Administrator** permission |
+| **[`wypisz role`](#wypisz role)** | `.wypisz role` | Lists self managable roles. | None |
+| **[`stats`](#stats)** | `.stats` | Displays user statistics. | None |
+| **[`howmuchtolevelup`](#howmuchtolevelup)** | `.howmuchtolevelup` | Displays experience left for user to level up. | None |
+| **[`top`](#top)** | `.top {TopType}` | Displays leaderboard by given criteria. | None |
+| **[`waifu view`](#waifu view)** | `.waifu view` | Specifies whether to display waifu image on side panel. | Command channel if configured or **Guild Administrator** permission |
+| **[`profile`](#profile)** | `.profile` | Displays user profile. | None |
+| **[`quest`](#quest)** | `.quest` | Displays quest progress for given user. | Command channel if configured or **Guild Administrator** permission |
+| **[`style`](#style)** | `.style` | Changes profile style. | Command channel if configured or **Guild Administrator** permission |
+| **[`background`](#background)** | `.background` | Changes background. Costs 5000 SC/ 2500 TC. | Command channel if configured or **Guild Administrator** permission |
+| **[`global`](#global)** | `.global` | Grants global emote role for a month. Costs 1000 TC. | Command channel if configured or **Guild Administrator** permission |
+| **[`colour`](#colour)** | `.colour` | Changes user color. Costs 1000 TC. | Command channel if configured or **Guild Administrator** permission |
 
 ### Shinden ###
-|                   Command                    | Example |             Description             | Permissions requried |
+|                   Command                    | Example |             Description             | Permissions required |
 | :---------------------------------------: | :-------: | :----------------------------------- | ----------- |
-| **[`daily`](#daily)** | `.daily` | Deletes messages. | Configured **Admin role**, **Moderator role**, **Guild Administrator** or **Manage Messages** permission |
-
+| **[`episodes`](#episodes)** | `.episodes` | Displays new epsiodes. | Command channel if configured or **Guild Administrator** permission |
+| **[`anime`](#anime)** | `.anime {String}` | Displays information about given anime. | Command channel if configured or **Guild Administrator** permission |
+| **[`manga`](#manga)** | `.manga {String}` | Displays information about given manga. | Command channel if configured or **Guild Administrator** permission |
+| **[`character`](#character)** | `.character {String}` | Displays information about given character. | Command channel if configured or **Guild Administrator** permission |
 ### Debug ###
-|                   Command                    | Example |             Description             | Permissions requried |
+
+All commands require developer permission.
+
+|                   Command                    | Example |             Description             | Permissions required |
 | :---------------------------------------: | :-------: | :----------------------------------- | ----------- |
-| **[`daily`](#daily)** | `.daily` | Deletes messages. | Configured **Admin role**, **Moderator role**, **Guild Administrator** or **Manage Messages** permission |
+| **[`poke`](#poke)** | `.poke` | Generates safari image. | None |
+| **[`missingu`](#missingu)** | `.missingu` | Lists users which does not exist in database. | None |
+| **[`blacklist`](#blacklist)** | `.blacklist {User}` | Adds user to blacklist. | None |
+| **[`rmsg`](#rmsg)** | `.rmsg {GuildId/Number} {Number} {String}` | Sends response message to given channel. | None |
+| **[`smsg`](#smsg)** | `.smsg {GuildId/Number} {Number} {String}` | Send message to given channel. | None |
+| **[`semsg`](#semsg)** | `.semsg {GuildId/Number} {Number} {EMType} {String}` | Sends embed message to given channel. | None |
+| **[`r2msg`](#r2msg)** | `.r2msg {GuildId/Number} {Number} {Number} {String}` | Add reaction to given message. | None |
+| **[`cup`](#cup)** | `.cup` | Force updates cards. | None |
+| **[`rozdajm`](#rozdajm)** | `.rozdajm {Number} {Number} {Number} {Number}` | Gives away cards periodically. | None |
+| **[`rozdaj`](#rozdaj)** | `.rozdaj {Number} {Number} {Number}` | Gives away cards. | None |
+| **[`tranc`](#tranc)** | `.tranc {Number} {Number}...` | Transfers card between users. | None |
+| **[`rmcards`](#tranc)** | `.rmcards {Number}...` | Removes cards. | None |
+| **[`level`](#level)** | `.level {User} {Level/Number}...` | Sets user level. | None |
+| **[`mkick`](#mkick)** | `.mkick {User}...` | Kicks user from the server. | None |
+| **[`mban`](#mban)** | `.mban {User}...` | Bans user from the server. | None |
+| **[`restore`](#restore)** | `.restore {User}...` | Restores card back to given user. | None |
+| **[`missingc`](#missingc)** | `.missingc {Boolean}` | Lists cards ids which are not visible by cards owners. | None |
+| **[`cstats`](#cstats)** | `.cstats {CardId/Number}` | Generates card statistics. | None |
+| **[`dusrcards`](#dusrcards)** | `.dusrcards {UserId/Number}` | Removes cards from given user. | None |
+| **[`duser`](#duser)** | `.duser {UserId/Number} {IncludeCards/Boolean}` | Deletes user from database. | None |
+| **[`tc duser`](#tcduser)** | `.tc duser` | Resets user gamedeck items, karma and CT. | None |
+| **[`utitle`](#dusrcards)** | `.utitle {CardId/Number} {String}` | Updates card title. | None |
+| **[`delq`](#delq)** | `.delq {QuizId/Number}` | Removes quiz. | None |
+| **[`addq`](#addq)** | `.addq {UserId/Number}` | Adds new quiz. | None |
+| **[`chpp`](#chpp)** | `.chpp {Count/Number} {Persist/Boolean}` | Sets char count per card bundle ratio. | None |
+| **[`chpe`](#chpe)** | `.chpe {Count/Number} {Persist/Boolean}` | Adds Sets char count per experience ratio. | None |
+| **[`turlban`](#turlban)** | `.turlban {Persist/Boolean}` | Enables/Disables supervisor which bans users when they spam channel with scam urls. | None |
+| **[`tsafari`](#tsafari)** | `.tsafari {Persist/Boolean}` | Toggles safari mode. | None |
+| **[`twevent`](#twevent)** | `.twevent {Persist/Boolean}` | Toggles waifu event. | None |
+| **[`wevent`](#wevent)** | `.wevent {Persist/Boolean}` | Sets event ids. | None |
+| **[`lvlbadge`](#lvlbadge)** | `.lvlbadge {IGuildUser}` | Generates user badge. | None |
+| **[`devr`](#devr)** | `.devr` | Toggles developer mode. | None |
+| **[`gitem`](#gitem)** | `.gitem {IGuildUser} {ItemType} {Count} {Quality}` | Generates item and assigns it to user. | None |
+| **[`gcard`](#gcard)** | `.gcard {IGuildUser} {Number} {Rarity}` | Generates card and assigns it to user. | None |
+| **[`ctou`](#ctou)** | `.ctou {CardId/Number} {Quality} {AttackPoints/Number} {DefencePoints/Number} {HealthPoints/Number}` | Converts card to ultimate. | None |
+| **[`sc`](#sc)** | `.sc {IGuildUser} {Amount/Number}` | Changes amount of SC for given user. | None |
+
 ## App Configuration ##
 ### Locale
 |                   Name                    |         Type         |                 Default                 | Description                                                       |
