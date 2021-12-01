@@ -308,6 +308,9 @@ Rzędy / `1`, `2`, `3`</value>
 
 **Wygrana:** `{5} SC`</value>
   </data>
+  <data name="UserDoesNotExistInDatabase" xml:space="preserve">
+    <value>Ta osoba nie ma profilu bota.</value>
+  </data>
   <data name="UserNoCards" xml:space="preserve">
     <value>{0} nie masz żadnych kart.</value>
   </data>

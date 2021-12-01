@@ -68,7 +68,7 @@ namespace DiscordBot.ModulesTests
                     It.IsAny<RequestOptions>(),
                     It.IsAny<AllowedMentions>(),
                     It.IsAny<MessageReference>()))
-                .Callback(action)
+                .Callback(defaultAction)
                 .ReturnsAsync(_userMessageMock.Object);
         }
     }

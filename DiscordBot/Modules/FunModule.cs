@@ -413,7 +413,10 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            if (user.Id == Context.User.Id)
+            var invokingUserId = Context.User.Id;
+            var mention = Context.User.Mention;
+
+            if (user.Id == invokingUserId)
             {
                 await ReplyAsync(embed: "Coś tutaj nie gra.".ToEmbedMessage(EMType.Error).Build());
                 return;
@@ -421,16 +424,16 @@ namespace Sanakan.DiscordBot.Modules
 
             if (await _userRepository.ExistsByDiscordIdAsync(user.Id))
             {
-                await ReplyAsync(embed: "Ta osoba nie ma profilu bota.".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync(embed: Strings.UserDoesNotExistInDatabase.ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
             var targetUser = await _userRepository.GetUserOrCreateAsync(user.Id);
-            var thisUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
+            var thisUser = await _userRepository.GetUserOrCreateAsync(invokingUserId);
 
             if (thisUser.ScCount < value)
             {
-                await ReplyAsync(embed: $"{Context.User.Mention} nie masz wystarczającej ilości SC.".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync(embed: $"{mention} nie masz wystarczającej ilości SC.".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
@@ -443,7 +446,7 @@ namespace Sanakan.DiscordBot.Modules
 
             _cacheManager.ExpireTag(CacheKeys.User(thisUser.Id), CacheKeys.Users, CacheKeys.User(targetUser.Id));
 
-            await ReplyAsync(embed: $"{Context.User.Mention} podarował {user.Mention} {newScCnt} SC".ToEmbedMessage(EMType.Success).Build());
+            await ReplyAsync(embed: $"{mention} podarował {user.Mention} {newScCnt} SC".ToEmbedMessage(EMType.Success).Build());
         }
 
         [Command("zagadka", RunMode = RunMode.Async)]

@@ -63,6 +63,22 @@ For example to set trash spawn waifu channel one needs to invoke following comma
 
 See commands section below for list of available commands.
 
+### Database Configuration ###
+
+#### Sqlite ####
+
+Replace Database section in `appsettings.json`
+
+```json
+{
+  "Database": {
+    "Provider": "Sqlite",
+    "Version": "3.0.0",
+    "ConnectionString": "Data Source=SanakanDBTest.db;"
+  },
+}
+```
+
 ## Commands ##
 
 ### Moderation ###
@@ -79,12 +95,59 @@ See commands section below for list of available commands.
 | **[`welcome`](#welcome)** | `.mod welcome {String}` | Sets welcome message which is displayed when user joins the guild. | Configured **Admin role** or **Guild Administrator** |
 | **[`welcomepw`](#welcomepw)** | `.mod welcomepw {String}` | Sets welcome private message. | Configured **Admin role** or **Guild Administrator** |
 | **[`goodbye`](#goodbye)** | `.mod goodbye {String}` | Sets goodbye message which is displayed when user leaves the guild. | Configured **Admin role** or **Guild Administrator** |
+| **[`role`](#role)** | `.mod role` | Lists server roles. | Configured **Admin role**, **Guild Administrator** or **Manage Roles Permission** |
+| **[`config`](#config)** | `.mod config {ConfigType?}` | Displays serveur configuration | Configured **Admin role**, **Guild Administrator** |
+| **[`adminr`](#adminr)** | `.mod adminr {IRole}` | Sets admin role | Configured **Admin role**, **Guild Administrator** |
+| **[`userr`](#userr)** | `.mod userr {IRole}` | Sets user role | Configured **Admin role**, **Guild Administrator** |
+| **[`muter`](#muter)** | `.mod muter {IRole}` | Sets mute role | Configured **Admin role**, **Guild Administrator** |
+| **[`mutemodr`](#mutemodr)** | `.mod mutemodr {IRole}` | Sets mute moderator role | Configured **Admin role**, **Guild Administrator** |
+| **[`globalr`](#globalr)** | `.mod globalr {IRole}` | Sets global emote role | Configured **Admin role**, **Guild Administrator** |
+| **[`waifur`](#waifur)** | `.mod waifur {IRole}` | Sets waifu role | Configured **Admin role**, **Guild Administrator** |
+| **[`modr`](#modr)** | `.mod modr {IRole}` | Sets moderator role | Configured **Admin role**, **Guild Administrator** |
+| **[`addur`](#addur)** | `.mod addur {IRole} {Level\Number}` | Sets level role | Configured **Admin role**, **Guild Administrator** |
+| **[`selfrole`](#selfrole)** | `.mod selfrole` | Sets self governing role | Configured **Admin role**, **Guild Administrator** |
+| **[`myland`](#myland)** | `.mod myland` | Sets my land role | Configured **Admin role**, **Guild Administrator** |
+| **[`logch`](#logch)** | `.mod logch` | Sets log channel | Configured **Admin role**, **Guild Administrator** |
+| **[`helloch`](#helloch)** | `.mod helloch` | Sets greetings channel | Configured **Admin role**, **Guild Administrator** |
+| **[`notifch`](#notifch)** | `.mod notifch` | Sets notification channel | Configured **Admin role**, **Guild Administrator** |
+| **[`raportch`](#raportch)** | `.mod raportch` | Sets report channel | Configured **Admin role**, **Guild Administrator** |
+| **[`quizch`](#helloch)** | `.mod quizch` | Sets quiz channel | Configured **Admin role**, **Guild Administrator** |
+| **[`todoch`](#todoch)** | `.mod todoch` | Sets todo channel | Configured **Admin role**, **Guild Administrator** |
+| **[`nsfwch`](#nsfwch)** | `.mod nsfwch` | Sets NSFW ( Not safe for work ) channel | Configured **Admin role**, **Guild Administrator** |
+| **[`tfightch`](#tfightch)** | `.mod tfightch` | Sets trash waifu fight channel | Configured **Admin role**, **Guild Administrator** |
+| **[`tcmdch`](#tcmdch)** | `.mod tcmdch` | Sets trash waifu command channel | Configured **Admin role**, **Guild Administrator** |
+| **[`tsafarich`](#tsafarich)** | `.mod tsafarich` | Sets waifu hunt channel | Configured **Admin role**, **Guild Administrator** |
+| **[`marketch`](#marketch)** | `.mod marketch` | Sets waifu market channel | Configured **Admin role**, **Guild Administrator** |
+| **[`duelch`](#duelch)** | `.mod duelch` | Sets waifu duel channel | Configured **Admin role**, **Guild Administrator** |
+| **[`spawnch`](#spawnch)** | `.mod spawnch` | Sets waifu spawn channel | Configured **Admin role**, **Guild Administrator** |
+| **[`fightch`](#fightch)** | `.mod fightch` | Sets waifu fight channel | Configured **Admin role**, **Guild Administrator** |
+| **[`wcmdch`](#helloch)** | `.mod wcmdch` | Sets waifu command channel | Configured **Admin role**, **Guild Administrator** |
+| **[`cmdch`](#cmdch)** | `.mod cmdch` | Sets command channel | Configured **Admin role**, **Guild Administrator** |
+| **[`ignch`](#ignch)** | `.mod ignch` | Sets ignored channel ( means messages from given channel are not counted ) | Configured **Admin role**, **Guild Administrator** |
+| **[`noexpch`](#noexpch)** | `.mod noexpch` | Sets no experience channel | Configured **Admin role**, **Guild Administrator** |
+| **[`nosupch`](#nosupch)** | `.mod nosupch` | Toggles supervision option on given channel | Configured **Admin role**, **Guild Administrator** |
+| **[`todo`](#todo)** | `.mod todo` | Adds todo message | Configured **Admin role**, **Moderator role**, **Guild Administrator** |
+| **[`quote`](#quote)** | `.mod quote {MessageId\Number} {ChannelId\Number}` | Cites message and sends to given channel. | Configured **Admin role**, **Moderator role**, **Guild Administrator** |
+| **[`tchaos`](#tchaos)** | `.mod tchaos` | Toggles chaos mode ( swaps nicknames of users ) | Configured **Admin role**, **Guild Administrator** |
+| **[`tsup`](#tsup)** | `.mod tsup` | Toggles supervision | Configured **Admin role**, **Guild Administrator** |
+| **[`check`](#check)** | `.mod check` | Checks whether the user is connected to Shinden. | Configured **Admin role**, **Guild Administrator** |
+| **[`loteria`](#loteria)** | `.mod loteria` | Gives away cards to random user which reacted to sent message by bot. | Configured **Admin role**, **Guild Administrator** |
+| **[`pary`](#pary)** | `.mod pary` | Generates pair of numbers. | Configured **Admin role**, **Guild Administrator** |
+| **[`pozycja gracza`](#pozycjagracza)** | `.mod pozycja gracza` | Generates random number for given players. | Configured **Admin role**, **Guild Administrator** |
+| **[`report`](#report)** | `.mod report` | Resolves report sent by user. | Configured **Admin role**, **Guild Administrator** |
+| **[`help`](#help)** | `.mod help` | Lists the commands. | Configured **Admin role**, **Guild Administrator** |
 
 ### Fun ###
 |                   Command                    | Example |             Description             | Permissions required |
 | :---------------------------------------: | :-------: | :----------------------------------- | ----------- |
-| **[`daily`](#daily)** | `.daily` | Deletes messages. | Configured **Admin role**, **Moderator role**, **Guild Administrator** or **Manage Messages** permission |
-
+| **[`daily`](#daily)** | `.daily` | Receives daily SC coins. | Command channel if configured or **Guild Administrator** permission |
+| **[`mute me`](#mute me)** | `.mute me` | Self mute |  |
+| **[`hourly`](#hourly)** | `.hourly` | Receives hourly SC coins. | Command channel if configured or **Guild Administrator** permission |
+| **[`beat`](#beat)** | `.beat {BetAmount\Number}` | Rolls a dice. | Command channel if configured or **Guild Administrator** permission |
+| **[`set slot`](#setslot)** | `.set slot` | Sets mechine slot. | Command channel if configured or **Guild Administrator** permission |
+| **[`slot machine`](#slotmachine)** | `.slot machine` | Runs slot machine. | Command channel if configured or **Guild Administrator** permission |
+| **[`donatesc`](#donatesc)** | `.donatesc {IGuildUser} ` | Donates SC to another user. | Command channel if configured or **Guild Administrator** permission |
+| **[`riddle`](#riddle)** | `.riddle {IGuildUser} ` | Generates random riddle. | Command channel if configured or **Guild Administrator** permission |
 ### Helper ###
 |                   Command                    | Example |             Description             | Permissions required |
 | :---------------------------------------: | :-------: | :----------------------------------- | ----------- |
@@ -142,16 +205,28 @@ See commands section below for list of available commands.
 | **[`site background`](#sitebackground)** | `.site background` | Changes background image of profile. Costs 2000 TC. | (Waifu) command channel if configured or **Guild Administrator** permission |
 | **[`site background position`](#sitebackgroundposition)** | `.site background position` | Changes background image position. | (Waifu) command channel if configured or **Guild Administrator** permission |
 | **[`site foreground position`](#siteforegroundposition)** | `.site foreground position` | Changes foreground image position. | (Waifu) command channel if configured or **Guild Administrator** permission |
-| **[``](#)** | `.` | . | (Waifu) command channel if configured or **Guild Administrator** permission |
-| **[``](#)** | `.` | . | (Waifu) command channel if configured or **Guild Administrator** permission |
-| **[``](#)** | `.` | . | (Waifu) command channel if configured or **Guild Administrator** permission |
-| **[``](#)** | `.` | . | (Waifu) command channel if configured or **Guild Administrator** permission |
-| **[``](#)** | `.` | . | (Waifu) command channel if configured or **Guild Administrator** permission |
-| **[``](#)** | `.` | . | (Waifu) command channel if configured or **Guild Administrator** permission |
-| **[``](#)** | `.` | . | (Waifu) command channel if configured or **Guild Administrator** permission |
-| **[``](#)** | `.` | . | (Waifu) command channel if configured or **Guild Administrator** permission |
-| **[``](#)** | `.` | . | (Waifu) command channel if configured or **Guild Administrator** permission |
-
+| **[`gallery`](#gallery)** | `.gallery` | Buys slots in gallery. | (Waifu) command channel if configured or **Guild Administrator** permission |
+| **[`crystal`](#crystal)** | `.crystal` | Converts necklace and flowers to crystal ball. | (Waifu) command channel if configured or **Guild Administrator** permission |
+| **[`tag`](#tag)** | `.tag {CardId\Number}...` | Adds tag to card. | (Waifu) command channel if configured or **Guild Administrator** permission |
+| **[`tag clean`](#tagclean)** | `.tag clean {CardId\Number}` | Clears card of tags. | (Waifu) command channel if configured or **Guild Administrator** permission |
+| **[`tag empty`](#tagempty)** | `.tag empty` | . | (Waifu) command channel if configured or **Guild Administrator** permission |
+| **[`tag replace`](#tagreplace)** | `.tag replace` | Replaces tags in all cards. | (Waifu) command channel if configured or **Guild Administrator** permission |
+| **[`tag remove`](#tagremove)** | `.tag remove` | Removes tag from all cards. | (Waifu) command channel if configured or **Guild Administrator** permission |
+| **[`exchange conditions`](#)** | `.exchange conditions` | Sets exchange conditions. | (Waifu) command channel if configured or **Guild Administrator** permission |
+| **[`deck`](#deck)** | `.deck {CardId\Number}` | Changes deck status for given card. | (Waifu) command channel if configured or **Guild Administrator** permission |
+| **[`who`](#who)** | `.who {CharacterId\Number} {Boolean}` | . | (Waifu) command channel if configured or **Guild Administrator** permission |
+| **[`favs`](#favs)** | `.favs {Boolean} {Boolean}` | . | (Waifu) command channel if configured or **Guild Administrator** permission |
+| **[`which`](#which)** | `.which {SeriesId\Number} {Boolean}` | . | (Waifu) command channel if configured or **Guild Administrator** permission |
+| **[`exchange`](#exchange)** | `.exchange {IGuildUser}` | Starts exchange session. | (Waifu) command channel if configured or **Guild Administrator** permission |
+| **[`exchange`](#exchange)** | `.exchange {IGuildUser}` | Starts exchange session. | (Waifu) command channel if configured or **Guild Administrator** permission |
+| **[`crafting`](#crafting)** | `.crafting` | Starts crafting session where user can create card from items. | (Waifu) command channel if configured or **Guild Administrator** permission |
+| **[`expedition status`](#expeditionstatus)** | `.expedition status` | Displays expedition progress. | (Waifu) command channel if configured or **Guild Administrator** permission |
+| **[`expedition end`](#expeditionend)** | `.expedition end` | Finishes expedition for given card. | (Waifu) command channel if configured or **Guild Administrator** permission |
+| **[`expedition`](#expedition)** | `.expedition {CardId\Number} {ExpeditionCardType}` | Starts expedition for given card. | (Waifu) command channel if configured or **Guild Administrator** permission |
+| **[`duel`](#duel)** | `.duel` | Performs dueling with another player. | (Waifu) command channel if configured or **Guild Administrator** permission |
+| **[`husbando`](#husbando)** | `.husbando {CardId\Number}` | Sets default favourite card. | (Waifu) command channel if configured or **Guild Administrator** permission |
+| **[`doante`](#doante)** | `.doante {CardId\Number}` | Converts card to angel or demon. Costs blood item. | (Waifu) command channel if configured or **Guild Administrator** permission |
+| **[`cpf`](#cpf)** | `.cpf {IGuildUser}` | Shows pocket waifu profile. | (Waifu) command channel if configured or **Guild Administrator** permission |
 ### Profile ###
 |                   Command                    | Example |             Description             | Permissions required |
 | :---------------------------------------: | :-------: | :----------------------------------- | ----------- |
@@ -174,10 +249,13 @@ See commands section below for list of available commands.
 ### Shinden ###
 |                   Command                    | Example |             Description             | Permissions required |
 | :---------------------------------------: | :-------: | :----------------------------------- | ----------- |
-| **[`episodes`](#episodes)** | `.episodes` | Displays new epsiodes. | Command channel if configured or **Guild Administrator** permission |
-| **[`anime`](#anime)** | `.anime {String}` | Displays information about given anime. | Command channel if configured or **Guild Administrator** permission |
-| **[`manga`](#manga)** | `.manga {String}` | Displays information about given manga. | Command channel if configured or **Guild Administrator** permission |
-| **[`character`](#character)** | `.character {String}` | Displays information about given character. | Command channel if configured or **Guild Administrator** permission |
+| **[`episodes`](#episodes)** | `.episodes` | Displays new epsiodes. |  |
+| **[`anime`](#anime)** | `.anime {String}` | Displays information about given anime. |  |
+| **[`manga`](#manga)** | `.manga {String}` | Displays information about given manga. |  |
+| **[`character`](#character)** | `.character {String}` | Displays information about given character. |  |
+| **[`site`](#site)** | `.site {IGuildUser?}` | Displays site statistics | |
+| **[`connect`](#connect)** | `.connect {Url}` | Connects discord and shinden user. |  |
+
 ### Debug ###
 
 All commands require developer permission.
@@ -220,6 +298,19 @@ All commands require developer permission.
 | **[`gcard`](#gcard)** | `.gcard {IGuildUser} {Number} {Rarity}` | Generates card and assigns it to user. | None |
 | **[`ctou`](#ctou)** | `.ctou {CardId/Number} {Quality} {AttackPoints/Number} {DefencePoints/Number} {HealthPoints/Number}` | Converts card to ultimate. | None |
 | **[`sc`](#sc)** | `.sc {IGuildUser} {Amount/Number}` | Changes amount of SC for given user. | None |
+| **[`ac`](#ac)** | `.ac {IGuildUser} {Amount/Number}` | Changes amount of AC for given user. | None |
+| **[`tc`](#tc)** | `.tc {IGuildUser} {Amount/Number}` | Changes amount of TC for given user. | None |
+| **[`pc`](#pc)** | `.pc {IGuildUser} {Amount/Number}` | Changes amount of PC for given user. | None |
+| **[`ct`](#ct)** | `.ct {IGuildUser} {Amount/Number}` | Changes amount of CT for given user. | None |
+| **[`exp`](#exp)** | `.exp {IGuildUser} {Amount/Number}` | Changes amount of experience for given user. | None |
+| **[`ost`](#ost)** | `.ost {IGuildUser} {Amount/Number}` | Changes amount of warnings for given user. | None |
+| **[`sime`](#sime)** | `.sime {CardId/Number} {ExpeditionCardType} {Time/Number}` | Changes amount of experience for given user. | None |
+| **[`kill`](#kill)** | `.kill` | Log outs the bot. | None |
+| **[`update`](#update)** | `.update` | Log outs the bot and creates the file ./updateNow. | None |
+| **[`rmconfig`](#rmconfig)** | `.rmconfig` | Displays rich message configuration. | None |
+| **[`mrmconfig`](#mrmconfig)** | `.mrmconfig {RichMessageType} {ChannelId/Number} {RoleId/Number}` | Creates/Updates rich message config. | None |
+| **[`ignore`](#ignore)** | `.ignore` | Adds server to blacklist. | None |
+| **[`help`](#help)** | `.help` | Displays available command. | None |
 
 ## App Configuration ##
 ### Locale
@@ -248,16 +339,16 @@ All commands require developer permission.
 | :---------------------------------------: | :------------------: | :-------------------------------------: | :---------------------------------------------------------------- |
 |  **[`CaptureMemoryUsageDueTime`](#CaptureMemoryUsageDueTime)** | `{String\|TimeSpan}` | `00:01:00` | The inital amount of time to delay before capturing memory usage. |
 | **[`CaptureMemoryUsagePeriod`](#CaptureMemoryUsagePeriod)** | `{String\|TimeSpan}` | `00:01:00` | The time interval between invocations of memory usage. |
-|  **[`ProfilePeriod`](#ProfilePeriod)**  | `{String\|TimeSpan}` | `00:00:05` | The inital amount of time to delay before <>. |
-| **[`ProfileDueTime`](#ProfileDueTime)** | `{String\|TimeSpan}` | `00:00:30` | The time interval between invocations of <>. |
-| **[`ChaosDueTime`](#ChaosDueTime)** | `{String\|TimeSpan}` | `01:00:00`  | The inital amount of time to delay before <>. |
-| **[`ChaosPeriod`](#ChaosPeriod)** | `{String\|TimeSpan}` | `01:00:00`  | The time interval between invocations of <>. |
-| **[`SessionDueTime`](#SessionDueTime)** | `{String\|TimeSpan}` | `00:00:05` | The inital amount of time to delay before <>. |
-| **[`SessionPeriod`](#SessionPeriod)** | `{String\|TimeSpan}`  |  `00:00:30` | The time interval between invocations of <>. |
-| **[`ModeratorDueTime`](#ModeratorDueTime)** | `{String\|TimeSpan}` | `00:01:00` | The inital amount of time to delay before <>. |
-| **[`ModeratorPeriod`](#ModeratorPeriod)** | `{String\|TimeSpan}` | `00:30:00` | The time interval between invocations of <>. |
-| **[`SupervisorDueTime`](#SupervisorDueTime)** | `{String\|TimeSpan}` | `00:05:00` | The inital amount of time to delay before <>. |
-| **[`SupervisorPeriod`](#SupervisorPeriod)** | `{String\|TimeSpan}` | `00:05:00` | The time interval between invocations of <>. |
+|  **[`ProfilePeriod`](#ProfilePeriod)**  | `{String\|TimeSpan}` | `00:00:05` | The inital amount of time to delay before time status check. |
+| **[`ProfileDueTime`](#ProfileDueTime)** | `{String\|TimeSpan}` | `00:00:30` | The time interval between invocations of time status check. |
+| **[`ChaosDueTime`](#ChaosDueTime)** | `{String\|TimeSpan}` | `01:00:00`  | The inital amount of time to delay before chaos mode reset. |
+| **[`ChaosPeriod`](#ChaosPeriod)** | `{String\|TimeSpan}` | `01:00:00`  | The time interval between invocations of chaos mode reset. |
+| **[`SessionDueTime`](#SessionDueTime)** | `{String\|TimeSpan}` | `00:00:05` | The inital amount of time to delay before session expiry check. |
+| **[`SessionPeriod`](#SessionPeriod)** | `{String\|TimeSpan}`  |  `00:00:30` | The time interval between invocations of session expiry check. |
+| **[`ModeratorDueTime`](#ModeratorDueTime)** | `{String\|TimeSpan}` | `00:01:00` | The inital amount of time to delay before penalty expiry check. |
+| **[`ModeratorPeriod`](#ModeratorPeriod)** | `{String\|TimeSpan}` | `00:30:00` | The time interval between invocations of penalty expiry check. |
+| **[`SupervisorDueTime`](#SupervisorDueTime)** | `{String\|TimeSpan}` | `00:05:00` | The inital amount of time to delay before supervisor subject reset. |
+| **[`SupervisorPeriod`](#SupervisorPeriod)** | `{String\|TimeSpan}` | `00:05:00` | The time interval between invocations of supervisor subject reset. |
 
 ### Discord
 |                   Name                    |         Type         |                 Default                 | Description                                                       |

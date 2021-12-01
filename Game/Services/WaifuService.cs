@@ -531,7 +531,7 @@ namespace Sanakan.Game.Services
         public Card GenerateNewCard(ulong? discordUserId, CharacterInfo character)
             => GenerateNewCard(discordUserId, character, RandomizeRarity(_randomNumberGenerator, Enumerable.Empty<Rarity>()));
 
-        public Card GenerateNewCard(ulong? discordUserId, CharacterInfo character, List<Rarity> rarityExcluded)
+        public Card GenerateNewCard(ulong? discordUserId, CharacterInfo character, IEnumerable<Rarity> rarityExcluded)
             => GenerateNewCard(discordUserId, character, RandomizeRarity(_randomNumberGenerator, rarityExcluded));
 
         private int ScaleNumber(int oMin, int oMax, int nMin, int nMax, int value)

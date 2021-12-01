@@ -83,7 +83,7 @@ namespace Sanakan.DiscordBot.Modules
 
             if (botuser == null)
             {
-                await ReplyAsync(embed: "Ta osoba nie ma profilu bota.".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync(embed: Strings.UserDoesNotExistInDatabase.ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
@@ -232,17 +232,19 @@ namespace Sanakan.DiscordBot.Modules
             [Summary("użytkownik (opcjonalne)")]IUser? user = null)
         {
             var effectiveUser = user ?? Context.User;
+            Embed embed;
 
             if (effectiveUser == null)
             {
                 return;
             }
-            
+
             var databaseUser = await _userRepository.GetCachedFullUserAsync(effectiveUser.Id);
 
             if (databaseUser == null)
             {
-                await ReplyAsync(embed: "Ta osoba nie ma profilu bota.".ToEmbedMessage(EMType.Error).Build());
+                embed = Strings.UserDoesNotExistInDatabase.ToEmbedMessage(EMType.Error).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
@@ -267,13 +269,13 @@ namespace Sanakan.DiscordBot.Modules
 
             var summary = string.Format(Strings.ProfileUserStats, parameters);
 
-            var embed = new EmbedBuilder
+            var embedBuilder = new EmbedBuilder
             {
                 Color = EMType.Info.Color(),
                 Description = summary.ElipseTrimToLength(1950),
             };
 
-            await ReplyAsync(embed: embed.Build());
+            await ReplyAsync(embed: embedBuilder.Build());
         }
 
         [Command("idp", RunMode = RunMode.Async)]
@@ -294,7 +296,7 @@ namespace Sanakan.DiscordBot.Modules
 
             if (databaseUser == null)
             {
-                await ReplyAsync(embed: "Ta osoba nie ma profilu bota.".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync(embed: Strings.UserDoesNotExistInDatabase.ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
@@ -381,7 +383,7 @@ namespace Sanakan.DiscordBot.Modules
 
             if (databaseUser == null)
             {
-                await ReplyAsync(embed: "Ta osoba nie ma profilu bota.".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync(embed: Strings.UserDoesNotExistInDatabase.ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 

@@ -16,7 +16,7 @@ namespace Sanakan.Game.Services.Abstractions
 
         Card GenerateNewCard(ulong? discordUserId, CharacterInfo character);
 
-        Card GenerateNewCard(ulong? discordUserId, CharacterInfo character, List<Rarity> rarityExcluded);
+        Card GenerateNewCard(ulong? discordUserId, CharacterInfo character, IEnumerable<Rarity> rarityExcluded);
 
         Embed GetBoosterPackList(IUser user, List<BoosterPack> packs);
 

@@ -21,6 +21,7 @@ using System.Text;
 using Sanakan.Common.Cache;
 using Sanakan.DiscordBot.Session;
 using Microsoft.Extensions.DependencyInjection;
+using Sanakan.DiscordBot.Resources;
 
 namespace Sanakan.DiscordBot.Modules
 {
@@ -193,27 +194,27 @@ namespace Sanakan.DiscordBot.Modules
             [Summary("użytkownik (opcjonalne)")]IGuildUser? guildUser = null)
         {
             var user = guildUser ?? Context.User as IGuildUser;
-            
+
             if (user == null)
             {
                 return;
             }
-            
-            var botUser = await _userRepository.GetCachedFullUserAsync(user.Id);
 
-            if (botUser == null)
+            var databaseUser = await _userRepository.GetCachedFullUserAsync(user.Id);
+
+            if (databaseUser == null)
             {
-                await ReplyAsync(embed: "Ta osoba nie ma profilu bota.".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync(embed: Strings.UserDoesNotExistInDatabase.ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
-            if (!botUser.ShindenId.HasValue)
+            if (!databaseUser.ShindenId.HasValue)
             {
                 await ReplyAsync(embed: "Ta osoba nie połączyła konta bota z kontem na stronie.".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
-            using var stream = await GetSiteStatisticAsync(botUser.ShindenId.Value, user);
+            using var stream = await GetSiteStatisticAsync(databaseUser.ShindenId.Value, user);
                 
             if (stream == null)
             {
@@ -221,7 +222,7 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            var profileUrl = UrlHelpers.GetProfileURL(botUser.ShindenId.Value);
+            var profileUrl = UrlHelpers.GetProfileURL(databaseUser.ShindenId.Value);
 
             await Context.Channel.SendFileAsync(stream, $"{user.Id}.png", $"{profileUrl}");
         }
@@ -307,8 +308,11 @@ namespace Sanakan.DiscordBot.Modules
                 }
             }
 
-            if (splited[toChek].Equals("forum.shinden.pl") || splited[toChek].Equals("www.forum.shinden.pl"))
+            if (splited[toChek].Equals("forum.shinden.pl")
+                || splited[toChek].Equals("www.forum.shinden.pl"))
+            {
                 return UrlParsingError.InvalidUrlForum;
+            }
 
             return UrlParsingError.InvalidUrl;
         }

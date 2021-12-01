@@ -358,6 +358,15 @@ namespace Sanakan.DiscordBot.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Ta osoba nie ma profilu bota..
+        /// </summary>
+        internal static string UserDoesNotExistInDatabase {
+            get {
+                return ResourceManager.GetString("UserDoesNotExistInDatabase", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {0} nie masz żadnych kart..
         /// </summary>
         internal static string UserNoCards {
