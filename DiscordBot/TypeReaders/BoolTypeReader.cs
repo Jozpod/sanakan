@@ -4,9 +4,7 @@ using System.Threading.Tasks;
 
 namespace Sanakan.TypeReaders
 {
-    /// <summary>
-    /// 
-    /// </summary>
+    /// <inheritdoc/>
     public class BoolTypeReader : TypeReader
     {
         public override Task<TypeReaderResult> ReadAsync(ICommandContext context, string input, IServiceProvider services)

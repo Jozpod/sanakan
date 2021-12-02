@@ -42,12 +42,13 @@ namespace Sanakan.DAL.Models
             {
                 str += $"**{answer.Number}**: {answer.Content}\n";
             }
+
             return str;
         }
 
         public void RandomizeAnswers(IRandomNumberGenerator randomNumberGenerator)
         {
-            var numbersColeration = new List<Tuple<int, int>>();
+            var numbersColeration = new List<(int, int)>();
             var possibleAnswers = Answers.Select(x => x.Number).ToList();
 
             foreach (var answer in Answers)
@@ -55,7 +56,7 @@ namespace Sanakan.DAL.Models
                 var num = randomNumberGenerator.GetOneRandomFrom(possibleAnswers);
                 possibleAnswers.Remove(num);
 
-                numbersColeration.Add(new Tuple<int, int>(num, answer.Number));
+                numbersColeration.Add((num, answer.Number));
                 answer.Number = num;
             }
 

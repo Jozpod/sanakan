@@ -169,12 +169,12 @@ namespace Sanakan.Daemon.HostedService
                     }
                 }
 
-                if (config.ChannelsWithoutExperience.Any(x => x.Channel == message.Channel.Id))
+                if (config.ChannelsWithoutExperience.Any(x => x.ChannelId == message.Channel.Id))
                 {
                     calculateExperience = false;
                 }
 
-                if (config.IgnoredChannels.Any(x => x.Channel == message.Channel.Id))
+                if (config.IgnoredChannels.Any(x => x.ChannelId == message.Channel.Id))
                 {
                     countMessages = false;
                 }

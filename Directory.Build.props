@@ -10,6 +10,11 @@
     </PropertyGroup>
 
     <PropertyGroup>
+        <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+        <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
+    </PropertyGroup>
+
+    <PropertyGroup>
         <GenerateDocumentationFromFile>true</GenerateDocumentationFromFile>
         <CodeAnalysisRuleSet>$(MSBuildThisFileDirectory)stylecop.ruleset</CodeAnalysisRuleSet>
     </PropertyGroup>

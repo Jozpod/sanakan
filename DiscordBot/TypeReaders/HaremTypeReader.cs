@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 
 namespace Sanakan.TypeReaders
 {
+    /// <inheritdoc/>
     public class HaremTypeReader : TypeReader
     {
         public override Task<TypeReaderResult> ReadAsync(ICommandContext context, string input, IServiceProvider services)

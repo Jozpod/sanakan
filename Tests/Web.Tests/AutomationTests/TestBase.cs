@@ -21,7 +21,9 @@ using System.Threading.Tasks;
 
 namespace Sanakan.Web.Tests.AutomationTests
 {
+#if DEBUG
     [TestClass]
+#endif
     public partial class TestBase
     {
         protected static HttpClient _client;

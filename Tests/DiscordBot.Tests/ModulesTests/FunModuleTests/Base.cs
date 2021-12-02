@@ -8,6 +8,7 @@ using Sanakan.DiscordBot.Session;
 using Sanakan.Game.Services;
 using Sanakan.Common.Cache;
 using Sanakan.DAL.Repositories.Abstractions;
+using Sanakan.Game.Services.Abstractions;
 
 namespace DiscordBot.ModulesTests.FunModuleTests
 {
@@ -23,7 +24,7 @@ namespace DiscordBot.ModulesTests.FunModuleTests
         protected readonly Mock<ICacheManager> _cacheManagerMock = new(MockBehavior.Strict);
         protected readonly Mock<ISystemClock> _systemClockMock = new(MockBehavior.Strict);
         protected readonly Mock<IRandomNumberGenerator> _randomNumberGeneratorMock = new(MockBehavior.Strict);
-        protected readonly Mock<SlotMachine> _slotMachineMock = new(MockBehavior.Strict);
+        protected readonly Mock<ISlotMachine> _slotMachineMock = new(MockBehavior.Strict);
         protected readonly Mock<ITaskManager> _taskManagerMock = new(MockBehavior.Strict);
 
         public Base()

@@ -23,7 +23,9 @@ using System.Threading.Tasks;
 
 namespace Sanakan.DiscordBot.Tests.IntegrationTests
 {
+#if DEBUG
     [TestClass]
+#endif
     public partial class TestBase
     {
         private static ServiceProvider _serviceProvider;
@@ -144,19 +146,18 @@ namespace Sanakan.DiscordBot.Tests.IntegrationTests
         {
             var userMessage = message as IUserMessage;
 
-            if(userMessage == null)
+            if (userMessage == null)
             {
                 return Task.CompletedTask;
             }
 
-            if(message.Author.Id == FakeUser.Id)
+            if (message.Author.Id == FakeUser.Id)
             {
                 return Task.CompletedTask;
             }
 
             LastMessage = userMessage;
 
-            Console.WriteLine("message");
             _semaphore.Release();
             return Task.CompletedTask;
         }

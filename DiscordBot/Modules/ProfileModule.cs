@@ -151,7 +151,7 @@ namespace Sanakan.DiscordBot.Modules
 
             var config = await _guildConfigRepository.GetCachedGuildFullConfigAsync(Context.Guild.Id);
             var selfRole = config.SelfRoles.FirstOrDefault(x => x.Name == name);
-            var gRole = Context.Guild.GetRole(selfRole?.Role ?? 0);
+            var gRole = Context.Guild.GetRole(selfRole?.RoleId ?? 0);
 
             if (gRole == null)
             {
@@ -183,7 +183,7 @@ namespace Sanakan.DiscordBot.Modules
 
             var config = await _guildConfigRepository.GetCachedGuildFullConfigAsync(Context.Guild.Id);
             var selfRole = config.SelfRoles.FirstOrDefault(x => x.Name == name);
-            var guildRole = Context.Guild.GetRole(selfRole?.Role ?? 0);
+            var guildRole = Context.Guild.GetRole(selfRole?.RoleId ?? 0);
 
             if (guildRole == null)
             {
@@ -217,7 +217,7 @@ namespace Sanakan.DiscordBot.Modules
             string stringRole = "";
             foreach (var selfRole in config.SelfRoles)
             {
-                var gRole = guild.GetRole(selfRole?.Role ?? 0);
+                var gRole = guild.GetRole(selfRole?.RoleId ?? 0);
                 stringRole += $" `{selfRole.Name}` ";
             }
 

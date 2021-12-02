@@ -6858,8 +6858,7 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\jozefpodlecki\\.nuget\\packages\\": {},
-    "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder": {}
+    "C:\\Users\\jozefpodlecki\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "0.0.1",
@@ -6870,9 +6869,6 @@
       "packagesPath": "C:\\Users\\jozefpodlecki\\.nuget\\packages\\",
       "outputPath": "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\DiscordBot\\obj\\",
       "projectStyle": "PackageReference",
-      "fallbackFolders": [
-        "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
-      ],
       "configFilePaths": [
         "C:\\Users\\jozefpodlecki\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
@@ -6913,6 +6909,9 @@
         "warnAsError": [
           "NU1605"
         ]
+      },
+      "restoreLockProperties": {
+        "restorePackagesWithLockFile": "true"
       }
     },
     "frameworks": {

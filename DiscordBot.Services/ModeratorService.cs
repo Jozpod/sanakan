@@ -130,7 +130,7 @@ namespace Sanakan.DiscordBot.Services
             {
                 foreach (var role in config.SelfRoles)
                 {
-                    var mention = guild.GetRole(role.Role)?.Mention ?? "usunięta";
+                    var mention = guild.GetRole(role.RoleId)?.Mention ?? "usunięta";
                     stringBuilder.AppendFormat("*{0}* - {1}\n", role.Name, mention);
                 }
             }
@@ -199,7 +199,7 @@ namespace Sanakan.DiscordBot.Services
             {
                 foreach (var rolePerLevel in config.RolesPerLevel.OrderBy(x => x.Level))
                 {
-                    var mention = guild.GetRole(rolePerLevel.Role)?.Mention ?? "usunięta";
+                    var mention = guild.GetRole(rolePerLevel.RoleId)?.Mention ?? "usunięta";
                     stringBuilder.AppendFormat("*{0}*: {1}\n", rolePerLevel.Level, mention);
                 }
             }
@@ -293,8 +293,8 @@ namespace Sanakan.DiscordBot.Services
             {
                 foreach (var ignoredChannel in config.IgnoredChannels)
                 {
-                    var channel = await guild.GetTextChannelAsync(ignoredChannel.Channel);
-                    var mention = channel?.Mention ?? ignoredChannel.Channel.ToString();
+                    var channel = await guild.GetTextChannelAsync(ignoredChannel.ChannelId);
+                    var mention = channel?.Mention ?? ignoredChannel.ChannelId.ToString();
                     stringBuilder.AppendFormat("{0}\n", mention);
                 }
             }
@@ -316,8 +316,8 @@ namespace Sanakan.DiscordBot.Services
             {
                 foreach (var channelWithoutExperience in config.ChannelsWithoutExperience)
                 {
-                    var channel = await guild.GetTextChannelAsync(channelWithoutExperience.Channel);
-                    var mention = channel?.Mention ?? channelWithoutExperience.Channel.ToString();
+                    var channel = await guild.GetTextChannelAsync(channelWithoutExperience.ChannelId);
+                    var mention = channel?.Mention ?? channelWithoutExperience.ChannelId.ToString();
                     stringBuilder.AppendFormat("{0}\n", mention);
                 }
             }
@@ -339,8 +339,8 @@ namespace Sanakan.DiscordBot.Services
             {
                 foreach (var channelWithoutSupervision in config.ChannelsWithoutSupervision)
                 {
-                    var channel = await guild.GetTextChannelAsync(channelWithoutSupervision.Channel);
-                    var mention = channel?.Mention ?? channelWithoutSupervision.Channel.ToString();
+                    var channel = await guild.GetTextChannelAsync(channelWithoutSupervision.ChannelId);
+                    var mention = channel?.Mention ?? channelWithoutSupervision.ChannelId.ToString();
                     stringBuilder.AppendFormat("{0}\n", mention);
                 }
             }

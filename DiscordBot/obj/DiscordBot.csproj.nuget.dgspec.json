@@ -13,9 +13,6 @@
         "packagesPath": "C:\\Users\\jozefpodlecki\\.nuget\\packages\\",
         "outputPath": "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\Common\\obj\\",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
-        ],
         "configFilePaths": [
           "C:\\Users\\jozefpodlecki\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
@@ -37,6 +34,9 @@
           "warnAsError": [
             "NU1605"
           ]
+        },
+        "restoreLockProperties": {
+          "restorePackagesWithLockFile": "true"
         }
       },
       "frameworks": {
@@ -110,9 +110,6 @@
         "packagesPath": "C:\\Users\\jozefpodlecki\\.nuget\\packages\\",
         "outputPath": "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\DAL\\obj\\",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
-        ],
         "configFilePaths": [
           "C:\\Users\\jozefpodlecki\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
@@ -138,6 +135,9 @@
           "warnAsError": [
             "NU1605"
           ]
+        },
+        "restoreLockProperties": {
+          "restorePackagesWithLockFile": "true"
         }
       },
       "frameworks": {
@@ -199,9 +199,6 @@
         "packagesPath": "C:\\Users\\jozefpodlecki\\.nuget\\packages\\",
         "outputPath": "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\DiscordBot.Abstractions\\obj\\",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
-        ],
         "configFilePaths": [
           "C:\\Users\\jozefpodlecki\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
@@ -230,6 +227,9 @@
           "warnAsError": [
             "NU1605"
           ]
+        },
+        "restoreLockProperties": {
+          "restorePackagesWithLockFile": "true"
         }
       },
       "frameworks": {
@@ -279,9 +279,6 @@
         "packagesPath": "C:\\Users\\jozefpodlecki\\.nuget\\packages\\",
         "outputPath": "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\DiscordBot.Services\\obj\\",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
-        ],
         "configFilePaths": [
           "C:\\Users\\jozefpodlecki\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
@@ -319,6 +316,9 @@
           "warnAsError": [
             "NU1605"
           ]
+        },
+        "restoreLockProperties": {
+          "restorePackagesWithLockFile": "true"
         }
       },
       "frameworks": {
@@ -380,9 +380,6 @@
         "packagesPath": "C:\\Users\\jozefpodlecki\\.nuget\\packages\\",
         "outputPath": "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\DiscordBot.Session\\obj\\",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
-        ],
         "configFilePaths": [
           "C:\\Users\\jozefpodlecki\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
@@ -420,6 +417,9 @@
           "warnAsError": [
             "NU1605"
           ]
+        },
+        "restoreLockProperties": {
+          "restorePackagesWithLockFile": "true"
         }
       },
       "frameworks": {
@@ -469,9 +469,6 @@
         "packagesPath": "C:\\Users\\jozefpodlecki\\.nuget\\packages\\",
         "outputPath": "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\DiscordBot\\obj\\",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
-        ],
         "configFilePaths": [
           "C:\\Users\\jozefpodlecki\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
@@ -512,6 +509,9 @@
           "warnAsError": [
             "NU1605"
           ]
+        },
+        "restoreLockProperties": {
+          "restorePackagesWithLockFile": "true"
         }
       },
       "frameworks": {
@@ -573,9 +573,6 @@
         "packagesPath": "C:\\Users\\jozefpodlecki\\.nuget\\packages\\",
         "outputPath": "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\Game\\obj\\",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
-        ],
         "configFilePaths": [
           "C:\\Users\\jozefpodlecki\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
@@ -607,6 +604,9 @@
           "warnAsError": [
             "NU1605"
           ]
+        },
+        "restoreLockProperties": {
+          "restorePackagesWithLockFile": "true"
         }
       },
       "frameworks": {
@@ -664,9 +664,6 @@
         "packagesPath": "C:\\Users\\jozefpodlecki\\.nuget\\packages\\",
         "outputPath": "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\ShindenApi\\obj\\",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
-        ],
         "configFilePaths": [
           "C:\\Users\\jozefpodlecki\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
@@ -692,6 +689,9 @@
           "warnAsError": [
             "NU1605"
           ]
+        },
+        "restoreLockProperties": {
+          "restorePackagesWithLockFile": "true"
         }
       },
       "frameworks": {
@@ -757,9 +757,6 @@
         "packagesPath": "C:\\Users\\jozefpodlecki\\.nuget\\packages\\",
         "outputPath": "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\TaskQueue\\obj\\",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
-        ],
         "configFilePaths": [
           "C:\\Users\\jozefpodlecki\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
@@ -794,6 +791,9 @@
           "warnAsError": [
             "NU1605"
           ]
+        },
+        "restoreLockProperties": {
+          "restorePackagesWithLockFile": "true"
         }
       },
       "frameworks": {

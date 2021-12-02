@@ -82,17 +82,42 @@ namespace Sanakan.DAL.Models
         /// The Discord user identifier.
         /// </summary>
         public ulong UserId { get; set; }
+
         [JsonIgnore]
         public virtual User User { get; set; }
 
         public string GetUserNameStatus()
         {
-            if (Karma >= 2000) return $"Papaj";
-            if (Karma >= 1600) return $"Miłościwy kumpel";
-            if (Karma >= 1200) return $"Oślepiony bugiem";
-            if (Karma >= 800) return $"Pan pokoiku";
-            if (Karma >= 400) return $"Błogosławiony rycerz";
-            if (Karma >= 200) return $"Pionek buga";
+            if (Karma >= 2000)
+            {
+                return $"Papaj";
+            }
+
+            if (Karma >= 1600)
+            {
+                return $"Miłościwy kumpel";
+            }
+
+            if (Karma >= 1200)
+            {
+                return $"Oślepiony bugiem";
+            }
+
+            if (Karma >= 800)
+            {
+                return $"Pan pokoiku";
+            }
+
+            if (Karma >= 400)
+            {
+                return $"Błogosławiony rycerz";
+            }
+
+            if (Karma >= 200)
+            {
+                return $"Pionek buga";
+            }
+
             if (Karma >= 100) return $"Sługa buga";
             if (Karma >= 50) return $"Biały koleś";
             if (Karma >= 10) return $"Pantofel";

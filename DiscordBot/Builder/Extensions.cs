@@ -8,6 +8,7 @@ using Sanakan.Common.Models;
 using Sanakan.DAL.Models;
 using Sanakan.DiscordBot.Services;
 using Sanakan.Game.Models;
+using System;
 
 namespace Sanakan.DiscordBot.Builder
 {
@@ -44,6 +45,8 @@ namespace Sanakan.DiscordBot.Builder
             commandService.AddTypeReader<HaremType>(new TypeReaders.HaremTypeReader());
             commandService.AddTypeReader<TopType>(new TypeReaders.TopTypeReader());
             commandService.AddTypeReader<bool>(new TypeReaders.BoolTypeReader());
+            commandService.AddTypeReader<Uri>(new TypeReaders.UrlTypeReader());
+            commandService.AddTypeReader<TimeSpan>(new TypeReaders.TimespanTypeReader());
         }
 
         public static ResourceManagerBuilder AddImageResources(this ResourceManagerBuilder builder)

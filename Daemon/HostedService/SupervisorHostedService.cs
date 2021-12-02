@@ -233,7 +233,7 @@ namespace Sanakan.Daemon.HostedService
 
             var channel = message.Channel;
 
-            if (gConfig.ChannelsWithoutSupervision.Any(x => x.Channel == channel.Id))
+            if (gConfig.ChannelsWithoutSupervision.Any(x => x.ChannelId == channel.Id))
             {
                 return;
             }

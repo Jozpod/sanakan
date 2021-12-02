@@ -9,7 +9,7 @@ namespace Sanakan.DAL.Models.Configuration
 
         [StringLength(100)]
         [Required]
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
         /// <summary>
         /// The Discord role identifier of land manager.

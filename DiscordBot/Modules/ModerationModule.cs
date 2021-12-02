@@ -751,7 +751,7 @@ namespace Sanakan.DiscordBot.Modules
 
             var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(guildId);
 
-            var levelRole = config.RolesPerLevel.FirstOrDefault(x => x.Role == role.Id);
+            var levelRole = config.RolesPerLevel.FirstOrDefault(x => x.RoleId == role.Id);
             if (levelRole != null)
             {
                 config.RolesPerLevel.Remove(levelRole);
@@ -765,7 +765,7 @@ namespace Sanakan.DiscordBot.Modules
 
             levelRole = new LevelRole
             {
-                Role = role.Id,
+                RoleId = role.Id,
                 Level = level
             };
             config.RolesPerLevel.Add(levelRole);
@@ -793,7 +793,7 @@ namespace Sanakan.DiscordBot.Modules
 
             var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(guildId);
 
-            var selfRole = config.SelfRoles.FirstOrDefault(x => x.Role == role.Id);
+            var selfRole = config.SelfRoles.FirstOrDefault(x => x.RoleId == role.Id);
 
             if (selfRole != null)
             {
@@ -814,7 +814,7 @@ namespace Sanakan.DiscordBot.Modules
 
             selfRole = new SelfRole
             {
-                Role = role.Id,
+                RoleId = role.Id,
                 Name = name
             };
             config.SelfRoles.Add(selfRole);
@@ -1373,7 +1373,7 @@ namespace Sanakan.DiscordBot.Modules
             var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(guildId);
 
             var ignoredChannel = config.IgnoredChannels
-                .FirstOrDefault(x => x.Channel == channelId);
+                .FirstOrDefault(x => x.ChannelId == channelId);
 
             if (ignoredChannel != null)
             {
@@ -1389,7 +1389,7 @@ namespace Sanakan.DiscordBot.Modules
 
             ignoredChannel = new WithoutMessageCountChannel
             {
-                Channel = channelId
+                ChannelId = channelId
             };
             config.IgnoredChannels.Add(ignoredChannel);
 
@@ -1410,7 +1410,7 @@ namespace Sanakan.DiscordBot.Modules
             var channelName = Context.Channel.Name;
             var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(guildId);
 
-            var chan = config.ChannelsWithoutExperience.FirstOrDefault(x => x.Channel == Context.Channel.Id);
+            var chan = config.ChannelsWithoutExperience.FirstOrDefault(x => x.ChannelId == Context.Channel.Id);
             if (chan != null)
             {
                 config.ChannelsWithoutExperience.Remove(chan);
@@ -1425,7 +1425,7 @@ namespace Sanakan.DiscordBot.Modules
 
             chan = new WithoutExpChannel
             {
-                Channel = Context.Channel.Id
+                ChannelId = Context.Channel.Id
             };
             config.ChannelsWithoutExperience.Add(chan);
             await _guildConfigRepository.SaveChangesAsync();
@@ -1445,7 +1445,7 @@ namespace Sanakan.DiscordBot.Modules
             var channelName = Context.Channel.Name;
             var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(Context.Guild.Id);
 
-            var chan = config.ChannelsWithoutSupervision.FirstOrDefault(x => x.Channel == Context.Channel.Id);
+            var chan = config.ChannelsWithoutSupervision.FirstOrDefault(x => x.ChannelId == Context.Channel.Id);
             if (chan != null)
             {
                 config.ChannelsWithoutSupervision.Remove(chan);
@@ -1458,7 +1458,7 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            chan = new WithoutSupervisionChannel { Channel = Context.Channel.Id };
+            chan = new WithoutSupervisionChannel { ChannelId = Context.Channel.Id };
             config.ChannelsWithoutSupervision.Add(chan);
             await _guildConfigRepository.SaveChangesAsync();
 

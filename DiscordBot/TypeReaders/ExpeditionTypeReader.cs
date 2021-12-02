@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 
 namespace Sanakan.TypeReaders
 {
+    /// <inheritdoc/>
     public class ExpeditionTypeReader : TypeReader
     {
         public override Task<TypeReaderResult> ReadAsync(ICommandContext context, string input, IServiceProvider services)

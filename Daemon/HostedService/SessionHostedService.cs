@@ -172,7 +172,7 @@ namespace Sanakan.Daemon.HostedService
                 Client = client,
                 Channel = message.Channel,
                 Message = userMessage,
-                User = userMessage.Author,
+                UserId = userMessage.Author.Id,
             };
 
             await RunSessions(userSessions, sessionPayload).ConfigureAwait(false);
@@ -215,9 +215,9 @@ namespace Sanakan.Daemon.HostedService
                 return;
             }
 
-            var socketUserMessage = message as IUserMessage;
+            var uuserMessage = message as IUserMessage;
             
-            if (socketUserMessage == null)
+            if (uuserMessage == null)
             {
                 return;
             }
@@ -227,9 +227,9 @@ namespace Sanakan.Daemon.HostedService
             var sessionPayload = new SessionContext
             {
                 Client = client,
-                Channel = socketUserMessage.Channel,
-                Message = socketUserMessage,
-                User = reactionUser,
+                Channel = uuserMessage.Channel,
+                Message = uuserMessage,
+                UserId = reactionUser.Id,
                 AddReaction = reaction,
             };
 
@@ -287,7 +287,7 @@ namespace Sanakan.Daemon.HostedService
                 Client = client,
                 Channel = socketUserMessage.Channel,
                 Message = socketUserMessage,
-                User = reactionUser,
+                UserId = reactionUser.Id,
                 RemoveReaction = reaction,
             };
 

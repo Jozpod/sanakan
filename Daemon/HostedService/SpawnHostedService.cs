@@ -384,7 +384,7 @@ namespace Sanakan.Daemon.HostedService
                 return;
             }
 
-            var noExperience = guildConfig.ChannelsWithoutExperience.Any(x => x.Channel == userMessage.Channel.Id);
+            var noExperience = guildConfig.ChannelsWithoutExperience.Any(x => x.ChannelId == userMessage.Channel.Id);
 
             if (!noExperience)
             {

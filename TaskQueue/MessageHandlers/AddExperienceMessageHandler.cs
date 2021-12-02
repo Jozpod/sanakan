@@ -123,7 +123,7 @@ namespace Sanakan.TaskQueue.MessageHandlers
 
             foreach (var lvlRole in config.RolesPerLevel)
             {
-                var role = discordUser.Guild.GetRole(lvlRole.Role);
+                var role = discordUser.Guild.GetRole(lvlRole.RoleId);
                 if (role == null)
                 {
                     continue;

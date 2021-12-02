@@ -455,6 +455,9 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks(""), RequireCommandChannel]
         public async Task ShowRiddleAsync()
         {
+            var userId = Context.User.Id;
+            var mention = Context.User.Mention;
+
             var riddles = new List<Question>();
             riddles = await _questionRepository.GetCachedAllQuestionsAsync();
 
@@ -465,14 +468,14 @@ namespace Sanakan.DiscordBot.Modules
             var message = await ReplyAsync(riddle.Get());
             await message.AddReactionsAsync(riddle.GetEmotes());
 
-            await _taskManager.Delay(TimeSpan.FromMilliseconds(15000));
+            await _taskManager.Delay(TimeSpan.FromSeconds(15));
 
             int answers = 0;
             var react = await message.GetReactionUsersAsync(riddle.GetRightEmote(), 100).FlattenAsync();
-            foreach (var addR in riddle.GetEmotes())
+            foreach (var addReactions in riddle.GetEmotes())
             {
-                var re = await message.GetReactionUsersAsync(addR, 100).FlattenAsync();
-                if (re.Any(x => x.Id == Context.User.Id))
+                var reactionUsers = await message.GetReactionUsersAsync(addReactions, 100).FlattenAsync();
+                if (reactionUsers.Any(x => x.Id == userId))
                 {
                     answers++;
                 }
@@ -480,19 +483,19 @@ namespace Sanakan.DiscordBot.Modules
 
             await message.RemoveAllReactionsAsync();
 
-            if (react.Any(x => x.Id == Context.User.Id) && answers < 2)
+            if (react.Any(x => x.Id == userId) && answers < 2)
             {
-                await ReplyAsync("", false, $"{Context.User.Mention} zgadłeś!"
+                await ReplyAsync("", false, $"{mention} zgadłeś!"
                     .ToEmbedMessage(EMType.Success).Build());
             }
             else if (answers > 1)
             {
-                await ReplyAsync("", false, $"{Context.User.Mention} wybrałeś więcej jak jedną odpowiedź!"
+                await ReplyAsync("", false, $"{mention} wybrałeś więcej jak jedną odpowiedź!"
                     .ToEmbedMessage(EMType.Error).Build());
             }
             else
             {
-                await ReplyAsync("", false, $"{Context.User.Mention} pudło!"
+                await ReplyAsync("", false, $"{mention} pudło!"
                     .ToEmbedMessage(EMType.Error).Build());
             }
         }
