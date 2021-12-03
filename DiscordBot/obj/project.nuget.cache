@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "jysILNDp42nwjavreNvHk0FAsMaDPN5CZt7aVPHcVY8P7aLqgUc+VzJ0sZtC9SfAeRNlqqlS8iJHEgkKvYXOUQ==",
+  "dgSpecHash": "6SnDGKQc/PZJLLkqqY2vnPokQ+3mV8VKCc0fOy5ErYhUBGsnHXJaKjCrb0OYKPvXuoRrIZDRKF0JOND3u2h7fA==",
   "success": true,
   "projectFilePath": "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\DiscordBot\\DiscordBot.csproj",
   "expectedPackageFiles": [
@@ -68,8 +68,6 @@
     "C:\\Users\\jozefpodlecki\\.nuget\\packages\\sqlitepclraw.core\\2.0.4\\sqlitepclraw.core.2.0.4.nupkg.sha512",
     "C:\\Users\\jozefpodlecki\\.nuget\\packages\\sqlitepclraw.lib.e_sqlite3\\2.0.4\\sqlitepclraw.lib.e_sqlite3.2.0.4.nupkg.sha512",
     "C:\\Users\\jozefpodlecki\\.nuget\\packages\\sqlitepclraw.provider.dynamic_cdecl\\2.0.4\\sqlitepclraw.provider.dynamic_cdecl.2.0.4.nupkg.sha512",
-    "C:\\Users\\jozefpodlecki\\.nuget\\packages\\stylecop.analyzers\\1.2.0-beta.354\\stylecop.analyzers.1.2.0-beta.354.nupkg.sha512",
-    "C:\\Users\\jozefpodlecki\\.nuget\\packages\\stylecop.analyzers.unstable\\1.2.0.354\\stylecop.analyzers.unstable.1.2.0.354.nupkg.sha512",
     "C:\\Users\\jozefpodlecki\\.nuget\\packages\\system.buffers\\4.5.0\\system.buffers.4.5.0.nupkg.sha512",
     "C:\\Users\\jozefpodlecki\\.nuget\\packages\\system.collections\\4.3.0\\system.collections.4.3.0.nupkg.sha512",
     "C:\\Users\\jozefpodlecki\\.nuget\\packages\\system.collections.concurrent\\4.3.0\\system.collections.concurrent.4.3.0.nupkg.sha512",

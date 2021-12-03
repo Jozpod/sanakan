@@ -79,9 +79,9 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            var botuser = await _userRepository.GetCachedFullUserAsync(effectiveUser.Id);
+            var databaseUser = await _userRepository.GetCachedFullUserAsync(effectiveUser.Id);
 
-            if (botuser == null)
+            if (databaseUser == null)
             {
                 await ReplyAsync(embed: Strings.UserDoesNotExistInDatabase.ToEmbedMessage(EMType.Error).Build());
                 return;
@@ -90,11 +90,11 @@ namespace Sanakan.DiscordBot.Modules
             var parameters = new object[]
             {
                 effectiveUser.Mention,
-                botuser?.ScCount,
-                botuser?.TcCount,
-                botuser?.AcCount,
-                botuser?.GameDeck?.CTCount,
-                botuser?.GameDeck?.PVPCoins,
+                databaseUser.ScCount,
+                databaseUser.TcCount,
+                databaseUser.AcCount,
+                databaseUser.GameDeck?.CTCount,
+                databaseUser.GameDeck?.PVPCoins,
             };
 
             var walletInfo = string.Format(Strings.WalletInfo, parameters);
@@ -149,9 +149,10 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            var config = await _guildConfigRepository.GetCachedGuildFullConfigAsync(Context.Guild.Id);
+            var guild = Context.Guild;
+            var config = await _guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
             var selfRole = config.SelfRoles.FirstOrDefault(x => x.Name == name);
-            var gRole = Context.Guild.GetRole(selfRole?.RoleId ?? 0);
+            var gRole = guild.GetRole(selfRole?.RoleId ?? 0);
 
             if (gRole == null)
             {
@@ -349,14 +350,14 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks(""), RequireAnyCommandChannel]
         public async Task ToggleWaifuViewInProfileAsync()
         {
-            var botuser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
-            botuser.ShowWaifuInProfile = !botuser.ShowWaifuInProfile;
+            var databaseUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
+            databaseUser.ShowWaifuInProfile = !databaseUser.ShowWaifuInProfile;
 
-            var result = botuser.ShowWaifuInProfile ? "załączony" : "wyłączony";
+            var result = databaseUser.ShowWaifuInProfile ? "załączony" : "wyłączony";
 
             await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(CacheKeys.User(botuser.Id), CacheKeys.Users);
+            _cacheManager.ExpireTag(CacheKeys.User(databaseUser.Id), CacheKeys.Users);
 
             var content = $"Podgląd waifu w profilu {Context.User.Mention} został {result}."
                 .ToEmbedMessage(EMType.Success).Build();
@@ -476,14 +477,14 @@ namespace Sanakan.DiscordBot.Modules
             var scCost = 3000;
             var tcCost = 1000;
             var mention = Context.User.Mention;
-            var botuser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
+            var databaseUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
 
-            if (botuser.ScCount < scCost && currency == SCurrency.Sc)
+            if (databaseUser.ScCount < scCost && currency == SCurrency.Sc)
             {
                 await ReplyAsync(embed: $"{mention} nie posiadasz wystarczającej liczby SC!".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
-            if (botuser.TcCount < tcCost && currency == SCurrency.Tc)
+            if (databaseUser.TcCount < tcCost && currency == SCurrency.Tc)
             {
                 await ReplyAsync(embed: $"{mention} nie posiadasz wystarczającej liczby TC!".ToEmbedMessage(EMType.Error).Build());
                 return;
@@ -493,11 +494,11 @@ namespace Sanakan.DiscordBot.Modules
             {
                 case ProfileType.Image:
                 case ProfileType.StatisticsWithImage:
-                    var saveResult = await _profileService.SaveProfileImageAsync(imageUrl, $"{Paths.SavedData}/SR{botuser.Id}.png", 325, 272);
+                    var saveResult = await _profileService.SaveProfileImageAsync(imageUrl, $"{Paths.SavedData}/SR{databaseUser.Id}.png", 325, 272);
 
                     if (saveResult == SaveResult.Success)
                     {
-                        botuser.StatsReplacementProfileUri = $"{Paths.SavedData}/SR{botuser.Id}.png";
+                        databaseUser.StatsReplacementProfileUri = $"{Paths.SavedData}/SR{databaseUser.Id}.png";
                         break;
                     }
                     else if (saveResult == SaveResult.BadUrl)
@@ -514,17 +515,17 @@ namespace Sanakan.DiscordBot.Modules
 
             if (currency == SCurrency.Sc)
             {
-                botuser.ScCount -= scCost;
+                databaseUser.ScCount -= scCost;
             }
             else
             {
-                botuser.TcCount -= tcCost;
+                databaseUser.TcCount -= tcCost;
             }
-            botuser.ProfileType = profileType;
+            databaseUser.ProfileType = profileType;
 
             await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(CacheKeys.User(botuser.Id), CacheKeys.Users);
+            _cacheManager.ExpireTag(CacheKeys.User(databaseUser.Id), CacheKeys.Users);
 
             var content = $"Zmieniono styl profilu użytkownika: {mention}!".ToEmbedMessage(EMType.Success).Build();
             await ReplyAsync(embed: content);
@@ -542,24 +543,24 @@ namespace Sanakan.DiscordBot.Modules
             var scCost = 5000;
             var mention = Context.User.Mention;
 
-            var botuser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
-            if (botuser.ScCount < scCost && currency == SCurrency.Sc)
+            var databaseUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
+            if (databaseUser.ScCount < scCost && currency == SCurrency.Sc)
             {
                 await ReplyAsync(embed: $"{mention} nie posiadasz wystarczającej liczby SC!".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
-            if (botuser.TcCount < tcCost && currency == SCurrency.Tc)
+            if (databaseUser.TcCount < tcCost && currency == SCurrency.Tc)
             {
                 await ReplyAsync(embed: $"{mention} nie posiadasz wystarczającej liczby TC!".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
-            var savePath = $"{Paths.SavedData}/BG{botuser.Id}.png";
+            var savePath = $"{Paths.SavedData}/BG{databaseUser.Id}.png";
             var saveResult = await _profileService.SaveProfileImageAsync(imageUrl, savePath, 450, 145, true);
             
             if (saveResult == SaveResult.Success)
             {
-                botuser.BackgroundProfileUri = $"{Paths.SavedData}/BG{botuser.Id}.png";
+                databaseUser.BackgroundProfileUri = $"{Paths.SavedData}/BG{databaseUser.Id}.png";
             }
             else if (saveResult == SaveResult.BadUrl)
             {
@@ -574,16 +575,16 @@ namespace Sanakan.DiscordBot.Modules
 
             if (currency == SCurrency.Sc)
             {
-                botuser.ScCount -= scCost;
+                databaseUser.ScCount -= scCost;
             }
             else
             {
-                botuser.TcCount -= tcCost;
+                databaseUser.TcCount -= tcCost;
             }
 
             await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(CacheKeys.User(botuser.Id), CacheKeys.Users);
+            _cacheManager.ExpireTag(CacheKeys.User(databaseUser.Id), CacheKeys.Users);
 
             var content = $"Zmieniono tło profilu użytkownika: {mention}!".ToEmbedMessage(EMType.Success).Build();
             await ReplyAsync(embed: content);
@@ -669,8 +670,8 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            var botuser = await _userRepository.GetUserOrCreateAsync(user.Id);
-            var points = currency == SCurrency.Tc ? botuser.TcCount : botuser.ScCount;
+            var databaseUser = await _userRepository.GetUserOrCreateAsync(user.Id);
+            var points = currency == SCurrency.Tc ? databaseUser.TcCount : databaseUser.ScCount;
 
             if (points < color.Price(currency))
             {
@@ -680,14 +681,14 @@ namespace Sanakan.DiscordBot.Modules
 
             var guildId = Context.Guild.Id;
 
-            var colort = botuser.TimeStatuses
+            var colort = databaseUser.TimeStatuses
                 .FirstOrDefault(x => x.Type == StatusType.Color
                     && x.GuildId == guildId);
 
             if (colort == null)
             {
                 colort = new TimeStatus(StatusType.Color, guildId);
-                botuser.TimeStatuses.Add(colort);
+                databaseUser.TimeStatuses.Add(colort);
             }
 
             if (color == FColor.CleanColor)
@@ -718,17 +719,17 @@ namespace Sanakan.DiscordBot.Modules
 
                 if (currency == SCurrency.Tc)
                 {
-                    botuser.TcCount -= color.Price(currency);
+                    databaseUser.TcCount -= color.Price(currency);
                 }
                 else
                 {
-                    botuser.ScCount -= color.Price(currency);
+                    databaseUser.ScCount -= color.Price(currency);
                 }
             }
 
             await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(CacheKeys.User(botuser.Id), CacheKeys.Users);
+            _cacheManager.ExpireTag(CacheKeys.User(databaseUser.Id), CacheKeys.Users);
 
             await ReplyAsync(embed: $"{user.Mention} wykupił kolor!".ToEmbedMessage(EMType.Success).Build());
         }

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Sanakan.TaskQueue.MessageHandlers
 {
-    internal class GiveCardsMessageHandler : IMessageHandler<GiveCardsMessage>
+    internal class GiveCardsMessageHandler : BaseMessageHandler<GiveCardsMessage>
     {
         private readonly IUserRepository _userRepository;
         private readonly ICacheManager _cacheManager;
@@ -19,7 +19,7 @@ namespace Sanakan.TaskQueue.MessageHandlers
             _cacheManager = cacheManager;
         }
 
-        public async Task HandleAsync(GiveCardsMessage message)
+        public override async Task HandleAsync(GiveCardsMessage message)
         {
             var databaseUser = await _userRepository.GetUserOrCreateAsync(message.DiscordUserId);
 

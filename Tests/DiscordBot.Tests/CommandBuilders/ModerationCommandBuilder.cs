@@ -33,5 +33,20 @@ namespace Sanakan.DiscordBot.Tests.IntegrationTests
         /// <see cref="ModerationModule.AssingNumberToUsersAsync(string[])"/>.
         /// </summary>
         public static string AssingNumberToUsers(string prefix) => $"{prefix}mod pozycja gracza";
+
+        /// <summary>
+        /// <see cref="ModerationModule.CheckUserAsync(IGuildUser)"/>.
+        /// </summary>
+        public static string CheckUserAsync(string prefix, IGuildUser user) => $"{prefix}mod check {user.Mention}";
+
+        /// <summary>
+        /// <see cref="ModerationModule.GetRandomUserAsync(uint)"/>.
+        /// </summary>
+        public static string GetRandomUserAsync(string prefix) => $"{prefix}mod loteria";
+
+        /// <summary>
+        /// <see cref="ModerationModule.ResolveReportAsync(ulong, string?, string)"/>.
+        /// </summary>
+        public static string ResolveReport(string prefix) => $"{prefix}mod report";
     }
 }

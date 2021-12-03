@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Sanakan.TaskQueue.MessageHandlers
 {
-    internal class DeleteUserMessageHandler : IMessageHandler<DeleteUserMessage>
+    internal class DeleteUserMessageHandler : BaseMessageHandler<DeleteUserMessage>
     {
         private readonly IUserRepository _userRepository;
         private readonly ICacheManager _cacheManager;
@@ -19,7 +19,7 @@ namespace Sanakan.TaskQueue.MessageHandlers
             _cacheManager = cacheManager;
         }
 
-        public async Task HandleAsync(DeleteUserMessage message)
+        public override async Task HandleAsync(DeleteUserMessage message)
         {
             var databaseUser = await _userRepository.GetUserOrCreateAsync(message.DiscordUserId);
             var fakeUser = await _userRepository.GetUserOrCreateAsync(1);

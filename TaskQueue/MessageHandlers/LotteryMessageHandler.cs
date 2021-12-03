@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 
 namespace Sanakan.TaskQueue.MessageHandlers
 {
-    internal class LotteryMessageHandler : IMessageHandler<LotteryMessage>
+    internal class LotteryMessageHandler : BaseMessageHandler<LotteryMessage>
     {
         private readonly IRandomNumberGenerator _randomNumberGenerator;
         private readonly IUserRepository _userRepository;
@@ -32,7 +32,7 @@ namespace Sanakan.TaskQueue.MessageHandlers
             _cacheManager = cacheManager;
         }
 
-        public async Task HandleAsync(LotteryMessage message)
+        public override async Task HandleAsync(LotteryMessage message)
         {
             var userMessage = message.UserMessage;
             var user = await _userRepository.GetUserOrCreateAsync(message.DiscordUserId);

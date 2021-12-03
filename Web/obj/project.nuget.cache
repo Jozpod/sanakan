@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "gaP2DM+Qjr4SPvdYI6jMmhSOefygQNWC6uU7/AZ+n1oSH88vxSxUkH6danLuNxQKLAocWg9W2yvHNnsuJKOKfw==",
+  "dgSpecHash": "TKl+wFjQAcO7Qaxok8qKQRR17NluGrqCL2u/ctb0QY7TNFzQ+urLDIOg/OUCHEgOuqi3TF1k+A9YgUSzKEyKZg==",
   "success": true,
   "projectFilePath": "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\Web\\Web.csproj",
   "expectedPackageFiles": [
@@ -111,8 +111,6 @@
     "C:\\Users\\jozefpodlecki\\.nuget\\packages\\sqlitepclraw.core\\2.0.4\\sqlitepclraw.core.2.0.4.nupkg.sha512",
     "C:\\Users\\jozefpodlecki\\.nuget\\packages\\sqlitepclraw.lib.e_sqlite3\\2.0.4\\sqlitepclraw.lib.e_sqlite3.2.0.4.nupkg.sha512",
     "C:\\Users\\jozefpodlecki\\.nuget\\packages\\sqlitepclraw.provider.dynamic_cdecl\\2.0.4\\sqlitepclraw.provider.dynamic_cdecl.2.0.4.nupkg.sha512",
-    "C:\\Users\\jozefpodlecki\\.nuget\\packages\\stylecop.analyzers\\1.2.0-beta.354\\stylecop.analyzers.1.2.0-beta.354.nupkg.sha512",
-    "C:\\Users\\jozefpodlecki\\.nuget\\packages\\stylecop.analyzers.unstable\\1.2.0.354\\stylecop.analyzers.unstable.1.2.0.354.nupkg.sha512",
     "C:\\Users\\jozefpodlecki\\.nuget\\packages\\swashbuckle.aspnetcore.swagger\\6.2.3\\swashbuckle.aspnetcore.swagger.6.2.3.nupkg.sha512",
     "C:\\Users\\jozefpodlecki\\.nuget\\packages\\swashbuckle.aspnetcore.swaggergen\\6.2.3\\swashbuckle.aspnetcore.swaggergen.6.2.3.nupkg.sha512",
     "C:\\Users\\jozefpodlecki\\.nuget\\packages\\swashbuckle.aspnetcore.swaggerui\\6.2.3\\swashbuckle.aspnetcore.swaggerui.6.2.3.nupkg.sha512",

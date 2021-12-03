@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "g/kpo6JXjPVJk15IQWql9+ci4gP2oBnD1CxFvooh+vQcil/Joucp4CbcTwMnEec7FdyzM+n9kVPE9iaHtIpr8A==",
+  "dgSpecHash": "li7m0Gdn1G6RItQVYtJX4eQz5ftf8XpJp2CXFX8iTev3TYE7k87d9t4PJXapwS4HwqUT+wB5AC0yWarAsTIKXg==",
   "success": true,
   "projectFilePath": "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\DAL\\DAL.csproj",
   "expectedPackageFiles": [
@@ -52,8 +52,6 @@
     "C:\\Users\\jozefpodlecki\\.nuget\\packages\\sqlitepclraw.core\\2.0.4\\sqlitepclraw.core.2.0.4.nupkg.sha512",
     "C:\\Users\\jozefpodlecki\\.nuget\\packages\\sqlitepclraw.lib.e_sqlite3\\2.0.4\\sqlitepclraw.lib.e_sqlite3.2.0.4.nupkg.sha512",
     "C:\\Users\\jozefpodlecki\\.nuget\\packages\\sqlitepclraw.provider.dynamic_cdecl\\2.0.4\\sqlitepclraw.provider.dynamic_cdecl.2.0.4.nupkg.sha512",
-    "C:\\Users\\jozefpodlecki\\.nuget\\packages\\stylecop.analyzers\\1.2.0-beta.354\\stylecop.analyzers.1.2.0-beta.354.nupkg.sha512",
-    "C:\\Users\\jozefpodlecki\\.nuget\\packages\\stylecop.analyzers.unstable\\1.2.0.354\\stylecop.analyzers.unstable.1.2.0.354.nupkg.sha512",
     "C:\\Users\\jozefpodlecki\\.nuget\\packages\\system.collections\\4.3.0\\system.collections.4.3.0.nupkg.sha512",
     "C:\\Users\\jozefpodlecki\\.nuget\\packages\\system.collections.concurrent\\4.3.0\\system.collections.concurrent.4.3.0.nupkg.sha512",
     "C:\\Users\\jozefpodlecki\\.nuget\\packages\\system.collections.immutable\\5.0.0\\system.collections.immutable.5.0.0.nupkg.sha512",

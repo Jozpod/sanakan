@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Sanakan.TaskQueue.MessageHandlers
 {
-    internal class ReplaceCharacterIdsInCardMessageHandler : IMessageHandler<ReplaceCharacterIdsInCardMessage>
+    internal class ReplaceCharacterIdsInCardMessageHandler : BaseMessageHandler<ReplaceCharacterIdsInCardMessage>
     {
         private readonly ICardRepository _cardRepository;
         private readonly ICacheManager _cacheManager;
@@ -20,7 +20,7 @@ namespace Sanakan.TaskQueue.MessageHandlers
             _cacheManager = cacheManager;
         }
 
-        public async Task HandleAsync(ReplaceCharacterIdsInCardMessage message)
+        public override async Task HandleAsync(ReplaceCharacterIdsInCardMessage message)
         {
             var userRelease = new List<string>() { CacheKeys.Users };
             var cards = await _cardRepository.GetByCharacterIdAsync(message.OldCharacterId);

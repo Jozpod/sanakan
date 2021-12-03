@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace Sanakan.TaskQueue.MessageHandlers
 {
-    internal class SafariMessageHandler : IMessageHandler<SafariMessage>
+    internal class SafariMessageHandler : BaseMessageHandler<SafariMessage>
     {
         private readonly IUserRepository _userRepository;
         private readonly IUserAnalyticsRepository _userAnalyticsRepository;
@@ -36,7 +36,7 @@ namespace Sanakan.TaskQueue.MessageHandlers
             _waifuService = waifuService;
         }
 
-        public async Task HandleAsync(SafariMessage safariMessage)
+        public override async Task HandleAsync(SafariMessage safariMessage)
         {
             var embed = safariMessage.Embed;
             var winner = safariMessage.Winner;

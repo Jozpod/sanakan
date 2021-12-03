@@ -43,12 +43,12 @@ namespace Sanakan.Web.Tests.IntegrationTests
         public async Task Should_Return_User_Cards()
         {
             var shindenUserId = 1ul;
-            var cards = await _client.GetFromJsonAsync<IEnumerable<Card>>($"user/{shindenUserId}/cards");
+            var cards = await _client.GetFromJsonAsync<IEnumerable<Card>>($"api/user/{shindenUserId}/cards");
             cards.Should().NotBeNull();
         }
 
         /// <summary>
-        /// Defines test for <see cref="WaifuController.GetUsersCardsByShindenIdWithOffsetAndFilterAsync(ulong, uint, uint, DAL.Repositories.CardsQueryFilter)"/> method.
+        /// Defines test for <see cref="WaifuController.GetUsersCardsByShindenIdWithOffsetAndFilterAsync(ulong, uint, uint, CardsQueryFilter)"/> method.
         /// </summary>
         [TestMethod]
         public async Task Should_Return_Filtered_User_Cards()
@@ -56,11 +56,8 @@ namespace Sanakan.Web.Tests.IntegrationTests
             var shindenUserId = 1ul;
             var offset = 0;
             var count = 0;
-            var filter = new CardsQueryFilter
-            {
-
-            };
-            var response = await _client.PostAsJsonAsync($"user/{shindenUserId}/cards/{offset}/{count}", filter);
+            var filter = new CardsQueryFilter();
+            var response = await _client.PostAsJsonAsync($"api/user/{shindenUserId}/cards/{offset}/{count}", filter);
             response.EnsureSuccessStatusCode();
             var result = await response.Content.ReadFromJsonAsync<FilteredCards>();
             result.Should().NotBeNull();

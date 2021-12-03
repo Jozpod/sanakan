@@ -1049,9 +1049,9 @@ namespace Sanakan.DiscordBot.Modules
             [Summary("jakość przedmiotu")]Quality quality = Quality.Broken)
         {
             var item = itemType.ToItem(count, quality);
-            var botuser = await _userRepository.GetUserOrCreateAsync(user.Id);
+            var databaseUser = await _userRepository.GetUserOrCreateAsync(user.Id);
 
-            var thisItem = botuser
+            var thisItem = databaseUser
                 .GameDeck
                 .Items
                 .FirstOrDefault(x => x.Type == item.Type 
@@ -1060,13 +1060,13 @@ namespace Sanakan.DiscordBot.Modules
             if (thisItem == null)
             {
                 thisItem = item;
-                botuser.GameDeck.Items.Add(thisItem);
+                databaseUser.GameDeck.Items.Add(thisItem);
             }
             else thisItem.Count += count;
 
             await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(CacheKeys.User(botuser.Id), CacheKeys.Users);
+            _cacheManager.ExpireTag(CacheKeys.User(databaseUser.Id), CacheKeys.Users);
 
             var cnt = (count > 1) ? $" x{count}" : "";
             var content = $"{user.Mention} otrzymał _{item.Name}_{cnt}.".ToEmbedMessage(EMType.Success).Build();
@@ -1159,14 +1159,14 @@ namespace Sanakan.DiscordBot.Modules
             [Summary("użytkownik")]IGuildUser user,
             [Summary("liczba SC")]long amount)
         {
-            var botuser = await _userRepository.GetUserOrCreateAsync(user.Id);
-            botuser.ScCount += amount;
+            var databaseUser = await _userRepository.GetUserOrCreateAsync(user.Id);
+            databaseUser.ScCount += amount;
 
             await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(CacheKeys.User(botuser.Id), CacheKeys.Users);
+            _cacheManager.ExpireTag(CacheKeys.User(databaseUser.Id), CacheKeys.Users);
 
-            var content = $"{user.Mention} ma teraz {botuser.ScCount} SC".ToEmbedMessage(EMType.Success).Build();
+            var content = $"{user.Mention} ma teraz {databaseUser.ScCount} SC".ToEmbedMessage(EMType.Success).Build();
             await ReplyAsync(embed: content);
         }
 
@@ -1177,14 +1177,14 @@ namespace Sanakan.DiscordBot.Modules
             [Summary("użytkownik")] IGuildUser user,
             [Summary("liczba AC")]long amount)
         {
-            var botuser = await _userRepository.GetUserOrCreateAsync(user.Id);
-            botuser.AcCount += amount;
+            var databaseUser = await _userRepository.GetUserOrCreateAsync(user.Id);
+            databaseUser.AcCount += amount;
 
             await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(CacheKeys.User(botuser.Id), CacheKeys.Users);
+            _cacheManager.ExpireTag(CacheKeys.User(databaseUser.Id), CacheKeys.Users);
 
-            await ReplyAsync(embed: $"{user.Mention} ma teraz {botuser.AcCount} AC".ToEmbedMessage(EMType.Success).Build());
+            await ReplyAsync(embed: $"{user.Mention} ma teraz {databaseUser.AcCount} AC".ToEmbedMessage(EMType.Success).Build());
         }
 
         [Command("tc"), Priority(1)]
@@ -1194,14 +1194,14 @@ namespace Sanakan.DiscordBot.Modules
             [Summary("użytkownik")] IGuildUser user,
             [Summary("liczba TC")]long amount)
         {
-            var botuser = await _userRepository.GetUserOrCreateAsync(user.Id);
-            botuser.TcCount += amount;
+            var databaseUser = await _userRepository.GetUserOrCreateAsync(user.Id);
+            databaseUser.TcCount += amount;
 
             await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(CacheKeys.User(botuser.Id), CacheKeys.Users);
+            _cacheManager.ExpireTag(CacheKeys.User(databaseUser.Id), CacheKeys.Users);
 
-            await ReplyAsync(embed: $"{user.Mention} ma teraz {botuser.TcCount} TC".ToEmbedMessage(EMType.Success).Build());
+            await ReplyAsync(embed: $"{user.Mention} ma teraz {databaseUser.TcCount} TC".ToEmbedMessage(EMType.Success).Build());
         }
 
         [Command("pc"), Priority(1)]
@@ -1211,14 +1211,14 @@ namespace Sanakan.DiscordBot.Modules
             [Summary("użytkownik")] IGuildUser user,
             [Summary("liczba PC")]long amount)
         {
-            var botuser = await _userRepository.GetUserOrCreateAsync(user.Id);
-            botuser.GameDeck.PVPCoins += amount;
+            var databaseUser = await _userRepository.GetUserOrCreateAsync(user.Id);
+            databaseUser.GameDeck.PVPCoins += amount;
 
             await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(CacheKeys.User(botuser.Id), CacheKeys.Users);
+            _cacheManager.ExpireTag(CacheKeys.User(databaseUser.Id), CacheKeys.Users);
 
-            await ReplyAsync(embed: $"{user.Mention} ma teraz {botuser.GameDeck.PVPCoins} PC".ToEmbedMessage(EMType.Success).Build());
+            await ReplyAsync(embed: $"{user.Mention} ma teraz {databaseUser.GameDeck.PVPCoins} PC".ToEmbedMessage(EMType.Success).Build());
         }
 
         [Command("ct"), Priority(1)]
@@ -1228,14 +1228,14 @@ namespace Sanakan.DiscordBot.Modules
             [Summary("użytkownik")] IGuildUser user,
             [Summary("liczba CT")]long amount)
         {
-            var botuser = await _userRepository.GetUserOrCreateAsync(user.Id);
-            botuser.GameDeck.CTCount += amount;
+            var databaseUser = await _userRepository.GetUserOrCreateAsync(user.Id);
+            databaseUser.GameDeck.CTCount += amount;
 
             await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(CacheKeys.User(botuser.Id), CacheKeys.Users);
+            _cacheManager.ExpireTag(CacheKeys.User(databaseUser.Id), CacheKeys.Users);
 
-            await ReplyAsync(embed: $"{user.Mention} ma teraz {botuser.GameDeck.CTCount} CT".ToEmbedMessage(EMType.Success).Build());
+            await ReplyAsync(embed: $"{user.Mention} ma teraz {databaseUser.GameDeck.CTCount} CT".ToEmbedMessage(EMType.Success).Build());
         }
 
         [Command("exp"), Priority(1)]
@@ -1245,14 +1245,14 @@ namespace Sanakan.DiscordBot.Modules
             [Summary("użytkownik")] IGuildUser user,
             [Summary("liczba punktów doświadczenia")]ulong amount)
         {
-            var botuser = await _userRepository.GetUserOrCreateAsync(user.Id);
-            botuser.ExperienceCount += amount;
+            var databaseUser = await _userRepository.GetUserOrCreateAsync(user.Id);
+            databaseUser.ExperienceCount += amount;
 
             await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(CacheKeys.User(botuser.Id), CacheKeys.Users);
+            _cacheManager.ExpireTag(CacheKeys.User(databaseUser.Id), CacheKeys.Users);
 
-            await ReplyAsync(embed: $"{user.Mention} ma teraz {botuser.ExperienceCount} punktów doświadczenia.".ToEmbedMessage(EMType.Success).Build());
+            await ReplyAsync(embed: $"{user.Mention} ma teraz {databaseUser.ExperienceCount} punktów doświadczenia.".ToEmbedMessage(EMType.Success).Build());
         }
 
         [Command("ost"), Priority(1)]
@@ -1262,14 +1262,14 @@ namespace Sanakan.DiscordBot.Modules
             [Summary("użytkownik")] IGuildUser user,
             [Summary("liczba ostrzeżeń")]long amount)
         {
-            var botuser = await _userRepository.GetUserOrCreateAsync(user.Id);
-            botuser.WarningsCount += amount;
+            var databaseUser = await _userRepository.GetUserOrCreateAsync(user.Id);
+            databaseUser.WarningsCount += amount;
 
             await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(CacheKeys.User(botuser.Id), CacheKeys.Users);
+            _cacheManager.ExpireTag(CacheKeys.User(databaseUser.Id), CacheKeys.Users);
 
-            var content = $"{user.Mention} ma teraz {botuser.WarningsCount} punktów ostrzeżeń.".ToEmbedMessage(EMType.Success).Build();
+            var content = $"{user.Mention} ma teraz {databaseUser.WarningsCount} punktów ostrzeżeń.".ToEmbedMessage(EMType.Success).Build();
             await ReplyAsync(embed: content);
         }
 

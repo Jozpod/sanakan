@@ -14,12 +14,9 @@ namespace DiscordBot.ModulesTests.ModerationModuleTests
     public class SetRaportChannelAsyncTests : Base
     {
         [TestMethod]
-        public async Task Should_Set_User_User_And_Send_Confirm_Message()
+        public async Task Should_Set_Report_Channel_And_Send_Confirm_Message()
         {
-            _helperServiceMock
-                .Setup(pr => pr.GivePrivateHelp(PrivateModules.Moderation))
-                .Returns("test info");
-            
+           
             await _module.SetRaportChannelAsync();
         }
     }

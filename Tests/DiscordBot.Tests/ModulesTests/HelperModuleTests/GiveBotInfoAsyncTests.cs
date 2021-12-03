@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using System.Diagnostics;
 using System;
 using Sanakan.DiscordBot.Modules;
+using FluentAssertions;
 
 namespace DiscordBot.ModulesTests.HelperModuleTests
 {
@@ -13,7 +14,7 @@ namespace DiscordBot.ModulesTests.HelperModuleTests
     public class GiveBotInfoAsyncTests : Base
     {
         [TestMethod]
-        public async Task Should_Give_Bot_Info()
+        public async Task Should_Return_Bot_Info()
         {
             var process = Process.GetCurrentProcess();
 
@@ -24,6 +25,15 @@ namespace DiscordBot.ModulesTests.HelperModuleTests
             _systemClockMock
                 .Setup(pr => pr.UtcNow)
                 .Returns(DateTime.Now);
+
+            _helperServiceMock
+                .Setup(pr => pr.GetVersion())
+                .Returns(new Version(1, 1, 1));
+
+            SetupSendMessage((message, embed) =>
+            {
+                message.Should().NotBeNullOrEmpty();
+            });
 
             await _module.GiveBotInfoAsync();
         }

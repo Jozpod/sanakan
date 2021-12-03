@@ -92,15 +92,6 @@
         "resolved": "96.0.4664.4500",
         "contentHash": "7bH+2/bX4IqPXxnMsbD820pCb1DFLeESIbjpUL/Zgq5wfKJHTxtknrQ1wnlMJmWtbpoNcj6Zck7OfoIVstl3zQ=="
       },
-      "StyleCop.Analyzers": {
-        "type": "Direct",
-        "requested": "[1.2.0-beta.354, )",
-        "resolved": "1.2.0-beta.354",
-        "contentHash": "oDSJNxnEvIzAQTkpkc/FnJP4dQ7TV6fHMsI+2ckU5DOaMiwiEfh1fawMsSqz2bCoNwbTt9lS6MgYvyVKujNJoA==",
-        "dependencies": {
-          "StyleCop.Analyzers.Unstable": "1.2.0.354"
-        }
-      },
       "Castle.Core": {
         "type": "Transitive",
         "resolved": "4.4.0",
@@ -1210,11 +1201,6 @@
         "dependencies": {
           "SQLitePCLRaw.core": "2.0.4"
         }
-      },
-      "StyleCop.Analyzers.Unstable": {
-        "type": "Transitive",
-        "resolved": "1.2.0.354",
-        "contentHash": "/3RlM31XbJ02gaWh7dVumWOyMvGHswb/zygGJXd9oEJMRyyYc/HFJlAC5gBPxvi9cB4CMvIyyUTmZz5VLKwTvg=="
       },
       "Swashbuckle.AspNetCore.Swagger": {
         "type": "Transitive",

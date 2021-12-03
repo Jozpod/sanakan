@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Sanakan.TaskQueue.MessageHandlers
 {
-    internal class UpdateCardMessageHandler : IMessageHandler<UpdateCardMessage>
+    internal class UpdateCardMessageHandler : BaseMessageHandler<UpdateCardMessage>
     {
         private readonly ICardRepository _cardRepository;
         private readonly IWaifuService _waifuService;
@@ -25,7 +25,7 @@ namespace Sanakan.TaskQueue.MessageHandlers
             _cacheManager = cacheManager;
         }
 
-        public async Task HandleAsync(UpdateCardMessage message)
+        public override async Task HandleAsync(UpdateCardMessage message)
         {
             var userRelease = new List<string>() { CacheKeys.Users };
             var cards = await _cardRepository.GetCardsByCharacterIdAsync(message.CharacterId);

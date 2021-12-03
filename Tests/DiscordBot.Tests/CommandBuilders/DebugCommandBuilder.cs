@@ -23,5 +23,45 @@ namespace Sanakan.DiscordBot.Tests.IntegrationTests
         /// <see cref="DebugModule.GenerateMissingUsersListAsync"/>.
         /// </summary>
         public static string GenerateMissingUsersList(string prefix) => $"{prefix}dev missingu";
+
+        /// <summary>
+        /// <see cref="DebugModule.ChangeUserAcAsync(IGuildUser, long)"/>.
+        /// </summary>
+        public static string ChangeUserAc(string prefix) => $"{prefix}dev ac";
+
+        /// <summary>
+        /// <see cref="DebugModule.ChangeUserCtAsync(IGuildUser, long)"/>.
+        /// </summary>
+        public static string ChangeUserCt(string prefix) => $"{prefix}dev ct";
+
+        /// <summary>
+        /// <see cref="DebugModule.ChangeUserExpAsync(IGuildUser, ulong)"/>.
+        /// </summary>
+        public static string ChangeUserExp(string prefix) => $"{prefix}dev exp";
+
+        /// <summary>
+        /// <see cref="DebugModule.ChangeTitleCardAsync(ulong, string?)"/>.
+        /// </summary>
+        public static string ChangeTitleCard(string prefix) => $"{prefix}dev utitle";
+
+        /// <summary>
+        /// <see cref="DebugModule.AddReactionToMessageOnChannelInGuildAsync(ulong, ulong, ulong, string)(IGuildUser, ulong)"/>.
+        /// </summary>
+        public static string AddReactionToMessageOnChannelInGuild(string prefix) => $"{prefix}dev r2msg";
+
+        /// <summary>
+        /// <see cref="DebugModule.ChangeUserLevelAsync(IGuildUser, ulong)"/>.
+        /// </summary>
+        public static string ChangeUserLevel(string prefix) => $"{prefix}dev level";
+
+        /// <summary>
+        /// <see cref="DebugModule.MultiBankAsync(IGuildUser[])"/>.
+        /// </summary>
+        public static string MultiBankAsync(string prefix) => $"{prefix}dev mban";
+
+        /// <summary>
+        /// <see cref="DebugModule.RestoreCardsAsync(IGuildUser)"/>.
+        /// </summary>
+        public static string RestoreCardsAsync(string prefix, IGuildUser user) => $"{prefix}dev restore";
     }
 }

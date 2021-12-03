@@ -20,6 +20,7 @@ namespace Sanakan.Web.Tests.IntegrationTests
     [TestClass]
     public partial class TestBase
     {
+        protected static TestWebApplicationFactory _factory;
         protected static HttpClient _client;
         protected static IDatabaseFacade _databaseFacade;
         protected static readonly JsonSerializerOptions _jsonSerializerOptions;
@@ -42,9 +43,9 @@ namespace Sanakan.Web.Tests.IntegrationTests
         [ClassInitialize]
         public static async Task Setup(TestContext context)
         {
-            var factory = new TestWebApplicationFactory();
-            _client = factory.CreateClient();
-            var serviceScope = factory.Services.CreateScope();
+            _factory = new TestWebApplicationFactory();
+            _client = _factory.CreateClient();
+            var serviceScope = _factory.Services.CreateScope();
             var serviceProvider = serviceScope.ServiceProvider;
             _databaseFacade = serviceProvider.GetRequiredService<IDatabaseFacade>();
             var dbContext = serviceProvider.GetRequiredService<SanakanDbContext>();
@@ -53,15 +54,7 @@ namespace Sanakan.Web.Tests.IntegrationTests
 
             if (created)
             {
-                var testUser = new User(1ul, DateTime.UtcNow);
-                testUser.ShindenId = 1ul;
-                var card = new Card(1ul, "title", "name", 100, 50, Rarity.A, Dere.Bodere, DateTime.UtcNow);
-
-                dbContext.Users.Add(testUser);
-                await dbContext.SaveChangesAsync();
-
-                testUser.GameDeck.Cards.Add(card);
-                await dbContext.SaveChangesAsync();
+                await TestDataGenerator.RunAsync(dbContext);
             }
 
             await AuthorizeAsync();
@@ -70,7 +63,7 @@ namespace Sanakan.Web.Tests.IntegrationTests
         [ClassCleanup]
         public static async Task Cleanup()
         {
-            await _databaseFacade.EnsureDeletedAsync();
+            //await _databaseFacade.EnsureDeletedAsync();
             _client.Dispose();
         }
     }

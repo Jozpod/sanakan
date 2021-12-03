@@ -5,7 +5,7 @@
         <Rule Id="SA0002"  Action="Warning" />          <!-- Invalid settings file -->
     </Rules>
     <Rules AnalyzerId="StyleCop.Analyzers" RuleNamespace="StyleCop.Analyzers.SpacingRules">
-        <Rule Id="SA1000"  Action="Warning" />          <!-- Keywords should be spaced correctly -->
+        <Rule Id="SA1000"  Action="None" />          <!-- Keywords should be spaced correctly -->
         <Rule Id="SA1001"  Action="Warning" />          <!-- Commas should be spaced correctly -->
         <Rule Id="SA1002"  Action="Warning" />          <!-- Semicolons should be spaced correctly -->
         <Rule Id="SA1003"  Action="Warning" />          <!-- Symbols should be spaced correctly -->
@@ -121,7 +121,7 @@
     <Rules AnalyzerId="StyleCop.Analyzers" RuleNamespace="StyleCop.Analyzers.MaintainabilityRules">
         <Rule Id="SA1119"  Action="Warning" />          <!-- Statement should not use unnecessary parenthesis -->
         <Rule Id="SA1400"  Action="Warning" />          <!-- Access modifier should be declared -->
-        <Rule Id="SA1401"  Action="Warning" />          <!-- Fields should be private -->
+        <Rule Id="SA1401"  Action="None" />          <!-- Fields should be private -->
         <Rule Id="SA1402"  Action="Warning" />          <!-- File may only contain a single type -->
         <Rule Id="SA1403"  Action="Warning" />          <!-- File may only contain a single namespace -->
         <Rule Id="SA1404"  Action="Warning" />          <!-- Code analysis suppression should have justification -->
@@ -155,7 +155,7 @@
         <Rule Id="SA1515"  Action="Warning" />          <!-- Single-line comment should be preceded by blank line -->
         <Rule Id="SA1516"  Action="Warning" />          <!-- Elements should be separated by blank line -->
         <Rule Id="SA1517"  Action="Warning" />          <!-- Code should not contain blank lines at start of file -->
-        <Rule Id="SA1518"  Action="Warning" />          <!-- Use line endings correctly at end of file -->
+        <Rule Id="SA1518"  Action="None" />          <!-- Use line endings correctly at end of file -->
         <Rule Id="SA1519"  Action="Warning" />          <!-- Braces should not be omitted from multi-line child statement -->
         <Rule Id="SA1520"  Action="Warning" />          <!-- Use braces consistently -->
     </Rules>

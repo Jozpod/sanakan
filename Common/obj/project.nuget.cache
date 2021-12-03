@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "24ml1uCgh0QqqvS/7MplrjcVks3hLKtnGnELkY0/1GD3Mky7W1UiA/HyQx9zIrj6sqKVrAHkKY6oBeyL0Dr6Ug==",
+  "dgSpecHash": "reLxMrlvOiggzCWgIYPlfuNMfKDycc4EB9J/TnxrIL2j4Wgw0yfgJmiopb73Pbz3OHJT3qisUCxkUbxuiGM71w==",
   "success": true,
   "projectFilePath": "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\Common\\Common.csproj",
   "expectedPackageFiles": [
@@ -22,8 +22,6 @@
     "C:\\Users\\jozefpodlecki\\.nuget\\packages\\microsoft.extensions.primitives\\5.0.0\\microsoft.extensions.primitives.5.0.0.nupkg.sha512",
     "C:\\Users\\jozefpodlecki\\.nuget\\packages\\microsoft.netcore.platforms\\1.1.0\\microsoft.netcore.platforms.1.1.0.nupkg.sha512",
     "C:\\Users\\jozefpodlecki\\.nuget\\packages\\microsoft.netcore.targets\\1.1.0\\microsoft.netcore.targets.1.1.0.nupkg.sha512",
-    "C:\\Users\\jozefpodlecki\\.nuget\\packages\\stylecop.analyzers\\1.2.0-beta.354\\stylecop.analyzers.1.2.0-beta.354.nupkg.sha512",
-    "C:\\Users\\jozefpodlecki\\.nuget\\packages\\stylecop.analyzers.unstable\\1.2.0.354\\stylecop.analyzers.unstable.1.2.0.354.nupkg.sha512",
     "C:\\Users\\jozefpodlecki\\.nuget\\packages\\system.collections\\4.3.0\\system.collections.4.3.0.nupkg.sha512",
     "C:\\Users\\jozefpodlecki\\.nuget\\packages\\system.collections.concurrent\\4.3.0\\system.collections.concurrent.4.3.0.nupkg.sha512",
     "C:\\Users\\jozefpodlecki\\.nuget\\packages\\system.diagnostics.debug\\4.3.0\\system.diagnostics.debug.4.3.0.nupkg.sha512",

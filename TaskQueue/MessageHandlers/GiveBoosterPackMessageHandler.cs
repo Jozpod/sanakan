@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Sanakan.TaskQueue.MessageHandlers
 {
-    internal class GiveBoosterPackMessageHandler : IMessageHandler<GiveBoosterPackMessage>
+    internal class GiveBoosterPackMessageHandler : BaseMessageHandler<GiveBoosterPackMessage>
     {
         private readonly IUserRepository _userRepository;
         private readonly ICacheManager _cacheManager;
@@ -19,7 +19,7 @@ namespace Sanakan.TaskQueue.MessageHandlers
             _cacheManager = cacheManager;
         }
 
-        public async Task HandleAsync(GiveBoosterPackMessage message)
+        public override async Task HandleAsync(GiveBoosterPackMessage message)
         {
             var databaseUser = await _userRepository.GetUserOrCreateAsync(message.DiscordUserId);
 

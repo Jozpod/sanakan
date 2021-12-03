@@ -272,19 +272,19 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            var botuser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
-            botuser.ShindenId = shindenId;
+            var databaseUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
+            databaseUser.ShindenId = shindenId;
 
             await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(CacheKeys.User(botuser.Id));
+            _cacheManager.ExpireTag(CacheKeys.User(databaseUser.Id));
 
             await ReplyAsync(embed: "Konta zostały połączone.".ToEmbedMessage(EMType.Success).Build());
             return;
             
         }
 
-        public UrlParsingError ParseUrlToShindenId(string url, out ulong shindenId)
+        private UrlParsingError ParseUrlToShindenId(string url, out ulong shindenId)
         {
             shindenId = 0;
             var splited = url.Split('/');
@@ -317,7 +317,7 @@ namespace Sanakan.DiscordBot.Modules
             return UrlParsingError.InvalidUrl;
         }
 
-        public string[] GetSearchResponse(IEnumerable<object> list, string title)
+        private string[] GetSearchResponse(IEnumerable<object> list, string title)
         {
             var temp = new StringBuilder(2000);
             int messageNr = 0;
@@ -345,7 +345,7 @@ namespace Sanakan.DiscordBot.Modules
             return toSend;
         }
 
-        public async Task SendSearchInfoAsync(ICommandContext context, string title, QuickSearchType type)
+        private async Task SendSearchInfoAsync(ICommandContext context, string title, QuickSearchType type)
         {
             if (title.Equals("fate/loli"))
             {
@@ -388,7 +388,7 @@ namespace Sanakan.DiscordBot.Modules
             }
         }
 
-        public async Task SendSearchResponseAsync(
+        private async Task SendSearchResponseAsync(
             ICommandContext context,
             IEnumerable<string?> toSend,
             SearchSession session,
@@ -411,7 +411,7 @@ namespace Sanakan.DiscordBot.Modules
             _sessionManager.Add(session);
         }
 
-        public string GetResponseFromSearchCode(HttpStatusCode code)
+        private string GetResponseFromSearchCode(HttpStatusCode code)
         {
             switch (code)
             {
@@ -423,7 +423,7 @@ namespace Sanakan.DiscordBot.Modules
             }
         }
 
-        public async Task<Stream?> GetSiteStatisticAsync(ulong shindenUserId, IGuildUser user)
+        private async Task<Stream?> GetSiteStatisticAsync(ulong shindenUserId, IGuildUser user)
         {
             var result = await _shindenClient.GetUserInfoAsync(shindenUserId);
 

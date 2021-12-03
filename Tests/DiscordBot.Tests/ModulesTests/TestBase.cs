@@ -11,10 +11,12 @@ namespace DiscordBot.ModulesTests
     [TestClass]
     public abstract class TestBase
     {
+        protected readonly Mock<IUserMessage> _contextMessageMock = new(MockBehavior.Strict);
         protected readonly Mock<ICommandContext> _commandContextMock = new(MockBehavior.Strict);
         protected readonly Mock<IMessageChannel> _messageChannelMock = new(MockBehavior.Strict);
         protected readonly Mock<IUserMessage> _userMessageMock = new(MockBehavior.Strict);
         protected readonly Mock<IUser> _userMock = new(MockBehavior.Strict);
+        protected Mock<IGuildUser> _guildUserMock;
         protected readonly Mock<IGuild> _guildMock = new(MockBehavior.Strict);
         protected readonly Mock<IDiscordClient> _discordClientMock = new(MockBehavior.Strict);
         protected Mock<ITextChannel> _textChannelMock;
@@ -40,6 +42,12 @@ namespace DiscordBot.ModulesTests
             _commandContextMock
                 .Setup(pr => pr.Channel)
                 .Returns(_messageChannelMock.Object);
+
+            _guildUserMock = _userMock.As<IGuildUser>();
+
+            _commandContextMock
+                .Setup(pr => pr.Message)
+                .Returns(_contextMessageMock.Object);
 
             _commandContextMock
                 .Setup(pr => pr.User)

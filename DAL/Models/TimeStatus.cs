@@ -6,6 +6,7 @@ namespace Sanakan.DAL.Models
 
     public class TimeStatus
     {
+        [JsonConstructor]
         private TimeStatus() { }
 
         public TimeStatus(StatusType statusType, ulong? guildId = null)

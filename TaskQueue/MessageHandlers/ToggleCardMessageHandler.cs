@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Sanakan.TaskQueue.MessageHandlers
 {
-    internal class ToggleCardMessageHandler : IMessageHandler<ToggleCardMessage>
+    internal class ToggleCardMessageHandler : BaseMessageHandler<ToggleCardMessage>
     {
         private readonly IUserRepository _userRepository;
         private readonly ICacheManager _cacheManager;
@@ -19,7 +19,7 @@ namespace Sanakan.TaskQueue.MessageHandlers
             _userRepository = userRepository;
         }
 
-        public async Task HandleAsync(ToggleCardMessage message)
+        public override async Task HandleAsync(ToggleCardMessage message)
         {
             var databaseUser = await _userRepository.GetUserOrCreateAsync(message.DiscordUserId);
             var userCard = databaseUser.GameDeck.Cards.FirstOrDefault(x => x.Id == message.WId);

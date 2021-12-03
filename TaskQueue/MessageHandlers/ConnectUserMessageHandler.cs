@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Sanakan.TaskQueue.MessageHandlers
 {
-    internal class ConnectUserMessageHandler : IMessageHandler<ConnectUserMessage>
+    internal class ConnectUserMessageHandler : BaseMessageHandler<ConnectUserMessage>
     {
         private readonly IUserRepository _userRepository;
         private readonly ICacheManager _cacheManager;
@@ -19,10 +19,10 @@ namespace Sanakan.TaskQueue.MessageHandlers
             _cacheManager = cacheManager;
         }
 
-        public async Task HandleAsync(ConnectUserMessage message)
+        public override async Task HandleAsync(ConnectUserMessage message)
         {
-            var botUser = await _userRepository.GetUserOrCreateAsync(message.DiscordUserId);
-            botUser.ShindenId = message.ShindenUserId;
+            var databaseUser = await _userRepository.GetUserOrCreateAsync(message.DiscordUserId);
+            databaseUser.ShindenId = message.ShindenUserId;
 
             await _userRepository.SaveChangesAsync();
 

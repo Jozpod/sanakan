@@ -117,15 +117,6 @@
         "resolved": "6.0.0",
         "contentHash": "bStGNqIX/MGYtML7K3EzdsE/k5HGVAcg7XgN23TQXGXqxNC9fvYFR94fA0sGM5hAT36R+BBGet6ZDQxXL/IPxg=="
       },
-      "StyleCop.Analyzers": {
-        "type": "Direct",
-        "requested": "[1.2.0-beta.354, )",
-        "resolved": "1.2.0-beta.354",
-        "contentHash": "oDSJNxnEvIzAQTkpkc/FnJP4dQ7TV6fHMsI+2ckU5DOaMiwiEfh1fawMsSqz2bCoNwbTt9lS6MgYvyVKujNJoA==",
-        "dependencies": {
-          "StyleCop.Analyzers.Unstable": "1.2.0.354"
-        }
-      },
       "Castle.Core": {
         "type": "Transitive",
         "resolved": "4.4.0",
@@ -581,11 +572,6 @@
         "type": "Transitive",
         "resolved": "4.3.0",
         "contentHash": "VB5cn/7OzUfzdnC8tqAIMQciVLiq2epm2NrAm1E9OjNRyG4lVhfR61SMcLizejzQP8R8Uf/0l5qOIbUEi+RdEg=="
-      },
-      "StyleCop.Analyzers.Unstable": {
-        "type": "Transitive",
-        "resolved": "1.2.0.354",
-        "contentHash": "/3RlM31XbJ02gaWh7dVumWOyMvGHswb/zygGJXd9oEJMRyyYc/HFJlAC5gBPxvi9cB4CMvIyyUTmZz5VLKwTvg=="
       },
       "System.AppContext": {
         "type": "Transitive",

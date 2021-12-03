@@ -34,6 +34,13 @@ namespace DiscordBot.ModulesTests.HelperModuleTests
             var serviceProvider = serviceCollection.BuildServiceProvider();
             var serviceScopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
 
+            _discordConfigurationMock
+                .Setup(pr => pr.CurrentValue)
+                .Returns(new DiscordConfiguration
+                {
+
+                });
+
             _module = new(
                 _discordClientAccessorMock.Object,
                 _sessionManagerMock.Object,

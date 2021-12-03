@@ -139,8 +139,6 @@ namespace Sanakan.DiscordBot.Tests.PreconditionsTests
         [TestMethod]
         public async Task Should_Return_Error_No_Configured_Role_Not_Admin()
         {
-            var roleId = 1ul;
-            var userId = 1ul;
             var guildConfig = new GuildOptions(1, 50);
             var roleIds = new List<ulong>();
 

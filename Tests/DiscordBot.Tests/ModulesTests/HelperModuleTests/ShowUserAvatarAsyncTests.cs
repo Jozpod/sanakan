@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Sanakan.DiscordBot.Modules;
 using Discord;
 using Moq;
+using FluentAssertions;
 
 namespace DiscordBot.ModulesTests.HelperModuleTests
 {
@@ -21,6 +22,15 @@ namespace DiscordBot.ModulesTests.HelperModuleTests
                 .Setup(pr => pr.GetAvatarUrl(ImageFormat.Auto, 128))
                 .Returns(avatarUrl);
 
+            _guildUserMock
+                .Setup(pr => pr.Nickname)
+                .Returns("nickname");
+
+            SetupSendMessage((message, embed) =>
+            {
+                embed.Should().NotBeNull();
+            });
+
             await _module.ShowUserAvatarAsync();
         }
 
@@ -33,6 +43,15 @@ namespace DiscordBot.ModulesTests.HelperModuleTests
             userMock
                 .Setup(pr => pr.GetAvatarUrl(ImageFormat.Auto, 128))
                 .Returns(avatarUrl);
+
+            userMock
+                .Setup(pr => pr.Username)
+                .Returns("username");
+
+            SetupSendMessage((message, embed) =>
+            {
+                embed.Should().NotBeNull();
+            });
 
             await _module.ShowUserAvatarAsync(userMock.Object);
         }

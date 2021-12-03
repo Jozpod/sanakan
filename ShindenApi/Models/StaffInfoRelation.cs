@@ -130,13 +130,13 @@ namespace Sanakan.ShindenApi.Models
         public string RatingMusicCnt { get; set; }
 
         [JsonPropertyName("episodes")]
-        public string Episodes { get; set; }
+        public string? Episodes { get; set; }
 
         [JsonPropertyName("episode_time")]
-        public string EpisodeTime { get; set; }
+        public string? EpisodeTime { get; set; }
 
         [JsonPropertyName("anime_type")]
-        public string AnimeType { get; set; }
+        public string? AnimeType { get; set; }
 
         [JsonPropertyName("rating_lines_sum")]
         public double RatingLinesSum { get; set; }
@@ -145,7 +145,7 @@ namespace Sanakan.ShindenApi.Models
         public double RatingLinesCnt { get; set; }
 
         [JsonPropertyName("volumes")]
-        public string Volumes { get; set; }
+        public string? Volumes { get; set; }
 
         [JsonPropertyName("chapters")]
         public string Chapters { get; set; }

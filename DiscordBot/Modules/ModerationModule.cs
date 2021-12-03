@@ -1601,25 +1601,30 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks("Karna"), RequireAdminRole]
         public async Task CheckUserAsync([Summary("użytkownik")] IGuildUser user)
         {
-            var report = "**Globalki:** ✅\n\n";
-            var guildId = user.Guild.Id;
+            var report = new StringBuilder("**Globalki:** ✅\n\n", 50);
+            var guild = user.Guild;
+            var guildId = guild.Id;
             var guildConfig = await _guildConfigRepository.GetCachedGuildFullConfigAsync(guildId);
             var databaseUser = await _userRepository.GetUserOrCreateAsync(user.Id);
-            var globalRole = user.Guild.GetRole(guildConfig.GlobalEmotesRoleId);
+            var globalRole = guild.GetRole(guildConfig.GlobalEmotesRoleId);
+            var roleIds = user.RoleIds;
+            var timeStatuses = databaseUser.TimeStatuses;
+            var statusType = StatusType.Globals;
+            var utcNow = _systemClock.UtcNow;
 
             if (globalRole != null)
             {
-                if (user.RoleIds.Contains(globalRole.Id))
+                if (roleIds.Contains(globalRole.Id))
                 {
-                    var sub = databaseUser.TimeStatuses.FirstOrDefault(x => x.Type == StatusType.Globals && x.GuildId == guildId);
+                    var sub = timeStatuses.FirstOrDefault(x => x.Type == statusType && x.GuildId == guildId);
                     if (sub == null)
                     {
-                        report = $"**Globalki:** ❗\n\n";
+                        report.Append("**Globalki:** ❗\n\n");
                         await user.RemoveRoleAsync(globalRole);
                     }
-                    else if (!sub.IsActive(_systemClock.UtcNow))
+                    else if (!sub.IsActive(utcNow))
                     {
-                        report = $"**Globalki:** ⚠\n\n";
+                        report.Append("**Globalki:** ⚠\n\n");
                         await user.RemoveRoleAsync(globalRole);
                     }
                 }
@@ -1627,42 +1632,45 @@ namespace Sanakan.DiscordBot.Modules
 
             var kolorRep = $"**Kolor:** ✅\n\n";
             var colorRoles = FColorExtensions.FColors.Cast<uint>();
-            var guild = user.Guild;
             var roles = guild.Roles;
 
             var role = roles
-                .Join(user.RoleIds, pr => pr.Id, pr => pr, (src, dst) => src);
+                .Join(roleIds, pr => pr.Id, pr => pr, (src, dst) => src);
 
             if (role.Any(x => colorRoles.Any(c => c.ToString() == x.Name)))
             {
-                var sub = databaseUser.TimeStatuses
-                    .FirstOrDefault(x => x.Type == StatusType.Color
-                        && x.GuildId == user.Guild.Id);
+                statusType = StatusType.Color;
+                var colorStatus = timeStatuses
+                    .FirstOrDefault(x => x.Type == statusType
+                        && x.GuildId == guild.Id);
 
-                if (sub == null)
+                if (colorStatus == null)
                 {
                     kolorRep = $"**Kolor:** ❗\n\n";
                     await _profileService.RomoveUserColorAsync(user);
                 }
-                else if (!sub.IsActive(_systemClock.UtcNow))
+                else if (!colorStatus.IsActive(utcNow))
                 {
                     kolorRep = $"**Kolor:** ⚠\n\n";
                     await _profileService.RomoveUserColorAsync(user);
                 }
             }
-            report += kolorRep;
+
+            report.Append(kolorRep);
 
             var nickRep = $"**Nick:** ✅";
-            if (guildConfig.UserRoleId.HasValue)
+            var userRoleId = guildConfig.UserRoleId;
+            if (userRoleId.HasValue)
             {
-                var userRole = user.Guild.GetRole(guildConfig.UserRoleId.Value);
-                if (userRole != null && user.RoleIds.Contains(userRole.Id))
+                var userRole = guild.GetRole(userRoleId.Value);
+                if (userRole != null && roleIds.Contains(userRole.Id))
                 {
                     var realNick = user.Nickname ?? user.Username;
+                    var shindenId = databaseUser.ShindenId;
 
-                    if (databaseUser.ShindenId.HasValue)
+                    if (shindenId.HasValue)
                     {
-                        var userResult = await _shindenClient.GetUserInfoAsync(databaseUser.ShindenId.Value);
+                        var userResult = await _shindenClient.GetUserInfoAsync(shindenId.Value);
 
                         if (userResult.Value == null)
                         {
@@ -1674,7 +1682,7 @@ namespace Sanakan.DiscordBot.Modules
                         }
                         else
                         {
-                            nickRep = $"**Nick:** ❗ D: {databaseUser.ShindenId}";
+                            nickRep = $"**Nick:** ❗ D: {shindenId}";
                         }
                     }
                     else
@@ -1688,13 +1696,17 @@ namespace Sanakan.DiscordBot.Modules
                                 nickRep = $"**Nick:** ⚠";
                             }
                         }
-                        else nickRep = $"**Nick:** ⚠";
+                        else
+                        {
+                            nickRep = $"**Nick:** ⚠";
+                        }
                     }
                 }
             }
-            report += nickRep;
 
-            var content = report.ToEmbedMessage(EMType.Bot).WithAuthor(new EmbedAuthorBuilder().WithUser(user)).Build();
+            report.Append(nickRep);
+
+            var content = report.ToString().ToEmbedMessage(EMType.Bot).WithAuthor(new EmbedAuthorBuilder().WithUser(user)).Build();
             await ReplyAsync(embed: content);
         }
 
@@ -1705,16 +1717,16 @@ namespace Sanakan.DiscordBot.Modules
         {
             var emote = new Emoji("🎰");
             var time = _systemClock.UtcNow.AddMinutes(duration);
-            var msg = await ReplyAsync(embed: $"Loteria! zareaguj {emote}, aby wziąć udział.\n\n Koniec `{time.ToShortTimeString()}:{time.Second.ToString("00")}`".ToEmbedMessage(EMType.Bot).Build());
+            var message = await ReplyAsync(embed: $"Loteria! zareaguj {emote}, aby wziąć udział.\n\n Koniec `{time.ToShortTimeString()}:{time.Second.ToString("00")}`".ToEmbedMessage(EMType.Bot).Build());
 
-            await msg.AddReactionAsync(emote);
+            await message.AddReactionAsync(emote);
             var delay = TimeSpan.FromMinutes(duration);
             await _taskManager.Delay(delay);
-            await msg.RemoveReactionAsync(emote, Context.Client.CurrentUser);
+            await message.RemoveReactionAsync(emote, Context.Client.CurrentUser);
 
-            var reactions = await msg.GetReactionUsersAsync(emote, 300).FlattenAsync();
+            var reactions = await message.GetReactionUsersAsync(emote, 300).FlattenAsync();
             var winner = _randomNumberGenerator.GetOneRandomFrom(reactions);
-            await msg.DeleteAsync();
+            await message.DeleteAsync();
 
             await ReplyAsync(embed: $"Zwycięzca loterii: {winner.Mention}".ToEmbedMessage(EMType.Success).Build());
         }

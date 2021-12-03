@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace Sanakan.TaskQueue.MessageHandlers
 {
-    internal class AddExperienceMessageHandler : IMessageHandler<AddExperienceMessage>
+    internal class AddExperienceMessageHandler : BaseMessageHandler<AddExperienceMessage>
     {
         private readonly ISystemClock _systemClock;
         private readonly IImageProcessor _imageProcessor;
@@ -38,7 +38,7 @@ namespace Sanakan.TaskQueue.MessageHandlers
             _oneMonth = TimeSpan.FromDays(30);
         }
 
-        public async Task HandleAsync(AddExperienceMessage message)
+        public override async Task HandleAsync(AddExperienceMessage message)
         {
             var characterCount = message.CharacterCount;
             var discordUser = message.User;

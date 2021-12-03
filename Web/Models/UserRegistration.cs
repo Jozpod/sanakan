@@ -29,8 +29,8 @@ namespace Sanakan.Api.Models
         public string Username { get; set; }
 
         /// <summary>
-        /// Lista rang użytkownika na forum
+        /// The collection of user ranks in forum.
         /// </summary>
-        public List<ForumUserGroup> ForumGroupsId { get; set; }
+        public List<ForumUserGroup> ForumGroupsId { get; set; } = new List<ForumUserGroup>();
     }
 }

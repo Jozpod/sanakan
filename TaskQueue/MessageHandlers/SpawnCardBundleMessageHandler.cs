@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Sanakan.TaskQueue.MessageHandlers
 {
-    internal class SpawnCardBundleMessageHandler : IMessageHandler<SpawnCardBundleMessage>
+    internal class SpawnCardBundleMessageHandler : BaseMessageHandler<SpawnCardBundleMessage>
     {
         private readonly IUserRepository _userRepository;
         private readonly IUserAnalyticsRepository _userAnalyticsRepository;
@@ -27,22 +27,22 @@ namespace Sanakan.TaskQueue.MessageHandlers
             _systemClock = systemClock;
         }
 
-        public async Task HandleAsync(SpawnCardBundleMessage message)
+        public override async Task HandleAsync(SpawnCardBundleMessage message)
         {
-            var botUser = await _userRepository.GetUserOrCreateAsync(message.DiscordUserId);
+            var databaseUser = await _userRepository.GetUserOrCreateAsync(message.DiscordUserId);
 
-            if (botUser.IsBlacklisted)
+            if (databaseUser.IsBlacklisted)
             {
                 return;
             }
 
             var statusType = StatusType.Packet;
-            var timeStatus = botUser.TimeStatuses.FirstOrDefault(x => x.Type == statusType);
+            var timeStatus = databaseUser.TimeStatuses.FirstOrDefault(x => x.Type == statusType);
 
             if (timeStatus == null)
             {
                 timeStatus = new TimeStatus(statusType);
-                botUser.TimeStatuses.Add(timeStatus);
+                databaseUser.TimeStatuses.Add(timeStatus);
             }
 
             var utcNow = _systemClock.UtcNow;
@@ -67,7 +67,7 @@ namespace Sanakan.TaskQueue.MessageHandlers
                 CardSourceFromPack = CardSource.Activity
             };
 
-            botUser.GameDeck.BoosterPacks.Add(boosterPack);
+            databaseUser.GameDeck.BoosterPacks.Add(boosterPack);
             await _userRepository.SaveChangesAsync();
 
             var content = $"{message.Mention} otrzymał pakiet losowych kart.".ToEmbedMessage(EMType.Bot).Build();

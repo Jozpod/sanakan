@@ -41,27 +41,19 @@ namespace DiscordBot.ModulesTests.DebugModuleTests
 
             _shindenClientMock
                 .Setup(pr => pr.GetCharacterInfoAsync(card.CharacterId))
-                .ReturnsAsync(characterInfoResult)
-                .Verifiable();
+                .ReturnsAsync(characterInfoResult);
 
             _cardRepositoryMock
                 .Setup(pr => pr.SaveChangesAsync(default))
-                .Returns(Task.CompletedTask)
-                .Verifiable();
+                .Returns(Task.CompletedTask);
 
             _waifuServiceMock
-                .Setup(pr => pr.DeleteCardImageIfExist(card))
-                .Verifiable();
+                .Setup(pr => pr.DeleteCardImageIfExist(card));
 
             _cacheManagerMock
                 .Setup(pr => pr.ExpireTag(It.IsAny<string[]>()));
 
             await _module.ForceUpdateCardsAsync();
-
-            _shindenClientMock.Verify();
-            _cardRepositoryMock.Verify();
-            _messageChannelMock.Verify();
-            _waifuServiceMock.Verify();
         }
     }
 }

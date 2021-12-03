@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "XdPpzCNmOCWi+CKxM1a+hIQbqSlSyejtCCerXqHlLYhhHKy0vgRRd/GjYwGMyh9psBaI3js/Sgs76HAqvQPLXA==",
+  "dgSpecHash": "+ieNh5EeS5F9jqJ2THMUBwha46/1M6oJYEWctdTbjDN73edGkY93Cbyd095SOOyA/4W8Yrd0c/vzFVtp4Dnefg==",
   "success": true,
   "projectFilePath": "C:\\Users\\jozefpodlecki\\Documents\\Shinden\\sanakan\\ShindenApi\\ShindenApi.csproj",
   "expectedPackageFiles": [
@@ -26,8 +26,6 @@
     "C:\\Users\\jozefpodlecki\\.nuget\\packages\\microsoft.net.http.headers\\2.2.0\\microsoft.net.http.headers.2.2.0.nupkg.sha512",
     "C:\\Users\\jozefpodlecki\\.nuget\\packages\\microsoft.netcore.platforms\\1.1.0\\microsoft.netcore.platforms.1.1.0.nupkg.sha512",
     "C:\\Users\\jozefpodlecki\\.nuget\\packages\\microsoft.netcore.targets\\1.1.0\\microsoft.netcore.targets.1.1.0.nupkg.sha512",
-    "C:\\Users\\jozefpodlecki\\.nuget\\packages\\stylecop.analyzers\\1.2.0-beta.354\\stylecop.analyzers.1.2.0-beta.354.nupkg.sha512",
-    "C:\\Users\\jozefpodlecki\\.nuget\\packages\\stylecop.analyzers.unstable\\1.2.0.354\\stylecop.analyzers.unstable.1.2.0.354.nupkg.sha512",
     "C:\\Users\\jozefpodlecki\\.nuget\\packages\\system.buffers\\4.5.0\\system.buffers.4.5.0.nupkg.sha512",
     "C:\\Users\\jozefpodlecki\\.nuget\\packages\\system.collections\\4.3.0\\system.collections.4.3.0.nupkg.sha512",
     "C:\\Users\\jozefpodlecki\\.nuget\\packages\\system.collections.concurrent\\4.3.0\\system.collections.concurrent.4.3.0.nupkg.sha512",

@@ -67,12 +67,6 @@
               "target": "Package",
               "version": "[5.0.0, )"
             },
-            "StyleCop.Analyzers": {
-              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
-              "suppressParent": "All",
-              "target": "Package",
-              "version": "[1.2.0-beta.354, )"
-            },
             "System.Collections.Concurrent": {
               "target": "Package",
               "version": "[4.3.0, )"
@@ -169,12 +163,6 @@
             "Microsoft.Extensions.DependencyInjection": {
               "target": "Package",
               "version": "[5.0.2, )"
-            },
-            "StyleCop.Analyzers": {
-              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
-              "suppressParent": "All",
-              "target": "Package",
-              "version": "[1.2.0-beta.354, )"
             }
           },
           "imports": [
@@ -258,12 +246,6 @@
             "Pomelo.EntityFrameworkCore.MySql": {
               "target": "Package",
               "version": "[5.0.2, )"
-            },
-            "StyleCop.Analyzers": {
-              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
-              "suppressParent": "All",
-              "target": "Package",
-              "version": "[1.2.0-beta.354, )"
             }
           },
           "imports": [
@@ -338,12 +320,6 @@
             "Microsoft.Extensions.DependencyInjection": {
               "target": "Package",
               "version": "[5.0.2, )"
-            },
-            "StyleCop.Analyzers": {
-              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
-              "suppressParent": "All",
-              "target": "Package",
-              "version": "[1.2.0-beta.354, )"
             }
           },
           "imports": [
@@ -439,12 +415,6 @@
             "SixLabors.ImageSharp.Drawing": {
               "target": "Package",
               "version": "[1.0.0-beta0006, )"
-            },
-            "StyleCop.Analyzers": {
-              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
-              "suppressParent": "All",
-              "target": "Package",
-              "version": "[1.2.0-beta.354, )"
             }
           },
           "imports": [
@@ -528,12 +498,6 @@
             "Microsoft.Extensions.DependencyInjection": {
               "target": "Package",
               "version": "[5.0.2, )"
-            },
-            "StyleCop.Analyzers": {
-              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
-              "suppressParent": "All",
-              "target": "Package",
-              "version": "[1.2.0-beta.354, )"
             }
           },
           "imports": [
@@ -620,12 +584,6 @@
             "SixLabors.ImageSharp.Drawing": {
               "target": "Package",
               "version": "[1.0.0-beta0006, )"
-            },
-            "StyleCop.Analyzers": {
-              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
-              "suppressParent": "All",
-              "target": "Package",
-              "version": "[1.2.0-beta.354, )"
             }
           },
           "imports": [
@@ -724,12 +682,6 @@
             "SixLabors.ImageSharp.Drawing": {
               "target": "Package",
               "version": "[1.0.0-beta0006, )"
-            },
-            "StyleCop.Analyzers": {
-              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
-              "suppressParent": "All",
-              "target": "Package",
-              "version": "[1.2.0-beta.354, )"
             }
           },
           "imports": [
@@ -815,12 +767,6 @@
             "SixLabors.ImageSharp.Drawing": {
               "target": "Package",
               "version": "[1.0.0-beta0006, )"
-            },
-            "StyleCop.Analyzers": {
-              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
-              "suppressParent": "All",
-              "target": "Package",
-              "version": "[1.2.0-beta.354, )"
             }
           },
           "imports": [
@@ -905,12 +851,6 @@
               "target": "Package",
               "version": "[5.0.0, )"
             },
-            "StyleCop.Analyzers": {
-              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
-              "suppressParent": "All",
-              "target": "Package",
-              "version": "[1.2.0-beta.354, )"
-            },
             "System.Net.Http.Json": {
               "target": "Package",
               "version": "[5.0.0, )"
@@ -994,12 +934,6 @@
             "Microsoft.Extensions.DependencyInjection": {
               "target": "Package",
               "version": "[5.0.2, )"
-            },
-            "StyleCop.Analyzers": {
-              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
-              "suppressParent": "All",
-              "target": "Package",
-              "version": "[1.2.0-beta.354, )"
             }
           },
           "imports": [
@@ -1114,12 +1048,6 @@
             "NReco.Logging.File": {
               "target": "Package",
               "version": "[1.1.2, )"
-            },
-            "StyleCop.Analyzers": {
-              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
-              "suppressParent": "All",
-              "target": "Package",
-              "version": "[1.2.0-beta.354, )"
             },
             "Swashbuckle.AspNetCore.SwaggerGen": {
               "target": "Package",

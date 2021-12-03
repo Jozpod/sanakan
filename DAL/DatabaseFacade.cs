@@ -32,7 +32,7 @@ namespace Sanakan.DAL
             if (_created)
             {
                 _semaphore.Release();
-                return !_created;
+                return _created;
             }
 
             using var serviceScope = _serviceScopeFactory.CreateScope();

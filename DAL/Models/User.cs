@@ -4,11 +4,13 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Text.Json.Serialization;
 
 namespace Sanakan.DAL.Models
 {
     public class User
     {
+        [JsonConstructor]
         private User() { }
 
         public User(ulong discordUserId, DateTime datetime)
@@ -19,7 +21,6 @@ namespace Sanakan.DAL.Models
             TcCount = 0;
             ScCount = Constants.ScCount;
             ExperienceCount = 10;
-            ShindenId = 0;
             WarningsCount = 0;
             MessagesCount = 0;
             CommandsCount = 0;

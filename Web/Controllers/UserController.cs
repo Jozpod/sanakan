@@ -265,9 +265,9 @@ namespace Sanakan.Web.Controllers
                 return ShindenNotFound(Strings.UserNotFound);
             }
 
-            var botUser = await _userRepository.GetByDiscordIdAsync(model.DiscordUserId);
+            var databaseUser = await _userRepository.GetByDiscordIdAsync(model.DiscordUserId);
 
-            if (botUser != null || botUser.ShindenId.HasValue)
+            if (databaseUser != null && databaseUser.ShindenId.HasValue)
             {
                 return ShindenNotFound("User already connected!");
             }
