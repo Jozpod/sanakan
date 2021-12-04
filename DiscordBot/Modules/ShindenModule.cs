@@ -208,13 +208,15 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            if (!databaseUser.ShindenId.HasValue)
+            var shindenId = databaseUser.ShindenId;
+
+            if (!shindenId.HasValue)
             {
-                await ReplyAsync(embed: "Ta osoba nie połączyła konta bota z kontem na stronie.".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync(embed: Strings.UserNotConnectedToShinden.ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
-            using var stream = await GetSiteStatisticAsync(databaseUser.ShindenId.Value, user);
+            using var stream = await GetSiteStatisticAsync(shindenId.Value, user);
                 
             if (stream == null)
             {
@@ -222,7 +224,7 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            var profileUrl = UrlHelpers.GetProfileURL(databaseUser.ShindenId.Value);
+            var profileUrl = UrlHelpers.GetProfileURL(shindenId.Value);
 
             await Context.Channel.SendFileAsync(stream, $"{user.Id}.png", $"{profileUrl}");
         }

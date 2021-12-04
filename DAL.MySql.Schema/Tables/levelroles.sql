@@ -1,6 +1,6 @@
 CREATE TABLE `levelroles` (
   `Id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `Role` bigint unsigned NOT NULL,
+  `RoleId` bigint unsigned NOT NULL,
   `Level` bigint unsigned NOT NULL,
   `GuildOptionsId` bigint unsigned NOT NULL,
   PRIMARY KEY (`Id`),

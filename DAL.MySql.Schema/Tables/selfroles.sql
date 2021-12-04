@@ -1,6 +1,6 @@
 CREATE TABLE `selfroles` (
   `Id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `Role` bigint unsigned NOT NULL,
+  `RoleId` bigint unsigned NOT NULL,
   `Name` varchar(100) NOT NULL,
   `GuildOptionsId` bigint unsigned NOT NULL,
   PRIMARY KEY (`Id`),

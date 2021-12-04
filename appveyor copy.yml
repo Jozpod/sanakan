@@ -1,0 +1,16 @@
+version: '1.0.{build}'
+image: Visual Studio 2019
+branches:
+  only:
+  - master
+init:
+  - cmd: git config --global core.autocrlf true
+install:
+before_build:
+  - cmd: dotnet --version
+  - cmd: dotnet restore
+build_script:
+  - cmd: dotnet build --configuration Release --no-restore
+test_script:
+  - cmd: dotnet test  --configuration Release --no-build --no-restore --test-adapter-path:. --logger:Appveyor 
+deploy: off

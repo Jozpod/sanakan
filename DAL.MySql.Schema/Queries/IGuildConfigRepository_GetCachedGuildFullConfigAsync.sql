@@ -8,7 +8,7 @@ FROM (
 ) AS `t`
 ORDER BY `t`.`Id`, `t`.`Id0`
 
-SELECT `i`.`Id`, `i`.`Channel`, `i`.`GuildOptionsId`, `t`.`Id`, `t`.`Id0`
+SELECT `i`.`Id`, `i`.`ChannelId`, `i`.`GuildOptionsId`, `t`.`Id`, `t`.`Id0`
 FROM (
     SELECT `g`.`Id`, `w`.`Id` AS `Id0`
     FROM `Guilds` AS `g`
@@ -19,7 +19,7 @@ FROM (
 INNER JOIN `IgnoredChannels` AS `i` ON `t`.`Id` = `i`.`GuildOptionsId`
 ORDER BY `t`.`Id`, `t`.`Id0`
 
-SELECT `w0`.`Id`, `w0`.`Channel`, `w0`.`GuildOptionsId`, `t`.`Id`, `t`.`Id0`
+SELECT `w0`.`Id`, `w0`.`ChannelId`, `w0`.`GuildOptionsId`, `t`.`Id`, `t`.`Id0`
 FROM (
     SELECT `g`.`Id`, `w`.`Id` AS `Id0`
     FROM `Guilds` AS `g`
@@ -30,7 +30,7 @@ FROM (
 INNER JOIN `WithoutExpChannels` AS `w0` ON `t`.`Id` = `w0`.`GuildOptionsId`
 ORDER BY `t`.`Id`, `t`.`Id0`
 
-SELECT `w0`.`Id`, `w0`.`Channel`, `w0`.`GuildOptionsId`, `t`.`Id`, `t`.`Id0`
+SELECT `w0`.`Id`, `w0`.`ChannelId`, `w0`.`GuildOptionsId`, `t`.`Id`, `t`.`Id0`
 FROM (
     SELECT `g`.`Id`, `w`.`Id` AS `Id0`
     FROM `Guilds` AS `g`
@@ -52,7 +52,7 @@ FROM (
 INNER JOIN `CommandChannels` AS `c` ON `t`.`Id` = `c`.`GuildOptionsId`
 ORDER BY `t`.`Id`, `t`.`Id0`
 
-SELECT `s`.`Id`, `s`.`GuildOptionsId`, `s`.`Name`, `s`.`Role`, `t`.`Id`, `t`.`Id0`
+SELECT `s`.`Id`, `s`.`GuildOptionsId`, `s`.`Name`, `s`.`RoleId`, `t`.`Id`, `t`.`Id0`
 FROM (
     SELECT `g`.`Id`, `w`.`Id` AS `Id0`
     FROM `Guilds` AS `g`
@@ -85,7 +85,7 @@ FROM (
 INNER JOIN `ModeratorRoles` AS `m` ON `t`.`Id` = `m`.`GuildOptionsId`
 ORDER BY `t`.`Id`, `t`.`Id0`
 
-SELECT `l`.`Id`, `l`.`GuildOptionsId`, `l`.`Level`, `l`.`Role`, `t`.`Id`, `t`.`Id0`
+SELECT `l`.`Id`, `l`.`GuildOptionsId`, `l`.`Level`, `l`.`RoleId`, `t`.`Id`, `t`.`Id0`
 FROM (
     SELECT `g`.`Id`, `w`.`Id` AS `Id0`
     FROM `Guilds` AS `g`

@@ -173,7 +173,7 @@ namespace Sanakan.DiscordBot
 
                 default:
                 case RunMode.Sync:
-                    await channel.SendMessageAsync(embed: "Odrzucono polecenie!".ToEmbedMessage(EMType.Error).Build());
+                    await channel.SendMessageAsync(embed: Strings.RejectedCommand.ToEmbedMessage(EMType.Error).Build());
                     break;
             }
         }

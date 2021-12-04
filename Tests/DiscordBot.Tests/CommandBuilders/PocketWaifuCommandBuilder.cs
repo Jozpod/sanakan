@@ -38,6 +38,16 @@ namespace Sanakan.DiscordBot.Tests.IntegrationTests
         /// <summary>
         /// <see cref="PocketWaifuModule.SendCardToExpeditionAsync(ulong, ExpeditionCardType)"/>.
         /// </summary>
-        public static string SendCardToExpedition(string prefix, ulong wid, string expeditionCardType) => $"{prefix}expedition";
+        public static string SendCardToExpedition(string prefix, ulong wid, string expeditionCardType) => $"{prefix}wyprawa {wid} {expeditionCardType}";
+
+        /// <summary>
+        /// <see cref="PocketWaifuModule.ShowItemsAsync(int)"/>.
+        /// </summary>
+        public static string ShowItems(string prefix, int itemNumber) => $"{prefix}item {itemNumber}";
+
+        /// <summary>
+        /// <see cref="PocketWaifuModule.ShowCardImageAsync(ulong, bool)"/>.
+        /// </summary>
+        public static string ShowCardImage(string prefix, ulong cardId, bool showStats) => $"{prefix}card image {cardId}";
     }
 }

@@ -4,16 +4,19 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 using Sanakan.Common;
 using Sanakan.Common.Builder;
 using Sanakan.Common.Configuration;
 using Sanakan.DAL;
 using Sanakan.DAL.Builder;
+using Sanakan.DAL.Models;
 using Sanakan.DAL.Models.Configuration;
 using Sanakan.DiscordBot.Builder;
 using Sanakan.DiscordBot.Services.Builder;
 using Sanakan.DiscordBot.Session.Builder;
 using Sanakan.Game.Builder;
+using Sanakan.ShindenApi;
 using Sanakan.ShindenApi.Builder;
 using Sanakan.TaskQueue.Builder;
 using System;
@@ -30,7 +33,7 @@ namespace Sanakan.DiscordBot.Tests.IntegrationTests
     {
         private static ServiceProvider _serviceProvider;
         private static IDiscordClientAccessor _discordClientAccessor;
-
+        private static Mock<IShindenClient> _shindenClientMock = new();
         public static DiscordSocketClient FakeUserClient { get; private set; }
 
         private static DiscordConfiguration _configuration;
@@ -41,7 +44,6 @@ namespace Sanakan.DiscordBot.Tests.IntegrationTests
         private static IGuild Guild;
 
         private static ITextChannel Channel;
-        private static ulong FakeUserId = 910284425655386172;
         private static string Prefix = ".";
         private static IDatabaseFacade DatabaseFacade;
 
@@ -56,6 +58,7 @@ namespace Sanakan.DiscordBot.Tests.IntegrationTests
             var builder = new ConfigurationBuilder()
               .SetBasePath(Directory.GetCurrentDirectory())
               .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+              .AddUserSecrets<FakeUserBotOptions>()
               .AddEnvironmentVariables();
 
             var configurationRoot = builder.Build();
@@ -76,10 +79,13 @@ namespace Sanakan.DiscordBot.Tests.IntegrationTests
             services.AddResourceManager()
                 .AddImageResources()
                 .AddFontResources();
-            services.AddShindenApi();
+            //services.AddShindenApi();
+
+            services.AddSingleton(_shindenClientMock.Object);
             services.AddGameServices();
             services.AddDiscordBot();
             services.AddDiscordBotServices();
+            services.Configure<FakeUserBotOptions>(configurationRoot.GetSection(nameof(FakeUserBotOptions)));
             services.AddConfiguration(configurationRoot);
             services.AddSingleton<IConfiguration>(configurationRoot);
             _serviceProvider = services.BuildServiceProvider();
@@ -87,6 +93,12 @@ namespace Sanakan.DiscordBot.Tests.IntegrationTests
             _discordClientAccessor = _serviceProvider.GetRequiredService<IDiscordClientAccessor>();
             var discordConfiguration = _serviceProvider.GetRequiredService<IOptionsMonitor<DiscordConfiguration>>();
             var commandHandler = _serviceProvider.GetRequiredService<ICommandHandler>();
+            var fileSystem = _serviceProvider.GetRequiredService<IFileSystem>();
+
+            fileSystem.CreateDirectory(Paths.CardsMiniatures);
+            fileSystem.CreateDirectory(Paths.CardsInProfiles);
+            fileSystem.CreateDirectory(Paths.SavedData);
+            fileSystem.CreateDirectory(Paths.Profiles);
 
             _configuration = discordConfiguration.CurrentValue;
             await _discordClientAccessor.LoginAsync(TokenType.Bot, _configuration.BotToken);
@@ -100,24 +112,21 @@ namespace Sanakan.DiscordBot.Tests.IntegrationTests
             Guild = FakeUserClient.GetGuild(_configuration.MainGuild);
             Channel = await Guild.GetTextChannelAsync(ChannelId);
             FakeUser = FakeUserClient.CurrentUser;
-            FakeUserId = FakeUser.Id;
             FakeUserClient.MessageReceived += MessageReceivedAsync;
 
             DatabaseFacade = _serviceProvider.GetRequiredService<IDatabaseFacade>();
             if(await DatabaseFacade.EnsureCreatedAsync())
             {
-                await PopulateDatabaseAsync();
+                var dbContext = _serviceProvider.GetRequiredService<SanakanDbContext>();
+                await TestDataGenerator.PopulateDatabaseAsync(
+                    dbContext,
+                    _configuration.MainGuild,
+                    FakeUser.Id,
+                    ChannelId);
             }
         }
 
-        private static async Task PopulateDatabaseAsync()
-        {
-            var dbContext = _serviceProvider.GetRequiredService<SanakanDbContext>();
-            var guildConfig = new GuildOptions(_configuration.MainGuild, 50);
-
-            dbContext.Guilds.Add(guildConfig);
-            await dbContext.SaveChangesAsync();
-        }
+       
 
         [ClassCleanup]
         public static async Task ClassCleanup()
@@ -164,8 +173,9 @@ namespace Sanakan.DiscordBot.Tests.IntegrationTests
 
         public static async Task<DiscordSocketClient> SetupFakeUserBot()
         {
+            var options = _serviceProvider.GetRequiredService<IOptions<FakeUserBotOptions>>().Value;
             var client = new DiscordSocketClient();
-            await client.LoginAsync(TokenType.Bot, "OTExNDA5NTQ1MDk0NTEyNjcx.YZg-SA.lvO1ggIl1Vi7soakOMzwZHHG29Q");
+            await client.LoginAsync(TokenType.Bot, options.Token);
             await client.StartAsync();
             return client;
         }

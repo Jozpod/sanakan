@@ -49,7 +49,7 @@ CREATE TABLE `cards` (
   CONSTRAINT `CK_Card_CustomImageUrl` CHECK ((regexp_like(`CustomImageUrl`,_utf8mb4'^https?') or (`CustomImageUrl` is null))),
   CONSTRAINT `CK_Card_ImageUrl` CHECK ((regexp_like(`ImageUrl`,_utf8mb4'^https?') or (`ImageUrl` is null))),
   CONSTRAINT `CK_Card_Title` CHECK (((trim(`Title`) <> _utf8mb4'') or (`Title` is null)))
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
 ALTER TABLE cards ADD INDEX IX_Cards_Active USING BTREE(Active);
 ALTER TABLE cards ADD INDEX IX_Cards_CharacterId USING BTREE(CharacterId);
 ALTER TABLE cards ADD INDEX IX_Cards_GameDeckId USING BTREE(GameDeckId);

@@ -209,6 +209,9 @@ Traci siły po {3} min.</value>
   <data name="ProvideTags" xml:space="preserve">
     <value>{0} musisz sprecyzować tag!</value>
   </data>
+  <data name="RejectedCommand" xml:space="preserve">
+    <value>Odrzucono polecenie!</value>
+  </data>
   <data name="RequiredChannel" xml:space="preserve">
     <value>To polecenie działa na kanale {0}</value>
   </data>
@@ -313,6 +316,9 @@ Rzędy / `1`, `2`, `3`</value>
   </data>
   <data name="UserNoCards" xml:space="preserve">
     <value>{0} nie masz żadnych kart.</value>
+  </data>
+  <data name="UserNotConnectedToShinden" xml:space="preserve">
+    <value>Ta osoba nie połączyła konta bota z kontem na stronie.</value>
   </data>
   <data name="UserNotFound" xml:space="preserve">
     <value>Nie znaleziono uzytkownika.</value>

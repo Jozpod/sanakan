@@ -27,7 +27,7 @@ namespace Sanakan.DiscordBot.Tests.IntegrationTests
         /// <summary>
         /// <see cref="DebugModule.ChangeUserAcAsync(IGuildUser, long)"/>.
         /// </summary>
-        public static string ChangeUserAc(string prefix) => $"{prefix}dev ac";
+        public static string ChangeUserAc(string prefix, string mention, long value) => $"{prefix}dev ac {mention} {value}";
 
         /// <summary>
         /// <see cref="DebugModule.ChangeUserCtAsync(IGuildUser, long)"/>.

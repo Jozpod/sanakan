@@ -1174,7 +1174,7 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("zmienia AC użytkownika o podaną wartość")]
         [Remarks("User 10000")]
         public async Task ChangeUserAcAsync(
-            [Summary("użytkownik")] IGuildUser user,
+            [Summary("użytkownik")]IGuildUser user,
             [Summary("liczba AC")]long amount)
         {
             var databaseUser = await _userRepository.GetUserOrCreateAsync(user.Id);

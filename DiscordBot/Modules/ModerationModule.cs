@@ -1102,6 +1102,7 @@ namespace Sanakan.DiscordBot.Modules
         {
             var guildId = Context.Guild.Id;
             var channelName = Context.Channel.Name;
+            var channelId = Context.Channel.Id;
             var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(guildId);
 
             if (config.WaifuConfig == null)
@@ -1109,14 +1110,14 @@ namespace Sanakan.DiscordBot.Modules
                 config.WaifuConfig = new WaifuConfiguration();
             }
 
-            if (config.WaifuConfig.TrashCommandsChannelId == Context.Channel.Id)
+            if (config.WaifuConfig.TrashCommandsChannelId == channelId)
             {
                 await ReplyAsync(embed: $"Kanał `{channelName}` już jest ustawiony jako kanał śmieciowy poleceń waifu."
                     .ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
 
-            config.WaifuConfig.TrashCommandsChannelId = Context.Channel.Id;
+            config.WaifuConfig.TrashCommandsChannelId = channelId;
             await _guildConfigRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(CacheKeys.GuildConfig(guildId));
@@ -1292,7 +1293,7 @@ namespace Sanakan.DiscordBot.Modules
         [Command("wcmdch")]
         [Summary("ustawia kanał poleneń waifu")]
         [Remarks(""), RequireAdminRole]
-        public async Task SetCmdWaifuChannelAsync()
+        public async Task SetCommandWaifuChannelAsync()
         {
             var guildId = Context.Guild.Id;
             var channelName = Context.Channel.Name;

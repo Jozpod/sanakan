@@ -9,47 +9,15 @@ namespace Sanakan.DiscordBot.Tests.IntegrationTests
     public partial class TestBase
     {
         [TestMethod]
-        public async Task Should_Return_Latency()
+        public async Task TC011_Should_Change_User_Ac()
         {
-            var commandMessage = $"{Prefix}ping";
+            var commandMessage = DebugCommandBuilder.ChangeUserAc(Prefix, FakeUser.Mention, 1000);
             await Channel.SendMessageAsync(commandMessage);
 
             var message = await WaitForMessageAsync();
             message.Should().NotBeNull();
             var embed = message.Embeds.FirstOrDefault();
             embed.Should().NotBeNull();
-            embed.Description.Should().Contain("Pong");
         }
-
-        [TestMethod]
-        public async Task Should_Return_Info()
-        {
-            var commandMessage = $"{Prefix}info";
-            await Channel.SendMessageAsync(commandMessage);
-
-            var message = await WaitForMessageAsync();
-            message.Should().NotBeNull();
-            message.Content.Should().Contain("Czas działania");
-        }
-
-        [TestMethod]
-        public async Task Should_Return_User_Info()
-        {
-            var commandMessage = $"{Prefix}ktoto <@!{FakeUserId}>";
-            await Channel.SendMessageAsync(commandMessage);
-
-            var message = await WaitForMessageAsync();
-            message.Should().NotBeNull();
-            var embed = message.Embeds.FirstOrDefault();
-            embed.Should().NotBeNull();
-            embed.Fields.Should().HaveCount(7);
-        }
-
-        //[TestMethod]
-        //public async Task Should_Report_User()
-        //{
-        //    var commandMessage = $"{Prefix}report <@!{FakeUserId}> test";
-        //    await Channel.SendMessageAsync(commandMessage);
-        //}
     }
 }

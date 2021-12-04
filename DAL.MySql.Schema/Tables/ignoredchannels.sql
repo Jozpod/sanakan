@@ -1,6 +1,6 @@
 CREATE TABLE `ignoredchannels` (
   `Id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `Channel` bigint unsigned NOT NULL,
+  `ChannelId` bigint unsigned NOT NULL,
   `GuildOptionsId` bigint unsigned NOT NULL,
   PRIMARY KEY (`Id`),
   KEY `IX_IgnoredChannels_GuildOptionsId` (`GuildOptionsId`),

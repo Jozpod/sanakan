@@ -10,5 +10,5 @@ CREATE TABLE `boosterpacks` (
   PRIMARY KEY (`Id`),
   KEY `IX_BoosterPacks_GameDeckId` (`GameDeckId`),
   CONSTRAINT `FK_BoosterPacks_GameDecks_GameDeckId` FOREIGN KEY (`GameDeckId`) REFERENCES `gamedecks` (`Id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
 ALTER TABLE boosterpacks ADD INDEX IX_BoosterPacks_GameDeckId USING BTREE(GameDeckId);

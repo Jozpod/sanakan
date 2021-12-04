@@ -231,6 +231,15 @@ namespace Sanakan.DiscordBot.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Odrzucono polecenie!.
+        /// </summary>
+        internal static string RejectedCommand {
+            get {
+                return ResourceManager.GetString("RejectedCommand", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to To polecenie działa na kanale {0}.
         /// </summary>
         internal static string RequiredChannel {
@@ -372,6 +381,15 @@ namespace Sanakan.DiscordBot.Resources {
         internal static string UserNoCards {
             get {
                 return ResourceManager.GetString("UserNoCards", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Ta osoba nie połączyła konta bota z kontem na stronie..
+        /// </summary>
+        internal static string UserNotConnectedToShinden {
+            get {
+                return ResourceManager.GetString("UserNotConnectedToShinden", resourceCulture);
             }
         }
         

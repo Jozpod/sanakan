@@ -11,6 +11,7 @@ using Sanakan.DiscordBot.Abstractions.Models;
 using Sanakan.Common;
 using Discord;
 using Microsoft.Extensions.DependencyInjection;
+using Sanakan.DiscordBot.Resources;
 
 namespace Sanakan.DiscordBot.Modules
 {
@@ -49,7 +50,8 @@ namespace Sanakan.DiscordBot.Modules
         public async Task ShowPeopleAsync(
             [Summary("nazwa krainy (opcjonalne)")][Remainder]string? name = null)
         {
-            var config = await _guildConfigRepository.GetCachedGuildFullConfigAsync(Context.Guild.Id);
+            var guild = Context.Guild;
+            var config = await _guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
 
             var user = Context.User as IGuildUser;
 
@@ -67,7 +69,7 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            foreach (var embed in await _landManager.GetMembersList(land, Context.Guild))
+            foreach (var embed in await _landManager.GetMembersList(land, guild))
             {
                 await ReplyAsync(embed: embed);
                 await _taskManager.Delay(TimeSpan.FromSeconds(2));
@@ -82,13 +84,14 @@ namespace Sanakan.DiscordBot.Modules
             [Summary("użytkownik")] IGuildUser userToAdd,
             [Summary("nazwa krainy (opcjonalne)")][Remainder]string? name = null)
         {
-            var config = await _guildConfigRepository.GetCachedGuildFullConfigAsync(Context.Guild.Id);
+            var guild = Context.Guild;
+            var config = await _guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
 
             var user = Context.User as IGuildUser;
 
             if(user == null)
             {
-                await ReplyAsync(embed: "Nie odnaleziono uzytkownika!".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync(embed: Strings.UserNotFound.ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
@@ -100,7 +103,7 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            var role = Context.Guild.GetRole(land.UnderlingId);
+            var role = guild.GetRole(land.UnderlingId);
 
             if (role == null)
             {
@@ -132,7 +135,7 @@ namespace Sanakan.DiscordBot.Modules
 
             if (user == null)
             {
-                await ReplyAsync(embed: "Nie odnaleziono uzytkownika!".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync(embed: Strings.UserNotFound.ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 

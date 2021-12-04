@@ -231,9 +231,16 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            var trashCommandsChannelId = guildConfig.WaifuConfig.TrashCommandsChannelId.Value;
+            var trashCommandsChannelId = guildConfig.WaifuConfig.TrashCommandsChannelId;
 
-            var trashChannel = (ITextChannel)await guild.GetChannelAsync(trashCommandsChannelId);
+            if(!trashCommandsChannelId.HasValue)
+            {
+                var embed = $"Nie skonfigurowany kanal smieciowych polecen.".ToEmbedMessage(EMType.Error).Build();
+                await ReplyAsync(embed: embed);
+                return;
+            }
+
+            var trashChannel = (ITextChannel)await guild.GetChannelAsync(trashCommandsChannelId.Value);
             var cardImage = await _waifuService.BuildCardImageAsync(card, trashChannel, user, showStats);
             await ReplyAsync(embed: cardImage);
         }
@@ -3603,12 +3610,13 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
+            var statusType = StatusType.DExpeditions;
             var mission = timeStatuses
-                .FirstOrDefault(x => x.Type == StatusType.DExpeditions);
+                .FirstOrDefault(x => x.Type == statusType);
 
             if (mission == null)
             {
-                mission = new TimeStatus(StatusType.DExpeditions);
+                mission = new TimeStatus(statusType);
                 timeStatuses.Add(mission);
             }
 

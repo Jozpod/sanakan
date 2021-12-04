@@ -13,7 +13,7 @@ CREATE TABLE `usersstats` (
   `UpgradedCardsCount` bigint NOT NULL,
   `SacrificedCardsCount` bigint NOT NULL,
   `DestroyedCardsCount` bigint NOT NULL,
-  `UnleashedCards` bigint NOT NULL,
+  `UnleashedCardsCount` bigint NOT NULL,
   `ReleasedCards` bigint NOT NULL,
   `OpenedBoosterPacks` bigint NOT NULL,
   `OpenedBoosterPacksActivity` bigint NOT NULL,
@@ -29,5 +29,5 @@ CREATE TABLE `usersstats` (
   PRIMARY KEY (`Id`),
   UNIQUE KEY `IX_UsersStats_UserId` (`UserId`),
   CONSTRAINT `FK_UsersStats_Users_UserId` FOREIGN KEY (`UserId`) REFERENCES `users` (`Id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
 ALTER TABLE usersstats ADD UNIQUE INDEX IX_UsersStats_UserId USING BTREE(UserId);

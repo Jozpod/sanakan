@@ -127,13 +127,14 @@ namespace Sanakan.DiscordBot.Modules
         public async Task GiveMuteAsync()
         {
             var user = Context.User as IGuildUser;
-            
+            var guild = Context.Guild;
+
             if (user == null)
             {
                 return;
             }
 
-            var config = await _guildConfigRepository.GetCachedGuildFullConfigAsync(Context.Guild.Id);
+            var config = await _guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
 
             if (config == null)
             {
@@ -141,9 +142,9 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            var notifChannel = await Context.Guild.GetChannelAsync(config.NotificationChannelId);
-            var userRole = Context.Guild.GetRole(config.UserRoleId.Value);
-            var muteRole = Context.Guild.GetRole(config.MuteRoleId);
+            var notifChannel = await guild.GetChannelAsync(config.NotificationChannelId);
+            var userRole = guild.GetRole(config.UserRoleId.Value);
+            var muteRole = guild.GetRole(config.MuteRoleId);
 
             if (muteRole == null)
             {
@@ -366,25 +367,25 @@ namespace Sanakan.DiscordBot.Modules
             }
 
             var discordUser = Context.User;
-            var botUser = await _userRepository.GetUserOrCreateAsync(discordUser.Id);
+            var databaseUser = await _userRepository.GetUserOrCreateAsync(discordUser.Id);
 
-            var toPay = _slotMachine.ToPay(botUser);
+            var toPay = _slotMachine.ToPay(databaseUser);
 
-            if (botUser.ScCount < toPay)
+            if (databaseUser.ScCount < toPay)
             {
                 var content1 = $"{Context.User.Mention} brakuje Ci SC, aby za tyle zagrać.".ToEmbedMessage(EMType.Error).Build();
                 await ReplyAsync(embed: content1);
                 return;
             }
 
-            var win = _slotMachine.Play(botUser);
-            botUser.ScCount += win - toPay;
+            var win = _slotMachine.Play(databaseUser);
+            databaseUser.ScCount += win - toPay;
 
             await _userRepository.SaveChangesAsync();
 
-            var smConfig = botUser.SMConfig;
+            var smConfig = databaseUser.SMConfig;
 
-            _cacheManager.ExpireTag(CacheKeys.User(botUser.Id), CacheKeys.Users);
+            _cacheManager.ExpireTag(CacheKeys.User(databaseUser.Id), CacheKeys.Users);
 
             var psay = smConfig.PsayMode > 0 ? $"{Emojis.PsyduckEmoji} " : " ";
             var beatValue = smConfig.Beat.Value();
@@ -394,7 +395,7 @@ namespace Sanakan.DiscordBot.Modules
                 Strings.SlotMachineResult,
                 psay,
                 discordUser.Mention,
-                _slotMachine.Draw(botUser),
+                _slotMachine.Draw(databaseUser),
                 beatValue,
                 multiplierValue,
                 win);

@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using FluentAssertions;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -24,12 +25,18 @@ using System.Threading.Tasks;
 
 namespace Sanakan.Daemon.Tests
 {
+    /// <summary>
+    /// Defines tests for <see cref="TaskQueueHostedService"/> class.
+    /// </summary>
+#if DEBUG
     [TestClass]
+#endif
     public class TaskQueueHostedServiceTests
     {
         private static IDatabaseFacade _databaseFacade;
         private static TaskQueueHostedService _service;
         private static IBlockingPriorityQueue _blockingPriorityQueue;
+        private static SanakanDbContext _sanakanDbContext;
 
         [ClassInitialize]
         public static async Task ClassInitialize(TestContext context)
@@ -56,14 +63,14 @@ namespace Sanakan.Daemon.Tests
             var serviceProvider = serviceCollection.BuildServiceProvider();
             _service = serviceProvider.GetRequiredService<TaskQueueHostedService>();
             _blockingPriorityQueue = serviceProvider.GetRequiredService<IBlockingPriorityQueue>();
-            var sanakanDbContext = serviceProvider.GetRequiredService<SanakanDbContext>();
+            _sanakanDbContext = serviceProvider.GetRequiredService<SanakanDbContext>();
             _databaseFacade = serviceProvider.GetRequiredService<IDatabaseFacade>();
 
             await _databaseFacade.EnsureCreatedAsync();
 
             var user = new User(1, DateTime.UtcNow);
-            sanakanDbContext.Users.Add(user);
-            await sanakanDbContext.SaveChangesAsync();
+            _sanakanDbContext.Users.Add(user);
+            await _sanakanDbContext.SaveChangesAsync();
         }
 
         [ClassCleanup]
@@ -75,15 +82,15 @@ namespace Sanakan.Daemon.Tests
         [TestMethod]
         public async Task Should_Process_Messages()
         {
-            _blockingPriorityQueue.TryEnqueue(new ConnectUserMessage()
+            var message = new ConnectUserMessage()
             {
                 DiscordUserId = 1ul,
                 ShindenUserId = 2ul,
-            });
+            };
+            _blockingPriorityQueue.TryEnqueue(message);
 
             var cancellationTokenSource = new CancellationTokenSource();
-            cancellationTokenSource.CancelAfter(TimeSpan.FromSeconds(5));
-            await _service.StartAsync(cancellationTokenSource.Token);
+            var task = _service.StartAsync(cancellationTokenSource.Token);
         }
     }
 }

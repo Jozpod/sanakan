@@ -2,6 +2,7 @@
 
 # Sanakan #
 
+[![Coverage Status](https://coveralls.io/repos/github/Jozpod/sanakan/badge.svg?branch=main)](https://coveralls.io/github/Jozpod/sanakan?branch=main) 
 [![Build status](https://img.shields.io/appveyor/build/Jozpod/sanakan)](https://ci.appveyor.com/project/jozpod/sanakan/branch/master) 
 [![CodeFactor](https://img.shields.io/codefactor/grade/github/Jozpod/sanakan/master)](https://www.codefactor.io/repository/github/jozpod/sanakan)
 [![License](https://img.shields.io/github/license/Jozpod/sanakan)](https://github.com/Jozpod/sanakan/blob/master/LICENSE)
@@ -141,7 +142,7 @@ Replace Database section in `appsettings.json`
 |                   Command                    | Example |             Description             | Permissions required |
 | :---------------------------------------: | :-------: | :----------------------------------- | ----------- |
 | **[`daily`](#daily)** | `.daily` | Receives daily SC coins. | Command channel if configured or **Guild Administrator** permission |
-| **[`mute me`](#mute me)** | `.mute me` | Self mute |  |
+| **[`mute me`](#muteme)** | `.mute me` | Self mute |  |
 | **[`hourly`](#hourly)** | `.hourly` | Receives hourly SC coins. | Command channel if configured or **Guild Administrator** permission |
 | **[`beat`](#beat)** | `.beat {BetAmount\Number}` | Rolls a dice. | Command channel if configured or **Guild Administrator** permission |
 | **[`set slot`](#setslot)** | `.set slot` | Sets mechine slot. | Command channel if configured or **Guild Administrator** permission |
@@ -193,15 +194,15 @@ Replace Database section in `appsettings.json`
 | **[`cage`](#cage)** | `.cage` | Opens the cage with card(s). | (Waifu) command channel if configured or **Guild Administrator** permission |
 | **[`wadd`](#wadd)** | `.wadd` | Adds card/anime/manga/character to wishlist. | (Waifu) command channel if configured or **Guild Administrator** permission |
 | **[`wishlist view`](#wishlistview)** | `.wishlist view` | Toggles the hidden wishlist option. | (Waifu) command channel if configured or **Guild Administrator** permission |
-| **[`on wishlist`](#on wishlist)** | `.on wishlist {User?}` | Displays content of wishlist. | (Waifu) command channel if configured or **Guild Administrator** permission |
+| **[`on wishlist`](#onwishlist)** | `.on wishlist {User?}` | Displays content of wishlist. | (Waifu) command channel if configured or **Guild Administrator** permission |
 | **[`wishlist`](#wishlist)** | `.wishlist` | Displays user wishlist. | (Waifu) command channel if configured or **Guild Administrator** permission |
 | **[`wishlistf`](#wishlistf)** | `.wishlistf` | Compares the wishlist between users. | (Waifu) command channel if configured or **Guild Administrator** permission |
 | **[`who wants`](#whowants)** | `.who wants {Number} {Boolean?}` | Looks up wishlists which contain given card. | (Waifu) command channel if configured or **Guild Administrator** permission |
 | **[`who wants anime`](#whowantsanime)** | `.who wants anime {Number} {Boolean?}` | Displays user wishlist. | (Waifu) command channel if configured or **Guild Administrator** permission |
 | **[`unleash`](#unleash)** | `.unleash` | Makes card tradeable. Costs TC. | (Waifu) command channel if configured or **Guild Administrator** permission |
 | **[`card limit`](#cardlimit)** | `.card limit` | Increases the card slot limit. | (Waifu) command channel if configured or **Guild Administrator** permission |
-| **[`site color`](#site color)** | `.site color` | Changes main theme color of profile. Costs 500 TC. | (Waifu) command channel if configured or **Guild Administrator** permission |
-| **[`site foreground`](#site foreground)** | `.site foreground` | Changes foreground image of profile. Costs 500 TC. | (Waifu) command channel if configured or **Guild Administrator** permission |
+| **[`site color`](#sitecolor)** | `.site color` | Changes main theme color of profile. Costs 500 TC. | (Waifu) command channel if configured or **Guild Administrator** permission |
+| **[`site foreground`](#siteforeground)** | `.site foreground` | Changes foreground image of profile. Costs 500 TC. | (Waifu) command channel if configured or **Guild Administrator** permission |
 | **[`site background`](#sitebackground)** | `.site background` | Changes background image of profile. Costs 2000 TC. | (Waifu) command channel if configured or **Guild Administrator** permission |
 | **[`site background position`](#sitebackgroundposition)** | `.site background position` | Changes background image position. | (Waifu) command channel if configured or **Guild Administrator** permission |
 | **[`site foreground position`](#siteforegroundposition)** | `.site foreground position` | Changes foreground image position. | (Waifu) command channel if configured or **Guild Administrator** permission |
@@ -234,11 +235,11 @@ Replace Database section in `appsettings.json`
 | **[`sub`](#sub)** | `.sub` | Displays current user subscriptions. | Command channel if configured or **Guild Administrator** permission |
 | **[`add role`](#addrole)** | `.add role {String}` | Grants user given role. | Command channel if configured or **Guild Administrator** permission |
 | **[`remove role`](#removerole)** | `.remove role {String}` | Removes given role. | Command channel if configured or **Guild Administrator** permission |
-| **[`wypisz role`](#wypisz role)** | `.wypisz role` | Lists self managable roles. | None |
+| **[`wypisz role`](#wypiszrole)** | `.wypisz role` | Lists self managable roles. | None |
 | **[`stats`](#stats)** | `.stats` | Displays user statistics. | None |
 | **[`howmuchtolevelup`](#howmuchtolevelup)** | `.howmuchtolevelup` | Displays experience left for user to level up. | None |
 | **[`top`](#top)** | `.top {TopType}` | Displays leaderboard by given criteria. | None |
-| **[`waifu view`](#waifu view)** | `.waifu view` | Specifies whether to display waifu image on side panel. | Command channel if configured or **Guild Administrator** permission |
+| **[`waifu view`](#waifuview)** | `.waifu view` | Specifies whether to display waifu image on side panel. | Command channel if configured or **Guild Administrator** permission |
 | **[`profile`](#profile)** | `.profile` | Displays user profile. | None |
 | **[`quest`](#quest)** | `.quest` | Displays quest progress for given user. | Command channel if configured or **Guild Administrator** permission |
 | **[`style`](#style)** | `.style` | Changes profile style. | Command channel if configured or **Guild Administrator** permission |

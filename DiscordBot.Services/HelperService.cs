@@ -392,7 +392,7 @@ namespace Sanakan.DiscordBot.Services
             var guildId = guild.Id;
             var stringBuilder = new StringBuilder(100);
             var owner = await guild.GetOwnerAsync();
-            var users = await guild.GetUsersAsync();
+            var users = await guild.GetUsersAsync(CacheMode.CacheOnly);
             var channels = await guild.GetChannelsAsync();
             var textChannelsCount = channels.OfType<ITextChannel>().Count();
             var voiceChannelsCount = channels.OfType<IVoiceChannel>().Count();
@@ -418,7 +418,7 @@ namespace Sanakan.DiscordBot.Services
                 new EmbedFieldBuilder
                 {
                     Name = "Właściciel",
-                    Value = owner.Mention,
+                    Value = owner?.Mention ?? "Unknown",
                     IsInline = true
                 },
                 new EmbedFieldBuilder

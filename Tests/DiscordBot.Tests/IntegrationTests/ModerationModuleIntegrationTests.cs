@@ -9,7 +9,7 @@ namespace Sanakan.DiscordBot.Tests.IntegrationTests
     public partial class TestBase
     {
         [TestMethod]
-        public async Task TC01_Should_Set_Admin_Role()
+        public async Task TC501_Should_Set_Admin_Role()
         {
             var adminRole = Guild.Roles.FirstOrDefault(pr => pr.Name == "AdminRole").Id;
             var commandMessage = ModerationCommandBuilder.SetAdminRole(Prefix, adminRole);
@@ -23,29 +23,51 @@ namespace Sanakan.DiscordBot.Tests.IntegrationTests
         }
 
         [TestMethod]
-        public async Task TC02_Should_Set_Report_Channel()
+        public async Task TC502_Should_Set_Report_Channel()
         {
-            var commandMessage = $"{Prefix}raportch";
+            var commandMessage = ModerationCommandBuilder.SetRaportChannel(Prefix);
             await Channel.SendMessageAsync(commandMessage);
 
             var message = await WaitForMessageAsync();
             message.Should().NotBeNull();
             var embed = message.Embeds.FirstOrDefault();
             embed.Should().NotBeNull();
-            embed.Fields.Should().HaveCount(7);
         }
 
         [TestMethod]
-        public async Task TC03_Should_Set_Log_Channel()
+        public async Task TC503_Should_Set_Log_Channel()
         {
-            var commandMessage = $"{Prefix}logch";
+            var commandMessage = ModerationCommandBuilder.SetLogChannel(Prefix);
             await Channel.SendMessageAsync(commandMessage);
 
             var message = await WaitForMessageAsync();
             message.Should().NotBeNull();
             var embed = message.Embeds.FirstOrDefault();
             embed.Should().NotBeNull();
-            embed.Fields.Should().HaveCount(7);
+        }
+
+        [TestMethod]
+        public async Task TC504_Should_Set_Greeting_Channel()
+        {
+            var commandMessage = ModerationCommandBuilder.SetGreetingChannel(Prefix);
+            await Channel.SendMessageAsync(commandMessage);
+
+            var message = await WaitForMessageAsync();
+            message.Should().NotBeNull();
+            var embed = message.Embeds.FirstOrDefault();
+            embed.Should().NotBeNull();
+        }
+
+        [TestMethod]
+        public async Task TC505_Should_Set_Command_Waifu_Channel()
+        {
+            var commandMessage = ModerationCommandBuilder.SetCommandWaifuChannel(Prefix);
+            await Channel.SendMessageAsync(commandMessage);
+
+            var message = await WaitForMessageAsync();
+            message.Should().NotBeNull();
+            var embed = message.Embeds.FirstOrDefault();
+            embed.Should().NotBeNull();
         }
     }
 }

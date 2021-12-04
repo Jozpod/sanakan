@@ -17,6 +17,7 @@ using Sanakan.DiscordBot.Services;
 using Sanakan.DiscordBot.Services.Abstractions;
 using Sanakan.DiscordBot.Session;
 using Sanakan.Extensions;
+using Sanakan.Game;
 using Sanakan.Game.Models;
 using Sanakan.Preconditions;
 using System;
@@ -284,9 +285,9 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("wyświetla ile pozostało punktów doświadczenia do następnego poziomu")]
         [Remarks("karna")]
         public async Task ShowHowMuchToLevelUpAsync(
-            [Summary("użytkownik(opcjonalne)")]IUser? socketUser = null)
+            [Summary("użytkownik(opcjonalne)")]IUser? user = null)
         {
-            var effectiveUser = socketUser ?? Context.User;
+            var effectiveUser = user ?? Context.User;
 
             if (effectiveUser == null)
             {
@@ -301,7 +302,11 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            var embed = $"{effectiveUser.Mention} potrzebuje **{databaseUser.GetRemainingExp(databaseUser.Level + 1)}** punktów doświadczenia do następnego poziomu."
+            var nextLevel = databaseUser.Level + 1;
+            var experience = ExperienceUtils.CalculateExpForLevel(nextLevel);
+            var remainingExperience = databaseUser.GetRemainingExp(experience);
+
+            var embed = $"{effectiveUser.Mention} potrzebuje **{remainingExperience}** punktów doświadczenia do następnego poziomu."
                 .ToEmbedMessage(EMType.Info).Build();
             await ReplyAsync(embed: embed);
         }

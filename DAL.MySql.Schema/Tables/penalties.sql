@@ -9,6 +9,6 @@ CREATE TABLE `penalties` (
   PRIMARY KEY (`Id`),
   KEY `IX_Penalties_GuildId` (`GuildId`),
   KEY `IX_Penalties_UserId` (`UserId`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
 ALTER TABLE penalties ADD INDEX IX_Penalties_GuildId USING BTREE(GuildId);
 ALTER TABLE penalties ADD INDEX IX_Penalties_UserId USING BTREE(UserId);

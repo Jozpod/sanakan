@@ -45,8 +45,7 @@ namespace Sanakan.Web.Tests.Controllers.UserControllerTests
 
             _userRepositoryMock
                 .Setup(pr => pr.GetByDiscordIdAsync(discordUserId))
-                .ReturnsAsync(user)
-                .Verifiable();
+                .ReturnsAsync(user);
 
             _blockingPriorityQueueMock
                 .Setup(pr => pr.TryEnqueue(It.IsAny<BaseMessage>()))
@@ -55,8 +54,6 @@ namespace Sanakan.Web.Tests.Controllers.UserControllerTests
             var result = await _controller.ModifyPointsTCDiscordAsync(discordUserId, amount);
             var okObjectResult = result.Should().BeOfType<ObjectResult>().Subject;
             okObjectResult.Value.Should().NotBeNull();
-
-            _userRepositoryMock.Verify();
         }
     }
 }

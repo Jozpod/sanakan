@@ -21,6 +21,6 @@ CREATE TABLE `users` (
   KEY `IX_Users_ShindenId` (`ShindenId`),
   CONSTRAINT `CK_User_BackgroundProfileUri` CHECK (((trim(`BackgroundProfileUri`) <> _utf8mb4'') or (`BackgroundProfileUri` is null))),
   CONSTRAINT `CK_User_StatsReplacementProfileUri` CHECK (((trim(`StatsReplacementProfileUri`) <> _utf8mb4'') or (`StatsReplacementProfileUri` is null)))
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
 ALTER TABLE users ADD INDEX IX_Users_ShindenId USING BTREE(ShindenId);
 ALTER TABLE users ADD UNIQUE INDEX USER USING HASH(USER);

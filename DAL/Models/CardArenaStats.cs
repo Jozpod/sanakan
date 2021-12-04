@@ -10,6 +10,7 @@ namespace Sanakan.DAL.Models
         public long Draws { get; set; }
 
         public ulong CardId { get; set; }
+
         [JsonIgnore]
         public virtual Card Card { get; set; }
     }

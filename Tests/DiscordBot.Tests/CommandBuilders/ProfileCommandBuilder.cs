@@ -51,7 +51,7 @@ namespace Sanakan.DiscordBot.Tests.IntegrationTests
         /// <summary>
         /// <see cref="ProfileModule.ShowRolesAsync"/>.
         /// </summary>
-        public static string ShowRoles(string prefix, string name) => $"{prefix}wypisz role";
+        public static string ShowRoles(string prefix) => $"{prefix}wypisz role";
 
         /// <summary>
         /// <see cref="ProfileModule.ShowUserProfileAsync(IGuildUser?)"/>.

@@ -174,8 +174,15 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            var embed = (Embed)await _helperService.GetInfoAboutServerAsync(guild);
-            await ReplyAsync(embed: embed);
+            try
+            {
+                var embed = (Embed)await _helperService.GetInfoAboutServerAsync(guild);
+                await ReplyAsync(embed: embed);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Error occurred while getting server info", ex);
+            }
         }
 
         [Command("awatar", RunMode = RunMode.Async)]

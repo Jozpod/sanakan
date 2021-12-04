@@ -48,5 +48,25 @@ namespace Sanakan.DiscordBot.Tests.IntegrationTests
         /// <see cref="ModerationModule.ResolveReportAsync(ulong, string?, string)"/>.
         /// </summary>
         public static string ResolveReport(string prefix) => $"{prefix}mod report";
+
+        /// <summary>
+        /// <see cref="ModerationModule.SetRaportChannelAsync"/>.
+        /// </summary>
+        public static string SetRaportChannel(string prefix) => $"{prefix}mod raportch";
+
+        /// <summary>
+        /// <see cref="ModerationModule.SetLogChannelAsync"/>.
+        /// </summary>
+        public static string SetLogChannel(string prefix) => $"{prefix}mod logch";
+
+        /// <summary>
+        /// <see cref="ModerationModule.SetGreetingChannelAsync"/>.
+        /// </summary>
+        public static string SetGreetingChannel(string prefix) => $"{prefix}mod helloch";
+
+        /// <summary>
+        /// <see cref="ModerationModule.SetCommandWaifuChannelAsync"/>.
+        /// </summary>
+        public static string SetCommandWaifuChannel(string prefix) => $"{prefix}mod wcmdch";
     }
 }
