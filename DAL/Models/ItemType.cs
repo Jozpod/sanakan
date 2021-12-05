@@ -42,6 +42,7 @@ namespace Sanakan.DAL.Models
         FigureClothesPart = 32,
 
         BigRandomBoosterPackE = 33,
+        ResetCardValue = 34,
     }
 
     public static class ItemTypeExtensions
@@ -166,7 +167,8 @@ namespace Sanakan.DAL.Models
                     return 80;
                 case ItemType.ChangeCardImage:
                     return 10;
-
+                case ItemType.ResetCardValue:
+                    return 5;
                 default:
                     return 1;
             }
@@ -311,6 +313,7 @@ namespace Sanakan.DAL.Models
                 case ItemType.ChangeStarType: return 0.3;
                 case ItemType.SetCustomBorder: return 0.4;
                 case ItemType.ChangeCardImage: return 0.1;
+                case ItemType.ResetCardValue: return 0.1;
 
                 default: return 0;
             }
@@ -386,7 +389,8 @@ namespace Sanakan.DAL.Models
                     return $"Część, którą można zamontować jako prawą rękę figurki.";
                 case ItemType.FigureRightLegPart:
                     return $"Część, którą można zamontować jako prawą nogę figurki.";
-
+                case ItemType.ResetCardValue:
+                    return $"Resetuje warość karty do początkowego poziomu.";
                 default:
                     return "Brak opisu.";
             }
@@ -467,7 +471,8 @@ namespace Sanakan.DAL.Models
                     return $"Prawa ręka{quality}";
                 case ItemType.FigureRightLegPart:
                     return $"Prawa noga{quality}";
-
+                case ItemType.ResetCardValue:
+                    return $"Marker";
                 default:
                     return "Brak";
             }

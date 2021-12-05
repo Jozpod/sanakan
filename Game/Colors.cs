@@ -33,6 +33,10 @@ namespace Sanakan.Game
         public static Rgba32 DarkGreenBlue = Rgba32.FromHex("#19615e");
         public static Rgba32 Flirt = Rgba32.FromHex("#a90079");
 
+        public static Rgba32 BrickRed = Rgba32.FromHex("#c9282c");
+        public static Rgba32 Mariner = Rgba32.FromHex("#1d64d5");
+        public static Rgba32 LaPalma = Rgba32.FromHex("#318b19");
+
         public static Rgba32 Pine = Rgba32.FromHex("#356231");
         public static Rgba32 DeepSeaBlue = Rgba32.FromHex("#00527f");
         public static Rgba32 MetallicCopper = Rgba32.FromHex("#78261a");

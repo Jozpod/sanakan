@@ -373,6 +373,18 @@ namespace Sanakan.DiscordBot.Session
             }
         }
 
+        public double GetAvgValue(List<Card> cards)
+        {
+            if (cards.Count < 1) return 0.01;
+            return cards.Average(x => x.MarketValue);
+        }
+
+        public double GetAvgRarity(List<Card> cards)
+        {
+            if (cards.Count < 1) return (int)Rarity.E;
+            return cards.Average(x => (int)x.Rarity);
+        }
+
         private async Task HandleUserReactionInAccept(IReaction reaction, PlayerInfo player, IUserMessage message)
         {
             var messageChannel = false;
@@ -397,20 +409,23 @@ namespace Sanakan.DiscordBot.Session
                 {
                     _payload.Tips = $"Wymiana zakończona!";
                     messageChannel = true;
+                    var sourceCards = _payload.SourcePlayer.Cards;
+                    var destinationCards = _payload.DestinationPlayer.Cards;
 
-                    if (_payload.SourcePlayer.Cards.Count == 0 && _payload.DestinationPlayer.Cards.Count == 0)
+                    if (sourceCards.Count == 0 && destinationCards.Count == 0)
                     {
                         return;
                     }
 
                     var sourceUser = await userRepository.GetUserOrCreateAsync(_payload.SourcePlayer.DiscordId);
-                    var user2 = await userRepository.GetUserOrCreateAsync(_payload.DestinationPlayer.DiscordId);
+                    var destinationUser = await userRepository.GetUserOrCreateAsync(_payload.DestinationPlayer.DiscordId);
 
-                    double avgValueP1 = _payload.SourcePlayer.Cards.Sum(x => x.MarketValue) / ((_payload.SourcePlayer.Cards.Count == 0) ? 1 : _payload.SourcePlayer.Cards.Count);
-                    double avgValueP2 = _payload.DestinationPlayer.Cards.Sum(x => x.MarketValue) / ((_payload.DestinationPlayer.Cards.Count == 0) ? 1 : _payload.DestinationPlayer.Cards.Count);
+                    double avgValueP1 = GetAvgValue(sourceCards);
+                    double avgValueP2 = GetAvgValue(destinationCards);
 
-                    double avgRarP1 = _payload.SourcePlayer.Cards.Sum(x => (int)x.Rarity) / ((_payload.SourcePlayer.Cards.Count == 0) ? 1 : _payload.SourcePlayer.Cards.Count);
-                    double avgRarP2 = _payload.DestinationPlayer.Cards.Sum(x => (int)x.Rarity) / ((_payload.DestinationPlayer.Cards.Count == 0) ? 1 : _payload.DestinationPlayer.Cards.Count);
+                    double avgRarP1 = GetAvgRarity(sourceCards);
+                    double avgRarP2 = GetAvgRarity(destinationCards);
+
                     var avgRarDif = avgRarP1 - avgRarP2;
 
                     if (avgRarDif > 0)
@@ -423,11 +438,11 @@ namespace Sanakan.DiscordBot.Session
                         avgValueP2 /= avgRarDif + 1;
                     }
 
-                    var divP1 = _payload.SourcePlayer.Cards.Count / ((avgValueP1 <= 0) ? 1 : avgValueP1);
-                    var divP2 = _payload.DestinationPlayer.Cards.Count / ((avgValueP2 <= 0) ? 1 : avgValueP2);
+                    var divP1 = sourceCards.Count * ((avgValueP1 <= 0) ? 1 : avgValueP1);
+                    var divP2 = destinationCards.Count * ((avgValueP2 <= 0) ? 1 : avgValueP2);
 
-                    var exchangeRateP1 = divP2 / ((_payload.SourcePlayer.Cards.Count == 0) ? (divP2 * 0.5) : divP1);
-                    var exchangeRateP2 = divP1 / ((_payload.DestinationPlayer.Cards.Count == 0) ? (divP1 * 0.5) : divP2);
+                    var exchangeRateP1 = divP2 / ((destinationCards.Count == 0) ? (divP2 * 0.5) : divP1);
+                    var exchangeRateP2 = divP1 / ((destinationCards.Count == 0) ? (divP1 * 0.5) : divP2);
 
                     if (exchangeRateP1 > 1) exchangeRateP1 = 10;
                     if (exchangeRateP1 < 0.0001) exchangeRateP1 = 0.001;
@@ -435,9 +450,9 @@ namespace Sanakan.DiscordBot.Session
                     if (exchangeRateP2 > 1) exchangeRateP2 = 10;
                     if (exchangeRateP2 < 0.0001) exchangeRateP2 = 0.001;
 
-                    foreach (var sourceCards in _payload.SourcePlayer.Cards)
+                    foreach (var sourceCard in sourceCards)
                     {
-                        var card = sourceUser.GameDeck.Cards.FirstOrDefault(x => x.Id == sourceCards.Id);
+                        var card = sourceUser.GameDeck.Cards.FirstOrDefault(x => x.Id == sourceCard.Id);
                         if (card == null)
                         {
                             continue;
@@ -452,7 +467,7 @@ namespace Sanakan.DiscordBot.Session
                             card.ExperienceCount *= 0.3;
                         }
 
-                        var valueDiff = card.MarketValue - exchangeRateP1;
+                        var valueDiff = exchangeRateP1 - card.MarketValue;
                         var changed = card.MarketValue + valueDiff * 0.8;
                         if (changed < 0.0001) changed = 0.0001;
                         if (changed > 1) changed = 1;
@@ -465,15 +480,15 @@ namespace Sanakan.DiscordBot.Session
 
                         sourceUser.GameDeck.RemoveFromWaifu(card);
 
-                        card.GameDeckId = user2.GameDeck.Id;
+                        card.GameDeckId = destinationUser.GameDeck.Id;
 
-                        user2.GameDeck.RemoveCharacterFromWishList(card.CharacterId);
-                        user2.GameDeck.RemoveCardFromWishList(card.Id);
+                        destinationUser.GameDeck.RemoveCharacterFromWishList(card.CharacterId);
+                        destinationUser.GameDeck.RemoveCardFromWishList(card.Id);
                     }
 
-                    foreach (var destinationCards in _payload.DestinationPlayer.Cards)
+                    foreach (var destinationCard in destinationCards)
                     {
-                        var card = user2.GameDeck.Cards.FirstOrDefault(x => x.Id == destinationCards.Id);
+                        var card = destinationUser.GameDeck.Cards.FirstOrDefault(x => x.Id == destinationCard.Id);
                         if (card == null)
                         {
                             continue;
@@ -488,7 +503,7 @@ namespace Sanakan.DiscordBot.Session
                             card.ExperienceCount *= 0.3;
                         }
 
-                        var valueDiff = card.MarketValue - exchangeRateP2;
+                        var valueDiff = exchangeRateP2 - card.MarketValue;
                         var changed = card.MarketValue + valueDiff * 0.8;
                         if (changed < 0.0001)
                         {
@@ -503,10 +518,10 @@ namespace Sanakan.DiscordBot.Session
 
                         if (!card.FirstOwnerId.HasValue)
                         {
-                            card.FirstOwnerId = user2.Id;
+                            card.FirstOwnerId = destinationUser.Id;
                         }
 
-                        user2.GameDeck.RemoveFromWaifu(card);
+                        destinationUser.GameDeck.RemoveFromWaifu(card);
 
                         card.GameDeckId = sourceUser.GameDeck.Id;
 

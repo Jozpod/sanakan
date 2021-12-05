@@ -905,12 +905,22 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks("")]
         public async Task ToggleBanIfDisallowedUrlAsync()
         {
-            await _config.UpdateAsync(opt =>
+            var hasSaved = await _config.UpdateAsync(opt =>
             {
                 opt.Discord.BanForUrlSpam = !opt.Discord.BanForUrlSpam;
             });
 
-            await ReplyAsync(embed: $"Banowanie uzytkownikow za spamowanie url: `{_config.Value.Discord.BanForUrlSpam}`".ToEmbedMessage(EMType.Success).Build());
+            Embed embed;
+
+            if(hasSaved)
+            {
+                embed = $"Banowanie uzytkownikow za spamowanie url: `{_config.Value.Discord.BanForUrlSpam}`".ToEmbedMessage(EMType.Success).Build();
+                await ReplyAsync(embed: embed);
+                return;
+            }
+
+            embed = $"Wystapil blad podczas zapisywania".ToEmbedMessage(EMType.Error).Build();
+            await ReplyAsync(embed: embed);
         }
 
         [Command("tsafari"), Priority(1)]
@@ -927,7 +937,11 @@ namespace Sanakan.DiscordBot.Modules
                 });
             }
 
-            await ReplyAsync(embed: $"Safari: `{_config.Value.Discord.SafariEnabled.GetYesNo()}` `Zapisano: {save.GetYesNo()}`".ToEmbedMessage(EMType.Success).Build());
+            var embed = $"Safari: `{_config.Value.Discord.SafariEnabled.GetYesNo()}` `Zapisano: {save.GetYesNo()}`"
+                .ToEmbedMessage(EMType.Success)
+                .Build();
+
+            await ReplyAsync(embed: embed);
         }
 
         [Command("twevent"), Priority(1)]
@@ -1286,24 +1300,26 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            var botUser = await _userRepository.GetUserAndDontTrackAsync(Context.User.Id);
-            var thisCard = botUser.GameDeck.Cards.FirstOrDefault(x => x.Id == wid);
-            if (thisCard == null)
+            var databaseUser = await _userRepository.GetUserAndDontTrackAsync(Context.User.Id);
+            var card = databaseUser.GameDeck.Cards.FirstOrDefault(x => x.Id == wid);
+
+            if (card == null)
             {
                 return;
             }
 
             if (time > 0)
             {
-                thisCard.ExpeditionDate = _systemClock.UtcNow.AddMinutes(-time);
+                card.ExpeditionDate = _systemClock.UtcNow.AddMinutes(-time);
             }
 
-            thisCard.Expedition = expedition;
-            var message = _waifuService.EndExpedition(botUser, thisCard, true);
-            var cardSummary = thisCard.GetString(false, false, true);
+            card.Expedition = expedition;
+            var message = _waifuService.EndExpedition(databaseUser, card, true);
+            var cardSummary = card.GetString(false, false, true);
 
             var content = $"Karta {cardSummary} wróciła z {expedition.GetName("ej")} wyprawy!\n\n{message}"
-                .ToEmbedMessage(EMType.Success).Build();
+                .ToEmbedMessage(EMType.Success)
+                .Build();
 
             await ReplyAsync(embed: content);
         }

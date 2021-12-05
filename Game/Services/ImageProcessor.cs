@@ -904,6 +904,47 @@ namespace Sanakan.Game.Services
             return characterImg;
         }
 
+        private bool HasCustomBorderString(Card card)
+        {
+            switch (card.Quality)
+            {
+                case Quality.Gamma: return true;
+                default: return false;
+            }
+        }
+
+        private string GetCustomBorderString(Card card)
+        {
+            var border = "Border.png";
+
+            switch (card.Quality)
+            {
+                case Quality.Gamma:
+                    {
+                        var totalPower = card.GetHealthWithPenalty();
+                        totalPower += card.GetDefenceWithBonus();
+                        totalPower += card.GetAttackWithBonus();
+
+                        if (totalPower > 5000)
+                        {
+                            border = "Border_2";
+                            break;
+                        }
+
+                        if (totalPower > 2000)
+                        {
+                            border = "Border_1.png";
+                            break;
+                        }
+
+                        border = "Border_0.png";
+                    }
+                break;
+            }
+
+            return string.Format(Paths.PWCGBorderPicture, card.Quality, border);
+        }
+
         private Image<Rgba32> GenerateBorder(Card card)
         {
             var borderStr = string.Format(Paths.PWPicture, card.Rarity);
@@ -915,12 +956,17 @@ namespace Sanakan.Game.Services
                 dereStr = dereStr = string.Format(Paths.PWCGDerePicture, card.Quality, card.Dere);
             }
 
-            var img = Image.Load(borderStr);
+            if (HasCustomBorderString(card))
+            {
+                borderStr = GetCustomBorderString(card);
+            }
 
-            using var dere = Image.Load(dereStr);
-            img.Mutate(x => x.DrawImage(dere, _origin, 1));
+            var image = Image.Load(borderStr);
 
-            return img;
+            using var dereImage = Image.Load(dereStr);
+            image.Mutate(x => x.DrawImage(dereImage, _origin, 1));
+
+            return image;
         }
 
         private async Task<Image<Rgba32>> LoadCustomBorderAsync(Card card)
@@ -1000,16 +1046,16 @@ namespace Sanakan.Game.Services
 
         private void ApplyGammaStats(Image<Rgba32> image, Card card)
         {
-            var aphFont = new Font(_latoBold, 37);
+            var aphFont = new Font(_latoBold, 26);
 
             var healthPoints = card.GetHealthWithPenalty().ToString();
             var defencePoints = card.GetDefenceWithBonus().ToString();
             var attackPoints = card.GetAttackWithBonus().ToString();
 
             // TODO: center numbers
-            image.Mutate(x => x.DrawText(attackPoints, aphFont, Colors.Flirt, new Point(196, 495)));
-            image.Mutate(x => x.DrawText(defencePoints, aphFont, Colors.DarkGreenBlue, new Point(282, 545)));
-            image.Mutate(x => x.DrawText(healthPoints, aphFont, Colors.MediumSpringGreen, new Point(90, 545)));
+            image.Mutate(x => x.DrawText(attackPoints, aphFont, Colors.BrickRed, new Point(115, 593)));
+            image.Mutate(x => x.DrawText(defencePoints, aphFont, Colors.Mariner, new Point(155, 565)));
+            image.Mutate(x => x.DrawText(healthPoints, aphFont, Colors.LaPalma, new Point(300, 593)));
         }
 
         private void ApplyDeltaStats(Image<Rgba32> image, Card card)
@@ -1018,8 +1064,8 @@ namespace Sanakan.Game.Services
             var adFont = new Font(_latoBold, 26);
 
             var healthPoints = card.GetHealthWithPenalty().ToString();
-            var def = card.GetDefenceWithBonus().ToString();
-            var atk = card.GetAttackWithBonus().ToString();
+            var defencePoints = card.GetDefenceWithBonus().ToString();
+            var attackPoints = card.GetAttackWithBonus().ToString();
 
             var options = _options.CurrentValue;
             using var hpImg = new Image<Rgba32>(options.StatsImageWidth, options.StatsImageHeight);
@@ -1030,8 +1076,8 @@ namespace Sanakan.Game.Services
             image.Mutate(x => x.DrawImage(hpImg, new Point(333, 490), 1));
 
             // TODO: center numbers
-            image.Mutate(x => x.DrawText(atk, adFont, Colors.MetallicCopper, new Point(62, 600)));
-            image.Mutate(x => x.DrawText(def, adFont, Colors.DeepSeaBlue, new Point(352, 600)));
+            image.Mutate(x => x.DrawText(attackPoints, adFont, Colors.MetallicCopper, new Point(62, 600)));
+            image.Mutate(x => x.DrawText(defencePoints, adFont, Colors.DeepSeaBlue, new Point(352, 600)));
         }
 
         private void ApplyEpsilonStats(Image<Rgba32> image, Card card)
@@ -1039,13 +1085,13 @@ namespace Sanakan.Game.Services
             var aphFont = new Font(_latoBold, 28);
 
             var healthPoints = card.GetHealthWithPenalty().ToString();
-            int def = card.GetDefenceWithBonus();
-            int atk = card.GetAttackWithBonus();
+            var defencePoints = card.GetDefenceWithBonus().ToString();
+            var attackPoints = card.GetAttackWithBonus().ToString();
 
             var textGraphicsOptions = new TextGraphicsOptions() { ApplyKerning = true, DpiX = 80 }; // TODO: rotate hp
             image.Mutate(x => x.DrawText(textGraphicsOptions, healthPoints, aphFont, Colors.BrightLightGreen, new Point(59, 365)));
-            image.Mutate(x => x.DrawText(textGraphicsOptions, $"{atk}", aphFont, Colors.DeepOrange, new Point(64, 432)));
-            image.Mutate(x => x.DrawText(textGraphicsOptions, $"{def}", aphFont, Colors.Azure, new Point(55, 485)));
+            image.Mutate(x => x.DrawText(textGraphicsOptions, attackPoints, aphFont, Colors.DeepOrange, new Point(64, 432)));
+            image.Mutate(x => x.DrawText(textGraphicsOptions, defencePoints, aphFont, Colors.Azure, new Point(55, 485)));
         }
 
         private void ApplyZetaStats(Image<Rgba32> image, Card card)
@@ -1053,12 +1099,12 @@ namespace Sanakan.Game.Services
             var aphFont = new Font(_digital, 28);
 
             var healthPoints = card.GetHealthWithPenalty().ToString("D5");
-            int def = card.GetDefenceWithBonus();
-            int atk = card.GetAttackWithBonus();
+            var defencePoints = card.GetDefenceWithBonus().ToString("D4");
+            var attackPoints = card.GetAttackWithBonus().ToString("D4");
 
             var textGraphicsOptions = new TextGraphicsOptions() { ApplyKerning = true, DpiX = 80 };
-            image.Mutate(x => x.DrawText(textGraphicsOptions, atk.ToString("D4"), aphFont, Colors.DeepOrange, new Point(342, 538)));
-            image.Mutate(x => x.DrawText(textGraphicsOptions, def.ToString("D4"), aphFont, Colors.Azure, new Point(342, 565)));
+            image.Mutate(x => x.DrawText(textGraphicsOptions, attackPoints, aphFont, Colors.DeepOrange, new Point(342, 538)));
+            image.Mutate(x => x.DrawText(textGraphicsOptions, defencePoints, aphFont, Colors.Azure, new Point(342, 565)));
             image.Mutate(x => x.DrawText(textGraphicsOptions, healthPoints, aphFont, Colors.BrightLightGreen, new Point(328, 593)));
         }
 
@@ -1066,24 +1112,24 @@ namespace Sanakan.Game.Services
         {
             var aphFont = new Font(_latoBold, 28);
 
-            int hp = card.GetHealthWithPenalty();
-            int def = card.GetDefenceWithBonus();
-            int atk = card.GetAttackWithBonus();
+            var healthPoints = card.GetHealthWithPenalty().ToString();
+            var defencePoints = card.GetDefenceWithBonus().ToString();
+            var attackPoints = card.GetAttackWithBonus().ToString();
 
             var options = _options.CurrentValue;
             using var hpImg = new Image<Rgba32>(options.StatsImageWidth, options.StatsImageHeight);
-            hpImg.Mutate(x => x.DrawText($"{hp}", aphFont, Colors.LightGreenishBlue, new Point(1)));
+            hpImg.Mutate(x => x.DrawText(healthPoints, aphFont, Colors.LightGreenishBlue, new Point(1)));
             hpImg.Mutate(x => x.Rotate(-19));
             image.Mutate(x => x.DrawImage(hpImg, new Point(57, 555), 1));
 
 
             using var atkImg = new Image<Rgba32>(options.StatsImageWidth, options.StatsImageHeight);
-            atkImg.Mutate(x => x.DrawText($"{atk}", aphFont, Colors.BlossomPink, new Point(1)));
+            atkImg.Mutate(x => x.DrawText(attackPoints, aphFont, Colors.BlossomPink, new Point(1)));
             atkImg.Mutate(x => x.Rotate(34));
             image.Mutate(x => x.DrawImage(atkImg, new Point(80, 485), 1));
             
 
-            image.Mutate(x => x.DrawText($"{def}", aphFont, Colors.BlueDiamond, new Point(326, 576)));
+            image.Mutate(x => x.DrawText(defencePoints, aphFont, Colors.BlueDiamond, new Point(326, 576)));
         }
 
         private void ApplyUltimateStats(Image<Rgba32> image, Card card)
@@ -1097,19 +1143,26 @@ namespace Sanakan.Game.Services
 
             switch (card.Quality)
             {
-                case Quality.Alpha:ApplyAlphaStats(image, card);
+                case Quality.Alpha:
+                    ApplyAlphaStats(image, card);
                     break;
-                case Quality.Beta: ApplyBetaStats(image, card);
+                case Quality.Beta:
+                    ApplyBetaStats(image, card);
                     break;
-                case Quality.Gamma: ApplyGammaStats(image, card);
+                case Quality.Gamma:
+                    ApplyGammaStats(image, card);
                     break;
-                case Quality.Delta: ApplyDeltaStats(image, card);
+                case Quality.Delta:
+                    ApplyDeltaStats(image, card);
                     break;
-                case Quality.Epsilon: ApplyEpsilonStats(image, card);
+                case Quality.Epsilon:
+                    ApplyEpsilonStats(image, card);
                     break;
-                case Quality.Zeta: ApplyZetaStats(image, card);
+                case Quality.Zeta:
+                    ApplyZetaStats(image, card);
                     break;
-                case Quality.Lambda: ApplyLambdaStats(image, card);
+                case Quality.Lambda:
+                    ApplyLambdaStats(image, card);
                     break;
 
                 default:

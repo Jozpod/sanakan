@@ -17,7 +17,7 @@ namespace Sanakan.Web
         {
             get
             {
-                var discordStr = _user.Claims.FirstOrDefault(x => x.Type == "DiscordId")?.Value;
+                var discordStr = _user.Claims.FirstOrDefault(x => x.Type == nameof(DiscordId))?.Value;
 
                 if (discordStr == null || !ulong.TryParse(discordStr, out var discordId))
                 {

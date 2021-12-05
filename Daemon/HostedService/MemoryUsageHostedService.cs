@@ -26,6 +26,7 @@ namespace Sanakan.Daemon.HostedService
         private readonly ITimer _timer;
         private readonly IDatabaseFacade _databaseFacade;
         private const int MB = 1048576;
+        private bool _isRunning;
 
         public MemoryUsageHostedService(
             ILogger<MemoryUsageHostedService> logger,
@@ -70,6 +71,13 @@ namespace Sanakan.Daemon.HostedService
 
         private async void OnTick(object sender, TimerEventArgs e)
         {
+            if (_isRunning)
+            {
+                return;
+            }
+
+            _isRunning = true;
+
             try
             {
                 _operatingSystem.Refresh(_process);
@@ -94,6 +102,8 @@ namespace Sanakan.Daemon.HostedService
             {
                 _logger.LogError($"Could not get memory usage", ex);
             }
+
+            _isRunning = false;
         }
     }
 }

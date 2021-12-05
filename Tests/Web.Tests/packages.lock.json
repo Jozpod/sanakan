@@ -2394,7 +2394,8 @@
         "type": "Project",
         "dependencies": {
           "Discord.Net": "2.4.0",
-          "Microsoft.Extensions.DependencyInjection": "5.0.2"
+          "MSTest.TestAdapter": "2.2.3",
+          "MSTest.TestFramework": "2.2.3"
         }
       },
       "Sanakan.Web": {

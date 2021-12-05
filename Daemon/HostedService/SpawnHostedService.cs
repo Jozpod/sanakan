@@ -39,6 +39,7 @@ namespace Sanakan.Daemon.HostedService
         private readonly object _syncRoot = new object();
         private readonly IDictionary<ulong, Entry> _serverCounter;
         private readonly IDictionary<ulong, ulong> _userCounter;
+        private bool _isRunning;
 
         public SpawnHostedService(
             IRandomNumberGenerator randomNumberGenerator,
@@ -98,6 +99,13 @@ namespace Sanakan.Daemon.HostedService
 
         internal void OnResetCounter(object sender, TimerEventArgs e)
         {
+            if (_isRunning)
+            {
+                return;
+            }
+
+            _isRunning = true;
+
             var utcNow = _systemClock.UtcNow;
             var resetInterval = TimeSpan.FromDays(1);
 
@@ -112,6 +120,8 @@ namespace Sanakan.Daemon.HostedService
                     }
                 }
             }
+
+            _isRunning = false;
         }
 
         private async Task HandleGuildAsync(

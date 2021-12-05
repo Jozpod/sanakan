@@ -3,7 +3,7 @@ using System.Threading;
 
 namespace Sanakan.Common
 {
-    public class ThreadingTimer : ITimer, IDisposable
+    internal class ThreadingTimer : ITimer, IDisposable
     {
         private Timer? _timer;
 

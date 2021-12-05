@@ -1,6 +1,6 @@
 ﻿namespace Sanakan.Common
 {
-    public class FileSystemWatcherFactory : IFileSystemWatcherFactory
+    internal class FileSystemWatcherFactory : IFileSystemWatcherFactory
     {
         public IFileSystemWatcher Create(FileSystemWatcherOptions options)
         {

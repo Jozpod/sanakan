@@ -28,8 +28,7 @@ namespace Sanakan.Web.Test
 
             _optionsMock
                 .Setup(pr => pr.CurrentValue)
-                .Returns(options)
-                .Verifiable();
+                .Returns(options);
 
             _jwtBuilder = new JwtBuilder(
                 _optionsMock.Object,
@@ -48,9 +47,6 @@ namespace Sanakan.Web.Test
 
             var tokenData = _jwtBuilder.Build(TimeSpan.FromMinutes(1));
             tokenData.Token.Should().NotBeNullOrEmpty();
-
-            _optionsMock.Verify();
-            _systemClockMock.Verify();
         }
     }
 }

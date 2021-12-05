@@ -728,6 +728,13 @@ namespace Sanakan.DiscordBot.Modules
                     karmaChange += itemCount;
                     card.UpgradesCount += itemCount;
                     embed.Description += $"Zwiększono liczbę ulepszeń do {card.UpgradesCount}!";
+
+                    break;
+
+                case ItemType.ResetCardValue:
+                    karmaChange += 0.5;
+                    card.MarketValue = 1;
+                    embed.Description += "Wartość karty została zresetowana.";
                     break;
 
                 case ItemType.DereReRoll:

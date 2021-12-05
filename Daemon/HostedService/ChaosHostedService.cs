@@ -31,6 +31,7 @@ namespace Sanakan.Daemon.HostedService
         private readonly ITaskManager _taskManager;
         private readonly ISet<ulong> _usersWithSwappedNicknames;
         private readonly object _syncRoot = new ();
+        private bool _isRunning;
 
         public ChaosHostedService(
             ILogger<ChaosHostedService> logger,
@@ -93,10 +94,19 @@ namespace Sanakan.Daemon.HostedService
 
         private async void OnTick(object sender, TimerEventArgs eventArgs)
         {
+            if (_isRunning)
+            {
+                return;
+            }
+
+            _isRunning = true;
+
             lock (_syncRoot)
             {
                 _usersWithSwappedNicknames.Clear();
             }
+
+            _isRunning = false;
         }
 
         internal async Task HandleMessageAsync(IMessage message)

@@ -24,6 +24,7 @@ namespace Sanakan.Common
         public const string PWEmptyPicture = "./Pictures/PW/empty.png";
         public const string PWPicture = "./Pictures/PW/{0}.png";
         public const string PWCGPicture = "./Pictures/PW/CG/{0}/Border.png";
+        public const string PWCGBorderPicture = "./Pictures/PW/CG/{0}/{1}.png";
         public const string PWCGDerePicture = "./Pictures/PW/CG/{0}/Dere/{1}.png";
         public const string PWCGStatsPicture = "./Pictures/PW/CG/{0}/Stats.png";
         public const string PWStarPicture = "./Pictures/PW/stars/{0}_{1}.png";

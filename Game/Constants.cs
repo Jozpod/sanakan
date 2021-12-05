@@ -26,6 +26,7 @@ namespace Sanakan.Game
             new ItemWithCost(499,   ItemType.RandomNormalBoosterPackA.ToItem()),
             new ItemWithCost(899,   ItemType.RandomNormalBoosterPackS.ToItem()),
             new ItemWithCost(1299,  ItemType.RandomNormalBoosterPackSS.ToItem()),
+            new ItemWithCost(569,   ItemType.ResetCardValue.ToItem()),
         };
 
         public static ItemWithCost[] ItemsWithCostForPVP = new []

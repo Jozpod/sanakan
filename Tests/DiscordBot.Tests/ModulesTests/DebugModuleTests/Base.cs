@@ -52,7 +52,13 @@ namespace DiscordBot.ModulesTests.DebugModuleTests
 
             _sanakanConfigurationMock
                 .Setup(pr => pr.Value)
-                .Returns(new SanakanConfiguration());
+                .Returns(new SanakanConfiguration
+                {
+                    Discord = new DiscordConfiguration
+                    {
+                        
+                    },
+                });
 
             _module = new(
                 eventIdsImporterMock.Object,
