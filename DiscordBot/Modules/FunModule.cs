@@ -252,7 +252,10 @@ namespace Sanakan.DiscordBot.Modules
             var delay = _randomNumberGenerator.GetRandomValue(100, 500);
             await _taskManager.Delay(TimeSpan.FromMilliseconds(delay));
 
-            var content = $"{Emotes.PinkArrow} {_randomNumberGenerator.GetOneRandomFrom(allOptions)}".ToEmbedMessage(EMType.Success).WithAuthor(new EmbedAuthorBuilder().WithUser(Context.User)).Build();
+            var content = $"{Emotes.PinkArrow} {_randomNumberGenerator.GetOneRandomFrom(allOptions)}"
+                .ToEmbedMessage(EMType.Success).WithAuthor(new EmbedAuthorBuilder()
+                .WithUser(Context.User))
+                .Build();
             await ReplyAsync(embed: content);
         }
 

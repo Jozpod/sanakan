@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
-using SearchResult = Discord.Commands.SearchResult;
 
 namespace Sanakan.DiscordBot
 {
@@ -25,8 +24,8 @@ namespace Sanakan.DiscordBot
 
         public void AddTypeReader<T>(TypeReader reader) => _commandService.AddTypeReader<T>(reader);
 
-        public SearchResult Search(ICommandContext context, int argPos) => _commandService.Search(context, argPos);
+        public Discord.Commands.SearchResult Search(ICommandContext context, int argPos) => _commandService.Search(context, argPos);
 
-        public SearchResult Search(string input) => _commandService.Search(input);
+        public Discord.Commands.SearchResult Search(string input) => _commandService.Search(input);
     }
 }

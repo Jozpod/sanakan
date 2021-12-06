@@ -30,7 +30,7 @@ namespace Sanakan.DiscordBot.Tests
             var serviceCollection = new ServiceCollection();
             var serviceProvider = serviceCollection.BuildServiceProvider();
             var commandError = CommandError.BadArgCount;
-            var searchResult = SearchResult.FromError(commandError, "test");
+            var searchResult = Discord.Commands.SearchResult.FromError(commandError, "test");
 
             _userMessageMock
                 .Setup(pr => pr.Content)

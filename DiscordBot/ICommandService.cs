@@ -15,8 +15,8 @@ namespace Sanakan.DiscordBot
 
         void AddTypeReader<T>(TypeReader reader);
 
-        SearchResult Search(string input);
+        Discord.Commands.SearchResult Search(string input);
 
-        SearchResult Search(ICommandContext context, int argPos);
+        Discord.Commands.SearchResult Search(ICommandContext context, int argPos);
     }
 }

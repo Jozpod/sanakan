@@ -5,6 +5,7 @@ using Moq;
 using Sanakan.DiscordBot.Modules;
 using Sanakan.DAL.Models.Configuration;
 using System.Threading;
+using FluentAssertions;
 
 namespace DiscordBot.ModulesTests.ModerationModuleTests
 {
@@ -49,6 +50,12 @@ namespace DiscordBot.ModulesTests.ModerationModuleTests
 
             _cacheManagerMock
                 .Setup(pr => pr.ExpireTag(It.IsAny<string[]>()));
+
+            SetupSendMessage((message, embed) =>
+            {
+                embed.Should().NotBeNull();
+                embed.Description.Should().NotBeNullOrEmpty();
+            });
 
             await _module.AddMyLandRoleAsync(_managerRoleMock.Object, _underlingRoleMock.Object);
         }

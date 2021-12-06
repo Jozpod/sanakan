@@ -12,6 +12,8 @@ using Sanakan.DiscordBot.Abstractions.Models;
 using Sanakan.DiscordBot.Extensions;
 using Sanakan.DiscordBot.Resources;
 using Sanakan.DiscordBot.Services.Abstractions;
+using Sanakan.TaskQueue;
+using Sanakan.TaskQueue.Messages;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -20,7 +22,8 @@ namespace Sanakan.DiscordBot
 {
     internal class CommandHandler : ICommandHandler
     {
-        private readonly IDiscordClientAccessor _discordSocketClientAccessor;
+        private readonly IDiscordClientAccessor _discordClientAccessor;
+        private readonly IBlockingPriorityQueue _blockingPriorityQueue;
         private readonly IHelperService _helperService;
         private readonly ICommandService _commandService;
         private readonly IOptionsMonitor<DiscordConfiguration> _config;
@@ -31,7 +34,7 @@ namespace Sanakan.DiscordBot
         private readonly IServiceScopeFactory _serviceScopeFactory;
 
         public CommandHandler(
-            IDiscordClientAccessor discordSocketClientAccessor,
+            IDiscordClientAccessor discordClientAccessor,
             IHelperService helperService,
             ICommandService commandService,
             IOptionsMonitor<DiscordConfiguration> config,
@@ -41,7 +44,7 @@ namespace Sanakan.DiscordBot
             IServiceProvider serviceProvider,
             IServiceScopeFactory scopeFactory)
         {
-            _discordSocketClientAccessor = discordSocketClientAccessor;
+            _discordClientAccessor = discordClientAccessor;
             _helperService = helperService;
             _commandService = commandService;
             _config = config;
@@ -54,7 +57,7 @@ namespace Sanakan.DiscordBot
 
         public async Task InitializeAsync()
         {
-            var client = _discordSocketClientAccessor.Client;
+            var client = _discordClientAccessor.Client;
 
             var modules = await _commandService
                 .AddModulesAsync(typeof(CommandHandler).Assembly, _serviceProvider);
@@ -64,7 +67,7 @@ namespace Sanakan.DiscordBot
                 (PrivateModules.Moderation, await _commandService.AddModuleAsync<Modules.ModerationModule>(_serviceProvider)),
                 (PrivateModules.Debug, await _commandService.AddModuleAsync<Modules.DebugModule>(_serviceProvider)));
 
-            _discordSocketClientAccessor.MessageReceived += HandleCommandAsync;
+            _discordClientAccessor.MessageReceived += HandleCommandAsync;
         }
 
         private async Task HandleCommandAsync(IMessage message)
@@ -95,11 +98,12 @@ namespace Sanakan.DiscordBot
 
             var guild = guildUser.Guild;
             var guildId = guild.Id;
-            var client = _discordSocketClientAccessor.Client;
+            var client = _discordClientAccessor.Client;
             var channel = (IMessageChannel)await client.GetChannelAsync(userMessage.Channel.Id);
 
             using var serviceScope = _serviceScopeFactory.CreateScope();
-            var guildConfigRepository = serviceScope.ServiceProvider.GetRequiredService<IGuildConfigRepository>();
+            var serviceProvider = serviceScope.ServiceProvider;
+            var guildConfigRepository = serviceProvider.GetRequiredService<IGuildConfigRepository>();
             var guildConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(guildId);
 
             if (guildConfig?.Prefix != null)
@@ -123,19 +127,19 @@ namespace Sanakan.DiscordBot
                 return;
             }
 
-            var context = _discordSocketClientAccessor.GetCommandContext(userMessage);
+            var commandContext = _discordClientAccessor.GetCommandContext(userMessage);
 
             var searchResult = await _commandService
-                .GetExecutableCommandAsync(context, argumentPosition, _serviceProvider);
+                .GetExecutableCommandAsync(commandContext, argumentPosition, _serviceProvider);
 
             if (!searchResult.IsSuccess())
             {
-                await ProcessResultAsync(searchResult.Result, context, channel, argumentPosition, prefix);
+                await ProcessResultAsync(searchResult.Result, commandContext, channel, argumentPosition, prefix);
                 return;
             }
 
-            var command = searchResult.Command;
-            var commandInfo = command.Match.Command;
+            var commandMatch = searchResult.CommandMatch;
+            var commandInfo = commandMatch.Command;
             var commandName = commandInfo.Name;
 
             _logger.LogInformation($"Running command: u{userId} {commandName}");
@@ -160,7 +164,7 @@ namespace Sanakan.DiscordBot
                 CommandParameters = param,
             };
 
-            var commandsAnalyticsRepository = serviceScope.ServiceProvider.GetRequiredService<ICommandsAnalyticsRepository>();
+            var commandsAnalyticsRepository = serviceProvider.GetRequiredService<ICommandsAnalyticsRepository>();
 
             commandsAnalyticsRepository.Add(record);
             await commandsAnalyticsRepository.SaveChangesAsync();
@@ -168,12 +172,26 @@ namespace Sanakan.DiscordBot
             switch (commandInfo.RunMode)
             {
                 case RunMode.Async:
-                    await command.ExecuteAsync(_serviceProvider);
+                    await searchResult.ExecuteAsync(_serviceProvider).ConfigureAwait(false);
                     break;
 
                 default:
                 case RunMode.Sync:
-                    await channel.SendMessageAsync(embed: Strings.RejectedCommand.ToEmbedMessage(EMType.Error).Build());
+
+                    var queueMessage = new CommandMessage(searchResult.Priority)
+                    {
+                        Match = commandMatch,
+                        Context = commandContext,
+                        ParseResult = searchResult.ParseResult,
+                    };
+
+                    var enqueued = _blockingPriorityQueue.TryEnqueue(queueMessage);
+
+                    if(!enqueued)
+                    {
+                        await channel.SendMessageAsync(embed: Strings.RejectedCommand.ToEmbedMessage(EMType.Error).Build());
+                    }
+                    
                     break;
             }
         }

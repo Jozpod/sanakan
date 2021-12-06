@@ -21,6 +21,7 @@ namespace Sanakan.TaskQueue.Builder
             services.AddScoped<IMessageHandler<SafariMessage>, SafariMessageHandler>();
             services.AddScoped<IMessageHandler<GiveCardsMessage>, GiveCardsMessageHandler>();
             services.AddScoped<IMessageHandler<GiveBoosterPackMessage>, GiveBoosterPackMessageHandler>();
+            services.AddScoped<IMessageHandler<CommandMessage>, CommandMessageHandler>();
 
             return services;
         }

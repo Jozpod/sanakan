@@ -10,6 +10,7 @@ using Sanakan.DiscordBot.Session;
 using Sanakan.DiscordBot.Modules;
 using Discord;
 using Moq;
+using FluentAssertions;
 
 namespace DiscordBot.ModulesTests.ShindenModuleTests
 {
@@ -79,6 +80,12 @@ namespace DiscordBot.ModulesTests.ShindenModuleTests
             _systemClockMock
                 .Setup(pr => pr.UtcNow)
                 .Returns(DateTime.UtcNow);
+
+            SetupSendMessage((message, embed) =>
+            {
+                embed.Should().NotBeNull();
+                embed.Fields.Should().HaveCount(3);
+            });
 
             await _module.SearchAnimeAsync(title);
         }

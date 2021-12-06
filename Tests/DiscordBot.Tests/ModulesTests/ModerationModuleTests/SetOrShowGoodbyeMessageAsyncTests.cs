@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Sanakan.DiscordBot.Modules;
 using Discord;
 using Moq;
+using Sanakan.DAL.Models.Configuration;
 
 namespace DiscordBot.ModulesTests.ModerationModuleTests
 {
@@ -16,9 +17,11 @@ namespace DiscordBot.ModulesTests.ModerationModuleTests
         [TestMethod]
         public async Task Should_Send_Message()
         {
-            _helperServiceMock
-                .Setup(pr => pr.GivePrivateHelp(PrivateModules.Moderation))
-                .Returns("test info");
+            var guildOptions = new GuildOptions(1ul, 50);
+
+            _guildConfigRepositoryMock
+              .Setup(pr => pr.GetGuildConfigOrCreateAsync(guildOptions.Id))
+              .ReturnsAsync(guildOptions);
 
             await _module.SetOrShowGoodbyeMessageAsync();
         }

@@ -57,7 +57,7 @@ namespace Sanakan.DiscordBot.Tests.CommandHandlerTests
                  .Returns(_guildId);
         }
 
-        public void Setup_Process_No_Search_Result(IUserMessage userMessage, SearchResult searchResult)
+        public void Setup_Process_No_Search_Result(IUserMessage userMessage, Discord.Commands.SearchResult searchResult)
         {
             var channelId = 1ul;
             var guildConfig = new GuildOptions(_guildId, 50);
@@ -262,7 +262,7 @@ namespace Sanakan.DiscordBot.Tests.CommandHandlerTests
         [TestMethod]
         public void Should_Process_No_Search_Result_UnknownCommand()
         {
-            var searchResult = SearchResult.FromError(CommandError.UnknownCommand, "unknown command");
+            var searchResult = Discord.Commands.SearchResult.FromError(CommandError.UnknownCommand, "unknown command");
             SetupGuildAndUser();
             Setup_Process_No_Search_Result(
                 _userMessageMock.Object,
@@ -279,7 +279,7 @@ namespace Sanakan.DiscordBot.Tests.CommandHandlerTests
         [TestMethod]
         public void Should_Process_No_Search_Result_MultipleMatches()
         {
-            var searchResult = SearchResult.FromError(CommandError.MultipleMatches, "unknown command");
+            var searchResult = Discord.Commands.SearchResult.FromError(CommandError.MultipleMatches, "unknown command");
             SetupGuildAndUser();
             Setup_Process_No_Search_Result(
               _userMessageMock.Object,
@@ -306,12 +306,12 @@ namespace Sanakan.DiscordBot.Tests.CommandHandlerTests
         [TestMethod]
         public void Should_Process_No_Search_Result_BadArgCount()
         {
-            var searchResult = SearchResult.FromError(CommandError.BadArgCount, "bad arg count");
+            var searchResult = Discord.Commands.SearchResult.FromError(CommandError.BadArgCount, "bad arg count");
             var commands = new List<CommandMatch>
             {
                 new CommandMatch(null as CommandInfo, "command"),
             };
-            var commandSearchResult = SearchResult.FromSuccess("commands", commands);
+            var commandSearchResult = Discord.Commands.SearchResult.FromSuccess("commands", commands);
             SetupGuildAndUser();
             Setup_Process_No_Search_Result(
                 _userMessageMock.Object,
@@ -348,7 +348,7 @@ namespace Sanakan.DiscordBot.Tests.CommandHandlerTests
         {
             var preconditionErrorPayload = new PreconditionErrorPayload();
             preconditionErrorPayload.Message = "unmet precondition";
-            var searchResult = SearchResult.FromError(CommandError.UnmetPrecondition, preconditionErrorPayload.Serialize());
+            var searchResult = Discord.Commands.SearchResult.FromError(CommandError.UnmetPrecondition, preconditionErrorPayload.Serialize());
             SetupGuildAndUser();
             Setup_Process_No_Search_Result(
                 _userMessageMock.Object,
@@ -377,7 +377,7 @@ namespace Sanakan.DiscordBot.Tests.CommandHandlerTests
         {
             var preconditionErrorPayload = new PreconditionErrorPayload();
             preconditionErrorPayload.ImageUrl = "http://www.test.com/image.png";
-            var searchResult = SearchResult.FromError(CommandError.UnmetPrecondition, preconditionErrorPayload.Serialize());
+            var searchResult = Discord.Commands.SearchResult.FromError(CommandError.UnmetPrecondition, preconditionErrorPayload.Serialize());
             SetupGuildAndUser();
             Setup_Process_No_Search_Result(
                 _userMessageMock.Object,
