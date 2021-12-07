@@ -43,7 +43,7 @@ namespace Sanakan.Web.Tests.IntegrationTests
         public async Task Should_Return_User_Cards()
         {
             var shindenUserId = 1ul;
-            var cards = await _client.GetFromJsonAsync<IEnumerable<Card>>($"api/user/{shindenUserId}/cards");
+            var cards = await _client.GetFromJsonAsync<IEnumerable<Card>>($"api/waifu/user/{shindenUserId}/cards");
             cards.Should().NotBeNull();
         }
 
@@ -55,9 +55,12 @@ namespace Sanakan.Web.Tests.IntegrationTests
         {
             var shindenUserId = 1ul;
             var offset = 0;
-            var count = 0;
-            var filter = new CardsQueryFilter();
-            var response = await _client.PostAsJsonAsync($"api/user/{shindenUserId}/cards/{offset}/{count}", filter);
+            var take = 1;
+            var filter = new CardsQueryFilter()
+            {
+                SearchText = "title",
+            };
+            var response = await _client.PostAsJsonAsync($"api/waifu/user/{shindenUserId}/cards/{offset}/{take}", filter);
             response.EnsureSuccessStatusCode();
             var result = await response.Content.ReadFromJsonAsync<FilteredCards>();
             result.Should().NotBeNull();

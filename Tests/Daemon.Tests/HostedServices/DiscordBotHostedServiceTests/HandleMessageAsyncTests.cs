@@ -7,9 +7,14 @@ using Sanakan.TaskQueue.Messages;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Sanakan.Daemon.HostedService;
+using System.Collections.Generic;
 
 namespace Sanakan.Daemon.Tests.HostedServices.DiscordBotHostedServiceTests
 {
+    /// <summary>
+    /// Defines tests for <see cref="DiscordBotHostedService.HandleMessageAsync"/> event handler.
+    /// </summary>
     [TestClass]
     public class HandleMessageAsyncTests : Base
     {
@@ -85,9 +90,17 @@ namespace Sanakan.Daemon.Tests.HostedServices.DiscordBotHostedServiceTests
                 .Setup(pr => pr.UtcNow)
                 .Returns(DateTime.UtcNow);
 
+            _systemClockMock
+                .Setup(pr => pr.StartOfMonth)
+                .Returns(DateTime.UtcNow);
+
             _blockingPriorityQueueMock
                 .Setup(pr => pr.TryEnqueue(It.IsAny<BaseMessage>()))
                 .Returns(true);
+
+            messageMock
+                .Setup(pr => pr.Tags)
+                .Returns(new List<ITag>());
 
             _discordSocketClientAccessorMock.Raise(pr => pr.MessageReceived += null, messageMock.Object);
 

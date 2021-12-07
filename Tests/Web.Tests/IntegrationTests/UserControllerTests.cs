@@ -19,6 +19,7 @@ using Sanakan.Common.Converters;
 using Sanakan.ShindenApi.Models;
 using Moq;
 using Discord;
+using Sanakan.ShindenApi;
 
 namespace Sanakan.Web.Tests.IntegrationTests
 {
@@ -46,7 +47,25 @@ namespace Sanakan.Web.Tests.IntegrationTests
         [TestMethod]
         public async Task Should_Find_Shinden_User()
         {
-            var response = await _client.PostAsJsonAsync($"api/user/find", "user");
+            var username = "username";
+            var userSearchResults = new Result<List<UserSearchResult>>
+            {
+                Value = new List<UserSearchResult>
+                {
+                    new UserSearchResult
+                    {
+                        Id = 1ul,
+                        Avatar = "test",
+                        Name = "test",
+                    },
+                },
+            };
+
+            _factory.ShindenClientMock
+                .Setup(pr => pr.SearchUserAsync(username))
+                .ReturnsAsync(userSearchResults);
+
+            var response = await _client.PostAsJsonAsync($"api/user/find", username);
             response.EnsureSuccessStatusCode();
             var users = await response.Content.ReadFromJsonAsync<IEnumerable<UserSearchResult>>();
             users.Should().NotBeNull();
@@ -100,7 +119,6 @@ namespace Sanakan.Web.Tests.IntegrationTests
 
             var response = await _client.PutAsJsonAsync($"api/user/register", model);
             response.EnsureSuccessStatusCode();
-            await Task.Delay(TimeSpan.FromMinutes(1));
         }
     }
 }

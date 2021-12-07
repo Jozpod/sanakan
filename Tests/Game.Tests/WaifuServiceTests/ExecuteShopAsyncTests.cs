@@ -34,6 +34,10 @@ namespace Sanakan.Game.Tests.WaifuServiceTests
                .Setup(pr => pr.Mention)
                .Returns("test mention");
 
+            _userRepositoryMock
+                .Setup(pr => pr.GetUserOrCreateAsync(user.Id))
+                .ReturnsAsync(user);
+
             var embed = await _waifuService.ExecuteShopAsync(shopType, userMock.Object, item, specialCommand);
             embed.Should().NotBeNull();
             embed.Description.Should().NotBeNullOrEmpty();

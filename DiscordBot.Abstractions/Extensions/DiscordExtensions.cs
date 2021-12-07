@@ -2,6 +2,7 @@
 using System.Linq;
 using Discord;
 using Discord.WebSocket;
+using Sanakan.Common;
 using Sanakan.DiscordBot.Abstractions.Models;
 
 namespace Sanakan.DiscordBot.Abstractions.Extensions
@@ -40,7 +41,7 @@ namespace Sanakan.DiscordBot.Abstractions.Extensions
         {
             if (user == null)
             {
-                return builder.WithName("????");
+                return builder.WithName(Placeholders.Undefined);
             }
 
             var id = includeId ? $" ({user.Id})" : "";

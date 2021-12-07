@@ -1015,11 +1015,11 @@ namespace Sanakan.ShindenApi
                 { "api_key", _options.CurrentValue.Token },
             };
 
-            var query = QueryHelpers.AddQueryString($"userlist/{userId}/fav ", queryData);
+            var query = QueryHelpers.AddQueryString($"userlist/{userId}/fav", queryData);
 
             var response = await _httpClient.SendAsync(new HttpRequestMessage
             {
-                RequestUri = new Uri(query),
+                RequestUri = new Uri(query, UriKind.Relative),
                 Method = HttpMethod.Delete,
                 Content = content,
             });

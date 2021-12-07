@@ -4,6 +4,7 @@ using Sanakan.DAL.Models;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Sanakan.DiscordBot.Modules;
+using FluentAssertions;
 
 namespace DiscordBot.ModulesTests.DebugModuleTests
 {
@@ -30,20 +31,22 @@ namespace DiscordBot.ModulesTests.DebugModuleTests
             var questionJson = JsonSerializer.Serialize(question);
 
             _questionRepositoryMock
-                .Setup(pr => pr.Add(It.IsAny<Question>()))
-                .Verifiable();
+                .Setup(pr => pr.Add(It.IsAny<Question>()));
 
             _questionRepositoryMock
                 .Setup(pr => pr.SaveChangesAsync(default))
-                .Returns(Task.CompletedTask)
-                .Verifiable();
+                .Returns(Task.CompletedTask);
 
             _cacheManagerMock
                 .Setup(pr => pr.ExpireTag(It.IsAny<string[]>()));
 
-            await _module.AddNewQuizAsync(questionJson);
+            SetupSendMessage((message, embed) =>
+            {
+                embed.Should().NotBeNull();
+                embed.Description.Should().NotBeNullOrEmpty();
+            });
 
-            _questionRepositoryMock.Verify();
+            await _module.AddNewQuizAsync(questionJson);
         }
     }
 }

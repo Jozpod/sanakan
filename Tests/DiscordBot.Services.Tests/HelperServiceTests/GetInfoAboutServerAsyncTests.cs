@@ -81,15 +81,15 @@ namespace DiscordBot.ServicesTests.HelperServiceTests
                 .Returns(roles);
 
             guildMock
-                .Setup(pr => pr.GetOwnerAsync(CacheMode.AllowDownload, null))
+                .Setup(pr => pr.GetOwnerAsync(It.IsAny<CacheMode>(), null))
                 .ReturnsAsync(guildUserMock.Object);
 
             guildMock
-                .Setup(pr => pr.GetUsersAsync(CacheMode.AllowDownload, null))
+                .Setup(pr => pr.GetUsersAsync(It.IsAny<CacheMode>(), null))
                 .ReturnsAsync(users);
 
             guildMock
-                .Setup(pr => pr.GetChannelsAsync(CacheMode.AllowDownload, null))
+                .Setup(pr => pr.GetChannelsAsync(It.IsAny<CacheMode>(), null))
                 .ReturnsAsync(channels);
 
             var result = await _helperService.GetInfoAboutServerAsync(guildMock.Object);

@@ -8,6 +8,7 @@ using Moq;
 using Sanakan.Common;
 using Sanakan.Common.Builder;
 using Sanakan.Common.Configuration;
+using Sanakan.Daemon.HostedService;
 using Sanakan.DAL;
 using Sanakan.DAL.Builder;
 using Sanakan.DAL.Models;
@@ -46,6 +47,8 @@ namespace Sanakan.DiscordBot.Tests.IntegrationTests
         private static ITextChannel Channel;
         private static string Prefix = ".";
         private static IDatabaseFacade DatabaseFacade;
+        private static TaskQueueHostedService _hostedService;
+        private static CancellationToken _cancellationToken;
 
         public static SocketSelfUser FakeUser { get; private set; }
 
@@ -88,12 +91,14 @@ namespace Sanakan.DiscordBot.Tests.IntegrationTests
             services.Configure<FakeUserBotOptions>(configurationRoot.GetSection(nameof(FakeUserBotOptions)));
             services.AddConfiguration(configurationRoot);
             services.AddSingleton<IConfiguration>(configurationRoot);
+            services.AddSingleton<TaskQueueHostedService>();
             _serviceProvider = services.BuildServiceProvider();
 
             _discordClientAccessor = _serviceProvider.GetRequiredService<IDiscordClientAccessor>();
             var discordConfiguration = _serviceProvider.GetRequiredService<IOptionsMonitor<DiscordConfiguration>>();
             var commandHandler = _serviceProvider.GetRequiredService<ICommandHandler>();
             var fileSystem = _serviceProvider.GetRequiredService<IFileSystem>();
+            _hostedService = _serviceProvider.GetRequiredService<TaskQueueHostedService>();
 
             fileSystem.CreateDirectory(Paths.CardsMiniatures);
             fileSystem.CreateDirectory(Paths.CardsInProfiles);
@@ -124,6 +129,9 @@ namespace Sanakan.DiscordBot.Tests.IntegrationTests
                     FakeUser.Id,
                     ChannelId);
             }
+
+            _cancellationToken = new CancellationToken();
+            _hostedService.StartAsync(_cancellationToken);
         }
 
        
@@ -142,6 +150,12 @@ namespace Sanakan.DiscordBot.Tests.IntegrationTests
             if (FakeUserClient != null)
             {
                 await FakeUserClient.LogoutAsync();
+            }
+
+            if (_hostedService != null)
+            {
+                await _hostedService.StopAsync(_cancellationToken);
+                _hostedService.Dispose();
             }
         }
 

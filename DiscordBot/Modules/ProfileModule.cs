@@ -323,13 +323,14 @@ namespace Sanakan.DiscordBot.Modules
                 Bot = Context.Client.CurrentUser,
             };
 
+            var utcNow = _systemClock.UtcNow;
             var discordUserId = Context.User.Id;
-            var session = new ListSession<string>(discordUserId, _systemClock.UtcNow, payload, SessionExecuteCondition.ReactionAdded);
+            var session = new ListSession<string>(discordUserId, utcNow, payload, SessionExecuteCondition.ReactionAdded);
             _sessionManager.RemoveIfExists<ListSession<string>>(discordUserId);
 
             var building = await ReplyAsync(embed: $"🔨 Trwa budowanie topki...".ToEmbedMessage(EMType.Bot).Build());
             var users = await _userRepository.GetCachedAllUsersAsync();
-            var topUsers = _profileService.GetTopUsers(users, topType, _systemClock.UtcNow);
+            var topUsers = _profileService.GetTopUsers(users, topType, utcNow);
             payload.ListItems = await _profileService.BuildListViewAsync(topUsers, topType, Context.Guild);
 
             payload.Embed = new EmbedBuilder
@@ -355,7 +356,8 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks(""), RequireAnyCommandChannel]
         public async Task ToggleWaifuViewInProfileAsync()
         {
-            var databaseUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
+            var user = Context.User;
+            var databaseUser = await _userRepository.GetUserOrCreateAsync(user.Id);
             databaseUser.ShowWaifuInProfile = !databaseUser.ShowWaifuInProfile;
 
             var result = databaseUser.ShowWaifuInProfile ? "załączony" : "wyłączony";
@@ -364,7 +366,7 @@ namespace Sanakan.DiscordBot.Modules
 
             _cacheManager.ExpireTag(CacheKeys.User(databaseUser.Id), CacheKeys.Users);
 
-            var content = $"Podgląd waifu w profilu {Context.User.Mention} został {result}."
+            var content = $"Podgląd waifu w profilu {user.Mention} został {result}."
                 .ToEmbedMessage(EMType.Success).Build();
 
             await ReplyAsync(embed: content);
@@ -412,11 +414,14 @@ namespace Sanakan.DiscordBot.Modules
         public async Task ShowUserQuestsProgressAsync(
             [Summary("czy odebrać nagrody?")]bool claimGifts = false)
         {
-            var databaseUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
+            var user = Context.User;
+            var databaseUser = await _userRepository.GetUserOrCreateAsync(user.Id);
             var weeklyQuests = databaseUser.CreateOrGetAllWeeklyQuests();
             var dailyQuests = databaseUser.CreateOrGetAllDailyQuests();
             var utcNow = _systemClock.UtcNow;
-            
+
+            Embed embed;
+
             if (claimGifts)
             {
                 var rewards = new List<string>();
@@ -449,12 +454,21 @@ namespace Sanakan.DiscordBot.Modules
                 {
                     _cacheManager.ExpireTag(CacheKeys.User(databaseUser.Id), CacheKeys.Users);
 
-                    await ReplyAsync(embed: $"**Odebrane nagrody:**\n\n{string.Join("\n", rewards)}".ToEmbedMessage(EMType.Success).WithUser(Context.User).Build());
+                    embed = $"**Odebrane nagrody:**\n\n{string.Join("\n", rewards)}"
+                        .ToEmbedMessage(EMType.Success)
+                        .WithUser(user)
+                        .Build();
+
+                    await ReplyAsync(embed: embed);
                     await _userRepository.SaveChangesAsync();
                     return;
                 }
 
-                await ReplyAsync(embed: "Nie masz nic do odebrania.".ToEmbedMessage(EMType.Error).WithUser(Context.User).Build());
+                embed = "Nie masz nic do odebrania.".ToEmbedMessage(EMType.Error)
+                    .WithUser(user)
+                    .Build();
+
+                await ReplyAsync(embed: embed);
                 return;
             }
 
@@ -464,10 +478,10 @@ namespace Sanakan.DiscordBot.Modules
                 string.Join("\n", weeklyQuests.Select(x => x.ToView(utcNow)))
             };
 
-            var content = string.Format(Strings.UserQuestsProgress, parameters)
+            embed = string.Format(Strings.UserQuestsProgress, parameters)
                 .ToEmbedMessage(EMType.Bot)
                 .WithUser(Context.User).Build();
-            await ReplyAsync(embed: content);
+            await ReplyAsync(embed: embed);
         }
 
         [Command("styl")]
@@ -617,16 +631,15 @@ namespace Sanakan.DiscordBot.Modules
             }
 
             var guild = Context.Guild;
-            var guildConfig = await _guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
-            var gRole = guild.GetRole(guildConfig.GlobalEmotesRoleId);
+            var guildid = guild.Id;
+            var guildConfig = await _guildConfigRepository.GetCachedGuildFullConfigAsync(guildid);
+            var globalRole = guild.GetRole(guildConfig.GlobalEmotesRoleId);
 
-            if (gRole == null)
+            if (globalRole == null)
             {
                 await ReplyAsync(embed: "Serwer nie ma ustawionej roli globalnych emotek.".ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
-
-            var guildid = guild.Id;
 
             var global = databaseUser.TimeStatuses
                 .FirstOrDefault(x => x.Type == StatusType.Globals 
@@ -638,9 +651,9 @@ namespace Sanakan.DiscordBot.Modules
                 databaseUser.TimeStatuses.Add(global);
             }
 
-            if (!user.RoleIds.Contains(gRole.Id))
+            if (!user.RoleIds.Contains(globalRole.Id))
             {
-                await user.AddRoleAsync(gRole);
+                await user.AddRoleAsync(globalRole);
             }
 
             global.EndsOn = global.EndsOn.Value.AddMonths(1);
@@ -662,7 +675,10 @@ namespace Sanakan.DiscordBot.Modules
             [Summary("waluta (SC/TC)")]SCurrency currency = SCurrency.Tc)
         {
             var user = Context.User as IGuildUser;
-            
+            var guild = Context.Guild;
+            var guildId = guild.Id;
+            Embed embed;
+
             if (user == null)
             {
                 return;
@@ -670,8 +686,8 @@ namespace Sanakan.DiscordBot.Modules
 
             if (color == FColor.None)
             {
-                using var img = _profileService.GetColorList(currency);
-                await Context.Channel.SendFileAsync(img, "list.png");
+                using var imageList = _profileService.GetColorList(currency);
+                await Context.Channel.SendFileAsync(imageList, "list.png");
                 return;
             }
 
@@ -680,40 +696,43 @@ namespace Sanakan.DiscordBot.Modules
 
             if (points < color.Price(currency))
             {
-                await ReplyAsync(embed: $"{user.Mention} nie posiadasz wystarczającej liczby {currency.ToString().ToUpper()}!".ToEmbedMessage(EMType.Error).Build());
+                embed = $"{user.Mention} nie posiadasz wystarczającej liczby {currency.ToString().ToUpper()}!"
+                    .ToEmbedMessage(EMType.Error)
+                    .Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
-            var guildId = Context.Guild.Id;
-
-            var colort = databaseUser.TimeStatuses
+            var colorTimeStatus = databaseUser.TimeStatuses
                 .FirstOrDefault(x => x.Type == StatusType.Color
                     && x.GuildId == guildId);
 
-            if (colort == null)
+            if (colorTimeStatus == null)
             {
-                colort = new TimeStatus(StatusType.Color, guildId);
-                databaseUser.TimeStatuses.Add(colort);
+                colorTimeStatus = new TimeStatus(StatusType.Color, guildId);
+                databaseUser.TimeStatuses.Add(colorTimeStatus);
             }
+
+            var utcNow = _systemClock.UtcNow;
 
             if (color == FColor.CleanColor)
             {
-                colort.EndsOn = _systemClock.UtcNow;
+                colorTimeStatus.EndsOn = utcNow;
                 await _profileService.RomoveUserColorAsync(user);
             }
             else
             {
-                if (_profileService.HasSameColor(user, color) && colort.IsActive(_systemClock.UtcNow))
+                if (_profileService.HasSameColor(user, color) && colorTimeStatus.IsActive(utcNow))
                 {
-                    colort.EndsOn = colort.EndsOn.Value.AddMonths(1);
+                    colorTimeStatus.EndsOn = colorTimeStatus.EndsOn.Value.AddMonths(1);
                 }
                 else
                 {
                     await _profileService.RomoveUserColorAsync(user);
-                    colort.EndsOn = _systemClock.UtcNow.AddMonths(1);
+                    colorTimeStatus.EndsOn = utcNow.AddMonths(1);
                 }
 
-                var gConfig = await _guildConfigRepository.GetCachedGuildFullConfigAsync(Context.Guild.Id);
+                var gConfig = await _guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
                 var adminRoleId = gConfig.AdminRoleId.Value;
 
                 if (!await _profileService.SetUserColorAsync(user, adminRoleId, color))
@@ -736,7 +755,8 @@ namespace Sanakan.DiscordBot.Modules
 
             _cacheManager.ExpireTag(CacheKeys.User(databaseUser.Id), CacheKeys.Users);
 
-            await ReplyAsync(embed: $"{user.Mention} wykupił kolor!".ToEmbedMessage(EMType.Success).Build());
+            embed = $"{user.Mention} wykupił kolor!".ToEmbedMessage(EMType.Success).Build();
+            await ReplyAsync(embed: embed);
         }
     }
 }

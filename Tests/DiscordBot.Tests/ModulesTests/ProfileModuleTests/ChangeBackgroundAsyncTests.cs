@@ -8,6 +8,7 @@ using System.Threading;
 using Sanakan.DiscordBot.Modules;
 using Discord;
 using Moq;
+using FluentAssertions;
 
 namespace DiscordBot.ModulesTests.ProfileModuleTests
 {
@@ -19,13 +20,21 @@ namespace DiscordBot.ModulesTests.ProfileModuleTests
     {
         
         [TestMethod]
-        public async Task Should_Give_Bot_Info()
+        public async Task Should_Change_Background_And_Send_Confirm_Message()
         {
             var imageUrl = "image.png";
             var user = new User(1ul, DateTime.UtcNow)
             {
                 ScCount = 5000,
             };
+
+            _userMock
+                .Setup(pr => pr.Id)
+                .Returns(user.Id);
+
+            _userMock
+                .Setup(pr => pr.Mention)
+                .Returns("user mention");
 
             _userRepositoryMock
                 .Setup(pr => pr.GetUserOrCreateAsync(user.Id))
@@ -46,6 +55,11 @@ namespace DiscordBot.ModulesTests.ProfileModuleTests
 
             _cacheManagerMock
                 .Setup(pr => pr.ExpireTag(It.IsAny<string>()));
+
+            SetupSendMessage((message, embed) =>
+            {
+                embed.Description.Should().NotBeNull();
+            });
 
             await _module.ChangeBackgroundAsync(imageUrl);
         }

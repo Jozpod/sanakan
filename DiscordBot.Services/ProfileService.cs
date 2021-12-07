@@ -127,7 +127,7 @@ namespace Sanakan.DiscordBot.Services
 
       
 
-        public List<User> GetTopUsers(IEnumerable<User> list, TopType type, DateTime date)
+        public IEnumerable<User> GetTopUsers(IEnumerable<User> list, TopType type, DateTime date)
             => GetRangeMax(OrderUsersByTop(list, type, date), 50);
 
         private List<T> GetRangeMax<T>(List<T> list, int range)

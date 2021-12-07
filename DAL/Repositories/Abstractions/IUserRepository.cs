@@ -27,7 +27,7 @@ namespace Sanakan.DAL.Repositories.Abstractions
 
         Task<List<User>> GetCachedAllUsersLiteAsync();
 
-        Task<List<User>> GetCachedAllUsersAsync();
+        Task<IEnumerable<User>> GetCachedAllUsersAsync();
 
         Task<bool> ExistsByDiscordIdAsync(ulong userId);
 

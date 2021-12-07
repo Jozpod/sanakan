@@ -1,27 +1,27 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
-using Sanakan.DAL.Models.Configuration;
 using System.Threading.Tasks;
 using Sanakan.DiscordBot.Modules;
-using Discord;
+using System.Linq;
 using Moq;
+using System.Collections;
+using System.Collections.Generic;
+using System.Threading;
+using Sanakan.DAL.Models.Configuration;
 using FluentAssertions;
 
 namespace DiscordBot.ModulesTests.ModerationModuleTests
 {
     /// <summary>
-    /// Defines tests for <see cref="ModerationModule.SetDuelWaifuChannelAsync"/> method.
+    /// Defines tests for <see cref="ModerationModule.SetCommandWaifuChannelAsync"/> method.
     /// </summary>
     [TestClass]
-    public class SetDuelWaifuChannelAsyncTests : Base
+    public class SetCommandWaifuChannelAsyncTests : Base
     {
         [TestMethod]
-        public async Task Should_Set_Channel_And_Reply()
+        public async Task Should_Set_Channel()
         {
             var guildId = 1ul;
-            var channelId = 1ul;
-            var channelName = "test";
-            var guildOption = new GuildOptions(guildId, 50);
+            var guildOptions = new GuildOptions(guildId, 50);
 
             _guildMock
                 .Setup(pr => pr.Id)
@@ -29,18 +29,18 @@ namespace DiscordBot.ModulesTests.ModerationModuleTests
 
             _messageChannelMock
                 .Setup(pr => pr.Id)
-                .Returns(channelId);
+                .Returns(1ul);
 
             _messageChannelMock
                 .Setup(pr => pr.Name)
-                .Returns(channelName);
+                .Returns("channel name");
 
             _guildConfigRepositoryMock
                 .Setup(pr => pr.GetGuildConfigOrCreateAsync(guildId))
-                .ReturnsAsync(guildOption);
+                .ReturnsAsync(guildOptions);
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.SaveChangesAsync(default))
+                .Setup(pr => pr.SaveChangesAsync(It.IsAny<CancellationToken>()))
                 .Returns(Task.CompletedTask);
 
             _cacheManagerMock
@@ -52,7 +52,7 @@ namespace DiscordBot.ModulesTests.ModerationModuleTests
                 embed.Description.Should().NotBeNullOrEmpty();
             });
 
-            await _module.SetDuelWaifuChannelAsync();
+            await _module.SetCommandWaifuChannelAsync();
         }
     }
 }

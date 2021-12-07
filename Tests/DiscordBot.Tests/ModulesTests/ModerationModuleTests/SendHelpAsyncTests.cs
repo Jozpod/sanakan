@@ -4,6 +4,7 @@ using Sanakan.DAL.Models.Configuration;
 using Sanakan.DiscordBot;
 using System.Threading.Tasks;
 using Sanakan.DiscordBot.Modules;
+using FluentAssertions;
 
 namespace DiscordBot.ModulesTests.ModerationModuleTests
 {
@@ -21,12 +22,14 @@ namespace DiscordBot.ModulesTests.ModerationModuleTests
 
             _helperServiceMock
                 .Setup(pr => pr.GivePrivateHelp(PrivateModules.Moderation))
-                .Returns("test info")
-                .Verifiable();
+                .Returns("test info");
+
+            SetupSendMessage((message, embed) =>
+            {
+                message.Should().NotBeNull();
+            });
 
             await _module.SendHelpAsync();
-
-            _helperServiceMock.Verify();
         }
 
         [TestMethod]
@@ -46,12 +49,14 @@ namespace DiscordBot.ModulesTests.ModerationModuleTests
 
             _helperServiceMock
                 .Setup(pr => pr.GiveHelpAboutPrivateCommand(PrivateModules.Moderation, command, It.IsAny<string>(), true))
-                .Returns("test info")
-                .Verifiable();
+                .Returns("test info");
+
+            SetupSendMessage((message, embed) =>
+            {
+                message.Should().NotBeNull();
+            });
 
             await _module.SendHelpAsync(command);
-
-            _helperServiceMock.Verify();
         }
     }
 }

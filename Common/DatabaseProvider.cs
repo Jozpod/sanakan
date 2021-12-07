@@ -4,6 +4,7 @@
     {
         MySql = 0,
         Sqlite = 1,
-        SqlServer = 2
+        SqlServer = 2,
+        InMemory = 3
     }
 }

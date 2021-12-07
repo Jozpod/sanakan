@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
@@ -32,16 +33,24 @@ namespace Sanakan.Web.Tests.AutomationTests
         private static HttpClient _client;
         private static ChromeDriver _driver;
         private static SHA1Managed _sha;
-        private static readonly uint[] _lookup32 = CreateLookup32();
+        private static TestWebApplicationFactory _factory;
 
         [ClassInitialize]
         public static async Task Setup(TestContext context)
         {
-            var factory = new TestWebApplicationFactory();
-            _client = factory.CreateClient();
+            _sha = new SHA1Managed();
+            _factory = new TestWebApplicationFactory();
+            var options = new WebApplicationFactoryClientOptions
+            {
+                BaseAddress = new Uri(@"https://localhost:5001"),
+                AllowAutoRedirect = true,
+                
+            };
+            _client = _factory.CreateClient(options);
             var chromeOptions = new ChromeOptions();
             chromeOptions.AddArguments("headless");
             chromeOptions.AddArguments("start-maximized");
+            chromeOptions.AddArguments("ignore-certificate-errors");
             _driver = new ChromeDriver(chromeOptions);
         }
 
@@ -49,54 +58,33 @@ namespace Sanakan.Web.Tests.AutomationTests
         public static async Task Cleanup()
         {
             _client.Dispose();
+            _sha.Dispose();
             _driver.Quit();
         }
 
         [TestMethod]
         public async Task Should_Display_Swagger_Page()
         {
-            _driver.Url = _client.BaseAddress.ToString();
+            _driver.Navigate().GoToUrl(_factory.RootUri);
             var wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(10));
 
             wait.Until(dr => ((IJavaScriptExecutor)dr).ExecuteScript("return document.readyState").Equals("complete"));
-            var screenshot = ((ITakesScreenshot)_driver).GetScreenshot();
-            var fileName = @"screenshot.jpg";
-            screenshot.SaveAsFile(fileName, ScreenshotImageFormat.Jpeg);
-            string actualHash = await GetFileHashAsync(fileName);
-            string expectedHash = await GetFileHashAsync("AutomationTests/expectedScreenshot.jpg");
-            actualHash.Should().Be(expectedHash);
+            new WebDriverWait(_driver, TimeSpan.FromSeconds(10)).Until(drv => !IsElementVisible(By.ClassName("loading-container")));
+            var title = _driver.FindElement(By.ClassName("title")).Text.Should().Contain("Sanakan API");
+            _driver.Title.Should().Be("Sanakan API");
         }
 
-        private static uint[] CreateLookup32()
+        private bool IsElementVisible(By searchElementBy)
         {
-            var result = new uint[256];
-            for (int i = 0; i < 256; i++)
+            try
             {
-                string s = i.ToString("X2");
-                result[i] = ((uint)s[0]) + ((uint)s[1] << 16);
-            }
-            return result;
-        }
+                return _driver.FindElement(searchElementBy).Displayed;
 
-        private static string ByteArrayToHexViaLookup32(byte[] bytes)
-        {
-            var lookup32 = _lookup32;
-            var result = new char[bytes.Length * 2];
-            for (int i = 0; i < bytes.Length; i++)
+            }
+            catch (NoSuchElementException)
             {
-                var val = lookup32[bytes[i]];
-                result[2 * i] = (char)val;
-                result[2 * i + 1] = (char)(val >> 16);
+                return false;
             }
-            return new string(result);
-        }
-
-        private static async Task<string> GetFileHashAsync(string filename)
-        {
-            var stream = File.OpenRead(filename);
-            var hashedBytes = await _sha.ComputeHashAsync(stream);
-            return ByteArrayToHexViaLookup32(hashedBytes);
-
         }
     }
 }

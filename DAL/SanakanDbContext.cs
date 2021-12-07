@@ -70,6 +70,11 @@ namespace Sanakan.DAL
         {
             var config = _config.CurrentValue;
 
+            if (config.Provider == DatabaseProvider.InMemory)
+            {
+                optionsBuilder.UseInMemoryDatabase("SanakanDb");
+            }
+
             if (config.Provider == DatabaseProvider.MySql)
             {
                 optionsBuilder.UseMySql(

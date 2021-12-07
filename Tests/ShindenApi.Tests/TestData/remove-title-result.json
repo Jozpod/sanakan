@@ -1,7 +1,7 @@
 {
   "status": "test",
-  "titleStatus": {
-    "watchedStatusId": "1",
-    "userId": "1"
+  "series_status": {
+    "watched_status_id": "1",
+    "user_id": "1"
   }
 }

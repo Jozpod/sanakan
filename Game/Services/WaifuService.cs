@@ -440,7 +440,7 @@ namespace Sanakan.Game.Services
             return $"{mention} zakupił: _{thisItem.Item.Name}{boosterPackTitleName}{count}_.".ToEmbedMessage(EMType.Success).Build();
         }
 
-        public double GetExpToUpgrade(Card toUp, Card toSac)
+        public double GetExperienceToUpgrade(Card toUp, Card toSac)
         {
             double rExp = 30f / 5f;
 
@@ -496,7 +496,7 @@ namespace Sanakan.Game.Services
             var characterId = character.CharacterId;
             var title = character?.Relations?.OrderBy(x => x.CharacterId)?
                 .FirstOrDefault()?
-                .Title ?? "????";
+                .Title ?? Placeholders.Undefined;
 
             var card = new Card(
                 characterId,
@@ -820,7 +820,7 @@ namespace Sanakan.Game.Services
                 var tempContentString = $"";
                 var gameDeckUser = await client.GetUserAsync(card.GameDeck.UserId);
 
-                var usrName = (mention ? (gameDeckUser?.Mention) : (gameDeckUser?.Username)) ?? "????";
+                var usrName = (mention ? (gameDeckUser?.Mention) : (gameDeckUser?.Username)) ?? Placeholders.Undefined;
                 tempContentString += $"{usrName} **[{card.Id}]** **{card.GetCardRealRarity()}** {card.GetStatusIcons()}\n";
 
                 if ((contentString.Length + tempContentString.Length) <= 2000)
@@ -864,7 +864,7 @@ namespace Sanakan.Game.Services
                 foreach (var card in cardsG)
                 {
                     var user = await client.GetUserAsync(card.GameDeckId);
-                    var usrName = (mention ? (user?.Mention) : (user?.Username)) ?? "????";
+                    var usrName = (mention ? (user?.Mention) : (user?.Username)) ?? Placeholders.Undefined;
 
                     tempContentString += $"{usrName}: **[{card.Id}]** **{card.GetCardRealRarity()}** {card.GetStatusIcons()}\n";
                 }
@@ -1186,7 +1186,7 @@ namespace Sanakan.Game.Services
                 imageUrl = await GetWaifuProfileImageUrlAsync(card, trashChannel);
             }
 
-            var ownerString = ((owner as IGuildUser)?.Nickname ?? owner?.Username) ?? "????";
+            var ownerString = ((owner as IGuildUser)?.Nickname ?? owner?.Username) ?? Placeholders.Undefined;
 
             return new EmbedBuilder
             {
@@ -1211,7 +1211,7 @@ namespace Sanakan.Game.Services
             }
 
             var imgUrls = $"[_obrazek_]({imageUrl})\n[_możesz zmienić obrazek tutaj_]({card.GetCharacterUrl()}/edit_crossroad)";
-            var ownerString = ((owner as IGuildUser)?.Nickname ?? owner?.Username) ?? "????";
+            var ownerString = ((owner as IGuildUser)?.Nickname ?? owner?.Username) ?? Placeholders.Undefined;
 
             return new EmbedBuilder
             {

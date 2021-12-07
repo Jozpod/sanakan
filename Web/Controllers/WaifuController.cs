@@ -112,15 +112,15 @@ namespace Sanakan.Web.Controllers
         /// </summary>
         /// <param name="shindenUserId">The Shinden user identifier.</param>
         /// <param name="offset">offset.</param>
-        /// <param name="count">number of cards to take.</param>
+        /// <param name="take">number of cards to take.</param>
         /// <param name="filter">The filter criteria.</param>
-        [HttpPost("user/{shindenUserId}/cards/{offset}/{count}")]
+        [HttpPost("user/{shindenUserId}/cards/{offset}/{take}")]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(FilteredCards), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetUsersCardsByShindenIdWithOffsetAndFilterAsync(
             ulong shindenUserId,
-            uint offset,
-            uint count,
+            int offset,
+            int take,
             [FromBody]CardsQueryFilter filter)
         {
             var user = await _userRepository.GetByShindenIdAsync(shindenUserId, new UserQueryOptions
@@ -138,7 +138,7 @@ namespace Sanakan.Web.Controllers
             var result = new FilteredCards
             {
                 TotalCards = cards.Count,
-                Cards = cards.Skip((int)offset).Take((int)count).ToView(),
+                Cards = cards.Skip(offset).Take(take).ToView(),
             };
 
             return Ok(result);
@@ -149,12 +149,14 @@ namespace Sanakan.Web.Controllers
         /// </summary>
         /// <param name="shindenUserId">The Shinden user identifier.</param>
         /// <param name="offset">The offset.</param>
-        /// <param name="count">The number of cards to take.</param>
-        [HttpGet("user/{shindenUserId}/cards/{offset}/{count}")]
+        /// <param name="take">The number of cards to take.</param>
+        [HttpGet("user/{shindenUserId}/cards/{offset}/{take}")]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(IEnumerable<CardFinalView>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetUsersCardsByShindenIdWithOffsetAsync(
-            ulong shindenUserId, int offset, int count)
+            ulong shindenUserId,
+            int offset,
+            int take)
         {
             var user = await _userRepository.GetByShindenIdAsync(shindenUserId, new UserQueryOptions
             {
@@ -166,7 +168,7 @@ namespace Sanakan.Web.Controllers
                 return ShindenNotFound(Strings.UserNotFound);
             }
 
-            var cards = await _cardRepository.GetByGameDeckIdAsync(user.GameDeck.Id, offset, count);
+            var cards = await _cardRepository.GetByGameDeckIdAsync(user.GameDeck.Id, offset, take);
             var result = cards.ToView();
 
             return Ok(result);

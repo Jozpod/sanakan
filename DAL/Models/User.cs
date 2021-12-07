@@ -11,7 +11,7 @@ namespace Sanakan.DAL.Models
     public class User
     {
         [JsonConstructor]
-        private User() { }
+        public User() { }
 
         public User(ulong discordUserId, DateTime datetime)
         {

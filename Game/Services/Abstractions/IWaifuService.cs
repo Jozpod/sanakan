@@ -20,7 +20,7 @@ namespace Sanakan.Game.Services.Abstractions
 
         Embed GetBoosterPackList(IUser user, List<BoosterPack> packs);
 
-        double GetExpToUpgrade(Card toUp, Card toSac);
+        double GetExperienceToUpgrade(Card toUp, Card toSac);
 
         Embed GetActiveList(IEnumerable<Card> list);
 

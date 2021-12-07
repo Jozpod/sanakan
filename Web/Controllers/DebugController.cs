@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Sanakan.Common;
 using Sanakan.DiscordBot;
 
 namespace Sanakan.Web.Controllers
@@ -12,14 +13,17 @@ namespace Sanakan.Web.Controllers
     [Produces("application/json")]
     public class DebugController : ControllerBase
     {
+        private readonly IDiscordClientAccessor _discordClientAccessor;
+        private readonly IFileSystem _fileSystem;
         private readonly ILogger _logger;
-        private readonly IDiscordClientAccessor _discordSocketClientAccessor;
 
         public DebugController(
-            IDiscordClientAccessor discordSocketClientAccessor,
+            IDiscordClientAccessor discordClientAccessor,
+            IFileSystem fileSystem,
             ILogger<DebugController> logger)
         {
-            _discordSocketClientAccessor = discordSocketClientAccessor;
+            _discordClientAccessor = discordClientAccessor;
+            _fileSystem = fileSystem;
             _logger = logger;
         }
 
@@ -30,7 +34,7 @@ namespace Sanakan.Web.Controllers
         [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
         public async Task<IActionResult> RestartBotAsync()
         {
-            await _discordSocketClientAccessor.LogoutAsync();
+            await _discordClientAccessor.LogoutAsync();
             _logger.LogDebug("Kill app from web.");
             return Ok();
         }
@@ -42,8 +46,8 @@ namespace Sanakan.Web.Controllers
         [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
         public async Task<IActionResult> UpdateBotAsync()
         {
-            await _discordSocketClientAccessor.LogoutAsync();
-            //System.IO.File.Create("./updateNow");
+            await _discordClientAccessor.LogoutAsync();
+            _fileSystem.Create("./updateNow");
             _logger.LogDebug("Update app from web.");
             return Ok();
         }

@@ -389,10 +389,15 @@ namespace Sanakan.DiscordBot.Services
 
         private async Task<List<EmbedFieldBuilder>> GetInfoGuildFieldsAsync(IGuild guild)
         {
+            var cacheMode = CacheMode.CacheOnly;
+#if RELEASE
+            cacheMode = CacheMode.AllowDownload;
+#endif
+
             var guildId = guild.Id;
             var stringBuilder = new StringBuilder(100);
             var owner = await guild.GetOwnerAsync();
-            var users = await guild.GetUsersAsync(CacheMode.CacheOnly);
+            var users = await guild.GetUsersAsync(cacheMode);
             var channels = await guild.GetChannelsAsync();
             var textChannelsCount = channels.OfType<ITextChannel>().Count();
             var voiceChannelsCount = channels.OfType<IVoiceChannel>().Count();

@@ -40,14 +40,12 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
                 .Setup(pr => pr.GetUserOrCreateAsync(user.Id))
                 .ReturnsAsync(user);
 
-            SetupSendMessage((message, embed) =>
-            {
-                embed.Description.Should().NotBeNull();
-            });
-
             _userRepositoryMock
                 .Setup(pr => pr.SaveChangesAsync(It.IsAny<CancellationToken>()))
                 .Returns(Task.CompletedTask);
+
+            _cacheManagerMock
+                .Setup(pr => pr.ExpireTag(It.IsAny<string[]>()));
 
             SetupSendMessage((message, embed) =>
             {

@@ -45,6 +45,15 @@ namespace Sanakan.Daemon.Tests.HostedServices.DiscordBotHostedServiceTests
                 .Setup(pr => pr.Client)
                 .Returns(_discordClientMock.Object);
 
+            _experienceConfigurationMock
+                .Setup(pr => pr.CurrentValue)
+                .Returns(new ExperienceConfiguration
+                {
+                    CharPerPoint = 100,
+                    MinPerMessage =50,
+                    MaxPerMessage = 25,
+                });
+
             _discordConfigurationMock
                 .Setup(pr => pr.CurrentValue)
                 .Returns(new DiscordConfiguration

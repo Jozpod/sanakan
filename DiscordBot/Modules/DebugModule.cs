@@ -316,7 +316,7 @@ namespace Sanakan.DiscordBot.Modules
                 card.ImageUrl = hasImage ? new Uri(pictureUrl) : null;
                 card.Title = characterInfo?.Relations?.OrderBy(x => x.CharacterId)
                     .FirstOrDefault()?
-                    .Title ?? "????";
+                    .Title ?? Placeholders.Undefined;
 
                 _waifuService.DeleteCardImageIfExist(card);
             }
@@ -810,7 +810,7 @@ namespace Sanakan.DiscordBot.Modules
                 {
                     thisCard.Title = result.Value.Relations?
                         .OrderBy(x => x.CharacterId)?
-                        .FirstOrDefault()?.Title ?? "????";
+                        .FirstOrDefault()?.Title ?? Placeholders.Undefined;
                 }
             }
 

@@ -19,6 +19,10 @@
     color: #B4A4BA;
 }
 
+.body-param__text {
+    background: #FFFFFF;
+}
+
 .swagger-ui .topbar .download-url-wrapper .select-label select {
     background: #8E50A8;
     color: white;

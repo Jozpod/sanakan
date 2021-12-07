@@ -5,7 +5,9 @@ using Microsoft.Extensions.Options;
 using Sanakan.Common.Converters;
 using System;
 using System.IO;
+using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace Sanakan.Common
@@ -36,6 +38,7 @@ namespace Sanakan.Common
             _configuration = configuration;
             _file = file;
             _jsonSerializerOptions = new JsonSerializerOptions();
+            _jsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
             _jsonSerializerOptions.Converters.Add(new VersionConverter());
             _jsonSerializerOptions.Converters.Add(new TimeSpanConverter());
             _jsonSerializerOptions.Converters.Add(new TimeZoneInfoConverter());
@@ -58,7 +61,12 @@ namespace Sanakan.Common
                 applyChanges(configuration);
 
                 stream.Seek(0, SeekOrigin.Begin);
+                //var memoryStream = new MemoryStream();
+                //await JsonSerializer.SerializeAsync(memoryStream, configuration, _jsonSerializerOptions);
+                //var json1 = Encoding.UTF8.GetString(memoryStream.ToArray());
                 await JsonSerializer.SerializeAsync(stream, configuration, _jsonSerializerOptions);
+                stream.Close();
+
                 _configuration.Reload();
                 return true;
             }

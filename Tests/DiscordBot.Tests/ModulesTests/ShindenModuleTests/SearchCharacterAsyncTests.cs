@@ -14,7 +14,7 @@ namespace DiscordBot.ModulesTests.ShindenModuleTests
     {
         
         [TestMethod]
-        public async Task Should_Return_Anime_Info()
+        public async Task Should_Return_Character_Info()
         {
             var characterName = "test";
 

@@ -7,9 +7,13 @@ using Sanakan.Tests.Shared;
 using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
+using Sanakan.Daemon.HostedService;
 
 namespace Sanakan.Daemon.Tests.HostedServices.DiscordBotHostedServiceTests
 {
+    /// <summary>
+    /// Defines tests for <see cref="DiscordBotHostedService.HandleDeletedMessageAsync"/> event handler.
+    /// </summary>
     [TestClass]
     public class HandleDeletedMessageAsyncTests : Base
     {
@@ -127,8 +131,6 @@ namespace Sanakan.Daemon.Tests.HostedServices.DiscordBotHostedServiceTests
             guildMock.Verify();
             _guildConfigRepositoryMock.Verify();
             messageChannelMock.Verify();
-            messageMock.Verify();
-            userMock.Verify();
             _taskManagerMock.Verify();
             _discordClientMock.Verify();
         }

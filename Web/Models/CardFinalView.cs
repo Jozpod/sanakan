@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Sanakan.Common;
 using Sanakan.DAL.Models;
 using Sanakan.Extensions;
 using Sanakan.Game.Extensions;
@@ -12,6 +13,8 @@ namespace Sanakan.Api.Models
     /// </summary>
     public class CardFinalView
     {
+        public CardFinalView() {}
+
         public CardFinalView(Card card)
         {
             Id = card.Id;
@@ -20,10 +23,10 @@ namespace Sanakan.Api.Models
             IsTradable = card.IsTradable;
             IsUnique = card.IsUnique;
             IsUltimate = card.FromFigure;
-            ExpCnt = card.ExperienceCount;
+            ExperienceCount = card.ExperienceCount;
             Affection = card.GetAffectionString();
-            UpgradesCnt = card.UpgradesCount;
-            RestartCnt = card.RestartCount;
+            UpgradesCount = card.UpgradesCount;
+            RestartCount = card.RestartCount;
             Rarity = card.Rarity;
             Dere = card.Dere;
             Defence = card.GetDefenceWithBonus();
@@ -33,12 +36,12 @@ namespace Sanakan.Api.Models
             Name = card.Name;
             CharacterUrl = card.GetCharacterUrl();
             Source = card.Source.GetString();
-            AnimeTitle = card.Title ?? "????";
+            AnimeTitle = card.Title ?? Placeholders.Undefined;
             UltimateQuality = card.Quality;
             CreatedOn = card.CreatedOn;
             CardPower = card.CardPower;
             Value = card.GetThreeStateMarketValue();
-            ExpCntForNextLevel = card.ExpToUpgrade();
+            ExperienceCountForNextLevel = card.ExpToUpgrade();
             HasCustomImage = card.CustomImageUrl != null;
             HasCustomBorder = card.CustomBorderUrl != null;
             ImageUrl = $"https://cdn2.shinden.eu/{card.Id}.png";
@@ -54,95 +57,97 @@ namespace Sanakan.Api.Models
         public ulong Id { get; set; }
 
         /// <summary>
-        /// Czy karta jest w talii
+        /// Specifies whether the card is in deck.
         /// </summary>
         public bool IsActive { get; set; }
 
         /// <summary>
-        /// Czy karta jest w klatce
+        /// Specifies whether the card is in cage.
         /// </summary>
         public bool IsInCage { get; set; }
 
         /// <summary>
-        /// Czy karta jest na wyprawie
+        /// Specifies whether the card is on adventure.
         /// </summary>
         public bool IsOnExpedition { get; set; }
 
         /// <summary>
-        /// Czy karta można wymienić
+        /// Specifies whether the card can be traded.
         /// </summary>
         public bool IsTradable { get; set; }
 
         /// <summary>
-        /// Czy karta jest unikalna
+        /// Specifies whether the card is unique.
         /// </summary>
         public bool IsUnique { get; set; }
 
         /// <summary>
-        /// Czy karta jest kartą ultimate
+        /// Specifies whether the card is ultimate card.
         /// </summary>
         public bool IsUltimate { get; set; }
 
         /// <summary>
-        /// Czy karta posiada niestandardowy obrazek
+        /// Specifies whether the card has custom image.
         /// </summary>
         public bool HasCustomImage { get; set; }
 
         /// <summary>
-        /// Czy karta posiada niestandardową ramkę
+        /// Specifies whether the card has custom border.
         /// </summary>
         public bool HasCustomBorder { get; set; }
 
         /// <summary>
-        /// Ilość punktów doświadczenia na karcie
+        /// The amount of experience points in a card.
         /// </summary>
-        public double ExpCnt { get; set; }
+        public double ExperienceCount { get; set; }
 
         /// <summary>
-        /// Ilość punktów doświadczenia potrzebnych na następny poziom karty
+        /// The amount of experience needed for next level.
         /// </summary>
-        public double ExpCntForNextLevel { get; set; }
+        public double ExperienceCountForNextLevel { get; set; }
 
         /// <summary>
-        /// Teoretyczna moc karty
+        /// The rough estimated card power.
         /// </summary>
         public double CardPower { get; set; }
 
         /// <summary>
-        /// Poziom relacji na karcie
+        /// The affection level
         /// </summary>
         public string Affection { get; set; }
-        /// <summary>
-        /// Liczba dostępnych ulepszeń
-        /// </summary>
-        public int UpgradesCnt { get; set; }
-        /// <summary>
-        /// Ile razy została karta zrestartowana
-        /// </summary>
-        public int RestartCnt { get; set; }
 
         /// <summary>
-        /// Jakość karty
+        /// Specifies how many times card can be upgraded.
+        /// </summary>
+        public int UpgradesCount { get; set; }
+
+        /// <summary>
+        /// Specifies how many times card has been restarted
+        /// </summary>
+        public int RestartCount { get; set; }
+
+        /// <summary>
+        /// The quality of card.
         /// </summary>
         public Rarity Rarity { get; set; }
 
         /// <summary>
-        /// Charakter karty
+        /// The character of card.
         /// </summary>
         public Dere Dere { get; set; }
 
         /// <summary>
-        /// Punkty obrony karty
+        /// The defence points.
         /// </summary>
         public int Defence { get; set; }
 
         /// <summary>
-        /// Punkty ataku karty
+        /// The attack points.
         /// </summary>
         public int Attack { get; set; }
 
         /// <summary>
-        /// Bazowe punkty życia karty
+        /// The base health points.
         /// </summary>
         public int BaseHealth { get; set; }
 
@@ -152,7 +157,7 @@ namespace Sanakan.Api.Models
         public int FinalHealth { get; set; }
 
         /// <summary>
-        /// Imię i nazwisko postaci
+        /// The full name of the characted.
         /// </summary>
         public string Name { get; set; }
 
@@ -187,23 +192,23 @@ namespace Sanakan.Api.Models
         public string ProfileImageUrl { get; set; }
 
         /// <summary>
-        /// Wartość rynkowa wyrażona w trzech stanach
+        /// The market value
         /// </summary>
         public MarketValue Value { get; set; }
 
         /// <summary>
-        /// Jakość karty poziomu ultimate
+        /// The ultimate quality level
         /// </summary>
         public Quality UltimateQuality { get; set; }
 
         /// <summary>
-        /// Data utworzenia karty
+        /// The datetime when card was created.
         /// </summary>
         public DateTime CreatedOn { get; set; }
 
         /// <summary>
-        /// Tagi znajdujące się na karcie
+        /// The tags associated with card.
         /// </summary>
-        public List<string> Tags { get; set; }
+        public IEnumerable<string> Tags { get; set; } = Enumerable.Empty<string>();
     }
 }

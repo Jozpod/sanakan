@@ -1,6 +1,8 @@
 ﻿using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace Sanakan.Web.Tests.Controllers.DebugControllerTests
@@ -9,11 +11,18 @@ namespace Sanakan.Web.Tests.Controllers.DebugControllerTests
     public class UpdateBotAsyncTests : Base
     {
         [TestMethod]
-        public async Task Should_Return_Module_Info()
+        public async Task Should_Update_Bot()
         {
+            _discordClientAccessorMock
+                .Setup(pr => pr.LogoutAsync())
+                .Returns(Task.CompletedTask);
+
+            _fileSystemMock
+                .Setup(pr => pr.Create(It.IsAny<string>()))
+                .Returns(new MemoryStream());
+
             var result = await _controller.UpdateBotAsync();
-            var okObjectResult = result.Should().BeOfType<ObjectResult>().Subject;
-            okObjectResult.Value.Should().NotBeNull();
+            result.Should().BeOfType<OkResult>();
         }
     }
 }

@@ -33,7 +33,7 @@ namespace Sanakan.Web.Tests.Controllers.QuizControllerTests
                 .ReturnsAsync(question);
 
             var result = await _controller.GetQuestionAsync(question.Id);
-            var okObjectResult = result.Should().BeOfType<ObjectResult>().Subject;
+            var okObjectResult = result.Should().BeOfType<OkObjectResult>().Subject;
             okObjectResult.Value.Should().BeEquivalentTo(question);
         }
     }

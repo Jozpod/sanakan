@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using System.Text;
+using Sanakan.Common;
 using Sanakan.Common.Extensions;
 using Sanakan.DAL.Models;
 using Sanakan.ShindenApi.Utilities;
@@ -46,10 +47,10 @@ namespace Sanakan.Extensions
                 var tagName = tagItem.Name.ToLowerInvariant();
                 switch (tagName)
                 {
-                    case "ulubione":
+                    case Tags.Favourite:
                         result.AppendFormat("{0} ", "💗");
                         break;
-                    case "galeria":
+                    case Tags.Gallery:
                         result.AppendFormat("{0} ", "📌");
                         break;
                     case "rezerwacja":
@@ -94,7 +95,7 @@ namespace Sanakan.Extensions
             }
 
             return @$"{card.GetNameWithUrl()} **{card.GetCardRealRarity()}**
-*{card.Title ?? "????"}*
+*{card.Title ?? Placeholders.Undefined}*
 
 
 *{card.GetCardParams(true, false, true)}*

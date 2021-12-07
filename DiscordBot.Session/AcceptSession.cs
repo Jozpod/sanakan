@@ -74,12 +74,8 @@ namespace Sanakan.DiscordBot.Session
 
                 var reaction = context.AddReaction ?? context.RemoveReaction;
 
-                if (reaction.Emote.Equals(Emojis.DeclineEmote))
-                {
-                    return;
-                }
-
-                if (!reaction.Emote.Equals(Emojis.Checked))
+                if (reaction.Emote.Equals(Emojis.DeclineEmote)
+                    || !reaction.Emote.Equals(Emojis.Checked))
                 {
                     return;
                 }

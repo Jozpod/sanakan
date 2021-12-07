@@ -4,6 +4,10 @@ using Sanakan.DiscordBot.Modules;
 using Discord;
 using Moq;
 using Sanakan.Game.Models;
+using Sanakan.DAL.Models;
+using System;
+using Sanakan.DiscordBot.Session;
+using System.Collections.Generic;
 
 namespace DiscordBot.ModulesTests.ProfileModuleTests
 {
@@ -16,7 +20,63 @@ namespace DiscordBot.ModulesTests.ProfileModuleTests
         [TestMethod]
         public async Task Should_Send_Message_And_Start_Session()
         {
-            await _module.ShowTopAsync();
+            var utcNow = DateTime.UtcNow;
+            var user = new User(1ul, utcNow);
+            var userMessageMock = new Mock<IUserMessage>(MockBehavior.Strict);
+            var users = new[] { user };
+            var strList = new List<string>();
+
+            _userMock
+               .Setup(pr => pr.Id)
+               .Returns(user.Id);
+
+            _systemClockMock
+                .Setup(pr => pr.UtcNow)
+                .Returns(utcNow);
+
+            _sessionManagerMock
+                .Setup(pr => pr.RemoveIfExists<ListSession<string>>(user.Id));
+
+            _userRepositoryMock
+                .Setup(pr => pr.GetCachedAllUsersAsync())
+                .ReturnsAsync(users);
+
+            _profileServiceMock
+               .Setup(pr => pr.GetTopUsers(
+                   users,
+                   It.IsAny<TopType>(),
+                   It.IsAny<DateTime>()))
+               .Returns(users);
+
+            _profileServiceMock
+                .Setup(pr => pr.BuildListViewAsync(
+                    users,
+                    It.IsAny<TopType>(),
+                    It.IsAny<IGuild>()))
+                .ReturnsAsync(strList);
+
+            _messageChannelMock
+               .Setup(pr => pr.SendMessageAsync(
+                   It.IsAny<string>(),
+                   It.IsAny<bool>(),
+                   It.IsAny<Embed>(),
+                   It.IsAny<RequestOptions>(),
+                   It.IsAny<AllowedMentions>(),
+                   It.IsAny<MessageReference>()))
+               .ReturnsAsync(userMessageMock.Object);
+
+            userMessageMock
+                .Setup(pr => pr.DeleteAsync(null))
+                .Returns(Task.CompletedTask);
+
+            userMessageMock
+                .Setup(pr => pr.AddReactionAsync(It.IsAny<IEmote>(), null))
+                .Returns(Task.CompletedTask);
+
+            _sessionManagerMock
+                .Setup(pr => pr.Add(It.IsAny<IInteractionSession>()));
+
+           await _module.ShowTopAsync();
         }
     }
 }

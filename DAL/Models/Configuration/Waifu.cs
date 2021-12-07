@@ -1,10 +1,17 @@
 ﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Text.Json.Serialization;
 
 namespace Sanakan.DAL.Models.Configuration
 {
     public class WaifuConfiguration
     {
+        public WaifuConfiguration()
+        {
+            CommandChannels = new Collection<WaifuCommandChannel>();
+            FightChannels = new Collection<WaifuFightChannel>();
+        }
+
         public ulong Id { get; set; }
 
         /// <summary>

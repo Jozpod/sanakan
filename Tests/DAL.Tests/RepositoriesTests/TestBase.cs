@@ -26,7 +26,12 @@ namespace Sanakan.DAL.Tests
 
             var builder = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
+#if RELEASE
+                .AddJsonFile("appsettings.in-memory.json", optional: true, reloadOnChange: true);
+#else
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+#endif
+
 
             var configurationRoot = builder.Build();
 

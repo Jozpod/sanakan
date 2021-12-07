@@ -21,9 +21,7 @@ namespace Sanakan.Daemon.Tests.HostedServices.DiscordBotHostedServiceTests
             var exception = new Exception("test");
 
             _taskManagerMock
-                .Setup(pr => pr.Delay(
-                    It.IsAny<TimeSpan>(),
-                    It.IsAny<CancellationToken>()))
+                .Setup(pr => pr.Delay(It.IsAny<TimeSpan>()))
                 .Returns(Task.CompletedTask)
                 .Verifiable();
 

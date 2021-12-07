@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using Sanakan.ShindenApi.Models;
 using Sanakan.ShindenApi;
 using Sanakan.DAL.Models.Configuration;
+using FluentAssertions;
 
 namespace DiscordBot.ModulesTests.ModerationModuleTests
 {
@@ -43,20 +44,21 @@ namespace DiscordBot.ModulesTests.ModerationModuleTests
 
             _guildConfigRepositoryMock
                 .Setup(pr => pr.GetGuildConfigOrCreateAsync(guildId))
-                .ReturnsAsync(guildOption)
-                .Verifiable();
+                .ReturnsAsync(guildOption);
 
             _guildConfigRepositoryMock
                 .Setup(pr => pr.SaveChangesAsync(default))
-                .Returns(Task.CompletedTask)
-                .Verifiable();
+                .Returns(Task.CompletedTask);
 
             _cacheManagerMock
                 .Setup(pr => pr.ExpireTag(It.IsAny<string[]>()));
 
-            await _module.SetGlobalRoleAsync(_roleMock.Object);
+            SetupSendMessage((message, embed) =>
+            {
+                embed.Description.Should().NotBeNull();
+            });
 
-            _guildConfigRepositoryMock.Verify();
+            await _module.SetGlobalRoleAsync(_roleMock.Object);
         }
     }
 }

@@ -323,15 +323,17 @@ namespace Sanakan.DiscordBot.Modules
         public async Task UnmuteUserAsync(
             [Summary("użytkownik")] IGuildUser user)
         {
-            var config = await _guildConfigRepository.GetCachedGuildFullConfigAsync(Context.Guild.Id);
+            var guild = Context.Guild;
+            var config = await _guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
+
             if (config == null)
             {
                 await ReplyAsync(embed: Strings.ServerNotConfigured.ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
 
-            var muteRole = Context.Guild.GetRole(config.MuteRoleId);
-            var muteModRole = Context.Guild.GetRole(config.ModMuteRoleId);
+            var muteRole = guild.GetRole(config.MuteRoleId);
+            var muteModRole = guild.GetRole(config.ModMuteRoleId);
             if (muteRole == null)
             {
                 await ReplyAsync(embed: "Rola wyciszająca nie jest ustawiona.".ToEmbedMessage(EMType.Bot).Build());
@@ -522,7 +524,7 @@ namespace Sanakan.DiscordBot.Modules
                 await _guildConfigRepository.SaveChangesAsync();
             }
 
-            var content = (await _moderatorService.GetConfigurationAsync(config, Context as SocketCommandContext, type))
+            var content = (await _moderatorService.GetConfigurationAsync(config, Context, type))
                 .WithTitle($"Konfiguracja {Context.Guild.Name}:")
                 .Build();
 
@@ -1133,6 +1135,7 @@ namespace Sanakan.DiscordBot.Modules
         {
             var guildId = Context.Guild.Id;
             var channelName = Context.Channel.Name;
+            var channelId = Context.Channel.Id;
             var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(guildId);
 
             if (config.WaifuConfig == null)
@@ -1140,14 +1143,14 @@ namespace Sanakan.DiscordBot.Modules
                 config.WaifuConfig = new WaifuConfiguration();
             }
 
-            if (config.WaifuConfig.TrashSpawnChannelId == Context.Channel.Id)
+            if (config.WaifuConfig.TrashSpawnChannelId == channelId)
             {
                 await ReplyAsync(embed: $"Kanał `{channelName}` już jest ustawiony jako kanał śmieciowy polowań waifu."
                     .ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
 
-            config.WaifuConfig.TrashSpawnChannelId = Context.Channel.Id;
+            config.WaifuConfig.TrashSpawnChannelId = channelId;
             await _guildConfigRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(CacheKeys.GuildConfig(guildId));
@@ -1163,6 +1166,7 @@ namespace Sanakan.DiscordBot.Modules
         {
             var guildId = Context.Guild.Id;
             var channelName = Context.Channel.Name;
+            var channelId = Context.Channel.Id;
             var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(guildId);
 
             if (config.WaifuConfig == null)
@@ -1170,15 +1174,14 @@ namespace Sanakan.DiscordBot.Modules
                 config.WaifuConfig = new WaifuConfiguration();
             }
 
-
-            if (config.WaifuConfig.MarketChannelId == Context.Channel.Id)
+            if (config.WaifuConfig.MarketChannelId == channelId)
             {
                 await ReplyAsync(embed: $"Kanał `{channelName}` już jest ustawiony jako kanał rynku waifu."
                     .ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
 
-            config.WaifuConfig.MarketChannelId = Context.Channel.Id;
+            config.WaifuConfig.MarketChannelId = channelId;
             await _guildConfigRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(CacheKeys.GuildConfig(guildId));
@@ -1297,6 +1300,7 @@ namespace Sanakan.DiscordBot.Modules
         {
             var guildId = Context.Guild.Id;
             var channelName = Context.Channel.Name;
+            var channelId = Context.Channel.Id;
             var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(guildId);
 
             if (config.WaifuConfig == null)
@@ -1304,11 +1308,12 @@ namespace Sanakan.DiscordBot.Modules
                 config.WaifuConfig = new WaifuConfiguration();
             }
 
-            var chan = config.WaifuConfig.CommandChannels.FirstOrDefault(x => x.ChannelId == Context.Channel.Id);
+            var commandChannels = config.WaifuConfig.CommandChannels;
+            var channel = commandChannels.FirstOrDefault(x => x.ChannelId == channelId);
 
-            if (chan != null)
+            if (channel != null)
             {
-                config.WaifuConfig.CommandChannels.Remove(chan);
+                commandChannels.Remove(channel);
                 await _guildConfigRepository.SaveChangesAsync();
 
                 _cacheManager.ExpireTag(CacheKeys.GuildConfig(guildId));
@@ -1318,11 +1323,11 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            chan = new WaifuCommandChannel
+            channel = new WaifuCommandChannel
             {
-                ChannelId = Context.Channel.Id
+                ChannelId = channelId,
             };
-            config.WaifuConfig.CommandChannels.Add(chan);
+            commandChannels.Add(channel);
             await _guildConfigRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(CacheKeys.GuildConfig(guildId));

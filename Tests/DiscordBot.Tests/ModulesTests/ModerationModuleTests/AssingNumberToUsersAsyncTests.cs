@@ -5,6 +5,7 @@ using System.Linq;
 using Moq;
 using System.Collections;
 using System.Collections.Generic;
+using FluentAssertions;
 
 namespace DiscordBot.ModulesTests.ModerationModuleTests
 {
@@ -26,6 +27,12 @@ namespace DiscordBot.ModulesTests.ModerationModuleTests
             _randomNumberGeneratorMock
                 .Setup(pr => pr.GetOneRandomFrom(It.IsAny<IEnumerable<string>>()))
                 .Returns<IEnumerable<string>>(pr => pr.First());
+
+            SetupSendMessage((message, embed) =>
+            {
+                embed.Should().NotBeNull();
+                embed.Description.Should().NotBeNullOrEmpty();
+            });
 
             await _module.AssingNumberToUsersAsync(players);
         }

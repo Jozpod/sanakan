@@ -9,18 +9,16 @@ namespace Sanakan.Web.Tests.Controllers.DebugControllerTests
     [TestClass]
     public class RestartBotAsyncTests : Base
     {
-        public ModuleInfo CreateModuleInfo()
-        {
-            return null;
-        }
-
         [TestMethod]
-        public async Task Should_Return_Module_Info()
+        public async Task Should_Restart_Bot()
         {
-            
+            _discordClientAccessorMock
+                .Setup(pr => pr.LogoutAsync())
+                .Returns(Task.CompletedTask);
+
+
             var result = await _controller.RestartBotAsync();
-            var okObjectResult = result.Should().BeOfType<ObjectResult>().Subject;
-            okObjectResult.Value.Should().NotBeNull();
+            result.Should().BeOfType<OkResult>();
         }
     }
 }

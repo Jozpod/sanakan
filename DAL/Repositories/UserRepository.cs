@@ -237,7 +237,7 @@ namespace Sanakan.DAL.Repositories
             return user;
         }
 
-        public async Task<List<User>> GetCachedAllUsersAsync()
+        public async Task<IEnumerable<User>> GetCachedAllUsersAsync()
         {
             var cacheResult = _cacheManager.Get<List<User>>(CacheKeys.Users);
 

@@ -24,12 +24,12 @@ namespace Sanakan.DAL.Repositories
         /// <summary>
         /// Tags to include in query
         /// </summary>
-        public List<string> IncludeTags { get; set; }
+        public List<string> IncludeTags { get; set; } = new();
 
         /// <summary>
         /// Tags to exclude in query.
         /// </summary>
-        public List<string> ExcludeTags { get; set; }
+        public List<string> ExcludeTags { get; set; } = new();
 
         /// <summary>
         /// Descibes the method by which tags are filtered.

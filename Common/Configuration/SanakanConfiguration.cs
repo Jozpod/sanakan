@@ -14,7 +14,7 @@ namespace Sanakan.Common.Configuration
 
         public MSCacheManagerOptions Cache { get; set; }
 
-        public DaemonsConfiguration Daemon { get; set; }
+        public DaemonsConfiguration Daemons { get; set; }
 
         public DiscordConfiguration Discord { get; set; }
 

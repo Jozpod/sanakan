@@ -23,9 +23,10 @@ namespace Sanakan.DiscordBot.Services.Abstractions
             int width = 0,
             int height = 0,
             bool streach = false);
+
         Task<List<string>> BuildListViewAsync(IEnumerable<User> userList, TopType topType, IGuild guild);
 
-        List<User> GetTopUsers(IEnumerable<User> userList, TopType topType, DateTime date);
+        IEnumerable<User> GetTopUsers(IEnumerable<User> userList, TopType topType, DateTime date);
 
         Task<Stream> GetProfileImageAsync(IGuildUser discordUser, User databaseUser, long topPosition);
 

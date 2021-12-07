@@ -3,16 +3,17 @@
 namespace Sanakan.Api.Models
 {
     /// <summary>
-    /// Odpowiedź na filtrowanie kart
+    /// Describes summary of filtered cards.
     /// </summary>
     public class FilteredCards
     {
         /// <summary>
-        /// Wszystkie karty dosepne pod tym filtrem
+        /// The total number of filtered cards.
         /// </summary>
         public int TotalCards { get; set; }
+
         /// <summary>
-        /// Karty uwzględniające paginacje
+        /// The list of paginated cards.
         /// </summary>
         public IEnumerable<CardFinalView> Cards { get; set; }
     }

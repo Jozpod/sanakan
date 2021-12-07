@@ -13,7 +13,7 @@ namespace Sanakan.ShindenApi.Tests
         [TestMethod]
         public async Task Should_Return_Result()
         {
-            MockHttpOk("remove-from-favourites-result.json", HttpMethod.Post);
+            MockHttpOk("remove-from-favourites-result.json", HttpMethod.Delete);
 
             var expected = new Modification
             {

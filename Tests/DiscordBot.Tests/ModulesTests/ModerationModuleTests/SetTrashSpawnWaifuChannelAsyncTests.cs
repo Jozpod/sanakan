@@ -4,6 +4,9 @@ using System.Threading.Tasks;
 using Sanakan.DiscordBot.Modules;
 using Discord;
 using Moq;
+using FluentAssertions;
+using System.Threading;
+using Sanakan.DAL.Models.Configuration;
 
 namespace DiscordBot.ModulesTests.ModerationModuleTests
 {
@@ -14,12 +17,39 @@ namespace DiscordBot.ModulesTests.ModerationModuleTests
     public class SetTrashSpawnWaifuChannelAsyncTests : Base
     {
         [TestMethod]
-        public async Task Should_Send_Message()
+        public async Task Should_Set_Waifu_Channel_And_Send_Confirm_Message()
         {
-            _helperServiceMock
-                .Setup(pr => pr.GivePrivateHelp(PrivateModules.Moderation))
-                .Returns("test info");
-            
+            var guildOptions = new GuildOptions(1ul, 50);
+
+            _guildMock
+                .Setup(pr => pr.Id)
+                .Returns(guildOptions.Id);
+
+            _messageChannelMock
+                .Setup(pr => pr.Id)
+                .Returns(1ul);
+
+            _messageChannelMock
+                .Setup(pr => pr.Name)
+                .Returns("channel name");
+
+            _guildConfigRepositoryMock
+                .Setup(pr => pr.GetGuildConfigOrCreateAsync(guildOptions.Id))
+                .ReturnsAsync(guildOptions);
+
+            _guildConfigRepositoryMock
+                .Setup(pr => pr.SaveChangesAsync(It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
+
+            _cacheManagerMock
+                .Setup(pr => pr.ExpireTag(It.IsAny<string[]>()));
+
+            SetupSendMessage((message, embed) =>
+            {
+                embed.Should().NotBeNull();
+                embed.Description.Should().NotBeNullOrEmpty();
+            });
+
             await _module.SetTrashSpawnWaifuChannelAsync();
         }
     }

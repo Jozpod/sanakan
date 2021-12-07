@@ -9,8 +9,7 @@ namespace Sanakan.DAL.Models
 {
     public class Card
     {
-        [JsonConstructor]
-        private Card()
+        public Card()
         {
             TagList = new List<CardTag>();
         }

@@ -18,6 +18,15 @@
           "System.Diagnostics.DiagnosticSource": "5.0.1"
         }
       },
+      "Microsoft.EntityFrameworkCore.InMemory": {
+        "type": "Direct",
+        "requested": "[5.0.11, )",
+        "resolved": "5.0.11",
+        "contentHash": "qtrmHiREbqsFnwFhgpdLFkA8yBcvn/NxCGJ2nTR7hIYHfBYSphwEnSPgPhqIEdHV1Hjuu2vQJrI0aLi6oAme7w==",
+        "dependencies": {
+          "Microsoft.EntityFrameworkCore": "5.0.11"
+        }
+      },
       "Microsoft.EntityFrameworkCore.Sqlite": {
         "type": "Direct",
         "requested": "[5.0.11, )",
