@@ -51,7 +51,8 @@ namespace Sanakan.TaskQueue.MessageHandlers
                 return;
             }
 
-            var lastMeasure = _systemClock.UtcNow - user.MeasuredOn;
+            var utcNow = _systemClock.UtcNow;
+            var lastMeasure = utcNow - user.MeasuredOn;
 
             if (lastMeasure > _oneMonth)
             {
@@ -64,7 +65,7 @@ namespace Sanakan.TaskQueue.MessageHandlers
                 user.CharacterCountFromDate += characterCount;
             }
 
-            var experience = CheckFloodAndReturnExperience(message.Experience, user);
+            var experience = CheckFloodAndReturnExperience(utcNow, message.Experience, user.TimeStatuses);
             if (experience < 1)
             {
                 experience = 1;
@@ -76,9 +77,11 @@ namespace Sanakan.TaskQueue.MessageHandlers
 
             var level = ExperienceUtils.CalculateLevel(user.ExperienceCount);
             var username = discordUser.Nickname ?? discordUser.Username;
+            var guild = discordUser.Guild;
+            var roleIds = discordUser.RoleIds;
 
-            var highestRole = discordUser.Guild.Roles
-                .Join(discordUser.RoleIds, pr => pr.Id, pr => pr, (src, dst) => src)
+            var highestRole = guild.Roles
+                .Join(roleIds, pr => pr.Id, pr => pr, (src, dst) => src)
                 .OrderByDescending(pr => pr.Position)
                 .First();
 
@@ -101,7 +104,7 @@ namespace Sanakan.TaskQueue.MessageHandlers
                     Value = level,
                     UserId = user.Id,
                     GuildId = message.GuildId,
-                    MeasuredOn = _systemClock.UtcNow,
+                    MeasuredOn = utcNow,
                     Type = UserAnalyticsEventType.Level
                 };
 
@@ -123,13 +126,13 @@ namespace Sanakan.TaskQueue.MessageHandlers
 
             foreach (var lvlRole in config.RolesPerLevel)
             {
-                var role = discordUser.Guild.GetRole(lvlRole.RoleId);
+                var role = guild.GetRole(lvlRole.RoleId);
                 if (role == null)
                 {
                     continue;
                 }
 
-                bool hasRole = discordUser.RoleIds.Any(roleId => roleId == role.Id);
+                bool hasRole = roleIds.Any(roleId => roleId == role.Id);
 
                 if (level >= lvlRole.Level)
                 {
@@ -145,19 +148,17 @@ namespace Sanakan.TaskQueue.MessageHandlers
             await _userRepository.SaveChangesAsync();
         }
 
-        private ulong CheckFloodAndReturnExperience(long experience, User botUser)
+        private ulong CheckFloodAndReturnExperience(DateTime utcNow, long experience, ICollection<TimeStatus> timeStatuses)
         {
-            var timeStatus = botUser
-                .TimeStatuses
-                .FirstOrDefault(x => x.Type == StatusType.Flood);
+            var statusType = StatusType.Flood;
+            var timeStatus = timeStatuses
+                .FirstOrDefault(x => x.Type == statusType);
 
             if (timeStatus == null)
             {
-                timeStatus = new TimeStatus(StatusType.Flood);
-                botUser.TimeStatuses.Add(timeStatus);
+                timeStatus = new TimeStatus(statusType);
+                timeStatuses.Add(timeStatus);
             }
-
-            var utcNow = _systemClock.UtcNow;
 
             if (!timeStatus.IsActive(utcNow))
             {

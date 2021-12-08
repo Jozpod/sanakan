@@ -78,7 +78,7 @@ namespace Sanakan.Daemon.Tests.HostedServices.ModeratorHostedServiceTests
                 .Verifiable();
 
             _cacheManagerMock
-                .Setup(pr => pr.ExpireTag(It.IsAny<string>()))
+                .Setup(pr => pr.ExpireTag(It.IsAny<string[]>()))
                 .Verifiable();
 
             var cancellationTokenSource = new CancellationTokenSource();
@@ -260,7 +260,7 @@ namespace Sanakan.Daemon.Tests.HostedServices.ModeratorHostedServiceTests
                 .Verifiable();
 
             _cacheManagerMock
-                .Setup(pr => pr.ExpireTag(It.IsAny<string>()))
+                .Setup(pr => pr.ExpireTag(It.IsAny<string[]>()))
                 .Verifiable();
 
             var cancellationTokenSource = new CancellationTokenSource();

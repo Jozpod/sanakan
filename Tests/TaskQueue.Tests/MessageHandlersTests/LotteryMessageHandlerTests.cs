@@ -42,18 +42,13 @@ namespace Sanakan.TaskQueue.Tests.MessageHandlersTests
 
             _userRepositoryMock
                 .Setup(pr => pr.GetUserOrCreateAsync(message.DiscordUserId))
-                .ReturnsAsync(null as User)
-                .Verifiable();
+                .ReturnsAsync(null as User);
 
             _userMessageMock
                 .Setup(pr => pr.ModifyAsync(It.IsAny<Action<MessageProperties>>(), null))
-                .Returns(Task.CompletedTask)
-                .Verifiable();
+                .Returns(Task.CompletedTask);
 
             await _messageHandler.HandleAsync(message);
-
-            _userRepositoryMock.Verify();
-            _userMessageMock.Verify();
         }
 
         [TestMethod]
@@ -69,22 +64,27 @@ namespace Sanakan.TaskQueue.Tests.MessageHandlersTests
 
             _userRepositoryMock
                 .Setup(pr => pr.GetUserOrCreateAsync(message.DiscordUserId))
-                .ReturnsAsync(user)
-                .Verifiable();
+                .ReturnsAsync(user);
+
+            _userMessageMock
+                .Setup(pr => pr.ModifyAsync(It.IsAny<Action<MessageProperties>>(), null))
+                .Returns(Task.CompletedTask);
 
             await _messageHandler.HandleAsync(message);
-
-            _userRepositoryMock.Verify();
-            _userMessageMock.Verify();
         }
 
         [TestMethod]
-        public async Task Should_Handle_Message()
+        public async Task Should_Handle_Message_Winner()
         {
+            var messageChannelMock = new Mock<ITextChannel>(MockBehavior.Strict);
+            var userMock = new Mock<IUser>(MockBehavior.Strict);
             var message = new LotteryMessage()
             {
                 DiscordUserId = 1ul,
                 WinnerUserId = 2ul,
+                WinnerUser = userMock.Object,
+                UserMessage = _userMessageMock.Object,
+                Channel = messageChannelMock.Object,
             };
             var user = new User(message.DiscordUserId, DateTime.UtcNow);
             var card = new Card(1ul, "title", "name", 100, 50, Rarity.E, Dere.Bodere, DateTime.UtcNow);
@@ -92,33 +92,58 @@ namespace Sanakan.TaskQueue.Tests.MessageHandlersTests
 
             _userRepositoryMock
                 .Setup(pr => pr.GetUserOrCreateAsync(message.DiscordUserId))
-                .ReturnsAsync(user)
-                .Verifiable();
+                .ReturnsAsync(user);
 
             _userRepositoryMock
                .Setup(pr => pr.GetUserOrCreateAsync(message.WinnerUserId))
-               .ReturnsAsync(user)
-               .Verifiable();
+               .ReturnsAsync(user);
 
             _randomNumberGeneratorMock
                 .Setup(pr => pr.GetOneRandomFrom(It.IsAny<IEnumerable<ulong>>()))
-                .Returns(0)
-                .Verifiable();
+                .Returns(0);
 
             _userRepositoryMock
                 .Setup(pr => pr.SaveChangesAsync(It.IsAny<CancellationToken>()))
-                .Returns(Task.CompletedTask)
-                .Verifiable();
+                .Returns(Task.CompletedTask);
+
+            userMock
+                .Setup(pr => pr.Mention)
+                .Returns("user mention");
+
+            _userMessageMock
+                .Setup(pr => pr.Channel)
+                .Returns(messageChannelMock.Object);
+
+            _userMessageMock
+               .Setup(pr => pr.DeleteAsync(null))
+               .Returns(Task.CompletedTask);
+
+            messageChannelMock
+                .Setup(pr => pr.SendMessageAsync(
+                   It.IsAny<string>(),
+                   It.IsAny<bool>(),
+                   It.IsAny<Embed>(),
+                   It.IsAny<RequestOptions>(),
+                   It.IsAny<AllowedMentions>(),
+                   It.IsAny<MessageReference>()))
+                .ReturnsAsync(_userMessageMock.Object);
+
+            _userMessageMock
+                .Setup(pr => pr.Id)
+                .Returns(1ul);
+
+            messageChannelMock
+                .Setup(pr => pr.GuildId)
+                .Returns(1ul);
+
+            messageChannelMock
+                .Setup(pr => pr.Id)
+                .Returns(1ul);
 
             _cacheManagerMock
-                .Setup(pr => pr.ExpireTag())
-                .Verifiable();
+                 .Setup(pr => pr.ExpireTag(It.IsAny<string[]>()));
 
             await _messageHandler.HandleAsync(message);
-
-            _userRepositoryMock.Verify();
-            _randomNumberGeneratorMock.Verify();
-            _cacheManagerMock.Verify();
         }
     }
 }

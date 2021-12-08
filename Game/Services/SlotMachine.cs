@@ -21,9 +21,9 @@ namespace Sanakan.Game.Services
             Row = new SlotMachineSlot[Rows, Slots];
         }
 
-        public long ToPay(User user) => user.SMConfig.Beat.Value() 
-            * user.SMConfig.Multiplier.Value() 
-            * user.SMConfig.Rows.Value();
+        public long ToPay(SlotMachineConfig slotMachineConfig) => slotMachineConfig.Beat.Value() 
+            * slotMachineConfig.Multiplier.Value() 
+            * slotMachineConfig.Rows.Value();
 
         private string RowIsSelected(User user, int index)
         {
@@ -102,7 +102,7 @@ namespace Sanakan.Game.Services
 
             Randomize();
             var win = GetWin(user, ref slots);
-            UpdateStats(user, win, slots);
+            UpdateStats(user.SMConfig, user.Stats, win, slots);
 
             if (user.SMConfig.PsayMode > 0)
             {
@@ -112,19 +112,19 @@ namespace Sanakan.Game.Services
             return win;
         }
 
-        private void UpdateStats(User user, long win, List<SlotMachineWinSlots> slots)
+        private void UpdateStats(SlotMachineConfig slotMachineConfig, UserStats userStats, long win, List<SlotMachineWinSlots> slots)
         {
-            ++user.Stats.SlotMachineGames;
-            var scLost = ToPay(user) - win;
+            ++userStats.SlotMachineGames;
+            var scLost = ToPay(slotMachineConfig) - win;
 
             if (scLost > 0)
             {
-                user.Stats.ScLost += scLost;
-                user.Stats.IncomeInSc -= scLost;
+                userStats.ScLost += scLost;
+                userStats.IncomeInSc -= scLost;
             }
             else
             {
-                user.Stats.IncomeInSc += win;
+                userStats.IncomeInSc += win;
             }
         }
 

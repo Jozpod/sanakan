@@ -32,7 +32,7 @@ namespace DiscordBot.ModulesTests.DebugModuleTests
         protected readonly Mock<IWritableOptions<SanakanConfiguration>> _sanakanConfigurationMock = new(MockBehavior.Strict);
         protected readonly Mock<IUserRepository> _userRepositoryMock = new(MockBehavior.Strict);
         protected readonly Mock<ICardRepository> _cardRepositoryMock = new(MockBehavior.Strict);
-        protected readonly Mock<IGuildConfigRepository> _guildConfigRepository = new(MockBehavior.Strict);
+        protected readonly Mock<IGuildConfigRepository> _guildConfigRepositoryMock = new(MockBehavior.Strict);
         protected readonly Mock<IQuestionRepository> _questionRepositoryMock = new(MockBehavior.Strict);
         protected readonly Mock<ISystemClock> _systemClockMock = new(MockBehavior.Strict);
         protected readonly Mock<ICacheManager> _cacheManagerMock = new(MockBehavior.Strict);
@@ -45,7 +45,7 @@ namespace DiscordBot.ModulesTests.DebugModuleTests
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddSingleton(_userRepositoryMock.Object);
             serviceCollection.AddSingleton(_cardRepositoryMock.Object);
-            serviceCollection.AddSingleton(_guildConfigRepository.Object);
+            serviceCollection.AddSingleton(_guildConfigRepositoryMock.Object);
             serviceCollection.AddSingleton(_questionRepositoryMock.Object);
             var serviceProvider = serviceCollection.BuildServiceProvider();
             var serviceScopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();

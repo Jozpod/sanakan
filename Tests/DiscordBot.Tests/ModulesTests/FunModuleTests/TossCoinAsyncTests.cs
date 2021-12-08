@@ -17,7 +17,7 @@ namespace DiscordBot.ModulesTests.FunModuleTests
     public class TossCoinAsyncTests : Base
     {
         [TestMethod]
-        public async Task Should_Send_Message()
+        public async Task Should_Toss_Coin_And_Send_Message_Describing_Result()
         {
             var discordUserId = 1ul;
             var coinSide = CoinSide.Head;

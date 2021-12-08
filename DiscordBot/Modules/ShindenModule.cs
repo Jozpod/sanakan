@@ -51,6 +51,7 @@ namespace Sanakan.DiscordBot.Modules
             ICacheManager cacheManager,
             ISystemClock systemClock,
             ITaskManager taskManager,
+            IImageProcessor imageProcessor,
             IServiceScopeFactory serviceScopeFactory)
         {
             _shindenClient = shindenClient;
@@ -58,6 +59,7 @@ namespace Sanakan.DiscordBot.Modules
             _cacheManager = cacheManager;
             _systemClock = systemClock;
             _taskManager = taskManager;
+            _imageProcessor = imageProcessor;
             _serviceScopeFactory = serviceScopeFactory;
 
             _serviceScope = _serviceScopeFactory.CreateScope();

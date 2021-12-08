@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Discord;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.Common;
 using Sanakan.DAL.Models;
@@ -31,41 +32,44 @@ namespace Sanakan.TaskQueue.Tests.MessageHandlersTests
         [TestMethod]
         public async Task Should_Handle_Message()
         {
+            var messageChannelMock = new Mock<IMessageChannel>(MockBehavior.Strict);
+
             var message = new SpawnCardBundleMessage()
             {
-
+                MessageChannel = messageChannelMock.Object,
             };
             var user = new User(message.DiscordUserId, DateTime.UtcNow);
 
             _userRepositoryMock
                 .Setup(pr => pr.GetUserOrCreateAsync(message.DiscordUserId))
-                .ReturnsAsync(user)
-                .Verifiable();
+                .ReturnsAsync(user);
 
             _userAnalyticsRepositoryMock
-               .Setup(pr => pr.Add(It.IsAny<UserAnalytics>()))
-               .Verifiable();
+               .Setup(pr => pr.Add(It.IsAny<UserAnalytics>()));
 
             _userAnalyticsRepositoryMock
                 .Setup(pr => pr.SaveChangesAsync(It.IsAny<CancellationToken>()))
-                .Returns(Task.CompletedTask)
-                .Verifiable();
+                .Returns(Task.CompletedTask);
 
             _userRepositoryMock
                 .Setup(pr => pr.SaveChangesAsync(It.IsAny<CancellationToken>()))
-                .Returns(Task.CompletedTask)
-                .Verifiable();
+                .Returns(Task.CompletedTask);
 
             _systemClockMock
                 .Setup(pr => pr.UtcNow)
-                .Returns(DateTime.UtcNow)
-                .Verifiable();
+                .Returns(DateTime.UtcNow);
+
+            messageChannelMock
+                .Setup(pr => pr.SendMessageAsync(
+                    It.IsAny<string>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<Embed>(),
+                    It.IsAny<RequestOptions>(),
+                    It.IsAny<AllowedMentions>(),
+                    It.IsAny<MessageReference>()))
+                .ReturnsAsync(null as IUserMessage);
 
             await _messageHandler.HandleAsync(message);
-
-            _userAnalyticsRepositoryMock.Verify();
-            _userRepositoryMock.Verify();
-            _systemClockMock.Verify();
         }
     }
 }

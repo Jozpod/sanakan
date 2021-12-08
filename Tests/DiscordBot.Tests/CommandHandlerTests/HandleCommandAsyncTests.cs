@@ -79,7 +79,7 @@ namespace Sanakan.DiscordBot.Tests.CommandHandlerTests
                 .Setup(pr => pr.GetCachedGuildFullConfigAsync(_guildId))
                 .ReturnsAsync(guildConfig);
 
-            _discordSocketClientAccessorMock
+            _discordClientAccessorMock
                 .Setup(pr => pr.GetCommandContext(userMessage))
                 .Returns(_commandContextMock.Object);
 
@@ -105,7 +105,7 @@ namespace Sanakan.DiscordBot.Tests.CommandHandlerTests
         {
             var messageMock = new Mock<IMessage>(MockBehavior.Strict);
 
-            _discordSocketClientAccessorMock
+            _discordClientAccessorMock
                 .Raise(pr => pr.MessageReceived += null, messageMock.Object);
         }
 
@@ -123,7 +123,7 @@ namespace Sanakan.DiscordBot.Tests.CommandHandlerTests
                 .Setup(pr => pr.IsBot)
                 .Returns(true);
 
-            _discordSocketClientAccessorMock
+            _discordClientAccessorMock
                 .Raise(pr => pr.MessageReceived += null, userMessageMock.Object);
         }
 
@@ -145,7 +145,7 @@ namespace Sanakan.DiscordBot.Tests.CommandHandlerTests
                 .Setup(pr => pr.IsWebhook)
                 .Returns(false);
 
-            _discordSocketClientAccessorMock
+            _discordClientAccessorMock
                 .Raise(pr => pr.MessageReceived += null, userMessageMock.Object);
         }
 
@@ -200,7 +200,7 @@ namespace Sanakan.DiscordBot.Tests.CommandHandlerTests
                 .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildId))
                 .ReturnsAsync(guildConfig);
 
-            _discordSocketClientAccessorMock
+            _discordClientAccessorMock
                 .Raise(pr => pr.MessageReceived += null, userMessageMock.Object);
         }
 
@@ -255,7 +255,7 @@ namespace Sanakan.DiscordBot.Tests.CommandHandlerTests
                 .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildId))
                 .ReturnsAsync(guildConfig);
 
-            _discordSocketClientAccessorMock
+            _discordClientAccessorMock
                 .Raise(pr => pr.MessageReceived += null, _userMessageMock.Object);
         }
 
@@ -272,7 +272,7 @@ namespace Sanakan.DiscordBot.Tests.CommandHandlerTests
                 .Setup(pr => pr.Content)
                 .Returns(".test");
 
-            _discordSocketClientAccessorMock
+            _discordClientAccessorMock
                 .Raise(pr => pr.MessageReceived += null, _userMessageMock.Object);
         }
 
@@ -299,7 +299,7 @@ namespace Sanakan.DiscordBot.Tests.CommandHandlerTests
                     It.IsAny<MessageReference>()))
                 .ReturnsAsync(_userMessageMock.Object);
 
-            _discordSocketClientAccessorMock
+            _discordClientAccessorMock
                 .Raise(pr => pr.MessageReceived += null, _userMessageMock.Object);
         }
 
@@ -339,7 +339,7 @@ namespace Sanakan.DiscordBot.Tests.CommandHandlerTests
                 .Setup(pr => pr.GetCommandInfo(It.IsAny<CommandInfo>(), It.IsAny<string?>()))
                 .Returns("command info");
 
-            _discordSocketClientAccessorMock
+            _discordClientAccessorMock
                 .Raise(pr => pr.MessageReceived += null, _userMessageMock.Object);
         }
 
@@ -368,7 +368,7 @@ namespace Sanakan.DiscordBot.Tests.CommandHandlerTests
                     It.IsAny<MessageReference>()))
                 .ReturnsAsync(_userMessageMock.Object);
 
-            _discordSocketClientAccessorMock
+            _discordClientAccessorMock
                 .Raise(pr => pr.MessageReceived += null, _userMessageMock.Object);
         }
 
@@ -405,7 +405,7 @@ namespace Sanakan.DiscordBot.Tests.CommandHandlerTests
                 .Setup(pr => pr.GetResourceStream(preconditionErrorPayload.ImageUrl))
                 .Returns(new MemoryStream());
 
-            _discordSocketClientAccessorMock
+            _discordClientAccessorMock
                 .Raise(pr => pr.MessageReceived += null, _userMessageMock.Object);
 
             void VerifyMessage(
@@ -425,18 +425,46 @@ namespace Sanakan.DiscordBot.Tests.CommandHandlerTests
         }
 
         [TestMethod]
-        public async Task Should_Process_Command()
+        public async Task Should_Process_Command_Sync()
         {
+            var userId = 1ul;
             var channelId = 1ul;
             var guildId = 1ul;
             var guildConfig = new GuildOptions(guildId, 50);
             var messageChannelMock = new Mock<IMessageChannel>(MockBehavior.Strict);
             var guildUserMock = new Mock<IGuildUser>(MockBehavior.Strict);
             var guildMock = new Mock<IGuild>(MockBehavior.Strict);
+            var commands = new List<CommandMatch>
+            {
+                new CommandMatch(null, "command"),
+            };
+            var commandName = "test";
+            var messageText = $".{commandName}";
+            var commandSearchResult = Discord.Commands.SearchResult.FromSuccess("commands", commands);
+
+            _commandServiceMock
+                .Setup(pr => pr.Search(commandName))
+                .Returns(commandSearchResult);
+
+            _discordClientAccessorMock
+                .Setup(pr => pr.GetCommandContext(_userMessageMock.Object))
+                .Returns(_commandContextMock.Object);
+
+            _commandContextMock
+                .Setup(pr => pr.Message)
+                .Returns(_userMessageMock.Object);
+
+            _userMessageMock
+                .Setup(pr => pr.Content)
+                .Returns(messageText);
 
             _userMessageMock
                 .Setup(pr => pr.Author)
                 .Returns(guildUserMock.Object);
+
+            guildUserMock
+                .Setup(pr => pr.Id)
+                .Returns(userId);
 
             guildUserMock
                 .Setup(pr => pr.IsBot)
@@ -474,7 +502,89 @@ namespace Sanakan.DiscordBot.Tests.CommandHandlerTests
                 .Setup(pr => pr.UtcNow)
                 .Returns(DateTime.UtcNow);
 
-            _discordSocketClientAccessorMock
+            _discordClientAccessorMock
+                .Raise(pr => pr.MessageReceived += null, _userMessageMock.Object);
+        }
+
+        [TestMethod]
+        public async Task Should_Process_Command_Async()
+        {
+            var userId = 1ul;
+            var channelId = 1ul;
+            var guildId = 1ul;
+            var guildConfig = new GuildOptions(guildId, 50);
+            var messageChannelMock = new Mock<IMessageChannel>(MockBehavior.Strict);
+            var guildUserMock = new Mock<IGuildUser>(MockBehavior.Strict);
+            var guildMock = new Mock<IGuild>(MockBehavior.Strict);
+            var commands = new List<CommandMatch>
+            {
+                new CommandMatch(null, "command"),
+            };
+            var commandName = "test";
+            var messageText = $".{commandName}";
+            var commandSearchResult = Discord.Commands.SearchResult.FromSuccess("commands", commands);
+
+            _commandServiceMock
+                .Setup(pr => pr.Search(commandName))
+                .Returns(commandSearchResult);
+
+            _discordClientAccessorMock
+                .Setup(pr => pr.GetCommandContext(_userMessageMock.Object))
+                .Returns(_commandContextMock.Object);
+
+            _commandContextMock
+                .Setup(pr => pr.Message)
+                .Returns(_userMessageMock.Object);
+
+            _userMessageMock
+                .Setup(pr => pr.Content)
+                .Returns(messageText);
+
+            _userMessageMock
+                .Setup(pr => pr.Author)
+                .Returns(guildUserMock.Object);
+
+            guildUserMock
+                .Setup(pr => pr.Id)
+                .Returns(userId);
+
+            guildUserMock
+                .Setup(pr => pr.IsBot)
+                .Returns(false);
+
+            guildUserMock
+                .Setup(pr => pr.IsWebhook)
+                .Returns(false);
+
+            guildUserMock
+                .Setup(pr => pr.Guild)
+                .Returns(guildMock.Object);
+
+            _userMessageMock
+                .Setup(pr => pr.Channel)
+                .Returns(messageChannelMock.Object);
+
+            messageChannelMock
+                .Setup(pr => pr.Id)
+                .Returns(channelId);
+
+            _discordClientMock
+                .Setup(pr => pr.GetChannelAsync(channelId, CacheMode.AllowDownload, null))
+                .ReturnsAsync(messageChannelMock.Object);
+
+            guildMock
+                .Setup(pr => pr.Id)
+                .Returns(guildId);
+
+            _guildConfigRepositoryMock
+                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildId))
+                .ReturnsAsync(guildConfig);
+
+            _systemClockMock
+                .Setup(pr => pr.UtcNow)
+                .Returns(DateTime.UtcNow);
+
+            _discordClientAccessorMock
                 .Raise(pr => pr.MessageReceived += null, _userMessageMock.Object);
         }
     }

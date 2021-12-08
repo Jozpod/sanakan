@@ -1010,10 +1010,12 @@ namespace Sanakan.DiscordBot.Modules
                 .First();
 
             var color = role.Color;
+            var name = "Very very long nickname of trolly user";
+            var level = 2154ul;
 
             using var badge = await _imageProcessor.GetLevelUpBadgeAsync(
-                "Very very long nickname of trolly user",
-                2154,
+                name,
+                level,
                 user.GetUserOrDefaultAvatarUrl(),
                 color);
             using var badgeStream = badge.ToPngStream();

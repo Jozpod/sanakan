@@ -92,7 +92,7 @@ namespace DiscordBot.ModulesTests.FunModuleTests
 
             _userMessageMock
                 .Setup(pr => pr.RemoveAllReactionsAsync(null))
-              .Returns(Task.CompletedTask);
+                .Returns(Task.CompletedTask);
 
             await _module.ShowRiddleAsync();
         }

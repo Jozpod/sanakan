@@ -35,6 +35,7 @@ namespace Sanakan.DiscordBot
 
         public CommandHandler(
             IDiscordClientAccessor discordClientAccessor,
+            IBlockingPriorityQueue blockingPriorityQueue,
             IHelperService helperService,
             ICommandService commandService,
             IOptionsMonitor<DiscordConfiguration> config,
@@ -45,6 +46,7 @@ namespace Sanakan.DiscordBot
             IServiceScopeFactory scopeFactory)
         {
             _discordClientAccessor = discordClientAccessor;
+            _blockingPriorityQueue =  blockingPriorityQueue;
             _helperService = helperService;
             _commandService = commandService;
             _config = config;
@@ -72,128 +74,138 @@ namespace Sanakan.DiscordBot
 
         private async Task HandleCommandAsync(IMessage message)
         {
-            var userMessage = message as IUserMessage;
-
-            if (userMessage == null)
-            {
-                return;
-            }
-
-            var user = userMessage.Author;
-
-            if (user.IsBotOrWebhook())
-            {
-                return;
-            }
-
-            var config = _config.CurrentValue;
-            var prefix = config.Prefix;
-
-            var guildUser = userMessage.Author as IGuildUser;
-
-            if (guildUser == null)
-            {
-                return;
-            }
-
-            var guild = guildUser.Guild;
-            var guildId = guild.Id;
-            var client = _discordClientAccessor.Client;
-            var channel = (IMessageChannel)await client.GetChannelAsync(userMessage.Channel.Id);
-
-            using var serviceScope = _serviceScopeFactory.CreateScope();
-            var serviceProvider = serviceScope.ServiceProvider;
-            var guildConfigRepository = serviceProvider.GetRequiredService<IGuildConfigRepository>();
-            var guildConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(guildId);
-
-            if (guildConfig?.Prefix != null)
-            {
-                prefix = guildConfig.Prefix;
-            }
-
-            var argumentPosition = 0;
-
-            if (!userMessage.HasStringPrefix(prefix, ref argumentPosition, StringComparison.OrdinalIgnoreCase))
-            {
-                return;
-            }
-
-            var userId = guildUser.Id;
-            var isDev = config.AllowedToDebug.Any(x => x == userId);
-            var isOnBlacklist = config.BlacklistedGuilds.Any(x => x == guild.Id);
-
-            if (isOnBlacklist && !isDev)
-            {
-                return;
-            }
-
-            var commandContext = _discordClientAccessor.GetCommandContext(userMessage);
-
-            var searchResult = await _commandService
-                .GetExecutableCommandAsync(commandContext, argumentPosition, _serviceProvider);
-
-            if (!searchResult.IsSuccess())
-            {
-                await ProcessResultAsync(searchResult.Result, commandContext, channel, argumentPosition, prefix);
-                return;
-            }
-
-            var commandMatch = searchResult.CommandMatch;
-            var commandInfo = commandMatch.Command;
-            var commandName = commandInfo.Name;
-
-            _logger.LogInformation($"Running command: u{userId} {commandName}");
-
-            string? param = null;
-
+#if DEBUG
             try
             {
-                var paramStart = argumentPosition + commandName.Length;
-                var content = userMessage.Content;
-                var textBigger = content.Length > paramStart;
-                param = textBigger ? content.Substring(paramStart) : null;
+#endif
+                var userMessage = message as IUserMessage;
+
+                if (userMessage == null)
+                {
+                    return;
+                }
+
+                var user = userMessage.Author;
+
+                if (user.IsBotOrWebhook())
+                {
+                    return;
+                }
+
+                var config = _config.CurrentValue;
+                var prefix = config.Prefix;
+
+                var guildUser = userMessage.Author as IGuildUser;
+
+                if (guildUser == null)
+                {
+                    return;
+                }
+
+                var guild = guildUser.Guild;
+                var guildId = guild.Id;
+                var client = _discordClientAccessor.Client;
+                var channel = (IMessageChannel)await client.GetChannelAsync(userMessage.Channel.Id);
+
+                using var serviceScope = _serviceScopeFactory.CreateScope();
+                var serviceProvider = serviceScope.ServiceProvider;
+                var guildConfigRepository = serviceProvider.GetRequiredService<IGuildConfigRepository>();
+                var guildConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(guildId);
+
+                if (guildConfig?.Prefix != null)
+                {
+                    prefix = guildConfig.Prefix;
+                }
+
+                var argumentPosition = 0;
+
+                if (!userMessage.HasStringPrefix(prefix, ref argumentPosition, StringComparison.OrdinalIgnoreCase))
+                {
+                    return;
+                }
+
+                var userId = guildUser.Id;
+                var isDev = config.AllowedToDebug.Any(x => x == userId);
+                var isOnBlacklist = config.BlacklistedGuilds.Any(x => x == guild.Id);
+
+                if (isOnBlacklist && !isDev)
+                {
+                    return;
+                }
+
+                var commandContext = _discordClientAccessor.GetCommandContext(userMessage);
+
+                var searchResult = await _commandService
+                    .GetExecutableCommandAsync(commandContext, argumentPosition, _serviceProvider);
+
+                if (!searchResult.IsSuccess())
+                {
+                    await ProcessResultAsync(searchResult.Result, commandContext, channel, argumentPosition, prefix);
+                    return;
+                }
+
+                var commandMatch = searchResult.CommandMatch;
+                var commandInfo = commandMatch.Command;
+                var commandName = commandInfo.Name;
+
+                _logger.LogInformation($"Running command: u{userId} {commandName}");
+
+                string? param = null;
+
+                try
+                {
+                    var paramStart = argumentPosition + commandName.Length;
+                    var content = userMessage.Content;
+                    var textBigger = content.Length > paramStart;
+                    param = textBigger ? content.Substring(paramStart) : null;
+                }
+                catch (Exception) { }
+
+                var record = new CommandsAnalytics
+                {
+                    CommandName = commandName,
+                    GuildId = guildId,
+                    UserId = userId,
+                    Date = _systemClock.UtcNow,
+                    CommandParameters = param,
+                };
+
+                var commandsAnalyticsRepository = serviceProvider.GetRequiredService<ICommandsAnalyticsRepository>();
+
+                commandsAnalyticsRepository.Add(record);
+                await commandsAnalyticsRepository.SaveChangesAsync();
+
+                switch (commandInfo.RunMode)
+                {
+                    case RunMode.Async:
+                        await searchResult.ExecuteAsync(_serviceProvider).ConfigureAwait(false);
+                        break;
+
+                    default:
+                    case RunMode.Sync:
+
+                        var queueMessage = new CommandMessage(commandMatch, searchResult.Priority)
+                        {
+                            Context = commandContext,
+                            ParseResult = searchResult.ParseResult,
+                        };
+
+                        var enqueued = _blockingPriorityQueue.TryEnqueue(queueMessage);
+
+                        if (!enqueued)
+                        {
+                            await channel.SendMessageAsync(embed: Strings.RejectedCommand.ToEmbedMessage(EMType.Error).Build());
+                        }
+
+                        break;
+                }
             }
-            catch (Exception) { }
-
-            var record = new CommandsAnalytics
+#if DEBUG
+            catch (Exception ex)
             {
-                CommandName = commandName,
-                GuildId = guildId,
-                UserId = userId,
-                Date = _systemClock.UtcNow,
-                CommandParameters = param,
-            };
 
-            var commandsAnalyticsRepository = serviceProvider.GetRequiredService<ICommandsAnalyticsRepository>();
-
-            commandsAnalyticsRepository.Add(record);
-            await commandsAnalyticsRepository.SaveChangesAsync();
-
-            switch (commandInfo.RunMode)
-            {
-                case RunMode.Async:
-                    await searchResult.ExecuteAsync(_serviceProvider).ConfigureAwait(false);
-                    break;
-
-                default:
-                case RunMode.Sync:
-
-                    var queueMessage = new CommandMessage(searchResult.Priority)
-                    {
-                        Match = commandMatch,
-                        Context = commandContext,
-                        ParseResult = searchResult.ParseResult,
-                    };
-
-                    var enqueued = _blockingPriorityQueue.TryEnqueue(queueMessage);
-
-                    if(!enqueued)
-                    {
-                        await channel.SendMessageAsync(embed: Strings.RejectedCommand.ToEmbedMessage(EMType.Error).Build());
-                    }
-                    
-                    break;
             }
+#endif
         }
 
         private async Task ProcessResultAsync(

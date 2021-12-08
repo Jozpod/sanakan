@@ -23,7 +23,7 @@ namespace Sanakan.TaskQueue
         {
             lock (_syncRoot)
             {
-                if(_head == _items.Length)
+                if(_head + 1 == _items.Length)
                 {
                     return false;
                 }

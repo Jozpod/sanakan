@@ -7,6 +7,7 @@ using Discord;
 using Sanakan.Configuration;
 using Sanakan.Common.Configuration;
 using System;
+using FluentAssertions;
 
 namespace DiscordBot.ModulesTests.DebugModuleTests
 {
@@ -31,12 +32,15 @@ namespace DiscordBot.ModulesTests.DebugModuleTests
 
             _sanakanConfigurationMock
                 .Setup(pr => pr.UpdateAsync(It.IsAny<Action<SanakanConfiguration>>()))
-                .ReturnsAsync(true)
-                .Verifiable();
+                .ReturnsAsync(true);
+
+            SetupSendMessage((message, embed) =>
+            {
+                embed.Should().NotBeNull();
+                embed.Description.Should().NotBeNullOrEmpty();
+            });
 
             await _module.ChangeRMConfigAsync(richMessageType, channelId, roleId, save);
-
-            _sanakanConfigurationMock.Verify();
         }
     }
 }

@@ -46,16 +46,17 @@ namespace Sanakan.TaskQueue.MessageHandlers
             var pokeImage = safariMessage.Image;
             var message = safariMessage.Message;
             var discordUserId = winner.Id;
-            var botUser = await _userRepository.GetUserOrCreateAsync(discordUserId);
+            var databaseUser = await _userRepository.GetUserOrCreateAsync(discordUserId);
+            var gameDeck = databaseUser.GameDeck;
 
             card.FirstOwnerId = discordUserId;
-            card.Affection += botUser.GameDeck.AffectionFromKarma();
-            botUser.GameDeck.RemoveCharacterFromWishList(card.CharacterId);
+            card.Affection += gameDeck.AffectionFromKarma();
+            gameDeck.RemoveCharacterFromWishList(card.CharacterId);
 
-            botUser.GameDeck.Cards.Add(card);
+            gameDeck.Cards.Add(card);
             await _userRepository.SaveChangesAsync();
 
-            _cacheManager.ExpireTag(CacheKeys.User(botUser.Id), CacheKeys.Users);
+            _cacheManager.ExpireTag(CacheKeys.User(databaseUser.Id), CacheKeys.Users);
 
             var record = new UserAnalytics
             {

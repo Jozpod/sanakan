@@ -43,22 +43,16 @@ namespace Sanakan.TaskQueue.Tests.MessageHandlersTests
 
             _cardRepositoryMock
                 .Setup(pr => pr.GetByCharacterIdAsync(message.OldCharacterId))
-                .ReturnsAsync(cards)
-                .Verifiable();
+                .ReturnsAsync(cards);
 
             _cardRepositoryMock
                .Setup(pr => pr.SaveChangesAsync(It.IsAny<CancellationToken>()))
-               .Returns(Task.CompletedTask)
-               .Verifiable();
+               .Returns(Task.CompletedTask);
 
             _cacheManagerMock
-                .Setup(pr => pr.ExpireTag())
-                .Verifiable();
+                 .Setup(pr => pr.ExpireTag(It.IsAny<string[]>()));
 
             await _messageHandler.HandleAsync(message);
-
-            _cardRepositoryMock.Verify();
-            _cacheManagerMock.Verify();
         }
     }
 }

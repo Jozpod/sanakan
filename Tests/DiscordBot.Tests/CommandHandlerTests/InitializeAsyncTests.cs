@@ -30,7 +30,7 @@ namespace Sanakan.DiscordBot.Tests.CommandHandlerTests
             var messageMock = new Mock<IMessage>(MockBehavior.Strict);
 
             await _commandHandler.InitializeAsync();
-            _discordSocketClientAccessorMock.Raise(pr => pr.MessageReceived += null, messageMock.Object);
+            _discordClientAccessorMock.Raise(pr => pr.MessageReceived += null, messageMock.Object);
         }
 
         [TestMethod]
@@ -48,7 +48,7 @@ namespace Sanakan.DiscordBot.Tests.CommandHandlerTests
                 .Returns(true);
 
             await _commandHandler.InitializeAsync();
-            _discordSocketClientAccessorMock.Raise(pr => pr.MessageReceived += null, userMmessageMock.Object);
+            _discordClientAccessorMock.Raise(pr => pr.MessageReceived += null, userMmessageMock.Object);
         }
 
         [TestMethod]
@@ -57,7 +57,7 @@ namespace Sanakan.DiscordBot.Tests.CommandHandlerTests
             var userMmessageMock = new Mock<IUserMessage>(MockBehavior.Strict);
 
             await _commandHandler.InitializeAsync();
-            _discordSocketClientAccessorMock.Raise(pr => pr.MessageReceived += null, userMmessageMock.Object);
+            _discordClientAccessorMock.Raise(pr => pr.MessageReceived += null, userMmessageMock.Object);
         }
     }
 }

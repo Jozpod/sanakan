@@ -1,7 +1,5 @@
 ﻿using Discord.Commands;
-using Sanakan.DiscordBot.Abstractions;
 using Sanakan.TaskQueue;
-using Sanakan.TaskQueue.Messages;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;

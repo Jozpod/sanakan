@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using Sanakan.ShindenApi.Models;
 using Sanakan.ShindenApi;
+using FluentAssertions;
 
 namespace DiscordBot.ModulesTests.DebugModuleTests
 {
@@ -20,7 +21,7 @@ namespace DiscordBot.ModulesTests.DebugModuleTests
     public class ForceUpdateCardsAsyncTests : Base
     {
         [TestMethod]
-        public async Task Should_Send_Message()
+        public async Task Should_Update_Card_And_Send_Confirm_Message()
         {
             var card = new Card(1ul, "title", "name", 100, 50, Rarity.E, Dere.Bodere, DateTime.UtcNow);
             var cards = new List<Card>
@@ -52,6 +53,12 @@ namespace DiscordBot.ModulesTests.DebugModuleTests
 
             _cacheManagerMock
                 .Setup(pr => pr.ExpireTag(It.IsAny<string[]>()));
+
+            SetupSendMessage((message, embed) =>
+            {
+                embed.Should().NotBeNull();
+                embed.Description.Should().NotBeNullOrEmpty();
+            });
 
             await _module.ForceUpdateCardsAsync();
         }

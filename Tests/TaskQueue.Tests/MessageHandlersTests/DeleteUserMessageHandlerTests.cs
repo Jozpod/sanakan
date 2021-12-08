@@ -37,25 +37,19 @@ namespace Sanakan.TaskQueue.Tests.MessageHandlersTests
 
             _userRepositoryMock
                 .Setup(pr => pr.GetUserOrCreateAsync(message.DiscordUserId))
-                .ReturnsAsync(user)
-                .Verifiable();
+                .ReturnsAsync(user);
 
             _userRepositoryMock
-               .Setup(pr => pr.Remove(user))
-               .Verifiable();
+               .Setup(pr => pr.Remove(user));
 
             _userRepositoryMock
                 .Setup(pr => pr.SaveChangesAsync(It.IsAny<CancellationToken>()))
-                .Returns(Task.CompletedTask)
-                .Verifiable();
+                .Returns(Task.CompletedTask);
 
             _cacheManagerMock
-                .Setup(pr => pr.ExpireTag())
-                .Verifiable();
+                .Setup(pr => pr.ExpireTag(It.IsAny<string[]>()));
 
             await _messageHandler.HandleAsync(message);
-            _userRepositoryMock.Verify();
-            _cacheManagerMock.Verify();
         }
     }
 }

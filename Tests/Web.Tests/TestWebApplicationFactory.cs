@@ -35,19 +35,6 @@ namespace Sanakan.Web.Tests
 
             builder.ConfigureTestServices(services =>
             {
-                //services.AddHttpsRedirection(options =>
-                //{
-                //    options.RedirectStatusCode = StatusCodes.Status301MovedPermanently;
-                //    options.HttpsPort = 5001;
-                //});
-
-                //services.AddHsts(options =>
-                //{
-                //    options.MaxAge = TimeSpan.FromDays(30);
-                //    options.Preload = true;
-                //    options.IncludeSubDomains = true;
-                //});
-
                 DiscordClientAccessorMock
                     .Setup(pr => pr.Client)
                     .Returns(DiscordClientMock.Object);

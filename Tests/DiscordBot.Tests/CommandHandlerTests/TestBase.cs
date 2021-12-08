@@ -27,7 +27,8 @@ namespace Sanakan.DiscordBot.Tests.CommandHandlerTests
     public class TestBase
     {
         protected readonly ICommandHandler _commandHandler;
-        protected readonly Mock<IDiscordClientAccessor> _discordSocketClientAccessorMock = new(MockBehavior.Strict);
+        protected readonly Mock<IDiscordClientAccessor> _discordClientAccessorMock = new(MockBehavior.Strict);
+        protected readonly Mock<IBlockingPriorityQueue> _blockingPriorityQueueMock = new(MockBehavior.Strict);
         protected readonly Mock<IDiscordClient> _discordClientMock = new(MockBehavior.Strict);
         protected readonly Mock<IHelperService> _helperServiceMock = new(MockBehavior.Strict);
         protected readonly Mock<IOptionsMonitor<DiscordConfiguration>> _discordConfigurationMock = new(MockBehavior.Strict);
@@ -51,7 +52,6 @@ namespace Sanakan.DiscordBot.Tests.CommandHandlerTests
         protected readonly Mock<IWaifuService> _waifuServiceMock = new(MockBehavior.Strict);
         protected readonly Mock<IImageProcessor> _imageProcessorMock = new(MockBehavior.Strict);
         protected readonly Mock<IWritableOptions<SanakanConfiguration>> _sanakanConfigurationWritableMock = new(MockBehavior.Strict);
-        protected readonly Mock<IBlockingPriorityQueue> _blockingPriorityQueueMock = new(MockBehavior.Strict);
         protected readonly Mock<IShindenClient> _shindenClientMock = new(MockBehavior.Strict);
         protected readonly DiscordConfiguration _configuration;
 
@@ -96,7 +96,7 @@ namespace Sanakan.DiscordBot.Tests.CommandHandlerTests
                 .Setup(pr => pr.CurrentValue)
                 .Returns(_configuration);
 
-            _discordSocketClientAccessorMock
+            _discordClientAccessorMock
                 .Setup(pr => pr.Client)
                 .Returns(_discordClientMock.Object);
 
@@ -115,7 +115,8 @@ namespace Sanakan.DiscordBot.Tests.CommandHandlerTests
                 .Setup(pr => pr.AddPrivateModuleInfo(It.IsAny<(string, ModuleInfo)[]>()));
 
             _commandHandler = new CommandHandler(
-                _discordSocketClientAccessorMock.Object,
+                _discordClientAccessorMock.Object,
+                _blockingPriorityQueueMock.Object,
                 _helperServiceMock.Object,
                 _commandServiceMock.Object,
                 _discordConfigurationMock.Object,

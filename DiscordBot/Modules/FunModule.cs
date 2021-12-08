@@ -23,6 +23,7 @@ using Sanakan.Common.Cache;
 using Sanakan.DiscordBot.Session;
 using Sanakan.Game.Services;
 using Sanakan.Game.Services.Abstractions;
+using System.Text;
 
 namespace Sanakan.DiscordBot.Modules
 {
@@ -172,7 +173,7 @@ namespace Sanakan.DiscordBot.Modules
             };
 
             var session = new AcceptSession(user.Id, _systemClock.UtcNow, acceptPayload);
-            _sessionManager.Remove(session);
+            _sessionManager.RemoveIfExists<AcceptSession>(user.Id);
 
             var content = $"{user.Mention} na pewno chcesz muta?".ToEmbedMessage(EMType.Error).Build();
             var replyMessage = await ReplyAsync(embed: content);
@@ -318,6 +319,8 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks("info"), RequireCommandChannel]
         public async Task SlotMachineSettingsAsync([Summary("typ nastaw (info - wyświetla informacje)")]SlotMachineSetting setting = SlotMachineSetting.Info, [Summary("wartość nastawy")]string value = "info")
         {
+            var user = Context.User;
+
             if (setting == SlotMachineSetting.Info)
             {
                 var content = $"{Strings.SlotMachineInfo}".ToEmbedMessage(EMType.Info).Build();
@@ -325,7 +328,7 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            var databaseUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
+            var databaseUser = await _userRepository.GetUserOrCreateAsync(user.Id);
             if (!databaseUser.ApplySlotMachineSetting(setting, value))
             {
                 await ReplyAsync(embed: $"Podano niewłaściwą wartość parametru!".ToEmbedMessage(EMType.Error).Build());
@@ -336,7 +339,7 @@ namespace Sanakan.DiscordBot.Modules
 
             _cacheManager.ExpireTag(CacheKeys.User(databaseUser.Id), CacheKeys.Users);
 
-            await ReplyAsync(embed: $"{Context.User.Mention} zmienił nastawy automatu.".ToEmbedMessage(EMType.Success).Build());
+            await ReplyAsync(embed: $"{user.Mention} zmienił nastawy automatu.".ToEmbedMessage(EMType.Success).Build());
         }
 
         [Command("automat")]
@@ -346,38 +349,46 @@ namespace Sanakan.DiscordBot.Modules
         public async Task PlayOnSlotMachineAsync(
             [Summary("typ (info - wyświetla informacje)")]string type = "game")
         {
-            var info = string.Format(Strings.GameInfo, Emojis.PsyduckEmoji);
+            var stringBuilder = new StringBuilder(string.Format(Strings.GameInfo, Emojis.PsyduckEmoji));
+
+            Embed embed;
 
             foreach (var slotMachineSlot in SlotMachineSlotsExtensions.SlotMachineSlots)
             {
                 if (slotMachineSlot != SlotMachineSlot.max
                         && slotMachineSlot != SlotMachineSlot.q)
                 {
-                    for (int i = 3; i < 6; i++)
+                    for (var index = 3; index < 6; index++)
                     {
-                        string val = $"x{slotMachineSlot.WinValue(i)}";
-                        info += $"{i}x{slotMachineSlot.Icon()} - {val.PadRight(5, ' ')} ";
+                        var val = $"x{slotMachineSlot.WinValue(index)}".PadRight(5, ' ');
+                        stringBuilder.AppendFormat("{0}x{1} - {2} ",
+                            index,
+                            slotMachineSlot.Icon(),
+                            val);
                     }
-                    info += "\n";
+                    stringBuilder.AppendLine();
                 }
             }
 
             if (type != "game")
             {
-                await ReplyAsync("", false, $"{Strings.SlotMachineInfo}"
-                    .ToEmbedMessage(EMType.Info).Build());
+                embed = Strings.SlotMachineInfo
+                    .ToEmbedMessage(EMType.Info)
+                    .Build();
+                await ReplyAsync("", false, embed);
                 return;
             }
 
             var discordUser = Context.User;
             var databaseUser = await _userRepository.GetUserOrCreateAsync(discordUser.Id);
+            var smConfig = databaseUser.SMConfig;
 
-            var toPay = _slotMachine.ToPay(databaseUser);
+            var toPay = _slotMachine.ToPay(smConfig);
 
             if (databaseUser.ScCount < toPay)
             {
-                var content1 = $"{Context.User.Mention} brakuje Ci SC, aby za tyle zagrać.".ToEmbedMessage(EMType.Error).Build();
-                await ReplyAsync(embed: content1);
+                embed = $"{discordUser.Mention} brakuje Ci SC, aby za tyle zagrać.".ToEmbedMessage(EMType.Error).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
@@ -385,8 +396,6 @@ namespace Sanakan.DiscordBot.Modules
             databaseUser.ScCount += win - toPay;
 
             await _userRepository.SaveChangesAsync();
-
-            var smConfig = databaseUser.SMConfig;
 
             _cacheManager.ExpireTag(CacheKeys.User(databaseUser.Id), CacheKeys.Users);
 
@@ -403,8 +412,8 @@ namespace Sanakan.DiscordBot.Modules
                 multiplierValue,
                 win);
 
-            var content = slotMachineResult.ToEmbedMessage(EMType.Bot).Build();
-            await ReplyAsync(embed: content);
+            embed = slotMachineResult.ToEmbedMessage(EMType.Bot).Build();
+            await ReplyAsync(embed: embed);
         }
 
         [Command("podarujsc")]

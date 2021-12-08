@@ -1,6 +1,16 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Threading.Tasks;
 using Sanakan.DiscordBot.Modules;
+using Moq;
+using Sanakan.TaskQueue.Messages;
+using System;
+using Sanakan.DAL.Models.Configuration;
+using Discord;
+using Sanakan.DiscordBot;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using Sanakan.DAL.Models;
 
 namespace DiscordBot.ModulesTests.DebugModuleTests
 {
@@ -12,12 +22,100 @@ namespace DiscordBot.ModulesTests.DebugModuleTests
     {
         
         [TestMethod]
-        public async Task Should_Send_Message()
+        public async Task Should_Give_Away_Card_And_Send_Confirm_Message()
         {
-            var discordUserId = 1ul;
             var cardCount = 1u;
             var duration = 5u;
-            await _module.GiveawayCardsAsync(discordUserId, cardCount, duration);
+            var user = new User(1ul, DateTime.UtcNow);
+            var guildOptions = new GuildOptions(1ul, 50);
+            guildOptions.WaifuRoleId = 1ul;
+            guildOptions.MuteRoleId = 2ul;
+            var roleMock = new Mock<IRole>(MockBehavior.Strict);
+            var reactionUsers = new[]
+            {
+                new List<IUser>() { _guildUserMock.Object },
+            }.ToAsyncEnumerable();
+            var roleIds = new List<ulong>();
+
+            _systemClockMock
+                .Setup(pr => pr.UtcNow)
+                .Returns(DateTime.UtcNow);
+
+            _guildMock
+                .Setup(pr => pr.Id)
+                .Returns(guildOptions.Id);
+
+            _guildMock
+                .Setup(pr => pr.GetRole(guildOptions.WaifuRoleId.Value))
+                .Returns(null as IRole);
+
+            _guildMock
+                .Setup(pr => pr.GetRole(guildOptions.MuteRoleId))
+                .Returns(roleMock.Object);
+
+            roleMock
+               .Setup(pr => pr.Id)
+               .Returns(guildOptions.MuteRoleId);
+
+            _guildUserMock
+                .Setup(pr => pr.Id)
+                .Returns(user.Id);
+
+            _guildUserMock
+                .Setup(pr => pr.RoleIds)
+                .Returns(roleIds);
+
+            _guildConfigRepositoryMock
+                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildOptions.Id))
+                .ReturnsAsync(guildOptions);
+
+            _userMessageMock
+                .Setup(pr => pr.AddReactionAsync(Emotes.GreenChecked, null))
+                .Returns(Task.CompletedTask);
+
+            _userMessageMock
+                .Setup(pr => pr.RemoveReactionAsync(Emotes.GreenChecked, _currentUserMock.Object, null))
+                .Returns(Task.CompletedTask);
+
+            _userMessageMock
+                .Setup(pr => pr.GetReactionUsersAsync(It.IsAny<IEmote>(), 300, null))
+                .Returns(reactionUsers);
+
+            _randomNumberGeneratorMock
+                .Setup(pr => pr.Shuffle(It.IsAny<IEnumerable<IUser>>()))
+                .Returns<IEnumerable<IUser>>(pr => pr);
+
+            _taskManagerMock
+                .Setup(pr => pr.Delay(It.IsAny<TimeSpan>()))
+                .Returns(Task.CompletedTask);
+
+            _randomNumberGeneratorMock
+                .Setup(pr => pr.GetOneRandomFrom(It.IsAny<IEnumerable<IUser>>()))
+                .Returns(_guildUserMock.Object);
+
+            _userRepositoryMock
+                .Setup(pr => pr.GetCachedFullUserAsync(user.Id))
+                .ReturnsAsync(user);
+
+            _blockingPriorityQueueMock
+                .Setup(pr => pr.TryEnqueue(It.IsAny<LotteryMessage>()))
+                .Returns(true);
+
+            _userMessageMock
+                .Setup(pr => pr.RemoveAllReactionsAsync(null))
+                .Returns(Task.CompletedTask);
+
+            _messageChannelMock
+                .Setup(pr => pr.SendMessageAsync(
+                    It.IsAny<string>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<Embed>(),
+                    It.IsAny<RequestOptions>(),
+                    It.IsAny<AllowedMentions>(),
+                    It.IsAny<MessageReference>()))
+                .ReturnsAsync(_userMessageMock.Object);
+
+            await _module.GiveawayCardsAsync(user.Id, cardCount, duration);
         }
     }
 }

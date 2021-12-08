@@ -45,26 +45,23 @@ namespace Sanakan.TaskQueue.Tests.MessageHandlersTests
 
             _cardRepositoryMock
                 .Setup(pr => pr.GetCardsByCharacterIdAsync(message.CharacterId))
-                .ReturnsAsync(cards)
-                .Verifiable();
+                .ReturnsAsync(cards);
 
             _waifuServiceMock
-                .Setup(pr => pr.DeleteCardImageIfExist(card))
-                .Verifiable();
+                .Setup(pr => pr.DeleteCardImageIfExist(card));
 
             _waifuServiceMock
                .Setup(pr => pr.GenerateAndSaveCardAsync(card, CardImageType.Normal))
-               .Verifiable();
+               .ReturnsAsync("image url");
 
             _cacheManagerMock
-                .Setup(pr => pr.ExpireTag())
-                .Verifiable();
+                .Setup(pr => pr.ExpireTag(It.IsAny<string[]>()));
+
+            _cardRepositoryMock
+              .Setup(pr => pr.SaveChangesAsync(default))
+              .Returns(Task.CompletedTask);
 
             await _messageHandler.HandleAsync(message);
-
-            _cardRepositoryMock.Verify();
-            _waifuServiceMock.Verify();
-            _cacheManagerMock.Verify();
         }
     }
 }

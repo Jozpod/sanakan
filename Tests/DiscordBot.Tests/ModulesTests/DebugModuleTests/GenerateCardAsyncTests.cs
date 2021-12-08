@@ -10,6 +10,7 @@ using Sanakan.Common.Configuration;
 using System;
 using Sanakan.ShindenApi.Models;
 using System.Threading;
+using FluentAssertions;
 
 namespace DiscordBot.ModulesTests.DebugModuleTests
 {
@@ -75,8 +76,13 @@ namespace DiscordBot.ModulesTests.DebugModuleTests
             _cacheManagerMock
                 .Setup(pr => pr.ExpireTag(It.IsAny<string[]>()));
 
+            SetupSendMessage((message, embed) =>
+            {
+                embed.Should().NotBeNull();
+                embed.Description.Should().NotBeNullOrEmpty();
+            });
+
             await _module.GenerateCardAsync(guildUserMock.Object);
-            _messageChannelMock.Verify();
         }
     }
 }

@@ -9,7 +9,7 @@ namespace Sanakan.DiscordBot.Tests.IntegrationTests
     public partial class TestBase
     {
         [TestMethod]
-        public async Task TC011_Should_Change_User_Ac()
+        public async Task TC711_Should_Change_User_Ac()
         {
             var commandMessage = DebugCommandBuilder.ChangeUserAc(Prefix, FakeUser.Mention, 1000);
             await Channel.SendMessageAsync(commandMessage);
