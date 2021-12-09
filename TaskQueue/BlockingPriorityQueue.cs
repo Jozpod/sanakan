@@ -39,6 +39,32 @@ namespace Sanakan.TaskQueue
             return true;
         }
 
+        // TO-DO Test
+        public async IAsyncEnumerable<BaseMessage> GetAsyncEnumerable(CancellationToken token = default)
+        {
+            while (true)
+            {
+                token.ThrowIfCancellationRequested();
+
+                if (_head == -1)
+                {
+                    _manualResetEventSlim.Reset();
+                    // TO-DO Replace with SemaphoreSlim.WaitAsync(CancellationToken);
+                    _manualResetEventSlim.Wait(token);
+                }
+
+                BaseMessage item;
+                lock (_syncRoot)
+                {
+                    item = _items[_head];
+                    _items[_head] = null;
+                    _head--;
+                }
+
+                yield return item;
+            }
+        }
+
         public IEnumerable<BaseMessage> GetEnumerable(CancellationToken token = default)
         {
             while(true)
@@ -48,7 +74,7 @@ namespace Sanakan.TaskQueue
                 if(_head == -1)
                 {
                     _manualResetEventSlim.Reset();
-                    _manualResetEventSlim.Wait();
+                    _manualResetEventSlim.Wait(token);
                 }
 
                 BaseMessage item;

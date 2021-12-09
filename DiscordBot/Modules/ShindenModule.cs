@@ -219,7 +219,7 @@ namespace Sanakan.DiscordBot.Modules
             }
 
             using var stream = await GetSiteStatisticAsync(shindenId.Value, user);
-                
+
             if (stream == null)
             {
                 await ReplyAsync(embed: $"Brak połączenia z Shindenem!".ToEmbedMessage(EMType.Error).Build());

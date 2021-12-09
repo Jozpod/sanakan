@@ -17,7 +17,7 @@ namespace Sanakan.DAL.Tests
             var entity = new SystemAnalytics
             {
                 Id = 1,
-                MeasureDate = DateTime.UtcNow,
+                MeasuredOn = DateTime.UtcNow,
                 Type = SystemAnalyticsEventType.Ram,
                 Value = 1000,
             };

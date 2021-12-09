@@ -141,16 +141,16 @@ namespace Sanakan.DiscordBot.Services
                 case TopType.Level:
                     return list.OrderByDescending(x => x.ExperienceCount).ToList();
 
-                case TopType.ScCnt:
+                case TopType.ScCount:
                     return list.OrderByDescending(x => x.ScCount).ToList();
 
-                case TopType.TcCnt:
+                case TopType.TcCount:
                     return list.OrderByDescending(x => x.TcCount).ToList();
 
-                case TopType.AcCnt:
+                case TopType.AcCount:
                     return list.OrderByDescending(x => x.AcCount).ToList();
 
-                case TopType.PcCnt:
+                case TopType.PcCount:
                     return list.OrderByDescending(x => x.GameDeck.PVPCoins).ToList();
 
                 case TopType.Posts:
@@ -221,11 +221,12 @@ namespace Sanakan.DiscordBot.Services
             return image.ToPngStream();
         }
 
-        public async Task<Stream> GetProfileImageAsync(IGuildUser discordUser, User botUser, long topPosition)
+        public async Task<Stream> GetProfileImageAsync(IGuildUser discordUser, User databaseUser, long topPosition)
         {
-            var isConnected = botUser.ShindenId.HasValue;
+            var shindenId = databaseUser.ShindenId;
+            var isConnected = shindenId.HasValue;
 
-            var userResult = await _shindenClient.GetUserInfoAsync(botUser.ShindenId.Value);
+            var userResult = await _shindenClient.GetUserInfoAsync(shindenId.Value);
             var user = userResult.Value;
 
             var guildRoles = discordUser.Guild.Roles;
@@ -235,10 +236,12 @@ namespace Sanakan.DiscordBot.Services
             var roleColor = roles.OrderByDescending(x => x.Position)
                 .FirstOrDefault()?.Color ?? Color.DarkerGrey;
 
+            var avatarUrl = discordUser.GetUserOrDefaultAvatarUrl();
+
             using var image = await _imageProcessor.GetUserProfileAsync(
                 isConnected ? user : null,
-                botUser,
-                discordUser.GetUserOrDefaultAvatarUrl(),
+                databaseUser,
+                avatarUrl,
                 topPosition,
                 discordUser.Nickname ?? discordUser.Username,
                 roleColor);

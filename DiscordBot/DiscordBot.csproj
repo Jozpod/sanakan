@@ -13,12 +13,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Resources\Pictures\ManWaggingFinger.gif" />
-    <EmbeddedResource Include="Resources\Pictures\WomenMagnifyingGlass.gif" />
-    <EmbeddedResource Include="Resources\Pictures\YouHaveNoPowerHere.gif" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Discord.Net" Version="2.4.0" />
     <PackageReference Include="Humanizer.Core.pl" Version="2.11.10" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="5.0.0" />

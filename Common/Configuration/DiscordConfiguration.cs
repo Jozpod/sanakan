@@ -44,7 +44,7 @@ namespace Sanakan.Common.Configuration
         /// <summary>
         /// The list of Discord user identifiers which can access diagnostics.
         /// </summary>
-        public IEnumerable<ulong> AllowedToDebug { get; set; } = Enumerable.Empty<ulong>();
+        public ICollection<ulong> AllowedToDebug { get; set; } = new Collection<ulong>();
 
         /// <summary>
         /// The list of Discord guild ( servers ) identifiers to blacklist

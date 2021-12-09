@@ -27,12 +27,14 @@ using Sanakan.Web;
 using Sanakan.Web.Resources;
 using Sanakan.Web.Swagger;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Text;
 
 namespace Sanakan.Web
 {
+    [ExcludeFromCodeCoverage]
     public class Startup
     {
         public Startup(IConfiguration configuration)

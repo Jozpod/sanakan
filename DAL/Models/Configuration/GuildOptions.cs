@@ -9,7 +9,7 @@ namespace Sanakan.DAL.Models.Configuration
     /// </summary>
     public class GuildOptions
     {
-        private GuildOptions()
+        public GuildOptions()
         {
             ChannelsWithoutSupervision = new Collection<WithoutSupervisionChannel>();
             IgnoredChannels = new Collection<WithoutMessageCountChannel>();

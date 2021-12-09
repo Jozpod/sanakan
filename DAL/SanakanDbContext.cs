@@ -30,7 +30,7 @@ namespace Sanakan.DAL
         public DbSet<TimeStatus> TimeStatuses { get; set; } = null!;
         public DbSet<SlotMachineConfig> SlotMachineConfigs { get; set; } = null!;
         public DbSet<GameDeck> GameDecks { get; set; } = null!;
-        public DbSet<ExperienceContainer> ExpContainers { get; set; } = null!;
+        public DbSet<ExperienceContainer> ExperienceContainers { get; set; } = null!;
         public DbSet<Card> Cards { get; set; } = null!;
         public DbSet<Item> Items { get; set; } = null!;
         public DbSet<CardTag> CardTags { get; set; } = null!;
@@ -53,7 +53,7 @@ namespace Sanakan.DAL
         public DbSet<WithoutExpChannel> WithoutExpChannels { get; set; } = null!;
         public DbSet<WithoutMessageCountChannel> IgnoredChannels { get; set; } = null!;
         public DbSet<WithoutSupervisionChannel> WithoutSupervisionChannels { get; set; } = null!;
-        public DbSet<UserLand> MyLands { get; set; } = null!;
+        public DbSet<UserLand> UserLands { get; set; } = null!;
         public DbSet<WaifuConfiguration> Waifus { get; set; } = null!;
         public DbSet<Report> Raports { get; set; } = null!;
         public DbSet<WaifuCommandChannel> WaifuCommandChannels { get; set; } = null!;

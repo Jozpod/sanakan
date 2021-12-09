@@ -159,7 +159,7 @@ namespace Sanakan.Game.Services
 
         public async Task<Image<Rgba32>> GetUserProfileAsync(
             UserInfo shindenUser,
-            User botUser,
+            User databaseUser,
             string avatarUrl,
             long topPos,
             string nickname,
@@ -180,12 +180,12 @@ namespace Sanakan.Game.Services
             var template = Image.Load(Paths.ProfileBodyPicture);
             var profilePic = new Image<Rgba32>(template.Width, template.Height);
 
-            if (!_fileSystem.Exists(botUser.BackgroundProfileUri))
+            if (!_fileSystem.Exists(databaseUser.BackgroundProfileUri))
             {
-                botUser.BackgroundProfileUri = Paths.DefaultBackgroundPicture;
+                databaseUser.BackgroundProfileUri = Paths.DefaultBackgroundPicture;
             }
 
-            using var userBg = Image.Load(botUser.BackgroundProfileUri);
+            using var userBg = Image.Load(databaseUser.BackgroundProfileUri);
             profilePic.Mutate(x => x.DrawImage(userBg, _origin, 1));
             profilePic.Mutate(x => x.DrawImage(template, _origin, 1));
 
@@ -222,26 +222,26 @@ namespace Sanakan.Game.Services
             profilePic.Mutate(x => x.DrawText(nickname, nickFont, Colors.GreyChateau, new Point(132, 150 + (int)((30 - nickFont.Size) / 2))));
             profilePic.Mutate(x => x.DrawText(rangName, rangFont, defFontColor, new Point(132, 180)));
 
-            var mLevel = TextMeasurer.Measure($"{botUser.Level}", new RendererOptions(levelFont));
-            profilePic.Mutate(x => x.DrawText($"{botUser.Level}", levelFont, defFontColor, new Point((int)(125 - mLevel.Width) / 2, 206)));
+            var mLevel = TextMeasurer.Measure($"{databaseUser.Level}", new RendererOptions(levelFont));
+            profilePic.Mutate(x => x.DrawText($"{databaseUser.Level}", levelFont, defFontColor, new Point((int)(125 - mLevel.Width) / 2, 206)));
 
             var mTopPos = TextMeasurer.Measure($"{topPos}", new RendererOptions(levelFont));
             profilePic.Mutate(x => x.DrawText($"{topPos}", levelFont, posColor, new Point((int)(125 - mTopPos.Width) / 2, 284)));
 
-            var mScOwn = TextMeasurer.Measure($"{botUser.ScCount}", new RendererOptions(rangFont));
-            profilePic.Mutate(x => x.DrawText($"{botUser.ScCount}", rangFont, defFontColor, new Point((int)(125 - mScOwn.Width) / 2, 365)));
+            var mScOwn = TextMeasurer.Measure($"{databaseUser.ScCount}", new RendererOptions(rangFont));
+            profilePic.Mutate(x => x.DrawText($"{databaseUser.ScCount}", rangFont, defFontColor, new Point((int)(125 - mScOwn.Width) / 2, 365)));
 
-            var mTcOwn = TextMeasurer.Measure($"{botUser.TcCount}", new RendererOptions(rangFont));
-            profilePic.Mutate(x => x.DrawText($"{botUser.TcCount}", rangFont, defFontColor, new Point((int)(125 - mTcOwn.Width) / 2, 405)));
+            var mTcOwn = TextMeasurer.Measure($"{databaseUser.TcCount}", new RendererOptions(rangFont));
+            profilePic.Mutate(x => x.DrawText($"{databaseUser.TcCount}", rangFont, defFontColor, new Point((int)(125 - mTcOwn.Width) / 2, 405)));
 
-            var mMsg = TextMeasurer.Measure($"{botUser.MessagesCount}", new RendererOptions(rangFont));
-            profilePic.Mutate(x => x.DrawText($"{botUser.MessagesCount}", rangFont, defFontColor, new Point((int)(125 - mMsg.Width) / 2, 445)));
+            var mMsg = TextMeasurer.Measure($"{databaseUser.MessagesCount}", new RendererOptions(rangFont));
+            profilePic.Mutate(x => x.DrawText($"{databaseUser.MessagesCount}", rangFont, defFontColor, new Point((int)(125 - mMsg.Width) / 2, 445)));
 
-            if (botUser.GameDeck.FavouriteWaifuId != 0 && botUser.ShowWaifuInProfile)
+            if (databaseUser.GameDeck.FavouriteWaifuId != 0 && databaseUser.ShowWaifuInProfile)
             {
-                var tChar = botUser.GameDeck.Cards
+                var tChar = databaseUser.GameDeck.Cards
                     .OrderBy(x => x.Rarity)
-                    .FirstOrDefault(x => x.CharacterId == botUser.GameDeck.FavouriteWaifuId);
+                    .FirstOrDefault(x => x.CharacterId == databaseUser.GameDeck.FavouriteWaifuId);
 
                 if (tChar != null)
                 {
@@ -255,9 +255,9 @@ namespace Sanakan.Game.Services
                 }
             }
 
-            var prevLvlExp = ExperienceUtils.CalculateExpForLevel(botUser.Level);
-            var nextLvlExp = ExperienceUtils.CalculateExpForLevel(botUser.Level + 1);
-            var expOnLvl = botUser.ExperienceCount - prevLvlExp;
+            var prevLvlExp = ExperienceUtils.CalculateExpForLevel(databaseUser.Level);
+            var nextLvlExp = ExperienceUtils.CalculateExpForLevel(databaseUser.Level + 1);
+            var expOnLvl = databaseUser.ExperienceCount - prevLvlExp;
             var lvlExp = nextLvlExp - prevLvlExp;
 
             if (expOnLvl < 0)
@@ -281,26 +281,26 @@ namespace Sanakan.Game.Services
             var mExp = TextMeasurer.Measure(expText, new RendererOptions(rangFont));
             profilePic.Mutate(x => x.DrawText(expText, rangFont, Colors.White, new Point(135 + ((int)(305 - mExp.Width) / 2), 204)));
 
-            using var inside = GetProfileInside(shindenUser, botUser);
+            using var inside = GetProfileInside(shindenUser, databaseUser);
             profilePic.Mutate(x => x.DrawImage(inside, new Point(125, 228), 1));
 
             return profilePic;
         }
 
-        private Image<Rgba32> GetProfileInside(UserInfo shindenUser, User botUser)
+        private Image<Rgba32> GetProfileInside(UserInfo shindenUser, User databaseUser)
         {
             var image = new Image<Rgba32>(325, 272);
 
-            if (!_fileSystem.Exists(botUser.StatsReplacementProfileUri))
+            if (!_fileSystem.Exists(databaseUser.StatsReplacementProfileUri))
             {
-                if ((botUser.ProfileType == ProfileType.Image 
-                    || botUser.ProfileType == ProfileType.StatisticsWithImage))
+                if ((databaseUser.ProfileType == ProfileType.Image 
+                    || databaseUser.ProfileType == ProfileType.StatisticsWithImage))
                 {
-                    botUser.ProfileType = ProfileType.Statistics;
+                    databaseUser.ProfileType = ProfileType.Statistics;
                 }
             }
 
-            switch (botUser.ProfileType)
+            switch (databaseUser.ProfileType)
             {
                 case ProfileType.Statistics:
                 case ProfileType.StatisticsWithImage:
@@ -324,7 +324,7 @@ namespace Sanakan.Game.Services
                             image.Mutate(x => x.DrawImage(stats, new Point(0, 142), 1));
                         }
 
-                        if (botUser.ProfileType == ProfileType.StatisticsWithImage)
+                        if (databaseUser.ProfileType == ProfileType.StatisticsWithImage)
                         {
                             goto case ProfileType.Image;
                         }
@@ -333,14 +333,14 @@ namespace Sanakan.Game.Services
 
                 case ProfileType.Cards:
                     {
-                        using var cardsBg = GetCardsProfileImage(botUser).Result;
+                        using var cardsBg = GetCardsProfileImage(databaseUser).Result;
                         image.Mutate(x => x.DrawImage(cardsBg, _origin, 1));
                     }
                     break;
 
                 case ProfileType.Image:
                     {
-                        using var userBg = Image.Load(botUser.StatsReplacementProfileUri);
+                        using var userBg = Image.Load(databaseUser.StatsReplacementProfileUri);
                         image.Mutate(x => x.DrawImage(userBg, _origin, 1));
                     }
                     break;
@@ -349,17 +349,17 @@ namespace Sanakan.Game.Services
             return image;
         }
 
-        private async Task<Image<Rgba32>> GetCardsProfileImage(User botUser)
+        private async Task<Image<Rgba32>> GetCardsProfileImage(User databaseUser)
         {
             var profilePic = new Image<Rgba32>(325, 272);
-            var gameDeck = botUser.GameDeck;
+            var gameDeck = databaseUser.GameDeck;
             var cards = gameDeck.Cards;
 
             if (gameDeck.FavouriteWaifuId.HasValue)
             {
                 var favouriteCharacter = gameDeck.Cards
                     .OrderBy(x => x.Rarity)
-                    .FirstOrDefault(x => x.CharacterId == botUser.GameDeck.FavouriteWaifuId);
+                    .FirstOrDefault(x => x.CharacterId == gameDeck.FavouriteWaifuId);
 
                 if (favouriteCharacter != null)
                 {

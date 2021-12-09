@@ -11,7 +11,7 @@ namespace Sanakan.TaskQueue.MessageHandlers
         private static readonly Type _messageHandlerType = typeof(IMessageHandler<>);
         private static IDictionary<Type, Type> _messageHandlerTypeCache = new Dictionary<Type, Type>();
 
-        public static IMessageHandler<T> GetMessageHandler<T>(this IServiceProvider serviceProvider, T message)
+        public static IMessageHandler GetMessageHandler<T>(this IServiceProvider serviceProvider, T message)
            where T : BaseMessage
         {
             var messageType = message.GetType();
@@ -22,7 +22,7 @@ namespace Sanakan.TaskQueue.MessageHandlers
                 _messageHandlerTypeCache[messageType] = messageHandlerType;
             }
 
-            return (IMessageHandler<T>)serviceProvider.GetRequiredService(messageHandlerType);
+            return (IMessageHandler)serviceProvider.GetRequiredService(messageHandlerType);
         }
     }
 }

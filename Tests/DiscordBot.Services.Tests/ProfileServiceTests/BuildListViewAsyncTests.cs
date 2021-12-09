@@ -25,7 +25,7 @@ namespace DiscordBot.ServicesTests.ProfileServiceTests
             {
                 user,
             };
-            var topType = TopType.AcCnt;
+            var topType = TopType.AcCount;
             var guildMock = new Mock<IGuild>();
             var guildUserMock = new Mock<IGuildUser>();
 

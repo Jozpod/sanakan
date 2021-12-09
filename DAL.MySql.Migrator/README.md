@@ -1,3 +1,3 @@
-# DAL.MySql.Schema assembly #
+# DAL.MySql.Migrator assembly #
 
-As database project is not supported for MySql it is basic console app which scrapes table schema.
+Utility tool for migrating database data.

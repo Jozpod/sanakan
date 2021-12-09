@@ -166,7 +166,7 @@ namespace Sanakan.DiscordBot
                     CommandName = commandName,
                     GuildId = guildId,
                     UserId = userId,
-                    Date = _systemClock.UtcNow,
+                    CreatedOn = _systemClock.UtcNow,
                     CommandParameters = param,
                 };
 
@@ -257,19 +257,15 @@ namespace Sanakan.DiscordBot
                     if (result.ImageUrl == null)
                     {
                         embed = embedBuilder.Build();
-                        await channel.SendMessageAsync(embed: embed);
                     }
                     else
                     {
-                        var stream = _resourceManager.GetResourceStream(result.ImageUrl);
-                        var fileName = "image.png";
-
                         embed = embedBuilder
-                            .WithImageUrl($"attachment://{fileName}")
+                            .WithImageUrl(result.ImageUrl)
                             .Build();
-
-                        await channel.SendFileAsync(stream, fileName, embed: embed);
                     }
+
+                    await channel.SendMessageAsync(embed: embed);
 
                     break;
 

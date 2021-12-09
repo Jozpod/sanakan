@@ -31,5 +31,17 @@ namespace Sanakan.DiscordBot.Tests.IntegrationTests
             var embed = message.Embeds.FirstOrDefault();
             embed.Should().NotBeNull();
         }
+
+        [TestMethod]
+        public async Task TC013_Should_Mute_Decline()
+        {
+            var commandMessage = FunCommandBuilder.GiveMute(Prefix);
+            await Channel.SendMessageAsync(commandMessage);
+
+            var message = await WaitForMessageAsync();
+            message.Should().NotBeNull();
+            var embed = message.Embeds.FirstOrDefault();
+            embed.Should().NotBeNull();
+        }
     }
 }

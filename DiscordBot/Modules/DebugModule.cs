@@ -865,7 +865,7 @@ namespace Sanakan.DiscordBot.Modules
         [Command("chpp"), Priority(1)]
         [Summary("ustawia liczbę znaków na pakiet")]
         [Remarks("true")]
-        public async Task SetCharCntPerPacketAsync(
+        public async Task SetCharCountPerPacketAsync(
             [Summary("liczba znaków")]ulong count,
             [Summary("true/false - czy zapisać")]bool save = false)
         {
@@ -884,7 +884,7 @@ namespace Sanakan.DiscordBot.Modules
         [Command("chpe"), Priority(1)]
         [Summary("ustawia liczbę znaków na punkt doświadczenia")]
         [Remarks("true")]
-        public async Task SetCharCntPerExpAsync(
+        public async Task SetCharCountPerExpAsync(
             [Summary("liczba znaków")]long count,
             [Summary("true/false - czy zapisać")]bool save = false)
         {

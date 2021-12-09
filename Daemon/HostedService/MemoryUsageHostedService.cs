@@ -90,7 +90,7 @@ namespace Sanakan.Daemon.HostedService
 
                 var record = new SystemAnalytics
                 {
-                    MeasureDate = _systemClock.UtcNow,
+                    MeasuredOn = _systemClock.UtcNow,
                     Value = memoryUsage,
                     Type = SystemAnalyticsEventType.Ram,
                 };

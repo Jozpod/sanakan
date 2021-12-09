@@ -18,7 +18,7 @@ namespace Sanakan.DAL.Tests
             {
                 Id = 1,
                 CommandName = "test",
-                Date = DateTime.UtcNow,
+                CreatedOn = DateTime.UtcNow,
                 GuildId = 1,
                 UserId = 1,
             };

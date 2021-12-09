@@ -7,7 +7,7 @@ namespace Sanakan.DAL.Models.Analytics
     {
         public ulong Id { get; set; }
         public long Value { get; set; }
-        public DateTime MeasureDate { get; set; }
+        public DateTime MeasuredOn { get; set; }
         public SystemAnalyticsEventType Type { get; set; }
     }
 }

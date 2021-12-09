@@ -2,18 +2,17 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <AssemblyName>Sanakan.DAL.MySql.Schema</AssemblyName>
-    <RootNamespace>Sanakan.DAL.MySql.Schema</RootNamespace>
+    <AssemblyName>Sanakan.DAL.MySql.Migrator</AssemblyName>
+    <RootNamespace>Sanakan.DAL.MySql.Migrator</RootNamespace>
     <Configurations>Debug;Release;Test</Configurations>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Queries\**" />
-    <Compile Remove="Tables\**" />
-    <EmbeddedResource Remove="Queries\**" />
-    <EmbeddedResource Remove="Tables\**" />
-    <None Remove="Queries\**" />
-    <None Remove="Tables\**" />
+    <Compile Remove="TableEnumerators\CardMigrator.cs" />
+    <Compile Remove="TableEnumerators\CardTagsMigrator.cs" />
+    <Compile Remove="TableEnumerators\FiguresMigrator.cs" />
+    <Compile Remove="TableEnumerators\GameDecksMigrator.cs" />
+    <Compile Remove="TableEnumerators\SelfRolesMigrator.cs" />
   </ItemGroup>
 
   <ItemGroup>

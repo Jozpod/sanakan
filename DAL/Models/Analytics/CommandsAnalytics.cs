@@ -19,7 +19,8 @@ namespace Sanakan.DAL.Models.Analytics
         /// The Discord guild (server) identifier.
         /// </summary>
         public ulong GuildId { get; set; }
-        public DateTime Date { get; set; }
+
+        public DateTime CreatedOn { get; set; }
 
         /// <summary>
         /// The command name which user typed in Discord.

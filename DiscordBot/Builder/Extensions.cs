@@ -51,6 +51,7 @@ namespace Sanakan.DiscordBot.Builder
 
         public static ResourceManagerBuilder AddImageResources(this ResourceManagerBuilder builder)
         {
+            // TO-DO Remove
             var assembly = typeof(Extensions).Assembly;
             builder.AssemblyResourceMap.Add(ImageResources.ManWaggingFinger, assembly);
             builder.AssemblyResourceMap.Add(ImageResources.WomenMagnifyingGlass, assembly);

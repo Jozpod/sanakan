@@ -24,10 +24,10 @@ namespace Sanakan.Extensions
             return stream;
         }
 
-        public static Stream ToPngStream<T>(this Image<T> img) where T : struct, IPixel<T>
+        public static Stream ToPngStream<T>(this Image<T> image) where T : struct, IPixel<T>
         {
             var stream = new MemoryStream();
-            img.Save(stream, _pngEncoder);
+            image.Save(stream, _pngEncoder);
             stream.Seek(0, SeekOrigin.Begin);
             return stream;
         }
@@ -37,7 +37,7 @@ namespace Sanakan.Extensions
         {
             var extension = path.Split(".").Last().ToLower();
             var encoder = (extension == "png") ? _pngEncoder : _jpgEncoder;
-            var fileStream = fileSystem.OpenWrite(path);
+            using var fileStream = fileSystem.OpenWrite(path);
             image.Save(fileStream, encoder);
 
             return path;
@@ -49,7 +49,7 @@ namespace Sanakan.Extensions
             var extension = path.Split(".").Last().ToLower();
             var encoder = (extension == "png") ? _pngEncoder : _jpgEncoder;
             image.Mutate(x => x.Resize(new Size(width, height)));
-            var fileStream = fileSystem.OpenWrite(path);
+            using var fileStream = fileSystem.OpenWrite(path);
             image.Save(fileStream, encoder);
 
             return path;

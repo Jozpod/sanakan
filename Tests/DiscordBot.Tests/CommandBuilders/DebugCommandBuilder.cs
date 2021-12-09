@@ -32,17 +32,17 @@ namespace Sanakan.DiscordBot.Tests.IntegrationTests
         /// <summary>
         /// <see cref="DebugModule.ChangeUserCtAsync(IGuildUser, long)"/>.
         /// </summary>
-        public static string ChangeUserCt(string prefix) => $"{prefix}dev ct";
+        public static string ChangeUserCt(string prefix, string mention, long value) => $"{prefix}dev ct {mention} {value}";
 
         /// <summary>
         /// <see cref="DebugModule.ChangeUserExpAsync(IGuildUser, ulong)"/>.
         /// </summary>
-        public static string ChangeUserExp(string prefix) => $"{prefix}dev exp";
+        public static string ChangeUserExp(string prefix, string mention, long value) => $"{prefix}dev exp {mention} {value}";
 
         /// <summary>
         /// <see cref="DebugModule.ChangeTitleCardAsync(ulong, string?)"/>.
         /// </summary>
-        public static string ChangeTitleCard(string prefix) => $"{prefix}dev utitle";
+        public static string ChangeTitleCard(string prefix, ulong cardId, string newTitle) => $"{prefix}dev utitle {cardId} {newTitle}";
 
         /// <summary>
         /// <see cref="DebugModule.AddReactionToMessageOnChannelInGuildAsync(ulong, ulong, ulong, string)(IGuildUser, ulong)"/>.
@@ -52,7 +52,7 @@ namespace Sanakan.DiscordBot.Tests.IntegrationTests
         /// <summary>
         /// <see cref="DebugModule.ChangeUserLevelAsync(IGuildUser, ulong)"/>.
         /// </summary>
-        public static string ChangeUserLevel(string prefix) => $"{prefix}dev level";
+        public static string ChangeUserLevel(string prefix, string mention, long value) => $"{prefix}dev level {mention} {value}";
 
         /// <summary>
         /// <see cref="DebugModule.MultiBankAsync(IGuildUser[])"/>.

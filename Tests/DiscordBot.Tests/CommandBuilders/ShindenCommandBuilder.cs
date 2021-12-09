@@ -42,6 +42,6 @@ namespace Sanakan.DiscordBot.Tests.IntegrationTests
         /// <summary>
         /// <see cref="ShindenModule.ShowSiteStatisticAsync(IGuildUser)"/>.
         /// </summary>
-        public static string GetSiteStatistic(string prefix, string mention) => $"{prefix}character {mention}";
+        public static string GetSiteStatistic(string prefix, string mention) => $"{prefix}site {mention}";
     }
 }

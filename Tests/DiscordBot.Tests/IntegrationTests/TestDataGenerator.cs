@@ -13,13 +13,15 @@ namespace Sanakan.DiscordBot.Tests.IntegrationTests
     {
         public static async Task PopulateDatabaseAsync(
             SanakanDbContext dbContext,
-            ulong guildId,
             ulong userId,
-            ulong channelId)
+            DiscordIntegrationTestOptions options)
         {
-            var guildConfig = new GuildOptions(guildId, 50);
+            var guildConfig = new GuildOptions(options.GuildId, 50);
+            guildConfig.MuteRoleId = options.MuteRoleId;
+            guildConfig.UserRoleId = options.UserRoleId;
 
             var user = new User(userId, DateTime.UtcNow);
+            user.ShindenId = 1ul;
             dbContext.Users.Add(user);
             await dbContext.SaveChangesAsync();
 
@@ -37,7 +39,7 @@ namespace Sanakan.DiscordBot.Tests.IntegrationTests
 
             guildConfig.WaifuConfig = new WaifuConfiguration
             {
-                TrashCommandsChannelId = channelId,
+                TrashCommandsChannelId = options.MainChannelId,
             };
             await dbContext.SaveChangesAsync();
         }

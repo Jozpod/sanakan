@@ -21,16 +21,16 @@ namespace Sanakan.TypeReaders
                 case "funds":
                 case "wallet":
                 case "wallet sc":
-                    return Task.FromResult(TypeReaderResult.FromSuccess(TopType.ScCnt));
+                    return Task.FromResult(TypeReaderResult.FromSuccess(TopType.ScCount));
 
                 case "tc":
-                    return Task.FromResult(TypeReaderResult.FromSuccess(TopType.TcCnt));
+                    return Task.FromResult(TypeReaderResult.FromSuccess(TopType.TcCount));
 
                 case "ac":
-                    return Task.FromResult(TypeReaderResult.FromSuccess(TopType.AcCnt));
+                    return Task.FromResult(TypeReaderResult.FromSuccess(TopType.AcCount));
 
                 case "pc":
-                    return Task.FromResult(TypeReaderResult.FromSuccess(TopType.PcCnt));
+                    return Task.FromResult(TypeReaderResult.FromSuccess(TopType.PcCount));
 
                 case "posty":
                 case "msg":

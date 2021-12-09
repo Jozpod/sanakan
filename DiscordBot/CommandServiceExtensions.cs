@@ -103,6 +103,7 @@ namespace Sanakan.DiscordBot.Extensions
                 CommandMatch = commandMatch,
                 Context = commandContext,
                 Result = chosenOverload.Value,
+                ParseResult = chosenOverload.Value,
             };
         }
 

@@ -31,16 +31,16 @@ namespace Sanakan.Game.Extensions
                 case TopType.Level:
                     return $"{user.Level} **LVL** ({user.ExperienceCount} **EXP**)";
 
-                case TopType.ScCnt:
+                case TopType.ScCount:
                     return $"{user.ScCount} **SC**";
 
-                case TopType.TcCnt:
+                case TopType.TcCount:
                     return $"{user.TcCount} **TC**";
 
-                case TopType.AcCnt:
+                case TopType.AcCount:
                     return $"{user.AcCount} **AC**";
 
-                case TopType.PcCnt:
+                case TopType.PcCount:
                     return $"{user.GameDeck.PVPCoins} **PC**";
 
                 case TopType.Posts:

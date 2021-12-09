@@ -55,17 +55,17 @@ namespace Sanakan.Preconditions
                 }
             }
 
-            var botUser = await userRepository.GetBaseUserAndDontTrackAsync(user.Id);
+            var databaseUser = await userRepository.GetBaseUserAndDontTrackAsync(user.Id);
             var result = new PreconditionErrorPayload();
             result.ImageUrl = ImageResources.WomenMagnifyingGlass;
             result.Message = string.Format(Strings.RequiredLevelToExecuteCommand, _level);
 
-            if (botUser == null)
+            if (databaseUser == null)
             {
                 return PreconditionResult.FromError(result.Serialize());
             }
 
-            if (botUser.Level >= _level)
+            if (databaseUser.Level >= _level)
             {
                 return PreconditionResult.FromSuccess();
             }

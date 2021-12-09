@@ -20,6 +20,7 @@ namespace Sanakan.DiscordBot.Tests.IntegrationTests
                 Value = new UserInfo
                 {
                     Id = 1ul,
+                    Name = "test user",
                 }
             };
 

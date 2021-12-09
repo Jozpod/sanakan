@@ -3,8 +3,8 @@
     public enum TopType
     {
         Level = 0,
-        ScCnt = 1,
-        TcCnt = 2,
+        ScCount = 1,
+        TcCount = 2,
         Posts = 3,
         PostsMonthly = 4,
         PostsMonthlyCharacter = 5,
@@ -16,8 +16,8 @@
         KarmaNegative = 11,
         Pvp = 12,
         PvpSeason = 13,
-        PcCnt = 14,
-        AcCnt = 15
+        PcCount = 14,
+        AcCount = 15
     }
 
     public static class TopTypeExtensions
@@ -30,16 +30,16 @@
                 case TopType.Level:
                     return "doświadczenia";
 
-                case TopType.ScCnt:
+                case TopType.ScCount:
                     return "SC";
 
-                case TopType.TcCnt:
+                case TopType.TcCount:
                     return "TC";
 
-                case TopType.AcCnt:
+                case TopType.AcCount:
                     return "AC";
 
-                case TopType.PcCnt:
+                case TopType.PcCount:
                     return "PC";
 
                 case TopType.Posts:
