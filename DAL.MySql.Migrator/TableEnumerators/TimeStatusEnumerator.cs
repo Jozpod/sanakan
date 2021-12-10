@@ -1,14 +1,13 @@
-﻿using MySqlConnector;
-using Sanakan.DAL.Models;
+﻿using Sanakan.DAL.Models;
 
 namespace Sanakan.DAL.MySql.Migrator.TableEnumerators
 {
     public class TimeStatusEnumerator : TableEnumerator<TimeStatus>
     {
-        public TimeStatusEnumerator(MySqlConnection connection)
+        public TimeStatusEnumerator(IDbConnection connection)
             : base(connection) { }
 
-        public override TimeStatus Current => new TimeStatus
+        public override TimeStatus Current => new()
         {
             Id = _reader.GetUInt64(0),
             Type = (StatusType)_reader.GetInt32(1),

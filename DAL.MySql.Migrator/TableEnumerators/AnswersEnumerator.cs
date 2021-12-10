@@ -1,14 +1,13 @@
-﻿using MySqlConnector;
-using Sanakan.DAL.Models;
+﻿using Sanakan.DAL.Models;
 
 namespace Sanakan.DAL.MySql.Migrator.TableEnumerators
 {
     public class AnswersEnumerator : TableEnumerator<Answer>
     {
-        public AnswersEnumerator(MySqlConnection connection)
+        public AnswersEnumerator(IDbConnection connection)
             : base(connection) {}
 
-        public override Answer Current => new Answer
+        public override Answer Current => new()
         {
             Id = _reader.GetUInt64(0),
             Number = _reader.GetInt32(1),

@@ -57,7 +57,7 @@ namespace Sanakan.DAL.Models
         [StringLength(50)]
         public Uri? ForegroundImageUrl { get; set; }
 
-        [StringLength(50)]
+        [StringLength(10)]
         public string? ForegroundColor { get; set; }
 
         public int ForegroundPosition { get; set; }

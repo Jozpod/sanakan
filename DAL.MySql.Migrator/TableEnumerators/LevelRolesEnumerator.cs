@@ -1,20 +1,13 @@
-﻿using MySqlConnector;
-using Sanakan.DAL.Models;
-using Sanakan.DAL.Models.Configuration;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Sanakan.DAL.Models.Configuration;
 
 namespace Sanakan.DAL.MySql.Migrator.TableEnumerators
 {
     public class LevelRolesEnumerator : TableEnumerator<LevelRole>
     {
-        public LevelRolesEnumerator(MySqlConnection connection)
+        public LevelRolesEnumerator(IDbConnection connection)
          : base(connection) { }
 
-        public override LevelRole Current => new LevelRole
+        public override LevelRole Current => new()
         {
             Id = _reader.GetUInt64(0),
             RoleId = _reader.GetUInt64(1),
@@ -22,6 +15,6 @@ namespace Sanakan.DAL.MySql.Migrator.TableEnumerators
             GuildOptionsId = _reader.GetUInt64(3),
         };
 
-        public override string TableName => "commandchannels";
+        public override string TableName => nameof(SanakanDbContext.LevelRoles);
     }
 }

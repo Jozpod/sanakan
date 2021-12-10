@@ -6,7 +6,7 @@ namespace Sanakan.DAL.Models
     {
         public ulong Id { get; set; }
         public double ExperienceCount { get; set; }
-        public ExpContainerLevel Level { get; set; }
+        public ExperienceContainerLevel Level { get; set; }
 
         public ulong GameDeckId { get; set; }
 

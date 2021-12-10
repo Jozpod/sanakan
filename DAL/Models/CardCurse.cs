@@ -1,6 +1,6 @@
 ﻿namespace Sanakan.DAL.Models
 {
-    public enum CardCurse
+    public enum CardCurse : byte
     {
         None = 0,
         LoweredStats = 1,

@@ -4,8 +4,6 @@ namespace Sanakan.DAL.Models.Configuration
 {
     public class WithoutSupervisionChannel
     {
-        public ulong Id { get; set; }
-
         public ulong ChannelId { get; set; }
 
         public ulong GuildOptionsId { get; set; }

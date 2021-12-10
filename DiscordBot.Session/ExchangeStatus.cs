@@ -1,6 +1,6 @@
 ﻿namespace Sanakan.DiscordBot.Session
 {
-    public enum ExchangeStatus
+    public enum ExchangeStatus : byte
     {
         Add = 0,
         AcceptSourcePlayer = 1,

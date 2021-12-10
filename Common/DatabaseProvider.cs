@@ -1,6 +1,6 @@
 ﻿namespace Sanakan.DAL
 {
-    public enum DatabaseProvider
+    public enum DatabaseProvider : byte
     {
         MySql = 0,
         Sqlite = 1,

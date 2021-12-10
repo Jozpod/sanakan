@@ -1,14 +1,13 @@
-﻿using MySqlConnector;
-using Sanakan.DAL.Models.Analytics;
+﻿using Sanakan.DAL.Models.Analytics;
 
 namespace Sanakan.DAL.MySql.Migrator.TableEnumerators
 {
     public class SystemAnalyticsEnumerator : TableEnumerator<SystemAnalytics>
     {
-        public SystemAnalyticsEnumerator(MySqlConnection connection)
+        public SystemAnalyticsEnumerator(IDbConnection connection)
             : base(connection) { }
 
-        public override SystemAnalytics Current => new SystemAnalytics
+        public override SystemAnalytics Current => new()
         {
             Id = _reader.GetUInt64(0),
             Value = _reader.GetInt64(1),

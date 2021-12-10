@@ -17,7 +17,7 @@ namespace Sanakan.DAL.Configuration
 
         public void Configure(EntityTypeBuilder<UserStats> builder)
         {
-            builder.HasKey(e => e.Id);
+            builder.HasKey(e => e.UserId);
 
             builder
                 .HasOne(e => e.User)

@@ -4,7 +4,7 @@ using Sanakan.Game.Models;
 
 namespace DiscordBot.Services.PocketWaifu
 {
-    public enum ShopType
+    public enum ShopType : byte
     {
         Normal = 0,
         Pvp = 1,

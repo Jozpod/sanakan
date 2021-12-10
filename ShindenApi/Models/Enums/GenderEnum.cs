@@ -1,6 +1,6 @@
 namespace Sanakan.ShindenApi.Models.Enums
 {
-    public enum Gender
+    public enum Gender : byte
     {
         NotSpecified = 0,
         Female = 1,

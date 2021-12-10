@@ -1,6 +1,6 @@
 ﻿namespace Sanakan.Common.Models
 {
-    public enum ProfileType
+    public enum ProfileType : byte
     {
         Statistics = 0,
         Image = 1,

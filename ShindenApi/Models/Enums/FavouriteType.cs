@@ -1,6 +1,6 @@
 ﻿namespace Sanakan.ShindenApi.Models.Enums
 {
-    public enum FavouriteType
+    public enum FavouriteType : byte
     {
         Character = 0,
         Title = 1,

@@ -1,6 +1,6 @@
 ﻿namespace Sanakan.ShindenApi.Models.Enums
 {
-    public enum Language
+    public enum Language : byte
     {
         NotSpecified = 0,
         Japanese = 1,

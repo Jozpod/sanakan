@@ -1,6 +1,6 @@
 ﻿namespace Sanakan.DAL.Models
 {
-    public enum FigurePart
+    public enum FigurePart : byte
     {
         Head,
         Body,

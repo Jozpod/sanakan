@@ -1,6 +1,6 @@
 ﻿namespace Sanakan.DAL.Models
 {
-    public enum DeckPowerStatus
+    public enum DeckPowerStatus : byte
     {
         Ok = 0,
         TooLow = 1,

@@ -14,6 +14,7 @@ namespace Sanakan.DAL.Configuration
             builder.HasOne(e => e.GameDeck)
                 .WithMany(d => d.Wishes);
 
+            builder.HasAlternateKey(pr => new { pr.ObjectId, pr.GameDeckId });
             builder.HasIndex(pr => new { pr.Type, pr.ObjectId });
         }
     }

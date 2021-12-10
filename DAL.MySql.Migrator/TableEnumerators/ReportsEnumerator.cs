@@ -5,10 +5,10 @@ namespace Sanakan.DAL.MySql.Migrator.TableEnumerators
 {
     public class ReportsEnumerator : TableEnumerator<Report>
     {
-        public ReportsEnumerator(MySqlConnection connection)
+        public ReportsEnumerator(IDbConnection connection)
              : base(connection) { }
 
-        public override Report Current => new Report
+        public override Report Current => new()
         {
             Id = _reader.GetUInt64(0),
             UserId = _reader.GetUInt64(1),

@@ -1,22 +1,19 @@
-﻿using MySqlConnector;
-using Sanakan.DAL.Models;
-using Sanakan.DAL.Models.Configuration;
-using Sanakan.DAL.MySql.Migrator.TableEnumerators;
+﻿using Sanakan.DAL.Models.Configuration;
 
 namespace Sanakan.DAL.MySql.Migrator.TableEnumerators
 {
     public class ModeratorRolesEnumerator : TableEnumerator<ModeratorRoles>
     {
-        public ModeratorRolesEnumerator(MySqlConnection connection)
+        public ModeratorRolesEnumerator(IDbConnection connection)
          : base(connection) { }
 
-        public override ModeratorRoles Current => new ModeratorRoles
+        public override ModeratorRoles Current => new()
         {
             Id = _reader.GetUInt64(0),
             RoleId = _reader.GetUInt64(1),
             GuildOptionsId = _reader.GetUInt64(2),
         };
 
-        public override string TableName => "commandchannels";
+        public override string TableName => nameof(SanakanDbContext.ModeratorRoles);
     }
 }

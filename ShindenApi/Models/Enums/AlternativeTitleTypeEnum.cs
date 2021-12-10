@@ -1,6 +1,6 @@
 ﻿namespace Sanakan.ShindenApi.Models.Enums
 {
-    public enum AlternativeTitleType
+    public enum AlternativeTitleType : byte
     {
         NotSpecified = 0,
         Alternative = 1,

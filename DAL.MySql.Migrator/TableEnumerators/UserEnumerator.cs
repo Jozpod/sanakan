@@ -1,15 +1,14 @@
-﻿using MySqlConnector;
-using Sanakan.Common.Models;
+﻿using Sanakan.Common.Models;
 using Sanakan.DAL.Models;
 
 namespace Sanakan.DAL.MySql.Migrator.TableEnumerators
 {
     public class UserEnumerator : TableEnumerator<User>
     {
-        public UserEnumerator(MySqlConnection connection)
+        public UserEnumerator(IDbConnection connection)
             : base(connection) { }
 
-        public override User Current => new User
+        public override User Current => new()
         {
             Id = _reader.GetUInt64(0),
             ShindenId = _reader.GetUInt64(1),

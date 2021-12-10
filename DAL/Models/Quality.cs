@@ -1,6 +1,6 @@
 ﻿namespace Sanakan.DAL.Models
 {
-    public enum Quality
+    public enum Quality : byte
     {
         Broken = 0,
         Alpha = 1,

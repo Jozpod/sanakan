@@ -3,7 +3,7 @@
     /// <summary>
     /// Describes ratings of Motion Picture Association film rating system.
     /// </summary>
-    public enum MpaaRating
+    public enum MpaaRating : byte
     {
         NotSpecified,
         PGThirteen,

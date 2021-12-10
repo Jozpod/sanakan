@@ -1,6 +1,6 @@
 ﻿namespace Sanakan.TaskQueue
 {
-    public enum Priority
+    public enum Priority : byte
     {
         High = 0,
         Medium = 1,

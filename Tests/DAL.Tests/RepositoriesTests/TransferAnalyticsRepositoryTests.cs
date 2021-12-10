@@ -17,9 +17,9 @@ namespace Sanakan.DAL.Tests
             var entity = new TransferAnalytics
             {
                 Id = 1,
-                Date = DateTime.UtcNow,
-                DiscordId = 1,
-                ShindenId = 1,
+                CreatedOn = DateTime.UtcNow,
+                DiscordUserId = 1,
+                ShindenUserId = 1,
                 Source = TransferSource.ByDiscordId,
                 Value = 10,
             };

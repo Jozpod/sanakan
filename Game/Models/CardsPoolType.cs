@@ -1,6 +1,6 @@
 ﻿namespace Sanakan.Game.Models
 {
-    public enum CardsPoolType
+    public enum CardsPoolType : byte
     {
         Random = 0,
 

@@ -1,6 +1,6 @@
 ﻿namespace Sanakan.ShindenApi.Models.Enums
 {
-    public enum EpisodeType
+    public enum EpisodeType : byte
     {
         NotSpecified = 0,
         Standard = 1,

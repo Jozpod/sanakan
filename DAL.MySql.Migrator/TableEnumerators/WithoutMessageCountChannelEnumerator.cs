@@ -5,12 +5,13 @@ namespace Sanakan.DAL.MySql.Migrator.TableEnumerators
 {
     public class WithoutMessageCountChannelEnumerator : TableEnumerator<WithoutMessageCountChannel>
     {
-        public WithoutMessageCountChannelEnumerator(MySqlConnection connection)
+        public WithoutMessageCountChannelEnumerator(IDbConnection connection)
             : base(connection) { }
 
-        public override WithoutMessageCountChannel Current => new WithoutMessageCountChannel
+        public override WithoutMessageCountChannel Current => new()
         {
-            Id = _reader.GetUInt64(0),
+            ChannelId = _reader.GetUInt64(1),
+            GuildOptionsId = _reader.GetUInt64(2),
         };
 
         public override string TableName => nameof(SanakanDbContext.IgnoredChannels);

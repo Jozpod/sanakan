@@ -4,8 +4,6 @@ namespace Sanakan.DAL.Models.Configuration
 {
     public class WithoutMessageCountChannel
     {
-        public ulong Id { get; set; }
-
         /// <summary>
         /// Discord channel identifier where message counting does not happen.
         /// </summary>

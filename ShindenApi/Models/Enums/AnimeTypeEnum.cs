@@ -1,6 +1,6 @@
 ﻿namespace Sanakan.ShindenApi.Models.Enums
 {
-    public enum AnimeType
+    public enum AnimeType : byte
     {
         NotSpecified,
         Special,

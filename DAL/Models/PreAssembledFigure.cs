@@ -1,6 +1,6 @@
 ﻿namespace Sanakan.DAL.Models
 {
-    public enum PreAssembledFigure
+    public enum PreAssembledFigure : byte
     {
         None = 0,
         Megumin = 1,

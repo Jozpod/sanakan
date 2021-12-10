@@ -3,7 +3,9 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Sanakan.DAL.Models
 {
-
+    /// <summary>
+    /// Describes the item which user would like to have.
+    /// </summary>
     public class WishlistObject
     {
         /// <summary>
@@ -17,7 +19,7 @@ namespace Sanakan.DAL.Models
         public ulong ObjectId { get; set; }
 
         [StringLength(50)]
-        public string ObjectName { get; set; }
+        public string ObjectName { get; set; } = string.Empty;
 
         public WishlistObjectType Type { get; set; }
 

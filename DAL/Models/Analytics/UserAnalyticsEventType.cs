@@ -1,6 +1,6 @@
 ﻿namespace Sanakan.DAL.Models.Analytics
 {
-    public enum UserAnalyticsEventType
+    public enum UserAnalyticsEventType : byte
     {
         /// <summary>
         /// Specifies Safari event.

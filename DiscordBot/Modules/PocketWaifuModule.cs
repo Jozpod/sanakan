@@ -1426,7 +1426,7 @@ namespace Sanakan.DiscordBot.Modules
         {
             var databaseUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
 
-            if (databaseUser.GameDeck.ExperienceContainer.Level == ExpContainerLevel.Disabled)
+            if (databaseUser.GameDeck.ExperienceContainer.Level == ExperienceContainerLevel.Disabled)
             {
                 await ReplyAsync(embed: $"{Context.User.Mention} nie posiadasz jeszcze skrzyni doświadczenia.".ToEmbedMessage(EMType.Error).Build());
                 return;

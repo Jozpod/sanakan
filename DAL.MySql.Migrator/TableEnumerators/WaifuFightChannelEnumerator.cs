@@ -5,12 +5,13 @@ namespace Sanakan.DAL.MySql.Migrator.TableEnumerators
 {
     public class WaifuFightChannelEnumerator : TableEnumerator<WaifuFightChannel>
     {
-        public WaifuFightChannelEnumerator(MySqlConnection connection)
+        public WaifuFightChannelEnumerator(IDbConnection connection)
             : base(connection) { }
 
         public override WaifuFightChannel Current => new WaifuFightChannel
         {
-            Id = _reader.GetUInt64(0),
+            ChannelId = _reader.GetUInt64(1),
+            WaifuId = _reader.GetUInt64(2),
         };
 
         public override string TableName => nameof(SanakanDbContext.WaifuFightChannels);

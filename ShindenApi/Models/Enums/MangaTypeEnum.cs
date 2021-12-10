@@ -1,6 +1,6 @@
 ﻿namespace Sanakan.ShindenApi.Models.Enums
 {
-    public enum MangaType
+    public enum MangaType : byte
     {
         NotSpecified = 0,
         LightNovel = 1,

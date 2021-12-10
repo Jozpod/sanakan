@@ -3,7 +3,7 @@
     /// <summary>
     /// Describes group forum roles.
     /// </summary>
-    public enum ForumUserGroup
+    public enum ForumUserGroup : byte
     {
         Unregistered = 1,
         User = 2,

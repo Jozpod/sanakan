@@ -2,7 +2,7 @@
 
 namespace Sanakan.DAL.Models
 {
-    public enum Rarity
+    public enum Rarity : byte
     {
         SSS = 0,
         SS = 1,

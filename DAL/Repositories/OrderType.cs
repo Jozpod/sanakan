@@ -1,6 +1,6 @@
 ﻿namespace Sanakan.DAL.Repositories
 {
-    public enum OrderType
+    public enum OrderType : byte
     {
         Id,
         IdDes,

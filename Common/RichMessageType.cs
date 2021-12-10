@@ -3,44 +3,53 @@
     /// <summary>
     /// Describes rich message type.
     /// </summary>
-    public enum RichMessageType
+    public enum RichMessageType : byte
     {
         /// <summary>
-        /// Oznaczenie brakujacego typu
+        /// Describes missing type
         /// </summary>
         None = 0,
+
         /// <summary>
-        /// Wiadomość do kanału newsów
+        /// News channel
         /// </summary>
         News = 1,
+
         /// <summary>
-        /// Wiadomość do kanału recenzji
+        /// Review channel
         /// </summary>
         Review = 2,
+
         /// <summary>
-        /// Wiadomość do kanału nowych epizodów
+        /// New epsiode channel
         /// </summary>
         NewEpisode = 3,
+
         /// <summary>
-        /// Wiadomość użytkownika na PW
+        /// User private message.
         /// </summary>
         UserNotify = 4,
+
         /// <summary>
-        /// Wiadomość do kanału nowych epizodów
+        /// New epsiode channel
         /// </summary>
         NewEpisodePL = 5,
+
         /// <summary>
-        /// Wiadomość do kanału rekomendacji
+        /// Recommendation channel.
         /// </summary>
         Recommendation = 6,
+
         /// <summary>
         /// Wiadomość do kanału moderatorów
         /// </summary>
         ModNotify = 7,
+
         /// <summary>
         /// Wiadomość do kanału sezonów
         /// </summary>
         NewSesonalEpisode = 8,
+
         /// <summary>
         /// Wiadomość do kanału raportów
         /// </summary>

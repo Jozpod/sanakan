@@ -3,7 +3,7 @@
 namespace Sanakan.DiscordBot.Session
 {
     [Flags]
-    public enum SessionExecuteCondition
+    public enum SessionExecuteCondition : byte
     {
         None = 0,
         Message = 1 << 0,

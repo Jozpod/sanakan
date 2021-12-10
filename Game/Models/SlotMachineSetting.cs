@@ -1,6 +1,6 @@
 ﻿namespace Sanakan.DiscordBot.Services
 {
-    public enum SlotMachineSetting
+    public enum SlotMachineSetting : byte
     {
         Info = 0,
         Multiplier = 1,

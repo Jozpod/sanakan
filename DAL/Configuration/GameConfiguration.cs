@@ -90,7 +90,7 @@ namespace Sanakan.DAL.Configuration
 
         public void Configure(EntityTypeBuilder<CardTag> builder)
         {
-            builder.HasKey(e => e.Id);
+            builder.HasKey(pr => pr.Name);
 
             builder.HasOne(e => e.Card)
                 .WithMany(d => d.TagList);

@@ -1,6 +1,6 @@
 ﻿namespace Sanakan.Game.Models
 {
-    public enum EventType
+    public enum EventType : byte
     {
         MoreItems = 0,
         MoreExp = 1,

@@ -1,14 +1,13 @@
-﻿using MySqlConnector;
-using Sanakan.DAL.Models;
+﻿using Sanakan.DAL.Models;
 
 namespace Sanakan.DAL.MySql.Migrator.TableEnumerators
 {
     public class ItemEnumerator : TableEnumerator<Item>
     {
-        public ItemEnumerator(MySqlConnection connection)
+        public ItemEnumerator(IDbConnection connection)
              : base(connection) { }
 
-        public override Item Current => new Item
+        public override Item Current => new()
         {
             Id = _reader.GetUInt64(0),
             Count = _reader.GetInt64(1),
@@ -18,6 +17,6 @@ namespace Sanakan.DAL.MySql.Migrator.TableEnumerators
             GameDeckId = _reader.GetUInt64(5),
         };
 
-        public override string TableName => "Items";
+        public override string TableName => nameof(SanakanDbContext.Items);
     }
 }

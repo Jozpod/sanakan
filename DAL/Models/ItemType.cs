@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Sanakan.DAL.Models
 {
-    public enum ItemType
+    public enum ItemType : byte
     {
         AffectionRecoverySmall = 0,
         AffectionRecoveryNormal = 1,

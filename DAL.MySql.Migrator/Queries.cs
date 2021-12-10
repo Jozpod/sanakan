@@ -2,6 +2,6 @@
 {
     public class Queries
     {
-        public const string SelectAllFrom = @"SELECT * FROM {0}";
+        public const string SelectAllFrom = @"SELECT * FROM `{0}`";
     }
 }

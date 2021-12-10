@@ -1,15 +1,13 @@
-﻿using MySqlConnector;
-using Sanakan.DAL.Models.Configuration;
-using Sanakan.DAL.MySql.Migrator.TableEnumerators;
+﻿using Sanakan.DAL.Models.Configuration;
 
 namespace Sanakan.DAL.MySql.Migrator.TableEnumerators
 {
     public class GuildOptionsEnumerator : TableEnumerator<GuildOptions>
     {
-        public GuildOptionsEnumerator(MySqlConnection connection)
+        public GuildOptionsEnumerator(IDbConnection connection)
            : base(connection) { }
 
-        public override GuildOptions Current => new GuildOptions
+        public override GuildOptions Current => new()
         {
             Id = _reader.GetUInt64(0),
             MuteRoleId = _reader.GetUInt64(1),

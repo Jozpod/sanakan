@@ -16,7 +16,7 @@ namespace Sanakan.DAL.Configuration
     {
         public void Configure(EntityTypeBuilder<WithoutExpChannel> builder)
         {
-            builder.HasKey(e => e.Id);
+            builder.HasKey(pr => new { pr.ChannelId, pr.GuildOptionsId });
 
             builder
                 .HasOne(e => e.GuildOptions)
@@ -25,7 +25,7 @@ namespace Sanakan.DAL.Configuration
 
         public void Configure(EntityTypeBuilder<WithoutSupervisionChannel> builder)
         {
-            builder.HasKey(e => e.Id);
+            builder.HasKey(pr => new { pr.ChannelId, pr.GuildOptionsId });
 
             builder
                 .HasOne(e => e.GuildOptions)
@@ -42,7 +42,7 @@ namespace Sanakan.DAL.Configuration
 
         public void Configure(EntityTypeBuilder<WaifuCommandChannel> builder)
         {
-            builder.HasKey(e => e.Id);
+            builder.HasKey(pr => new { pr.ChannelId, pr.WaifuId });
 
             builder.HasOne(e => e.Waifu)
                 .WithMany(w => w.CommandChannels);
@@ -50,7 +50,7 @@ namespace Sanakan.DAL.Configuration
 
         public void Configure(EntityTypeBuilder<WaifuFightChannel> builder)
         {
-            builder.HasKey(e => e.Id);
+            builder.HasKey(pr => new { pr.ChannelId, pr.WaifuId });
 
             builder.HasOne(e => e.Waifu)
                 .WithMany(w => w.FightChannels);
@@ -58,7 +58,7 @@ namespace Sanakan.DAL.Configuration
 
         public void Configure(EntityTypeBuilder<CommandChannel> builder)
         {
-            builder.HasKey(e => e.Id);
+            builder.HasKey(pr => new { pr.ChannelId, pr.GuildOptionsId });
 
             builder.HasOne(e => e.GuildOptions)
                 .WithMany(g => g.CommandChannels);
@@ -66,7 +66,7 @@ namespace Sanakan.DAL.Configuration
 
         public void Configure(EntityTypeBuilder<WithoutMessageCountChannel> builder)
         {
-            builder.HasKey(e => e.Id);
+            builder.HasKey(pr => new { pr.ChannelId, pr.GuildOptionsId });
 
             builder.HasOne(e => e.GuildOptions)
                 .WithMany(g => g.IgnoredChannels);

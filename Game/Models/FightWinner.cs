@@ -3,7 +3,7 @@ using Sanakan.Game.Extensions;
 
 namespace Sanakan.Game.Models
 {
-    public enum FightWinner
+    public enum FightWinner : byte
     {
         Card1 = 0,
         Card2 = 1,

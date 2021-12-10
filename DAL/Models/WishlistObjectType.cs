@@ -1,6 +1,6 @@
 ﻿namespace Sanakan.DAL.Models
 {
-    public enum WishlistObjectType
+    public enum WishlistObjectType : byte
     {
         Card = 0,
         Title = 1,

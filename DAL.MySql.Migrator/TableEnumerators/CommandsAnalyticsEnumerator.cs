@@ -1,24 +1,20 @@
-﻿using MySqlConnector;
-using Sanakan.DAL.Models;
-using Sanakan.DAL.Models.Analytics;
-using Sanakan.DAL.Models.Configuration;
-using Sanakan.DAL.MySql.Migrator.TableEnumerators;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Sanakan.DAL.Models.Analytics;
 
 namespace Sanakan.DAL.MySql.Migrator.TableEnumerators
 {
     public class CommandsAnalyticsEnumerator : TableEnumerator<CommandsAnalytics>
     {
-        public CommandsAnalyticsEnumerator(MySqlConnection connection)
+        public CommandsAnalyticsEnumerator(IDbConnection connection)
           : base(connection) { }
 
-        public override CommandsAnalytics Current => new CommandsAnalytics
+        public override CommandsAnalytics Current => new()
         {
             Id = _reader.GetUInt64(0),
+            UserId = _reader.GetUInt64(1),
+            GuildId = _reader.GetUInt64(2),
+            CreatedOn = _reader.GetDateTime(3),
+            CommandName = _reader.GetString(4),
+            CommandParameters = _reader.GetString(5),
         };
 
         public override string TableName => nameof(SanakanDbContext.CommandsData);

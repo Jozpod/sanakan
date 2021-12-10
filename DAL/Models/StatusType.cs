@@ -2,7 +2,7 @@
 
 namespace Sanakan.DAL.Models
 {
-    public enum StatusType
+    public enum StatusType : byte
     {
         Hourly = 0,
         Daily = 1,

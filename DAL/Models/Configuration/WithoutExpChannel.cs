@@ -4,8 +4,6 @@ namespace Sanakan.DAL.Models.Configuration
 {
     public class WithoutExpChannel
     {
-        public ulong Id { get; set; }
-
         /// <summary>
         /// Discord channel identifier which is exclued from experience gathering.
         /// </summary>

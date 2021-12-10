@@ -2,7 +2,7 @@
 
 namespace Sanakan.DAL.Models
 {
-    public enum StarStyle
+    public enum StarStyle : byte
     {
         Full = 0,
         White = 1,

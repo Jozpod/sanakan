@@ -1,6 +1,6 @@
 ﻿namespace Sanakan.DiscordBot.Services
 {
-    public enum ConfigType
+    public enum ConfigType : byte
     {
         Global = 0,
         SelfRoles = 1,

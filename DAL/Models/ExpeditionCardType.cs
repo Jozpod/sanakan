@@ -1,6 +1,6 @@
 ﻿namespace Sanakan.DAL.Models
 {
-    public enum ExpeditionCardType
+    public enum ExpeditionCardType : byte
     {
         None = 0,
         NormalItemWithExp = 1,

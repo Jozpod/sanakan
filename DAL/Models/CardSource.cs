@@ -1,6 +1,6 @@
 ﻿namespace Sanakan.DAL.Models
 {
-    public enum CardSource
+    public enum CardSource : byte
     {
         Activity = 0,
         Safari = 1,

@@ -5,7 +5,7 @@ namespace Sanakan.DAL.Models
     /// <summary>
     ///  Describes character personality archetypes
     /// </summary>
-    public enum Dere
+    public enum Dere : byte
     {
         /// <summary>
         /// The type of character who in the beginning acts rudely towards their love interest. But once the timing is perfect they reveal their gentle side

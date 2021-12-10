@@ -1,6 +1,6 @@
 ﻿namespace Sanakan.Game.Models
 {
-    public enum HaremType
+    public enum HaremType : byte
     {
         Rarity = 0,
         Cage = 1,

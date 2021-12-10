@@ -1,6 +1,6 @@
 ﻿namespace Sanakan.DAL.Models
 {
-    public enum FightType
+    public enum FightType : byte
     {
         Versus = 0,
         BattleRoyale = 1,

@@ -2,7 +2,7 @@
 
 namespace Sanakan.Game.Models
 {
-    public enum SafariImageType
+    public enum SafariImageType : byte
     {
         Mystery = 0,
         Truth = 1

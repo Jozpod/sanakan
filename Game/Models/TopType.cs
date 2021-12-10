@@ -1,6 +1,6 @@
 ﻿namespace Sanakan.Game.Models
 {
-    public enum TopType
+    public enum TopType : byte
     {
         Level = 0,
         ScCount = 1,

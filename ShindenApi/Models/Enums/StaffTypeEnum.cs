@@ -1,6 +1,6 @@
 namespace Sanakan.ShindenApi.Models.Enums
 {
-    public enum StaffType
+    public enum StaffType : byte
     {
         NotSpecified = 0,
         Colaboration = 1,

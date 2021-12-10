@@ -1,6 +1,6 @@
 ﻿namespace Sanakan.ShindenApi.Models.Enums
 {
-    public enum MangaStatus
+    public enum MangaStatus : byte
     {
         NotSpecified,
         NotYetPublished,

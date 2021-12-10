@@ -7,7 +7,7 @@ namespace Sanakan.DAL.Models
     /// </summary>
     public class UserStats
     {
-        public ulong Id { get; set; }
+        public ulong UserId { get; set; }
 
         public long ScLost { get; set; }
 
@@ -61,8 +61,6 @@ namespace Sanakan.DAL.Models
         public long WastedPuzzlesOnCookies { get; set; }
 
         public long WastedPuzzlesOnCards { get; set; }
-
-        public ulong UserId { get; set; }
 
         [JsonIgnore]
         public virtual User? User { get; set; }

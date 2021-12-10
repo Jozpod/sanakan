@@ -9,19 +9,21 @@ namespace Sanakan.TaskQueue.Builder
         public static IServiceCollection AddTaskQueue(this IServiceCollection services)
         {
             services.AddSingleton<IBlockingPriorityQueue, BlockingPriorityQueue>();
-            services.AddScoped<IMessageHandler<LotteryMessage>, LotteryMessageHandler>();
-            services.AddScoped<IMessageHandler<DeleteUserMessage>, DeleteUserMessageHandler>();
-            services.AddScoped<IMessageHandler<ConnectUserMessage>, ConnectUserMessageHandler>();
-            services.AddScoped<IMessageHandler<ReplaceCharacterIdsInCardMessage>, ReplaceCharacterIdsInCardMessageHandler>();
-            services.AddScoped<IMessageHandler<ToggleCardMessage>, ToggleCardMessageHandler>();
-            services.AddScoped<IMessageHandler<SpawnCardBundleMessage>, SpawnCardBundleMessageHandler>();
-            services.AddScoped<IMessageHandler<UpdateCardMessage>, UpdateCardMessageHandler>();
-            services.AddScoped<IMessageHandler<UpdateCardPictureMessage>, UpdateCardPictureMessageHandler>();
             services.AddScoped<IMessageHandler<AddExperienceMessage>, AddExperienceMessageHandler>();
-            services.AddScoped<IMessageHandler<SafariMessage>, SafariMessageHandler>();
+            services.AddScoped<IMessageHandler<ConnectUserMessage>, ConnectUserMessageHandler>();
+            services.AddScoped<IMessageHandler<CommandMessage>, CommandMessageHandler>();
+            services.AddScoped<IMessageHandler<DeleteUserMessage>, DeleteUserMessageHandler>();
             services.AddScoped<IMessageHandler<GiveCardsMessage>, GiveCardsMessageHandler>();
             services.AddScoped<IMessageHandler<GiveBoosterPackMessage>, GiveBoosterPackMessageHandler>();
-            services.AddScoped<IMessageHandler<CommandMessage>, CommandMessageHandler>();
+            services.AddScoped<IMessageHandler<LotteryMessage>, LotteryMessageHandler>();
+            services.AddScoped<IMessageHandler<ReplaceCharacterIdsInCardMessage>, ReplaceCharacterIdsInCardMessageHandler>();
+            services.AddScoped<IMessageHandler<SafariMessage>, SafariMessageHandler>();
+            services.AddScoped<IMessageHandler<SpawnCardBundleMessage>, SpawnCardBundleMessageHandler>();
+            services.AddScoped<IMessageHandler<ToggleCardMessage>, ToggleCardMessageHandler>();
+            services.AddScoped<IMessageHandler<TransferTCMessage>, TransferTCMessageHandler>();
+            services.AddScoped<IMessageHandler<UpdateCardCharacterIdMessage>, UpdateCardCharacterIdMessageHandler>();
+            services.AddScoped<IMessageHandler<UpdateCardMessage>, UpdateCardMessageHandler>();
+            services.AddScoped<IMessageHandler<UpdateCardPictureMessage>, UpdateCardPictureMessageHandler>();
 
             return services;
         }

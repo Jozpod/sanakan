@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Sanakan.DiscordBot.Abstractions.Models
 {
-    public enum EMType
+    public enum EMType : byte
     {
         Neutral = 0,
         Warning = 1,

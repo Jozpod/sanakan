@@ -1,6 +1,6 @@
 ﻿namespace Sanakan.Game.Models
 {
-    public enum CardImageType
+    public enum CardImageType : byte
     {
         Normal = 0,
         Small = 1,

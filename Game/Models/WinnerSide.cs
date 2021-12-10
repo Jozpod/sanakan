@@ -1,6 +1,6 @@
 ﻿namespace DiscordBot.Services.PocketWaifu
 {
-    public enum WinnerSide 
+    public enum WinnerSide : byte
     {
         Left = 0,
         Right = 1,

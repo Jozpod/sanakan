@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Sanakan.DAL.MySql.Migrator
 {
-    public class DatabaseMigrator
+    public class DatabaseMigrator : IAsyncDisposable
     {
         private readonly ILogger<DatabaseMigrator> _logger;
         private readonly SanakanDbContext _dbContext;
@@ -38,16 +38,17 @@ namespace Sanakan.DAL.MySql.Migrator
             await MigrateTableAsync<GuildOptions>(serviceProvider);
             await MigrateTableAsync<Card>(serviceProvider);
             await MigrateTableAsync<CardArenaStats>(serviceProvider);
+            await MigrateTableAsync<CardPvPStats>(serviceProvider);
+            await MigrateTableAsync<CardTag>(serviceProvider);
             await MigrateTableAsync<GameDeck>(serviceProvider);
             await MigrateTableAsync<WaifuConfiguration>(serviceProvider);
             await MigrateTableAsync<WaifuCommandChannel>(serviceProvider);
+            await MigrateTableAsync<WithoutExpChannel>(serviceProvider);
+            await MigrateTableAsync<WithoutSupervisionChannel>(serviceProvider);
             await MigrateTableAsync<WaifuFightChannel>(serviceProvider);
             await MigrateTableAsync<BoosterPack>(serviceProvider);
             await MigrateTableAsync<BoosterPackCharacter>(serviceProvider);
-            await MigrateTableAsync<CardPvPStats>(serviceProvider);
-            await MigrateTableAsync<CardTag>(serviceProvider);
             await MigrateTableAsync<CommandChannel>(serviceProvider);
-            await MigrateTableAsync<CommandsAnalytics>(serviceProvider);
             await MigrateTableAsync<ExperienceContainer>(serviceProvider);
             await MigrateTableAsync<Figure>(serviceProvider);
             await MigrateTableAsync<WithoutMessageCountChannel>(serviceProvider);
@@ -57,25 +58,26 @@ namespace Sanakan.DAL.MySql.Migrator
             await MigrateTableAsync<UserLand>(serviceProvider);
             await MigrateTableAsync<PenaltyInfo>(serviceProvider);
             await MigrateTableAsync<Question>(serviceProvider);
+            await MigrateTableAsync<Answer>(serviceProvider);
             await MigrateTableAsync<Report>(serviceProvider);
             await MigrateTableAsync<RarityExcluded>(serviceProvider);
             await MigrateTableAsync<SelfRole>(serviceProvider);
             await MigrateTableAsync<SlotMachineConfig>(serviceProvider);
             await MigrateTableAsync<SystemAnalytics>(serviceProvider);
-            await MigrateTableAsync<TimeStatus>(serviceProvider);
+            await MigrateTableAsync<CommandsAnalytics>(serviceProvider);
             await MigrateTableAsync<TransferAnalytics>(serviceProvider);
             await MigrateTableAsync<UserAnalytics>(serviceProvider);
+            await MigrateTableAsync<TimeStatus>(serviceProvider);
             await MigrateTableAsync<UserStats>(serviceProvider);
             await MigrateTableAsync<WishlistObject>(serviceProvider);
-            await MigrateTableAsync<WithoutExpChannel>(serviceProvider);
-            await MigrateTableAsync<WithoutSupervisionChannel>(serviceProvider);
         }
 
         public async Task MigrateTableAsync<T>(IServiceProvider serviceProvider)
             where T : class
         {
             var dbSet = _dbContext.Set<T>();
-            var tableEnumerator = serviceProvider.GetService<TableEnumerator<T>>();
+            await using var tableEnumerator = serviceProvider.GetService<TableEnumerator<T>>();
+            await tableEnumerator.OpenAsync();
             var currentIt = 0;
 
             await foreach (var record in tableEnumerator)
@@ -97,6 +99,11 @@ namespace Sanakan.DAL.MySql.Migrator
                 _logger.LogInformation("Saving batch");
                 await _dbContext.SaveChangesAsync();
             }
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            await _dbContext.DisposeAsync();
         }
     }
 }

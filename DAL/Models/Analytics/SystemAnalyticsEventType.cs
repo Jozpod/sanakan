@@ -1,6 +1,6 @@
 ﻿namespace Sanakan.DAL.Models.Analytics
 {
-    public enum SystemAnalyticsEventType
+    public enum SystemAnalyticsEventType : byte
     {
         Ram = 0
     }

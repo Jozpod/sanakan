@@ -1,16 +1,16 @@
-﻿using MySqlConnector;
-using Sanakan.DAL.Models;
+﻿using Sanakan.DAL.Models;
 
 namespace Sanakan.DAL.MySql.Migrator.TableEnumerators
 {
     public class CardTagsEnumerator : TableEnumerator<CardTag>
     {
-        public CardTagsEnumerator(MySqlConnection connection)
+        public CardTagsEnumerator(IDbConnection connection)
           : base(connection) { }
 
-        public override CardTag Current => new CardTag
+        public override CardTag Current => new()
         {
-            Id = _reader.GetUInt64(0),
+            Name = _reader.GetString(1),
+            CardId = _reader.GetUInt64(2),
         };
 
         public override string TableName => nameof(SanakanDbContext.CardTags);

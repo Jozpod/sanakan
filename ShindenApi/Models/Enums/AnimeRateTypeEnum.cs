@@ -1,6 +1,6 @@
 namespace Sanakan.ShindenApi.Models.Enums
 {
-    public enum AnimeRateType
+    public enum AnimeRateType : byte
     {
         Characters = 0,
         Graphic = 1,
