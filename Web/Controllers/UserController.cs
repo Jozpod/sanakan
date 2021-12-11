@@ -83,7 +83,7 @@ namespace Sanakan.Web.Controllers
         [HttpPost("find")]
         [ProducesResponseType(typeof(IEnumerable<UserSearchResult>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetUserIdByNameAsync([FromBody, Required]string name)
+        public async Task<IActionResult> GetUserIdByNameAsync([FromBody, Required] string name)
         {
             var searchUserResult = await _shindenClient.SearchUserAsync(name);
 
@@ -133,7 +133,7 @@ namespace Sanakan.Web.Controllers
             }
 
             TokenData? tokenData = null;
-            
+
             if (_userContext.HasWebpageClaim())
             {
                 tokenData = _jwtBuilder.Build(_config.CurrentValue.SanakanApi.Jwt.UserWithTokenExpiry);
@@ -196,7 +196,7 @@ namespace Sanakan.Web.Controllers
         [ProducesResponseType(typeof(UserWithToken), StatusCodes.Status200OK)]
         public async Task<IActionResult> ChangeNicknameShindenUserAsync(
             ulong shindenUserId,
-            [FromBody, Required]string nickname)
+            [FromBody, Required] string nickname)
         {
             var user = await _userRepository.GetByShindenIdAsync(shindenUserId);
 
@@ -207,7 +207,7 @@ namespace Sanakan.Web.Controllers
 
             var client = _discordSocketClientAccessor.Client;
 
-            if(client == null)
+            if (client == null)
             {
                 return ShindenForbidden(Strings.CannotAccessDiscord);
             }
@@ -240,7 +240,7 @@ namespace Sanakan.Web.Controllers
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status401Unauthorized)]
-        public async Task<IActionResult> RegisterUserAsync([FromBody, Required]UserRegistration model)
+        public async Task<IActionResult> RegisterUserAsync([FromBody, Required] UserRegistration model)
         {
             if (model == null)
             {
@@ -371,7 +371,7 @@ namespace Sanakan.Web.Controllers
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> ModifyPointsTCDiscordAsync(
-            ulong discordUserId, [FromBody, Required]ulong amount)
+            ulong discordUserId, [FromBody, Required] ulong amount)
         {
             var user = await _userRepository.GetByDiscordIdAsync(discordUserId);
 
@@ -398,12 +398,12 @@ namespace Sanakan.Web.Controllers
         /// Changes TC points for given Shinden user.
         /// </summary>
         /// <param name="shindenUserId">The user identifier in Shinden.</param>
-        /// <param name="value">liczba TC</param>
+        /// <param name="amount">liczba TC</param>
         [HttpPut("shinden/{shindenUserId}/tc"), Authorize(Policy = AuthorizePolicies.Site)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status200OK)]
         public async Task<IActionResult> ModifyPointsTCAsync(
-            ulong shindenUserId, [FromBody, Required]ulong amount)
+            ulong shindenUserId, [FromBody, Required] ulong amount)
         {
             var user = await _userRepository.GetByShindenIdAsync(shindenUserId);
 

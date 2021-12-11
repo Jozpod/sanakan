@@ -39,9 +39,13 @@ namespace Sanakan.Daemon.Tests.HostedServices.SessionHostedServiceTests
                 socketMessageChannel.Object,
                 1ul,
                 Optional<SocketUserMessage>.Unspecified,
-                1ul,
+                userId,
                 Optional<IUser>.Unspecified,
                 Emotes.GreenChecked);
+
+            userMock
+                .Setup(pr => pr.Id)
+                .Returns(userId);
 
             userMock
                 .Setup(pr => pr.IsBot)
@@ -104,7 +108,7 @@ namespace Sanakan.Daemon.Tests.HostedServices.SessionHostedServiceTests
                 .Returns(ValueTask.CompletedTask);
 
             _discordClientAccessorMock.Raise(pr => pr.LoggedIn += null);
-            _discordClientAccessorMock.Raise(pr => pr.ReactionAdded += null, cachedMessage, socketMessageChannel.Object, reaction);
+            _discordClientAccessorMock.Raise(pr => pr.ReactionRemoved += null, cachedMessage, socketMessageChannel.Object, reaction);
 
             sessionMock.Verify();
         }

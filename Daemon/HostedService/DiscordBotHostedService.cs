@@ -108,6 +108,7 @@ namespace Sanakan.Daemon.HostedService
                 await _discordSocketClientAccessor.SetGameAsync($"{configuration.Prefix}pomoc");
                 await _discordSocketClientAccessor.Client.StartAsync();
                 stoppingToken.ThrowIfCancellationRequested();
+                _logger.LogInformation("Starting bot");
 
                 await _commandHandler.InitializeAsync();
 
@@ -115,11 +116,11 @@ namespace Sanakan.Daemon.HostedService
 
                 await _taskManager.Delay(Timeout.InfiniteTimeSpan, stoppingToken);
             }
-            catch (InvalidOperationException ex)
+            catch (InvalidOperationException)
             {
                 _logger.LogInformation("The discord client stopped");
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogInformation("Error occurred while running discord bot daemon", ex);
             }
@@ -189,9 +190,9 @@ namespace Sanakan.Daemon.HostedService
                     var databseUser = new User(userId, _systemClock.StartOfMonth);
                     userRepository.Add(databseUser);
                     await userRepository.SaveChangesAsync();
-                    userExperienceStat = new UserStat();
-                    _userStatsMap[userId] = userExperienceStat;
                 }
+                userExperienceStat = new UserStat();
+                _userStatsMap[userId] = userExperienceStat;
             }
 
             if (countMessages)
@@ -199,7 +200,7 @@ namespace Sanakan.Daemon.HostedService
                 var isCommand = _discordConfiguration.CurrentValue.IsCommand(message.Content);
                 userExperienceStat.MessagesCount++;
 
-                if(isCommand)
+                if (isCommand)
                 {
                     userExperienceStat.CommandsCount++;
                 }
@@ -256,7 +257,7 @@ namespace Sanakan.Daemon.HostedService
                 experience = 0;
             }
 
-            if(userExperienceStat.Experience == 0)
+            if (userExperienceStat.Experience == 0)
             {
                 userExperienceStat.Experience = experience;
                 return;
@@ -265,7 +266,7 @@ namespace Sanakan.Daemon.HostedService
             var utcNow = _systemClock.UtcNow;
 
             userExperienceStat.Experience += experience;
-            
+
             if (!userExperienceStat.SavedOn.HasValue)
             {
                 userExperienceStat.SavedOn = utcNow;

@@ -7,6 +7,7 @@ using Sanakan.DAL.Models;
 using Moq;
 using FluentAssertions;
 using Discord;
+using Sanakan.Game.Models;
 
 namespace DiscordBot.ModulesTests.FunModuleTests
 {

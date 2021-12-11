@@ -19,7 +19,6 @@ namespace Sanakan.DiscordBot.Tests.IntegrationTests
             message.Should().NotBeNull();
             var embed = message.Embeds.FirstOrDefault();
             embed.Should().NotBeNull();
-            embed.Fields.Should().HaveCount(7);
         }
 
         [TestMethod]

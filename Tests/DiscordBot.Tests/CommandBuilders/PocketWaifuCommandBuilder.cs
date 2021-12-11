@@ -18,7 +18,7 @@ namespace Sanakan.DiscordBot.Tests.IntegrationTests
         /// <summary>
         /// <see cref="PocketWaifuModule.AddToWishlistAsync(WishlistObjectType, ulong)"/>.
         /// </summary>
-        public static string AddToWishlist(string prefix) => $"{prefix}wadd";
+        public static string AddToWishlist(string prefix, string wishlistObjectType, ulong id) => $"{prefix}wadd {wishlistObjectType} {id}";
 
         /// <summary>
         /// <see cref="PocketWaifuModule.BuyItemActivityAsync(int, string)"/>.
@@ -38,7 +38,7 @@ namespace Sanakan.DiscordBot.Tests.IntegrationTests
         /// <summary>
         /// <see cref="PocketWaifuModule.SendCardToExpeditionAsync(ulong, ExpeditionCardType)"/>.
         /// </summary>
-        public static string SendCardToExpedition(string prefix, ulong wid, string expeditionCardType) => $"{prefix}wyprawa {wid} {expeditionCardType}";
+        public static string SendCardToExpedition(string prefix, ulong wid, string expeditionCardType) => $"{prefix}expedition {wid} {expeditionCardType}";
 
         /// <summary>
         /// <see cref="PocketWaifuModule.ShowItemsAsync(int)"/>.
@@ -51,8 +51,18 @@ namespace Sanakan.DiscordBot.Tests.IntegrationTests
         public static string ShowCardImage(string prefix, ulong cardId, bool showStats) => $"{prefix}card image {cardId}";
 
         /// <summary>
+        /// <see cref="PocketWaifuModule.ShowCardsAsync(Game.Models.HaremType, string?)"/>.
+        /// </summary>
+        public static string ShowCards(string prefix, string haremType) => $"{prefix}cards {haremType}";
+
+        /// <summary>
         /// <see cref="PocketWaifuModule.DestroyCardAsync(ulong[])"/>.
         /// </summary>
         public static string DestroyCard(string prefix, ulong cardId) => $"{prefix}destroy {cardId}";
+
+        /// <summary>
+        /// <see cref="PocketWaifuModule.CraftCardAsync()"/>.
+        /// </summary>
+        public static string CraftCard(string prefix) => $"{prefix}crafting";
     }
 }

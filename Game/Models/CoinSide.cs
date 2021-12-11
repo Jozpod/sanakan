@@ -1,4 +1,4 @@
-﻿namespace Sanakan.DiscordBot.Services
+﻿namespace Sanakan.Game.Models
 {
     public enum CoinSide : byte
     {

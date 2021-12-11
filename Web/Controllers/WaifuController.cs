@@ -121,7 +121,7 @@ namespace Sanakan.Web.Controllers
             ulong shindenUserId,
             int offset,
             int take,
-            [FromBody]CardsQueryFilter filter)
+            [FromBody] CardsQueryFilter filter)
         {
             var user = await _userRepository.GetByShindenIdAsync(shindenUserId, new UserQueryOptions
             {
@@ -291,8 +291,8 @@ namespace Sanakan.Web.Controllers
         /// <summary>
         /// Replaces character ids in cards.
         /// </summary>
-        /// <param name="oldId">The character id from Shinden database which was deleted.</param>
-        /// <param name="newId">The new character id from Shinden database.</param>
+        /// <param name="oldCharacterId">The character id from Shinden database which was deleted.</param>
+        /// <param name="newCharacterId">The new character id from Shinden database.</param>
         [HttpPost("character/repair/{oldCharacterId}/{newCharacterId}"), Authorize(Policy = AuthorizePolicies.Site)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status500InternalServerError)]
@@ -318,7 +318,7 @@ namespace Sanakan.Web.Controllers
 
             //var exe = new Executable($"api-repair oc{oldId} c{newId}", new Task<Task>(async () =>
             //{
-              
+
             //}), Priority.High);
 
             //await _executor.TryAdd(exe, TimeSpan.FromSeconds(1));
@@ -330,12 +330,12 @@ namespace Sanakan.Web.Controllers
         /// Updates card information for given character.
         /// </summary>
         /// <param name="characterId">The character identifier in Shinden.</param>
-        /// <param name="newData">New card information.</param>
+        /// <param name="model">New card information.</param>
         [HttpPost("cards/character/{characterId}/update"), Authorize(Policy = AuthorizePolicies.Site)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status200OK)]
         public async Task<IActionResult> UpdateCardInfoAsync(
             ulong characterId,
-            [FromBody]CharacterCardInfoUpdate model)
+            [FromBody] CharacterCardInfoUpdate model)
         {
 
             _blockingPriorityQueue.TryEnqueue(new UpdateCardMessage
@@ -508,8 +508,8 @@ namespace Sanakan.Web.Controllers
         [ProducesResponseType(typeof(Stream), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetCardAsync(ulong id)
         {
-            if (!_fileSystem.Exists($"{Paths.CardsMiniatures}/{id}.png") 
-                || !_fileSystem.Exists($"{Paths.Cards}/{id}.png") 
+            if (!_fileSystem.Exists($"{Paths.CardsMiniatures}/{id}.png")
+                || !_fileSystem.Exists($"{Paths.Cards}/{id}.png")
                 || !_fileSystem.Exists($"{Paths.CardsInProfiles}/{id}.png"))
             {
                 var card = await _cardRepository.GetByIdAsync(id);
@@ -518,7 +518,7 @@ namespace Sanakan.Web.Controllers
                 {
                     return ShindenNotFound(Strings.CardNotFound);
                 }
-                
+
                 _waifuService.DeleteCardImageIfExist(card);
                 var cardImage = await _waifuService.GenerateAndSaveCardAsync(card);
                 var stream = _fileSystem.OpenRead(cardImage);
@@ -591,7 +591,7 @@ namespace Sanakan.Web.Controllers
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GiveShindenUserAPacksAsync(
-            ulong shindenUserId, [FromBody]List<CardBoosterPack> boosterPacks)
+            ulong shindenUserId, [FromBody] List<CardBoosterPack> boosterPacks)
         {
             if (boosterPacks?.Count < 1)
             {
@@ -602,7 +602,7 @@ namespace Sanakan.Web.Controllers
             foreach (var pack in boosterPacks)
             {
                 var realPack = pack.ToRealPack();
-                
+
                 if (realPack != null)
                 {
                     packs.Add(realPack);
@@ -629,7 +629,7 @@ namespace Sanakan.Web.Controllers
                 BoosterPacks = packs,
             });
 
-            TokenData tokenData = null;
+            TokenData? tokenData = null;
 
             if (_userContext.HasWebpageClaim())
             {
@@ -665,7 +665,7 @@ namespace Sanakan.Web.Controllers
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status200OK)]
         public async Task<IActionResult> GiveShindenUserAPacksAndOpenAsync(
-            ulong shindenUserId, [FromBody]List<CardBoosterPack> boosterPacks)
+            ulong shindenUserId, [FromBody] List<CardBoosterPack> boosterPacks)
         {
             if (boosterPacks?.Count < 1)
             {
@@ -720,7 +720,7 @@ namespace Sanakan.Web.Controllers
                 PackCount = packs.Count,
             });
 
-            if(!enqueued)
+            if (!enqueued)
             {
                 return ShindenServiceUnavailable("Command queue is full");
             }

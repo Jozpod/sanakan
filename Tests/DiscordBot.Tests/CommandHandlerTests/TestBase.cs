@@ -101,6 +101,9 @@ namespace Sanakan.DiscordBot.Tests.CommandHandlerTests
                 .Returns(_discordClientMock.Object);
 
             _commandServiceMock
+                .Setup(pr => pr.AddTypeReader<It.IsAnyType>(It.IsAny<TypeReader>()));
+
+            _commandServiceMock
                 .Setup(pr => pr.AddModulesAsync(It.IsAny<Assembly>(), It.IsAny<IServiceProvider>()))
                 .ReturnsAsync(Enumerable.Empty<ModuleInfo>());
 

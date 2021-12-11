@@ -53,15 +53,15 @@ namespace Sanakan.DiscordBot.Tests.IntegrationTests
             };
 
             _shindenClientMock
-                .Setup(pr => pr.GetUserInfoAsync(1ul))
+                .Setup(pr => pr.GetUserInfoAsync(It.IsAny<ulong>()))
                 .ReturnsAsync(userInfo);
 
             _shindenClientMock
-                .Setup(pr => pr.GetLastReadAsync(1ul, 5))
+                .Setup(pr => pr.GetLastReadAsync(It.IsAny<ulong>(), 5))
                 .ReturnsAsync(lastReadResult);
 
             _shindenClientMock
-                .Setup(pr => pr.GetLastWatchedAsync(1ul, 5))
+                .Setup(pr => pr.GetLastWatchedAsync(It.IsAny<ulong>(), 5))
                 .ReturnsAsync(lastReadResult);
 
             var commandMessage = ShindenCommandBuilder.GetSiteStatistic(Prefix, FakeUser.Mention);

@@ -34,10 +34,17 @@ It was forked and refactored from [MrZnake/sanakan](https://github.com/MrZnake/s
 
 ## Getting Started ##
 
-> ℹ️ Make sure to customize settings to your needs. By default the app will use Mysql server.
+> ℹ️ Make sure to customize settings to your needs. By default the app will use Mysql server and it would try to create database if not exist.
 
 ```console
 dotnet run
+```
+
+You can also build project with `make` build automation tool.
+> ℹ️  `make` is not shipped with windows. To install it download [chocolatey](https://chocolatey.org/install) and run `choco install make`
+
+```console
+make run
 ```
 
 ### Discord Configuration ###

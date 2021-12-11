@@ -36,6 +36,13 @@ namespace Sanakan.Daemon.Tests.HostedServices.ChaosHostedServiceTests
 
             _discordConfiguration = new DiscordConfiguration();
 
+            _daemonsConfigurationMock
+                .Setup(pr => pr.CurrentValue)
+                .Returns(new DaemonsConfiguration()
+                {
+
+                });
+
             _discordConfigurationMock
                 .Setup(pr => pr.CurrentValue)
                 .Returns(_discordConfiguration);

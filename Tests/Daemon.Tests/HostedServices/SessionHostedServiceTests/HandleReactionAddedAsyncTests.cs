@@ -38,11 +38,15 @@ namespace Sanakan.Daemon.Tests.HostedServices.SessionHostedServiceTests
                 socketMessageChannel.Object,
                 1ul,
                 Optional<SocketUserMessage>.Unspecified,
-                1ul,
+                userId,
                 Optional<IUser>.Unspecified,
                 Emotes.GreenChecked);
 
             var utcNow = DateTime.UtcNow;
+
+            userMock
+                 .Setup(pr => pr.Id)
+                 .Returns(userId);
 
             userMock
                 .Setup(pr => pr.IsBot)

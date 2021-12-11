@@ -36,8 +36,7 @@ namespace Sanakan.Daemon.Tests.HostedServices.ChaosHostedServiceTests
 
             userMock
                 .Setup(pr => pr.IsBot)
-                .Returns(true)
-                .Verifiable();
+                .Returns(true);
 
             _discordSocketClientAccessorMock.Raise(pr => pr.LoggedIn += null);
             _discordSocketClientAccessorMock.Raise(pr => pr.MessageReceived += null, userMessageMock.Object);
@@ -77,13 +76,11 @@ namespace Sanakan.Daemon.Tests.HostedServices.ChaosHostedServiceTests
 
             guildUserMock
                 .Setup(pr => pr.IsBot)
-                .Returns(false)
-                .Verifiable();
+                .Returns(false);
 
             guildUserMock
                .Setup(pr => pr.IsWebhook)
-               .Returns(false)
-               .Verifiable();
+               .Returns(false);
 
             guildUserMock
                 .Setup(pr => pr.Guild)
@@ -125,13 +122,11 @@ namespace Sanakan.Daemon.Tests.HostedServices.ChaosHostedServiceTests
 
             guildUserMock
                 .Setup(pr => pr.IsBot)
-                .Returns(false)
-                .Verifiable();
+                .Returns(false);
 
             guildUserMock
                .Setup(pr => pr.IsWebhook)
-               .Returns(false)
-               .Verifiable();
+               .Returns(false);
 
             guildUserMock
                 .Setup(pr => pr.Guild)

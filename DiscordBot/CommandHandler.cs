@@ -9,6 +9,7 @@ using Sanakan.DAL.Models.Analytics;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot.Abstractions.Extensions;
 using Sanakan.DiscordBot.Abstractions.Models;
+using Sanakan.DiscordBot.Builder;
 using Sanakan.DiscordBot.Extensions;
 using Sanakan.DiscordBot.Resources;
 using Sanakan.DiscordBot.Services.Abstractions;
@@ -46,7 +47,7 @@ namespace Sanakan.DiscordBot
             IServiceScopeFactory scopeFactory)
         {
             _discordClientAccessor = discordClientAccessor;
-            _blockingPriorityQueue =  blockingPriorityQueue;
+            _blockingPriorityQueue = blockingPriorityQueue;
             _helperService = helperService;
             _commandService = commandService;
             _config = config;
@@ -61,6 +62,7 @@ namespace Sanakan.DiscordBot
         {
             var client = _discordClientAccessor.Client;
 
+            _commandService.AddTypeReaders();
             var modules = await _commandService
                 .AddModulesAsync(typeof(CommandHandler).Assembly, _serviceProvider);
             _helperService.AddPublicModuleInfo(modules);
@@ -110,6 +112,7 @@ namespace Sanakan.DiscordBot
                 using var serviceScope = _serviceScopeFactory.CreateScope();
                 var serviceProvider = serviceScope.ServiceProvider;
                 var guildConfigRepository = serviceProvider.GetRequiredService<IGuildConfigRepository>();
+                var commandsAnalyticsRepository = serviceProvider.GetRequiredService<ICommandsAnalyticsRepository>();
                 var guildConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(guildId);
 
                 if (guildConfig?.Prefix != null)
@@ -170,8 +173,6 @@ namespace Sanakan.DiscordBot
                     CommandParameters = param,
                 };
 
-                var commandsAnalyticsRepository = serviceProvider.GetRequiredService<ICommandsAnalyticsRepository>();
-
                 commandsAnalyticsRepository.Add(record);
                 await commandsAnalyticsRepository.SaveChangesAsync();
 
@@ -199,8 +200,8 @@ namespace Sanakan.DiscordBot
 
                         break;
                 }
-            }
 #if DEBUG
+            }
             catch (Exception ex)
             {
 

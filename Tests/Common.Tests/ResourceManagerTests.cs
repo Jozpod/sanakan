@@ -25,23 +25,9 @@ namespace Sanakan.Common.Tests
         {
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddFileSystem();
-            serviceCollection.AddResourceManager()
-                .AddImageResources();
+            serviceCollection.AddResourceManager();
             _serviceProvider = serviceCollection.BuildServiceProvider();
             _resourceManager = _serviceProvider.GetRequiredService<IResourceManager>();
-        }
-
-        [TestMethod]
-        [DataRow(ImageResources.ManWaggingFinger)]
-        [DataRow(ImageResources.WomenMagnifyingGlass)]
-        [DataRow(ImageResources.YouHaveNoPowerHere)]
-        public void Should_Return_Image_Resource_Stream(string resourcePath)
-        {
-            var stream = _resourceManager.GetResourceStream(resourcePath);
-            stream.Should().NotBeNull();
-            var content = new byte[256];
-            var read = stream.Read(content);
-            read.Should().Be(content.Length);
         }
     }
 }

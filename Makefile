@@ -5,16 +5,16 @@ all-update-debug: update restore build-debug
 full-build: restore build
 
 run-debug:
-	dotnet bin/Debug/netcoreapp3.1/Sanakan.dll
+	dotnet --project Web/Web.csproj --configuration Debug
 
 build-debug:
-	dotnet build -c Debug
+	dotnet build -configuration Debug
 
 run:
-	dotnet bin/Release/netcoreapp3.1/Sanakan.dll
+	dotnet run --project Web/Web.csproj --configuration Release --verbosity quiet
 
 build:
-	dotnet build -c Release
+	dotnet build -configuration Release
 
 restore:
 	dotnet restore

@@ -10,11 +10,11 @@ namespace Sanakan.Api.Models
         /// <summary>
         /// The bot prefix.
         /// </summary>
-        public string Prefix { get; set; }
+        public string Prefix { get; set; } = string.Empty;
 
         /// <summary>
         /// The list of modules.
         /// </summary>
-        public List<Module> Modules { get; set; }
+        public List<Module> Modules { get; set; } = new();
     }
 }

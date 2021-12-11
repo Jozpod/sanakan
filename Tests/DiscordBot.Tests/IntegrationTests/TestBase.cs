@@ -43,12 +43,14 @@ namespace Sanakan.DiscordBot.Tests.IntegrationTests
         private static string Prefix = ".";
         private static IDatabaseFacade DatabaseFacade;
         private static DiscordIntegrationTestOptions _discordIntegrationTestOptions;
-        private static TaskQueueHostedService _hostedService;
+        private static TaskQueueHostedService _taskQueueHostedService;
+        private static SessionHostedService _sessionHostedService;
         private static CancellationToken _cancellationToken;
         private static SemaphoreSlim _guildAvailableSemaphore = new SemaphoreSlim(0);
         
         public static DiscordSocketClient FakeUserClient { get; private set; }
-        public static SocketSelfUser FakeUser { get; private set; }
+        public static ISelfUser BotUser { get; private set; }
+        public static ISelfUser FakeUser { get; private set; }
 
         [ClassInitialize]
         public static async Task ClassInitialize(TestContext context)
@@ -74,6 +76,7 @@ namespace Sanakan.DiscordBot.Tests.IntegrationTests
             services.AddCache(configurationRoot.GetSection("Cache"));
             services.AddOperatingSystem();
             services.AddFileSystem();
+            services.AddTimer();
             services.AddRandomNumberGenerator();
             services.AddResourceManager()
                 .AddImageResources()
@@ -87,6 +90,7 @@ namespace Sanakan.DiscordBot.Tests.IntegrationTests
             services.AddConfiguration(configurationRoot);
             services.AddSingleton<IConfiguration>(configurationRoot);
             services.AddSingleton<TaskQueueHostedService>();
+            services.AddSingleton<SessionHostedService>();
             _serviceProvider = services.BuildServiceProvider();
 
             _discordClientAccessor = _serviceProvider.GetRequiredService<IDiscordClientAccessor>();
@@ -94,7 +98,8 @@ namespace Sanakan.DiscordBot.Tests.IntegrationTests
             var commandHandler = _serviceProvider.GetRequiredService<ICommandHandler>();
             var fileSystem = _serviceProvider.GetRequiredService<IFileSystem>();
             _discordIntegrationTestOptions = _serviceProvider.GetRequiredService<IOptions<DiscordIntegrationTestOptions>>().Value;
-            _hostedService = _serviceProvider.GetRequiredService<TaskQueueHostedService>();
+            _taskQueueHostedService = _serviceProvider.GetRequiredService<TaskQueueHostedService>();
+            _sessionHostedService = _serviceProvider.GetRequiredService<SessionHostedService>();
 
             fileSystem.CreateDirectory(Paths.CardsMiniatures);
             fileSystem.CreateDirectory(Paths.CardsInProfiles);
@@ -110,6 +115,7 @@ namespace Sanakan.DiscordBot.Tests.IntegrationTests
 
             FakeUserClient = await SetupFakeUserBot();
 
+            BotUser = _discordClientAccessor.Client.CurrentUser;
             Guild = FakeUserClient.GetGuild(_configuration.MainGuild);
             Channel = await Guild.GetTextChannelAsync(_discordIntegrationTestOptions.MainChannelId);
             FakeUser = FakeUserClient.CurrentUser;
@@ -123,11 +129,13 @@ namespace Sanakan.DiscordBot.Tests.IntegrationTests
                 await TestDataGenerator.PopulateDatabaseAsync(
                     dbContext,
                     FakeUser.Id,
+                    BotUser.Id,
                     _discordIntegrationTestOptions);
             }
 
             _cancellationToken = new CancellationToken();
-            _hostedService.StartAsync(_cancellationToken);
+            _taskQueueHostedService.StartAsync(_cancellationToken);
+            _sessionHostedService.StartAsync(_cancellationToken);
         }
 
        
@@ -148,10 +156,16 @@ namespace Sanakan.DiscordBot.Tests.IntegrationTests
                 await FakeUserClient.LogoutAsync();
             }
 
-            if (_hostedService != null)
+            if (_taskQueueHostedService != null)
             {
-                await _hostedService.StopAsync(_cancellationToken);
-                _hostedService.Dispose();
+                await _taskQueueHostedService.StopAsync(_cancellationToken);
+                _taskQueueHostedService.Dispose();
+            }
+
+            if (_sessionHostedService != null)
+            {
+                await _sessionHostedService.StopAsync(_cancellationToken);
+                _sessionHostedService.Dispose();
             }
         }
 

@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Sanakan.DiscordBot.Modules;
+﻿using Sanakan.DiscordBot.Modules;
 using Discord;
 using Sanakan.DiscordBot.Services;
+using Sanakan.Game.Models;
 
 namespace Sanakan.DiscordBot.Tests.IntegrationTests
 {
@@ -37,7 +33,7 @@ namespace Sanakan.DiscordBot.Tests.IntegrationTests
         /// <summary>
         /// <see cref="FunModule.GiveUserScAsync(IGuildUser, uint)"/>.
         /// </summary>
-        public static string GiveUserSc(string prefix, IGuildUser guildUser, int amount) => $"{prefix}donatesc";
+        public static string GiveUserSc(string prefix, IUser user, int amount) => $"{prefix}donatesc {user.Mention} {amount}";
 
         /// <summary>
         /// <see cref="FunModule.PlayOnSlotMachineAsync(string)"/>.
@@ -48,5 +44,14 @@ namespace Sanakan.DiscordBot.Tests.IntegrationTests
         /// <see cref="FunModule.ShowRiddleAsync"/>.
         /// </summary>
         public static string ShowRiddle(string prefix) => $"{prefix}riddle";
+
+        /// <summary>
+        /// <see cref="FunModule.TossCoinAsync(CoinSide, int)"/>.
+        /// </summary>
+        public static string TossCoin(string prefix, CoinSide coinSide, int amount)
+        {
+            var coinSideStr = coinSide == CoinSide.Head ? "orzel" : "reszka";
+            return $"{prefix}toss {coinSideStr} {amount}";
+        }
     }
 }
