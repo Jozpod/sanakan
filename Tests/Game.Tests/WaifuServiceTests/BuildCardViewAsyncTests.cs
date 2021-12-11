@@ -89,7 +89,6 @@ namespace Sanakan.Game.Tests.WaifuServiceTests
             var imageUrl = "https://www.test.com/image.png";
             var guildUserMock = userMock.As<IGuildUser>();
             var fakeImage = new Image<Rgba32>(400, 400);
-            var stream = new MemoryStream();
 
             _imageProcessorMock
                 .Setup(pr => pr.GetWaifuCardImageAsync(card))
@@ -101,7 +100,7 @@ namespace Sanakan.Game.Tests.WaifuServiceTests
 
             _fileSystemMock
                 .Setup(pr => pr.OpenWrite(It.IsAny<string>()))
-                .Returns(stream);
+                .Returns(() => new MemoryStream());
 
             _fileSystemMock
                 .Setup(pr => pr.Exists(It.IsAny<string>()))

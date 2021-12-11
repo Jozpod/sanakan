@@ -1,6 +1,6 @@
 CREATE TABLE `raritysexcludedfrompacks` (
   `Id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `Rarity` int NOT NULL,
+  `Rarity` tinyint unsigned NOT NULL,
   `BoosterPackId` bigint unsigned NOT NULL,
   PRIMARY KEY (`Id`),
   KEY `IX_RaritysExcludedFromPacks_BoosterPackId` (`BoosterPackId`),

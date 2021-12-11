@@ -12,8 +12,17 @@ namespace Sanakan.DAL.MySql.Migrator.TableEnumerators
         {
             get
             {
-                Uri.TryCreate(_reader.GetString(15), UriKind.Absolute, out var backgroundImageUrl);
-                Uri.TryCreate(_reader.GetString(16), UriKind.Absolute, out var foregroundImageUrl);
+                Uri? backgroundImageUrl = null;
+                if(!_reader.IsDBNull(15))
+                {
+                    Uri.TryCreate(_reader.GetString(15), UriKind.Absolute, out backgroundImageUrl);
+                }
+
+                Uri? foregroundImageUrl = null;
+                if (!_reader.IsDBNull(16))
+                {
+                    Uri.TryCreate(_reader.GetString(15), UriKind.Absolute, out foregroundImageUrl);
+                }
 
                 return new()
                 {

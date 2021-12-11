@@ -1,6 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Sanakan.Common;
+using Sanakan.Common.Configuration;
 using Sanakan.DAL.Repositories.Abstractions;
 using System;
 using System.Collections;
@@ -16,16 +18,16 @@ namespace Sanakan.DAL.MySql.Schema
     {
         private readonly IFileSystem _fileSystem;
         private readonly IServiceScopeFactory _serviceScopeFactory;
-        private readonly Microsoft.EntityFrameworkCore.Infrastructure.DatabaseFacade _databaseFacade;
+        private readonly IOptions<DatabaseConfiguration> _databaseConfiguration;
 
         public QueryScripter(
             IFileSystem fileSystem,
             IServiceScopeFactory serviceScopeFactory,
-            Microsoft.EntityFrameworkCore.Infrastructure.DatabaseFacade databaseFacade)
+            IOptions<DatabaseConfiguration> databaseConfiguration)
         {
             _fileSystem = fileSystem;
             _serviceScopeFactory = serviceScopeFactory;
-            _databaseFacade = databaseFacade;
+            _databaseConfiguration = databaseConfiguration;
         }
 
         public async Task RunAsync()
@@ -36,12 +38,8 @@ namespace Sanakan.DAL.MySql.Schema
             using var serviceScope = _serviceScopeFactory.CreateScope();
             var serviceProvider = serviceScope.ServiceProvider;
 
-            var connection = _databaseFacade.GetDbConnection();
-
-            if (connection.State != System.Data.ConnectionState.Open)
-            {
-                await connection.OpenAsync();
-            }
+            var connection = new DbConnection(_databaseConfiguration.Value.ConnectionString);
+            await connection.OpenAsync();
 
             await Utils.TruncateGeneralLogAsync(connection);
             await Utils.ToggleGeneralLogAsync(connection, "ON");
@@ -49,7 +47,7 @@ namespace Sanakan.DAL.MySql.Schema
             var executed = await ExecuteQueriesAsync(serviceProvider, connection);
 
             await connection.CloseAsync();
-            connection = _databaseFacade.GetDbConnection();
+            connection = connection = new DbConnection(_databaseConfiguration.Value.ConnectionString);
             await connection.OpenAsync();
             await Utils.ToggleGeneralLogAsync(connection, "OFF");
 
@@ -97,6 +95,10 @@ namespace Sanakan.DAL.MySql.Schema
             await gameDeckRepository.GetByCardIdAndCharacterAsync(1ul, 1ul);
             await Utils.StubSelectAsync(connection);
             executed.Add($"{nameof(IGameDeckRepository)}_{nameof(IGameDeckRepository.GetByCardIdAndCharacterAsync)}");
+
+            await gameDeckRepository.GetCachedPlayersForPVP();
+            await Utils.StubSelectAsync(connection);
+            executed.Add($"{nameof(IGameDeckRepository)}_{nameof(IGameDeckRepository.GetCachedPlayersForPVP)}");
 
             await guildConfigRepository.GetCachedGuildFullConfigAsync(1ul);
             await Utils.StubSelectAsync(connection);

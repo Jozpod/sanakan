@@ -52,7 +52,7 @@ namespace Sanakan.Daemon.HostedService
         protected override async Task ExecuteAsync(CancellationToken stoppingToken = default)
         {
             await _databaseFacade.EnsureCreatedAsync(stoppingToken);
-
+           
             try
             {
                 stoppingToken.ThrowIfCancellationRequested();

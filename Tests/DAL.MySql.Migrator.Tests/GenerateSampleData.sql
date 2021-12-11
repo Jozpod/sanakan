@@ -10,6 +10,11 @@ DELETE FROM `usersstats` WHERE Id IN (1);
 # SELECT * FROM `users` WHERE Id IN (1, 2);
 */
 
+/*
+ROLLBACK;
+LEAVE PROC;
+*/
+
 DROP PROCEDURE IF EXISTS `SP_Import_Data`;
 
 DELIMITER $$
@@ -37,6 +42,7 @@ PROC:BEGIN
 	SET @GameDeckId = 1;
 	SET @BoosterPackId = 1;
 	SET @WaifuConfigurationId = 1;
+	SET @CurrentDate = CURRENT_DATE();
 
 	INSERT INTO `questions`
 	(`Id`,
@@ -111,8 +117,8 @@ PROC:BEGIN
 	`ShowWaifuInProfile`,
 	`Warnings`)
 	VALUES
-	(@User1Id, 0, 0, 100, 100, 100, 1, 10, 0, NULL, NULL, 0, 0, CURRENT_DATE(), 0, 0, 0, 0),
-	(@User2Id, 0, 0, 100, 100, 100, 1, 10, 0, NULL, NULL, 0, 0, CURRENT_DATE(), 0, 0, 0, 0);
+	(@User1Id, 0, 0, 100, 100, 100, 1, 10, 0, './Pictures/defBg.png', 'none', 0, 0, @CurrentDate, 0, 0, 0, 0),
+	(@User2Id, 0, 0, 100, 100, 100, 1, 10, 0, './Pictures/defBg.png', 'none', 0, 0, @CurrentDate, 0, 0, 0, 0);
 
 	INSERT INTO `timestatuses`
 	(`Id`,
@@ -123,7 +129,7 @@ PROC:BEGIN
 	`Guild`,
 	`UserId`)
 	VALUES
-	(1, 0, CURRENT_DATE(), 1, 0, 0, @User1Id);
+	(1, 0, @CurrentDate, 1, 0, 0, @User1Id);
 
 	INSERT INTO `gamedecks`
 	(`Id`,
@@ -150,7 +156,18 @@ PROC:BEGIN
 	`CardsInGallery`,
 	`UserId`)
 	VALUES
-	(1, 100, 1, 1, 1, 0, 100, 10, 1, 1, 1, 1, 1, CURRENT_DATE(), 0, NULL, NULL, '#FFFFFF', 0, 0, 10, 1, @User1Id);
+	(@GameDeckId, 100, 1, 1, 1, 0, 100, 10, 1, 1, 1, 1, 1, @CurrentDate, 0, NULL, NULL, '#FFFFFF', 0, 0, 10, 1, @User1Id);
+
+	INSERT INTO `items`
+	(`Id`,
+	`Count`,
+	`Name`,
+	`Type`,
+	`Quality`,
+	`GameDeckId`)
+	VALUES
+	(1, 1, 'test item', 0, 0, @GameDeckId);
+
 
 	INSERT INTO `usersstats`
 	(`Id`,
@@ -226,8 +243,8 @@ PROC:BEGIN
 	`GameDeckId`)
 	VALUES
 	(@CardId, 0, 0, 1, 0, 100, 0, 0, 0, 0, 0, 100, 50, 50, 'test card', 1, 
-	CURRENT_DATE(), 0, 'title', 'image', 'custom', 1, 0, 0, 0, 'test', 1, 100,
-	0, 0, 0, 0, 0, 0, 50, 50, 50, 1, CURRENT_DATE(), @GameDeckId);
+	@CurrentDate, 0, 'title', 'image', 'custom', 1, 0, 0, 0, 'test', 1, 100,
+	0, 0, 0, 0, 0, 0, 50, 50, 50, 1, @CurrentDate, @GameDeckId);
 
 	INSERT INTO `figures`
 	(`Id`,
@@ -256,8 +273,8 @@ PROC:BEGIN
 	`ClothesQuality`,
 	`GameDeckId`)
 	VALUES
-	(1, 0, 100, 50, 50, 'figure', 'title', 0, 100, 10, 1, 0, 1, 1, 0, 1, CURRENT_DATE(), 1, 1, 1, 1, 0, 0 , 1, @GameDeckId);
-
+	(1, 0, 100, 50, 50, 'figure', 'title', 0, 100, 10, 1, 0, 0, 0, @CurrentDate, 1, 1, 1, 1, 1, 1, 0, 0 , 1, @GameDeckId);
+	
 	INSERT INTO `cardarenastats`
 	(`Id`,
 	`Wins`,
@@ -291,8 +308,8 @@ PROC:BEGIN
 	`StartDate`,
 	`DurationInHours`)
 	VALUES
-	(@PenaltyInfo1Id, 1, 1, 'test reason', 0, CURRENT_DATE(), 100),
-	(@PenaltyInfo2Id, 1, 1, 'test reason', 0, CURRENT_DATE(), 100);
+	(@PenaltyInfo1Id, 1, 1, 'test reason', 0, @CurrentDate, 100),
+	(@PenaltyInfo2Id, 1, 1, 'test reason', 0, @CurrentDate, 100);
 
 	INSERT INTO `commandsdata`
 	(`Id`,
@@ -302,7 +319,7 @@ PROC:BEGIN
 	`CmdName`,
 	`CmdParams`)
 	VALUES
-	(1, @User1Id, 1, CURRENT_DATE(), 'test', 'test');
+	(1, @User1Id, 1, @CurrentDate, 'test', 'test');
     
 	INSERT INTO `systemdata`
 	(`Id`,
@@ -310,7 +327,7 @@ PROC:BEGIN
 	`MeasureDate`,
 	`Type`)
 	VALUES
-	(1, 1, CURRENT_DATE(), 1);
+	(1, 1, @CurrentDate, 1);
 
 	INSERT INTO `transferdata`
 	(`Id`,
@@ -320,7 +337,7 @@ PROC:BEGIN
 	`ShindenId`,
 	`Source`)
 	VALUES
-	(1, 1, CURRENT_DATE(), 1, 1, 0);
+	(1, 1, @CurrentDate, 1, 1, 0);
 
 	INSERT INTO `usersdata`
 	(`Id`,
@@ -330,7 +347,7 @@ PROC:BEGIN
 	`MeasureDate`,
 	`Type`)
 	VALUES
-	(1, 1, @User1Id, 0, CURRENT_DATE(), 1);
+	(1, 1, @User1Id, 0, @CurrentDate, 1);
 
 	INSERT INTO `boosterpacks`
 	(`Id`,
@@ -372,6 +389,13 @@ PROC:BEGIN
 	`GuildOptionsId`)
 	VALUES
 	(@WaifuConfigurationId, 1, 1, 1, 1, 1, 1, @GuildId);
+
+	INSERT INTO `commandchannels`
+	(`Id`,
+	`Channel`,
+	`GuildOptionsId`)
+	VALUES
+	(1, 1, @GuildId);
 
 	INSERT INTO `waifucommandchannels`
 	(`Id`,

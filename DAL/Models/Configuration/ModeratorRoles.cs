@@ -4,8 +4,6 @@ namespace Sanakan.DAL.Models.Configuration
 {
     public class ModeratorRoles
     {
-        public ulong Id { get; set; }
-
         /// <summary>
         /// The Discord role identifier.
         /// </summary>

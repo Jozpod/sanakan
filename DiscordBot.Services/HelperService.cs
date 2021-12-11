@@ -6,6 +6,7 @@ using Sanakan.DiscordBot.Abstractions.Extensions;
 using Sanakan.DiscordBot.Abstractions.Models;
 using Sanakan.DiscordBot.Services.Abstractions;
 using Sanakan.DiscordBot.Services.Models;
+using Sanakan.DiscordBot.Services.Resources;
 using Sanakan.Extensions;
 using System;
 using System.Collections.Generic;
@@ -105,7 +106,7 @@ namespace Sanakan.DiscordBot.Services
 
             if (throwEx)
             {
-                throw new Exception("Polecenie nie istnieje!");
+                throw new Exception(Strings.CommandDoesNotExist);
             }
 
             return null;
@@ -190,7 +191,7 @@ namespace Sanakan.DiscordBot.Services
                 }
             }
 
-            throw new Exception("Polecenie nie istnieje!");
+            throw new Exception(Strings.CommandDoesNotExist);
         }
 
         private List<SanakanModuleInfo> GetInfoAboutModules(IEnumerable<ModuleInfo> modules)

@@ -1,8 +1,9 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 
 namespace Sanakan.DAL.MySql
 {
-    public interface IDbCommand
+    public interface IDbCommand : IDisposable, IAsyncDisposable
     {
         Task<int> ExecuteNonQueryAsync();
         

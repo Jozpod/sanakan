@@ -11,6 +11,7 @@ using Sanakan.Common.Configuration;
 using Sanakan.Common.Models;
 using Sanakan.DAL.Models;
 using Sanakan.Extensions;
+using Sanakan.Game.Extensions;
 using Sanakan.Game.Services.Abstractions;
 using Sanakan.Services.PocketWaifu;
 using Sanakan.ShindenApi.Models;
@@ -340,8 +341,8 @@ namespace Sanakan.Game.Services
 
                 case ProfileType.Image:
                     {
-                        using var userBg = Image.Load(databaseUser.StatsReplacementProfileUri);
-                        image.Mutate(x => x.DrawImage(userBg, _origin, 1));
+                        using var userBackground = Image.Load(databaseUser.StatsReplacementProfileUri);
+                        image.Mutate(x => x.DrawImage(userBackground, _origin, 1));
                     }
                     break;
             }
@@ -374,45 +375,7 @@ namespace Sanakan.Game.Services
                 }
             }
 
-            var sss = 0;
-            var ss = 0;
-            var s = 0;
-            var a = 0;
-            var b = 0;
-            var c = 0;
-            var d = 0;
-            var e = 0;
-
-            foreach (var card in cards)
-            {
-                switch(card.Rarity)
-                {
-                    case Rarity.SSS:
-                        sss++;
-                        break;
-                    case Rarity.SS:
-                        ss++;
-                        break;
-                    case Rarity.S:
-                        s++;
-                        break;
-                    case Rarity.A:
-                        a++;
-                        break;
-                    case Rarity.B:
-                        b++;
-                        break;
-                    case Rarity.C:
-                        c++;
-                        break;
-                    case Rarity.D:
-                        d++;
-                        break;
-                    case Rarity.E:
-                        e++;
-                        break;
-                }
-            }
+            var cardRarityStats = cards.GetRarityStats();
 
             int jumpY = 18;
             int row2X = 45;
@@ -426,14 +389,14 @@ namespace Sanakan.Game.Services
 
             var rarityMap = new[]
             {
-                ("SSS", sss.ToString(), jumpY, defaultXPosition),
-                ("SS", ss.ToString(), jumpY, defaultXPosition),
-                ("S", s.ToString(), jumpY, defaultXPosition),
-                ("A", a.ToString(), jumpY, defaultXPosition),
-                ("B", b.ToString(), jumpY, defaultXPosition),
-                ("C", c.ToString(), jumpY, defaultXPosition),
-                ("D", d.ToString(), jumpY, defaultXPosition),
-                ("E", e.ToString(), jumpY, defaultXPosition),
+                ("SSS", cardRarityStats.SSS.ToString(), jumpY, defaultXPosition),
+                ("SS", cardRarityStats.SS.ToString(), jumpY, defaultXPosition),
+                ("S", cardRarityStats.S.ToString(), jumpY, defaultXPosition),
+                ("A", cardRarityStats.A.ToString(), jumpY, defaultXPosition),
+                ("B", cardRarityStats.B.ToString(), jumpY, defaultXPosition),
+                ("C", cardRarityStats.C.ToString(), jumpY, defaultXPosition),
+                ("D", cardRarityStats.D.ToString(), jumpY, defaultXPosition),
+                ("E", cardRarityStats.E.ToString(), jumpY, defaultXPosition),
                 ("SUM", cards.Count.ToString(), 4 * jumpY, defaultXPosition),
                 ("CT", gameDeck.CTCount.ToString(), jumpY, defaultXPosition),
                 ("K", gameDeck.Karma.ToString("F"), jumpY, startX + 15),

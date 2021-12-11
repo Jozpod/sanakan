@@ -15,5 +15,7 @@
         public const double MaxDeckPower = 800;
 
         public const double MinDeckPower = 200;
+
+        public const ulong FakeUserId = 1ul;
     }
 }

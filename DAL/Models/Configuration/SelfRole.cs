@@ -5,8 +5,6 @@ namespace Sanakan.DAL.Models.Configuration
 {
     public class SelfRole
     {
-        public ulong Id { get; set; }
-
         public ulong RoleId { get; set; }
 
         [StringLength(100)]

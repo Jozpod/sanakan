@@ -27,7 +27,7 @@ namespace Sanakan.DAL
 
         public async Task<bool> EnsureCreatedAsync(CancellationToken stoppingToken = default)
         {
-            await _semaphore.WaitAsync(stoppingToken);
+            await _semaphore.WaitAsync();
 
             if (_created)
             {
@@ -39,7 +39,7 @@ namespace Sanakan.DAL
             var serviceProvider = serviceScope.ServiceProvider;
             var sanakanDbContext = serviceProvider.GetRequiredService<SanakanDbContext>();
             var databaseFacade = sanakanDbContext.Database;
-            _created = await databaseFacade.EnsureCreatedAsync(stoppingToken);
+            _created = await databaseFacade.EnsureCreatedAsync(stoppingToken).ConfigureAwait(true);
 
             _semaphore.Release();
 

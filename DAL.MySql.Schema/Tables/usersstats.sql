@@ -1,5 +1,5 @@
 CREATE TABLE `usersstats` (
-  `Id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `UserId` bigint unsigned NOT NULL,
   `ScLost` bigint NOT NULL,
   `IncomeInSc` bigint NOT NULL,
   `SlotMachineGames` bigint NOT NULL,
@@ -9,7 +9,7 @@ CREATE TABLE `usersstats` (
   `Misd` bigint NOT NULL,
   `RightAnswers` bigint NOT NULL,
   `TotalAnswers` bigint NOT NULL,
-  `TurnamentsWon` bigint NOT NULL,
+  `TournamentsWon` bigint NOT NULL,
   `UpgradedCardsCount` bigint NOT NULL,
   `SacrificedCardsCount` bigint NOT NULL,
   `DestroyedCardsCount` bigint NOT NULL,
@@ -25,9 +25,6 @@ CREATE TABLE `usersstats` (
   `UpgradedToSSS` bigint NOT NULL,
   `WastedPuzzlesOnCookies` bigint NOT NULL,
   `WastedPuzzlesOnCards` bigint NOT NULL,
-  `UserId` bigint unsigned NOT NULL,
-  PRIMARY KEY (`Id`),
-  UNIQUE KEY `IX_UsersStats_UserId` (`UserId`),
+  PRIMARY KEY (`UserId`),
   CONSTRAINT `FK_UsersStats_Users_UserId` FOREIGN KEY (`UserId`) REFERENCES `users` (`Id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
-ALTER TABLE usersstats ADD UNIQUE INDEX IX_UsersStats_UserId USING BTREE(UserId);

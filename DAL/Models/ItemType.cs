@@ -95,7 +95,7 @@ namespace Sanakan.DAL.Models
                 BodyQuality = Quality.Alpha,
                 HeadQuality = Quality.Alpha,
                 Name = pas.GetCharacterName(),
-                CompletionDate = date,
+                CompletedOn = date,
                 FocusedPart = FigurePart.Head,
                 ClothesQuality = Quality.Alpha,
                 LeftArmQuality = Quality.Alpha,

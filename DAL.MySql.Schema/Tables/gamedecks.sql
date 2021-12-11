@@ -16,7 +16,7 @@ CREATE TABLE `gamedecks` (
   `ExchangeConditions` varchar(50) DEFAULT NULL,
   `BackgroundImageUrl` varchar(50) DEFAULT NULL,
   `ForegroundImageUrl` varchar(50) DEFAULT NULL,
-  `ForegroundColor` varchar(50) DEFAULT NULL,
+  `ForegroundColor` varchar(10) DEFAULT NULL,
   `ForegroundPosition` int NOT NULL,
   `BackgroundPosition` int NOT NULL,
   `MaxNumberOfCards` bigint NOT NULL,

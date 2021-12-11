@@ -69,7 +69,7 @@ namespace Sanakan.DAL.MySql.Schema
             {
                 ObjectName = "card",
                 Type = WishlistObjectType.Card,
-                ObjectId = 1ul,
+                ObjectId = 2ul,
                 GameDeckId = 1ul,
             };
 

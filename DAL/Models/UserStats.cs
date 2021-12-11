@@ -21,13 +21,16 @@ namespace Sanakan.DAL.Models
 
         public long Hit { get; set; }
 
+        /// <summary>
+        /// The number of missed coin tosses.
+        /// </summary>
         public long Misd { get; set; }
 
         public long RightAnswers { get; set; }
 
         public long TotalAnswers { get; set; }
 
-        public long TurnamentsWon { get; set; }
+        public long TournamentsWon { get; set; }
 
         public long UpgradedCardsCount { get; set; }
 

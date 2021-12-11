@@ -11,7 +11,7 @@ namespace Sanakan.DAL.MySql.Migrator.TableEnumerators
         {
             get
             {
-                ulong? guildId = _reader.GetUInt64(3);
+                ulong? guildId = _reader.IsDBNull(3) ? null : _reader.GetUInt64(3);
                 guildId = guildId == 0 ? null : guildId;
 
                 return new UserAnalytics

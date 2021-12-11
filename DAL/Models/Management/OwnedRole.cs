@@ -4,7 +4,9 @@ namespace Sanakan.DAL.Models.Management
 {
     public class OwnedRole
     {
-        public ulong Id { get; set; }
+        /// <summary>
+        /// The Discord role identifier.
+        /// </summary>
         public ulong RoleId { get; set; }
 
         public ulong PenaltyInfoId { get; set; }

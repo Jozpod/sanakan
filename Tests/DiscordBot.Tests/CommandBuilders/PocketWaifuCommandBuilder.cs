@@ -49,5 +49,10 @@ namespace Sanakan.DiscordBot.Tests.IntegrationTests
         /// <see cref="PocketWaifuModule.ShowCardImageAsync(ulong, bool)"/>.
         /// </summary>
         public static string ShowCardImage(string prefix, ulong cardId, bool showStats) => $"{prefix}card image {cardId}";
+
+        /// <summary>
+        /// <see cref="PocketWaifuModule.DestroyCardAsync(ulong[])"/>.
+        /// </summary>
+        public static string DestroyCard(string prefix, ulong cardId) => $"{prefix}destroy {cardId}";
     }
 }

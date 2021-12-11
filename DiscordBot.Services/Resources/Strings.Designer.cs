@@ -81,6 +81,15 @@ namespace Sanakan.DiscordBot.Services.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Polecenie nie istnieje!.
+        /// </summary>
+        internal static string CommandDoesNotExist {
+            get {
+                return ResourceManager.GetString("CommandDoesNotExist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to **Info:**
         ///
         ///✖ - nieaktywny rząd

@@ -18,7 +18,7 @@ namespace Sanakan.DAL.MySql.Migrator.TableEnumerators
             Misd = _reader.GetInt64(7),
             RightAnswers = _reader.GetInt64(8),
             TotalAnswers = _reader.GetInt64(9),
-            TurnamentsWon = _reader.GetInt64(10),
+            TournamentsWon = _reader.GetInt64(10),
             UpgradedCardsCount = _reader.GetInt64(11),
             SacrificedCardsCount = _reader.GetInt64(12),
             DestroyedCardsCount = _reader.GetInt64(13),
@@ -37,6 +37,6 @@ namespace Sanakan.DAL.MySql.Migrator.TableEnumerators
             UserId = _reader.GetUInt64(26),
         };
 
-        public override string TableName => nameof(SanakanDbContext.UsersData);
+        public override string TableName => nameof(SanakanDbContext.UsersStats);
     }
 }

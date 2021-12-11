@@ -3,7 +3,7 @@ CREATE TABLE `penalties` (
   `UserId` bigint unsigned NOT NULL,
   `GuildId` bigint unsigned NOT NULL,
   `Reason` varchar(100) DEFAULT NULL,
-  `Type` int NOT NULL,
+  `Type` tinyint unsigned NOT NULL,
   `StartedOn` datetime(6) NOT NULL,
   `Duration` time(6) NOT NULL,
   PRIMARY KEY (`Id`),

@@ -26,6 +26,9 @@ namespace Sanakan.DAL.Models
         /// </summary>
         public ulong IntegerValue { get; set; }
 
+        /// <summary>
+        /// Indicates whether time status rewards were collected or activity has been completed.
+        /// </summary>
         public bool BooleanValue { get; set; }
 
         public ulong? GuildId { get; set; }

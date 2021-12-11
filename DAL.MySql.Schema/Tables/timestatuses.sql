@@ -1,6 +1,6 @@
 CREATE TABLE `timestatuses` (
   `Id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `Type` int NOT NULL,
+  `Type` tinyint unsigned NOT NULL,
   `EndsOn` datetime(6) DEFAULT NULL,
   `IntegerValue` bigint unsigned NOT NULL,
   `BooleanValue` tinyint(1) NOT NULL,

@@ -32,15 +32,15 @@ namespace Sanakan.DAL.MySql.Migrator
         public async Task RunAsync()
         {
             using var serviceScope = _serviceScopeFactory.CreateScope();
-            var serviceProvider = serviceScope.ServiceProvider; 
+            var serviceProvider = serviceScope.ServiceProvider;
 
             await MigrateTableAsync<User>(serviceProvider);
             await MigrateTableAsync<GuildOptions>(serviceProvider);
+            await MigrateTableAsync<GameDeck>(serviceProvider);
             await MigrateTableAsync<Card>(serviceProvider);
             await MigrateTableAsync<CardArenaStats>(serviceProvider);
             await MigrateTableAsync<CardPvPStats>(serviceProvider);
             await MigrateTableAsync<CardTag>(serviceProvider);
-            await MigrateTableAsync<GameDeck>(serviceProvider);
             await MigrateTableAsync<WaifuConfiguration>(serviceProvider);
             await MigrateTableAsync<WaifuCommandChannel>(serviceProvider);
             await MigrateTableAsync<WithoutExpChannel>(serviceProvider);
@@ -53,8 +53,6 @@ namespace Sanakan.DAL.MySql.Migrator
             await MigrateTableAsync<Figure>(serviceProvider);
             await MigrateTableAsync<WithoutMessageCountChannel>(serviceProvider);
             await MigrateTableAsync<Item>(serviceProvider);
-            await MigrateTableAsync<LevelRole>(serviceProvider);
-            await MigrateTableAsync<ModeratorRoles>(serviceProvider);
             await MigrateTableAsync<UserLand>(serviceProvider);
             await MigrateTableAsync<PenaltyInfo>(serviceProvider);
             await MigrateTableAsync<Question>(serviceProvider);
@@ -62,6 +60,9 @@ namespace Sanakan.DAL.MySql.Migrator
             await MigrateTableAsync<Report>(serviceProvider);
             await MigrateTableAsync<RarityExcluded>(serviceProvider);
             await MigrateTableAsync<SelfRole>(serviceProvider);
+            await MigrateTableAsync<LevelRole>(serviceProvider);
+            await MigrateTableAsync<ModeratorRoles>(serviceProvider);
+            await MigrateTableAsync<OwnedRole>(serviceProvider);
             await MigrateTableAsync<SlotMachineConfig>(serviceProvider);
             await MigrateTableAsync<SystemAnalytics>(serviceProvider);
             await MigrateTableAsync<CommandsAnalytics>(serviceProvider);

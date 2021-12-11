@@ -32,6 +32,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Common\Common.csproj" />
+    <ProjectReference Include="..\..\DAL.MySql.Schema\DAL.MySql.Schema.csproj" />
     <ProjectReference Include="..\..\Game\Game.csproj" />
   </ItemGroup>
 

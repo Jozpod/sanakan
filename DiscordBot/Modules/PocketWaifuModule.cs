@@ -1355,15 +1355,20 @@ namespace Sanakan.DiscordBot.Modules
         public async Task DestroyCardAsync([Summary("WID kart")]params ulong[] ids)
         {
             var databaseUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
-            var cardsToSac = databaseUser.GameDeck.Cards.Where(x => ids.Any(c => c == x.Id)).ToList();
+            var gameDeck = databaseUser.GameDeck;
+            var mention = Context.User.Mention;
+            var cardsToSac = gameDeck.Cards.Where(x => ids.Any(c => c == x.Id)).ToList();
+
+            Embed embed;
 
             if (cardsToSac.Count < 1)
             {
-                await ReplyAsync(embed: $"{Context.User.Mention} nie posiadasz takich kart.".ToEmbedMessage(EMType.Error).Build());
+                embed = $"{mention} nie posiadasz takich kart.".ToEmbedMessage(EMType.Error).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
-            var chLvl = databaseUser.GameDeck.ExperienceContainer.Level;
+            var chLvl = gameDeck.ExperienceContainer.Level;
 
             var broken = new List<Card>();
             foreach (var card in cardsToSac)
@@ -1383,23 +1388,26 @@ namespace Sanakan.DiscordBot.Modules
                 var incKarma = 1 * card.MarketValue;
                 if (incKarma > 0.001 && incKarma < 1.5)
                 {
-                    databaseUser.GameDeck.Karma -= incKarma;
+                    gameDeck.Karma -= incKarma;
                 }
 
                 var incCt = card.GetValue() * card.MarketValue;
                 if (incCt > 0 && incCt < 50)
                 {
-                    databaseUser.GameDeck.CTCount += (long)incCt;
+                    gameDeck.CTCount += (long)incCt;
                 }
 
                 databaseUser.Stats.DestroyedCardsCount += 1;
 
-                databaseUser.GameDeck.Cards.Remove(card);
+                gameDeck.Cards.Remove(card);
                 _waifuService.DeleteCardImageIfExist(card);
             }
 
             var response = $"kartę: {cardsToSac.First().GetString(false, false, true)}";
-            if (cardsToSac.Count > 1) response = $" {cardsToSac.Count} kart";
+            if (cardsToSac.Count > 1)
+            {
+                response = $" {cardsToSac.Count} kart";
+            }
 
             await _userRepository.SaveChangesAsync();
 
@@ -1407,12 +1415,16 @@ namespace Sanakan.DiscordBot.Modules
 
             if (broken.Count != cardsToSac.Count)
             {
-                await ReplyAsync(embed: $"{Context.User.Mention} zniszczył {response}".ToEmbedMessage(EMType.Success).Build());
+                embed = $"{mention} zniszczył {response}".ToEmbedMessage(EMType.Success).Build();
+                await ReplyAsync(embed: embed);
             }
 
-            if (broken.Count > 0)
+            if (broken.Any())
             {
-                await ReplyAsync(embed: $"{Context.User.Mention} nie udało się zniszczyć {broken.Count} kart, najpewniej znajdują się w klatce lub są oznaczone jako ulubione.".ToEmbedMessage(EMType.Error).Build());
+                embed = $"{mention} nie udało się zniszczyć {broken.Count} kart, najpewniej znajdują się w klatce lub są oznaczone jako ulubione."
+                    .ToEmbedMessage(EMType.Error)
+                    .Build();
+                await ReplyAsync(embed: embed);
             }
         }
 
@@ -3992,38 +4004,7 @@ namespace Sanakan.DiscordBot.Modules
             }
 
             var cards = databaseUser.GameDeck.Cards;
-            var cardRarityStats = new CardRarityStats();
-
-            foreach (var card in cards)
-            {
-                switch (card.Rarity)
-                {
-                    case Rarity.A:
-                        cardRarityStats.A++;
-                        break;
-                    case Rarity.B:
-                        cardRarityStats.B++;
-                        break;
-                    case Rarity.C:
-                        cardRarityStats.C++;
-                        break;
-                    case Rarity.D:
-                        cardRarityStats.D++;
-                        break;
-                    case Rarity.E:
-                        cardRarityStats.E++;
-                        break;
-                    case Rarity.S:
-                        cardRarityStats.S++;
-                        break;
-                    case Rarity.SS:
-                        cardRarityStats.SS++;
-                        break;
-                    case Rarity.SSS:
-                        cardRarityStats.SSS++;
-                        break;
-                }
-            }
+            var cardRarityStats = cards.GetRarityStats();
 
             var gameDeck = databaseUser.GameDeck;
 

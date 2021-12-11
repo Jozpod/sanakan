@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data.Common;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -9,14 +6,19 @@ namespace Sanakan.DAL.MySql.Schema
 {
     public static class Utils
     {
-        public static async Task StubSelectAsync(DbConnection connection)
+        public const string Placeholder = "SELECT 12345679";
+
+        private static Task ExecuteNonQueryAsync(IDbConnection connection, string commandText)
         {
             var command = connection.CreateCommand();
-            command.CommandText = "SELECT 12345679";
-            await command.ExecuteNonQueryAsync();
+            command.CommandText = commandText;
+            return command.ExecuteNonQueryAsync();
         }
 
-        public static async Task<List<string>> GetLastQueriesAsync(DbConnection connection)
+        public static Task StubSelectAsync(IDbConnection connection)
+            => ExecuteNonQueryAsync(connection, Placeholder);
+
+        public static async Task<List<string>> GetLastQueriesAsync(IDbConnection connection)
         {
             var stringBuilder = new StringBuilder(1000);
             var queries = new List<string>();
@@ -25,21 +27,10 @@ namespace Sanakan.DAL.MySql.Schema
             command.CommandText = "SELECT argument FROM mysql.general_log";
 
             using var reader = await command.ExecuteReaderAsync();
-            var encoding = Encoding.UTF8;
 
             while (await reader.ReadAsync())
             {
-                var length = (int)reader.GetBytes(0, 0, null, 0, 0);
-                var buffer = new byte[length];
-                var dataOffset = 0;
-                var query = string.Empty;
-
-                while (dataOffset < length)
-                {
-                    var bytesRead = (int)reader.GetBytes(0, dataOffset, buffer, dataOffset, length - dataOffset);
-                    query = encoding.GetString(buffer, 0, bytesRead);
-                    dataOffset += bytesRead;
-                }
+                var query = await reader.GetTextReader(0).ReadToEndAsync();
 
                 if (query.Contains("SET GLOBAL")
                     || query.Contains("SET NAMES utf8mb4")
@@ -48,7 +39,7 @@ namespace Sanakan.DAL.MySql.Schema
                     continue;
                 }
 
-                if (query.Contains("SELECT 12345679"))
+                if (query.Contains(Placeholder))
                 {
                     query = stringBuilder.ToString();
                     stringBuilder.Clear();
@@ -70,19 +61,11 @@ namespace Sanakan.DAL.MySql.Schema
             return queries;
         }
 
-        public static async Task TruncateGeneralLogAsync(DbConnection connection)
-        {
-            var command = connection.CreateCommand();
-            command.CommandText = "TRUNCATE TABLE mysql.general_log";
-            await command.ExecuteNonQueryAsync();
-        }
+        public static Task TruncateGeneralLogAsync(IDbConnection connection)
+            => ExecuteNonQueryAsync(connection, "TRUNCATE TABLE mysql.general_log");
 
-        public static async Task ToggleGeneralLogAsync(DbConnection connection, string mode)
-        {
-            var command = connection.CreateCommand();
-            command.CommandText = $"SET GLOBAL general_log = '{mode}'";
-            await command.ExecuteNonQueryAsync();
-        }
+        public static Task ToggleGeneralLogAsync(IDbConnection connection, string mode)
+            => ExecuteNonQueryAsync(connection, $"SET GLOBAL general_log = '{mode}'");
 
         public static async Task<string> GetTableDefinitionAsync(DbConnection connection, string tableName)
         {
@@ -113,7 +96,7 @@ namespace Sanakan.DAL.MySql.Schema
             return list;
         }
 
-        public static async Task<List<string>> GetTableNamesAsync(DbConnection connection)
+        public static async Task<List<string>> GetTableNamesAsync(IDbConnection connection)
         {
             var command = connection.CreateCommand();
             command.CommandText = Queries.TablesInDatabase;

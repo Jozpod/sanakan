@@ -43,7 +43,7 @@ namespace Sanakan.Game.Tests.WaifuServiceTests
 
             _fileSystemMock
                 .Setup(pr => pr.OpenWrite(It.IsAny<string>()))
-                .Returns(new MemoryStream());
+                .Returns(() => new MemoryStream());
 
             messageChannelMock
                 .Setup(pr => pr.SendFileAsync(

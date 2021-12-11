@@ -33,7 +33,7 @@ namespace Sanakan.DAL.Models
             RestartCount = card.RestartCount;
             HeadQuality = Quality.Broken;
             PAS = PreAssembledFigure.None;
-            CompletionDate = completionDate;
+            CompletedOn = completionDate;
             FocusedPart = FigurePart.Head;
             SkeletonQuality = skeletonQuality;
             ClothesQuality = Quality.Broken;
@@ -63,7 +63,7 @@ namespace Sanakan.DAL.Models
         public bool IsComplete { get; set; }
         public PreAssembledFigure PAS { get; set; }
         public Quality SkeletonQuality { get; set; }
-        public DateTime CompletionDate { get; set; }
+        public DateTime CompletedOn { get; set; }
 
         public FigurePart FocusedPart { get; set; }
         public double PartExp { get; set; }

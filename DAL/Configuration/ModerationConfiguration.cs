@@ -14,7 +14,7 @@ namespace Sanakan.DAL.Configuration
     {
         public void Configure(EntityTypeBuilder<SelfRole> builder)
         {
-            builder.HasKey(e => e.Id);
+            builder.HasKey(pr => new { pr.RoleId, pr.GuildOptionsId });
 
             builder.HasOne(e => e.GuildOptions)
                 .WithMany(g => g.SelfRoles);
@@ -22,7 +22,7 @@ namespace Sanakan.DAL.Configuration
 
         public void Configure(EntityTypeBuilder<LevelRole> builder)
         {
-            builder.HasKey(e => e.Id);
+            builder.HasKey(pr => new { pr.RoleId, pr.GuildOptionsId });
 
             builder.HasOne(e => e.GuildOptions)
                 .WithMany(g => g.RolesPerLevel);
@@ -30,7 +30,7 @@ namespace Sanakan.DAL.Configuration
 
         public void Configure(EntityTypeBuilder<ModeratorRoles> builder)
         {
-            builder.HasKey(e => e.Id);
+            builder.HasKey(pr => new { pr.RoleId, pr.GuildOptionsId });
 
             builder
                 .HasOne(e => e.GuildOptions)
@@ -46,7 +46,7 @@ namespace Sanakan.DAL.Configuration
 
         public void Configure(EntityTypeBuilder<OwnedRole> builder)
         {
-            builder.HasKey(e => e.Id);
+            builder.HasKey(pr => new { pr.RoleId, pr.PenaltyInfoId });
 
             builder.HasOne(e => e.PenaltyInfo)
                 .WithMany(p => p.Roles);

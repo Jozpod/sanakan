@@ -1,26 +1,12 @@
 ﻿using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Support.UI;
-using Sanakan.Api.Models;
-using Sanakan.Common.Converters;
-using Sanakan.DAL;
-using Sanakan.DAL.Models;
-using Sanakan.DAL.Repositories.Abstractions;
-using Sanakan.Web.Tests.IntegrationTests;
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Net.Http.Json;
 using System.Security.Cryptography;
-using System.Text;
-using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Sanakan.Web.Tests.AutomationTests
@@ -33,13 +19,13 @@ namespace Sanakan.Web.Tests.AutomationTests
         private static HttpClient _client;
         private static ChromeDriver _driver;
         private static SHA1Managed _sha;
-        private static TestWebApplicationFactory _factory;
+        private static TestWebApplicationFactory<Startup> _factory;
 
         [ClassInitialize]
         public static async Task Setup(TestContext context)
         {
             _sha = new SHA1Managed();
-            _factory = new TestWebApplicationFactory();
+            _factory = new TestWebApplicationFactory<Startup>(true);
             var options = new WebApplicationFactoryClientOptions
             {
                 BaseAddress = new Uri(@"https://localhost:5001"),
@@ -57,9 +43,17 @@ namespace Sanakan.Web.Tests.AutomationTests
         [ClassCleanup]
         public static async Task Cleanup()
         {
-            _client.Dispose();
+            if(_client != null)
+            {
+                _client.Dispose();
+            }
+
+            if (_driver != null)
+            {
+                _driver.Quit();
+            }
+
             _sha.Dispose();
-            _driver.Quit();
         }
 
         [TestMethod]

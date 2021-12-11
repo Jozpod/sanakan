@@ -16,6 +16,8 @@ namespace Sanakan.DAL.MySql.Builder
         public static IServiceCollection AddDatabaseMigrator(this IServiceCollection services)
         {
             services.AddScoped<DatabaseMigrator>();
+            services.AddScoped<TableEnumerator<GuildOptions>, GuildOptionsEnumerator>();
+            services.AddScoped<TableEnumerator<WaifuConfiguration>, WaifuConfigurationEnumerator>();
             services.AddScoped<TableEnumerator<Answer>, AnswersEnumerator>();
             services.AddScoped<TableEnumerator<Question>, QuestionsEnumerator>();
             services.AddScoped<TableEnumerator<Report>, ReportsEnumerator>();
@@ -25,9 +27,12 @@ namespace Sanakan.DAL.MySql.Builder
             services.AddScoped<TableEnumerator<Figure>, FiguresEnumerator>();
             services.AddScoped<TableEnumerator<RarityExcluded>, RarityExcludedEnumerator>();
             services.AddScoped<TableEnumerator<User>, UserEnumerator>();
+            services.AddScoped<TableEnumerator<GameDeck>, GameDecksEnumerators>();
             services.AddScoped<TableEnumerator<CardArenaStats>, CardArenaStatsEnumerator>();
             services.AddScoped<TableEnumerator<CardPvPStats>, CardPvPStatsEnumerator>();
             services.AddScoped<TableEnumerator<CardTag>, CardTagsEnumerator>();
+            services.AddScoped<TableEnumerator<Card>, CardEnumerator>();
+            services.AddScoped<TableEnumerator<UserLand>, UserLandEnumerator>();
             services.AddScoped<TableEnumerator<BoosterPack>, BoosterPackEnumerator>();
             services.AddScoped<TableEnumerator<BoosterPackCharacter>, BoosterPackCharacterEnumerator>();
             services.AddScoped<TableEnumerator<CommandsAnalytics>, CommandsAnalyticsEnumerator>();
@@ -37,6 +42,7 @@ namespace Sanakan.DAL.MySql.Builder
             services.AddScoped<TableEnumerator<SlotMachineConfig>, SlotMachineConfigEnumerator>();
             services.AddScoped<TableEnumerator<ExperienceContainer>, ExperienceContainerEnumerator>();
             services.AddScoped<TableEnumerator<CommandChannel>, CommandChannelEnumerator>();
+            services.AddScoped<TableEnumerator<ModeratorRoles>, ModeratorRolesEnumerator>();
             services.AddScoped<TableEnumerator<LevelRole>, LevelRolesEnumerator>();
             services.AddScoped<TableEnumerator<SelfRole>, SelfRolesEnumerator>();
             services.AddScoped<TableEnumerator<OwnedRole>, OwnedRolesEnumerator>();

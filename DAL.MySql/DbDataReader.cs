@@ -1,17 +1,30 @@
 ﻿using MySql.Data.MySqlClient;
 using System;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace Sanakan.DAL.MySql
 {
-    public class DbDataReader : IDbDataReader, IDisposable, IAsyncDisposable
+    public class DbDataReader : IDbDataReader, IAsyncDisposable
     {
         private readonly MySqlDataReader _dbDataReader;
 
         public DbDataReader(MySqlDataReader dbDataReader)
         {
             _dbDataReader = dbDataReader;
+            
         }
+
+        public TextReader GetTextReader(int ordinal) => _dbDataReader.GetTextReader(ordinal);
+
+        public long GetBytes(int i, long fieldOffset, byte[] buffer, int bufferoffset, int length) => 
+            _dbDataReader.GetBytes(i, fieldOffset, buffer, bufferoffset, length);
+
+        public int GetValues(object[] values) => _dbDataReader.GetValues(values);
+
+        public bool IsDBNull(int ordinal) => _dbDataReader.IsDBNull(ordinal);
+
+        public Task<bool> IsDBNullAsync(int ordinal) => _dbDataReader.IsDBNullAsync(ordinal);
 
         public double GetDouble(int ordinal) => _dbDataReader.GetDouble(ordinal);
 

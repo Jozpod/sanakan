@@ -179,16 +179,24 @@ namespace Sanakan.DAL.Models
         {
             switch (Rarity)
             {
-                case Rarity.SSS: return 50;
-                case Rarity.SS: return 25;
-                case Rarity.S: return 15;
-                case Rarity.A: return 10;
-                case Rarity.B: return 7;
-                case Rarity.C: return 5;
-                case Rarity.D: return 3;
+                case Rarity.SSS:
+                    return 50;
+                case Rarity.SS:
+                    return 25;
+                case Rarity.S:
+                    return 15;
+                case Rarity.A:
+                    return 10;
+                case Rarity.B:
+                    return 7;
+                case Rarity.C:
+                    return 5;
+                case Rarity.D:
+                    return 3;
 
                 default:
-                case Rarity.E: return 1;
+                case Rarity.E:
+                    return 1;
             }
         }
 

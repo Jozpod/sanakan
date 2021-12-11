@@ -9,7 +9,6 @@ namespace Sanakan.DAL.MySql.Migrator.TableEnumerators
 
         public override LevelRole Current => new()
         {
-            Id = _reader.GetUInt64(0),
             RoleId = _reader.GetUInt64(1),
             Level = _reader.GetUInt64(2),
             GuildOptionsId = _reader.GetUInt64(3),

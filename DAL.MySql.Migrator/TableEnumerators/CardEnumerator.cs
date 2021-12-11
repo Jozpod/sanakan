@@ -15,7 +15,7 @@ namespace Sanakan.DAL.MySql.Migrator.TableEnumerators
             {
                 Uri.TryCreate(_reader.GetString(19), UriKind.Absolute, out var imageUrl);
                 Uri.TryCreate(_reader.GetString(20), UriKind.Absolute, out var customImageUrl);
-                Uri.TryCreate(_reader.GetString(20), UriKind.Absolute, out var customBorderUrl);
+                Uri.TryCreate(_reader.GetString(25), UriKind.Absolute, out var customBorderUrl);
 
                 return new()
                 {
@@ -46,18 +46,19 @@ namespace Sanakan.DAL.MySql.Migrator.TableEnumerators
                     StarStyle = (StarStyle)_reader.GetUInt64(24),
                     CustomBorderUrl = customBorderUrl,
                     MarketValue = _reader.GetUInt64(26),
-                    CardPower = _reader.GetUInt64(27),
-                    EnhanceCount = _reader.GetInt32(27),
-                    FromFigure = _reader.GetBoolean(28),
-                    Quality = (Quality)_reader.GetUInt64(29),
-                    AttackBonus = _reader.GetInt32(30),
-                    HealthBonus = _reader.GetInt32(31),
-                    DefenceBonus = _reader.GetInt32(32),
-                    QualityOnStart = (Quality)_reader.GetInt32(33),
-                    PAS = (PreAssembledFigure)_reader.GetInt32(34),
-                    Expedition = (ExpeditionCardType)_reader.GetInt32(35),
-                    ExpeditionDate = _reader.GetDateTime(36),
-                    GameDeckId = _reader.GetUInt64(37),
+                    Curse = (CardCurse)_reader.GetInt32(27),
+                    CardPower = _reader.GetUInt64(28),
+                    EnhanceCount = _reader.GetInt32(29),
+                    FromFigure = _reader.GetBoolean(30),
+                    Quality = (Quality)_reader.GetUInt64(31),
+                    AttackBonus = _reader.GetInt32(32),
+                    HealthBonus = _reader.GetInt32(33),
+                    DefenceBonus = _reader.GetInt32(34),
+                    QualityOnStart = (Quality)_reader.GetInt32(35),
+                    PAS = (PreAssembledFigure)_reader.GetInt32(36),
+                    Expedition = (ExpeditionCardType)_reader.GetInt32(37),
+                    ExpeditionDate = _reader.GetDateTime(38),
+                    GameDeckId = _reader.GetUInt64(39),
                 };
             }
         }

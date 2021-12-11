@@ -1,11 +1,9 @@
 ﻿using MySql.Data.MySqlClient;
-using System;
-using System.Data.Common;
 using System.Threading.Tasks;
 
 namespace Sanakan.DAL.MySql
 {
-    public class DbCommand : IDbCommand, IDisposable, IAsyncDisposable
+    public class DbCommand : IDbCommand
     {
         private readonly MySqlCommand _dbCommand;
 

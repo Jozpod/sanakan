@@ -9,7 +9,6 @@ namespace Sanakan.DAL.MySql.Migrator.TableEnumerators
 
         public override ModeratorRoles Current => new()
         {
-            Id = _reader.GetUInt64(0),
             RoleId = _reader.GetUInt64(1),
             GuildOptionsId = _reader.GetUInt64(2),
         };

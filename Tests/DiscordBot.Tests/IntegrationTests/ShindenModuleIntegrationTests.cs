@@ -105,5 +105,26 @@ namespace Sanakan.DiscordBot.Tests.IntegrationTests
             var embed = message.Embeds.FirstOrDefault();
             embed.Should().NotBeNull();
         }
+
+        [TestMethod]
+        public async Task TC302_Should_Connect_User()
+        {
+            var shindenId = 42069ul;
+            var shindenUrl = $"https://shinden.pl/user/{shindenId}-test";
+            var userInfoResult = new ShindenApi.Result<UserInfo>
+            {
+                Value = new UserInfo
+                {
+                    Name = "FakeUser",
+                }
+            };
+
+            _shindenClientMock
+                .Setup(pr => pr.GetUserInfoAsync(shindenId))
+                .ReturnsAsync(userInfoResult);
+
+            var commandMessage = ShindenCommandBuilder.Connect(Prefix, shindenUrl);
+            await Channel.SendMessageAsync(commandMessage);
+        }
     }
 }

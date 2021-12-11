@@ -3,24 +3,20 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Sanakan.Api.Models;
 using Sanakan.Common.Converters;
 using Sanakan.DAL;
-using Sanakan.DAL.Models;
-using Sanakan.DAL.Repositories.Abstractions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Sanakan.Web.Tests.IntegrationTests
 {
+#if DEBUG
     [TestClass]
+#endif
     public partial class TestBase
     {
-        protected static TestWebApplicationFactory _factory;
+        protected static TestWebApplicationFactory<Startup> _factory;
         protected static HttpClient _client;
         protected static IDatabaseFacade _databaseFacade;
         protected static readonly JsonSerializerOptions _jsonSerializerOptions;
@@ -43,7 +39,7 @@ namespace Sanakan.Web.Tests.IntegrationTests
         [ClassInitialize]
         public static async Task Setup(TestContext context)
         {
-            _factory = new TestWebApplicationFactory();
+            _factory = new TestWebApplicationFactory<Startup>();
             _client = _factory.CreateClient();
             var serviceScope = _factory.Services.CreateScope();
             var serviceProvider = serviceScope.ServiceProvider;
@@ -63,7 +59,7 @@ namespace Sanakan.Web.Tests.IntegrationTests
         [ClassCleanup]
         public static async Task Cleanup()
         {
-            //await _databaseFacade.EnsureDeletedAsync();
+            await _databaseFacade.EnsureDeletedAsync();
             _client.Dispose();
         }
     }

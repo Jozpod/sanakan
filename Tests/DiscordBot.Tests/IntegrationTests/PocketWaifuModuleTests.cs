@@ -43,5 +43,17 @@ namespace Sanakan.DiscordBot.Tests.IntegrationTests
             var embed = message.Embeds.FirstOrDefault();
             embed.Should().NotBeNull();
         }
+
+        [TestMethod]
+        public async Task TC404_Should_Destroy_Card()
+        {
+            var commandMessage = PocketWaifuCommandBuilder.DestroyCard(Prefix, 2);
+            await Channel.SendMessageAsync(commandMessage);
+
+            var message = await WaitForMessageAsync();
+            message.Should().NotBeNull();
+            var embed = message.Embeds.FirstOrDefault();
+            embed.Should().NotBeNull();
+        }
     }
 }

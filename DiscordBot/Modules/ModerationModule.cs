@@ -922,9 +922,10 @@ namespace Sanakan.DiscordBot.Modules
         public async Task SetGreetingChannelAsync()
         {
             var guildId = Context.Guild.Id;
-            var channelName = Context.Channel.Name;
+            var channel = Context.Channel;
+            var channelName = channel.Name;
+            var channelId = channel.Id;
             var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(guildId);
-            var channelId = Context.Channel.Id;
 
             if (config.GreetingChannelId == channelId)
             {
@@ -947,9 +948,10 @@ namespace Sanakan.DiscordBot.Modules
         public async Task SetNotifChannelAsync()
         {
             var guildId = Context.Guild.Id;
-            var channelName = Context.Channel.Name;
+            var channel = Context.Channel;
+            var channelName = channel.Name;
+            var channelId = channel.Id;
             var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(guildId);
-            var channelId = Context.Channel.Id;
 
             if (config.NotificationChannelId == channelId)
             {
@@ -973,9 +975,10 @@ namespace Sanakan.DiscordBot.Modules
         public async Task SetRaportChannelAsync()
         {
             var guildId = Context.Guild.Id;
-            var channelName = Context.Channel.Name;
+            var channel = Context.Channel;
+            var channelName = channel.Name;
+            var channelId = channel.Id;
             var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(guildId);
-            var channelId = Context.Channel.Id;
 
             if (config.RaportChannelId == channelId)
             {
@@ -999,9 +1002,10 @@ namespace Sanakan.DiscordBot.Modules
         public async Task SetQuizChannelAsync()
         {
             var guildId = Context.Guild.Id;
-            var channelName = Context.Channel.Name;
+            var channel = Context.Channel;
+            var channelName = channel.Name;
+            var channelId = channel.Id;
             var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(guildId);
-            var channelId = Context.Channel.Id;
 
             if (config.QuizChannelId == channelId)
             {
@@ -1023,9 +1027,10 @@ namespace Sanakan.DiscordBot.Modules
         public async Task SetTodoChannelAsync()
         {
             var guildId = Context.Guild.Id;
-            var channelName = Context.Channel.Name;
+            var channel = Context.Channel;
+            var channelName = channel.Name;
+            var channelId = channel.Id;
             var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(guildId);
-            var channelId = Context.Channel.Id;
 
             if (config.ToDoChannelId == channelId)
             {
@@ -1545,10 +1550,10 @@ namespace Sanakan.DiscordBot.Modules
             [Summary("id wiadomości")] ulong messageId,
             [Summary("id kanału na serwerze")] ulong channelId)
         {
-            var channel2Send = await Context.Guild.GetChannelAsync(channelId) as IMessageChannel;
+            var channelToSend = await Context.Guild.GetChannelAsync(channelId) as IMessageChannel;
             var invokingUser = Context.User as IGuildUser;
 
-            if (channel2Send == null)
+            if (channelToSend == null)
             {
                 await ReplyAsync(embed: "Nie odnaleziono kanału.\nPamiętaj, że kanał musi znajdować się na tym samym serwerze."
                     .ToEmbedMessage(EMType.Bot).Build());
@@ -1564,7 +1569,7 @@ namespace Sanakan.DiscordBot.Modules
 
             var todo = _moderatorService.BuildTodo(message, invokingUser);
             await Context.Message.AddReactionAsync(Emojis.HandSign);
-            await channel2Send.SendMessageAsync(message.GetJumpUrl(), embed: todo);
+            await channelToSend.SendMessageAsync(message.GetJumpUrl(), embed: todo);
         }
 
         [Command("tchaos")]

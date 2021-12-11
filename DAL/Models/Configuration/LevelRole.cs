@@ -4,8 +4,9 @@ namespace Sanakan.DAL.Models.Configuration
 {
     public class LevelRole
     {
-        public ulong Id { get; set; }
-        
+        /// <summary>
+        /// The Discord role identifier.
+        /// </summary>
         public ulong RoleId { get; set; }
 
         public ulong Level { get; set; }

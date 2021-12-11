@@ -1,3 +1,3 @@
 # DAL.MySql.Migrator assembly #
 
-Utility tool for migrating database data.
+Utility tool for migrating databases.

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Versioning;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
@@ -37,10 +38,15 @@ namespace Sanakan.Web
     [ExcludeFromCodeCoverage]
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        public Startup(
+            IConfiguration configuration,
+            IWebHostEnvironment webHostEnvironment)
         {
             Configuration = configuration;
+            CurrentEnvironment = webHostEnvironment;
         }
+
+        private IWebHostEnvironment CurrentEnvironment { get; set; }
 
         public IConfiguration Configuration { get; }
 
@@ -165,7 +171,11 @@ namespace Sanakan.Web
             services.AddCache(Configuration.GetSection("Cache"));
             services.AddConfiguration(Configuration);
             services.AddSanakanDbContext(Configuration);
-            services.AddHostedServices();
+
+            if (!CurrentEnvironment.IsEnvironment("Test"))
+            {
+                services.AddHostedServices();
+            }
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

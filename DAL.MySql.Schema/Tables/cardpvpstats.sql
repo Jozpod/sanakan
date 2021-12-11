@@ -1,7 +1,7 @@
 CREATE TABLE `cardpvpstats` (
   `Id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `Type` int NOT NULL,
-  `Result` int NOT NULL,
+  `Type` tinyint unsigned NOT NULL,
+  `Result` tinyint unsigned NOT NULL,
   `GameDeckId` bigint unsigned NOT NULL,
   PRIMARY KEY (`Id`),
   KEY `IX_CardPvPStats_GameDeckId` (`GameDeckId`),

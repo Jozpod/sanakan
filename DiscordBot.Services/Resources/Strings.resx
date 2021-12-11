@@ -125,6 +125,9 @@
   <data name="CanExecuteOnlyOnServer" xml:space="preserve">
     <value>To polecenie działa tylko z poziomu serwera.</value>
   </data>
+  <data name="CommandDoesNotExist" xml:space="preserve">
+    <value>Polecenie nie istnieje!</value>
+  </data>
   <data name="GameInfo" xml:space="preserve">
     <value>**Info:**
 

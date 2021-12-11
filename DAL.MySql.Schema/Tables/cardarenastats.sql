@@ -1,8 +1,8 @@
 CREATE TABLE `cardarenastats` (
   `Id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `Wins` bigint NOT NULL,
-  `Loses` bigint NOT NULL,
-  `Draws` bigint NOT NULL,
+  `WinsCount` bigint NOT NULL,
+  `LosesCount` bigint NOT NULL,
+  `DrawsCount` bigint NOT NULL,
   `CardId` bigint unsigned NOT NULL,
   PRIMARY KEY (`Id`),
   UNIQUE KEY `IX_CardArenaStats_CardId` (`CardId`),

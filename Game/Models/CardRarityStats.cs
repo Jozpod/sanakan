@@ -1,6 +1,6 @@
 ﻿
 
-namespace Sanakan.DiscordBot
+namespace Sanakan.Game.Models
 {
     public class CardRarityStats
     {

@@ -23,7 +23,7 @@ namespace Sanakan.DAL.MySql.Migrator.TableEnumerators
             IsComplete = _reader.GetBoolean(11),
             PAS = (PreAssembledFigure)_reader.GetUInt64(12),
             SkeletonQuality = (Quality)_reader.GetUInt64(13),
-            CompletionDate = _reader.GetDateTime(14),
+            CompletedOn = _reader.GetDateTime(14),
             FocusedPart = (FigurePart)_reader.GetUInt64(15),
             PartExp = _reader.GetDouble(16),
             HeadQuality = (Quality)_reader.GetInt32(17),

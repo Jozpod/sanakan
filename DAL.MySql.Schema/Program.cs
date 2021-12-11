@@ -37,7 +37,7 @@ namespace Sanakan.DAL.MySql.Schema
             serviceCollection.AddSanakanDbContext(configurationRoot);
             serviceCollection.AddSingleton(configurationRoot);
             serviceCollection.AddCache(configurationRoot.GetSection("Cache"));
-            serviceCollection.Configure<SanakanConfiguration>(configurationRoot);
+            serviceCollection.AddConfiguration(configurationRoot);
             serviceCollection.AddRepositories();
             serviceCollection.AddFileSystem();
             serviceCollection.AddSingleton<TableScripter>();

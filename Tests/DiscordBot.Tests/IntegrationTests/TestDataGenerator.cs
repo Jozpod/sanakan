@@ -25,9 +25,10 @@ namespace Sanakan.DiscordBot.Tests.IntegrationTests
             dbContext.Users.Add(user);
             await dbContext.SaveChangesAsync();
 
-            var card = new Card(1ul, "test", "test", 100, 50, Rarity.A, Dere.Bodere, DateTime.UtcNow);
-            //card.ImageUrl = new Uri();
-            user.GameDeck.Cards.Add(card);
+            var card1 = new Card(1ul, "card 1", "card 1", 100, 50, Rarity.A, Dere.Bodere, DateTime.UtcNow);
+            var card2 = new Card(2ul, "card 2", "card 2", 100, 50, Rarity.A, Dere.Bodere, DateTime.UtcNow);
+            user.GameDeck.Cards.Add(card1);
+            user.GameDeck.Cards.Add(card2);
             await dbContext.SaveChangesAsync();
 
             var item1 = new Item { Name = nameof(ItemType.AffectionRecoveryBig), Type = ItemType.AffectionRecoveryBig, Count = 100 };

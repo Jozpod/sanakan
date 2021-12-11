@@ -707,8 +707,14 @@ namespace Sanakan.DiscordBot.Modules
             [Summary("id użytkownika")]ulong discordUserId,
             [Summary("czy usunąć karty?")]bool cards = false)
         {
-            var fakeUser = await _userRepository.GetUserOrCreateAsync(1);
+            var fakeUser = await _userRepository.GetUserOrCreateAsync(DAL.Constants.FakeUserId);
             var user = await _userRepository.GetUserOrCreateAsync(discordUserId);
+
+            if(user == null)
+            {
+                await ReplyAsync(embed: $"Użytkownik o id: `{discordUserId}` został wymazany.".ToEmbedMessage(EMType.Success).Build());
+                return;
+            }
 
             if (!cards)
             {
@@ -1446,7 +1452,7 @@ namespace Sanakan.DiscordBot.Modules
             if (command == null)
             {
                 var message = _helperService.GivePrivateHelp(PrivateModules.Debug);
-                await ReplyAsync();
+                await ReplyAsync(message);
 
                 return;
             }

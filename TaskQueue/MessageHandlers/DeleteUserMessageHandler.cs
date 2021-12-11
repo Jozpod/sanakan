@@ -1,5 +1,6 @@
 ﻿using Sanakan.Common;
 using Sanakan.Common.Cache;
+using Sanakan.DAL;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.TaskQueue.Messages;
 using System.Threading.Tasks;
@@ -22,7 +23,7 @@ namespace Sanakan.TaskQueue.MessageHandlers
         public override async Task HandleAsync(DeleteUserMessage message)
         {
             var databaseUser = await _userRepository.GetUserOrCreateAsync(message.DiscordUserId);
-            var fakeUser = await _userRepository.GetUserOrCreateAsync(1);
+            var fakeUser = await _userRepository.GetUserOrCreateAsync(Constants.FakeUserId);
 
             foreach (var card in databaseUser.GameDeck.Cards)
             {

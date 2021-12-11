@@ -29,7 +29,6 @@ namespace Sanakan.DAL.Models
             CharacterCountFromDate = 0;
             ShowWaifuInProfile = false;
             ProfileType = ProfileType.Statistics;
-            StatsReplacementProfileUri = "none";
             TimeStatuses = new List<TimeStatus>();
             BackgroundProfileUri = Paths.DefaultBackgroundPicture;
             MeasuredOn = datetime;
@@ -85,7 +84,7 @@ namespace Sanakan.DAL.Models
                 YatoUpgrades = 0,
                 RaitoUpgrades = 0,
                 ReleasedCards = 0,
-                TurnamentsWon = 0,
+                TournamentsWon = 0,
                 UpgradedToSSS = 0,
                 UnleashedCardsCount = 0,
                 SacrificedCardsCount = 0,
@@ -164,7 +163,7 @@ namespace Sanakan.DAL.Models
         public string BackgroundProfileUri { get; set; } = string.Empty;
 
         [StringLength(50)]
-        public string StatsReplacementProfileUri { get; set; }
+        public string? StatsReplacementProfileUri { get; set; }
 
         public ulong MessagesCount { get; set; }
 

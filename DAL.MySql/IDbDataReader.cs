@@ -1,11 +1,21 @@
 ﻿using System;
-using System.Data.Common;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace Sanakan.DAL.MySql
 {
-    public interface IDbDataReader
+    public interface IDbDataReader : IDisposable
     {
+        TextReader GetTextReader(int ordinal);
+
+        long GetBytes(int i, long fieldOffset, byte[] buffer, int bufferoffset, int length);
+
+        int GetValues(object[] values);
+
+        bool IsDBNull(int ordinal);
+
+        Task<bool> IsDBNullAsync(int ordinal);
+
         double GetDouble(int ordinal);
 
         DateTime GetDateTime(int ordinal);
