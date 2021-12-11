@@ -8,7 +8,9 @@ using System.Threading.Tasks;
 
 namespace Sanakan.TaskQueue.Tests
 {
+#if DEBUG
     [TestClass]
+#endif
     public class BlockingPriorityQueueTests
     {
         private readonly BlockingPriorityQueue _blockingPriorityQueue;

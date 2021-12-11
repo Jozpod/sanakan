@@ -25,10 +25,9 @@ namespace Sanakan.DAL.MySql.Schema
         static async Task Main(string[] args)
         {
             var serviceCollection = new ServiceCollection();
-
             var builder = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 
             var configurationRoot = builder.Build();
 

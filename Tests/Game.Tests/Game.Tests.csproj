@@ -5,6 +5,7 @@
     <RootNamespace>Sanakan.Game.Tests</RootNamespace>
     <AssemblyName>Sanakan.Game.Tests</AssemblyName>
     <Configurations>Debug;Release;Test</Configurations>
+    <DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">

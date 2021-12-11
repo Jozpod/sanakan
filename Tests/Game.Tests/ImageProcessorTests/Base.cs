@@ -18,7 +18,6 @@ using FluentAssertions;
 
 namespace Sanakan.Game.Tests
 {
-    [TestClass]
     public abstract class Base
     {
         protected static IImageProcessor _imageProcessor;
