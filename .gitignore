@@ -17,18 +17,18 @@
 mono_crash.*
 
 # Build results
-[Dd]ebug/
-[Dd]ebugPublic/
-[Rr]elease/
-[Rr]eleases/
+**/[Dd]ebug/
+**/[Dd]ebugPublic/
+**/[Rr]elease/
+**/[Rr]eleases/
 x64/
 x86/
 [Ww][Ii][Nn]32/
 [Aa][Rr][Mm]/
 [Aa][Rr][Mm]64/
 bld/
-[Bb]in/
-[Oo]bj/
+**/[Bb]in/
+**/[Oo]bj/
 [Ll]og/
 [Ll]ogs/
 
@@ -228,7 +228,7 @@ _pkginfo.txt
 
 # Visual Studio cache files
 # files ending in .cache can be ignored
-*.[Cc]ache
+**/*.[Cc]ache
 # but keep track of directories ending in .cache
 !?*.[Cc]ache/
 
@@ -392,6 +392,8 @@ GOut
 Pictures/Duel
 Pictures/Poke
 nohup.out
-appsettings.json
+Web/appsettings.json
+appsettings.Development.json
 sanakan_key
 sanakan_key.pub
+Sanakan_coverage.xml
