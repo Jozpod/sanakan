@@ -2,7 +2,7 @@
 
 # Sanakan #
 
-[![Coverage Status](https://coveralls.io/repos/github/Jozpod/sanakan/badge.svg?branch=main)](https://coveralls.io/github/Jozpod/sanakan?branch=main) 
+[![Coverage Status](https://coveralls.io/repos/github/Jozpod/sanakan/badge.svg?branch=master)](https://coveralls.io/github/Jozpod/sanakan?branch=master)
 [![Build status](https://img.shields.io/appveyor/build/Jozpod/sanakan)](https://ci.appveyor.com/project/jozpod/sanakan/branch/master) 
 [![CodeFactor](https://img.shields.io/codefactor/grade/github/Jozpod/sanakan/master)](https://www.codefactor.io/repository/github/jozpod/sanakan)
 [![License](https://img.shields.io/github/license/Jozpod/sanakan)](https://github.com/Jozpod/sanakan/blob/master/LICENSE)
