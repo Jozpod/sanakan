@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using static Sanakan.Web.ResponseExtensions;
-using Sanakan.Common;
 using Sanakan.DAL.Models;
 using Microsoft.AspNetCore.Http;
 using Sanakan.DAL.Repositories.Abstractions;

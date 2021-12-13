@@ -31,38 +31,12 @@ namespace Sanakan.TaskQueue
                 _items[_head] = message;
             }
 
-            if(!_manualResetEventSlim.IsSet)
+            if (!_manualResetEventSlim.IsSet)
             {
                 _manualResetEventSlim.Set();
             }
 
             return true;
-        }
-
-        // TO-DO Test
-        public async IAsyncEnumerable<BaseMessage> GetAsyncEnumerable(CancellationToken token = default)
-        {
-            while (true)
-            {
-                token.ThrowIfCancellationRequested();
-
-                if (_head == -1)
-                {
-                    _manualResetEventSlim.Reset();
-                    // TO-DO Replace with SemaphoreSlim.WaitAsync(CancellationToken);
-                    _manualResetEventSlim.Wait(token);
-                }
-
-                BaseMessage item;
-                lock (_syncRoot)
-                {
-                    item = _items[_head];
-                    _items[_head] = null;
-                    _head--;
-                }
-
-                yield return item;
-            }
         }
 
         public IEnumerable<BaseMessage> GetEnumerable(CancellationToken token = default)

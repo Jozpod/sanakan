@@ -1,6 +1,5 @@
 ﻿using Discord;
 using Discord.Commands;
-using Discord.WebSocket;
 using DiscordBot.Services.PocketWaifu;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
@@ -11,7 +10,6 @@ using Sanakan.Common.Cache;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Repositories;
 using Sanakan.DAL.Repositories.Abstractions;
-using Sanakan.DiscordBot.Abstractions;
 using Sanakan.DiscordBot.Abstractions.Configuration;
 using Sanakan.DiscordBot.Abstractions.Extensions;
 using Sanakan.DiscordBot.Abstractions.Models;
@@ -3473,6 +3471,7 @@ namespace Sanakan.DiscordBot.Modules
             }
 
             var databaseUser = await _userRepository.GetCachedFullUserAsync(discordUser.Id);
+            var gameDeck = databaseUser.GameDeck;
 
             if (databaseUser == null)
             {
@@ -3481,9 +3480,9 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            if (databaseUser.GameDeck.Cards.Count + 1 > databaseUser.GameDeck.MaxNumberOfCards)
+            if (gameDeck.Cards.Count + 1 > gameDeck.MaxNumberOfCards)
             {
-                await ReplyAsync(embed: $"{Context.User.Mention} nie masz już miejsca na kolejną kartę!"
+                await ReplyAsync(embed: $"{discordUser.Mention} nie masz już miejsca na kolejną kartę!"
                     .ToEmbedMessage(EMType.Error).Build());
                 return;
             }
@@ -3501,7 +3500,7 @@ namespace Sanakan.DiscordBot.Modules
                 },
                 Name = "⚒ **Tworzenie:**",
                 Tips = $"Polecenia: `dodaj/usuń [nr przedmiotu] [liczba]`.",
-                Items = databaseUser.GameDeck.Items.ToList(),
+                Items = gameDeck.Items.ToList(),
             };
 
             var session = new CraftSession(
@@ -3565,9 +3564,10 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks("11321"), RequireWaifuFightChannel]
         public async Task EndCardExpeditionAsync([Summary("WID")] ulong wid)
         {
-            var databaseUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
+            var user = Context.User;
+            var databaseUser = await _userRepository.GetUserOrCreateAsync(user.Id);
             var thisCard = databaseUser.GameDeck.Cards.FirstOrDefault(x => x.Id == wid);
-            var mention = Context.User.Mention;
+            var mention = user.Mention;
 
             if (thisCard == null)
             {
@@ -3591,7 +3591,7 @@ namespace Sanakan.DiscordBot.Modules
 
             var content = $"Karta {thisCard.GetString(false, false, true)} wróciła z {oldName.GetName("ej")} wyprawy!\n\n{message}"
                 .ToEmbedMessage(EMType.Success)
-                .WithUser(Context.User)
+                .WithUser(user)
                 .Build();
             await ReplyAsync(embed: content);
         }
@@ -3820,24 +3820,26 @@ namespace Sanakan.DiscordBot.Modules
         [Alias("husbando")]
         [Summary("pozwala ustawić sobie ulubioną postać na profilu (musisz posiadać jej kartę)")]
         [Remarks("451"), RequireWaifuCommandChannel]
-        public async Task SetProfileWaifuAsync([Summary("WID")] ulong wid)
+        public async Task SetProfileWaifuAsync([Summary("WID")] ulong? wid = null)
         {
-            var databaseUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
-            var mention = Context.User.Mention;
+            var user = Context.User;
+            var databaseUser = await _userRepository.GetUserOrCreateAsync(user.Id);
+            var mention = user.Mention;
             var gameDeck = databaseUser.GameDeck;
             var cards = gameDeck.Cards;
+            IEnumerable<Card> previousCards;
 
-            if (wid == 0)
+            if (!wid.HasValue)
             {
                 if (gameDeck.FavouriteWaifuId.HasValue)
                 {
-                    var prevWaifus = cards
+                    previousCards = cards
                         .Where(x => x.CharacterId == gameDeck.FavouriteWaifuId);
 
-                    foreach (var card in prevWaifus)
+                    foreach (var previousCard in previousCards)
                     {
-                        card.Affection -= 5;
-                        _ = card.CalculateCardPower();
+                        previousCard.Affection -= 5;
+                        _ = previousCard.CalculateCardPower();
                     }
 
                     gameDeck.FavouriteWaifuId = null;
@@ -3848,35 +3850,35 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            var thisCard = cards.FirstOrDefault(x => x.Id == wid && !x.InCage);
+            var card = cards.FirstOrDefault(x => x.Id == wid && !x.InCage);
 
-            if (thisCard == null)
+            if (card == null)
             {
                 await ReplyAsync(embed: $"{mention} nie posiadasz takiej karty lub znajduje się ona w klatce!"
                     .ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
-            if (gameDeck.FavouriteWaifuId == thisCard.CharacterId)
+            if (gameDeck.FavouriteWaifuId == card.CharacterId)
             {
                 await ReplyAsync(embed: $"{mention} masz już ustawioną tą postać!"
                     .ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
-            var allPrevWaifus = cards.Where(x => x.CharacterId == gameDeck.FavouriteWaifuId);
-            foreach (var card in allPrevWaifus)
+            previousCards = cards.Where(x => x.CharacterId == gameDeck.FavouriteWaifuId);
+            foreach (var previousCard in previousCards)
             {
-                card.Affection -= 5;
-                _ = card.CalculateCardPower();
+                previousCard.Affection -= 5;
+                _ = previousCard.CalculateCardPower();
             }
 
-            gameDeck.FavouriteWaifuId = thisCard.CharacterId;
+            gameDeck.FavouriteWaifuId = card.CharacterId;
             await _userRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(CacheKeys.User(databaseUser.Id), CacheKeys.Users);
 
-            await ReplyAsync(embed: $"{mention} ustawił {thisCard.Name} jako ulubioną postać.".ToEmbedMessage(EMType.Success).Build());
+            await ReplyAsync(embed: $"{mention} ustawił {card.Name} jako ulubioną postać.".ToEmbedMessage(EMType.Success).Build());
         }
 
         [Command("ofiaruj")]

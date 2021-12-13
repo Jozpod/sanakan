@@ -1,7 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Sanakan.Api;
-using Sanakan.TaskQueue.MessageHandlers;
-using Sanakan.TaskQueue.Messages;
 using Sanakan.Web;
 using System.Diagnostics.CodeAnalysis;
 

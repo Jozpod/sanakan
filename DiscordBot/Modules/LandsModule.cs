@@ -1,7 +1,6 @@
 ﻿using Discord.Commands;
 using System.Threading.Tasks;
 using Sanakan.Preconditions;
-using Discord.WebSocket;
 using System.Linq;
 using System;
 using Sanakan.DAL.Repositories.Abstractions;

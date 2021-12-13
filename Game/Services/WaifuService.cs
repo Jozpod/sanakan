@@ -5,7 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 using Discord;
-using Discord.WebSocket;
 using DiscordBot.Services.PocketWaifu;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;

@@ -24,7 +24,6 @@ using Sanakan.DiscordBot.Supervisor;
 using Sanakan.Game.Builder;
 using Sanakan.ShindenApi.Builder;
 using Sanakan.TaskQueue.Builder;
-using Sanakan.Web;
 using Sanakan.Web.Resources;
 using Sanakan.Web.Swagger;
 using System;

@@ -1,6 +1,5 @@
 ﻿using Discord.Commands;
 using Sanakan.TaskQueue;
-using Sanakan.TaskQueue.Messages;
 using System;
 using System.Threading.Tasks;
 

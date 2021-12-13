@@ -1,7 +1,6 @@
 ﻿using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using Sanakan.Common;
 using Sanakan.Common.Builder;
 using Sanakan.Common.Configuration;
 using Sanakan.Common.Models;

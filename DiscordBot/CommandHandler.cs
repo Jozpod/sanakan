@@ -204,7 +204,7 @@ namespace Sanakan.DiscordBot
             }
             catch (Exception ex)
             {
-
+                _logger.LogError(ex, "An error occurred while invoking command");
             }
 #endif
         }

@@ -1,5 +1,4 @@
 ﻿using Discord.Commands;
-using Discord.WebSocket;
 using Sanakan.Extensions;
 using Sanakan.Preconditions;
 using System;
