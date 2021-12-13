@@ -40,14 +40,14 @@ namespace Sanakan.DiscordBot.Tests.IntegrationTests
         public static string CheckUserAsync(string prefix, IGuildUser user) => $"{prefix}mod check {user.Mention}";
 
         /// <summary>
-        /// <see cref="ModerationModule.GetRandomUserAsync(uint)"/>.
+        /// <see cref="ModerationModule.SetDuelWaifuChannelAsync"/>.
         /// </summary>
-        public static string GetRandomUserAsync(string prefix) => $"{prefix}mod loteria";
+        public static string SetDuelWaifuChannelAsync(string prefix) => $"{prefix}mod duelch";
 
         /// <summary>
-        /// <see cref="ModerationModule.ResolveReportAsync(ulong, string?, string)"/>.
+        /// <see cref="ModerationModule.SetMarketWaifuChannelAsync"/>.
         /// </summary>
-        public static string ResolveReport(string prefix) => $"{prefix}mod report";
+        public static string SetMarketWaifuChannel(string prefix) => $"{prefix}mod marketch";
 
         /// <summary>
         /// <see cref="ModerationModule.SetRaportChannelAsync"/>.
@@ -65,8 +65,38 @@ namespace Sanakan.DiscordBot.Tests.IntegrationTests
         public static string SetGreetingChannel(string prefix) => $"{prefix}mod helloch";
 
         /// <summary>
+        /// <see cref="ModerationModule.SetNsfwChannelAsync"/>.
+        /// </summary>
+        public static string SetNsfwChannel(string prefix) => $"{prefix}nsfwch";
+
+        /// <summary>
         /// <see cref="ModerationModule.SetCommandWaifuChannelAsync"/>.
         /// </summary>
         public static string SetCommandWaifuChannel(string prefix) => $"{prefix}mod wcmdch";
+
+        /// <summary>
+        /// <see cref="ModerationModule.SetWaifuRoleAsync(IRole)"/>.
+        /// </summary>
+        public static string SetWaifuRole(string prefix, ulong roleId) => $"{prefix}mod waifur {roleId}";
+
+        /// <summary>
+        /// <see cref="ModerationModule.ResolveReportAsync(ulong, string?, string)"/>.
+        /// </summary>
+        public static string ResolveReport(string prefix, ulong messageId, string durationStr, string reason) => $"{prefix}report {messageId} {durationStr} {reason}";
+
+        /// <summary>
+        /// <see cref="ModerationModule.CheckUserAsync(IGuildUser)"/>.
+        /// </summary>
+        public static string CheckUser(string prefix, string mention) => $"{prefix}mod check {mention}";
+
+        /// <summary>
+        /// <see cref="ModerationModule.GetRandomUserAsync(uint)"/>.
+        /// </summary>
+        public static string GetRandomUser(string prefix, uint duration) => $"{prefix}mod loteria {duration}";
+
+        /// <summary>
+        /// <see cref="ModerationModule.BanUserAsync(IGuildUser, string, string)"/>.
+        /// </summary>
+        public static string BanUser(string prefix, string mention, string duration) => $"{prefix}mod ban {mention} {duration}";
     }
 }

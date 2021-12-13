@@ -26,7 +26,7 @@ namespace Sanakan.Api.Models
         /// <summary>
         /// The username
         /// </summary>
-        public string Username { get; set; }
+        public string Username { get; set; } = string.Empty;
 
         /// <summary>
         /// The collection of user ranks in forum.

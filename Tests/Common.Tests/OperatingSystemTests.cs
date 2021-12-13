@@ -23,7 +23,7 @@ namespace Sanakan.Common.Tests
         }
 
         [TestMethod]
-        public async Task Should_Return_Process_Info()
+        public void Should_Return_Process_Info()
         {
             var operatingSystem = _serviceProvider.GetRequiredService<IOperatingSystem>();
             var process = operatingSystem.GetCurrentProcess();

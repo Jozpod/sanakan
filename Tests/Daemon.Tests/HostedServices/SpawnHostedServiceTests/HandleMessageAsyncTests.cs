@@ -87,7 +87,7 @@ namespace Sanakan.Daemon.Tests.HostedServices.SpawnHostedServiceTests
             guildUserMock
                 .Setup(pr => pr.RoleIds)
                 .Returns(roleIds);
-            
+
             guildUserMock
                 .Setup(pr => pr.Guild)
                 .Returns(guildMock.Object)
@@ -103,8 +103,8 @@ namespace Sanakan.Daemon.Tests.HostedServices.SpawnHostedServiceTests
 
             guildMock
                 .Setup(pr => pr.GetRole(1ul))
-                .Returns(null as IRole);
-            
+                .Returns<IRole?>(null);
+
             userMessageMock
                 .Setup(pr => pr.Channel)
                 .Returns(messageChannelMock.Object)

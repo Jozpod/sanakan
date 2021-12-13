@@ -14,11 +14,11 @@ namespace Sanakan.ShindenApi.Models
 
         [JsonPropertyName("first_name")]
         [JsonConverter(typeof(HtmlDecodeConverter))]
-        public string FirstName { get; set; }
+        public string FirstName { get; set; } = string.Empty;
 
         [JsonPropertyName("last_name")]
         [JsonConverter(typeof(HtmlDecodeConverter))]
-        public string LastName { get; set; }
+        public string LastName { get; set; } = string.Empty;
 
         [JsonPropertyName("is_real")]
         public bool IsReal { get; set; }
@@ -40,45 +40,45 @@ namespace Sanakan.ShindenApi.Models
 
         [JsonPropertyName("bloodtype")]
         [JsonConverter(typeof(HtmlDecodeConverter))]
-        public string Bloodtype { get; set; }
+        public string Bloodtype { get; set; } = string.Empty;
 
         [JsonPropertyName("height")]
         [JsonConverter(typeof(HtmlDecodeConverter))]
-        public string Height { get; set; }
+        public string Height { get; set; } = string.Empty;
 
         [JsonPropertyName("weight")]
         [JsonConverter(typeof(HtmlDecodeConverter))]
-        public string Weight { get; set; }
+        public string Weight { get; set; } = string.Empty;
 
         [JsonPropertyName("bust")]
         [JsonConverter(typeof(HtmlDecodeConverter))]
-        public string Bust { get; set; }
+        public string Bust { get; set; } = string.Empty;
 
         [JsonPropertyName("waist")]
         [JsonConverter(typeof(HtmlDecodeConverter))]
-        public string Waist { get; set; }
+        public string Waist { get; set; } = string.Empty;
 
         [JsonPropertyName("hips")]
         [JsonConverter(typeof(HtmlDecodeConverter))]
-        public string Hips { get; set; }
+        public string Hips { get; set; } = string.Empty;
 
         [JsonPropertyName("picture_artifact_id")]
         public ulong? PictureId { get; set; }
 
         [JsonPropertyName("bio")]
-        public CharacterBio Biography { get; set; }
+        public CharacterBio Biography { get; set; } = null;
 
         [JsonPropertyName("fav_stats")]
-        public CharacterFav FavStats { get; set; }
+        public CharacterFav FavStats { get; set; } = null;
 
         [JsonPropertyName("points")]
-        public List<PointsForEdit>? Points { get; set; }
+        public List<PointsForEdit> Points { get; set; } = new();
 
         [JsonPropertyName("relations")]
-        public List<StaffInfoRelation>? Relations { get; set; }
+        public List<StaffInfoRelation> Relations { get; set; } = new();
 
         [JsonPropertyName("pictures")]
-        public List<ImagePicture> Pictures { get; set; }
+        public List<ImagePicture> Pictures { get; set; } = new();
 
         public string CharacterUrl => UrlHelpers.GetCharacterURL(CharacterId);
         public string PictureUrl => UrlHelpers.GetPersonPictureURL(PictureId);

@@ -22,9 +22,7 @@ using Sanakan.TaskQueue;
 using Sanakan.TaskQueue.Messages;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -36,12 +34,14 @@ using Sanakan.Game.Models;
 using Sanakan.DiscordBot.Resources;
 using Microsoft.Extensions.DependencyInjection;
 using Sanakan.DiscordBot.Services;
+using Sanakan.DiscordBot.Abstractions.Configuration;
 
 namespace Sanakan.DiscordBot.Modules
 {
     [Name(PrivateModules.Debug), Group("dev"), DontAutoLoad, RequireDev]
     public class DebugModule : SanakanModuleBase
     {
+        private readonly IIconConfiguration _iconsConfiguration;
         private readonly IEventIdsImporter _eventIdsImporter;
         private readonly IFileSystem _fileSystem;
         private readonly IDiscordClientAccessor _discordClientAccessor;
@@ -64,6 +64,7 @@ namespace Sanakan.DiscordBot.Modules
         private readonly IServiceScope _serviceScope;
 
         public DebugModule(
+            IIconConfiguration iconsConfiguration,
             IEventIdsImporter eventIdsImporter,
             IFileSystem fileSystem,
             IDiscordClientAccessor discordClientAccessor,
@@ -80,6 +81,7 @@ namespace Sanakan.DiscordBot.Modules
             ITaskManager taskManager,
             IServiceScopeFactory serviceScopeFactory)
         {
+            _iconsConfiguration = iconsConfiguration;
             _eventIdsImporter = eventIdsImporter;
             _fileSystem = fileSystem;
             _discordClientAccessor = discordClientAccessor;
@@ -112,7 +114,7 @@ namespace Sanakan.DiscordBot.Modules
         [Command("poke", RunMode = RunMode.Async)]
         [Summary("generuje obrazek safari")]
         [Remarks("1")]
-        public async Task GeneratePokeImageAsync([Summary("nr grafiki")]int imageIndex)
+        public async Task GeneratePokeImageAsync([Summary("nr grafiki")] int imageIndex)
         {
             try
             {
@@ -124,7 +126,7 @@ namespace Sanakan.DiscordBot.Modules
                     return;
                 }
 
-                var character = (await _shindenClient.GetCharacterInfoAsync(2)).Value;
+                var character = (await _shindenClient.GetCharacterInfoAsync(2)).Value!;
                 var channel = (ITextChannel)Context.Channel;
                 var card = _waifuService.GenerateNewCard(null, character);
 
@@ -163,11 +165,11 @@ namespace Sanakan.DiscordBot.Modules
         [Command("blacklist")]
         [Summary("dodaje/usuwa użytkownika do czarnej listy")]
         [Remarks("Karna")]
-        public async Task TransferCardAsync([Summary("użytkownik")]IUser user)
+        public async Task TransferCardAsync([Summary("użytkownik")] IUser user)
         {
             var targetUser = await _userRepository.GetUserOrCreateAsync(user.Id);
 
-            if(targetUser == null)
+            if (targetUser == null)
             {
                 await ReplyAsync(embed: Strings.UserNotFound.ToEmbedMessage(EMType.Error).Build());
                 return;
@@ -186,10 +188,10 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("wysyła wiadomość na kanał w danym serwerze jako odpowiedź do podanej innej wiadomości")]
         [Remarks("15188451644 101155483 1231231 Nie masz racji!")]
         public async Task SendResponseMsgToChannelInGuildAsync(
-            [Summary("id serwera")]ulong guildId,
-            [Summary("id kanału")]ulong channelId,
-            [Summary("id wiadomości")]ulong messageId,
-            [Summary("treść wiadomości")][Remainder]string messageContent)
+            [Summary("id serwera")] ulong guildId,
+            [Summary("id kanału")] ulong channelId,
+            [Summary("id wiadomości")] ulong messageId,
+            [Summary("treść wiadomości")][Remainder] string messageContent)
         {
             try
             {
@@ -212,9 +214,9 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("wysyła wiadomość na kanał w danym serwerze")]
         [Remarks("15188451644 101155483 elo ziomki")]
         public async Task SendMsgToChannelInGuildAsync(
-            [Summary("id serwera")]ulong guildId,
-            [Summary("id kanału")]ulong channelId,
-            [Summary("treść wiadomości")][Remainder]string message)
+            [Summary("id serwera")] ulong guildId,
+            [Summary("id kanału")] ulong channelId,
+            [Summary("treść wiadomości")][Remainder] string message)
         {
             try
             {
@@ -232,10 +234,10 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("wysyła wiadomość w formie embed na kanał w danym serwerze")]
         [Remarks("15188451644 101155483 bot elo ziomki")]
         public async Task SendEmbedMsgToChannelInGuildAsync(
-            [Summary("id serwera")]ulong guildId,
-            [Summary("id kanału")]ulong channelId,
-            [Summary("typ wiadomości(Neutral/Warning/Success/Error/Info/Bot)")]EMType type,
-            [Summary("treść wiadomości")][Remainder]string content)
+            [Summary("id serwera")] ulong guildId,
+            [Summary("id kanału")] ulong channelId,
+            [Summary("typ wiadomości(Neutral/Warning/Success/Error/Info/Bot)")] EMType type,
+            [Summary("treść wiadomości")][Remainder] string content)
         {
             try
             {
@@ -254,10 +256,10 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("dodaje reakcje do wiadomości")]
         [Remarks("15188451644 101155483 825724399512453140 <:Redpill:455880209711759400>")]
         public async Task AddReactionToMessageOnChannelInGuildAsync(
-            [Summary("id serwera")]ulong guildId,
-            [Summary("id kanału")]ulong channelId,
-            [Summary("id wiadomości")]ulong messageId,
-            [Summary("reakcja")]string reaction)
+            [Summary("id serwera")] ulong guildId,
+            [Summary("id kanału")] ulong channelId,
+            [Summary("id wiadomości")] ulong messageId,
+            [Summary("reakcja")] string reaction)
         {
             try
             {
@@ -284,7 +286,7 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("wymusza update na kartach")]
         [Remarks("3123 121")]
         public async Task ForceUpdateCardsAsync(
-            [Summary("WID kart")]params ulong[] ids)
+            [Summary("WID kart")] params ulong[] ids)
         {
             var cards = await _cardRepository.GetByIdsAsync(ids);
 
@@ -308,7 +310,7 @@ namespace Sanakan.DiscordBot.Modules
                 }
 
                 var characterInfo = result.Value;
-                var pictureUrl = UrlHelpers.GetPersonPictureURL(characterInfo.PictureId.Value);
+                var pictureUrl = UrlHelpers.GetPersonPictureURL(characterInfo.PictureId!.Value);
                 var hasImage = pictureUrl != UrlHelpers.GetPlaceholderImageURL();
 
                 card.IsUnique = false;
@@ -332,12 +334,12 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("rozdaje karty kilka razy")]
         [Remarks("1 10 5 10")]
         public async Task GiveawayCardsMultiAsync(
-            [Summary("id użytkownika")]ulong id,
-            [Summary("liczba kart")]uint count,
-            [Summary("czas w minutach")]uint duration = 5,
-            [Summary("liczba powtórzeń")]uint repeat = 1)
+            [Summary("id użytkownika")] ulong id,
+            [Summary("liczba kart")] uint count,
+            [Summary("czas w hh:mm:ss")] TimeSpan duration,
+            [Summary("liczba powtórzeń")] uint repeatCount = 1)
         {
-            for (uint i = 0; i < repeat; i++)
+            for (uint i = 0; i < repeatCount; i++)
             {
                 await GiveawayCardsAsync(id, count, duration);
                 await _taskManager.Delay(TimeSpan.FromSeconds(10));
@@ -348,12 +350,12 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("rozdaje karty")]
         [Remarks("1 10 5")]
         public async Task GiveawayCardsAsync(
-            [Summary("id użytkownika")]ulong discordUserId,
-            [Summary("liczba kart")]uint cardCount,
-            [Summary("czas w minutach")]uint duration = 5)
+            [Summary("id użytkownika")] ulong discordUserId,
+            [Summary("liczba kart")] uint cardCount,
+            [Summary("czas w hh:mm:ss")] TimeSpan duration)
         {
-            var emote = Emotes.GreenChecked;
-            var time = _systemClock.UtcNow.AddMinutes(duration);
+            var emote = _iconsConfiguration.GiveawayCardParticipate;
+            var time = _systemClock.UtcNow + duration;
             var guild = Context.Guild;
 
             var mention = "";
@@ -362,7 +364,7 @@ namespace Sanakan.DiscordBot.Modules
 
             if (config != null)
             {
-                var wRole = guild.GetRole(config.WaifuRoleId.Value);
+                var wRole = guild.GetRole(config.WaifuRoleId!.Value);
                 if (wRole != null)
                 {
                     mention = wRole.Mention;
@@ -376,7 +378,7 @@ namespace Sanakan.DiscordBot.Modules
             var userMessage = await ReplyAsync(mention, embed: embed);
             await userMessage.AddReactionAsync(emote);
 
-            await _taskManager.Delay(TimeSpan.FromMinutes(duration));
+            await _taskManager.Delay(duration);
             await userMessage.RemoveReactionAsync(emote, Context.Client.CurrentUser);
 
             var reactions = await userMessage.GetReactionUsersAsync(emote, 300).FlattenAsync();
@@ -435,6 +437,12 @@ namespace Sanakan.DiscordBot.Modules
                 await ReplyAsync(ex.Message);
             }
 
+            if (winner == null)
+            {
+                await userMessage.RemoveAllReactionsAsync();
+                return;
+            }
+
             _blockingPriorityQueue.TryEnqueue(new LotteryMessage
             {
                 CardCount = cardCount,
@@ -453,15 +461,15 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("przenosi kartę między użytkownikami")]
         [Remarks("User 41231 41232")]
         public async Task TransferUserCardAsync(
-            [Summary("użytkownik")]IUser user,
-            [Summary("WIDs")]params ulong[] wids) => await TransferCardAsync(user.Id, wids);
+            [Summary("użytkownik")] IUser user,
+            [Summary("WIDs")] params ulong[] wids) => await TransferCardAsync(user.Id, wids);
 
         [Command("tranc"), Priority(1)]
         [Summary("przenosi kartę między użytkownikami")]
         [Remarks("User 41231 41232")]
         public async Task TransferCardAsync(
-            [Summary("id użytkownika")]ulong discordUserId,
-            [Summary("WIDs")]params ulong[] wids)
+            [Summary("id użytkownika")] ulong discordUserId,
+            [Summary("WIDs")] params ulong[] wids)
         {
             if (!await _userRepository.ExistsByDiscordIdAsync(discordUserId))
             {
@@ -470,7 +478,8 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            var thisCards = await _cardRepository.GetByIdsAsync(wids, new CardQueryOptions {
+            var thisCards = await _cardRepository.GetByIdsAsync(wids, new CardQueryOptions
+            {
                 IncludeTagList = true,
             });
 
@@ -481,7 +490,7 @@ namespace Sanakan.DiscordBot.Modules
             }
 
             var reply = $"Karta {thisCards.First().GetString(false, false, true)} została przeniesiona.";
-            
+
             if (thisCards.Count > 1)
             {
                 reply = $"Przeniesiono {thisCards.Count} kart.";
@@ -506,7 +515,7 @@ namespace Sanakan.DiscordBot.Modules
         [Command("rmcards"), Priority(1)]
         [Summary("kasuje podane karty")]
         [Remarks("41231 41232")]
-        public async Task RemoveCardsAsync([Summary("WIDs")]params ulong[] wids)
+        public async Task RemoveCardsAsync([Summary("WIDs")] params ulong[] wids)
         {
             var thisCards = await _cardRepository.GetByIdsAsync(wids, new CardQueryOptions
             {
@@ -522,7 +531,7 @@ namespace Sanakan.DiscordBot.Modules
             }
 
             var reply = $"Karta {thisCards.First().GetString(false, false, true)} została skasowana.";
-            
+
             if (thisCards.Count > 1)
             {
                 reply = $"Skasowano {thisCards.Count} kart.";
@@ -545,8 +554,8 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("ustawia podany poziom użytkownikowi")]
         [Remarks("Karna 1")]
         public async Task ChangeUserLevelAsync(
-            [Summary("użytkownik")]IGuildUser user,
-            [Summary("poziom")]ulong level)
+            [Summary("użytkownik")] IGuildUser user,
+            [Summary("poziom")] ulong level)
         {
             var databaseUser = await _userRepository.GetUserOrCreateAsync(user.Id);
 
@@ -565,7 +574,7 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("wyrzuca użytkowników z serwera")]
         [Remarks("Jupson Moe")]
         public async Task MultiKickAsync(
-            [Summary("użytkownicy")]params IGuildUser[] users)
+            [Summary("użytkownicy")] params IGuildUser[] users)
         {
             var count = 0;
 
@@ -576,7 +585,7 @@ namespace Sanakan.DiscordBot.Modules
                     await user.KickAsync("Multi kick - łamanie regulaminu");
                     ++count;
                 }
-                catch (Exception) {}
+                catch (Exception) { }
             }
 
             await ReplyAsync(embed: $"Wyrzucono {count} użytkowników.".ToEmbedMessage(EMType.Success).Build());
@@ -586,7 +595,7 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("banuje użytkowników z serwera")]
         [Remarks("Jupson Moe")]
         public async Task MultiBankAsync(
-            [Summary("użytkownicy")]params IGuildUser[] users)
+            [Summary("użytkownicy")] params IGuildUser[] users)
         {
             var count = 0;
 
@@ -597,7 +606,7 @@ namespace Sanakan.DiscordBot.Modules
                     await Context.Guild.AddBanAsync(user, 0, "Multi ban - łamanie regulaminu");
                     ++count;
                 }
-                catch (Exception) {}
+                catch (Exception) { }
             }
 
             await ReplyAsync(embed: $"Zbanowano {count} użytkowników.".ToEmbedMessage(EMType.Success).Build());
@@ -606,7 +615,7 @@ namespace Sanakan.DiscordBot.Modules
         [Command("restore"), Priority(1)]
         [Summary("przenosi kartę na nowo do użytkownika")]
         [Remarks("Sniku")]
-        public async Task RestoreCardsAsync([Summary("użytkownik")]IGuildUser user)
+        public async Task RestoreCardsAsync([Summary("użytkownik")] IGuildUser user)
         {
             var thisCards = await _cardRepository.GetByIdFirstOrLastOwnerAsync(user.Id);
 
@@ -642,11 +651,11 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("generuje listę id kart, których właścicieli nie widzi bot na serwerach")]
         [Remarks("true")]
         public async Task GenerateMissingUsersCardListAsync(
-            [Summary("czy wypisać id'ki")]bool ids = false)
+            [Summary("czy wypisać id'ki")] bool ids = false)
         {
             var guilds = await Context.Client.GetGuildsAsync();
             var allUserIds = new List<ulong>(1000);
-            
+
             foreach (var guild in guilds)
             {
                 var users = await guild.GetUsersAsync();
@@ -654,7 +663,7 @@ namespace Sanakan.DiscordBot.Modules
             }
 
             var nonExistingIds = await _cardRepository.GetByExcludedGameDeckIdsAsync(allUserIds.Distinct());
-                
+
             await ReplyAsync(embed: $"Kart: {nonExistingIds.Count}".ToEmbedMessage(EMType.Bot).Build());
 
             if (ids)
@@ -666,7 +675,7 @@ namespace Sanakan.DiscordBot.Modules
         [Command("cstats", RunMode = RunMode.Async)]
         [Summary("generuje statystyki kart począwszy od podanej karty")]
         [Remarks("1")]
-        public async Task GenerateCardStatsAsync([Summary("WID")]ulong wid)
+        public async Task GenerateCardStatsAsync([Summary("WID")] ulong wid)
         {
             var stringBuilder = new StringBuilder(100);
             var stats = new long[(int)Rarity.E + 1];
@@ -686,7 +695,7 @@ namespace Sanakan.DiscordBot.Modules
         [Command("dusrcards"), Priority(1)]
         [Summary("usuwa karty użytkownika o podanym id z bazy")]
         [Remarks("845155646123")]
-        public async Task RemoveCardsUserAsync([Summary("id użytkownika")]ulong discordUserId)
+        public async Task RemoveCardsUserAsync([Summary("id użytkownika")] ulong discordUserId)
         {
             var user = await _userRepository.GetUserOrCreateAsync(discordUserId);
             user.GameDeck.Cards.Clear();
@@ -704,13 +713,13 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("usuwa użytkownika o podanym id z bazy")]
         [Remarks("845155646123")]
         public async Task FactoryUserAsync(
-            [Summary("id użytkownika")]ulong discordUserId,
-            [Summary("czy usunąć karty?")]bool cards = false)
+            [Summary("id użytkownika")] ulong discordUserId,
+            [Summary("czy usunąć karty?")] bool cards = false)
         {
             var fakeUser = await _userRepository.GetUserOrCreateAsync(DAL.Constants.FakeUserId);
             var user = await _userRepository.GetUserOrCreateAsync(discordUserId);
 
-            if(user == null)
+            if (user == null)
             {
                 await ReplyAsync(embed: $"Użytkownik o id: `{discordUserId}` został wymazany.".ToEmbedMessage(EMType.Success).Build());
                 return;
@@ -739,8 +748,8 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("usuwa dane użytkownika o podanym id z bazy i danej wartości tc")]
         [Remarks("845155646123 5000")]
         public async Task FactoryUserAsync(
-            [Summary("id użytkownika")]ulong discordUserId,
-            [Summary("wartość tc")]long value)
+            [Summary("id użytkownika")] ulong discordUserId,
+            [Summary("wartość tc")] long value)
         {
             var user = await _userRepository.GetUserOrCreateAsync(discordUserId);
             var cards = user.GameDeck.Cards.OrderByDescending(x => x.CreatedOn).ToList();
@@ -794,8 +803,8 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("aktualizuje tytuł karty")]
         [Remarks("ssało")]
         public async Task ChangeTitleCardAsync(
-            [Summary("WID")]ulong wid,
-            [Summary("tytuł")][Remainder]string? title = null)
+            [Summary("WID")] ulong wid,
+            [Summary("tytuł")][Remainder] string? title = null)
         {
             var thisCard = await _cardRepository.GetByIdAsync(wid);
 
@@ -830,7 +839,7 @@ namespace Sanakan.DiscordBot.Modules
         [Command("delq"), Priority(1)]
         [Summary("kasuje zagadkę o podanym id")]
         [Remarks("20}")]
-        public async Task RemoveQuizAsync([Summary("id zagadki")]ulong id)
+        public async Task RemoveQuizAsync([Summary("id zagadki")] ulong id)
         {
             var question = await _questionRepository.GetByIdAsync(id);
 
@@ -851,12 +860,12 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("dodaje nową zagadkę")]
         [Remarks("{...}")]
         public async Task AddNewQuizAsync(
-            [Summary("zagadka w formie jsona")][Remainder]string json)
+            [Summary("zagadka w formie jsona")][Remainder] string json)
         {
             try
             {
                 var question = JsonSerializer.Deserialize<Question>(json);
-                _questionRepository.Add(question);
+                _questionRepository.Add(question!);
                 await _questionRepository.SaveChangesAsync();
 
                 _cacheManager.ExpireTag(CacheKeys.Quizes);
@@ -872,10 +881,11 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("ustawia liczbę znaków na pakiet")]
         [Remarks("true")]
         public async Task SetCharCountPerPacketAsync(
-            [Summary("liczba znaków")]ulong count,
-            [Summary("true/false - czy zapisać")]bool save = false)
+            [Summary("liczba znaków")] ulong count,
+            [Summary("true/false - czy zapisać")] bool save = false)
         {
-            if (save) {
+            if (save)
+            {
                 await _config.UpdateAsync(opt =>
                 {
                     opt.Experience.CharPerPacket = count;
@@ -891,8 +901,8 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("ustawia liczbę znaków na punkt doświadczenia")]
         [Remarks("true")]
         public async Task SetCharCountPerExpAsync(
-            [Summary("liczba znaków")]long count,
-            [Summary("true/false - czy zapisać")]bool save = false)
+            [Summary("liczba znaków")] long count,
+            [Summary("true/false - czy zapisać")] bool save = false)
         {
             if (save)
             {
@@ -918,7 +928,7 @@ namespace Sanakan.DiscordBot.Modules
 
             Embed embed;
 
-            if(hasSaved)
+            if (hasSaved)
             {
                 embed = $"Banowanie uzytkownikow za spamowanie url: `{_config.Value.Discord.BanForUrlSpam}`".ToEmbedMessage(EMType.Success).Build();
                 await ReplyAsync(embed: embed);
@@ -933,7 +943,7 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("wyłącza/załącza safari")]
         [Remarks("true")]
         public async Task ToggleSafariAsync(
-            [Summary("true/false - czy zapisać")]bool save = false)
+            [Summary("true/false - czy zapisać")] bool save = false)
         {
             if (save)
             {
@@ -967,7 +977,7 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("ustawia id eventu (kasowane są po restarcie)")]
         [Remarks("https://pastebin.com/raw/Y6a8gH5P")]
         public async Task SetWaifuEventIdsAsync(
-            [Summary("link do pliku z id postaci oddzielnymi średnikami")]string url)
+            [Summary("link do pliku z id postaci oddzielnymi średnikami")] string url)
         {
             var result = await _eventIdsImporter.RunAsync(url);
             Embed embed;
@@ -1001,7 +1011,7 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("generuje przykładowy obrazek otrzymania poziomu")]
         [Remarks("")]
         public async Task GenerateLevelUpBadgeAsync(
-            [Summary("użytkownik(opcjonalne)")]IGuildUser? guildUser = null)
+            [Summary("użytkownik(opcjonalne)")] IGuildUser? guildUser = null)
         {
             var user = guildUser ?? Context.User as IGuildUser;
 
@@ -1041,7 +1051,7 @@ namespace Sanakan.DiscordBot.Modules
             }
 
             var developerRole = Context.Guild.Roles.FirstOrDefault(x => x.Name == "Developer");
-            
+
             if (developerRole == null)
             {
                 return;
@@ -1065,10 +1075,10 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("generuje przedmiot i daje go użytkownikowi")]
         [Remarks("User 2 1")]
         public async Task GenerateItemAsync(
-            [Summary("użytkownik")]IGuildUser user,
-            [Summary("przedmiot")]ItemType itemType,
-            [Summary("liczba przedmiotów")]uint count = 1,
-            [Summary("jakość przedmiotu")]Quality quality = Quality.Broken)
+            [Summary("użytkownik")] IGuildUser user,
+            [Summary("przedmiot")] ItemType itemType,
+            [Summary("liczba przedmiotów")] uint count = 1,
+            [Summary("jakość przedmiotu")] Quality quality = Quality.Broken)
         {
             var item = itemType.ToItem(count, quality);
             var databaseUser = await _userRepository.GetUserOrCreateAsync(user.Id);
@@ -1076,7 +1086,7 @@ namespace Sanakan.DiscordBot.Modules
             var thisItem = databaseUser
                 .GameDeck
                 .Items
-                .FirstOrDefault(x => x.Type == item.Type 
+                .FirstOrDefault(x => x.Type == item.Type
                     && x.Quality == item.Quality);
 
             if (thisItem == null)
@@ -1099,31 +1109,49 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("generuje kartę i daje ją użytkownikowi")]
         [Remarks("User 54861")]
         public async Task GenerateCardAsync(
-            [Summary("użytkownik")]IGuildUser user,
-            [Summary("id postaci na shinden (nie podanie - losowo)")]ulong? characterId = null,
-            [Summary("jakość karty (nie podanie - losowo)")]Rarity rarity = Rarity.E)
+            [Summary("użytkownik")] IGuildUser user,
+            [Summary("id postaci na shinden (nie podanie - losowo)")] ulong? characterId = null,
+            [Summary("jakość karty (nie podanie - losowo)")] Rarity rarity = Rarity.E)
         {
-            CharacterInfo character;
+            CharacterInfo? character;
             Card card;
 
-            if (characterId.HasValue) {
-                character = (await _shindenClient.GetCharacterInfoAsync(characterId.Value)).Value;
+            if (characterId.HasValue)
+            {
+                var characterInfoResult = await _shindenClient.GetCharacterInfoAsync(characterId.Value);
+
+                if (characterInfoResult.Value == null)
+                {
+                    return;
+                }
+
+                character = characterInfoResult.Value;
             }
-            else {
+            else
+            {
                 character = await _waifuService.GetRandomCharacterAsync();
+
+                if (character == null)
+                {
+                    return;
+                }
             }
 
-            if (rarity == Rarity.E) {
+            if (rarity == Rarity.E)
+            {
                 card = _waifuService.GenerateNewCard(user.Id, character);
-            } else {
+            }
+            else
+            {
                 card = _waifuService.GenerateNewCard(user.Id, character, rarity);
             }
 
             card.Source = CardSource.GodIntervention;
             var databaseUser = await _userRepository.GetUserOrCreateAsync(user.Id);
-            databaseUser.GameDeck.Cards.Add(card);
+            var gameDeck = databaseUser.GameDeck;
+            gameDeck.Cards.Add(card);
 
-            databaseUser.GameDeck.RemoveCharacterFromWishList(card.CharacterId);
+            gameDeck.RemoveCharacterFromWishList(card.CharacterId);
 
             await _userRepository.SaveChangesAsync();
 
@@ -1138,11 +1166,11 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("zamienia kartę na ultimate")]
         [Remarks("54861 Zeta 100 100 1000")]
         public async Task MakeUltimateCardAsync(
-            [Summary("wid karty")]ulong id,
-            [Summary("jakość karty")]Quality quality,
-            [Summary("dodatkowy atak")]int atk = 0,
-            [Summary("dodatkowa obrona")]int def = 0,
-            [Summary("dodatkowe hp")]int hp = 0)
+            [Summary("wid karty")] ulong id,
+            [Summary("jakość karty")] Quality quality,
+            [Summary("dodatkowy atak")] int atk = 0,
+            [Summary("dodatkowa obrona")] int def = 0,
+            [Summary("dodatkowe hp")] int hp = 0)
         {
             var card = await _cardRepository.GetByIdAsync(id, new CardQueryOptions
             {
@@ -1178,8 +1206,8 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("zmienia SC użytkownika o podaną wartość")]
         [Remarks("Sniku 10000")]
         public async Task ChangeUserScAsync(
-            [Summary("użytkownik")]IGuildUser user,
-            [Summary("liczba SC")]long amount)
+            [Summary("użytkownik")] IGuildUser user,
+            [Summary("liczba SC")] long amount)
         {
             var databaseUser = await _userRepository.GetUserOrCreateAsync(user.Id);
             databaseUser.ScCount += amount;
@@ -1196,8 +1224,8 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("zmienia AC użytkownika o podaną wartość")]
         [Remarks("User 10000")]
         public async Task ChangeUserAcAsync(
-            [Summary("użytkownik")]IGuildUser user,
-            [Summary("liczba AC")]long amount)
+            [Summary("użytkownik")] IGuildUser user,
+            [Summary("liczba AC")] long amount)
         {
             var databaseUser = await _userRepository.GetUserOrCreateAsync(user.Id);
             databaseUser.AcCount += amount;
@@ -1214,7 +1242,7 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks("User 10000")]
         public async Task ChangeUserTcAsync(
             [Summary("użytkownik")] IGuildUser user,
-            [Summary("liczba TC")]long amount)
+            [Summary("liczba TC")] long amount)
         {
             var databaseUser = await _userRepository.GetUserOrCreateAsync(user.Id);
             databaseUser.TcCount += amount;
@@ -1231,7 +1259,7 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks("User 10000")]
         public async Task ChangeUserPcAsync(
             [Summary("użytkownik")] IGuildUser user,
-            [Summary("liczba PC")]long amount)
+            [Summary("liczba PC")] long amount)
         {
             var databaseUser = await _userRepository.GetUserOrCreateAsync(user.Id);
             databaseUser.GameDeck.PVPCoins += amount;
@@ -1248,7 +1276,7 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks("User 10000")]
         public async Task ChangeUserCtAsync(
             [Summary("użytkownik")] IGuildUser user,
-            [Summary("liczba CT")]long amount)
+            [Summary("liczba CT")] long amount)
         {
             var databaseUser = await _userRepository.GetUserOrCreateAsync(user.Id);
             databaseUser.GameDeck.CTCount += amount;
@@ -1265,7 +1293,7 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks("User 10000")]
         public async Task ChangeUserExpAsync(
             [Summary("użytkownik")] IGuildUser user,
-            [Summary("liczba punktów doświadczenia")]ulong amount)
+            [Summary("liczba punktów doświadczenia")] ulong amount)
         {
             var databaseUser = await _userRepository.GetUserOrCreateAsync(user.Id);
             databaseUser.ExperienceCount += amount;
@@ -1282,7 +1310,7 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks("User 10000")]
         public async Task ChangeUserOstAsync(
             [Summary("użytkownik")] IGuildUser user,
-            [Summary("liczba ostrzeżeń")]long amount)
+            [Summary("liczba ostrzeżeń")] long amount)
         {
             var databaseUser = await _userRepository.GetUserOrCreateAsync(user.Id);
             databaseUser.WarningsCount += amount;
@@ -1299,9 +1327,9 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("symuluje wyprawę daną kartą")]
         [Remarks("12312 n")]
         public async Task SimulateExpeditionAsync(
-            [Summary("WID")]ulong wid,
-            [Summary("typ wyprawy")]ExpeditionCardType expedition = ExpeditionCardType.None,
-            [Summary("czas w minutach")]int time = -1)
+            [Summary("WID")] ulong wid,
+            [Summary("typ wyprawy")] ExpeditionCardType expedition = ExpeditionCardType.None,
+            [Summary("czas w minutach")] int time = -1)
         {
             if (expedition == ExpeditionCardType.None)
             {
@@ -1338,7 +1366,7 @@ namespace Sanakan.DiscordBot.Modules
         public async Task TurnOffAsync()
         {
             await ReplyAsync(embed: "To dobry czas by umrzeć.".ToEmbedMessage(EMType.Bot).Build());
-            
+
             await _discordClientAccessor.LogoutAsync();
             await _taskManager.Delay(TimeSpan.FromMilliseconds(1500));
             Environment.Exit(0);
@@ -1350,7 +1378,7 @@ namespace Sanakan.DiscordBot.Modules
         public async Task TurnOffWithUpdateAsync()
         {
             await ReplyAsync(embed: "To już czas?".ToEmbedMessage(EMType.Bot).Build());
-            
+
             await _discordClientAccessor.LogoutAsync();
 
             using var _ = _fileSystem.Create("./updateNow");
@@ -1365,7 +1393,7 @@ namespace Sanakan.DiscordBot.Modules
         {
             var serverConfig = _config.Value
                 .RMConfig
-                .Where(x => x.GuildId == Context.Guild.Id 
+                .Where(x => x.GuildId == Context.Guild.Id
                     || x.GuildId == 0)
                 .ToList();
 
@@ -1381,10 +1409,10 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("zmienia istniejący wpis w konfiguracji powiadomień w odniesieniu do serwera, lub tworzy nowy gdy go nie ma")]
         [Remarks("News 1232321314 1232412323 tak")]
         public async Task ChangeRMConfigAsync(
-            [Summary("typ wpisu")]RichMessageType type,
-            [Summary("id kanału")]ulong channelId,
-            [Summary("id roli")]ulong roleId,
-            [Summary("czy zapisać?")]bool save = false)
+            [Summary("typ wpisu")] RichMessageType type,
+            [Summary("id kanału")] ulong channelId,
+            [Summary("id roli")] ulong roleId,
+            [Summary("czy zapisać?")] bool save = false)
         {
             var guildId = Context.Guild.Id;
             var config = _config.Value;
@@ -1433,7 +1461,7 @@ namespace Sanakan.DiscordBot.Modules
             }
             else
             {
-                
+
                 await _config.UpdateAsync(opt =>
                 {
                     opt.Discord.BlacklistedGuilds.Add(Context.Guild.Id);
@@ -1447,7 +1475,7 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("wypisuje polecenia")]
         [Remarks("kasuj")]
         public async Task SendHelpAsync(
-            [Summary("nazwa polecenia (opcjonalne)")][Remainder]string? command = null)
+            [Summary("nazwa polecenia (opcjonalne)")][Remainder] string? command = null)
         {
             if (command == null)
             {

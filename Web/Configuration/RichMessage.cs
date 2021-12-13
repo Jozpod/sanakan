@@ -15,37 +15,37 @@ namespace Sanakan.DiscordBot.Models
         /// <summary>
         /// Adres do kótego prowadzi tytuł wiadomości
         /// </summary>
-        public string Url { get; set; }
+        public string Url { get; set; } = null;
 
         /// <summary>
         /// Tytuł wiadomości, opcjonalne
         /// </summary>
-        public string Title { get; set; }
+        public string Title { get; set; } = null;
 
         /// <summary>
         /// Adres obrazka wyświetlanego na końcu wiadomości
         /// </summary>
-        public string ImageUrl { get; set; }
+        public string ImageUrl { get; set; } = null;
 
         /// <summary>
         /// Główna treść wiadomości, opcjonalne
         /// </summary>
-        public string Description { get; set; }
+        public string Description { get; set; } = null;
 
         /// <summary>
         /// Adres obrazka wyświetlanego po prawej stronie
         /// </summary>
-        public string ThumbnailUrl { get; set; }
+        public string ThumbnailUrl { get; set; } = null;
 
         /// <summary>
         /// Autor wiadomości - pierwsza linia
         /// </summary>
-        public RichMessageAuthor Author { get; set; }
+        public RichMessageAuthor Author { get; set; } = null;
 
         /// <summary>
         /// Stopka wiadomości - ostatnia linia
         /// </summary>
-        public RichMessageFooter Footer { get; set; }
+        public RichMessageFooter Footer { get; set; } = null;
 
         /// <summary>
         /// Timestamp obok stopki
@@ -55,7 +55,7 @@ namespace Sanakan.DiscordBot.Models
         /// <summary>
         /// Dodatkowe pola
         /// </summary>
-        public List<RichMessageField> Fields { get; set; }
+        public List<RichMessageField> Fields { get; set; } = null;
 
         /// <summary>
         /// Typ wiadomości
@@ -65,6 +65,6 @@ namespace Sanakan.DiscordBot.Models
         /// <summary>
         /// Dodatkowa wiadomość poza Embedem
         /// </summary>
-        public string Content { get; set; }
+        public string Content { get; set; } = null;
     }
 }

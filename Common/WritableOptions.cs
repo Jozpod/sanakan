@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace Sanakan.Common
 {
-    internal class WritableOptions<T> : IWritableOptions<T> 
+    internal class WritableOptions<T> : IWritableOptions<T>
         where T : class, new()
     {
         private readonly ILogger _logger;
@@ -37,7 +37,10 @@ namespace Sanakan.Common
             _options = options;
             _configuration = configuration;
             _file = file;
-            _jsonSerializerOptions = new JsonSerializerOptions();
+            _jsonSerializerOptions = new JsonSerializerOptions()
+            {
+                WriteIndented = true,
+            };
             _jsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
             _jsonSerializerOptions.Converters.Add(new VersionConverter());
             _jsonSerializerOptions.Converters.Add(new TimeSpanConverter());
@@ -56,15 +59,9 @@ namespace Sanakan.Common
 
             try
             {
-                using var stream = _fileSystem.Open(physicalPath, FileMode.OpenOrCreate);
-                var configuration = await JsonSerializer.DeserializeAsync<T>(stream, _jsonSerializerOptions);
-                applyChanges(configuration);
-
-                stream.Seek(0, SeekOrigin.Begin);
-                //var memoryStream = new MemoryStream();
-                //await JsonSerializer.SerializeAsync(memoryStream, configuration, _jsonSerializerOptions);
-                //var json1 = Encoding.UTF8.GetString(memoryStream.ToArray());
-                await JsonSerializer.SerializeAsync(stream, configuration, _jsonSerializerOptions);
+                using var stream = _fileSystem.Open(physicalPath, FileMode.Truncate);
+                applyChanges(_options.CurrentValue);
+                await JsonSerializer.SerializeAsync(stream, _options.CurrentValue, _jsonSerializerOptions);
                 stream.Close();
 
                 _configuration.Reload();

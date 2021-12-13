@@ -13,11 +13,11 @@ namespace Sanakan.ShindenApi.Models
 
         [JsonPropertyName("first_name")]
         [JsonConverter(typeof(HtmlDecodeConverter))]
-        public string FirstName { get; set; }
+        public string FirstName { get; set; } = string.Empty;
 
         [JsonPropertyName("last_name")]
         [JsonConverter(typeof(HtmlDecodeConverter))]
-        public string LastName { get; set; }
+        public string LastName { get; set; } = string.Empty;
 
         [JsonPropertyName("staff_type")]
         public StaffType StaffType { get; set; }
@@ -28,7 +28,7 @@ namespace Sanakan.ShindenApi.Models
 
         [JsonPropertyName("birth_place")]
         [JsonConverter(typeof(HtmlDecodeConverter))]
-        public string BirthPlace { get; set; }
+        public string BirthPlace { get; set; } = string.Empty;
 
         [JsonPropertyName("death_date")]
         [JsonConverter(typeof(DateTimeyyyyMMddConverter))]
@@ -44,9 +44,9 @@ namespace Sanakan.ShindenApi.Models
         public ulong PictureArtifactId { get; set; }
 
         [JsonPropertyName("bio")]
-        public StaffBio Biography { get; set; }
+        public StaffBio Biography { get; set; } = null;
 
         [JsonPropertyName("relations")]
-        public List<StaffInfoRelation> Relations { get; set; }
-    } 
+        public List<StaffInfoRelation> Relations { get; set; } = new();
+    }
 }

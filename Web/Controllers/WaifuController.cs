@@ -277,11 +277,11 @@ namespace Sanakan.Web.Controllers
                 ForegroundColor = gameDeck.ForegroundColor,
                 ForegroundPosition = gameDeck.ForegroundPosition,
                 BackgroundPosition = gameDeck.BackgroundPosition,
-                ExchangeConditions = gameDeck.ExchangeConditions,
+                ExchangeConditions = gameDeck.ExchangeConditions!,
                 BackgroundImageUrl = gameDeck.BackgroundImageUrl?.ToString(),
                 ForegroundImageUrl = gameDeck.ForegroundImageUrl?.ToString(),
                 Expeditions = cards.Where(x => x.Expedition != ExpeditionCardType.None).ToExpeditionView(gameDeck.Karma),
-                Waifu = waifu,
+                Waifu = waifu!,
                 Gallery = gallery,
             };
 
@@ -333,7 +333,7 @@ namespace Sanakan.Web.Controllers
         /// <param name="model">New card information.</param>
         [HttpPost("cards/character/{characterId}/update"), Authorize(Policy = AuthorizePolicies.Site)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status200OK)]
-        public async Task<IActionResult> UpdateCardInfoAsync(
+        public IActionResult UpdateCardInfoAsync(
             ulong characterId,
             [FromBody] CharacterCardInfoUpdate model)
         {
@@ -378,7 +378,7 @@ namespace Sanakan.Web.Controllers
             _blockingPriorityQueue.TryEnqueue(new UpdateCardPictureMessage
             {
                 CharacterId = characterId,
-                PictureId = characterInfo.PictureId.Value,
+                PictureId = characterInfo.PictureId!.Value,
             });
 
             return ShindenOk("Started!");
@@ -394,20 +394,22 @@ namespace Sanakan.Web.Controllers
         public async Task<IActionResult> GetUserWishlistAsync(ulong id)
         {
             var user = await _userRepository.GetCachedFullUserAsync(id);
+            var gameDeck = user.GameDeck;
 
             if (user == null)
             {
                 return ShindenNotFound(Strings.UserNotFound);
             }
 
-            if (user.GameDeck.Wishes.Count < 1)
+            if (gameDeck.Wishes.Count < 1)
             {
                 return ShindenNotFound("Wishlist not found!");
             }
 
-            var characterIds = user.GameDeck.GetCharactersWishList();
-            var titleIds = user.GameDeck.GetTitlesWishList();
-            var cardsId = user.GameDeck.GetCardsWishList();
+
+            var characterIds = gameDeck.GetCharactersWishList();
+            var titleIds = gameDeck.GetTitlesWishList();
+            var cardsId = gameDeck.GetCardsWishList();
 
             var allCards = new List<Card>();
 
@@ -423,7 +425,7 @@ namespace Sanakan.Web.Controllers
             }
 
             var result = await _waifuService.GetCardsFromWishlist(
-                cardsId,
+                cardsId!,
                 characterIds,
                 titleIds,
                 allCards,
@@ -475,7 +477,7 @@ namespace Sanakan.Web.Controllers
             }
 
             var result = await _waifuService.GetCardsFromWishlist(
-                cardsId,
+                cardsId!,
                 characterIds,
                 titleIds,
                 allCards,
@@ -542,6 +544,8 @@ namespace Sanakan.Web.Controllers
             ulong discordUserId,
             [FromBody] IEnumerable<CardBoosterPack>? boosterPacks)
         {
+            boosterPacks ??= Enumerable.Empty<CardBoosterPack>();
+
             if (!boosterPacks.Any())
             {
                 return ShindenInternalServerError(Strings.ModelIsInvalid);

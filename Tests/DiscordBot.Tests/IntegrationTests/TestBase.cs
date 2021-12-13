@@ -32,25 +32,25 @@ namespace Sanakan.DiscordBot.Tests.IntegrationTests
 #endif
     public partial class TestBase
     {
-        private static ServiceProvider _serviceProvider;
-        private static IDiscordClientAccessor _discordClientAccessor;
+        private static ServiceProvider _serviceProvider = null;
+        private static IDiscordClientAccessor _discordClientAccessor = null;
         private static Mock<IShindenClient> _shindenClientMock = new();
-        private static DiscordConfiguration _configuration;
+        private static DiscordConfiguration _configuration = null;
         private static SemaphoreSlim _semaphore = new SemaphoreSlim(0);
         private static IUserMessage? LastMessage = null;
-        private static IGuild Guild;
-        private static ITextChannel Channel;
+        private static IGuild Guild = null;
+        private static ITextChannel Channel = null;
         private static string Prefix = ".";
-        private static IDatabaseFacade DatabaseFacade;
-        private static DiscordIntegrationTestOptions _discordIntegrationTestOptions;
-        private static TaskQueueHostedService _taskQueueHostedService;
-        private static SessionHostedService _sessionHostedService;
+        private static IDatabaseFacade DatabaseFacade = null;
+        private static DiscordIntegrationTestOptions _discordIntegrationTestOptions = null;
+        private static TaskQueueHostedService _taskQueueHostedService = null;
+        private static SessionHostedService _sessionHostedService = null;
         private static CancellationToken _cancellationToken;
         private static SemaphoreSlim _guildAvailableSemaphore = new SemaphoreSlim(0);
-        
-        public static DiscordSocketClient FakeUserClient { get; private set; }
-        public static ISelfUser BotUser { get; private set; }
-        public static ISelfUser FakeUser { get; private set; }
+
+        public static DiscordSocketClient FakeUserClient { get; private set; } = null;
+        public static ISelfUser BotUser { get; private set; } = null;
+        public static ISelfUser FakeUser { get; private set; } = null;
 
         [ClassInitialize]
         public static async Task ClassInitialize(TestContext context)
@@ -85,6 +85,7 @@ namespace Sanakan.DiscordBot.Tests.IntegrationTests
             services.AddSingleton(_shindenClientMock.Object);
             services.AddGameServices();
             services.AddDiscordBot();
+            services.AddDiscordIcons();
             services.AddDiscordBotServices();
             services.Configure<DiscordIntegrationTestOptions>(configurationRoot.GetSection(nameof(DiscordIntegrationTestOptions)));
             services.AddConfiguration(configurationRoot);
@@ -123,7 +124,7 @@ namespace Sanakan.DiscordBot.Tests.IntegrationTests
             _configuration.AllowedToDebug.Add(FakeUser.Id);
 
             DatabaseFacade = _serviceProvider.GetRequiredService<IDatabaseFacade>();
-            if(await DatabaseFacade.EnsureCreatedAsync())
+            if (await DatabaseFacade.EnsureCreatedAsync())
             {
                 var dbContext = _serviceProvider.GetRequiredService<SanakanDbContext>();
                 await TestDataGenerator.PopulateDatabaseAsync(
@@ -134,16 +135,16 @@ namespace Sanakan.DiscordBot.Tests.IntegrationTests
             }
 
             _cancellationToken = new CancellationToken();
-            _taskQueueHostedService.StartAsync(_cancellationToken);
-            _sessionHostedService.StartAsync(_cancellationToken);
+            var taskQueueTask = _taskQueueHostedService.StartAsync(_cancellationToken);
+            var sessionHostedServiceTask = _sessionHostedService.StartAsync(_cancellationToken);
         }
 
-       
+
 
         [ClassCleanup]
         public static async Task ClassCleanup()
         {
-            if(DatabaseFacade != null)
+            if (DatabaseFacade != null)
             {
                 //await DatabaseFacade.EnsureDeletedAsync();
             }

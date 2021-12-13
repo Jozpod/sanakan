@@ -22,11 +22,11 @@ namespace DAL.MySql.Migrator.Tests
 #endif
     public class DatabaseMigratorTests
     {
-        private IServiceProvider _serviceProvider;
-        private DatabaseMigrator _databaseMigrator;
-        private SanakanDbContext _dbContext;
-        private TestDatabaseConfiguration _testDatabaseConfiguration;
-        private Microsoft.EntityFrameworkCore.Infrastructure.DatabaseFacade _databaseFacade;
+        private IServiceProvider _serviceProvider = null;
+        private DatabaseMigrator _databaseMigrator = null;
+        private SanakanDbContext _dbContext = null;
+        private TestDatabaseConfiguration _testDatabaseConfiguration = null;
+        private Microsoft.EntityFrameworkCore.Infrastructure.DatabaseFacade _databaseFacade = null;
 
         [TestInitialize]
         public async Task TestInitialize()
@@ -81,7 +81,7 @@ namespace DAL.MySql.Migrator.Tests
         {
             var created = await _databaseFacade.EnsureCreatedAsync();
 
-            if(!created)
+            if (!created)
             {
                 return;
             }

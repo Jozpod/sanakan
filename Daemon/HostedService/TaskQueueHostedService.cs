@@ -38,18 +38,18 @@ namespace Sanakan.Daemon.HostedService
                     foreach (var message in _blockingPriorityQueue.GetEnumerable(stoppingToken))
                     {
                         stoppingToken.ThrowIfCancellationRequested();
-                        
+
                         using var serviceScope = _serviceScopeFactory.CreateScope();
                         var serviceProvider = serviceScope.ServiceProvider;
                         var messageHandler = serviceProvider.GetMessageHandler(message);
 
                         await messageHandler.HandleAsync(message);
-                        
+
                         stoppingToken.ThrowIfCancellationRequested();
                     }
                 }, stoppingToken);
             }
-            catch (OperationCanceledException ex)
+            catch (OperationCanceledException)
             {
                 _logger.LogInformation("Task queue has been stopped");
             }

@@ -16,13 +16,13 @@ namespace Sanakan.Web.Tests.AutomationTests
 #endif
     public partial class TestBase
     {
-        private static HttpClient _client;
-        private static ChromeDriver _driver;
-        private static SHA1Managed _sha;
-        private static TestWebApplicationFactory<Startup> _factory;
+        private static HttpClient _client = null;
+        private static ChromeDriver _driver = null;
+        private static SHA1Managed _sha = null;
+        private static TestWebApplicationFactory<Startup> _factory = null;
 
         [ClassInitialize]
-        public static async Task Setup(TestContext context)
+        public static void Setup(TestContext context)
         {
             _sha = new SHA1Managed();
             _factory = new TestWebApplicationFactory<Startup>(true);
@@ -30,7 +30,7 @@ namespace Sanakan.Web.Tests.AutomationTests
             {
                 BaseAddress = new Uri(@"https://localhost:5001"),
                 AllowAutoRedirect = true,
-                
+
             };
             _client = _factory.CreateClient(options);
             var chromeOptions = new ChromeOptions();
@@ -41,9 +41,9 @@ namespace Sanakan.Web.Tests.AutomationTests
         }
 
         [ClassCleanup]
-        public static async Task Cleanup()
+        public static void Cleanup()
         {
-            if(_client != null)
+            if (_client != null)
             {
                 _client.Dispose();
             }
@@ -57,7 +57,7 @@ namespace Sanakan.Web.Tests.AutomationTests
         }
 
         [TestMethod]
-        public async Task Should_Display_Swagger_Page()
+        public void Should_Display_Swagger_Page()
         {
             _driver.Navigate().GoToUrl(_factory.RootUri);
             var wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(10));

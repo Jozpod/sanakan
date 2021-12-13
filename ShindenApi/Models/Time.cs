@@ -18,7 +18,7 @@ namespace Sanakan.ShindenApi.Models
         public ulong Minutes { get; set; }
 
         [JsonPropertyName("t")]
-        public string T { get; set; }
+        public string T { get; set; } = null;
 
         [JsonPropertyName("y")]
         public ulong Years { get; set; }

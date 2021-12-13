@@ -13,7 +13,7 @@ namespace DiscordBot.ServicesTests.HelperServiceTests
     public class GiveHelpAboutPublicCommandTests : Base
     {
         [TestMethod]
-        public async Task Should_Throw_When_Command_Does_Not_Exist()
+        public void Should_Throw_When_Command_Does_Not_Exist()
         {
             var command = "command";
             var prefix = ".";

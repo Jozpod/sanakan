@@ -125,7 +125,7 @@ namespace Sanakan.DiscordBot.Tests.PreconditionsTests
         {
             _commandContextMock
                  .Setup(pr => pr.User)
-                 .Returns(null as IUser);
+                 .Returns<IUser?>(null);
 
             var result = await _preconditionAttribute.CheckPermissionsAsync(_commandContextMock.Object, null, _serviceProvider);
             result.IsSuccess.Should().BeFalse();
@@ -136,7 +136,6 @@ namespace Sanakan.DiscordBot.Tests.PreconditionsTests
         public async Task Should_Return_Error_No_Role_Not_Admin()
         {
             var roleId = 1ul;
-            var userId = 1ul;
             var guildConfig = new GuildOptions(1, 50)
             {
                 AdminRoleId = roleId,
@@ -153,7 +152,7 @@ namespace Sanakan.DiscordBot.Tests.PreconditionsTests
 
             _guildMock
                 .Setup(pr => pr.GetRole(roleId))
-                .Returns(null as IRole);
+                .Returns<IRole?>(null);
 
             _guildUserMock
                 .Setup(pr => pr.RoleIds)
@@ -171,8 +170,6 @@ namespace Sanakan.DiscordBot.Tests.PreconditionsTests
         [TestMethod]
         public async Task Should_Return_Error_No_Configured_Role_Not_Admin()
         {
-            var roleId = 1ul;
-            var userId = 1ul;
             var guildConfig = new GuildOptions(1, 50);
             var roleIds = new List<ulong>();
 
@@ -201,7 +198,6 @@ namespace Sanakan.DiscordBot.Tests.PreconditionsTests
         public async Task Should_Return_Error_No_Guild_Not_Admin()
         {
             var guildId = 1ul;
-            var userId = 1ul;
             var guildConfig = null as GuildOptions;
 
             _guildMock

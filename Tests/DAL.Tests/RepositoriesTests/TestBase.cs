@@ -16,8 +16,8 @@ namespace Sanakan.DAL.Tests
     [TestClass]
     public class TestBase
     {
-        protected static SanakanDbContext DbContext;
-        protected static ServiceProvider ServiceProvider;
+        protected static SanakanDbContext DbContext = null;
+        protected static ServiceProvider ServiceProvider = null;
 
         [AssemblyInitialize]
         public static async Task ClassInitialize(TestContext context)

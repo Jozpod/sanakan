@@ -28,7 +28,7 @@ namespace Sanakan.DiscordBot.Services
         private readonly ICacheManager _cacheManager;
         private readonly ISystemClock _systemClock;
         private readonly IServiceScopeFactory _serviceScopeFactory;
-        
+
         public ModeratorService(
             ILogger<IModeratorService> logger,
             ICacheManager cacheManager,
@@ -76,17 +76,21 @@ namespace Sanakan.DiscordBot.Services
             var channels = await guild.GetTextChannelsAsync();
             var waifuConfiguration = config.WaifuConfig;
 
+            var adminRoleId = config.AdminRoleId;
+            var userRoleId = config.UserRoleId;
+            var waifuRoleId = config.WaifuRoleId;
+
             var parameters = new object[]
             {
                 config.Prefix ?? "--",
                 config.SupervisionEnabled.GetYesNo(),
                 config.ChaosModeEnabled.GetYesNo(),
-                config.AdminRoleId.HasValue ? guild.GetRole(config.AdminRoleId.Value)?.Mention : "--",
-                config.UserRoleId.HasValue ? guild.GetRole(config.UserRoleId.Value)?.Mention : "--",
+                adminRoleId.HasValue ? guild.GetRole(adminRoleId.Value)?.Mention! : "--",
+                userRoleId.HasValue ? guild.GetRole(userRoleId.Value)?.Mention! : "--",
                 guild.GetRole(config.MuteRoleId)?.Mention ?? "--",
                 guild.GetRole(config.ModMuteRoleId)?.Mention ?? "--",
                 guild.GetRole(config.GlobalEmotesRoleId)?.Mention ?? "--",
-                config.WaifuRoleId.HasValue ? guild.GetRole(config.WaifuRoleId.Value)?.Mention : "--",
+                waifuRoleId.HasValue ? guild.GetRole(waifuRoleId.Value)?.Mention! : "--",
                 channels.FirstOrDefault(pr => pr.Id == waifuConfiguration?.MarketChannelId)?.Mention ?? "--",
                 channels.FirstOrDefault(pr => pr.Id == waifuConfiguration?.SpawnChannelId)?.Mention ?? "--",
                 channels.FirstOrDefault(pr => pr.Id == waifuConfiguration?.DuelChannelId)?.Mention ?? "--",
@@ -121,7 +125,7 @@ namespace Sanakan.DiscordBot.Services
             };
         }
 
-        private async Task<EmbedBuilder> GetSelfRolesConfig(GuildOptions config, ICommandContext context)
+        private EmbedBuilder GetSelfRolesConfig(GuildOptions config, ICommandContext context)
         {
             var stringBuilder = new StringBuilder("**AutoRole:**\n\n", 500);
             var guild = context.Guild;
@@ -143,7 +147,7 @@ namespace Sanakan.DiscordBot.Services
             return new EmbedBuilder().WithColor(EMType.Bot.Color()).WithDescription(description);
         }
 
-        private async Task<EmbedBuilder> GetModRolesConfig(GuildOptions config, ICommandContext context)
+        private EmbedBuilder GetModRolesConfig(GuildOptions config, ICommandContext context)
         {
             var stringBuilder = new StringBuilder("**Role moderatorów:**\n\n", 500);
             var guild = context.Guild;
@@ -190,7 +194,7 @@ namespace Sanakan.DiscordBot.Services
             return new EmbedBuilder().WithColor(EMType.Bot.Color()).WithDescription(description);
         }
 
-        private async Task<EmbedBuilder> GetLevelRolesConfig(GuildOptions config, ICommandContext context)
+        private EmbedBuilder GetLevelRolesConfig(GuildOptions config, ICommandContext context)
         {
             var stringBuilder = new StringBuilder("**Role na poziom:**\n\n", 500);
             var guild = context.Guild;
@@ -376,16 +380,16 @@ namespace Sanakan.DiscordBot.Services
                     return await GetCmdChannelsConfig(config, context);
 
                 case ConfigType.LevelRoles:
-                    return await GetLevelRolesConfig(config, context);
+                    return GetLevelRolesConfig(config, context);
 
                 case ConfigType.Lands:
                     return GetLandsConfig(config, context);
 
                 case ConfigType.ModeratorRoles:
-                    return await GetModRolesConfig(config, context);
+                    return GetModRolesConfig(config, context);
 
                 case ConfigType.SelfRoles:
-                    return await GetSelfRolesConfig(config, context);
+                    return GetSelfRolesConfig(config, context);
 
                 default:
                 case ConfigType.Global:
@@ -562,7 +566,7 @@ namespace Sanakan.DiscordBot.Services
             await RemovePenaltyFromDb(penalty);
         }
 
-        private async Task RemovePenaltyFromDb(PenaltyInfo penalty)
+        private async Task RemovePenaltyFromDb(PenaltyInfo? penalty)
         {
             if (penalty == null)
             {

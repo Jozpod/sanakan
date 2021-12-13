@@ -12,7 +12,9 @@ namespace Sanakan.Game.Tests.ImageProcessorTests
     /// <summary>
     /// Defines tests for <see cref="IImageProcessor.GetUserProfileAsync(UserInfo?, User, string, long, string, Discord.Color)"/> method.
     /// </summary>
+#if DEBUG
     [TestClass]
+#endif
     public class GetUserProfileAsyncTests : Base
     {
 
@@ -59,17 +61,17 @@ namespace Sanakan.Game.Tests.ImageProcessorTests
                 MessagesCount = 1488,
                 ProfileType = ProfileType.Cards,
             };
-            var card1 = new Card(1l, "test card 1", "test card 1", 100, 50, Rarity.SSS, Dere.Dandere, DateTime.UtcNow);
-            var card2 = new Card(2l, "test card 2", "test card 2", 100, 50, Rarity.A, Dere.Bodere, DateTime.UtcNow);
-            var card3 = new Card(3l, "test card 3", "test card 3", 100, 50, Rarity.E, Dere.Tsundere, DateTime.UtcNow);
-            var card4 = new Card(4l, "test card 4", "test card 4", 100, 50, Rarity.S, Dere.Yami, DateTime.UtcNow);
-            databaseUser.GameDeck.FavouriteWaifuId = 1l;
+            var card1 = new Card(1ul, "test card 1", "test card 1", 100, 50, Rarity.SSS, Dere.Dandere, DateTime.UtcNow);
+            var card2 = new Card(2ul, "test card 2", "test card 2", 100, 50, Rarity.A, Dere.Bodere, DateTime.UtcNow);
+            var card3 = new Card(3ul, "test card 3", "test card 3", 100, 50, Rarity.E, Dere.Tsundere, DateTime.UtcNow);
+            var card4 = new Card(4ul, "test card 4", "test card 4", 100, 50, Rarity.S, Dere.Yami, DateTime.UtcNow);
+            databaseUser.GameDeck.FavouriteWaifuId = 1ul;
             databaseUser.GameDeck.Cards.Add(card1);
             databaseUser.GameDeck.Cards.Add(card2);
             databaseUser.GameDeck.Cards.Add(card3);
             databaseUser.GameDeck.Cards.Add(card4);
             var avatarUrl = "https://test.com/user-avatar";
-            var topPosition = 5l;
+            var topPosition = 5;
             var nickname = "test user";
             var color = Discord.Color.DarkerGrey;
 

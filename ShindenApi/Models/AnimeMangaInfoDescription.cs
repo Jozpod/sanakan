@@ -11,7 +11,7 @@ namespace Sanakan.ShindenApi.Models
 
         [JsonPropertyName("description")]
         [JsonConverter(typeof(HtmlDecodeAndRemoveBBCodeConverter))]
-        public string OtherDescription { get; set; }
+        public string OtherDescription { get; set; } = null;
 
         [JsonPropertyName("lang_code")]
         public Language LangCode { get; set; }

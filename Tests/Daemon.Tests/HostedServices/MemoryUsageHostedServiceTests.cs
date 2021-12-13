@@ -26,7 +26,7 @@ namespace Sanakan.Daemon.Test.HostedServices
         private readonly Mock<IOptionsMonitor<DaemonsConfiguration>> _optionsMock = new(MockBehavior.Strict);
         private readonly Mock<IOperatingSystem> _operatingSystemMock = new(MockBehavior.Strict);
         private readonly Mock<ISystemAnalyticsRepository> _systemAnalyticsRepositoryMock = new(MockBehavior.Strict);
-        private readonly FakeTimer _fakeTimer = new ();
+        private readonly FakeTimer _fakeTimer = new();
         private readonly Mock<ITaskManager> _taskManagerMock = new(MockBehavior.Strict);
         private readonly Mock<IDatabaseFacade> _databaseFacadeMock = new(MockBehavior.Strict);
         private readonly Process _process = Process.GetCurrentProcess();
@@ -111,7 +111,7 @@ namespace Sanakan.Daemon.Test.HostedServices
                 .Returns(Task.CompletedTask)
                 .Verifiable();
 
-            _service.StartAsync(new CancellationToken());
+            var startTask = _service.StartAsync(new CancellationToken());
             await Task.Delay(TimeSpan.FromSeconds(1));
             _fakeTimer.RaiseTickEvent();
 

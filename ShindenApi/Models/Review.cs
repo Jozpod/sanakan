@@ -19,10 +19,10 @@ namespace Sanakan.ShindenApi.Models
 
         [JsonPropertyName("review")]
         [JsonConverter(typeof(HtmlDecodeConverter))]
-        public string ReviewContent { get; set; }
+        public string ReviewContent { get; set; } = null;
 
         [JsonPropertyName("name")]
-        public string Name { get; set; }
+        public string Name { get; set; } = null;
 
         [JsonPropertyName("user_id")]
         public ulong UserId { get; set; }

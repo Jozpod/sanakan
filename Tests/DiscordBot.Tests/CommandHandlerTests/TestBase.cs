@@ -107,9 +107,11 @@ namespace Sanakan.DiscordBot.Tests.CommandHandlerTests
                 .Setup(pr => pr.AddModulesAsync(It.IsAny<Assembly>(), It.IsAny<IServiceProvider>()))
                 .ReturnsAsync(Enumerable.Empty<ModuleInfo>());
 
+            ModuleInfo moduleInfo = null!;
+
             _commandServiceMock
                 .Setup(pr => pr.AddModuleAsync<It.IsAnyType>(It.IsAny<IServiceProvider>()))
-                .ReturnsAsync(null as ModuleInfo);
+                .ReturnsAsync(moduleInfo);
 
             _helperServiceMock
                 .Setup(pr => pr.AddPublicModuleInfo(It.IsAny<IEnumerable<ModuleInfo>>()));

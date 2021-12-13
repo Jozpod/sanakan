@@ -5,6 +5,6 @@ namespace Sanakan.ShindenApi.Models
     public class AnimeMangaInfo
     {
         [JsonPropertyName("title")]
-        public TitleEntry Title { get; set; }
+        public TitleEntry Title { get; set; } = null;
     }
 }

@@ -10,7 +10,7 @@ namespace Sanakan.ShindenApi.Models
         public PictureType ArtifactType { get; set; }
 
         [JsonPropertyName("character_id")]
-        public string CharacterId { get; set; }
+        public string CharacterId { get; set; } = null;
 
         [JsonPropertyName("artifact_id")]
         public ulong ArtifactId { get; set; }
@@ -22,10 +22,10 @@ namespace Sanakan.ShindenApi.Models
         public bool Is18Plus { get; set; }
 
         [JsonPropertyName("user_id")]
-        public string UserId { get; set; }
+        public string UserId { get; set; } = null;
 
         [JsonPropertyName("title")]
         [JsonConverter(typeof(HtmlDecodeConverter))]
-        public string Title { get; set; }
+        public string Title { get; set; } = null;
     }
 }

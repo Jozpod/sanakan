@@ -14,7 +14,7 @@ namespace Sanakan.ShindenApi.Models
 
         [JsonPropertyName("biography")]
         [JsonConverter(typeof(HtmlDecodeConverter))]
-        public string Biography { get; set; }
+        public string Biography { get; set; } = null;
 
         [JsonPropertyName("lang")]
         public Language Lang { get; set; }

@@ -6,6 +6,7 @@ using Sanakan.Common.Cache;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot.Abstractions;
+using Sanakan.DiscordBot.Abstractions.Configuration;
 using Sanakan.DiscordBot.Abstractions.Extensions;
 using Sanakan.DiscordBot.Abstractions.Models;
 using Sanakan.Extensions;
@@ -22,17 +23,21 @@ namespace Sanakan.DiscordBot.Session
 {
     public class CraftSession : InteractionSession
     {
-        private readonly CraftSessionPayload _payload;
-        public IEmote[] StartReactions => new IEmote[] { Emojis.Checked, Emojis.DeclineEmote };
-        private IServiceProvider _serviceProvider { get; set; }
+        private readonly CraftSessionPayload _payload = null;
+        private IIconConfiguration _iconConfiguration = null;
+        private IServiceProvider _serviceProvider = null;
 
         public class CraftSessionPayload
         {
             public IMessage? Message { get; set; }
-            public List<Item> Items { get; set; }
-            public PlayerInfo? PlayerInfo { get; set; }
-            public string Name { get; set; }
-            public string Tips { get; set; }
+
+            public List<Item> Items { get; set; } = null;
+
+            public PlayerInfo? PlayerInfo { get; set; } = null;
+
+            public string Name { get; set; } = null;
+
+            public string Tips { get; set; } = null;
         }
 
         public CraftSession(
@@ -62,6 +67,7 @@ namespace Sanakan.DiscordBot.Session
                 return;
             }
 
+            _iconConfiguration = _serviceProvider.GetRequiredService<IIconConfiguration>();
             await HandleMessageAsync(context);
             await HandleReactionAsync(context);
             IsRunning = false;
@@ -127,12 +133,12 @@ namespace Sanakan.DiscordBot.Session
 
             if (commandType.Contains("usuń") || commandType.Contains("usun"))
             {
-                await HandleDeleteAsync(itemNumber - 1, itemCount, message);
+                await HandleDeleteAsync(itemNumber - 1, itemCount, message!);
                 ResetExpiry();
             }
             else if (commandType.Contains("dodaj"))
             {
-                await HandleAddAsync(itemNumber - 1, itemCount, message);
+                await HandleAddAsync(itemNumber - 1, itemCount, message!);
                 ResetExpiry();
             }
         }
@@ -141,7 +147,7 @@ namespace Sanakan.DiscordBot.Session
         {
             if (number >= _payload.Items.Count)
             {
-                await message.AddReactionAsync(Emojis.CrossMark);
+                await message.AddReactionAsync(_iconConfiguration.CrossMark);
                 return;
             }
 
@@ -170,7 +176,7 @@ namespace Sanakan.DiscordBot.Session
                 secondItem.Count += count;
             }
 
-            await message.AddReactionAsync(Emojis.InboxTray);
+            await message.AddReactionAsync(_iconConfiguration.InboxTray);
 
             if (await _payload.Message.Channel.GetMessageAsync(_payload.Message.Id) is IUserMessage userMessage)
             {
@@ -184,7 +190,7 @@ namespace Sanakan.DiscordBot.Session
 
             if (number >= playerItems.Count)
             {
-                await message.AddReactionAsync(Emojis.CrossMark);
+                await message.AddReactionAsync(_iconConfiguration.CrossMark);
                 return;
             }
 
@@ -223,7 +229,7 @@ namespace Sanakan.DiscordBot.Session
             var cacheManager = _serviceProvider.GetRequiredService<ICacheManager>();
             var userRepository = _serviceProvider.GetRequiredService<IUserRepository>();
             var waifuService = _serviceProvider.GetRequiredService<IWaifuService>();
-            
+
             if (context.Message.Id != _payload.Message.Id)
             {
                 return;
@@ -237,7 +243,7 @@ namespace Sanakan.DiscordBot.Session
             }
 
             var reaction = context.AddReaction ?? context.RemoveReaction;
-            
+
             if (reaction == null)
             {
                 return;
@@ -245,7 +251,7 @@ namespace Sanakan.DiscordBot.Session
 
             var discordUserId = _payload.PlayerInfo.DiscordId;
 
-            if (reaction.Emote.Equals(Emojis.DeclineEmote))
+            if (reaction.Emote.Equals(_iconConfiguration.Decline))
             {
                 await userMessage.ModifyAsync(x => x.Embed = $"{_payload.Name}\n\nOdrzucono tworzenie karty."
                     .ToEmbedMessage(EMType.Bot).Build());
@@ -275,7 +281,7 @@ namespace Sanakan.DiscordBot.Session
             var characterInfo = await waifuService.GetRandomCharacterAsync();
             var newCard = waifuService.GenerateNewCard(
                 discordUserId,
-                characterInfo,
+                characterInfo!,
                 rarity);
 
             var gameDeck = user.GameDeck;
@@ -363,7 +369,7 @@ namespace Sanakan.DiscordBot.Session
 
             if (userMessage == null)
             {
-                return;             
+                return;
             }
 
             try

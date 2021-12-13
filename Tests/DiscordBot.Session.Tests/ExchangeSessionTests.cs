@@ -5,6 +5,7 @@ using Moq;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot.Abstractions;
+using Sanakan.DiscordBot.Abstractions.Configuration;
 using Sanakan.Game.Models;
 using System;
 using System.Collections.Generic;
@@ -31,6 +32,7 @@ namespace Sanakan.DiscordBot.Session.Tests
         {
             _payload = new ExchangeSessionPayload();
             var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton<IIconConfiguration>(new DefaultIconConfiguration());
             serviceCollection.AddSingleton(_userRepositoryMock.Object);
 
             _serviceProvider = serviceCollection.BuildServiceProvider();
@@ -88,7 +90,7 @@ namespace Sanakan.DiscordBot.Session.Tests
                 .Returns($"dodaj {card.Id}");
 
             _userMessageMock
-                 .Setup(pr => pr.AddReactionAsync(Emojis.InboxTray, null))
+                 .Setup(pr => pr.AddReactionAsync(It.IsAny<IEmote>(), null))
                  .Returns(Task.CompletedTask);
 
             _messageChannelMock

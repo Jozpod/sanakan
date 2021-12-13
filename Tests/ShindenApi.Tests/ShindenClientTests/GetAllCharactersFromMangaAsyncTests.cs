@@ -15,7 +15,7 @@ namespace Sanakan.ShindenApi.Tests
             MockHttpOk("all-characters-from-manga-result.json", HttpMethod.Get);
 
             var result = await _shindenClient.GetAllCharactersFromMangaAsync();
-            result.Value.First().Should().Be(1);
+            result.Value!.First().Should().Be(1);
         }
     }
 }

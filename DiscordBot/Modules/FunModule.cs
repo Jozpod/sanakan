@@ -24,12 +24,14 @@ using Sanakan.DiscordBot.Session;
 using Sanakan.Game.Services;
 using Sanakan.Game.Services.Abstractions;
 using System.Text;
+using Sanakan.DiscordBot.Abstractions.Configuration;
 
 namespace Sanakan.DiscordBot.Modules
 {
     [Name("Zabawy"), RequireUserRole]
     public class FunModule : SanakanModuleBase
     {
+        private readonly IIconConfiguration _iconConfiguration;
         private readonly ISessionManager _sessionManager;
         private readonly ICacheManager _cacheManager;
         private readonly IUserRepository _userRepository;
@@ -43,7 +45,8 @@ namespace Sanakan.DiscordBot.Modules
         private readonly IServiceScope _serviceScope;
 
         public FunModule(
-            ISessionManager session,
+            IIconConfiguration iconConfiguration,
+            ISessionManager sessionManager,
             ICacheManager cacheManager,
             ISystemClock systemClock,
             IRandomNumberGenerator randomNumberGenerator,
@@ -51,7 +54,8 @@ namespace Sanakan.DiscordBot.Modules
             ITaskManager taskManager,
             IServiceScopeFactory serviceScopeFactory)
         {
-            _sessionManager = session;
+            _iconConfiguration = iconConfiguration;
+            _sessionManager = sessionManager;
             _cacheManager = cacheManager;
             _systemClock = systemClock;
             _randomNumberGenerator = randomNumberGenerator;
@@ -144,7 +148,7 @@ namespace Sanakan.DiscordBot.Modules
             }
 
             var notifChannel = await guild.GetChannelAsync(config.NotificationChannelId);
-            var userRole = guild.GetRole(config.UserRoleId.Value);
+            var userRole = guild.GetRole(config.UserRoleId!.Value);
             var muteRole = guild.GetRole(config.MuteRoleId);
 
             if (muteRole == null)
@@ -177,10 +181,7 @@ namespace Sanakan.DiscordBot.Modules
 
             var content = $"{user.Mention} na pewno chcesz muta?".ToEmbedMessage(EMType.Error).Build();
             var replyMessage = await ReplyAsync(embed: content);
-            await replyMessage.AddReactionsAsync(new IEmote[] {
-                Emojis.Checked,
-                Emojis.DeclineEmote
-            });
+            await replyMessage.AddReactionsAsync(_iconConfiguration.AcceptDecline);
 
             acceptPayload.MessageId = replyMessage.Id;
             acceptPayload.Channel = replyMessage.Channel;
@@ -240,7 +241,7 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("bot losuje jedną rzecz z podanych opcji")]
         [Remarks("user1 user2 user3"), RequireCommandChannel]
         public async Task GetOneFromManyAsync(
-            [Summary("opcje z których bot losuje")]params string[] options)
+            [Summary("opcje z których bot losuje")] params string[] options)
         {
             if (options.Count() < 2)
             {
@@ -265,8 +266,8 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("bot wykonuje rzut monetą, wygrywasz kwotę, o którą się założysz")]
         [Remarks("reszka 10"), RequireCommandChannel]
         public async Task TossCoinAsync(
-            [Summary("strona monety (orzeł/reszka)")]CoinSide coinSide,
-            [Summary("ilość SC")]int amount)
+            [Summary("strona monety (orzeł/reszka)")] CoinSide coinSide,
+            [Summary("ilość SC")] int amount)
         {
             var mention = Context.User.Mention;
 
@@ -317,7 +318,7 @@ namespace Sanakan.DiscordBot.Modules
         [Alias("set slot")]
         [Summary("ustawia automat")]
         [Remarks("info"), RequireCommandChannel]
-        public async Task SlotMachineSettingsAsync([Summary("typ nastaw (info - wyświetla informacje)")]SlotMachineSetting setting = SlotMachineSetting.Info, [Summary("wartość nastawy")]string value = "info")
+        public async Task SlotMachineSettingsAsync([Summary("typ nastaw (info - wyświetla informacje)")] SlotMachineSetting setting = SlotMachineSetting.Info, [Summary("wartość nastawy")] string value = "info")
         {
             var user = Context.User;
 
@@ -329,7 +330,7 @@ namespace Sanakan.DiscordBot.Modules
             }
 
             var databaseUser = await _userRepository.GetUserOrCreateAsync(user.Id);
-            if (!databaseUser.ApplySlotMachineSetting(setting, value))
+            if (!databaseUser!.ApplySlotMachineSetting(setting, value))
             {
                 await ReplyAsync(embed: $"Podano niewłaściwą wartość parametru!".ToEmbedMessage(EMType.Error).Build());
                 return;
@@ -347,9 +348,9 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("grasz na jednorękim bandycie")]
         [Remarks("info"), RequireCommandChannel]
         public async Task PlayOnSlotMachineAsync(
-            [Summary("typ (info - wyświetla informacje)")]string type = "game")
+            [Summary("typ (info - wyświetla informacje)")] string type = "game")
         {
-            var stringBuilder = new StringBuilder(string.Format(Strings.GameInfo, Emojis.PsyduckEmoji));
+            var stringBuilder = new StringBuilder(string.Format(Strings.GameInfo, _iconConfiguration.Psyduck));
 
             Embed embed;
 
@@ -399,7 +400,7 @@ namespace Sanakan.DiscordBot.Modules
 
             _cacheManager.ExpireTag(CacheKeys.User(databaseUser.Id), CacheKeys.Users);
 
-            var psay = smConfig.PsayMode > 0 ? $"{Emojis.PsyduckEmoji} " : " ";
+            var psay = smConfig.PsayMode > 0 ? $"{_iconConfiguration.Psyduck} " : " ";
             var beatValue = smConfig.Beat.Value();
             var multiplierValue = smConfig.Multiplier.Value();
 
@@ -421,8 +422,8 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("dajesz datek innemu graczowi w postaci SC obarczony 40% podatkiem")]
         [Remarks("Karna 2000"), RequireCommandChannel]
         public async Task GiveUserScAsync(
-            [Summary("użytkownik")]IGuildUser user,
-            [Summary("liczba SC (min. 1000)")]uint value)
+            [Summary("użytkownik")] IGuildUser user,
+            [Summary("liczba SC (min. 1000)")] uint value)
         {
             if (value < 1000)
             {

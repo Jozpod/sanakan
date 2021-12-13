@@ -9,7 +9,7 @@ namespace Sanakan.Daemon.Tests.HostedServices.DiscordBotHostedServiceTests
     public class UserJoinedAsyncTests : Base
     {
         [TestMethod]
-        public async Task Should_Exit_Not_User_Message()
+        public void Should_Exit_Not_User_Message()
         {
             var messageMock = new Mock<IMessage>(MockBehavior.Strict);
 

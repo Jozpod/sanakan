@@ -10,6 +10,7 @@ using Sanakan.Common.Cache;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot.Abstractions;
+using Sanakan.DiscordBot.Abstractions.Configuration;
 using Sanakan.DiscordBot.Abstractions.Extensions;
 using Sanakan.DiscordBot.Abstractions.Models;
 using Sanakan.Extensions;
@@ -21,22 +22,25 @@ namespace Sanakan.DiscordBot.Session
     public class ExchangeSession : InteractionSession
     {
         private readonly ExchangeSessionPayload _payload;
-        private readonly ICacheManager _cacheManager;
-        private IServiceProvider _serviceProvider { get; set; }
+        private ICacheManager _cacheManager = null;
+        private IIconConfiguration _iconConfiguration = null;
+        private IServiceProvider _serviceProvider = null;
 
         public class ExchangeSessionPayload
         {
-            public IMessage Message { get; set; }
-            public PlayerInfo SourcePlayer { get; set; }
-            public PlayerInfo DestinationPlayer { get; set; }
-            public string Name { get; set; }
-            public string Tips { get; set; }
+            public IMessage Message { get; set; } = null;
+
+            public PlayerInfo SourcePlayer { get; set; } = null;
+
+            public PlayerInfo DestinationPlayer { get; set; } = null;
+
+            public string Name { get; set; } = null;
+
+            public string Tips { get; set; } = null;
 
             public ExchangeStatus State { get; set; } = ExchangeStatus.Add;
 
         }
-
-        public IEmote[] StartReactions => new IEmote[] { Emojis.OneEmote, Emojis.TwoEmote };
 
         public ExchangeSession(
           ulong ownerId,
@@ -65,6 +69,7 @@ namespace Sanakan.DiscordBot.Session
                 return;
             }
 
+            _iconConfiguration = _serviceProvider.GetRequiredService<IIconConfiguration>();
             await HandleMessageAsync(sessionContext);
             await HandleReactionAsync(sessionContext);
             IsRunning = false;
@@ -148,13 +153,13 @@ namespace Sanakan.DiscordBot.Session
                 var WIDStr = splitedCommand?[1];
                 if (string.IsNullOrEmpty(WIDStr))
                 {
-                    await userMessage.AddReactionAsync(Emojis.CrossMark);
+                    await userMessage.AddReactionAsync(_iconConfiguration.CrossMark);
                     return;
                 }
 
                 if (ulong.TryParse(WIDStr, out var WID))
                 {
-                    await HandleDeleteAsync(thisPlayer, WID, userMessage);
+                    await HandleDeleteAsync(thisPlayer, WID, userMessage!);
                 }
                 ResetExpiry();
             }
@@ -171,11 +176,11 @@ namespace Sanakan.DiscordBot.Session
 
                 if (ids.Any())
                 {
-                    await HandleAddAsync(thisPlayer, ids, userMessage, targetPlayer);
+                    await HandleAddAsync(thisPlayer, ids, userMessage!, targetPlayer!);
                 }
                 else
                 {
-                    await userMessage.AddReactionAsync(Emojis.CrossMark);
+                    await userMessage.AddReactionAsync(_iconConfiguration.CrossMark);
                 }
 
                 ResetExpiry();
@@ -258,12 +263,12 @@ namespace Sanakan.DiscordBot.Session
 
             if (added)
             {
-                await message.AddReactionAsync(Emojis.InboxTray);
+                await message.AddReactionAsync(_iconConfiguration.InboxTray);
             }
 
             if (error)
             {
-                await message.AddReactionAsync(Emojis.CrossMark);
+                await message.AddReactionAsync(_iconConfiguration.CrossMark);
             }
 
             if (await _payload.Message.Channel.GetMessageAsync(_payload.Message.Id) is IUserMessage userMessage)
@@ -278,7 +283,7 @@ namespace Sanakan.DiscordBot.Session
             var card = player.Cards.FirstOrDefault(x => x.Id == wid);
             if (card == null)
             {
-                await message.AddReactionAsync(Emojis.CrossMark);
+                await message.AddReactionAsync(_iconConfiguration.CrossMark);
                 return;
             }
 
@@ -348,12 +353,12 @@ namespace Sanakan.DiscordBot.Session
         private async Task HandleReactionInAdd(IReaction reaction, IUserMessage userMessage)
         {
             var userId = reaction.GetUserId();
-            if (reaction.Emote.Equals(Emojis.OneEmote) && userId == _payload.SourcePlayer.DiscordId)
+            if (reaction.Emote.Equals(_iconConfiguration.OneEmote) && userId == _payload.SourcePlayer.DiscordId)
             {
                 _payload.SourcePlayer.Accepted = true;
                 ResetExpiry();
             }
-            else if (reaction.Emote.Equals(Emojis.TwoEmote) && userId == _payload.DestinationPlayer.DiscordId)
+            else if (reaction.Emote.Equals(_iconConfiguration.TwoEmote) && userId == _payload.DestinationPlayer.DiscordId)
             {
                 _payload.DestinationPlayer.Accepted = true;
                 ResetExpiry();
@@ -362,14 +367,11 @@ namespace Sanakan.DiscordBot.Session
             if (_payload.SourcePlayer.Accepted && _payload.DestinationPlayer.Accepted)
             {
                 _payload.State = ExchangeStatus.AcceptSourcePlayer;
-                _payload.Tips = $"{_payload.SourcePlayer.Mention} daj {Emojis.Checked} aby zaakceptować, lub {Emojis.DeclineEmote} aby odrzucić.";
+                _payload.Tips = $"{_payload.SourcePlayer.Mention} daj {_iconConfiguration.Accept} aby zaakceptować, lub {_iconConfiguration.Decline} aby odrzucić.";
 
                 await userMessage.RemoveAllReactionsAsync();
                 await userMessage.ModifyAsync(x => x.Embed = BuildEmbed());
-                await userMessage.AddReactionsAsync(new IEmote[] {
-                    Emojis.Checked,
-                    Emojis.DeclineEmote
-                });
+                await userMessage.AddReactionsAsync(_iconConfiguration.AcceptDecline);
             }
         }
 
@@ -389,6 +391,7 @@ namespace Sanakan.DiscordBot.Session
         {
             var messageChannel = false;
             var userRepository = _serviceProvider.GetRequiredService<IUserRepository>();
+            _cacheManager = _serviceProvider.GetRequiredService<ICacheManager>();
             var userId = reaction.GetUserId();
 
             if (userId != player.DiscordId)
@@ -403,7 +406,7 @@ namespace Sanakan.DiscordBot.Session
                     messageChannel = true;
                     ResetExpiry();
                     _payload.State = ExchangeStatus.AcceptDestinationPlayer;
-                    _payload.Tips = $"{_payload.DestinationPlayer.Mention} daj {Emojis.Checked} aby zaakceptować, lub {Emojis.DeclineEmote} aby odrzucić.";
+                    _payload.Tips = $"{_payload.DestinationPlayer.Mention} daj {_iconConfiguration.Accept} aby zaakceptować, lub {_iconConfiguration.Decline} aby odrzucić.";
                 }
                 else if (_payload.State == ExchangeStatus.AcceptDestinationPlayer)
                 {
@@ -539,7 +542,7 @@ namespace Sanakan.DiscordBot.Session
                         CacheKeys.Users);
                 }
             }
-            else if (reaction.Emote.Equals(Emojis.DeclineEmote) && _payload.State != ExchangeStatus.End)
+            else if (reaction.Emote.Equals(_iconConfiguration.Decline) && _payload.State != ExchangeStatus.End)
             {
                 ResetExpiry();
                 _payload.Tips = $"{player.Mention} odrzucił propozycje wymiany!";

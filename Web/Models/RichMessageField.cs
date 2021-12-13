@@ -8,11 +8,13 @@
         /// <summary>
         /// Nagłówek dodatkowego pola
         /// </summary>
-        public string Name { get; set; }
+        public string Name { get; set; } = null;
+
         /// <summary>
         /// Tekst dodatkowego pola
         /// </summary>
-        public string Value { get; set; }
+        public string Value { get; set; } = null;
+
         /// <summary>
         /// Czy pole może zostać wyświetlne w jednej lini z innymi
         /// </summary>

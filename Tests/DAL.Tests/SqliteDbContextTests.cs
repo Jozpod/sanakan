@@ -15,8 +15,8 @@ namespace Sanakan.DAL.Tests
     [TestClass]
     public class SqliteDbContextTests
     {
-        protected SanakanDbContext DbContext;
-        protected ServiceProvider ServiceProvider;
+        protected SanakanDbContext DbContext = null;
+        protected ServiceProvider ServiceProvider = null;
 
         [TestMethod]
         public async Task Should_Initialize_Model()

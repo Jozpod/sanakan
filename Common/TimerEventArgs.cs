@@ -6,11 +6,11 @@ namespace Sanakan.Common
 
     public class TimerEventArgs : EventArgs
     {
-        public TimerEventArgs(object state)
+        public TimerEventArgs(object? state)
         {
-            this.State = state;
+            State = state!;
         }
 
-        public object State { get; private set; }
+        public object State { get; private set; } = null;
     }
 }

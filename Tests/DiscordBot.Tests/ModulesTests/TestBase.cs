@@ -17,10 +17,10 @@ namespace DiscordBot.ModulesTests
         protected readonly Mock<IUserMessage> _userMessageMock = new(MockBehavior.Strict);
         protected readonly Mock<ISelfUser> _currentUserMock = new(MockBehavior.Strict);
         protected readonly Mock<IUser> _userMock = new(MockBehavior.Strict);
-        protected Mock<IGuildUser> _guildUserMock;
+        protected Mock<IGuildUser> _guildUserMock = new(MockBehavior.Strict);
         protected readonly Mock<IGuild> _guildMock = new(MockBehavior.Strict);
         protected readonly Mock<IDiscordClient> _discordClientMock = new(MockBehavior.Strict);
-        protected Mock<ITextChannel> _textChannelMock;
+        protected Mock<ITextChannel> _textChannelMock = new(MockBehavior.Strict);
 
         protected void SetContext(SanakanModuleBase moduleBase)
         {

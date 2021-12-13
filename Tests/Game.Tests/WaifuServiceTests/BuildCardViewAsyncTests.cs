@@ -72,7 +72,7 @@ namespace Sanakan.Game.Tests.WaifuServiceTests
             var embed = await _waifuService.BuildCardImageAsync(card, textChannelMock.Object, userMock.Object, showStats);
             embed.Should().NotBeNull();
             embed.Description.Should().NotBeNullOrEmpty();
-            embed.Image.Value.Url.Should().Be(imageUrl);
+            embed.Image!.Value.Url.Should().Be(imageUrl);
         }
 
         [TestMethod]
@@ -141,7 +141,7 @@ namespace Sanakan.Game.Tests.WaifuServiceTests
             var embed = await _waifuService.BuildCardImageAsync(card, textChannelMock.Object, userMock.Object, showStats);
             embed.Should().NotBeNull();
             embed.Description.Should().NotBeNullOrEmpty();
-            embed.Image.Value.Url.Should().Be(imageUrl);
+            embed.Image!.Value.Url.Should().Be(imageUrl);
         }
     }
 }

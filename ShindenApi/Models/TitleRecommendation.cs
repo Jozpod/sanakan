@@ -6,6 +6,6 @@ namespace Sanakan.ShindenApi.Models
     public class TitleRecommendation
     {
         [JsonPropertyName("recommendations")]
-        public List<Recommendation> Recommendations { get; set; }
+        public List<Recommendation> Recommendations { get; set; } = new();
     }
 }

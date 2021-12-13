@@ -20,6 +20,14 @@ namespace Sanakan.DiscordBot.Tests.IntegrationTests
             var guildConfig = new GuildOptions(options.GuildId, 50);
             guildConfig.MuteRoleId = options.MuteRoleId;
             guildConfig.UserRoleId = options.UserRoleId;
+            guildConfig.WaifuRoleId = options.WaifuRoleId;
+
+            var rootUser = new User(1ul, DateTime.UtcNow);
+            dbContext.Users.Add(rootUser);
+            await dbContext.SaveChangesAsync();
+            var kyleCard = new Card(1ul, "Kyle Rittenhouse", "Kyle Rittenhouse", 100, 50, Rarity.A, Dere.Bodere, DateTime.UtcNow);
+            rootUser.GameDeck.Cards.Add(kyleCard);
+            await dbContext.SaveChangesAsync();
 
             var user = new User(userId, DateTime.UtcNow);
             user.ShindenId = 1ul;

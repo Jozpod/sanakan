@@ -6,12 +6,15 @@ using Sanakan.Common.Builder;
 using Sanakan.Common.Configuration;
 using Sanakan.Common.Models;
 using Sanakan.DAL.Models;
+using Sanakan.DiscordBot.Abstractions.Configuration;
 using Sanakan.DiscordBot.Services;
 using Sanakan.Game.Models;
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Sanakan.DiscordBot.Builder
 {
+    [ExcludeFromCodeCoverage]
     public static class Extensions
     {
         public static IServiceCollection AddDiscordBot(this IServiceCollection services)
@@ -31,6 +34,26 @@ namespace Sanakan.DiscordBot.Builder
 
             services.AddSingleton<IDiscordClientAccessor, DiscordSocketClientAccessor>();
             services.AddSingleton<ICommandHandler, CommandHandler>();
+            return services;
+        }
+
+        public static IServiceCollection AddDiscordIcons(this IServiceCollection services)
+        {
+            services.AddSingleton((sp) => {
+
+                var discordConfiguration = sp.GetRequiredService<IOptionsMonitor<DiscordConfiguration>>().CurrentValue;
+                IIconConfiguration iconConfiguration;
+
+                if (discordConfiguration.IconTheme == "Default")
+                {
+                    iconConfiguration = new ShindenIconConfiguration();
+                    return iconConfiguration;
+                }
+
+                iconConfiguration = new DefaultIconConfiguration();
+                return iconConfiguration;
+            });
+
             return services;
         }
 

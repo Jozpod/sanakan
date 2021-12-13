@@ -102,7 +102,7 @@ namespace Sanakan.Daemon.HostedService
                         continue;
                     }
 
-                    var guildId = timeStatus.GuildId.Value;
+                    var guildId = timeStatus.GuildId!.Value;
 
                     var guild = await client.GetGuildAsync(guildId);
 
@@ -112,7 +112,7 @@ namespace Sanakan.Daemon.HostedService
                             var guildConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(guildId);
                             var roleId = guildConfig?.GlobalEmotesRoleId;
 
-                            if(roleId.HasValue)
+                            if (roleId.HasValue)
                             {
                                 await RemoveRoleAsync(guild, roleId.Value, timeStatus.UserId);
                             }
@@ -129,7 +129,7 @@ namespace Sanakan.Daemon.HostedService
                     }
                 }
             }
-            catch (OperationCanceledException ex)
+            catch (OperationCanceledException)
             {
                 _logger.LogInformation("profile background service canceled");
             }

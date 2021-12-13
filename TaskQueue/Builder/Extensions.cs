@@ -1,9 +1,11 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Sanakan.TaskQueue.MessageHandlers;
 using Sanakan.TaskQueue.Messages;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Sanakan.TaskQueue.Builder
 {
+    [ExcludeFromCodeCoverage]
     public static class Extensions
     {
         public static IServiceCollection AddTaskQueue(this IServiceCollection services)
@@ -21,7 +23,6 @@ namespace Sanakan.TaskQueue.Builder
             services.AddScoped<IMessageHandler<SpawnCardBundleMessage>, SpawnCardBundleMessageHandler>();
             services.AddScoped<IMessageHandler<ToggleCardMessage>, ToggleCardMessageHandler>();
             services.AddScoped<IMessageHandler<TransferTCMessage>, TransferTCMessageHandler>();
-            services.AddScoped<IMessageHandler<UpdateCardCharacterIdMessage>, UpdateCardCharacterIdMessageHandler>();
             services.AddScoped<IMessageHandler<UpdateCardMessage>, UpdateCardMessageHandler>();
             services.AddScoped<IMessageHandler<UpdateCardPictureMessage>, UpdateCardPictureMessageHandler>();
 

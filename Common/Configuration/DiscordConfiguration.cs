@@ -65,5 +65,10 @@ namespace Sanakan.Common.Configuration
         /// Gets or sets the number of messages per channel that should be kept in cache.
         /// </summary>
         public int MessageCacheSize { get; set; }
+
+        /// <summary>
+        /// The collection of icons to use.
+        /// </summary>
+        public string IconTheme { get; set; } = string.Empty;
     }
 }

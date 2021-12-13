@@ -3,8 +3,6 @@ using Moq;
 using Sanakan.DAL.Models.Configuration;
 using System.Threading.Tasks;
 using Sanakan.DiscordBot.Modules;
-using Discord;
-using Moq;
 using FluentAssertions;
 
 namespace DiscordBot.ModulesTests.ModerationModuleTests

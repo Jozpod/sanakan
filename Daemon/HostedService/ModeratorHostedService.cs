@@ -82,7 +82,7 @@ namespace Sanakan.Daemon.HostedService
 
         private async void OnTick(object sender, TimerEventArgs e)
         {
-            if(_isRunning)
+            if (_isRunning)
             {
                 return;
             }
@@ -142,13 +142,13 @@ namespace Sanakan.Daemon.HostedService
                             .Any(x => gconfig.ModeratorRoles.Any(z =>
                                 z.RoleId == x.RoleId)) ? muteModRole : null;
 
-                        await MuteUserGuildAsync(user, muteRole, penalty.Roles, muteMod);
+                        await MuteUserGuildAsync(user!, muteRole, penalty.Roles, muteMod);
                         continue;
                     }
 
                     if (penalty.Type == PenaltyType.Mute)
                     {
-                        await UnmuteUserGuildAsync(user, muteRole, muteModRole, penalty.Roles);
+                        await UnmuteUserGuildAsync(user!, muteRole, muteModRole, penalty.Roles);
                         await RemovePenalty(penaltyInfoRepository, penalty);
                     }
                 }

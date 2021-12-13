@@ -20,7 +20,7 @@ namespace Sanakan.DAL.Repositories
             _cacheManager = cacheManager;
         }
 
-        public async Task<GuildOptions> GetCachedGuildFullConfigAsync(ulong guildId)
+        public async Task<GuildOptions?> GetCachedGuildFullConfigAsync(ulong guildId)
         {
             var key = CacheKeys.GuildConfig(guildId);
 
@@ -54,7 +54,7 @@ namespace Sanakan.DAL.Repositories
             return result;
         }
 
-        public async Task<GuildOptions> GetGuildConfigOrCreateAsync(ulong guildId)
+        public async Task<GuildOptions?> GetGuildConfigOrCreateAsync(ulong guildId)
         {
             var config = await _dbContext.Guilds
                 .AsQueryable()

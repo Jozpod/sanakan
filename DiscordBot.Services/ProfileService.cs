@@ -125,7 +125,7 @@ namespace Sanakan.DiscordBot.Services
             return true;
         }
 
-      
+
 
         public IEnumerable<User> GetTopUsers(IEnumerable<User> list, TopType type, DateTime date)
             => GetRangeMax(OrderUsersByTop(list, type, date), 50);
@@ -226,7 +226,7 @@ namespace Sanakan.DiscordBot.Services
             var shindenId = databaseUser.ShindenId;
             var isConnected = shindenId.HasValue;
 
-            var userResult = await _shindenClient.GetUserInfoAsync(shindenId.Value);
+            var userResult = await _shindenClient.GetUserInfoAsync(shindenId!.Value);
             var user = userResult.Value;
 
             var guildRoles = discordUser.Guild.Roles;

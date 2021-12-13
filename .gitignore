@@ -397,3 +397,6 @@ appsettings.Development.json
 sanakan_key
 sanakan_key.pub
 Sanakan_coverage.xml
+
+*.FileListAbsolute.txt
+*.assets.cache

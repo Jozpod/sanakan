@@ -150,6 +150,7 @@ namespace Sanakan.Web
             services.AddUserContext();
             services.AddWritableOption<SanakanConfiguration>();
             services.AddDiscordBot();
+            services.AddDiscordIcons();
             services.AddDiscordBotServices();
             services.AddSingleton(Encoding.UTF8);
             services.AddResourceManager()

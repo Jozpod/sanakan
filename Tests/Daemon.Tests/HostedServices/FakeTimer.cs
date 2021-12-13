@@ -14,6 +14,6 @@ namespace Sanakan.Daemon.Tests.HostedServices
         public void RaiseTickEvent() => Tick.Invoke(this, new TimerEventArgs(null));
 
 
-        public event TimerEventHandler Tick;
+        public event TimerEventHandler Tick = null!;
     }
 }

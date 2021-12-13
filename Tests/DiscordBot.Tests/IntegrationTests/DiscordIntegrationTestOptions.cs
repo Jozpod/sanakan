@@ -2,7 +2,7 @@
 {
     public class DiscordIntegrationTestOptions
     {
-        public string FakeUserBotToken { get; set; }
+        public string FakeUserBotToken { get; set; } = null;
 
         public ulong GuildId { get; set; }
 
@@ -13,6 +13,8 @@
         public ulong UserRoleId { get; set; }
 
         public ulong AdminRoleId { get; set; }
-        
+
+        public ulong WaifuRoleId { get; set; }
+
     }
 }

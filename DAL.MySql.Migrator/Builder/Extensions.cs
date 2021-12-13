@@ -8,9 +8,11 @@ using Sanakan.DAL.Models.Management;
 using Sanakan.DAL.MySql.Migrator;
 using Sanakan.DAL.MySql.Migrator.Configuration;
 using Sanakan.DAL.MySql.Migrator.TableEnumerators;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Sanakan.DAL.MySql.Builder
 {
+    [ExcludeFromCodeCoverage]
     public static class Extensions
     {
         public static IServiceCollection AddDatabaseMigrator(this IServiceCollection services)

@@ -10,7 +10,7 @@ namespace Sanakan.ShindenApi.Tests
     [TestClass]
     public class LoginAsyncTests : Base
     {
- 
+
         [TestMethod]
         public async Task Should_LogIn_And_Put_Cookies()
         {
@@ -33,7 +33,7 @@ namespace Sanakan.ShindenApi.Tests
                     Signature = "signature",
                     AnimeCss = string.Empty,
                     MangaCss = string.Empty,
-                    
+
                 },
                 Session = new LogInResultSession
                 {
@@ -45,7 +45,7 @@ namespace Sanakan.ShindenApi.Tests
 
             var result = await _shindenClient.LoginAsync("username", "password");
             result.Value.Should().BeEquivalentTo(expected);
-            var cookies = _cookieContainer.GetCookies(_httpClient.BaseAddress);
+            var cookies = _cookieContainer.GetCookies(_httpClient.BaseAddress!);
             cookies[0].Name.Should().Be("name");
             cookies[0].Value.Should().Be("name");
             cookies[1].Name.Should().Be("id");

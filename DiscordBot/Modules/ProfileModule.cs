@@ -10,6 +10,7 @@ using Sanakan.Common.Models;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot.Abstractions;
+using Sanakan.DiscordBot.Abstractions.Configuration;
 using Sanakan.DiscordBot.Abstractions.Extensions;
 using Sanakan.DiscordBot.Abstractions.Models;
 using Sanakan.DiscordBot.Resources;
@@ -31,6 +32,7 @@ namespace Sanakan.DiscordBot.Modules
     [Name("Profil"), RequireUserRole]
     public class ProfileModule : SanakanModuleBase
     {
+        private readonly IIconConfiguration _iconConfiguration;
         private readonly IProfileService _profileService;
         private readonly ISessionManager _sessionManager;
         private readonly ICacheManager _cacheManager;
@@ -42,13 +44,15 @@ namespace Sanakan.DiscordBot.Modules
         private readonly IServiceScope _serviceScope;
 
         public ProfileModule(
-            IProfileService prof,
+            IIconConfiguration iconConfiguration,
+            IProfileService profileService,
             ISessionManager sessionManager,
             ICacheManager cacheManager,
             ISystemClock systemClock,
             IServiceScopeFactory serviceScopeFactory)
         {
-            _profileService = prof;
+            _iconConfiguration = iconConfiguration;
+            _profileService = profileService;
             _sessionManager = sessionManager;
             _cacheManager = cacheManager;
             _systemClock = systemClock;
@@ -71,7 +75,7 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("wyświetla portfel użytkownika")]
         [Remarks("")]
         public async Task ShowWalletAsync(
-            [Summary("użytkownik (opcjonalne)")]IUser? user = null)
+            [Summary("użytkownik (opcjonalne)")] IUser? user = null)
         {
             var effectiveUser = user ?? Context.User;
 
@@ -88,7 +92,7 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            var parameters = new object[]
+            var parameters = new object?[]
             {
                 effectiveUser.Mention,
                 databaseUser.ScCount,
@@ -99,7 +103,7 @@ namespace Sanakan.DiscordBot.Modules
             };
 
             var walletInfo = string.Format(Strings.WalletInfo, parameters);
-            
+
             var content = walletInfo
                 .ToEmbedMessage(EMType.Info)
                 .Build();
@@ -141,7 +145,7 @@ namespace Sanakan.DiscordBot.Modules
         [Alias("add role")]
         [Summary("dodaje samo zarządzaną role")]
         [Remarks("newsy"), RequireCommandChannel]
-        public async Task AddRoleAsync([Summary("nazwa roli z wypisz role")]string name)
+        public async Task AddRoleAsync([Summary("nazwa roli z wypisz role")] string name)
         {
             var user = Context.User as IGuildUser;
 
@@ -174,7 +178,7 @@ namespace Sanakan.DiscordBot.Modules
         [Alias("remove role")]
         [Summary("zdejmuje samo zarządzaną role")]
         [Remarks("newsy"), RequireCommandChannel]
-        public async Task RemoveRoleAsync([Summary("nazwa roli z wypisz role")]string name)
+        public async Task RemoveRoleAsync([Summary("nazwa roli z wypisz role")] string name)
         {
             var user = Context.User as IGuildUser;
 
@@ -231,7 +235,7 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("wyświetla statystyki użytkownika")]
         [Remarks("karna")]
         public async Task ShowUserStatsAsync(
-            [Summary("użytkownik (opcjonalne)")]IUser? user = null)
+            [Summary("użytkownik (opcjonalne)")] IUser? user = null)
         {
             var effectiveUser = user ?? Context.User;
             Embed embed;
@@ -285,7 +289,7 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("wyświetla ile pozostało punktów doświadczenia do następnego poziomu")]
         [Remarks("karna")]
         public async Task ShowHowMuchToLevelUpAsync(
-            [Summary("użytkownik(opcjonalne)")]IUser? user = null)
+            [Summary("użytkownik(opcjonalne)")] IUser? user = null)
         {
             var effectiveUser = user ?? Context.User;
 
@@ -316,7 +320,7 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("wyświetla topke użytkowników")]
         [Remarks(""), RequireAnyCommandChannel]
         public async Task ShowTopAsync(
-            [Summary("rodzaj topki (poziom/sc/tc/pc/ac/posty(m/ms)/kart(a/y/ym)/karma(-))/pvp(s)")]TopType topType = TopType.Level)
+            [Summary("rodzaj topki (poziom/sc/tc/pc/ac/posty(m/ms)/kart(a/y/ym)/karma(-))/pvp(s)")] TopType topType = TopType.Level)
         {
             var payload = new ListSession<string>.ListSessionPayload
             {
@@ -341,10 +345,7 @@ namespace Sanakan.DiscordBot.Modules
 
             await building.DeleteAsync();
             var message = await ReplyAsync(embed: session.BuildPage(0));
-            await message.AddReactionsAsync(new[] {
-                Emojis.LeftwardsArrow,
-                Emojis.RightwardsArrow,
-            });
+            await message.AddReactionsAsync(_iconConfiguration.LeftRightArrows);
 
             payload.Message = message;
             _sessionManager.Add(session);
@@ -377,10 +378,10 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("wyświetla profil użytkownika")]
         [Remarks("karna")]
         public async Task ShowUserProfileAsync(
-            [Summary("użytkownik (opcjonalne)")]IGuildUser? guildUser = null)
+            [Summary("użytkownik (opcjonalne)")] IGuildUser? guildUser = null)
         {
             var user = guildUser ?? Context.User as IGuildUser;
-            
+
             if (user == null)
             {
                 return;
@@ -395,7 +396,8 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            databaseUser.GameDeck = await _gameDeckRepository.GetCachedUserGameDeckAsync(user.Id);
+            var gameDeck = await _gameDeckRepository.GetCachedUserGameDeckAsync(user.Id);
+            databaseUser.GameDeck = gameDeck!;
             var topPosition = allUsers
                 .OrderByDescending(x => x.ExperienceCount)
                 .ToList()
@@ -412,7 +414,7 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("wyświetla postęp misji użytkownika")]
         [Remarks("tak"), RequireAnyCommandChannel]
         public async Task ShowUserQuestsProgressAsync(
-            [Summary("czy odebrać nagrody?")]bool claimGifts = false)
+            [Summary("czy odebrać nagrody?")] bool claimGifts = false)
         {
             var user = Context.User;
             var databaseUser = await _userRepository.GetUserOrCreateAsync(user.Id);
@@ -489,9 +491,9 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("zmienia styl profilu (koszt 3000 SC/1000 TC)")]
         [Remarks("1 https://i.imgur.com/8UK8eby.png"), RequireCommandChannel]
         public async Task ChangeStyleAsync(
-            [Summary("typ stylu (statystyki(0), obrazek(1), brzydkie(2), karcianka(3))")]ProfileType profileType,
-            [Summary("bezpośredni adres do obrazka gdy wybrany styl 1 lub 2 (325 x 272)")]string? imageUrl = null,
-            [Summary("waluta (SC/TC)")]SCurrency currency = SCurrency.Sc)
+            [Summary("typ stylu (statystyki(0), obrazek(1), brzydkie(2), karcianka(3))")] ProfileType profileType,
+            [Summary("bezpośredni adres do obrazka gdy wybrany styl 1 lub 2 (325 x 272)")] string? imageUrl = null,
+            [Summary("waluta (SC/TC)")] SCurrency currency = SCurrency.Sc)
         {
             var scCost = 3000;
             var tcCost = 1000;
@@ -513,7 +515,7 @@ namespace Sanakan.DiscordBot.Modules
             {
                 case ProfileType.Image:
                 case ProfileType.StatisticsWithImage:
-                    var saveResult = await _profileService.SaveProfileImageAsync(imageUrl, $"{Paths.SavedData}/SR{databaseUser.Id}.png", 325, 272);
+                    var saveResult = await _profileService.SaveProfileImageAsync(imageUrl!, $"{Paths.SavedData}/SR{databaseUser.Id}.png", 325, 272);
 
                     if (saveResult == SaveResult.Success)
                     {
@@ -555,8 +557,8 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("zmienia obrazek tła profilu (koszt 5000 SC/2500 TC)")]
         [Remarks("https://i.imgur.com/LjVxiv8.png"), RequireCommandChannel]
         public async Task ChangeBackgroundAsync(
-            [Summary("bezpośredni adres do obrazka (450 x 145)")]string imageUrl,
-            [Summary("waluta (SC/TC)")]SCurrency currency = SCurrency.Sc)
+            [Summary("bezpośredni adres do obrazka (450 x 145)")] string imageUrl,
+            [Summary("waluta (SC/TC)")] SCurrency currency = SCurrency.Sc)
         {
             var tcCost = 2500;
             var scCost = 5000;
@@ -576,7 +578,7 @@ namespace Sanakan.DiscordBot.Modules
 
             var savePath = $"{Paths.SavedData}/BG{databaseUser.Id}.png";
             var saveResult = await _profileService.SaveProfileImageAsync(imageUrl, savePath, 450, 145, true);
-            
+
             if (saveResult == SaveResult.Success)
             {
                 databaseUser.BackgroundProfileUri = $"{Paths.SavedData}/BG{databaseUser.Id}.png";
@@ -642,7 +644,7 @@ namespace Sanakan.DiscordBot.Modules
             }
 
             var global = databaseUser.TimeStatuses
-                .FirstOrDefault(x => x.Type == StatusType.Globals 
+                .FirstOrDefault(x => x.Type == StatusType.Globals
                     && x.GuildId == guildid);
 
             if (global == null)
@@ -656,7 +658,7 @@ namespace Sanakan.DiscordBot.Modules
                 await user.AddRoleAsync(globalRole);
             }
 
-            global.EndsOn = global.EndsOn.Value.AddMonths(1);
+            global.EndsOn = global.EndsOn!.Value.AddMonths(1);
             databaseUser.TcCount -= cost;
 
             await _userRepository.SaveChangesAsync();
@@ -671,8 +673,8 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("zmienia kolor użytkownika (koszt TC/SC na liście)")]
         [Remarks("pink"), RequireCommandChannel]
         public async Task ToggleColorRoleAsync(
-            [Summary("kolor z listy (none - lista)")]FColor color = FColor.None,
-            [Summary("waluta (SC/TC)")]SCurrency currency = SCurrency.Tc)
+            [Summary("kolor z listy (none - lista)")] FColor color = FColor.None,
+            [Summary("waluta (SC/TC)")] SCurrency currency = SCurrency.Tc)
         {
             var user = Context.User as IGuildUser;
             var guild = Context.Guild;
@@ -724,7 +726,7 @@ namespace Sanakan.DiscordBot.Modules
             {
                 if (_profileService.HasSameColor(user, color) && colorTimeStatus.IsActive(utcNow))
                 {
-                    colorTimeStatus.EndsOn = colorTimeStatus.EndsOn.Value.AddMonths(1);
+                    colorTimeStatus.EndsOn = colorTimeStatus.EndsOn!.Value.AddMonths(1);
                 }
                 else
                 {
@@ -733,7 +735,7 @@ namespace Sanakan.DiscordBot.Modules
                 }
 
                 var gConfig = await _guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
-                var adminRoleId = gConfig.AdminRoleId.Value;
+                var adminRoleId = gConfig.AdminRoleId!.Value;
 
                 if (!await _profileService.SetUserColorAsync(user, adminRoleId, color))
                 {

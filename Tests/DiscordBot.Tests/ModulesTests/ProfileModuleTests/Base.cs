@@ -7,6 +7,7 @@ using Sanakan.Common;
 using Sanakan.DiscordBot.Session;
 using Sanakan.Common.Cache;
 using Microsoft.Extensions.DependencyInjection;
+using Sanakan.DiscordBot.Abstractions.Configuration;
 
 namespace DiscordBot.ModulesTests.ProfileModuleTests
 {
@@ -32,6 +33,7 @@ namespace DiscordBot.ModulesTests.ProfileModuleTests
             var serviceScopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
 
             _module = new(
+                new DefaultIconConfiguration(),
                 _profileServiceMock.Object,
                 _sessionManagerMock.Object,
                 _cacheManagerMock.Object,

@@ -169,7 +169,7 @@ namespace Sanakan.Daemon.HostedService
 
                 _serverCounter[guildId].EventCount = effectiveLimit + 1;
             }
-            
+
             await SpawnCardAsync(spawnChannel, trashChannel, mention, muteRole);
         }
 
@@ -195,7 +195,7 @@ namespace Sanakan.Daemon.HostedService
             var pokeImage = await _waifuService.GetRandomSarafiImage();
             var time = _systemClock.UtcNow.AddMinutes(5);
             var description = $"**Polowanie zakończy się o**: `{time.ToShortTimeString()}:{time.Second.ToString("00")}`";
-            var imageUrl = await _waifuService.SendAndGetSafariImageUrlAsync(pokeImage, trashChannel);
+            var imageUrl = await _waifuService.SendAndGetSafariImageUrlAsync(pokeImage!, trashChannel);
 
             var embed = new EmbedBuilder
             {
@@ -278,7 +278,7 @@ namespace Sanakan.Daemon.HostedService
                     Card = newCard,
                     Message = message,
                     TrashChannel = trashChannel,
-                    Image = pokeImage,
+                    Image = pokeImage!,
                     GuildId = trashChannel?.Guild?.Id,
                 });
             }
@@ -329,7 +329,7 @@ namespace Sanakan.Daemon.HostedService
                     MessageChannel = message.Channel,
                 });
 
-                if(!enqueued)
+                if (!enqueued)
                 {
                     _logger.LogWarning("Could not enqueue message {0}", nameof(SpawnCardBundleMessage));
                 }
@@ -401,7 +401,7 @@ namespace Sanakan.Daemon.HostedService
                 HandleUserAsync(userMessage);
             }
 
-            if(guildConfig.WaifuConfig == null)
+            if (guildConfig.WaifuConfig == null)
             {
                 return;
             }

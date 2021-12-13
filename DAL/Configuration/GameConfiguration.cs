@@ -5,7 +5,7 @@ using Sanakan.DAL.Models.Configuration;
 
 namespace Sanakan.DAL.Configuration
 {
-    public class GameConfiguration : 
+    public class GameConfiguration :
         IEntityTypeConfiguration<SlotMachineConfig>,
         IEntityTypeConfiguration<ExperienceContainer>,
         IEntityTypeConfiguration<Figure>,
@@ -54,7 +54,7 @@ namespace Sanakan.DAL.Configuration
 
             builder.Property(pr => pr.ExpeditionDate)
                .HasColumnType("datetime(4)");
-            
+
             builder
                 .HasOne(e => e.GameDeck)
                 .WithMany(d => d.Cards);
@@ -132,14 +132,14 @@ namespace Sanakan.DAL.Configuration
             builder
                 .HasMany(e => e.CommandChannels)
                 .WithOne(w => w.Waifu);
-            
+
             builder
                 .HasMany(e => e.FightChannels)
                 .WithOne(w => w.Waifu);
-            
+
             builder
                 .HasOne(e => e.GuildOptions)
-                .WithOne(g => g.WaifuConfig);
+                .WithOne(g => g.WaifuConfig!);
         }
     }
 }

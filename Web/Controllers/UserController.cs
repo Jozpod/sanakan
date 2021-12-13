@@ -168,7 +168,7 @@ namespace Sanakan.Web.Controllers
                 return ShindenNotFound(Strings.UserNotFound);
             }
 
-            TokenData tokenData = null;
+            TokenData? tokenData = null;
 
             if (_userContext.HasWebpageClaim())
             {
@@ -290,7 +290,7 @@ namespace Sanakan.Web.Controllers
 
             var shindenUser = userResult.Value;
 
-            if (shindenUser.Id.Value != model.ForumUserId)
+            if (shindenUser.Id!.Value != model.ForumUserId)
             {
                 return ShindenInternalServerError("Something went wrong!");
             }

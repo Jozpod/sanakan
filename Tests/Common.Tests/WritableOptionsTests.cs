@@ -12,6 +12,7 @@ using Sanakan.Common.Builder;
 using Sanakan.Common.Configuration;
 using Sanakan.Common.Converters;
 using System;
+using System.Globalization;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -76,14 +77,15 @@ namespace Sanakan.Common.Tests
 
             await sanakanConfiguration.UpdateAsync(opts =>
             {
+                opts.Locale.Language = new CultureInfo("en-GB");
                 opts.Experience.CharPerPacket = charPerPacket;
                 opts.Experience.CharPerPoint = charPerPoint;
                 opts.Experience.MinPerMessage = minPerMessage;
             });
 
-            //sanakanConfiguration.Value.Experience.CharPerPacket.Should().Be(charPerPacket);
-            //sanakanConfiguration.Value.Experience.CharPerPoint.Should().Be(charPerPoint);
-            //sanakanConfiguration.Value.Experience.MinPerMessage.Should().Be(minPerMessage);
+            sanakanConfiguration.Value.Experience.CharPerPacket.Should().Be(charPerPacket);
+            sanakanConfiguration.Value.Experience.CharPerPoint.Should().Be(charPerPoint);
+            sanakanConfiguration.Value.Experience.MinPerMessage.Should().Be(minPerMessage);
         }
     }
 }

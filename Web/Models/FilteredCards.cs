@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace Sanakan.Api.Models
 {
@@ -15,6 +16,6 @@ namespace Sanakan.Api.Models
         /// <summary>
         /// The list of paginated cards.
         /// </summary>
-        public IEnumerable<CardFinalView> Cards { get; set; }
+        public IEnumerable<CardFinalView> Cards { get; set; } = Enumerable.Empty<CardFinalView>();
     }
 }

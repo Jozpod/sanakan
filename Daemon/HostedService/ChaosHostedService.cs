@@ -30,7 +30,7 @@ namespace Sanakan.Daemon.HostedService
         private readonly ITimer _timer;
         private readonly ITaskManager _taskManager;
         private readonly ISet<ulong> _usersWithSwappedNicknames;
-        private readonly object _syncRoot = new ();
+        private readonly object _syncRoot = new();
         private bool _isRunning;
 
         public ChaosHostedService(
@@ -92,7 +92,7 @@ namespace Sanakan.Daemon.HostedService
             }
         }
 
-        private async void OnTick(object sender, TimerEventArgs eventArgs)
+        private void OnTick(object sender, TimerEventArgs eventArgs)
         {
             if (_isRunning)
             {
@@ -119,7 +119,7 @@ namespace Sanakan.Daemon.HostedService
             }
 
             var user = userMessage.Author;
-            
+
             if (user.IsBotOrWebhook())
             {
                 return;

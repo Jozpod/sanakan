@@ -109,7 +109,7 @@ namespace Sanakan.DAL.Models
         public Uri? ImageUrl { get; set; }
 
         public Uri? CustomImageUrl { get; set; }
-        
+
         /// <summary>
         /// The Discord user identifier.
         /// </summary>
@@ -157,7 +157,7 @@ namespace Sanakan.DAL.Models
 
         public virtual ICollection<CardTag> TagList { get; set; }
 
-        public virtual CardArenaStats ArenaStats { get; set; }
+        public virtual CardArenaStats ArenaStats { get; set; } = null!;
 
         /// <summary>
         /// The Discord user identifier and foreign key reference to <see cref="User"/>.
@@ -165,7 +165,7 @@ namespace Sanakan.DAL.Models
         public ulong GameDeckId { get; set; }
 
         [JsonIgnore]
-        public virtual GameDeck GameDeck { get; set; }
+        public virtual GameDeck GameDeck { get; set; } = null!;
 
         public bool CanGiveRing() => Affection >= 5;
 
@@ -310,7 +310,7 @@ namespace Sanakan.DAL.Models
 
             param += affOffset + addOFK;
             var time = param / perMinute;
-            
+
             if (time > 10080)
             {
                 time = 10080;

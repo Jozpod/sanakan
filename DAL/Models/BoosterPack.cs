@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
@@ -8,7 +9,8 @@ namespace Sanakan.DAL.Models
     {
         public BoosterPack()
         {
-
+            Characters = new Collection<BoosterPackCharacter>();
+            RarityExcludedFromPack = new Collection<RarityExcluded>();
         }
 
         public ulong Id { get; set; }
@@ -33,6 +35,6 @@ namespace Sanakan.DAL.Models
         public ulong GameDeckId { get; set; }
 
         [JsonIgnore]
-        public virtual GameDeck GameDeck { get; set; }
+        public virtual GameDeck GameDeck { get; set; } = null;
     }
 }

@@ -23,11 +23,11 @@ namespace Sanakan.Web.Tests
          where TStartup : class
     {
         private const string _LocalhostBaseAddress = "https://localhost";
-        private IWebHost _host;
+        private IWebHost _host = null!;
         public readonly Mock<IDiscordClientAccessor> DiscordClientAccessorMock = new(MockBehavior.Strict);
         public readonly Mock<IDiscordClient> DiscordClientMock = new(MockBehavior.Strict);
         public readonly Mock<IShindenClient> ShindenClientMock = new(MockBehavior.Strict);
-        public string RootUri { get; private set; }
+        public string RootUri { get; private set; } = null!;
 
         public TestWebApplicationFactory(bool useServer = false)
         {
@@ -79,7 +79,10 @@ namespace Sanakan.Web.Tests
         {
             _host = builder.Build();
             _host.Start();
-            RootUri = _host.ServerFeatures.Get<IServerAddressesFeature>().Addresses.LastOrDefault();
+            RootUri = _host.ServerFeatures.Get<IServerAddressesFeature>()
+                .Addresses
+                .LastOrDefault()!;
+
             var serverBuilder = new WebHostBuilder();
 
             ConfigureWebHost(serverBuilder);

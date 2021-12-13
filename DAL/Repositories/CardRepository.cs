@@ -22,7 +22,7 @@ namespace Sanakan.DAL.Repositories
             _cacheManager = cacheManager;
         }
 
-        public async Task<Card> GetCardAsync(ulong wid)
+        public async Task<Card?> GetCardAsync(ulong wid)
         {
             var result = await _dbContext
                 .Cards
@@ -240,19 +240,19 @@ namespace Sanakan.DAL.Repositories
                 .ToListAsync();
         }
 
-        public Task<Card> GetByIdAsync(ulong id)
+        public Task<Card?> GetByIdAsync(ulong id)
         {
             return _dbContext.Cards
                 .AsNoTracking()
-                .FirstOrDefaultAsync(x => x.Id == id);
+                .FirstOrDefaultAsync(x => x.Id == id)!;
         }
 
-        public Task<Card> GetByIdAsync(ulong id, CardQueryOptions cardQueryOptions)
+        public Task<Card?> GetByIdAsync(ulong id, CardQueryOptions cardQueryOptions)
         {
             var query = _dbContext.Cards
                 .AsNoTracking();
 
-            if(cardQueryOptions.IncludeTagList)
+            if (cardQueryOptions.IncludeTagList)
             {
                 query = query.Include(pr => pr.TagList);
             }
@@ -277,7 +277,7 @@ namespace Sanakan.DAL.Repositories
                 query = query.AsNoTracking();
             }
 
-            return query.FirstOrDefaultAsync(x => x.Id == id);
+            return query.FirstOrDefaultAsync(x => x.Id == id)!;
         }
 
         public Task<List<Card>> GetByIdFirstOrLastOwnerAsync(ulong discordUserId)

@@ -56,7 +56,7 @@ namespace Sanakan.DiscordBot.Tests.PreconditionsTests
         {
             _commandContextMock
                  .Setup(pr => pr.User)
-                 .Returns(null as IUser);
+                 .Returns<IUser?>(null);
 
             var result = await _preconditionAttribute.CheckPermissionsAsync(_commandContextMock.Object, null, _serviceProvider);
             result.IsSuccess.Should().BeFalse();
@@ -72,7 +72,7 @@ namespace Sanakan.DiscordBot.Tests.PreconditionsTests
 
             _commandContextMock
                 .Setup(pr => pr.Channel)
-                .Returns(null as IMessageChannel);
+                .Returns<IMessageChannel?>(null);
 
             var result = await _preconditionAttribute.CheckPermissionsAsync(_commandContextMock.Object, null, _serviceProvider);
             result.IsSuccess.Should().BeFalse();

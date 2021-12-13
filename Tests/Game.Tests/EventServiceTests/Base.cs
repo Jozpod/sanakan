@@ -24,7 +24,7 @@ namespace Sanakan.Game.Tests.EventServiceTests
         }
 
         [TestMethod]
-        public async Task Should_Return_Value()
+        public void Should_Return_Value()
         {
             var eventType = EventType.MoreItems;
 

@@ -17,23 +17,23 @@ namespace Sanakan.DAL.Repositories.Abstractions
 
         Task<User?> GetUserOrCreateAsync(ulong discordUserId);
 
-        Task<User?> GetByShindenIdAsync(ulong userShindenId);
+        Task<User?> GetByShindenIdAsync(ulong shindenUserId);
 
-        Task<User?> GetByShindenIdAsync(ulong userShindenId, UserQueryOptions userQueryOptions);
+        Task<User?> GetByShindenIdAsync(ulong shindenUserId, UserQueryOptions userQueryOptions);
 
-        Task<User?> GetCachedFullUserAsync(ulong userId);
+        Task<User?> GetCachedFullUserAsync(ulong shindenUserId);
 
-        Task<User?> GetCachedFullUserByShindenIdAsync(ulong userId);
+        Task<User?> GetCachedFullUserByShindenIdAsync(ulong shindenUserId);
 
         Task<List<User>> GetCachedAllUsersLiteAsync();
 
         Task<IEnumerable<User>> GetCachedAllUsersAsync();
 
-        Task<bool> ExistsByDiscordIdAsync(ulong userId);
+        Task<bool> ExistsByDiscordIdAsync(ulong discordUserId);
 
         Task<User?> GetByDiscordIdAsync(ulong discordUserId);
 
-        Task<bool> ExistsByShindenIdAsync(ulong id);
+        Task<bool> ExistsByShindenIdAsync(ulong shindenUserId);
 
         Task<List<User>> GetByShindenIdExcludeDiscordIdAsync(ulong shindenUserId, ulong discordUserId);
 

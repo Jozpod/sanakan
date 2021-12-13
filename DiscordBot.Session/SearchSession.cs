@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Discord;
@@ -15,9 +16,9 @@ namespace Sanakan.DiscordBot.Session
         private readonly SearchSessionPayload _payload;
         public class SearchSessionPayload
         {
-            public IEnumerable<IMessage> Messages { get; set; }
-            public List<QuickSearchResult> SList { get; set; }
-            public List<CharacterSearchResult> PList { get; set; }
+            public IEnumerable<IMessage> Messages { get; set; } = Enumerable.Empty<IMessage>();
+            public List<QuickSearchResult> SList { get; set; } = new();
+            public List<CharacterSearchResult> PList { get; set; } = new();
         }
 
         public SearchSession(
@@ -63,7 +64,7 @@ namespace Sanakan.DiscordBot.Session
                 {
                     var parameter = _payload.SList[number - 1];
                     var animeMangaInfo = (await shindenClient.GetAnimeMangaInfoAsync(parameter.TitleId)).Value;
-                    await sessionContext.Channel.SendMessageAsync("", false, animeMangaInfo.ToEmbed());
+                    await sessionContext.Channel.SendMessageAsync("", false, animeMangaInfo!.ToEmbed());
                     await sessionContext.Message.DeleteAsync();
                     return;
                 }
@@ -75,7 +76,7 @@ namespace Sanakan.DiscordBot.Session
                     var person = _payload.PList.ToArray()[number - 1];
                     var characterInfo = (await shindenClient.GetCharacterInfoAsync(person.Id)).Value;
 
-                    await sessionContext.Channel.SendMessageAsync("", false, characterInfo.ToEmbed());
+                    await sessionContext.Channel.SendMessageAsync("", false, characterInfo!.ToEmbed());
                     await sessionContext.Message.DeleteAsync();
                     return;
                 }
@@ -94,7 +95,7 @@ namespace Sanakan.DiscordBot.Session
             foreach (var message in _payload.Messages)
             {
                 var discordMessage = await message.Channel.GetMessageAsync(message.Id);
-                
+
                 if (discordMessage != null)
                 {
                     await discordMessage.DeleteAsync();

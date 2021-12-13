@@ -17,7 +17,7 @@ namespace Sanakan.Game.Tests.WaifuServiceTests
     public class GetItemListTests : Base
     {
         [TestMethod]
-        public async Task Should_Return_Embed()
+        public void Should_Return_Embed()
         {
             var userMock = new Mock<IUser>(MockBehavior.Strict);
             var items = new[]

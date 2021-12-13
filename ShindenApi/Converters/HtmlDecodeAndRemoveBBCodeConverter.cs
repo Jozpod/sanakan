@@ -19,7 +19,7 @@ namespace Sanakan.ShindenApi.Converters
 
             var str = reader.GetString();
 
-            return _removeBBCodeRegex.Replace(HttpUtility.HtmlDecode(str), string.Empty);
+            return _removeBBCodeRegex.Replace(HttpUtility.HtmlDecode(str)!, string.Empty);
         }
 
         public override void Write(Utf8JsonWriter writer, string value, JsonSerializerOptions options)

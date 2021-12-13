@@ -21,7 +21,7 @@ namespace Sanakan.Daemon.Tests.HostedServices.SessionHostedServiceTests
     public class HandleReactionRemovedAsyncTests : Base
     {
         [TestMethod]
-        public async Task Should_Run_Session()
+        public void Should_Run_Session()
         {
             var userMessageMock = new Mock<IUserMessage>(MockBehavior.Strict);
             var userMock = new Mock<IUser>(MockBehavior.Strict);

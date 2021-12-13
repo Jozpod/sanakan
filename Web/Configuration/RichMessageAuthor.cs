@@ -8,14 +8,16 @@
         /// <summary>
         /// Tekst pierwszej lini
         /// </summary>
-        public string Name { get; set; }
+        public string Name { get; set; } = null;
+
         /// <summary>
         /// Obrazek przy pierwszej lini
         /// </summary>
-        public string ImageUrl { get; set; }
+        public string ImageUrl { get; set; } = null;
+
         /// <summary>
         /// Adres do którego prowadzi imię autora
         /// </summary>
-        public string NameUrl { get; set; }
+        public string NameUrl { get; set; } = null;
     }
 }

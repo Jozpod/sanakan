@@ -46,9 +46,9 @@ namespace Sanakan.DiscordBot.Abstractions.Extensions
 
             var id = includeId ? $" ({user.Id})" : "";
 
-            if (user is IGuildUser sUser)
+            if (user is IGuildUser guildUser)
             {
-                builder.WithName($"{sUser.Nickname ?? sUser.Username}{id}");
+                builder.WithName($"{guildUser.Nickname ?? guildUser.Username}{id}");
             }
             else
             {

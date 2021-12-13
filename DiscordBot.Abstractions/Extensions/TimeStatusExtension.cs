@@ -24,7 +24,7 @@ namespace Sanakan.Extensions
                 return $"{status.Type.Icon()} **{status.Type.Name()}** {progress}{reward}";
             }
 
-            var dateValue = status.EndsOn.Value.ToString("dd/MM/yyyy HH:mm");
+            var dateValue = status.EndsOn!.Value.ToString("dd/MM/yyyy HH:mm");
 
             if (status.EndsOn < dateTime)
             {

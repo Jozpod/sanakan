@@ -18,7 +18,7 @@ namespace Sanakan.ShindenApi.Models
 
         [JsonPropertyName("title")]
         [JsonConverter(typeof(HtmlDecodeConverter))]
-        public string Title { get; set; }
+        public string Title { get; set; } = null;
 
         [JsonPropertyName("title_other_id")]
         public ulong TitleOtherId { get; set; }

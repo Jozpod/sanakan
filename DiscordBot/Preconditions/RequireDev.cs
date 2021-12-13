@@ -11,7 +11,7 @@ namespace Sanakan.Preconditions
 {
     public class RequireDev : PreconditionAttribute
     {
-        public async override Task<PreconditionResult> CheckPermissionsAsync(
+        public override Task<PreconditionResult> CheckPermissionsAsync(
             ICommandContext context,
             CommandInfo command,
             IServiceProvider services)
@@ -20,13 +20,13 @@ namespace Sanakan.Preconditions
 
             if (config.AllowedToDebug.Any(x => x == context.User.Id))
             {
-                return PreconditionResult.FromSuccess();
+                return Task.FromResult(PreconditionResult.FromSuccess());
             }
 
             var result = new PreconditionErrorPayload();
             result.ImageUrl = ImageResources.ManWaggingFinger;
 
-            return PreconditionResult.FromError(result.Serialize());
+            return Task.FromResult(PreconditionResult.FromError(result.Serialize()));
         }
     }
 }

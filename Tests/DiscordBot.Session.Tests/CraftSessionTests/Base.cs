@@ -5,6 +5,7 @@ using Moq;
 using Sanakan.Common;
 using Sanakan.Common.Cache;
 using Sanakan.DAL.Repositories.Abstractions;
+using Sanakan.DiscordBot.Abstractions.Configuration;
 using Sanakan.Game.Services.Abstractions;
 using System;
 using static Sanakan.DiscordBot.Session.CraftSession;
@@ -31,6 +32,7 @@ namespace Sanakan.DiscordBot.Session.Tests.CraftSessionTests
             serviceCollection.AddSingleton(_cacheManagerMock.Object);
             serviceCollection.AddSingleton(_userRepositoryMock.Object);
             serviceCollection.AddSingleton(_waifuServiceMock.Object);
+            serviceCollection.AddSingleton<IIconConfiguration>(new DefaultIconConfiguration());
             _serviceProvider = serviceCollection.BuildServiceProvider();
 
             _userMessageMock

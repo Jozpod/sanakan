@@ -18,7 +18,7 @@ namespace Sanakan.Game.Tests.WaifuServiceTests
     public class GetListInRightOrderTests : Base
     {
         [TestMethod]
-        public async Task Should_Return_Embed()
+        public void Should_Return_Embed()
         {
             var card1 = new Card(1, "test 1", "test 1", 100, 50, Rarity.SSS, Dere.Bodere, DateTime.Now);
             var card2 = new Card(1, "test 2", "test 2", 100, 50, Rarity.SSS, Dere.Bodere, DateTime.Now);

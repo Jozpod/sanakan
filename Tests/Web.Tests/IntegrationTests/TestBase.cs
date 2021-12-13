@@ -16,9 +16,9 @@ namespace Sanakan.Web.Tests.IntegrationTests
 #endif
     public partial class TestBase
     {
-        protected static TestWebApplicationFactory<Startup> _factory;
-        protected static HttpClient _client;
-        protected static IDatabaseFacade _databaseFacade;
+        protected static TestWebApplicationFactory<Startup> _factory = null!;
+        protected static HttpClient _client = null!;
+        protected static IDatabaseFacade _databaseFacade = null!;
         protected static readonly JsonSerializerOptions _jsonSerializerOptions;
 
         static TestBase()

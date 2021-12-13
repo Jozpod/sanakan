@@ -11,7 +11,7 @@ namespace Sanakan.DAL.Models
 
         public BoosterPackCharacter(ulong characterId)
         {
-
+            CharacterId = characterId;
         }
 
         public ulong Id { get; set; }
@@ -20,6 +20,6 @@ namespace Sanakan.DAL.Models
         public ulong BoosterPackId { get; set; }
 
         [JsonIgnore]
-        public virtual BoosterPack BoosterPack { get; set; }
+        public virtual BoosterPack BoosterPack { get; set; } = null!;
     }
 }

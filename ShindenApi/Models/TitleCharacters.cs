@@ -6,6 +6,6 @@ namespace Sanakan.ShindenApi.Models
     public class TitleCharacters
     {
         [JsonPropertyName("relations")]
-        public List<StaffInfoRelation> Relations { get; set; }
+        public List<StaffInfoRelation> Relations { get; set; } = new();
     }
 }

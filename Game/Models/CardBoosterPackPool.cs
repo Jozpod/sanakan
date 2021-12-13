@@ -13,6 +13,6 @@ namespace Sanakan.Game.Models
         /// <summary>
         /// Id tytułu z którego będą losowane postacie
         /// </summary>
-        public List<ulong> Character { get; set; }
+        public List<ulong> Character { get; set; } = new();
     }
 }

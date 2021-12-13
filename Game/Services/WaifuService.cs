@@ -74,7 +74,7 @@ namespace Sanakan.Game.Services
 
         public DateTime LastUpdate { get; set; } = DateTime.MinValue;
 
-        public List<ulong> EventIds { get; set; } = new ();
+        public List<ulong> EventIds { get; set; } = new();
 
         public List<Card> GetListInRightOrder(IEnumerable<Card> list, HaremType type, string tag)
         {
@@ -105,32 +105,32 @@ namespace Sanakan.Game.Services
                     return list.Where(x => x.IsBroken).ToList();
 
                 case HaremType.Tag:
-                {
-                    var nList = new List<Card>();
-                    var tagList = tag.Split(" ").ToList();
-                    foreach (var t in tagList)
                     {
-                        if (t.Length < 1)
-                            continue;
+                        var nList = new List<Card>();
+                        var tagList = tag.Split(" ").ToList();
+                        foreach (var t in tagList)
+                        {
+                            if (t.Length < 1)
+                                continue;
 
-                        nList = list.Where(x => x.TagList.Any(c => c.Name.Equals(t, StringComparison.CurrentCultureIgnoreCase))).ToList();
+                            nList = list.Where(x => x.TagList.Any(c => c.Name.Equals(t, StringComparison.CurrentCultureIgnoreCase))).ToList();
+                        }
+                        return nList;
                     }
-                    return nList;
-                }
 
                 case HaremType.NoTag:
-                {
-                    var nList = new List<Card>();
-                    var tagList = tag.Split(" ").ToList();
-                    foreach (var t in tagList)
                     {
-                        if (t.Length < 1)
-                            continue;
+                        var nList = new List<Card>();
+                        var tagList = tag.Split(" ").ToList();
+                        foreach (var t in tagList)
+                        {
+                            if (t.Length < 1)
+                                continue;
 
-                        nList = list.Where(x => !x.TagList.Any(c => c.Name.Equals(t, StringComparison.CurrentCultureIgnoreCase))).ToList();
+                            nList = list.Where(x => !x.TagList.Any(c => c.Name.Equals(t, StringComparison.CurrentCultureIgnoreCase))).ToList();
+                        }
+                        return nList;
                     }
-                    return nList;
-                }
 
                 case HaremType.Picture:
                     return list.Where(x => x.HasImage()).ToList();
@@ -171,7 +171,7 @@ namespace Sanakan.Game.Services
 
             value = randomNumberGenerator.GetRandomValue(1000);
 
-            foreach(var rarityChance in rarityChances)
+            foreach (var rarityChance in rarityChances)
             {
                 if (value < rarityChance.Chance)
                 {
@@ -253,7 +253,7 @@ namespace Sanakan.Game.Services
                     return user.AcCount >= cost;
 
                 default:
-                   return false;
+                    return false;
             }
         }
 
@@ -449,8 +449,8 @@ namespace Sanakan.Game.Services
                 rExp *= 10f;
             }
 
-            var sacVal = (int) toSac.Rarity;
-            var upVal = (int) toUp.Rarity;
+            var sacVal = (int)toSac.Rarity;
+            var upVal = (int)toUp.Rarity;
             var diff = upVal - sacVal;
 
             if (diff < 0)
@@ -513,7 +513,7 @@ namespace Sanakan.Game.Services
                 card.FirstOwnerId = discordUserId.Value;
             }
 
-            var pictureUrl = UrlHelpers.GetPersonPictureURL(character.PictureId.Value);
+            var pictureUrl = UrlHelpers.GetPersonPictureURL(character.PictureId!.Value);
             var hasImage = pictureUrl != UrlHelpers.GetPlaceholderImageURL();
 
             if (hasImage)
@@ -713,11 +713,11 @@ namespace Sanakan.Game.Services
 
             if (winningCard != null)
             {
-                winner = players.FirstOrDefault(x => 
+                winner = players.FirstOrDefault(x =>
                     x.Cards.Any(c => c.GameDeckId == winningCard.GameDeckId));
             }
 
-            return new FightHistory(winner) { Rounds = rounds };
+            return new FightHistory(winner!) { Rounds = rounds };
         }
 
         public Embed GetActiveList(IEnumerable<Card> list)
@@ -742,11 +742,12 @@ namespace Sanakan.Game.Services
             return embed.Build();
         }
 
-        private List<ulong> _ids = new ();
-        
+        private List<ulong> _ids = new();
+
         public bool EventEnabled { get; set; }
 
-        public List<ulong> Ids {
+        public List<ulong> Ids
+        {
             get
             {
                 if (EventEnabled && EventIds.Count > 0)
@@ -795,6 +796,7 @@ namespace Sanakan.Game.Services
                     return null;
                 }
             }
+
             return response.Value;
         }
 
@@ -908,7 +910,7 @@ namespace Sanakan.Game.Services
                 {
                     if (groupName != "")
                     {
-                        string count = groupCnt > 0 ? $"{startGroup}-{startGroup+groupCnt}" : $"{startGroup}";
+                        string count = groupCnt > 0 ? $"{startGroup}-{startGroup + groupCnt}" : $"{startGroup}";
                         packString += $"**[{count}]** {groupName}\n";
                     }
                     if (i != packs.Count)
@@ -964,7 +966,7 @@ namespace Sanakan.Game.Services
                 else if (pack.TitleId.HasValue)
                 {
                     var charactersResult = await _shindenClient.GetCharactersAsync(pack.TitleId.Value);
-                    
+
                     if (charactersResult != null)
                     {
                         var characters = charactersResult.Value.Relations;
@@ -1060,7 +1062,7 @@ namespace Sanakan.Game.Services
                     }
                 }
             }
-            catch (Exception) {}
+            catch (Exception) { }
         }
 
         private async Task<string> GetCardUrlIfExistAsync(Card card, bool defaultStr = false, bool force = false)
@@ -1087,7 +1089,9 @@ namespace Sanakan.Game.Services
                 }
             }
 
-            return defaultStr ? (imageUrl ?? imageLocation) : imageUrl;
+            var cardUrl = defaultStr ? (imageUrl ?? imageLocation) : imageUrl;
+
+            return cardUrl!;
         }
 
         public async Task<SafariImage?> GetRandomSarafiImage()
@@ -1097,7 +1101,7 @@ namespace Sanakan.Game.Services
                 var images = await _resourceManager
                     .ReadFromJsonAsync<List<SafariImage>>(Paths.PokeList);
 
-                if(images == null)
+                if (images == null)
                 {
                     return null;
                 }
@@ -1128,7 +1132,7 @@ namespace Sanakan.Game.Services
             var safariImageType = SafariImageType.Truth;
             var imagePath = safariImageType.ToUri(safariImage.Index);
 
-            if(!_fileSystem.Exists(imagePath))
+            if (!_fileSystem.Exists(imagePath))
             {
                 imagePath = safariImageType.DefaultUri();
             }
@@ -1229,7 +1233,7 @@ namespace Sanakan.Game.Services
         {
             string embedString = "";
             for (int i = 0; i < items.Length; i++)
-                embedString+= $"**[{i + 1}]** _{items[i].Item.Name}_ - {items[i].Cost} {currency}\n";
+                embedString += $"**[{i + 1}]** _{items[i].Item.Name}_ - {items[i].Cost} {currency}\n";
 
             return new EmbedBuilder
             {
@@ -1277,13 +1281,13 @@ namespace Sanakan.Game.Services
                     var url = "https://shinden.pl/";
                     if (animeMangaInfo.Title.Type == IllustrationType.Anime)
                     {
-                        id = animeMangaInfo.Title.Manga.TitleId.Value;
+                        id = animeMangaInfo.Title.Anime.TitleId!.Value;
                         animeMangaTitle = HttpUtility.HtmlDecode(animeMangaInfo.Title.Title);
                         url = UrlHelpers.GetSeriesURL(animeMangaInfo.Title.Anime.TitleId.Value);
                     }
                     else if (animeMangaInfo.Title.Type == IllustrationType.Manga)
                     {
-                        id = animeMangaInfo.Title.Manga.TitleId.Value;
+                        id = animeMangaInfo.Title.Manga.TitleId!.Value;
                         animeMangaTitle = HttpUtility.HtmlDecode(animeMangaInfo.Title.Title);
                         url = UrlHelpers.GetMangaURL(id);
                     }
@@ -1349,7 +1353,7 @@ namespace Sanakan.Game.Services
                     var charactersBatch = response.Value
                         .Relations
                         .Where(x => x.CharacterId.HasValue)
-                        .Select(x => x.CharacterId.Value);
+                        .Select(x => x.CharacterId!.Value);
 
                     characters.AddRange(charactersBatch);
                 }
@@ -1480,7 +1484,7 @@ namespace Sanakan.Game.Services
             var multiplier = (duration.Item2 < Hour) ? ((duration.Item2 < HalfAnHour) ? 5d : 3d) : 1d;
 
             var totalExp = GetProgressiveValueFromExpedition(baseExp, duration.Item1.TotalMinutes, 15d);
-            var totalItemsCnt = (int) GetProgressiveValueFromExpedition(baseItemsCnt, duration.Item1.TotalMinutes, 25d);
+            var totalItemsCnt = (int)GetProgressiveValueFromExpedition(baseItemsCnt, duration.Item1.TotalMinutes, 25d);
 
             var karmaCost = card.GetKarmaCostInExpeditionPerMinute() * duration.Item1.TotalMinutes;
             var affectionCost = card.GetCostOfExpeditionPerMinute() * duration.Item1.TotalMinutes * multiplier;
@@ -1640,7 +1644,7 @@ namespace Sanakan.Game.Services
             return value + (duration * baseValue);
         }
 
-        private Item RandomizeItemForExpedition(ExpeditionCardType expedition)
+        private Item? RandomizeItemForExpedition(ExpeditionCardType expedition)
         {
             var chanceOfItems = Game.Constants.ChanceOfItemsInExpedition[expedition];
 
@@ -1693,7 +1697,8 @@ namespace Sanakan.Game.Services
                                 && n >= chanceOfItems[ItemType.BetterIncreaseUpgradeCnt].Item1):
                     return ItemType.BetterIncreaseUpgradeCnt.ToItem(1, quality);
 
-                default: return null;
+                default:
+                    return null;
             }
         }
 

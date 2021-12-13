@@ -35,7 +35,7 @@ namespace Sanakan.DAL.Repositories
                .Where(x => x.CharacterId == characterId
                    && x.GameDeck.User.ShindenId.HasValue)
                .AsNoTracking()
-               .Select(x => x.GameDeck.User.ShindenId.Value)
+               .Select(x => x.GameDeck.User.ShindenId!.Value)
                .Distinct()
                .ToListAsync();
 
@@ -66,12 +66,12 @@ namespace Sanakan.DAL.Repositories
                 .AsQueryable()
                 .AsNoTracking()
                 .AsSplitQuery()
-                .FirstOrDefaultAsync(x => x.Id == discordUserId);
+                .FirstOrDefaultAsync(x => x.Id == discordUserId)!;
         }
 
-        public async Task<User?> GetCachedFullUserAsync(ulong shindenUserId)
+        public async Task<User?> GetCachedFullUserAsync(ulong discordUserId)
         {
-            var key = CacheKeys.User(shindenUserId);
+            var key = CacheKeys.User(discordUserId);
 
             var cacheResult = _cacheManager.Get<User>(key);
 
@@ -82,7 +82,7 @@ namespace Sanakan.DAL.Repositories
 
             var result = await _dbContext.Users
                 .AsQueryable()
-                .Where(x => x.Id == shindenUserId)
+                .Where(x => x.Id == discordUserId)
                 .Include(x => x.Stats)
                 .Include(x => x.SMConfig)
                 .Include(x => x.TimeStatuses)
@@ -171,7 +171,7 @@ namespace Sanakan.DAL.Repositories
 
             if (cacheResult != null)
             {
-                return cacheResult.Value;
+                return cacheResult.Value ?? new();
             }
 
             var result = await _dbContext.Users
@@ -180,7 +180,8 @@ namespace Sanakan.DAL.Repositories
                 .AsSplitQuery()
                 .ToListAsync();
 
-            _cacheManager.Add(CacheKeys.UsersLite, result, new MemoryCacheEntryOptions { 
+            _cacheManager.Add(CacheKeys.UsersLite, result, new MemoryCacheEntryOptions
+            {
                 AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1)
             });
 
@@ -192,10 +193,10 @@ namespace Sanakan.DAL.Repositories
             var user = _dbContext.Users
                 .FirstOrDefaultAsync(x => x.ShindenId == shindenUserId);
 
-            return user;
+            return user!;
         }
 
-        public async Task<User> GetUserOrCreateAsync(ulong discordUserId)
+        public async Task<User?> GetUserOrCreateAsync(ulong discordUserId)
         {
             var user = await _dbContext.Users
                .AsQueryable()
@@ -243,7 +244,7 @@ namespace Sanakan.DAL.Repositories
 
             if (cacheResult != null)
             {
-                return cacheResult.Value;
+                return cacheResult.Value ?? new List<User>();
             }
 
             var result = await _dbContext.Users
@@ -289,7 +290,7 @@ namespace Sanakan.DAL.Repositories
             => _dbContext.Users.AnyAsync(x => x.Id == discordUserId);
 
         public Task<User?> GetByDiscordIdAsync(ulong discordUserId)
-            => _dbContext.Users.FirstOrDefaultAsync(x => x.Id == discordUserId);
+            => _dbContext.Users.FirstOrDefaultAsync(x => x.Id == discordUserId)!;
 
         public Task<User?> GetByShindenIdAsync(ulong userShindenId, UserQueryOptions userQueryOptions)
         {
@@ -326,13 +327,13 @@ namespace Sanakan.DAL.Repositories
 
             return query
                 .AsNoTracking()
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync()!;
         }
 
         public Task<bool> ExistsByShindenIdAsync(ulong userShindenId)
             => _dbContext.Users.AnyAsync(x => x.ShindenId == userShindenId);
 
-        public Task<User> GetUserAndDontTrackAsync(ulong discordUserId)
+        public Task<User?> GetUserAndDontTrackAsync(ulong discordUserId)
         {
             var result = _dbContext
               .Users
@@ -366,7 +367,7 @@ namespace Sanakan.DAL.Repositories
               .AsSplitQuery()
               .FirstOrDefaultAsync(x => x.Id == discordUserId);
 
-            return result;
+            return result!;
         }
 
         public Task<List<User>> GetByShindenIdExcludeDiscordIdAsync(ulong shindenUserId, ulong discordUserId)

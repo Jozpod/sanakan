@@ -13,7 +13,7 @@ namespace Sanakan.Common.Converters
                 throw new Exception("Invalid format for Version property");
             }
 
-            return TimeZoneInfo.FindSystemTimeZoneById(reader.GetString());
+            return TimeZoneInfo.FindSystemTimeZoneById(reader.GetString()!);
         }
 
         public override void Write(Utf8JsonWriter writer, TimeZoneInfo value, JsonSerializerOptions options)

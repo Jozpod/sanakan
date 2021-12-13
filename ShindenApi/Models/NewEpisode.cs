@@ -10,13 +10,13 @@ namespace Sanakan.ShindenApi.Models
     public class NewEpisodeRoot
     {
         [JsonPropertyName("lastonline")]
-        public List<NewEpisode> LastOnline { get; set; }
+        public List<NewEpisode> LastOnline { get; set; } = new();
     }
 
     public class NewEpisode
     {
         [JsonPropertyName("title")]
-        public string Title { get; set; }
+        public string Title { get; set; } = null;
 
         [JsonPropertyName("title_id")]
         public ulong TitleId { get; set; }
@@ -38,7 +38,7 @@ namespace Sanakan.ShindenApi.Models
         public Language SubtitlesLanguage { get; set; }
 
         [JsonPropertyName("langs")]
-        public string[] Langs { get; set; }
+        public string[] Langs { get; set; } = null;
 
         [JsonPropertyName("add_date")]
         [JsonConverter(typeof(DateTimeyyyyMMddHHmmssConverter))]

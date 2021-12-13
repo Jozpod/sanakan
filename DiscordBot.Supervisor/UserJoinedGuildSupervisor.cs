@@ -27,7 +27,7 @@ namespace Sanakan.DiscordBot.Supervisor
         internal class Entry
         {
             public bool IsRaid { get; set; }
-            public ISet<ulong> UserIds { get; set; }
+            public ISet<ulong> UserIds { get; set; } = new HashSet<ulong>();
             public uint OccurenceCount { get; set; }
             public DateTime ModifiedOn { get; set; }
         }
@@ -37,7 +37,7 @@ namespace Sanakan.DiscordBot.Supervisor
             var key = $"{guildId}-{username}";
             var utcNow = _systemClock.UtcNow;
             var hasExpired = true;
-            Entry entry;
+            Entry? entry;
 
             if (_entries.TryGetValue(key, out entry))
             {
@@ -64,7 +64,7 @@ namespace Sanakan.DiscordBot.Supervisor
                 _entries[key] = entry;
             }
 
-            if(entry.UserIds.Count > _supervisorConfiguration.CurrentValue.SameUsernameLimit)
+            if (entry.UserIds.Count > _supervisorConfiguration.CurrentValue.SameUsernameLimit)
             {
                 entry.IsRaid = true;
             }
@@ -85,7 +85,7 @@ namespace Sanakan.DiscordBot.Supervisor
             var utcNow = _systemClock.UtcNow;
             foreach (var entry in _entries.Values)
             {
-                if(utcNow - entry.ModifiedOn > _timeIntervalBetweenUserGuildJoins)
+                if (utcNow - entry.ModifiedOn > _timeIntervalBetweenUserGuildJoins)
                 {
                     entry.ModifiedOn = utcNow;
                     entry.UserIds.Clear();

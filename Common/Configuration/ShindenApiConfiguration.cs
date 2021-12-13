@@ -7,17 +7,17 @@ namespace Sanakan.Common.Configuration
         /// <summary>
         /// The Shinden API base url.
         /// </summary>
-        public Uri BaseUrl { get; set; }
+        public Uri BaseUrl { get; set; } = null;
 
         /// <summary>
         /// The Shinden API key.
         /// </summary>
-        public string Token { get; set; }
+        public string Token { get; set; } = null;
 
         /// <summary>
         /// The user agent.
         /// </summary>
-        public string UserAgent { get; set; }
+        public string UserAgent { get; set; } = null;
 
         /// <summary>
         /// The mysterious HTTP header used by Shinden API.

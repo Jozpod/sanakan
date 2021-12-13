@@ -81,7 +81,7 @@ namespace Sanakan.Daemon.HostedService
             }
         }
 
-        internal async void OnTick(object sender, TimerEventArgs e)
+        internal void OnTick(object sender, TimerEventArgs e)
         {
             if (_isRunning)
             {
@@ -160,7 +160,7 @@ namespace Sanakan.Daemon.HostedService
             {
                 userIds = _userJoinedGuildSupervisor.GetUsersToBanCauseRaid(guild.Id, user.Username, user.Id);
             }
-            
+
             var usersToBan = await Task.WhenAll(userIds.Select(pr => guild.GetUserAsync(pr)));
             foreach (var userToBan in usersToBan)
             {
@@ -208,21 +208,21 @@ namespace Sanakan.Daemon.HostedService
             var serviceProvider = serviceScope.ServiceProvider;
             var guildConfigRepository = serviceProvider.GetRequiredService<IGuildConfigRepository>();
 
-            var gConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
+            var guildConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
 
-            if (gConfig == null)
+            if (guildConfig == null)
             {
                 return;
             }
 
-            if (!gConfig.SupervisionEnabled)
+            if (!guildConfig.SupervisionEnabled)
             {
                 return;
             }
 
             var messageContent = GetMessageContent(userMessage);
-            var adminRoleId = gConfig.AdminRoleId;
-            var userRoleId = gConfig.UserRoleId;
+            var adminRoleId = guildConfig.AdminRoleId;
+            var userRoleId = guildConfig.UserRoleId;
             var rolesId = user.RoleIds;
 
             if (adminRoleId.HasValue
@@ -233,7 +233,7 @@ namespace Sanakan.Daemon.HostedService
 
             var channel = message.Channel;
 
-            if (gConfig.ChannelsWithoutSupervision.Any(x => x.ChannelId == channel.Id))
+            if (guildConfig.ChannelsWithoutSupervision.Any(x => x.ChannelId == channel.Id))
             {
                 return;
             }
@@ -241,14 +241,14 @@ namespace Sanakan.Daemon.HostedService
             var lessSeverePunishment = true;
 
             var hasRole = rolesId.Any(x => x == userRoleId
-                || x == gConfig.MuteRoleId)
+                || x == guildConfig.MuteRoleId)
                 || !userRoleId.HasValue;
 
             lessSeverePunishment &= hasRole;
 
-            var muteRole = guild.GetRole(gConfig.MuteRoleId);
+            var muteRole = guild.GetRole(guildConfig.MuteRoleId);
             var userRole = userRoleId.HasValue ? guild.GetRole(userRoleId.Value) : null;
-            var notifyChannel = (ITextChannel)await guild.GetChannelAsync(gConfig.NotificationChannelId);
+            var notifyChannel = (ITextChannel)await guild.GetChannelAsync(guildConfig.NotificationChannelId);
             var decision = SupervisorAction.None;
 
             // TO-DO Lock

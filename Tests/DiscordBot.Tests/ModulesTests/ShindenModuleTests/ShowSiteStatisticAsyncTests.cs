@@ -3,7 +3,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Threading.Tasks;
 using Moq;
 using Sanakan.DiscordBot.Modules;
-using Discord;
 using Sanakan.DAL.Models;
 using System;
 using Sanakan.ShindenApi;

@@ -65,7 +65,7 @@ namespace Sanakan.DiscordBot.Supervisor
             try
             {
                 await _semaphore.WaitAsync();
-                _disallowedUrls = _fileSystem.ReadAllLinesAsync(eventArgs.Name);
+                _disallowedUrls = _fileSystem.ReadAllLinesAsync(eventArgs.Name!);
                 _semaphore.Release();
             }
             catch (Exception ex)
@@ -85,7 +85,7 @@ namespace Sanakan.DiscordBot.Supervisor
         public class UserEntry
         {
             public uint ShortDelayBetweenMessagesOccurenceCount { get; set; }
-            public IDictionary<int, MessageEntry> Messages { get; set; }
+            public IDictionary<int, MessageEntry> Messages { get; set; } = null;
             public DateTime ModifiedOn { get; set; }
         }
 
@@ -102,7 +102,7 @@ namespace Sanakan.DiscordBot.Supervisor
             hasDisallowedUrl &= hasUrlsInMessage;
             var utcNow = _systemClock.UtcNow;
             var messageKey = content.GetHashCode();
-            MessageEntry messageEntry;
+            MessageEntry? messageEntry;
 
             if (_entries.TryGetValue(key, out var userEntry))
             {
@@ -192,7 +192,7 @@ namespace Sanakan.DiscordBot.Supervisor
             if (userEntry.ShortDelayBetweenMessagesOccurenceCount >= userMessageLimit
                 || messageEntry.OccurenceCount > messageLimit)
             {
-                if(lessSeverePunishment)
+                if (lessSeverePunishment)
                 {
                     return SupervisorAction.Mute;
                 }

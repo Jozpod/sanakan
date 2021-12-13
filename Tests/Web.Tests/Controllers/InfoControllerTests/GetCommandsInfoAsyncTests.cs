@@ -2,6 +2,7 @@
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Sanakan.Web.Tests.Controllers.InfoControllerTests
@@ -9,24 +10,16 @@ namespace Sanakan.Web.Tests.Controllers.InfoControllerTests
     [TestClass]
     public class GetCommandsInfoAsyncTests : Base
     {
-        public ModuleInfo CreateModuleInfo()
-        {
-            return null;
-        }
-
         [TestMethod]
-        public async Task Should_Return_Module_Info()
+        public void Should_Return_Module_Info()
         {
-            var moduleInfos = new[]
-            {
-                CreateModuleInfo()
-            };
+            var moduleInfos = Enumerable.Empty<ModuleInfo>();
 
             _helperServiceMock
                 .Setup(pr => pr.GetPublicModules())
                 .Returns(moduleInfos);
 
-            var result = await _controller.GetCommandsInfoAsync();
+            var result = _controller.GetCommandsInfoAsync();
             var okObjectResult = result.Should().BeOfType<ObjectResult>().Subject;
             okObjectResult.Value.Should().NotBeNull();
         }

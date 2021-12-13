@@ -34,7 +34,7 @@ namespace Sanakan.Extensions
                 new EmbedFieldBuilder
                 {
                     Name = "Wiek",
-                    Value = info.Age.GetQMarksIfEmpty(),
+                    Value = info.Age!.GetQMarksIfEmpty(),
                     IsInline = true
                 },
                 new EmbedFieldBuilder
@@ -92,7 +92,7 @@ namespace Sanakan.Extensions
 
         public static string ToModel(this Gender gender)
         {
-            switch(gender)
+            switch (gender)
             {
                 case Gender.Other: return "Helikopter bojowy";
                 case Gender.Female: return "Kobieta";

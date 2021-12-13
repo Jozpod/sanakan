@@ -10,9 +10,9 @@ namespace Sanakan.Services.PocketWaifu
         public static string DefaultColor() => SilverChalice;
 
         [JsonPropertyName("name")]
-        public string Name { get; set; }
+        public string Name { get; set; } = null;
 
         [JsonPropertyName("text-color")]
-        public string Color { get; set; }
+        public string Color { get; set; } = null;
     }
 }

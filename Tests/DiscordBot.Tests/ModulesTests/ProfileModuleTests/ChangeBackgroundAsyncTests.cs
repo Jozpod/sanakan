@@ -6,8 +6,6 @@ using Moq;
 using Sanakan.DiscordBot.Services;
 using System.Threading;
 using Sanakan.DiscordBot.Modules;
-using Discord;
-using Moq;
 using FluentAssertions;
 
 namespace DiscordBot.ModulesTests.ProfileModuleTests
@@ -18,7 +16,7 @@ namespace DiscordBot.ModulesTests.ProfileModuleTests
     [TestClass]
     public class ChangeBackgroundAsyncTests : Base
     {
-        
+
         [TestMethod]
         public async Task Should_Change_Background_And_Send_Confirm_Message()
         {

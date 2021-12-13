@@ -193,7 +193,7 @@ namespace Sanakan.DiscordBot.Tests.PreconditionsTests
 
             _guildMock
                 .Setup(pr => pr.GetRole(guildConfig.UserRoleId.Value))
-                .Returns(null as IRole)
+                .Returns<IRole?>(null)
                 .Verifiable();
 
             var result = await _preconditionAttribute.CheckPermissionsAsync(_commandContextMock.Object, null, _serviceProvider);
@@ -209,7 +209,7 @@ namespace Sanakan.DiscordBot.Tests.PreconditionsTests
         {
             _commandContextMock
                 .Setup(pr => pr.User)
-                .Returns(null as IUser)
+                .Returns<IUser?>(null)
                 .Verifiable();
 
             var result = await _preconditionAttribute.CheckPermissionsAsync(_commandContextMock.Object, null, _serviceProvider);

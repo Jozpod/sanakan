@@ -12,6 +12,7 @@ using Sanakan.DAL.Models;
 using Sanakan.DAL.Repositories;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot.Abstractions;
+using Sanakan.DiscordBot.Abstractions.Configuration;
 using Sanakan.DiscordBot.Abstractions.Extensions;
 using Sanakan.DiscordBot.Abstractions.Models;
 using Sanakan.DiscordBot.Resources;
@@ -37,6 +38,7 @@ namespace Sanakan.DiscordBot.Modules
     [Name("PocketWaifu"), RequireUserRole]
     public class PocketWaifuModule : SanakanModuleBase
     {
+        private readonly IIconConfiguration _iconConfiguration;
         private readonly IShindenClient _shindenClient;
         private readonly ISessionManager _sessionManager;
         private readonly ILogger _logger;
@@ -53,6 +55,7 @@ namespace Sanakan.DiscordBot.Modules
         private readonly IServiceScope _serviceScope;
 
         public PocketWaifuModule(
+            IIconConfiguration iconConfiguration,
             IWaifuService waifuService,
             IShindenClient shindenClient,
             ILogger<PocketWaifuModule> logger,
@@ -63,6 +66,7 @@ namespace Sanakan.DiscordBot.Modules
             ITaskManager taskManager,
             IServiceScopeFactory serviceScopeFactory)
         {
+            _iconConfiguration = iconConfiguration;
             _waifuService = waifuService;
             _logger = logger;
             _shindenClient = shindenClient;
@@ -93,7 +97,7 @@ namespace Sanakan.DiscordBot.Modules
         public async Task ShowCardsAsync(
             [Summary("typ sortowania (klatka/jakość/atak/obrona/relacja/życie/tag(-)/uszkodzone/niewymienialne/obrazek(-/c)/unikat)")]
             HaremType type = HaremType.Rarity,
-            [Summary("tag)")][Remainder]string? tag = null)
+            [Summary("tag)")][Remainder] string? tag = null)
         {
             var user = Context.User;
             var userMention = user.Mention;
@@ -126,7 +130,7 @@ namespace Sanakan.DiscordBot.Modules
             }
 
             sessionPayload.Enumerable = false;
-            sessionPayload.ListItems = _waifuService.GetListInRightOrder(cards, type, tag);
+            sessionPayload.ListItems = _waifuService.GetListInRightOrder(cards, type, tag!);
             sessionPayload.Embed = new EmbedBuilder
             {
                 Color = EMType.Info.Color(),
@@ -137,10 +141,7 @@ namespace Sanakan.DiscordBot.Modules
             {
                 var dmChannel = await user.GetOrCreateDMChannelAsync();
                 var message = await dmChannel.SendMessageAsync(embed: session.BuildPage(0));
-                await message.AddReactionsAsync( new [] {
-                    Emojis.LeftwardsArrow,
-                    Emojis.RightwardsArrow
-                });
+                await message.AddReactionsAsync(_iconConfiguration.LeftRightArrows);
 
                 sessionPayload.Message = message;
                 _sessionManager.Add(session);
@@ -157,7 +158,7 @@ namespace Sanakan.DiscordBot.Modules
         [Alias("items", "item", "przedmiot")]
         [Summary("wypisuje posiadane przedmioty (informacje o przedmiocie, gdy podany jego numer)")]
         [Remarks("1"), RequireWaifuCommandChannel]
-        public async Task ShowItemsAsync([Summary("nr przedmiotu")]int itemNumber = 0)
+        public async Task ShowItemsAsync([Summary("nr przedmiotu")] int itemNumber = 0)
         {
             var user = Context.User;
             var userMention = user.Mention;
@@ -205,8 +206,8 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("pozwala wyświetlić obrazek karty")]
         [Remarks("685 nie"), RequireAnyCommandChannelOrLevel]
         public async Task ShowCardImageAsync(
-            [Summary("WID")]ulong wid,
-            [Summary("czy wyświetlić statystyki?")]bool showStats = true)
+            [Summary("WID")] ulong wid,
+            [Summary("czy wyświetlić statystyki?")] bool showStats = true)
         {
             var card = await _cardRepository.GetCardAsync(wid);
 
@@ -234,7 +235,7 @@ namespace Sanakan.DiscordBot.Modules
 
             var trashCommandsChannelId = guildConfig.WaifuConfig.TrashCommandsChannelId;
 
-            if(!trashCommandsChannelId.HasValue)
+            if (!trashCommandsChannelId.HasValue)
             {
                 var embed = $"Nie skonfigurowany kanal smieciowych polecen.".ToEmbedMessage(EMType.Error).Build();
                 await ReplyAsync(embed: embed);
@@ -250,7 +251,7 @@ namespace Sanakan.DiscordBot.Modules
         [Alias("card-")]
         [Summary("pozwala wyświetlić kartę w prostej postaci")]
         [Remarks("685"), RequireAnyCommandChannelOrLevel]
-        public async Task ShowCardStringAsync([Summary("WID")]ulong wid)
+        public async Task ShowCardStringAsync([Summary("WID")] ulong wid)
         {
             var card = await _cardRepository.GetByIdAsync(wid, new CardQueryOptions
             {
@@ -290,7 +291,7 @@ namespace Sanakan.DiscordBot.Modules
         [Alias("card")]
         [Summary("pozwala wyświetlić kartę")]
         [Remarks("685"), RequireWaifuCommandChannel]
-        public async Task ShowCardAsync([Summary("WID")]ulong wid)
+        public async Task ShowCardAsync([Summary("WID")] ulong wid)
         {
             var card = await _cardRepository.GetByIdAsync(wid, new CardQueryOptions
             {
@@ -318,7 +319,7 @@ namespace Sanakan.DiscordBot.Modules
             }
 
             var guildConfig = await _guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
-            var trashChannel = (ITextChannel)await guild.GetChannelAsync(guildConfig.WaifuConfig.TrashCommandsChannelId.Value);
+            var trashChannel = (ITextChannel)await guild.GetChannelAsync(guildConfig.WaifuConfig.TrashCommandsChannelId!.Value);
             var embed = await _waifuService.BuildCardViewAsync(card, trashChannel, user);
 
             await ReplyAsync(embed: embed);
@@ -329,8 +330,8 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("listowanie/zakup przedmiotu/wypisanie informacji")]
         [Remarks("1 info"), RequireWaifuCommandChannel]
         public async Task BuyItemPvPAsync(
-            [Summary("nr przedmiotu")]int itemNumber = 0,
-            [Summary("info/4 (liczba przedmiotów do zakupu/id tytułu)")]string info = "0")
+            [Summary("nr przedmiotu")] int itemNumber = 0,
+            [Summary("info/4 (liczba przedmiotów do zakupu/id tytułu)")] string info = "0")
         {
             var embed = await _waifuService.ExecuteShopAsync(ShopType.Pvp, Context.User, itemNumber, info);
             await ReplyAsync(embed: embed);
@@ -341,8 +342,8 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("listowanie/zakup przedmiotu/wypisanie informacji")]
         [Remarks("1 info"), RequireWaifuCommandChannel]
         public async Task BuyItemActivityAsync(
-            [Summary("nr przedmiotu")]int itemNumber = 0,
-            [Summary("info/4 (liczba przedmiotów do zakupu/id tytułu)")]string info = "0")
+            [Summary("nr przedmiotu")] int itemNumber = 0,
+            [Summary("info/4 (liczba przedmiotów do zakupu/id tytułu)")] string info = "0")
         {
             var embed = await _waifuService.ExecuteShopAsync(
                 ShopType.Activity,
@@ -357,8 +358,8 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("listowanie/zakup przedmiotu/wypisanie informacji (du użycia wymagany 10 lvl)")]
         [Remarks("1 info"), RequireWaifuCommandChannel, RequireLevel(10)]
         public async Task BuyItemAsync(
-            [Summary("nr przedmiotu")]int itemNumber = 0,
-            [Summary("info/4 (liczba przedmiotów do zakupu/id tytułu)")]string info = "0")
+            [Summary("nr przedmiotu")] int itemNumber = 0,
+            [Summary("info/4 (liczba przedmiotów do zakupu/id tytułu)")] string info = "0")
         {
             var embed = await _waifuService.ExecuteShopAsync(ShopType.Normal, Context.User, itemNumber, info);
             await ReplyAsync(embed: embed);
@@ -369,9 +370,9 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("używa przedmiot na karcie lub nie")]
         [Remarks("1 4212 2"), RequireWaifuCommandChannel]
         public async Task UseItemAsync(
-            [Summary("nr przedmiotu")]int itemNumber,
-            [Summary("WID")]ulong wid = 0,
-            [Summary("liczba przedmiotów/link do obrazka/typ gwiazdki")]string itemsCountOrImageLinkOrStarType = "1")
+            [Summary("nr przedmiotu")] int itemNumber,
+            [Summary("WID")] ulong wid = 0,
+            [Summary("liczba przedmiotów/link do obrazka/typ gwiazdki")] string itemsCountOrImageLinkOrStarType = "1")
         {
             var discordUser = Context.User;
             var mention = discordUser.Mention;
@@ -444,7 +445,8 @@ namespace Sanakan.DiscordBot.Modules
                 default:
                     if (itemCount != 1)
                     {
-                        await ReplyAsync(embed: $"{mention} możesz użyć tylko jeden przedmiot tego typu na raz!".ToEmbedMessage(EMType.Error).Build());
+                        await ReplyAsync(embed: $"{mention} możesz użyć tylko jeden przedmiot tego typu na raz!"
+                            .ToEmbedMessage(EMType.Error).Build());
                         return;
                     }
                     break;
@@ -452,7 +454,8 @@ namespace Sanakan.DiscordBot.Modules
 
             if (item.Count < itemCount)
             {
-                await ReplyAsync(embed: $"{mention} nie posiadasz tylu sztuk tego przedmiotu.".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync(embed: $"{mention} nie posiadasz tylu sztuk tego przedmiotu."
+                    .ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
@@ -461,20 +464,23 @@ namespace Sanakan.DiscordBot.Modules
 
             if (card == null && !noCardOperation)
             {
-                await ReplyAsync(embed: $"{mention} nie posiadasz takiej karty!".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync(embed: $"{mention} nie posiadasz takiej karty!"
+                    .ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
             if (card.Expedition != ExpeditionCardType.None && !noCardOperation)
             {
-                await ReplyAsync(embed: $"{mention} ta karta jest na wyprawie!".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync(embed: $"{mention} ta karta jest na wyprawie!"
+                    .ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
             var activeFigure = gameDeck.Figures.FirstOrDefault(x => x.IsFocus);
             if (activeFigure == null && noCardOperation)
             {
-                await ReplyAsync(embed: $"{mention} nie posiadasz aktywnej figurki!".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync(embed: $"{mention} nie posiadasz aktywnej figurki!"
+                    .ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
@@ -488,7 +494,8 @@ namespace Sanakan.DiscordBot.Modules
                     case ItemType.CardParamsReRoll:
                     case ItemType.IncreaseUpgradeCount:
                     case ItemType.BetterIncreaseUpgradeCnt:
-                        await ReplyAsync(embed: $"{mention} tego przedmiotu nie można użyć na tej karcie.".ToEmbedMessage(EMType.Error).Build());
+                        await ReplyAsync(embed: $"{mention} tego przedmiotu nie można użyć na tej karcie."
+                            .ToEmbedMessage(EMType.Error).Build());
                         return;
 
                     default:
@@ -808,21 +815,22 @@ namespace Sanakan.DiscordBot.Modules
                     if (characterInfo.Points != null)
                     {
                         var ordered = characterInfo.Points.OrderByDescending(x => x.Points);
-                        
+
                         if (ordered.Any(x => x.Name == embed.Author.Name))
                         {
                             affectionInc *= 1.1;
-                        }    
+                        }
                     }
                 }
             }
 
-            var mission = databaseUser.TimeStatuses.FirstOrDefault(x => x.Type == StatusType.DUsedItems);
+            var timeStatuses = databaseUser.TimeStatuses;
+            var mission = timeStatuses.FirstOrDefault(x => x.Type == StatusType.DUsedItems);
 
             if (mission == null)
             {
                 mission = new TimeStatus(StatusType.DUsedItems);
-                databaseUser.TimeStatuses.Add(mission);
+                timeStatuses.Add(mission);
             }
 
             mission.Count(utcNow, (uint)itemCount);
@@ -873,9 +881,9 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("wypisuje dostępne pakiety/otwiera pakiety(maksymalna suma kart z pakietów do otworzenia to 20)")]
         [Remarks("1"), RequireWaifuCommandChannel]
         public async Task OpenPacketAsync(
-            [Summary("nr pakietu kart")]int numberOfPack = 0,
-            [Summary("liczba kolejnych pakietów")]int count = 1,
-            [Summary("czy sprawdzić listy życzeń?")]bool checkWishlists = false)
+            [Summary("nr pakietu kart")] int numberOfPack = 0,
+            [Summary("liczba kolejnych pakietów")] int count = 1,
+            [Summary("czy sprawdzić listy życzeń?")] bool checkWishlists = false)
         {
             var user = Context.User;
             var mention = user.Mention;
@@ -1031,7 +1039,7 @@ namespace Sanakan.DiscordBot.Modules
         [Alias("restart")]
         [Summary("restartuj kartę SSS na kartę E i dodaje stały bonus")]
         [Remarks("5412"), RequireWaifuCommandChannel]
-        public async Task ResetCardAsync([Summary("WID")]ulong cardId)
+        public async Task ResetCardAsync([Summary("WID")] ulong cardId)
         {
             var databaseUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
             var card = databaseUser.GameDeck.Cards.FirstOrDefault(x => x.Id == cardId);
@@ -1111,8 +1119,8 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("pobiera dane na tamat karty z shindena")]
         [Remarks("5412"), RequireWaifuCommandChannel]
         public async Task UpdateCardAsync(
-            [Summary("WID")]ulong id,
-            [Summary("czy przywrócić obrazek ze strony")]bool useDefaultImage = false)
+            [Summary("WID")] ulong id,
+            [Summary("czy przywrócić obrazek ze strony")] bool useDefaultImage = false)
         {
             var discordUser = Context.User;
             var databaseUser = await _userRepository.GetUserOrCreateAsync(discordUser.Id);
@@ -1179,7 +1187,7 @@ namespace Sanakan.DiscordBot.Modules
         [Alias("upgrade")]
         [Summary("ulepsza kartę na lepszą jakość")]
         [Remarks("5412"), RequireWaifuCommandChannel]
-        public async Task UpgradeCardAsync([Summary("WID")]ulong id)
+        public async Task UpgradeCardAsync([Summary("WID")] ulong id)
         {
             var databaseUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
             var card = databaseUser.GameDeck.Cards.FirstOrDefault(x => x.Id == id);
@@ -1270,7 +1278,7 @@ namespace Sanakan.DiscordBot.Modules
         [Alias("release", "puśmje")]
         [Summary("uwalnia posiadaną kartę")]
         [Remarks("5412 5413"), RequireWaifuCommandChannel]
-        public async Task ReleaseCardAsync([Summary("WID kart")]params ulong[] ids)
+        public async Task ReleaseCardAsync([Summary("WID kart")] params ulong[] ids)
         {
             var databaseUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
             var cardsToSac = databaseUser.GameDeck.Cards
@@ -1288,8 +1296,8 @@ namespace Sanakan.DiscordBot.Modules
             var broken = new List<Card>();
             foreach (var card in cardsToSac)
             {
-                if (card.InCage || card.HasTag(Tags.Favourite) 
-                    || card.FromFigure 
+                if (card.InCage || card.HasTag(Tags.Favourite)
+                    || card.FromFigure
                     || card.Expedition != ExpeditionCardType.None)
                 {
                     broken.Add(card);
@@ -1336,7 +1344,7 @@ namespace Sanakan.DiscordBot.Modules
         [Alias("destroy")]
         [Summary("niszczy posiadaną kartę")]
         [Remarks("5412"), RequireWaifuCommandChannel]
-        public async Task DestroyCardAsync([Summary("WID kart")]params ulong[] ids)
+        public async Task DestroyCardAsync([Summary("WID kart")] params ulong[] ids)
         {
             var databaseUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
             var gameDeck = databaseUser.GameDeck;
@@ -1357,8 +1365,8 @@ namespace Sanakan.DiscordBot.Modules
             var broken = new List<Card>();
             foreach (var card in cardsToSac)
             {
-                if (card.InCage || card.HasTag(Tags.Favourite) 
-                    || card.FromFigure 
+                if (card.InCage || card.HasTag(Tags.Favourite)
+                    || card.FromFigure
                     || card.Expedition != ExpeditionCardType.None)
                 {
                     broken.Add(card);
@@ -1417,8 +1425,8 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("przenosi doświadczenie z skrzyni do karty (kosztuje CT)")]
         [Remarks("2154"), RequireWaifuCommandChannel]
         public async Task TransferExpFromChestAsync(
-            [Summary("WID")]ulong id,
-            [Summary("liczba doświadczenia")]uint exp)
+            [Summary("WID")] ulong id,
+            [Summary("liczba doświadczenia")] uint exp)
         {
             var databaseUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
             var gameDeck = databaseUser.GameDeck;
@@ -1569,7 +1577,7 @@ namespace Sanakan.DiscordBot.Modules
             var gameDeck = databaseUser.GameDeck;
             var timeStatuses = databaseUser.TimeStatuses;
             var freeCard = databaseUser.TimeStatuses.FirstOrDefault(x => x.Type == statusType);
-            
+
             Embed embed;
 
             if (freeCard == null)
@@ -1612,7 +1620,7 @@ namespace Sanakan.DiscordBot.Modules
 
             var card = _waifuService.GenerateNewCard(
                 userId,
-                characterInfo,
+                characterInfo!,
                 rarityExcluded);
 
             bool wasOnWishlist = gameDeck.RemoveCharacterFromWishList(card.CharacterId);
@@ -1638,7 +1646,7 @@ namespace Sanakan.DiscordBot.Modules
         [Alias("market")]
         [Summary("udajesz się na rynek z wybraną przez Ciebie kartą, aby pohandlować")]
         [Remarks("2145"), RequireWaifuCommandChannel]
-        public async Task GoToMarketAsync([Summary("WID")]ulong wid)
+        public async Task GoToMarketAsync([Summary("WID")] ulong wid)
         {
             var databaseUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
             var gameDeck = databaseUser.GameDeck;
@@ -1800,7 +1808,7 @@ namespace Sanakan.DiscordBot.Modules
         [Alias("black market")]
         [Summary("udajesz się na czarny rynek z wybraną przez Ciebie kartą, wolałbym nie wiedzieć co tam będziesz robić")]
         [Remarks("2145"), RequireWaifuCommandChannel]
-        public async Task GoToBlackMarketAsync([Summary("WID")]ulong wid)
+        public async Task GoToBlackMarketAsync([Summary("WID")] ulong wid)
         {
             var databaseUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
             var gameDeck = databaseUser.GameDeck;
@@ -1935,8 +1943,8 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("dodaje exp do karty, poświęcając kilka innych")]
         [Remarks("5412 5411 5410"), RequireWaifuCommandChannel]
         public async Task SacrificeCardMultiAsync(
-            [Summary("WID(do ulepszenia)")]ulong idToUpgrade,
-            [Summary("WID kart(do poświęcenia)")]params ulong[] idsToSacrifice)
+            [Summary("WID(do ulepszenia)")] ulong idToUpgrade,
+            [Summary("WID kart(do poświęcenia)")] params ulong[] idsToSacrifice)
         {
             var mention = Context.User.Mention;
 
@@ -1975,10 +1983,10 @@ namespace Sanakan.DiscordBot.Modules
             var broken = new List<Card>();
             foreach (var card in cardsToSacrifice)
             {
-                if (card.IsBroken 
-                    || card.InCage 
-                    || card.HasTag(Tags.Favourite) 
-                    || card.FromFigure 
+                if (card.IsBroken
+                    || card.InCage
+                    || card.HasTag(Tags.Favourite)
+                    || card.FromFigure
                     || card.Expedition != ExpeditionCardType.None)
                 {
                     broken.Add(card);
@@ -2024,7 +2032,7 @@ namespace Sanakan.DiscordBot.Modules
         [Alias("cage")]
         [Summary("otwiera klatkę z kartami (sprecyzowanie wid wyciąga tylko jedną kartę)")]
         [Remarks(""), RequireWaifuCommandChannel]
-        public async Task OpenCageAsync([Summary("WID(opcjonalne)")]ulong wid = 0)
+        public async Task OpenCageAsync([Summary("WID(opcjonalne)")] ulong wid = 0)
         {
             var user = Context.User as IGuildUser;
             if (user == null)
@@ -2114,8 +2122,8 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("usuwa karty/tytuły/postacie z listy życzeń")]
         [Remarks("karta 4212 21452"), RequireWaifuCommandChannel]
         public async Task RemoveFromWishlistAsync(
-            [Summary("typ id (p - postać, t - tytuł, c - karta)")]WishlistObjectType type,
-            [Summary("ids/WIDs")]params ulong[] ids)
+            [Summary("typ id (p - postać, t - tytuł, c - karta)")] WishlistObjectType type,
+            [Summary("ids/WIDs")] params ulong[] ids)
         {
             var databaseUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
             var objs = databaseUser.GameDeck.Wishes
@@ -2147,8 +2155,8 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("dodaje kartę/tytuł/postać do listy życzeń")]
         [Remarks("karta 4212"), RequireWaifuCommandChannel]
         public async Task AddToWishlistAsync(
-            [Summary("typ id (p - postać, t - tytuł, c - karta)")]WishlistObjectType type,
-            [Summary("id/WID")]ulong objectId)
+            [Summary("typ id (p - postać, t - tytuł, c - karta)")] WishlistObjectType type,
+            [Summary("id/WID")] ulong objectId)
         {
             var response = "";
             var databaseUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
@@ -2230,7 +2238,7 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("pozwala ukryć listę życzeń przed innymi graczami")]
         [Remarks("tak"), RequireWaifuCommandChannel]
         public async Task SetWishlistViewAsync(
-            [Summary("czy ma być widoczna? (tak/nie)")]bool hideWishlist)
+            [Summary("czy ma być widoczna? (tak/nie)")] bool hideWishlist)
         {
             var databaseUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
             databaseUser.GameDeck.WishlistIsPrivate = !hideWishlist;
@@ -2402,7 +2410,7 @@ namespace Sanakan.DiscordBot.Modules
         bool showFavs = false,
         [Summary("czy pokazać niewymienialne (true/false) domyślnie pokazane")]
         bool showBlocked = true,
-        [Summary("czy zamienić oznaczenia na nicki?")]bool showNames = false)
+        [Summary("czy zamienić oznaczenia na nicki?")] bool showNames = false)
         {
             var userf = (filterUser ?? Context.User) as IGuildUser;
             var mention = Context.User.Mention;
@@ -2493,8 +2501,8 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("wyszukuje na listach życzeń użytkowników danej karty, pomija tytuły")]
         [Remarks("51545"), RequireWaifuCommandChannel]
         public async Task WhoWantsCardAsync(
-            [Summary("wid karty")]ulong wid,
-            [Summary("czy zamienić oznaczenia na nicki?")]bool showNames = false)
+            [Summary("wid karty")] ulong wid,
+            [Summary("czy zamienić oznaczenia na nicki?")] bool showNames = false)
         {
             var thisCards = await _cardRepository.GetByIdAsync(wid, new CardQueryOptions
             {
@@ -2545,8 +2553,8 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("wyszukuje na wishlistach danego anime")]
         [Remarks("21"), RequireWaifuCommandChannel]
         public async Task WhoWantsCardsFromAnimeAsync(
-            [Summary("id anime")]ulong animeId,
-            [Summary("czy zamienić oznaczenia na nicki?")]bool showNames = false)
+            [Summary("id anime")] ulong animeId,
+            [Summary("czy zamienić oznaczenia na nicki?")] bool showNames = false)
         {
             var animeMangaInfoResult = await _shindenClient.GetAnimeMangaInfoAsync(animeId);
 
@@ -2592,7 +2600,7 @@ namespace Sanakan.DiscordBot.Modules
         [Alias("unleash", "wyzwol")]
         [Summary("zmienia karte niewymienialną na wymienialną (250 CT)")]
         [Remarks("8651"), RequireWaifuCommandChannel]
-        public async Task UnleashCardAsync([Summary("WID")]ulong wid)
+        public async Task UnleashCardAsync([Summary("WID")] ulong wid)
         {
             int cost = 250;
             var databaseUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
@@ -2639,7 +2647,7 @@ namespace Sanakan.DiscordBot.Modules
         [Alias("card limit")]
         [Summary("zwiększa limit kart, jakie można posiadać o 100, podanie 0 jako krotności wypisuje obecny limit")]
         [Remarks("10"), RequireWaifuCommandChannel]
-        public async Task IncCardLimitAsync([Summary("krotność użycia polecenia")]uint count = 0)
+        public async Task IncCardLimitAsync([Summary("krotność użycia polecenia")] uint count = 0)
         {
             var databaseUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
             var gameDeck = databaseUser.GameDeck;
@@ -2680,7 +2688,7 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("zmienia kolor przewodni profilu na stronie waifu (500 TC)")]
         [Remarks("#dc5341"), RequireWaifuCommandChannel]
         public async Task ChangeWaifuSiteForegroundColorAsync(
-            [Summary("kolor w formacie hex")]string color)
+            [Summary("kolor w formacie hex")] string color)
         {
             var tcCost = 500;
 
@@ -2712,7 +2720,7 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("zmienia obrazek nakładany na tło profilu na stronie waifu (500 TC)")]
         [Remarks("https://i.imgur.com/eQoaZid.png"), RequireWaifuCommandChannel]
         public async Task ChangeWaifuSiteForegroundAsync(
-            [Summary("bezpośredni adres do obrazka")]string imageUrl)
+            [Summary("bezpośredni adres do obrazka")] string imageUrl)
         {
             var tcCost = 500;
             var mention = Context.User.Mention;
@@ -2743,7 +2751,7 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("zmienia obrazek tła profilu na stronie waifu (2000 TC)")]
         [Remarks("https://i.imgur.com/wmDhRWd.jpeg"), RequireWaifuCommandChannel]
         public async Task ChangeWaifuSiteBackgroundAsync(
-            [Summary("bezpośredni adres do obrazka")]string imageUrl)
+            [Summary("bezpośredni adres do obrazka")] string imageUrl)
         {
             var tcCost = 2000;
 
@@ -2775,7 +2783,7 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("zmienia położenie obrazka tła profilu na stronie waifu")]
         [Remarks("65"), RequireWaifuCommandChannel]
         public async Task ChangeWaifuSiteBackgroundPositionAsync(
-            [Summary("pozycja w % od 0 do 100")]uint position)
+            [Summary("pozycja w % od 0 do 100")] uint position)
         {
             var databaseUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
             var mention = Context.User.Mention;
@@ -2797,7 +2805,7 @@ namespace Sanakan.DiscordBot.Modules
         [Alias("pozycja szczególu strony", "pozycja szczegolu strony", "pozycja szczegołu strony", "site fgp", "site foreground position")]
         [Summary("zmienia położenie obrazka szczegółu profilu na stronie waifu")]
         [Remarks("78"), RequireWaifuCommandChannel]
-        public async Task ChangeWaifuSiteForegroundPositionAsync([Summary("pozycja w % od 0 do 100")]uint position)
+        public async Task ChangeWaifuSiteForegroundPositionAsync([Summary("pozycja w % od 0 do 100")] uint position)
         {
             var databaseUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
 
@@ -2818,7 +2826,7 @@ namespace Sanakan.DiscordBot.Modules
         [Alias("gallery")]
         [Summary("wykupuje dodatkowe 5 pozycji w galerii (koszt 100 TC), podanie 0 jako krotności wypisuje obecny limit")]
         [Remarks(""), RequireWaifuCommandChannel]
-        public async Task IncGalleryLimitAsync([Summary("krotność użycia polecenia")]uint count = 0)
+        public async Task IncGalleryLimitAsync([Summary("krotność użycia polecenia")] uint count = 0)
         {
             int cost = 100 * (int)count;
             var databaseUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
@@ -2924,7 +2932,7 @@ namespace Sanakan.DiscordBot.Modules
         [Alias("tag")]
         [Summary("dodaje tag do kart")]
         [Remarks("konie 231 12341 22"), RequireWaifuCommandChannel]
-        public async Task ChangeCardTagAsync([Summary("tag")]string tag, [Summary("WID kart")]params ulong[] wids)
+        public async Task ChangeCardTagAsync([Summary("tag")] string tag, [Summary("WID kart")] params ulong[] wids)
         {
             var databaseUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
             var cardsSelected = databaseUser.GameDeck.Cards
@@ -2963,7 +2971,7 @@ namespace Sanakan.DiscordBot.Modules
         [Alias("tag clean", "oznacz czysć", "oznacz czyśc", "oznacz czysc")]
         [Summary("czyści tagi z kart")]
         [Remarks("22"), RequireWaifuCommandChannel]
-        public async Task CleanCardTagAsync([Summary("WID kart")]params ulong[] wids)
+        public async Task CleanCardTagAsync([Summary("WID kart")] params ulong[] wids)
         {
             var databaseUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
             var cardsSelected = databaseUser.GameDeck.Cards.Where(x => wids.Any(c => c == x.Id)).ToList();
@@ -2988,7 +2996,7 @@ namespace Sanakan.DiscordBot.Modules
         [Alias("tag empty")]
         [Summary("dodaje tag do kart, które nie są oznaczone")]
         [Remarks("konie"), RequireWaifuCommandChannel]
-        public async Task ChangeCardsTagAsync([Summary("tag")]string tag)
+        public async Task ChangeCardsTagAsync([Summary("tag")] string tag)
         {
             var databaseUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
             var untaggedCards = databaseUser.GameDeck.Cards.Where(x => x.TagList.Count < 1).ToList();
@@ -3023,8 +3031,8 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("podmienia tag na wszystkich kartach, niepodanie nowego tagu usuwa tag z kart")]
         [Remarks("konie wymiana"), RequireWaifuCommandChannel]
         public async Task ReplaceCardsTagAsync(
-            [Summary("stary tag")]string oldTag,
-            [Summary("nowy tag")]string newTag = "%$-1")
+            [Summary("stary tag")] string oldTag,
+            [Summary("nowy tag")] string newTag = "%$-1")
         {
             var databaseUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
             var cards = databaseUser.GameDeck.Cards.Where(x => x.HasTag(oldTag)).ToList();
@@ -3070,8 +3078,8 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("kasuje tag z kart")]
         [Remarks("ulubione 2211 2123 33123"), RequireWaifuCommandChannel]
         public async Task RemoveCardTagAsync(
-            [Summary("tag")]string cardTag,
-            [Summary("WID kart")]params ulong[] wids)
+            [Summary("tag")] string cardTag,
+            [Summary("WID kart")] params ulong[] wids)
         {
             var databaseUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
             var cardsSelected = databaseUser.GameDeck.Cards.Where(x => wids.Any(c => c == x.Id)).ToList();
@@ -3105,7 +3113,7 @@ namespace Sanakan.DiscordBot.Modules
         [Alias("exchange conditions")]
         [Summary("ustawia tekst będący zasadami wymiany z nami, wywołanie bez podania zasad kasuje tekst")]
         [Remarks("Wymieniam się tylko za karty z mojej listy życzeń."), RequireWaifuCommandChannel]
-        public async Task SetExchangeConditionAsync([Summary("zasady wymiany")][Remainder]string condition = null)
+        public async Task SetExchangeConditionAsync([Summary("zasady wymiany")][Remainder] string condition = null)
         {
             var databaseUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
 
@@ -3122,7 +3130,7 @@ namespace Sanakan.DiscordBot.Modules
         [Alias("deck", "aktywne")]
         [Summary("wyświetla aktywne karty/ustawia kartę jako aktywną")]
         [Remarks("1"), RequireWaifuCommandChannel]
-        public async Task ChangeDeckCardStatusAsync([Summary("WID(opcjonalne)")]ulong wid = 0)
+        public async Task ChangeDeckCardStatusAsync([Summary("WID(opcjonalne)")] ulong wid = 0)
         {
             var userId = Context.User.Id;
             var databaseUser = await _userRepository.GetCachedFullUserAsync(userId);
@@ -3199,8 +3207,8 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("pozwala wyszukać użytkowników posiadających kartę danej postaci")]
         [Remarks("51 tak"), RequireWaifuCommandChannel]
         public async Task SearchCharacterCardsAsync(
-            [Summary("id postaci na shinden")]ulong characterId,
-            [Summary("czy zamienić oznaczenia na nicki?")]bool showNames = false)
+            [Summary("id postaci na shinden")] ulong characterId,
+            [Summary("czy zamienić oznaczenia na nicki?")] bool showNames = false)
         {
             var user = Context.User;
             var characterResult = await _shindenClient.GetCharacterInfoAsync(characterId);
@@ -3264,8 +3272,8 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("pozwala wyszukać użytkowników posiadających karty z naszej listy ulubionych postaci")]
         [Remarks("tak tak"), RequireWaifuCommandChannel]
         public async Task SearchCharacterCardsFromFavListAsync(
-            [Summary("czy pokazać ulubione (true/false) domyślnie ukryte")]bool showFavs = false,
-            [Summary("czy zamienić oznaczenia na nicki?")]bool showNames = false)
+            [Summary("czy pokazać ulubione (true/false) domyślnie ukryte")] bool showFavs = false,
+            [Summary("czy zamienić oznaczenia na nicki?")] bool showNames = false)
         {
             var user = Context.User;
             var databaseUser = await _userRepository.GetCachedFullUserAsync(user.Id);
@@ -3276,7 +3284,7 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            var charactersResult = await _shindenClient.GetFavouriteCharactersAsync(databaseUser.ShindenId.Value);
+            var charactersResult = await _shindenClient.GetFavouriteCharactersAsync(databaseUser.ShindenId!.Value);
 
             if (charactersResult.Value == null)
             {
@@ -3324,8 +3332,8 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("pozwala wyszukać użytkowników posiadających karty z danego tytułu")]
         [Remarks("1 tak"), RequireWaifuCommandChannel]
         public async Task SearchCharacterCardsFromTitleAsync(
-            [Summary("id serii na shinden")]ulong id,
-            [Summary("czy zamienić oznaczenia na nicki?")]bool showNames = false)
+            [Summary("id serii na shinden")] ulong id,
+            [Summary("czy zamienić oznaczenia na nicki?")] bool showNames = false)
         {
             var user = Context.User;
             var charactersResult = await _shindenClient.GetCharactersAsync(id);
@@ -3340,7 +3348,7 @@ namespace Sanakan.DiscordBot.Modules
                 .Relations
                 .Select(x => x.CharacterId)
                 .Distinct()
-                .Select(pr => pr.Value)
+                .Select(pr => pr!.Value)
                 .ToList();
 
             if (characterIds.Count < 1)
@@ -3379,7 +3387,7 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("propozycja wymiany z użytkownikiem")]
         [Remarks("Karna"), RequireWaifuMarketChannel]
         public async Task ExchangeCardsAsync(
-            [Summary("użytkownik")]IGuildUser destinationUser)
+            [Summary("użytkownik")] IGuildUser destinationUser)
         {
             var sourceUser = Context.User as IGuildUser;
             var sourceUserId = sourceUser.Id;
@@ -3438,7 +3446,7 @@ namespace Sanakan.DiscordBot.Modules
             payload.Tips = $"Polecenia: `dodaj [WID]`, `usuń [WID]`.\n\n\u0031\u20E3 - zakończenie dodawania {sourceUser.Mention}\n\u0032\u20E3 - zakończenie dodawania {destinationUser.Mention}";
 
             var message = await ReplyAsync(embed: session.BuildEmbed());
-            await message.AddReactionsAsync(session.StartReactions);
+            await message.AddReactionsAsync(_iconConfiguration.LeftRightArrows);
             payload.Message = message;
 
             _sessionManager.Add(session);
@@ -3503,7 +3511,7 @@ namespace Sanakan.DiscordBot.Modules
             var userMessage = await ReplyAsync(embed: session.BuildEmbed());
             payload.Message = userMessage;
 
-            await userMessage.AddReactionsAsync(session.StartReactions);
+            await userMessage.AddReactionsAsync(_iconConfiguration.AcceptDecline);
 
             _sessionManager.Add(session);
         }
@@ -3529,9 +3537,9 @@ namespace Sanakan.DiscordBot.Modules
                     .ToEmbedMessage(EMType.Error).Build());
                 return;
             }
-            
+
             var expStrs = cardsOnExpedition
-                .Select(card => 
+                .Select(card =>
                 {
 
                     var parameters = new object[]
@@ -3555,7 +3563,7 @@ namespace Sanakan.DiscordBot.Modules
         [Alias("expedition end")]
         [Summary("kończy wyprawę karty")]
         [Remarks("11321"), RequireWaifuFightChannel]
-        public async Task EndCardExpeditionAsync([Summary("WID")]ulong wid)
+        public async Task EndCardExpeditionAsync([Summary("WID")] ulong wid)
         {
             var databaseUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
             var thisCard = databaseUser.GameDeck.Cards.FirstOrDefault(x => x.Id == wid);
@@ -3593,8 +3601,8 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("wysyła kartę na wyprawę")]
         [Remarks("11321 n"), RequireWaifuFightChannel]
         public async Task SendCardToExpeditionAsync(
-            [Summary("WID")]ulong wid,
-            [Summary("typ wyprawy")]ExpeditionCardType expeditionCardType = ExpeditionCardType.None)
+            [Summary("WID")] ulong wid,
+            [Summary("typ wyprawy")] ExpeditionCardType expeditionCardType = ExpeditionCardType.None)
         {
             var user = Context.User;
             var mention = user.Mention;
@@ -3812,7 +3820,7 @@ namespace Sanakan.DiscordBot.Modules
         [Alias("husbando")]
         [Summary("pozwala ustawić sobie ulubioną postać na profilu (musisz posiadać jej kartę)")]
         [Remarks("451"), RequireWaifuCommandChannel]
-        public async Task SetProfileWaifuAsync([Summary("WID")]ulong wid)
+        public async Task SetProfileWaifuAsync([Summary("WID")] ulong wid)
         {
             var databaseUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
             var mention = Context.User.Mention;
@@ -4036,7 +4044,7 @@ namespace Sanakan.DiscordBot.Modules
                 (int)gameDeck.ExperienceContainer.Level,
                 gameDeck.ExperienceContainer.ExperienceCount.ToString("F"),
                 userStats.ReleasedCards,
-                userStats.DestroyedCardsCount, 
+                userStats.DestroyedCardsCount,
                 userStats.SacrificedCardsCount,
                 userStats.UpgradedCardsCount,
                 userStats.UnleashedCardsCount,
@@ -4051,8 +4059,8 @@ namespace Sanakan.DiscordBot.Modules
                 cardRarityStats.C,
                 cardRarityStats.D,
                 cardRarityStats.E,
-                aPvp,
-                wPvp,
+                aPvp!,
+                wPvp!,
                 globalString,
                 seasonString,
             };
@@ -4074,7 +4082,7 @@ namespace Sanakan.DiscordBot.Modules
                 if (tChar != null)
                 {
                     var config = await _guildConfigRepository.GetCachedGuildFullConfigAsync(Context.Guild.Id);
-                    var channel = (IMessageChannel)await Context.Guild.GetChannelAsync(config.WaifuConfig.TrashCommandsChannelId.Value);
+                    var channel = (IMessageChannel)await Context.Guild.GetChannelAsync(config.WaifuConfig.TrashCommandsChannelId!.Value);
 
                     embed.WithImageUrl(await _waifuService.GetWaifuProfileImageUrlAsync(tChar, channel));
                     embed.WithFooter(new EmbedFooterBuilder().WithText($"{tChar.Name}"));

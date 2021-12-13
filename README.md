@@ -370,7 +370,8 @@ All commands require developer permission.
 | **[`AllowedToDebug`](#AllowedToDebug)** | `{Array}` | `[]` | The list of Discord user identifiers which can access diagnostics. |
 | **[`BlacklistedGuilds`](#BlacklistedGuilds)** | `{Array}` | `[]` | The list of Discord guild ( servers ) identifiers to blacklist. |
 | **[`AlwaysDownloadUsers`](#AlwaysDownloadUsers)** | `{Boolean}` | `true` | Specifies whether or not all users should be downloaded as guilds come available. |
-| **[`MessageCacheSize`](#MessageCacheSize)** | `{Number}` | `200` | The number of messages per channel that should be kept in cache.. |
+| **[`MessageCacheSize`](#MessageCacheSize)** | `{Number}` | `200` | The number of messages per channel that should be kept in cache. |
+| **[`IconTheme`](#IconTheme)** | `{String}` | `Default` | The collection of emotes/emojis which bot will use. |
 
 ### Supervisor
 |                   Name                    |         Type         |                 Default                 | Description                                                       |

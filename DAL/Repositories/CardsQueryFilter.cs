@@ -19,7 +19,7 @@ namespace Sanakan.DAL.Repositories
         /// Text to search
         /// </summary>
         [StringLength(50)]
-        public string SearchText { get; set; }
+        public string SearchText { get; set; } = null;
 
         /// <summary>
         /// Tags to include in query

@@ -85,7 +85,7 @@ namespace Sanakan.ShindenApi
         private void SetSession(LogInResultSession session)
         {
             _expiresOn = _systemClock.UtcNow + _options.CurrentValue.SessionExiry;
-            var baseAddress = _httpClient.BaseAddress;
+            var baseAddress = _httpClient.BaseAddress!;
 
             _cookieContainer.Add(baseAddress, new Cookie()
             {
@@ -114,7 +114,7 @@ namespace Sanakan.ShindenApi
 
             var response = await _httpClient.GetAsync(query);
 
-            if(!response.IsSuccessStatusCode)
+            if (!response.IsSuccessStatusCode)
             {
                 return new Result<List<NewEpisode>>();
             }
@@ -757,13 +757,13 @@ namespace Sanakan.ShindenApi
         #region LoggedIn
         public async Task<Result<LogInResult>> LoginAsync(string username, string password)
         {
-            var formData = new Dictionary<string, string>()
+            var formData = new Dictionary<string, string?>()
             {
                 { nameof(username), username },
                 { nameof(password), password },
             };
 
-            var content = new FormUrlEncodedContent(formData);
+            var content = new FormUrlEncodedContent(formData!);
             content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
             content.Headers.ContentType.CharSet = "UTF-8";
 
@@ -802,12 +802,12 @@ namespace Sanakan.ShindenApi
         {
             await TryRenewSessionAsync();
 
-            var formData = new Dictionary<string, string>()
+            var formData = new Dictionary<string, string?>()
             {
                 { nameof(status), status.ToQuery() },
             };
 
-            var content = new FormUrlEncodedContent(formData);
+            var content = new FormUrlEncodedContent(formData!);
             content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
             content.Headers.ContentType.CharSet = "UTF-8";
 
@@ -895,7 +895,7 @@ namespace Sanakan.ShindenApi
                 { nameof(value), value.ToString() },
             };
 
-            var content = new FormUrlEncodedContent(formData);
+            var content = new FormUrlEncodedContent(formData!);
             content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
             content.Headers.ContentType.CharSet = "UTF-8";
 
@@ -936,7 +936,7 @@ namespace Sanakan.ShindenApi
                 { "value", value.ToString() }
             };
 
-            var content = new FormUrlEncodedContent(formData);
+            var content = new FormUrlEncodedContent(formData!);
             content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
             content.Headers.ContentType.CharSet = "UTF-8";
 
@@ -966,12 +966,12 @@ namespace Sanakan.ShindenApi
         {
             await TryRenewSessionAsync();
 
-            var formData = new Dictionary<string, string>()
+            var formData = new Dictionary<string, string?>()
             {
                 { "id", $"{type.ToString().ToLower()}-{id}" }
             };
 
-            var content = new FormUrlEncodedContent(formData);
+            var content = new FormUrlEncodedContent(formData!);
             content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
             content.Headers.ContentType.CharSet = "UTF-8";
 
@@ -982,7 +982,7 @@ namespace Sanakan.ShindenApi
 
             var query = QueryHelpers.AddQueryString($"userlist/{userId}/fav", queryData);
 
-            var response = await _httpClient.PostAsync(query, content);            
+            var response = await _httpClient.PostAsync(query, content);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -1006,7 +1006,7 @@ namespace Sanakan.ShindenApi
                 { "id", $"{type.ToString().ToLower()}-{favouriteId}" }
             };
 
-            var content = new FormUrlEncodedContent(formData);
+            var content = new FormUrlEncodedContent(formData!);
             content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
             content.Headers.ContentType.CharSet = "UTF-8";
 

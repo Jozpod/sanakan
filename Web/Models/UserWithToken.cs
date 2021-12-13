@@ -21,6 +21,6 @@ namespace Sanakan.Api.Models
         /// <summary>
         /// The user
         /// </summary>
-        public User User { get; set; }
+        public User User { get; set; } = null;
     }
 }

@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Sanakan.DiscordBot.Session;
 using Sanakan.DiscordBot;
+using Sanakan.DiscordBot.Abstractions.Configuration;
 
 namespace DiscordBot.ModulesTests.HelperModuleTests
 {
@@ -42,6 +43,7 @@ namespace DiscordBot.ModulesTests.HelperModuleTests
                 });
 
             _module = new(
+                new DefaultIconConfiguration(),
                 _discordClientAccessorMock.Object,
                 _sessionManagerMock.Object,
                 _helperServiceMock.Object,

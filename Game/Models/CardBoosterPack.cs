@@ -13,31 +13,31 @@ namespace Sanakan.Game.Models
         /// Specifies whether the cards in a bundle can be exchanged
         /// </summary>
         public bool Tradable { get; set; }
-        
+
         /// <summary>
         /// Gwarantowana jakość jednej z kart, E - 100% losowanei
         /// </summary>
         public Rarity Rarity { get; set; }
-        
+
         /// <summary>
         /// Wykluczone jakości z losowania, Gwarantowana ma wyższy priorytet
         /// </summary>
-        public List<Rarity> RarityExcluded { get; set; }
+        public List<Rarity> RarityExcluded { get; set; } = new();
 
         /// <summary>
         /// Nazwa pakietu
         /// </summary>
         public string Name { get; set; } = string.Empty;
-        
+
         /// <summary>
         /// The amount of cards in bundle (min. 1)
         /// </summary>
         public uint Count { get; set; }
-        
+
         /// <summary>
         /// Definuje jak będą losowane postacie do kart
         /// </summary>
-        public CardBoosterPackPool Pool { get; set; }
+        public CardBoosterPackPool Pool { get; set; } = null;
 
         public BoosterPack ToRealPack()
         {
@@ -67,7 +67,7 @@ namespace Sanakan.Game.Models
             {
                 case CardsPoolType.Title:
                     pack.TitleId = Pool.TitleId;
-                break;
+                    break;
 
                 case CardsPoolType.List:
                     pack.TitleId = null;
@@ -75,12 +75,12 @@ namespace Sanakan.Game.Models
                     {
                         pack.Characters.Add(new BoosterPackCharacter(characterId));
                     }
-                break;
+                    break;
 
                 default:
                 case CardsPoolType.Random:
                     pack.TitleId = null;
-                break;
+                    break;
             }
 
             return pack;

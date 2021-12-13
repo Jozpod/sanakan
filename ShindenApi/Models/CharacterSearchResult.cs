@@ -8,15 +8,15 @@ namespace Sanakan.ShindenApi.Models
         public ulong Id { get; set; }
 
         [JsonPropertyName("first_name")]
-        public string FirstName { get; set; }
+        public string FirstName { get; set; } = null;
 
         [JsonPropertyName("last_name")]
-        public string LastName { get; set; }
+        public string LastName { get; set; } = null;
 
         [JsonPropertyName("picture")]
         public ulong? Picture { get; set; }
 
         [JsonPropertyName("all_names")]
-        public string Names { get; set; }
+        public string Names { get; set; } = null;
     }
 }

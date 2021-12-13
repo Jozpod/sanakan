@@ -2,7 +2,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Threading.Tasks;
 using Sanakan.DAL.Models;
 using DiscordBot.Services;
-using Sanakan.DAL.Models;
 using Moq;
 using System.Collections.Generic;
 using Sanakan.DiscordBot.Modules;

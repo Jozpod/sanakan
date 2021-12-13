@@ -11,7 +11,9 @@ namespace Sanakan.Game.Tests.ImageProcessorTests
     /// <summary>
     /// Defines tests for <see cref="IImageProcessor.GetFColorsView(System.Collections.Generic.IEnumerable{(string, uint)})"/> method.
     /// </summary>
+#if DEBUG
     [TestClass]
+#endif
     public class GetFColorsViewTests : Base
     {
         [TestMethod]

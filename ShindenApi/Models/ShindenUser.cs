@@ -14,7 +14,7 @@ namespace Sanakan.ShindenApi.Models
         public ulong Id { get; set; }
 
         [JsonPropertyName("name")]
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
         [JsonPropertyName("last_active")]
         [JsonConverter(typeof(DateTimeyyyyMMddHHmmssConverter))]
@@ -25,13 +25,13 @@ namespace Sanakan.ShindenApi.Models
         public DateTime? RegisterDate { get; set; }
 
         [JsonPropertyName("rank")]
-        public string Rank { get; set; }
+        public string Rank { get; set; } = string.Empty;
 
         [JsonPropertyName("portal_lang")]
         public Language? PortalLang { get; set; }
 
         [JsonPropertyName("email")]
-        public string Email { get; set; }
+        public string Email { get; set; } = string.Empty;
 
         [JsonPropertyName("status")]
         public UserStatus Status { get; set; }
@@ -40,10 +40,10 @@ namespace Sanakan.ShindenApi.Models
         public ulong Avatar { get; set; }
 
         [JsonPropertyName("anime_css")]
-        public string AnimeCss { get; set; }
+        public string AnimeCss { get; set; } = string.Empty;
 
         [JsonPropertyName("manga_css")]
-        public string MangaCss { get; set; }
+        public string MangaCss { get; set; } = string.Empty;
 
         [JsonPropertyName("total_points")]
         public long? TotalPoints { get; set; }
@@ -56,9 +56,9 @@ namespace Sanakan.ShindenApi.Models
         public Gender Sex { get; set; }
 
         [JsonPropertyName("signature")]
-        public string Signature { get; set; }
+        public string Signature { get; set; } = string.Empty;
 
         [JsonPropertyName("about_me")]
-        public string AboutMe { get; set; }
+        public string AboutMe { get; set; } = string.Empty;
     }
 }

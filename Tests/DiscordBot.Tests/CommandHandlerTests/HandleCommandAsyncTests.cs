@@ -101,7 +101,7 @@ namespace Sanakan.DiscordBot.Tests.CommandHandlerTests
         }
 
         [TestMethod]
-        public async Task Should_Exit_No_User_Message()
+        public void Should_Exit_No_User_Message()
         {
             var messageMock = new Mock<IMessage>(MockBehavior.Strict);
 
@@ -110,7 +110,7 @@ namespace Sanakan.DiscordBot.Tests.CommandHandlerTests
         }
 
         [TestMethod]
-        public async Task Should_Exit_Bot()
+        public void Should_Exit_Bot()
         {
             var userMessageMock = new Mock<IUserMessage>(MockBehavior.Strict);
             var userMock = new Mock<IUser>(MockBehavior.Strict);
@@ -128,7 +128,7 @@ namespace Sanakan.DiscordBot.Tests.CommandHandlerTests
         }
 
         [TestMethod]
-        public async Task Should_Exit_No_Guild_User()
+        public void Should_Exit_No_Guild_User()
         {
             var userMessageMock = new Mock<IUserMessage>(MockBehavior.Strict);
             var userMock = new Mock<IUser>(MockBehavior.Strict);
@@ -150,7 +150,7 @@ namespace Sanakan.DiscordBot.Tests.CommandHandlerTests
         }
 
         [TestMethod]
-        public async Task Should_Exit_No_String_Prefix()
+        public void Should_Exit_No_String_Prefix()
         {
             var channelId = 1ul;
             var guildId = 1ul;
@@ -205,7 +205,7 @@ namespace Sanakan.DiscordBot.Tests.CommandHandlerTests
         }
 
         [TestMethod]
-        public async Task Should_Exit_User_Not_Dev()
+        public void Should_Exit_User_Not_Dev()
         {
             var userId = 1ul;
             var channelId = 1ul;
@@ -425,7 +425,7 @@ namespace Sanakan.DiscordBot.Tests.CommandHandlerTests
         }
 
         [TestMethod]
-        public async Task Should_Process_Command_Sync()
+        public void Should_Process_Command_Sync()
         {
             var userId = 1ul;
             var channelId = 1ul;
@@ -507,7 +507,7 @@ namespace Sanakan.DiscordBot.Tests.CommandHandlerTests
         }
 
         [TestMethod]
-        public async Task Should_Process_Command_Async()
+        public void Should_Process_Command_Async()
         {
             var userId = 1ul;
             var channelId = 1ul;

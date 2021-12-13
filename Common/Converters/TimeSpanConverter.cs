@@ -14,7 +14,7 @@ namespace Sanakan.Common.Converters
                 throw new Exception("Invalid format for Version property");
             }
 
-            return TimeSpan.ParseExact(reader.GetString(), "c", CultureInfo.InvariantCulture);
+            return TimeSpan.ParseExact(reader.GetString()!, "c", CultureInfo.InvariantCulture);
         }
 
         public override void Write(Utf8JsonWriter writer, TimeSpan value, JsonSerializerOptions options)

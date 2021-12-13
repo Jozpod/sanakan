@@ -8,6 +8,7 @@ using Moq;
 using Discord;
 using Sanakan.DiscordBot.Abstractions;
 using System.Linq;
+using Sanakan.DiscordBot.Abstractions.Configuration;
 
 namespace Sanakan.DiscordBot.Session.Tests
 {
@@ -47,6 +48,7 @@ namespace Sanakan.DiscordBot.Session.Tests
             _session = new(1ul, DateTime.UtcNow, _payload);
 
             var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton<IIconConfiguration>(new DefaultIconConfiguration());
             _serviceProvider = serviceCollection.BuildServiceProvider();
         }
 

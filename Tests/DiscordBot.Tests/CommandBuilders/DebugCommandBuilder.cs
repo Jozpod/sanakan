@@ -63,5 +63,17 @@ namespace Sanakan.DiscordBot.Tests.IntegrationTests
         /// <see cref="DebugModule.RestoreCardsAsync(IGuildUser)"/>.
         /// </summary>
         public static string RestoreCardsAsync(string prefix, IGuildUser user) => $"{prefix}dev restore";
+
+        /// <summary>
+        /// <see cref="DebugModule.GiveawayCardsAsync(ulong, uint, TimeSpan)"/>.
+        /// </summary>
+        public static string GiveawayCards(string prefix, ulong discordUserId, uint cardCount, TimeSpan duration) 
+            => $"{prefix}dev rozdaj {discordUserId} {cardCount} {duration}";
+
+        /// <summary>
+        /// <see cref="DebugModule.GiveawayCardsMultiAsync(ulong, uint, TimeSpan, uint)"/>.
+        /// </summary>
+        public static string GiveawayCardsMulti(string prefix, ulong discordUserId, uint cardCount, TimeSpan duration, uint repeatCount) 
+            => $"{prefix}dev rozdajm {discordUserId} {cardCount} {duration} {repeatCount}";
     }
 }

@@ -9,6 +9,7 @@ using Sanakan.Common.Configuration;
 using Sanakan.Common;
 using Sanakan.Common.Cache;
 using Microsoft.Extensions.DependencyInjection;
+using Sanakan.DiscordBot.Abstractions.Configuration;
 
 namespace DiscordBot.ModulesTests.ModerationModuleTests
 {
@@ -44,6 +45,7 @@ namespace DiscordBot.ModulesTests.ModerationModuleTests
                 });
 
             _module = new(
+                new DefaultIconConfiguration(),
                 _discordConfigurationMock.Object,
                 _helperServiceMock.Object,
                 _profileServiceMock.Object,

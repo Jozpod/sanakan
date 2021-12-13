@@ -12,6 +12,11 @@ namespace Sanakan.DAL.Models
         public GameDeck()
         {
             Cards = new Collection<Card>();
+            Items = new Collection<Item>();
+            BoosterPacks = new Collection<BoosterPack>();
+            PvPStats = new Collection<CardPvPStats>();
+            Wishes = new Collection<WishlistObject>();
+            Figures = new Collection<Figure>();
         }
 
         /// <summary>
@@ -74,7 +79,7 @@ namespace Sanakan.DAL.Models
         public virtual ICollection<CardPvPStats> PvPStats { get; set; }
         public virtual ICollection<WishlistObject> Wishes { get; set; }
 
-        public virtual ExperienceContainer ExperienceContainer { get; set; }
+        public virtual ExperienceContainer ExperienceContainer { get; set; } = null!;
 
         public virtual ICollection<Figure> Figures { get; set; }
 
@@ -84,7 +89,7 @@ namespace Sanakan.DAL.Models
         public ulong UserId { get; set; }
 
         [JsonIgnore]
-        public virtual User User { get; set; }
+        public virtual User User { get; set; } = null!;
 
         public string GetUserNameStatus()
         {
@@ -144,7 +149,7 @@ namespace Sanakan.DAL.Models
         public DeckPowerStatus CanFightPvP()
         {
             DeckPower = CalculateDeckPower();
-            
+
             if (DeckPower > Constants.MaxDeckPower)
             {
                 return DeckPowerStatus.TooHigh;

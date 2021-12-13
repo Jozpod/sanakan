@@ -25,7 +25,7 @@ namespace Sanakan.Daemon.Tests.HostedServices.DiscordBotHostedServiceTests
                 .ReturnsAsync(true)
                 .Verifiable();
 
-            var fakeDirectory = new System.IO.DirectoryInfo(Path.GetDirectoryName(typeof(ExecuteAsyncTests).Assembly.Location));
+            var fakeDirectory = new System.IO.DirectoryInfo(Path.GetDirectoryName(typeof(ExecuteAsyncTests).Assembly.Location)!);
 
             _fileSystemMock
                 .Setup(pr => pr.CreateDirectory(It.IsAny<string>()))

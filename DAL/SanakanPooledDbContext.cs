@@ -10,7 +10,7 @@ namespace Sanakan.DAL
 {
     public class SanakanPooledDbContext : DbContext
     {
-        private IOptionsMonitor<DatabaseConfiguration> _config;
+        private IOptionsMonitor<DatabaseConfiguration> _config = null;
 
         public SanakanPooledDbContext(DbContextOptions options) : base(options)
         {

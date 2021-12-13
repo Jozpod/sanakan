@@ -50,7 +50,7 @@ namespace Sanakan.Daemon.Tests.HostedServices.DiscordBotHostedServiceTests
                 .Returns(new ExperienceConfiguration
                 {
                     CharPerPoint = 100,
-                    MinPerMessage =50,
+                    MinPerMessage = 50,
                     MaxPerMessage = 25,
                 });
 
@@ -93,7 +93,7 @@ namespace Sanakan.Daemon.Tests.HostedServices.DiscordBotHostedServiceTests
                 .Setup(pr => pr.EnsureCreatedAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
 
-            var fakeDirectory = new System.IO.DirectoryInfo(Path.GetDirectoryName(typeof(ExecuteAsyncTests).Assembly.Location));
+            var fakeDirectory = new System.IO.DirectoryInfo(Path.GetDirectoryName(typeof(ExecuteAsyncTests).Assembly.Location)!);
 
             _fileSystemMock
                 .Setup(pr => pr.CreateDirectory(It.IsAny<string>()))

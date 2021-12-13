@@ -10,7 +10,9 @@ namespace Sanakan.Game.Tests
     /// <summary>
     /// Defines tests for <see cref="IImageProcessor.GetSiteStatisticAsync(UserInfo, Discord.Color, List{LastWatchedRead}?, List{LastWatchedRead}?)"/> method.
     /// </summary>
+#if DEBUG
     [TestClass]
+#endif
     public class GetSiteStatisticAsyncTests : Base
     {
         [TestMethod]

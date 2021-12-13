@@ -15,9 +15,9 @@ namespace Sanakan.Common
             services.AddTransient<IWritableOptions<T>>(serviceProvider =>
             {
                 var configuration = (IConfigurationRoot)serviceProvider.GetRequiredService<IConfiguration>();
-                var logger = serviceProvider.GetService<ILogger<WritableOptions<T>>>();
-                var environment = serviceProvider.GetService<IHostEnvironment>();
-                var options = serviceProvider.GetService<IOptionsMonitor<T>>();
+                var logger = serviceProvider.GetRequiredService<ILogger<WritableOptions<T>>>();
+                var environment = serviceProvider.GetRequiredService<IHostEnvironment>();
+                var options = serviceProvider.GetRequiredService<IOptionsMonitor<T>>();
                 var fileSystem = serviceProvider.GetRequiredService<IFileSystem>();
                 return new WritableOptions<T>(
                     logger,

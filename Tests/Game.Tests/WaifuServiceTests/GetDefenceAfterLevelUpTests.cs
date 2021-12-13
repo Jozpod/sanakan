@@ -17,7 +17,7 @@ namespace Sanakan.Game.Tests.WaifuServiceTests
     public class GetDefenceAfterLevelUpTests : Base
     {
         [TestMethod]
-        public async Task Should_Return_Value()
+        public void Should_Return_Value()
         {
             var rarity = Rarity.S;
             var defence = 200;

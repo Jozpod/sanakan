@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Microsoft.Extensions.DependencyInjection;
 using Sanakan.DiscordBot.Abstractions;
+using Sanakan.DiscordBot.Abstractions.Configuration;
 using Sanakan.DiscordBot.Abstractions.Extensions;
 using Sanakan.DiscordBot.Abstractions.Models;
 using Sanakan.DiscordBot.Services.Abstractions;
@@ -17,19 +18,19 @@ namespace Sanakan.DiscordBot.Session
         {
             public ulong MessageId { get; set; }
 
-            public IMessageChannel Channel { get; set; }
+            public IMessageChannel Channel { get; set; } = null;
 
-            public IUser Bot { get; set; }
+            public IUser Bot { get; set; } = null;
 
             public TimeSpan Duration { get; set; }
 
-            public IRole UserRole { get; set; }
+            public IRole UserRole { get; set; } = null;
 
-            public IRole MuteRole { get; set; }
+            public IRole MuteRole { get; set; } = null;
 
-            public IGuildUser User { get; set; }
+            public IGuildUser User { get; set; } = null;
 
-            public ITextChannel NotifyChannel { get; set; }
+            public ITextChannel NotifyChannel { get; set; } = null;
         }
 
         public AcceptSession(
@@ -50,6 +51,8 @@ namespace Sanakan.DiscordBot.Session
             IServiceProvider serviceProvider,
             CancellationToken cancellationToken = default)
         {
+            var iconConfiguration = serviceProvider.GetRequiredService<IIconConfiguration>();
+
             try
             {
                 IsRunning = true;
@@ -74,8 +77,8 @@ namespace Sanakan.DiscordBot.Session
 
                 var reaction = context.AddReaction ?? context.RemoveReaction;
 
-                if (reaction.Emote.Equals(Emojis.DeclineEmote)
-                    || !reaction.Emote.Equals(Emojis.Checked))
+                if (reaction.Emote.Equals(iconConfiguration.Decline)
+                    || !reaction.Emote.Equals(iconConfiguration.Accept))
                 {
                     return;
                 }

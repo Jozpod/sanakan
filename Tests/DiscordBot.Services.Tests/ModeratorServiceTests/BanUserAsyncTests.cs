@@ -19,7 +19,6 @@ namespace DiscordBot.ServicesTests.ModeratorServiceTests
         public async Task Should_Ban_User_And_Return_Penalty_Info()
         {
             var userId = 1ul;
-            var guildId = 1ul;
             var guildUserMock = new Mock<IGuildUser>(MockBehavior.Strict);
             var guildMock = new Mock<IGuild>(MockBehavior.Strict);
             var duration = TimeSpan.FromMinutes(1);

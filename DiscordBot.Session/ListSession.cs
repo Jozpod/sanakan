@@ -5,8 +5,10 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Discord;
+using Microsoft.Extensions.DependencyInjection;
 using Sanakan.DAL.Models;
 using Sanakan.DiscordBot.Abstractions;
+using Sanakan.DiscordBot.Abstractions.Configuration;
 using Sanakan.Extensions;
 
 namespace Sanakan.DiscordBot.Session
@@ -15,16 +17,23 @@ namespace Sanakan.DiscordBot.Session
     {
         private readonly ListSessionPayload _payload;
         private static readonly StringBuilder _stringBuilder = new StringBuilder(500);
+        private IIconConfiguration _iconConfiguration = null;
 
         public class ListSessionPayload
         {
             public bool Enumerable { get; set; }
-            public IMessage Message { get; set; }
+
+            public IMessage Message { get; set; } = null;
+
             public int ItemsPerPage { get; set; } = 10;
-            public List<T> ListItems { get; set; }
-            public EmbedBuilder Embed { get; set; }
+
+            public List<T> ListItems { get; set; } = null;
+
+            public EmbedBuilder Embed { get; set; } = null;
+
             public int CurrentPage { get; set; }
-            public IUser Bot { get; set; }
+
+            public IUser Bot { get; set; } = null;
         }
 
         public ListSession(
@@ -119,6 +128,7 @@ namespace Sanakan.DiscordBot.Session
             CancellationToken cancellationToken = default)
         {
             var message = _payload.Message;
+            _iconConfiguration = serviceProvider.GetRequiredService<IIconConfiguration>();
 
             if (context.Message.Id != message.Id)
             {
@@ -135,7 +145,7 @@ namespace Sanakan.DiscordBot.Session
             var reaction = context.AddReaction ?? context.RemoveReaction;
             var emote = reaction.Emote;
 
-            if (emote.Equals(Emojis.LeftwardsArrow))
+            if (emote.Equals(_iconConfiguration.LeftwardsArrow))
             {
                 if (--_payload.CurrentPage < 0)
                 {
@@ -149,7 +159,7 @@ namespace Sanakan.DiscordBot.Session
                 return;
             }
 
-            if (emote.Equals(Emojis.RightwardsArrow))
+            if (emote.Equals(_iconConfiguration.RightwardsArrow))
             {
                 if (++_payload.CurrentPage > MaxPageReal())
                 {
@@ -185,12 +195,7 @@ namespace Sanakan.DiscordBot.Session
             }
             catch (Exception)
             {
-                var reactions = new IEmote[] {
-                    Emojis.LeftwardsArrow,
-                    Emojis.RightwardsArrow
-                };
-
-                await userMessage.RemoveReactionsAsync(_payload.Bot, reactions);
+                await userMessage.RemoveReactionsAsync(_payload.Bot, _iconConfiguration.LeftRightArrows);
             }
 
             _payload.Message = null;

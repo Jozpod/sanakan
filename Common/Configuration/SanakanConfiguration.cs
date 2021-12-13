@@ -8,24 +8,45 @@ namespace Sanakan.Common.Configuration
         /// <summary>
         /// The locale configuration.
         /// </summary>
-        public LocaleConfiguration Locale { get; set; }
-
-        public DatabaseConfiguration Database { get; set; }
-
-        public MSCacheManagerOptions Cache { get; set; }
-
-        public DaemonsConfiguration Daemons { get; set; }
-
-        public DiscordConfiguration Discord { get; set; }
-
-        public ExperienceConfiguration Experience { get; set; }
-
-        public ShindenApiConfiguration ShindenApi { get; set; }
-
-        public ApiConfiguration SanakanApi { get; set; }
+        public LocaleConfiguration Locale { get; set; } = null;
 
         /// <summary>
-        /// The list of rich message configuration.
+        /// The database configuration.
+        /// </summary>
+        public DatabaseConfiguration Database { get; set; } = null;
+
+        /// <summary>
+        /// The cache configuration.
+        /// </summary>
+        public MSCacheManagerOptions Cache { get; set; } = null;
+
+        /// <summary>
+        /// The daemons configuration.
+        /// </summary>
+        public DaemonsConfiguration Daemons { get; set; } = null;
+
+        /// <summary>
+        /// The discord configuration.
+        /// </summary>
+        public DiscordConfiguration Discord { get; set; } = null;
+
+        /// <summary>
+        /// The experience configuration.
+        /// </summary>
+        public ExperienceConfiguration Experience { get; set; } = null;
+
+        /// <summary>
+        /// The shinden api configuration.
+        /// </summary>
+        public ShindenApiConfiguration ShindenApi { get; set; } = null;
+
+        /// <summary>
+        /// The sanakan api configuration.
+        /// </summary>
+        public ApiConfiguration SanakanApi { get; set; } = null;
+
+        /// <summary>
+        /// The list of rich message configurations.
         /// </summary>
         public List<RichMessageConfig> RMConfig { get; set; } = new();
     }

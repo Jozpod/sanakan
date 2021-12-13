@@ -37,7 +37,7 @@ namespace Sanakan.DAL.Repositories
 
             if (cacheResult != null)
             {
-                return cacheResult.Value;
+                return cacheResult.Value!;
             }
 
             var result = await _dbContext
@@ -59,7 +59,7 @@ namespace Sanakan.DAL.Repositories
 
             if (cacheResult != null)
             {
-                return cacheResult.Value;
+                return cacheResult.Value ?? Enumerable.Empty<PenaltyInfo>();
             }
 
             var list = await _dbContext

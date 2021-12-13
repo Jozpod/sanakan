@@ -346,7 +346,7 @@ namespace Sanakan.Daemon.HostedService
             var penaltyInfoRepository = serviceScope.ServiceProvider.GetRequiredService<IPenaltyInfoRepository>();
 
             var gConfig = await guildConfigRepository.GetGuildConfigOrCreateAsync(guild.Id);
-            guildConfigRepository.Remove(gConfig);
+            guildConfigRepository.Remove(gConfig!);
 
             var stats = await timeStatusRepository.GetByGuildIdAsync(guild.Id);
             timeStatusRepository.RemoveRange(stats);
@@ -556,12 +556,12 @@ namespace Sanakan.Daemon.HostedService
             }
             catch (Exception ex)
             {
-
+                _logger.LogError(ex, "Error occurred while logging");
                 throw;
             }
         }
 
-        private Embed BuildMessage(IMessage oldMessage, IMessage newMessage)
+        private Embed BuildMessage(IMessage oldMessage, IMessage? newMessage)
         {
             string content = (newMessage == null) ? oldMessage.Content
                 : $"**Stara:**\n{oldMessage.Content}\n\n**Nowa:**\n{newMessage.Content}";

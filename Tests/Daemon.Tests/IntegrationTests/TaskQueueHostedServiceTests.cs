@@ -33,10 +33,10 @@ namespace Sanakan.Daemon.Tests
 #endif
     public class TaskQueueHostedServiceTests
     {
-        private static IDatabaseFacade _databaseFacade;
-        private static TaskQueueHostedService _service;
-        private static IBlockingPriorityQueue _blockingPriorityQueue;
-        private static SanakanDbContext _sanakanDbContext;
+        private static IDatabaseFacade _databaseFacade = null;
+        private static TaskQueueHostedService _service = null;
+        private static IBlockingPriorityQueue _blockingPriorityQueue = null;
+        private static SanakanDbContext _sanakanDbContext = null;
 
         [ClassInitialize]
         public static async Task ClassInitialize(TestContext context)
@@ -80,7 +80,7 @@ namespace Sanakan.Daemon.Tests
         }
 
         [TestMethod]
-        public async Task Should_Process_Messages()
+        public void Should_Process_Messages()
         {
             var message = new ConnectUserMessage()
             {

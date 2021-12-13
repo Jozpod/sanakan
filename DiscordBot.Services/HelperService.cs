@@ -160,7 +160,7 @@ namespace Sanakan.DiscordBot.Services
             bool isAdmin = false,
             bool isDev = false)
         {
-            foreach(var module in _publicModulesInfo)
+            foreach (var module in _publicModulesInfo)
             {
                 var commands = module.Commands;
 
@@ -535,6 +535,6 @@ namespace Sanakan.DiscordBot.Services
             }.Build();
         }
 
-        public Version GetVersion() => typeof(HelperService).Assembly.GetName().Version;
+        public Version GetVersion() => typeof(HelperService).Assembly.GetName().Version!;
     }
 }

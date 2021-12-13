@@ -267,6 +267,24 @@ namespace Sanakan.DiscordBot.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Nie odnaleziono roli `{0}`.
+        /// </summary>
+        internal static string RoleNotFound {
+            get {
+                return ResourceManager.GetString("RoleNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Nie odnaleziono roli na serwerze..
+        /// </summary>
+        internal static string RoleNotFoundOnServer {
+            get {
+                return ResourceManager.GetString("RoleNotFoundOnServer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Description = **Prefix:** {0}
         ///
         ///**Nadzór:** {1}

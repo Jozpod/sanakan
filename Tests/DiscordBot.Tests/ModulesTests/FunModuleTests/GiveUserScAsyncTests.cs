@@ -16,8 +16,6 @@ namespace DiscordBot.ModulesTests.FunModuleTests
     [TestClass]
     public class GiveUserScAsyncTests : Base
     {
-        private readonly Mock<IGuildUser> _guildUserMock = new(MockBehavior.Strict);
-
         [TestMethod]
         public async Task Should_Give_Sc_And_Send_Confirm_Message()
         {

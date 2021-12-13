@@ -17,6 +17,7 @@ namespace Sanakan.TaskQueue.MessageHandlers
             ICacheManager cacheManager)
         {
             _userRepository = userRepository;
+            _cacheManager = cacheManager;
         }
 
         public override async Task HandleAsync(ToggleCardMessage message)

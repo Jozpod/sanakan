@@ -16,7 +16,7 @@ namespace DiscordBot.ServicesTests.HelperServiceTests
     public class GetInfoAboutUserTests : Base
     {
         [TestMethod]
-        public async Task Should_Return_Embed_With_User_Info()
+        public void Should_Return_Embed_With_User_Info()
         {
             var avatarUrl = "https://www.test.com/avatar.png";
             var nickname = "test user";

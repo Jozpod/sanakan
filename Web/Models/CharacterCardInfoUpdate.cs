@@ -13,11 +13,12 @@
         /// <summary>
         /// Imię i nazwisko na karcie
         /// </summary>
-        
-        public string CharacterName { get; set; }
+
+        public string CharacterName { get; set; } = string.Empty;
+
         /// <summary>
         /// Nazwa serii z której pochodzi karta
         /// </summary>
-        public string CardSeriesTitle { get; set; }
+        public string CardSeriesTitle { get; set; } = string.Empty;
     }
 }

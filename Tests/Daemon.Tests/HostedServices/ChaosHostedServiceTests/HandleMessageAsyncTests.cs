@@ -16,7 +16,7 @@ namespace Sanakan.Daemon.Tests.HostedServices.ChaosHostedServiceTests
     public class HandleMessageAsyncTests : Base
     {
         [TestMethod]
-        public async Task Should_Exit_Not_User_Message()
+        public void Should_Exit_Not_User_Message()
         {
             var messageMock = new Mock<IMessage>(MockBehavior.Strict);
 
@@ -25,7 +25,7 @@ namespace Sanakan.Daemon.Tests.HostedServices.ChaosHostedServiceTests
         }
 
         [TestMethod]
-        public async Task Should_Exit_Is_Bot()
+        public void Should_Exit_Is_Bot()
         {
             var userMessageMock = new Mock<IUserMessage>(MockBehavior.Strict);
             var userMock = new Mock<IUser>(MockBehavior.Strict);
@@ -45,7 +45,7 @@ namespace Sanakan.Daemon.Tests.HostedServices.ChaosHostedServiceTests
         }
 
         [TestMethod]
-        public async Task Should_Exit_Not_Guild_User()
+        public void Should_Exit_Not_Guild_User()
         {
             var userMessageMock = new Mock<IUserMessage>(MockBehavior.Strict);
             var userMock = new Mock<IUser>(MockBehavior.Strict);
@@ -64,7 +64,7 @@ namespace Sanakan.Daemon.Tests.HostedServices.ChaosHostedServiceTests
         }
 
         [TestMethod]
-        public async Task Should_Exit_Blacklisted_Guild()
+        public void Should_Exit_Blacklisted_Guild()
         {
             var userMessageMock = new Mock<IUserMessage>(MockBehavior.Strict);
             var guildUserMock = new Mock<IGuildUser>(MockBehavior.Strict);
@@ -101,7 +101,7 @@ namespace Sanakan.Daemon.Tests.HostedServices.ChaosHostedServiceTests
         }
 
         [TestMethod]
-        public async Task Should_Swap_User_Nicknames()
+        public void Should_Swap_User_Nicknames()
         {
             var userMessageMock = new Mock<IUserMessage>(MockBehavior.Strict);
             var guildUserMock = new Mock<IGuildUser>();

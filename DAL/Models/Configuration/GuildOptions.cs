@@ -43,12 +43,12 @@ namespace Sanakan.DAL.Models.Configuration
         public ulong Id { get; set; }
 
         /// <summary>
-        /// The Discord role identifier.
+        /// The Discord role identifier which is used for muting users.
         /// </summary>
         public ulong MuteRoleId { get; set; }
 
         /// <summary>
-        /// The Discord role identifier.
+        /// The Discord role identifier which is used for muting moderators.
         /// </summary>
         public ulong ModMuteRoleId { get; set; }
 

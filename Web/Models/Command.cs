@@ -10,22 +10,26 @@ namespace Sanakan.Api.Models
         /// <summary>
         /// Przykład użycia
         /// </summary>
-        public string Example { get; set; }
+        public string Example { get; set; } = null;
+
         /// <summary>
         /// Opis
         /// </summary>
-        public string Description { get; set; }
+        public string Description { get; set; } = null;
+
         /// <summary>
         /// Głowna nazwa
         /// </summary>
-        public string Name { get; set; }
+        public string Name { get; set; } = null;
+
         /// <summary>
         /// Alternatywne nazwy
         /// </summary>
-        public List<string> Aliases { get; set; }
+        public List<string> Aliases { get; set; } = null;
+
         /// <summary>
         /// Atrybuty polecenia
         /// </summary>
-        public List<CommandAttribute> Attributes { get; set; }
+        public List<CommandAttribute> Attributes { get; set; } = null;
     }
 }

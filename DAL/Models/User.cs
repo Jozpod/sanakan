@@ -2,6 +2,7 @@
 using Sanakan.Common.Models;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text.Json.Serialization;
@@ -11,7 +12,10 @@ namespace Sanakan.DAL.Models
     public class User
     {
         [JsonConstructor]
-        public User() { }
+        public User()
+        {
+            TimeStatuses = new Collection<TimeStatus>();
+        }
 
         public User(ulong discordUserId, DateTime datetime)
         {
@@ -138,7 +142,7 @@ namespace Sanakan.DAL.Models
         /// The amount of Tc coins.
         /// </summary>
         public long TcCount { get; set; }
-        
+
         /// <summary>
         /// The amount of Sc coins.
         /// </summary>
@@ -176,17 +180,17 @@ namespace Sanakan.DAL.Models
         public ulong MessagesCountAtDate { get; set; }
         public ulong CharacterCountFromDate { get; set; }
         public bool ShowWaifuInProfile { get; set; }
-        
+
         /// <summary>
         /// The number of warnings issued for this user in Discord.
         /// </summary>
         public long WarningsCount { get; set; }
 
-        public virtual UserStats Stats { get; set; }
+        public virtual UserStats Stats { get; set; } = null!;
 
-        public virtual GameDeck GameDeck { get; set; }
+        public virtual GameDeck GameDeck { get; set; } = null!;
 
-        public virtual SlotMachineConfig SMConfig { get; set; }
+        public virtual SlotMachineConfig SMConfig { get; set; } = null!;
 
         public virtual ICollection<TimeStatus> TimeStatuses { get; set; }
 

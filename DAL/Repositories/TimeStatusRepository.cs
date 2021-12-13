@@ -36,7 +36,7 @@ namespace Sanakan.DAL.Repositories
 
             if (cacheResult != null)
             {
-                return cacheResult.Value;
+                return cacheResult.Value!;
             }
 
             var result = await _dbContext

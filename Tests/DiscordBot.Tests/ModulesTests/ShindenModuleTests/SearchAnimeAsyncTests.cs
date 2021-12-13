@@ -8,8 +8,6 @@ using System.Collections.Generic;
 using Sanakan.ShindenApi.Models.Enums;
 using Sanakan.DiscordBot.Session;
 using Sanakan.DiscordBot.Modules;
-using Discord;
-using Moq;
 using FluentAssertions;
 
 namespace DiscordBot.ModulesTests.ShindenModuleTests
@@ -20,7 +18,7 @@ namespace DiscordBot.ModulesTests.ShindenModuleTests
     [TestClass]
     public class SearchAnimeAsyncTests : Base
     {
-        
+
         [TestMethod]
         public async Task Should_Return_Anime_Info()
         {

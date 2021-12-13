@@ -12,6 +12,6 @@ namespace Sanakan.DAL.Models
         public ulong CardId { get; set; }
 
         [JsonIgnore]
-        public virtual Card Card { get; set; }
+        public virtual Card Card { get; set; } = null;
     }
 }

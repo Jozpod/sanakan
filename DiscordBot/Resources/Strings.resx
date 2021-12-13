@@ -221,6 +221,12 @@ Traci siły po {3} min.</value>
   <data name="RequiredRole" xml:space="preserve">
     <value>Do użycia tego polecenia wymagana jest rola {0}</value>
   </data>
+  <data name="RoleNotFound" xml:space="preserve">
+    <value>Nie odnaleziono roli `{0}`</value>
+  </data>
+  <data name="RoleNotFoundOnServer" xml:space="preserve">
+    <value>Nie odnaleziono roli na serwerze.</value>
+  </data>
   <data name="ServerConfiguration" xml:space="preserve">
     <value>Description = **Prefix:** {0}
 

@@ -30,7 +30,7 @@ namespace Sanakan.DAL.Repositories
 
             if (cacheResult != null)
             {
-                return cacheResult.Value;
+                return cacheResult.Value ?? new();
             }
 
             var result = await _dbContext
@@ -51,7 +51,7 @@ namespace Sanakan.DAL.Repositories
             return result;
         }
 
-        public async Task<GameDeck> GetCachedUserGameDeckAsync(ulong userId)
+        public async Task<GameDeck?> GetCachedUserGameDeckAsync(ulong userId)
         {
             var key = string.Format(CacheKeys.GameDeckUser, userId);
 

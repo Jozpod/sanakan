@@ -17,7 +17,7 @@ namespace Sanakan.Game.Tests.WaifuServiceTests
     public class DeleteCardImageIfExistTests : Base
     {
         [TestMethod]
-        public async Task Should_Delete_Files()
+        public void Should_Delete_Files()
         {
             var card = new Card(1, "test", "test", 100, 50, Rarity.SSS, Dere.Bodere, DateTime.Now);
 

@@ -27,7 +27,7 @@ namespace Sanakan.DAL.Repositories
             return entity;
         }
 
-        public async Task<Question> GetCachedQuestionAsync(ulong id)
+        public async Task<Question?> GetCachedQuestionAsync(ulong id)
         {
             var key = CacheKeys.Quiz(id);
 
@@ -56,7 +56,7 @@ namespace Sanakan.DAL.Repositories
 
             if (cacheResult != null)
             {
-                return cacheResult.Value;
+                return cacheResult.Value ?? new();
             }
 
             var result = await _dbContext

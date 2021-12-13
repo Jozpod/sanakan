@@ -13,7 +13,7 @@ namespace Sanakan.Common.Converters
                 throw new Exception("Invalid format for Version property");
             }
 
-            return new(reader.GetString());
+            return new(reader.GetString()!);
         }
 
         public override void Write(Utf8JsonWriter writer, Version value, JsonSerializerOptions options)

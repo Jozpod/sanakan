@@ -17,7 +17,7 @@ namespace Sanakan.Game.Tests.WaifuServiceTests
     public class GetActiveListTests : Base
     {
         [TestMethod]
-        public async Task Should_Return_Embed_With_Cards_Details()
+        public void Should_Return_Embed_With_Cards_Details()
         {
             var card1 = new Card(1, "test 1", "test 1", 100, 50, Rarity.SSS, Dere.Bodere, DateTime.Now);
             var card2 = new Card(1, "test 2", "test 2", 100, 50, Rarity.SSS, Dere.Bodere, DateTime.Now);

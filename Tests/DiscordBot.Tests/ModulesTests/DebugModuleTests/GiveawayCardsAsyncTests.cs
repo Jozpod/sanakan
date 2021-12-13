@@ -20,12 +20,12 @@ namespace DiscordBot.ModulesTests.DebugModuleTests
     [TestClass]
     public class GiveawayCardsAsyncTests : Base
     {
-        
+
         [TestMethod]
         public async Task Should_Give_Away_Card_And_Send_Confirm_Message()
         {
             var cardCount = 1u;
-            var duration = 5u;
+            var duration = TimeSpan.FromMinutes(5);
             var user = new User(1ul, DateTime.UtcNow);
             var guildOptions = new GuildOptions(1ul, 50);
             guildOptions.WaifuRoleId = 1ul;
@@ -47,7 +47,7 @@ namespace DiscordBot.ModulesTests.DebugModuleTests
 
             _guildMock
                 .Setup(pr => pr.GetRole(guildOptions.WaifuRoleId.Value))
-                .Returns(null as IRole);
+                .Returns<IRole?>(null);
 
             _guildMock
                 .Setup(pr => pr.GetRole(guildOptions.MuteRoleId))
@@ -70,11 +70,11 @@ namespace DiscordBot.ModulesTests.DebugModuleTests
                 .ReturnsAsync(guildOptions);
 
             _userMessageMock
-                .Setup(pr => pr.AddReactionAsync(Emotes.GreenChecked, null))
+                .Setup(pr => pr.AddReactionAsync(It.IsAny<IEmote>(), null))
                 .Returns(Task.CompletedTask);
 
             _userMessageMock
-                .Setup(pr => pr.RemoveReactionAsync(Emotes.GreenChecked, _currentUserMock.Object, null))
+                .Setup(pr => pr.RemoveReactionAsync(It.IsAny<IEmote>(), _currentUserMock.Object, null))
                 .Returns(Task.CompletedTask);
 
             _userMessageMock

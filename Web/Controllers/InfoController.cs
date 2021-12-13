@@ -34,7 +34,7 @@ namespace Sanakan.Web.Controllers
         [HttpGet("commands")]
         [ProducesResponseType(typeof(ObjectResult), StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(typeof(Commands), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetCommandsInfoAsync()
+        public IActionResult GetCommandsInfoAsync()
         {
             try
             {
@@ -47,7 +47,7 @@ namespace Sanakan.Web.Controllers
 
                 return Ok(result);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return new ObjectResult(ex.Message)
                 {
@@ -80,12 +80,12 @@ namespace Sanakan.Web.Controllers
 
                 var subMInfo = new SubModule()
                 {
-                    Prefix = alias,
+                    Prefix = alias!,
                     Commands = new List<Command>(),
                     PrefixAliases = new List<string>()
                 };
 
-                foreach(var ali in moduleInfo.Aliases)
+                foreach (var ali in moduleInfo.Aliases)
                 {
                     if (!ali.Equals(subMInfo.Prefix))
                     {
@@ -120,7 +120,7 @@ namespace Sanakan.Web.Controllers
 
                     foreach (var commandAlias in command.Aliases)
                     {
-                        var parsedAlias = GetBoreboneCommandAlias(subMInfo.PrefixAliases, subMInfo.Prefix, commandAlias);
+                        var parsedAlias = GetBoreboneCommandAlias(subMInfo.PrefixAliases, subMInfo.Prefix!, commandAlias);
                         if (!commandSummary.Aliases.Any(x => x.Equals(parsedAlias)))
                         {
                             commandSummary.Aliases.Add(parsedAlias);

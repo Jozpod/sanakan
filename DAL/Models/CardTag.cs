@@ -6,11 +6,11 @@ namespace Sanakan.DAL.Models
     public class CardTag
     {
         [StringLength(30)]
-        public string Name { get; set; }
+        public string Name { get; set; } = null;
 
         public ulong CardId { get; set; }
 
         [JsonIgnore]
-        public virtual Card Card { get; set; }
+        public virtual Card Card { get; set; } = null;
     }
 }

@@ -20,13 +20,13 @@ namespace Sanakan.Common.Tests
         public class IsHexTripletTests
         {
             [TestMethod]
-            public async Task Should_Return_True()
+            public void Should_Return_True()
             {
                 "#FFFFFF".IsHexTriplet().Should().BeTrue();
             }
 
             [TestMethod]
-            public async Task False()
+            public void Should_Return_False()
             {
                 "test".IsHexTriplet().Should().BeFalse();
             }

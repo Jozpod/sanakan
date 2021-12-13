@@ -23,10 +23,10 @@ namespace Sanakan.Web.Tests.Controllers.InfoControllerTests
         }
 
         [TestMethod]
-        public async Task Should_Retrieve_Commands()
+        public void Should_Retrieve_Commands()
         {
 
-            var commands = await _controller.GetCommandsInfoAsync();
+            var commands = _controller.GetCommandsInfoAsync();
         }
     }
 }

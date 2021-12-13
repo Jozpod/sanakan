@@ -33,11 +33,11 @@ namespace Sanakan.ShindenApi.Converters
 
             if (type.ToLower().Equals("anime"))
             {
-                result = JsonSerializer.Deserialize<IllustrationInfoTitleAnime>(jsonObject, options);
+                result = JsonSerializer.Deserialize<IllustrationInfoTitleAnime>(jsonObject, options)!;
             }
             else
             {
-                result = JsonSerializer.Deserialize<IllustrationInfoTitleManga>(jsonObject, options);
+                result = JsonSerializer.Deserialize<IllustrationInfoTitleManga>(jsonObject, options)!;
             }
 
             return result;

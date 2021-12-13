@@ -39,7 +39,7 @@ namespace DiscordBot.ModulesTests.ModerationModuleTests
 
             _guildMock
                 .Setup(pr => pr.GetRole(0))
-                .Returns(null as IRole);
+                .Returns<IRole?>(null);
 
             _guildMock
                 .Setup(pr => pr.GetRole(guildConfig.MuteRoleId))

@@ -36,7 +36,7 @@ namespace Sanakan.DAL.Models
         public ulong UserId { get; set; }
 
         [JsonIgnore]
-        public virtual User User { get; set; }
+        public virtual User User { get; set; } = null;
 
         public void Reset()
         {

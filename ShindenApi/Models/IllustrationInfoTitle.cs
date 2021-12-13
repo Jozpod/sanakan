@@ -14,10 +14,10 @@ namespace Sanakan.ShindenApi.Models
         public MpaaRating MpaaRating { get; set; }
 
         [JsonPropertyName("rating_story_sum")]
-        public string RatingStorySum { get; set; }
+        public string RatingStorySum { get; set; } = string.Empty;
 
         [JsonPropertyName("description")]
-        public AnimeMangaInfoDescription Description { get; set; }
+        public AnimeMangaInfoDescription Description { get; set; } = null;
 
         [JsonPropertyName("add_date")]
         [JsonConverter(typeof(DateTimeyyyyMMddHHmmssConverter))]
@@ -38,7 +38,7 @@ namespace Sanakan.ShindenApi.Models
         public ulong FinishPrecision { get; set; }
 
         [JsonPropertyName("ranking_rate")]
-        public string RankingRate { get; set; }
+        public string RankingRate { get; set; } = string.Empty;
 
         [JsonPropertyName("premiere_precision")]
         public ulong PremierePrecision { get; set; }
@@ -51,10 +51,10 @@ namespace Sanakan.ShindenApi.Models
         public ulong RankingPosition { get; set; }
 
         [JsonPropertyName("rating_design_sum")]
-        public string RatingDesignSum { get; set; }
+        public string RatingDesignSum { get; set; } = string.Empty;
 
         [JsonPropertyName("rating_design_cnt")]
-        public string RatingDesignCnt { get; set; }
+        public string RatingDesignCnt { get; set; } = string.Empty;
 
         [JsonPropertyName("rating_story_cnt")]
         public double RatingStoryCnt { get; set; }
@@ -63,29 +63,29 @@ namespace Sanakan.ShindenApi.Models
         public double? RatingTotalSum { get; set; }
 
         [JsonPropertyName("rating_titlecahracters_sum")]
-        public string RatingTitlecahractersSum { get; set; }
+        public string RatingTitlecahractersSum { get; set; } = string.Empty;
 
         [JsonPropertyName("rating_titlecahracters_cnt")]
-        public string RatingTitlecahractersCnt { get; set; }
+        public string RatingTitlecahractersCnt { get; set; } = string.Empty;
 
         [JsonPropertyName("rating_total_cnt")]
         public double RatingTotalCount { get; set; }
 
         [JsonPropertyName("title")]
         [JsonConverter(typeof(HtmlDecodeConverter))]
-        public string Title { get; set; }
+        public string Title { get; set; } = string.Empty;
 
         [JsonPropertyName("title_other")]
-        public List<TitleOther> TitleOther { get; set; }
+        public List<TitleOther> TitleOther { get; set; } = null;
 
         [JsonPropertyName("tags")]
-        public AnimeMangaInfoTags TagCategories { get; set; }
+        public AnimeMangaInfoTags TagCategories { get; set; } = null;
 
         [JsonPropertyName("title_id")]
         public ulong TitleId { get; set; }
 
         [JsonPropertyName("title_status")]
-        public string TitleStatus { get; set; }
+        public string TitleStatus { get; set; } = string.Empty;
 
         [JsonIgnore]
         public IEnumerable<AnimeMangaInfoEntity> Tags => TagCategories == null ? Enumerable.Empty<AnimeMangaInfoEntity>() :

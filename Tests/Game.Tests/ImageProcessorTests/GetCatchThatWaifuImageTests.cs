@@ -9,7 +9,9 @@ namespace Sanakan.Game.Tests.ImageProcessorTests
     /// <summary>
     /// Defines tests for <see cref="IImageProcessor.GetCatchThatWaifuImage(Image{Rgba32}, string, int, int)"/> method.
     /// </summary>
+#if DEBUG
     [TestClass]
+#endif
     public class GetCatchThatWaifuImageTests : Base
     {
         [TestMethod]

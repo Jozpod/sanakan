@@ -4,7 +4,6 @@ namespace Sanakan.DiscordBot.Abstractions
 {
     public static class Emojis
     {
-        public const string PsyduckEmoji = "<:klasycznypsaj:482136878120828938>";
         public static Emoji Checked = new Emoji("✅");
         public static Emoji Zero = new Emoji("0⃣");
         public static Emoji One = new Emoji("1⃣");
@@ -20,8 +19,6 @@ namespace Sanakan.DiscordBot.Abstractions
         public static Emoji RaisedHand = new Emoji("🖐");
         public static Emoji LeftwardsArrow = new Emoji("⬅");
         public static Emoji RightwardsArrow = new Emoji("➡");
-
-        public static Emote DeclineEmote = Emote.Parse("<:redcross:581152766655856660>");
 
         public static Emoji InboxTray = new Emoji("📥");
         public static Emoji CrossMark = new Emoji("❌");

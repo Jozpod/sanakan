@@ -4,13 +4,13 @@ namespace Sanakan.DiscordBot.Session
 {
     public class SessionContext
     {
-        public IMessageChannel Channel { get; set; }
+        public IMessageChannel Channel { get; set; } = null;
 
         public ulong UserId { get; set; }
 
-        public IUserMessage Message { get; set; }
+        public IUserMessage Message { get; set; } = null!;
 
-        public IDiscordClient Client { get; set; }
+        public IDiscordClient Client { get; set; } = null;
 
         public IReaction? AddReaction { get; set; }
 

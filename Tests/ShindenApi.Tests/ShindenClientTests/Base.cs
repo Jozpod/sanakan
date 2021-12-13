@@ -39,7 +39,7 @@ namespace Sanakan.ShindenApi.Tests
                 .ReturnsAsync(new HttpResponseMessage
                 {
                     StatusCode = HttpStatusCode.OK,
-                    Content = new StreamContent(stream),
+                    Content = new StreamContent(stream!),
                 });
         }
 

@@ -51,7 +51,7 @@ namespace Sanakan.Extensions
                 new EmbedFieldBuilder
                 {
                     Name = "Data dodania",
-                    Value = ep.AddDate.Value.ToShortDateString(),
+                    Value = ep.AddDate!.Value.ToShortDateString(),
                     IsInline = false
                 }
             };

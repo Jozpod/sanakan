@@ -1,8 +1,10 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Sanakan.Daemon.HostedService;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Sanakan.Daemon.Builder
 {
+    [ExcludeFromCodeCoverage]
     public static class Extensions
     {
         public static IServiceCollection AddHostedServices(this IServiceCollection services)

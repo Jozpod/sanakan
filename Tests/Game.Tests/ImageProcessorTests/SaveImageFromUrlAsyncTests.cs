@@ -7,7 +7,9 @@ namespace Sanakan.Game.Tests.ImageProcessorTests
     /// <summary>
     /// Defines tests for <see cref="IImageProcessor.SaveImageFromUrlAsync(string, string)"/> method.
     /// </summary>
+#if DEBUG
     [TestClass]
+#endif
     public class SaveImageFromUrlAsyncTests : Base
     {
         [TestMethod]

@@ -10,37 +10,37 @@ namespace Sanakan.Api.Models
         /// <summary>
         /// The aggregated number of cards grouped by rarity.
         /// </summary>
-        public IDictionary<string, long> CardsCount { get; set; }
+        public IDictionary<string, long> CardsCount { get; set; } = null;
 
         /// <summary>
         /// The wallet content.
         /// </summary>
-        public IDictionary<string, long> Wallet { get; set; }
+        public IDictionary<string, long> Wallet { get; set; } = null;
 
         /// <summary>
         /// Waifu
         /// </summary>
-        public CardFinalView Waifu { get; set; }
+        public CardFinalView Waifu { get; set; } = null;
 
         /// <summary>
         /// Galeria
         /// </summary>
-        public List<CardFinalView> Gallery { get; set; }
+        public List<CardFinalView> Gallery { get; set; } = null;
 
         /// <summary>
         /// Lista wypraw
         /// </summary>
-        public List<ExpeditionCard> Expeditions { get; set; }
+        public List<ExpeditionCard> Expeditions { get; set; } = null;
 
         /// <summary>
         /// Lista tagów jakie ma użytkownik na kartach
         /// </summary>
-        public List<string> TagList { get; set; }
+        public List<string> TagList { get; set; } = null;
 
         /// <summary>
         /// User exchange rules.
         /// </summary>
-        public string ExchangeConditions { get; set; }
+        public string ExchangeConditions { get; set; } = null;
 
         /// <summary>
         /// The user title.

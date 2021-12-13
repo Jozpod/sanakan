@@ -3,9 +3,11 @@ using Sanakan.Api;
 using Sanakan.TaskQueue.MessageHandlers;
 using Sanakan.TaskQueue.Messages;
 using Sanakan.Web;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Sanakan.TaskQueue.Builder
 {
+    [ExcludeFromCodeCoverage]
     public static class Extensions
     {
         public static IServiceCollection AddJwtBuilder(this IServiceCollection services)

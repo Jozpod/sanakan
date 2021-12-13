@@ -68,5 +68,72 @@ namespace Sanakan.DiscordBot.Tests.IntegrationTests
             var embed = message.Embeds.FirstOrDefault();
             embed.Should().NotBeNull();
         }
+
+        [TestMethod]
+        public async Task TC506_Should_Set_Nsfw_Channel()
+        {
+            var commandMessage = ModerationCommandBuilder.SetNsfwChannel(Prefix);
+            await Channel.SendMessageAsync(commandMessage);
+
+            var message = await WaitForMessageAsync();
+            message.Should().NotBeNull();
+            var embed = message.Embeds.FirstOrDefault();
+            embed.Should().NotBeNull();
+        }
+
+        [TestMethod]
+        public async Task TC507_Should_Set_Market_Waifu_Channel()
+        {
+            var commandMessage = ModerationCommandBuilder.SetMarketWaifuChannel(Prefix);
+            await Channel.SendMessageAsync(commandMessage);
+
+            var message = await WaitForMessageAsync();
+            message.Should().NotBeNull();
+            var embed = message.Embeds.FirstOrDefault();
+            embed.Should().NotBeNull();
+        }
+
+        [TestMethod]
+        public async Task TC508_Should_Check_User()
+        {
+            var commandMessage = ModerationCommandBuilder.CheckUser(Prefix, FakeUser.Mention);
+            await Channel.SendMessageAsync(commandMessage);
+
+            var message = await WaitForMessageAsync();
+            message.Should().NotBeNull();
+            var embed = message.Embeds.FirstOrDefault();
+            embed.Should().NotBeNull();
+        }
+
+        [TestMethod]
+        public async Task TC509_Should_Start_Lottery()
+        {
+            var commandMessage = ModerationCommandBuilder.GetRandomUser(Prefix, 1);
+            await Channel.SendMessageAsync(commandMessage);
+
+            var message = await WaitForMessageAsync();
+            message.Should().NotBeNull();
+            var embed = message.Embeds.FirstOrDefault();
+            embed.Should().NotBeNull();
+
+            message = await WaitForMessageAsync();
+            message.Should().NotBeNull();
+        }
+
+
+        [TestMethod]
+        public async Task TC520_Should_Ban_User()
+        {
+            var commandMessage = ModerationCommandBuilder.BanUser(Prefix, FakeUser.Mention, "00:00:05");
+            await Channel.SendMessageAsync(commandMessage);
+
+            var message = await WaitForMessageAsync();
+            message.Should().NotBeNull();
+            var embed = message.Embeds.FirstOrDefault();
+            embed.Should().NotBeNull();
+
+            // https://discord.com/oauth2/authorize?client_id=911409545094512671&permissions=8&scope=applications.commands%20bot
+        }
+
     }
 }

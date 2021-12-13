@@ -72,7 +72,7 @@ namespace Sanakan.TaskQueue.MessageHandlers
                 var waifuId = _randomNumberGenerator.GetOneRandomFrom(idsToSelect);
                 var randomCard = loteryCards.FirstOrDefault(x => x.Id == waifuId);
 
-                cardsIds.Add(randomCard.GetString(false, false, true));
+                cardsIds.Add(randomCard!.GetString(false, false, true));
 
                 randomCard.Active = false;
                 randomCard.InCage = false;
@@ -90,7 +90,7 @@ namespace Sanakan.TaskQueue.MessageHandlers
             await _userRepository.SaveChangesAsync();
             await userMessage.DeleteAsync();
 
-            _cacheManager.ExpireTag(CacheKeys.User(message.DiscordUserId), CacheKeys.Users, CacheKeys.User(message.InvokingUserId)); 
+            _cacheManager.ExpireTag(CacheKeys.User(message.DiscordUserId), CacheKeys.Users, CacheKeys.User(message.InvokingUserId));
 
             var content = $"Loterie wygrywa {message.WinnerUser.Mention}.\nOtrzymuje: {string.Join("\n", cardsIds)}"
                 .ElipseTrimToLength(2000)

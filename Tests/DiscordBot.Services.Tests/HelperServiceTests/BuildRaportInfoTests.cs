@@ -16,7 +16,7 @@ namespace DiscordBot.ServicesTests.HelperServiceTests
     public class BuildRaportInfoTests : Base
     {
         [TestMethod]
-        public async Task Should_Return_Embed_With_Report_Info()
+        public void Should_Return_Embed_With_Report_Info()
         {
             var messageMock = new Mock<IMessage>(MockBehavior.Strict);
             var reportAuthor = "test report author";

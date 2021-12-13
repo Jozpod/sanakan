@@ -16,7 +16,7 @@ namespace Sanakan.ShindenApi.Converters
             _defaultValue = defaultValue;
         }
 
-        public override T Read(ref Utf8JsonReader reader, Type type, JsonSerializerOptions options)
+        public override T? Read(ref Utf8JsonReader reader, Type type, JsonSerializerOptions options)
         {
             if (reader.TokenType != JsonTokenType.String)
             {
@@ -25,7 +25,7 @@ namespace Sanakan.ShindenApi.Converters
 
             var enumString = reader.GetString();
 
-            if(_dictionary.TryGetValue(enumString, out var enumValue))
+            if (_dictionary.TryGetValue(enumString!, out var enumValue))
             {
                 return enumValue;
             }

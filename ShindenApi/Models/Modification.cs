@@ -5,6 +5,6 @@ namespace Sanakan.ShindenApi.Models
     public class Modification
     {
         [JsonPropertyName("updated")]
-        public string Updated { get; set; }
+        public string Updated { get; set; } = null;
     }
 }

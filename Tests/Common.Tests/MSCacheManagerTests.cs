@@ -37,7 +37,7 @@ namespace Sanakan.Common.Tests
         }
 
         [TestMethod]
-        public async Task Should_Cache()
+        public void Should_Cache()
         {
             var result = _cacheManager.Get<Entity>("test");
             result.Should().BeNull();
@@ -48,7 +48,7 @@ namespace Sanakan.Common.Tests
         }
 
         [TestMethod]
-        public async Task Should_Expire_Cache()
+        public void Should_Expire_Cache()
         {
             _cacheManager.Add("test", new Entity());
             _cacheManager.ExpireTag("test");

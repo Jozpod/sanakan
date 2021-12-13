@@ -8,10 +8,11 @@
         /// <summary>
         /// Tesks ostatniej lini
         /// </summary>
-        public string Text { get; set; }
+        public string Text { get; set; } = null;
+
         /// <summary>
         /// Obrazek ostatniej lini
         /// </summary>
-        public string ImageUrl { get; set; }
+        public string ImageUrl { get; set; } = null;
     }
 }

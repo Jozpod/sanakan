@@ -24,6 +24,6 @@ namespace Sanakan.DAL.Models.Configuration
         public ulong GuildOptionsId { get; set; }
 
         [JsonIgnore]
-        public virtual GuildOptions GuildOptions { get; set; }
+        public virtual GuildOptions GuildOptions { get; set; } = null;
     }
 }

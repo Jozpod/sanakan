@@ -17,7 +17,7 @@ namespace Sanakan.DiscordBot.Supervisor.Tests
     [TestClass]
     public class UserJoinedGuildSupervisorTests
     {
-        private readonly IUserJoinedGuildSupervisor _userJoinedGuildSupervisor;
+        private readonly UserJoinedGuildSupervisor _userJoinedGuildSupervisor;
         private readonly Mock<IOptionsMonitor<SupervisorConfiguration>> _supervisorConfigurationMock = new(MockBehavior.Strict);
         private readonly Mock<ISystemClock> _systemClockMock = new(MockBehavior.Strict);
 
@@ -39,7 +39,7 @@ namespace Sanakan.DiscordBot.Supervisor.Tests
         }
 
         [TestMethod]
-        public async Task Should_Return_Users()
+        public void Should_Return_Users()
         {
             var guildId = 1ul;
             var suspects = Enumerable.Range(1, 4).Select(pr => ("username", (ulong)pr)).ToList();
@@ -58,7 +58,7 @@ namespace Sanakan.DiscordBot.Supervisor.Tests
                 var (username, userId) = suspects.Last();
                 usersToBan = _userJoinedGuildSupervisor.GetUsersToBanCauseRaid(guildId, username, userId);
                 usersToBan.Should().BeEquivalentTo(suspects.Select(pr => pr.Item2));
-            }  
+            }
         }
     }
 }

@@ -35,7 +35,7 @@ namespace Sanakan.TaskQueue.Tests
         {
             var firstExpected = new ConnectUserMessage();
             var secondExpected = new GiveCardsMessage();
-       
+
             var cancellationTokenSource = new CancellationTokenSource();
             cancellationTokenSource.CancelAfter(TimeSpan.FromSeconds(3));
 
@@ -46,7 +46,7 @@ namespace Sanakan.TaskQueue.Tests
                 _blockingPriorityQueue.TryEnqueue(firstExpected);
             }, cancellationTokenSource.Token);
 
-            var consumer = Task.Run(async () =>
+            var consumer = Task.Run(() =>
             {
                 var enumerable = _blockingPriorityQueue.GetEnumerable(cancellationTokenSource.Token).GetEnumerator();
                 enumerable.MoveNext();

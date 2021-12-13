@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using Sanakan.DiscordBot.Modules;
 using Discord;
 using Moq;
-using Sanakan.Game.Models;
 using System;
 using Sanakan.DAL.Models;
 using FluentAssertions;
@@ -19,7 +18,6 @@ namespace DiscordBot.ModulesTests.ProfileModuleTests
         [TestMethod]
         public async Task Should_Send_Message_Containing_Remaining_Experience()
         {
-            var amount = 100ul;
             var user = new User(1ul, DateTime.UtcNow);
 
             _userMock

@@ -8,19 +8,24 @@ namespace Sanakan.DAL.Models
     public class Item
     {
         public ulong Id { get; set; }
+
         public long Count { get; set; }
-        public string Name { get; set; }
+
+        public string Name { get; set; } = null;
+
         public ItemType Type { get; set; }
+
         public Quality Quality { get; set; }
 
         public ulong GameDeckId { get; set; }
+
         [JsonIgnore]
-        public virtual GameDeck GameDeck { get; set; }
+        public virtual GameDeck GameDeck { get; set; } = null;
 
         public double BaseAffection()
         {
             var affection = Type.BaseAffection();
-            
+
             if (Type.HasDifferentQualities())
             {
                 affection += affection * Quality.GetQualityModifier();

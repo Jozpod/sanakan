@@ -12,7 +12,7 @@ namespace Sanakan.ShindenApi.Models
         public ulong EpisodeId { get; set; }
 
         [JsonPropertyName("episode_title")]
-        public string EpisodeTitle { get; set; }
+        public string EpisodeTitle { get; set; } = string.Empty;
 
         [JsonPropertyName("type")]
         public EpisodeType Type { get; set; }
@@ -27,7 +27,7 @@ namespace Sanakan.ShindenApi.Models
         public ulong TitleId { get; set; }
 
         [JsonPropertyName("title_main_id")]
-        public string TitleMainId { get; set; }
+        public string TitleMainId { get; set; } = string.Empty;
 
         [JsonPropertyName("episode_time")]
         [JsonConverter(typeof(TimeSpanFromMinutesConverter))]
@@ -41,7 +41,7 @@ namespace Sanakan.ShindenApi.Models
         public DateTime? AirDate { get; set; }
 
         [JsonPropertyName("air_channell")]
-        public string AirChannell { get; set; }
+        public string AirChannell { get; set; } = string.Empty;
 
         [JsonPropertyName("is_accepted")]
         public bool IsAccepted { get; set; }
@@ -50,17 +50,17 @@ namespace Sanakan.ShindenApi.Models
         public ulong EpisodeTitleId { get; set; }
 
         [JsonPropertyName("title_type")]
-        public string TitleType { get; set; }
+        public string TitleType { get; set; } = string.Empty;
 
         [JsonPropertyName("title")]
         [JsonConverter(typeof(HtmlDecodeAndRemoveBBCodeConverter))]
-        public string Title { get; set; }
+        public string Title { get; set; } = string.Empty;
 
         [JsonPropertyName("lang")]
         public Language Lang { get; set; }
 
         [JsonPropertyName("langs")]
-        public List<string> Langs { get; set; }
+        public List<string> Langs { get; set; } = new();
 
         [JsonPropertyName("has_online")]
         public bool HasOnline { get; set; }

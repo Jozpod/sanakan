@@ -11,6 +11,6 @@ namespace Sanakan.ShindenApi.Models
         public long MinNo { get; set; }
 
         [JsonPropertyName("status")]
-        public string Status { get; set; }
+        public string Status { get; set; } = null;
     }
 }

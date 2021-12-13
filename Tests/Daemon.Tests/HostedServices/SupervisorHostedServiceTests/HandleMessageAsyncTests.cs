@@ -101,7 +101,7 @@ namespace Sanakan.Daemon.Tests.HostedServices.SupervisorHostedServiceTests
 
             guildMock
                 .Setup(pr => pr.GetRole(roleId))
-                .Returns(null as IRole)
+                .Returns<IRole?>(null)
                 .Verifiable();
 
             guildMock
@@ -214,7 +214,7 @@ namespace Sanakan.Daemon.Tests.HostedServices.SupervisorHostedServiceTests
 
             guildMock
                 .Setup(pr => pr.GetRole(roleId))
-                .Returns(null as IRole)
+                .Returns<IRole?>(null)
                 .Verifiable();
 
             guildMock

@@ -119,7 +119,7 @@ namespace Sanakan.DiscordBot.Modules
         [Alias("bajka")]
         [Summary("wyświetla informacje o anime")]
         [Remarks("Soul Eater")]
-        public async Task SearchAnimeAsync([Summary("tytuł")][Remainder]string title)
+        public async Task SearchAnimeAsync([Summary("tytuł")][Remainder] string title)
         {
             await SendSearchInfoAsync(Context, title, QuickSearchType.Anime);
         }
@@ -129,7 +129,7 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("wyświetla informacje o mandze")]
         [Remarks("Gintama")]
         public async Task SearchMangaAsync(
-            [Summary("tytuł")][Remainder]string title)
+            [Summary("tytuł")][Remainder] string title)
         {
             await SendSearchInfoAsync(Context, title, QuickSearchType.Manga);
         }
@@ -139,13 +139,13 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("wyświetla informacje o postaci")]
         [Remarks("Gintoki")]
         public async Task SearchCharacterAsync(
-            [Summary("imie")][Remainder]string name)
+            [Summary("imie")][Remainder] string name)
         {
             var discordUserId = Context.User.Id;
             var payload = new SearchSession.SearchSessionPayload();
 
             var session = new SearchSession(discordUserId, _systemClock.UtcNow, payload);
-            
+
             if (_sessionManager.Exists<SearchSession>(discordUserId))
             {
                 return;
@@ -193,7 +193,7 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("wyświetla statystyki użytkownika z strony")]
         [Remarks("karna")]
         public async Task ShowSiteStatisticAsync(
-            [Summary("użytkownik (opcjonalne)")]IGuildUser? guildUser = null)
+            [Summary("użytkownik (opcjonalne)")] IGuildUser? guildUser = null)
         {
             var user = guildUser ?? Context.User as IGuildUser;
 
@@ -235,7 +235,7 @@ namespace Sanakan.DiscordBot.Modules
         [Alias("connect", "polacz", "połacz", "polącz")]
         [Summary("łączy funkcje bota, z kontem na stronie")]
         [Remarks("https://shinden.pl/user/136-mo0nisi44")]
-        public async Task ConnectAsync([Summary("adres do profilu")]string url)
+        public async Task ConnectAsync([Summary("adres do profilu")] string url)
         {
             switch (ParseUrlToShindenId(url, out var shindenId))
             {
@@ -285,7 +285,7 @@ namespace Sanakan.DiscordBot.Modules
 
             await ReplyAsync(embed: "Konta zostały połączone.".ToEmbedMessage(EMType.Success).Build());
             return;
-            
+
         }
 
         private UrlParsingError ParseUrlToShindenId(string url, out ulong shindenId)
@@ -383,7 +383,7 @@ namespace Sanakan.DiscordBot.Modules
             {
                 var first = list.First();
                 var info = (await _shindenClient.GetAnimeMangaInfoAsync(first.TitleId)).Value;
-                await context.Channel.SendMessageAsync("", false, info.ToEmbed());
+                await context.Channel.SendMessageAsync("", false, info!.ToEmbed());
             }
             else
             {

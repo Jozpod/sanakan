@@ -24,7 +24,7 @@ namespace Sanakan.DAL.Models
             Name = card.Name;
             IsComplete = false;
             ExperienceCount = experienceCount;
-            Title = card.Title;
+            Title = card.Title!;
             Health = card.Health;
             Attack = card.Attack;
             Defence = card.Defence;
@@ -51,11 +51,11 @@ namespace Sanakan.DAL.Models
 
         [StringLength(50)]
         [Required]
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
         [StringLength(50)]
         [Required]
-        public string Title { get; set; }
+        public string Title { get; set; } = string.Empty;
         public bool IsFocus { get; set; }
         public double ExperienceCount { get; set; }
         public int RestartCount { get; set; }
@@ -79,10 +79,10 @@ namespace Sanakan.DAL.Models
         public ulong GameDeckId { get; set; }
 
         [JsonIgnore]
-        public virtual GameDeck GameDeck { get; set; }
+        public virtual GameDeck GameDeck { get; set; } = null;
 
 
-        public int ConstructionPointsToInstall( Item part)
+        public int ConstructionPointsToInstall(Item part)
         {
             return (80 * (int)part.Quality) + (20 * (int)SkeletonQuality);
         }
@@ -111,9 +111,9 @@ namespace Sanakan.DAL.Models
             }
         }
 
-        public bool CanAddPart( Item part)
+        public bool CanAddPart(Item part)
         {
-            return part.Quality >= SkeletonQuality 
+            return part.Quality >= SkeletonQuality
                 && GetQualityOfFocusedPart() == Quality.Broken;
         }
 

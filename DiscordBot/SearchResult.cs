@@ -8,11 +8,15 @@ namespace Sanakan.DiscordBot
 {
     public class SearchResult
     {
-        public IResult Result { get; set; }
+        public IResult Result { get; set; } = null;
+
         public CommandMatch CommandMatch { get; set; }
+
         public Priority Priority { get; set; }
+
         public ParseResult ParseResult { get; set; }
-        public ICommandContext Context { get; set; }
+
+        public ICommandContext Context { get; set; } = null;
 
         public Task<IResult> ExecuteAsync(IServiceProvider serviceProvider) => CommandMatch.ExecuteAsync(Context, ParseResult, serviceProvider);
 

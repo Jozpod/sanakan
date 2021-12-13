@@ -34,7 +34,7 @@ namespace Sanakan.Game.Services.Abstractions
 
         void SetEventIds(IEnumerable<ulong> ids);
 
-        Task<CharacterInfo> GetRandomCharacterAsync();
+        Task<CharacterInfo?> GetRandomCharacterAsync();
 
         Embed GetItemList(IUser user, IEnumerable<Item> items);
 
@@ -51,9 +51,9 @@ namespace Sanakan.Game.Services.Abstractions
         Task<Embed> BuildCardImageAsync(Card card, ITextChannel trashChannel, IUser owner, bool showStats);
 
         Task<Embed> BuildCardViewAsync(Card card, ITextChannel trashChannel, IUser owner);
-        
+
         FightHistory MakeFightAsync(List<PlayerInfo> players, bool oneCard = false);
-        
+
         string GetDeathLog(FightHistory fight, List<PlayerInfo> players);
 
         Embed GetShopView(ItemWithCost[] items, string name = "Sklepik", string currency = "TC");

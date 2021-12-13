@@ -9,6 +9,7 @@ using Sanakan.Game.Services;
 using Sanakan.Common.Cache;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.Game.Services.Abstractions;
+using Sanakan.DiscordBot.Abstractions.Configuration;
 
 namespace DiscordBot.ModulesTests.FunModuleTests
 {
@@ -37,6 +38,7 @@ namespace DiscordBot.ModulesTests.FunModuleTests
             var serviceScopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
 
             _module = new(
+                new DefaultIconConfiguration(),
                 _sessionManagerMock.Object,
                 _cacheManagerMock.Object,
                 _systemClockMock.Object,

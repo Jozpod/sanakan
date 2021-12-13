@@ -11,6 +11,7 @@ using Sanakan.Game.Services.Abstractions;
 using Sanakan.DiscordBot;
 using Sanakan.Common.Cache;
 using Microsoft.Extensions.DependencyInjection;
+using Sanakan.DiscordBot.Abstractions.Configuration;
 
 namespace DiscordBot.ModulesTests.DebugModuleTests
 {
@@ -18,7 +19,7 @@ namespace DiscordBot.ModulesTests.DebugModuleTests
     /// Defines tests for <see cref="DebugModule"/> module.
     /// </summary>
     [TestClass]
-    public abstract class Base : TestBase
+    public class Base : TestBase
     {
         protected readonly DebugModule _module;
         protected readonly Mock<IEventIdsImporter> eventIdsImporterMock = new(MockBehavior.Strict);
@@ -61,6 +62,7 @@ namespace DiscordBot.ModulesTests.DebugModuleTests
                 });
 
             _module = new(
+                new DefaultIconConfiguration(),
                 eventIdsImporterMock.Object,
                 _fileSystemMock.Object,
                 _discordClientAccessorMock.Object,

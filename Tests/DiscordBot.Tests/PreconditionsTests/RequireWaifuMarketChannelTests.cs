@@ -99,7 +99,7 @@ namespace Sanakan.DiscordBot.Tests.PreconditionsTests
         {
             _commandContextMock
                 .Setup(pr => pr.User)
-                .Returns(null as IUser)
+                .Returns<IUser?>(null)
                 .Verifiable();
 
             var result = await _preconditionAttribute.CheckPermissionsAsync(_commandContextMock.Object, null, _serviceProvider);
@@ -148,7 +148,6 @@ namespace Sanakan.DiscordBot.Tests.PreconditionsTests
         public async Task Should_Return_Success_Administrator()
         {
             var guildConfig = new GuildOptions(1, 50);
-            var channelId = 1ul;
 
             SetupUserAndGuildConfig(guildConfig);
             SetupTextChannel(2ul);

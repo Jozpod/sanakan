@@ -16,14 +16,14 @@ namespace Sanakan.DiscordBot
             _client = client;
         }
 
-        public IDiscordClient? Client => _client;
+        public IDiscordClient Client => _client;
 
         public int Latency => _client.Latency;
 
         public Task LogoutAsync() => _client.LogoutAsync();
 
         public Task SetGameAsync(string name,
-            string streamUrl = null,
+            string? streamUrl = null,
             ActivityType type = ActivityType.Playing) => _client.SetGameAsync(name, streamUrl, type);
 
         public Task LoginAsync(TokenType tokenType, string token, bool validateToken = true)

@@ -11,6 +11,6 @@ namespace Sanakan.DAL.Models
         public ulong GameDeckId { get; set; }
 
         [JsonIgnore]
-        public virtual GameDeck GameDeck { get; set; }
+        public virtual GameDeck GameDeck { get; set; } = null;
     }
 }

@@ -5,9 +5,11 @@ using Microsoft.Extensions.Options;
 using Sanakan.Common.Configuration;
 using Sanakan.DAL.Repositories;
 using Sanakan.DAL.Repositories.Abstractions;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Sanakan.DAL.Builder
 {
+    [ExcludeFromCodeCoverage]
     public static class Extensions
     {
         public static IServiceCollection AddSanakanDbContext(this IServiceCollection services, IConfiguration configuration)

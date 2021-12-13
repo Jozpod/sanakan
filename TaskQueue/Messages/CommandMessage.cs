@@ -12,9 +12,9 @@ namespace Sanakan.TaskQueue.Messages
             Match = new CommandMatchWrapper(commandMatch);
         }
 
-        public ICommandMatchWrapper Match { get; set; }
+        public ICommandMatchWrapper Match { get; set; } = null;
         public ParseResult ParseResult { get; set; }
-        public ICommandContext Context { get; set; }
+        public ICommandContext Context { get; set; } = null;
 
         public interface ICommandMatchWrapper
         {

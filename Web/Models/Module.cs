@@ -15,6 +15,6 @@ namespace Sanakan.Api.Models
         /// <summary>
         /// The list of sub modules.
         /// </summary>
-        public IList<SubModule> SubModules { get; set; }
+        public IList<SubModule> SubModules { get; set; } = null;
     }
 }

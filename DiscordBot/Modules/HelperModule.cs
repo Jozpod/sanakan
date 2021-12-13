@@ -9,6 +9,7 @@ using Sanakan.Common.Configuration;
 using Sanakan.DAL.Models.Configuration;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot.Abstractions;
+using Sanakan.DiscordBot.Abstractions.Configuration;
 using Sanakan.DiscordBot.Abstractions.Extensions;
 using Sanakan.DiscordBot.Abstractions.Models;
 using Sanakan.DiscordBot.Resources;
@@ -24,6 +25,7 @@ namespace Sanakan.DiscordBot.Modules
     [Name("Ogólne")]
     public class HelperModule : SanakanModuleBase
     {
+        private readonly IIconConfiguration _iconConfiguration;
         private readonly IDiscordClientAccessor _discordClientAccessor;
         private readonly ISessionManager _sessionManager;
         private readonly IHelperService _helperService;
@@ -37,6 +39,7 @@ namespace Sanakan.DiscordBot.Modules
         private readonly IServiceScope _serviceScope;
 
         public HelperModule(
+            IIconConfiguration iconConfiguration,
             IDiscordClientAccessor discordClientAccessor,
             ISessionManager sessionManager,
             IHelperService helperService,
@@ -46,6 +49,7 @@ namespace Sanakan.DiscordBot.Modules
             IOperatingSystem operatingSystem,
             IServiceScopeFactory serviceScopeFactory)
         {
+            _iconConfiguration = iconConfiguration;
             _discordClientAccessor = discordClientAccessor;
             _sessionManager = sessionManager;
             _helperService = helperService;
@@ -70,7 +74,7 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("wyświetla listę poleceń")]
         [Remarks("odcinki"), RequireAnyCommandChannel]
         public async Task GiveHelpAsync(
-            [Summary("nazwa polecenia (opcjonalne)")][Remainder]string? command = null)
+            [Summary("nazwa polecenia (opcjonalne)")][Remainder] string? command = null)
         {
             var guildUser = Context.User as IGuildUser;
 
@@ -123,7 +127,7 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("wyświetla informacje o użytkowniku")]
         [Remarks("User"), RequireCommandChannel]
         public async Task GiveUserInfoAsync(
-            [Summary("nazwa użytkownika (opcjonalne)")]IUser? user = null)
+            [Summary("nazwa użytkownika (opcjonalne)")] IUser? user = null)
         {
             var effectiveUser = (user ?? Context.User) as IGuildUser;
 
@@ -190,7 +194,7 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("wyświetla awatar użytkownika")]
         [Remarks("User"), RequireCommandChannel]
         public async Task ShowUserAvatarAsync(
-            [Summary("nazwa użytkownika (opcjonalne)")]IUser? user = null)
+            [Summary("nazwa użytkownika (opcjonalne)")] IUser? user = null)
         {
             var effectiveUser = user ?? Context.User;
             var embedBuilder = new EmbedBuilder
@@ -223,8 +227,8 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("zgłasza wiadomość użytkownika")]
         [Remarks("63312335634561 Tak nie wolno!"), RequireUserRole]
         public async Task ReportUserAsync(
-            [Summary("id wiadomości")]ulong messageId,
-            [Summary("powód")][Remainder]string reason)
+            [Summary("id wiadomości")] ulong messageId,
+            [Summary("powód")][Remainder] string reason)
         {
             var guild = Context.Guild;
             var guildConfig = await _guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
@@ -235,7 +239,7 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            var raportChannel = (ITextChannel) await guild.GetChannelAsync(guildConfig.RaportChannelId);
+            var raportChannel = (ITextChannel)await guild.GetChannelAsync(guildConfig.RaportChannelId);
 
             if (raportChannel == null)
             {
@@ -283,7 +287,7 @@ namespace Sanakan.DiscordBot.Modules
                 }
 
                 var notificationChannel = (ITextChannel)await guild.GetChannelAsync(guildConfig.NotificationChannelId);
-                var userRole = guild.GetRole(guildConfig.UserRoleId.Value);
+                var userRole = guild.GetRole(guildConfig.UserRoleId!.Value);
                 var muteRole = guild.GetRole(guildConfig.MuteRoleId);
 
                 if (muteRole == null)
@@ -321,7 +325,7 @@ namespace Sanakan.DiscordBot.Modules
 
                 var userMessage = await ReplyAsync(embed: embed);
 
-                await userMessage.AddReactionsAsync(new IEmote[] { Emojis.Checked, Emojis.DeclineEmote });
+                await userMessage.AddReactionsAsync(_iconConfiguration.AcceptDecline);
 
                 payload.MessageId = userMessage.Id;
                 payload.Channel = userMessage.Channel;

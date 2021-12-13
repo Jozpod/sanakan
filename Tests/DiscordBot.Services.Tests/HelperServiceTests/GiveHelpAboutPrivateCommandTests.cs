@@ -12,7 +12,7 @@ namespace DiscordBot.ServicesTests.HelperServiceTests
     public class GiveHelpAboutPrivateCommandTests : Base
     {
         [TestMethod]
-        public async Task Should_Return_Private_Command_Info()
+        public void Should_Return_Private_Command_Info()
         {
             var module = "module";
             var command = "command";

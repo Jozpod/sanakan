@@ -11,6 +11,7 @@ using Sanakan.Game.Services.Abstractions;
 using Sanakan.DiscordBot.Session;
 using Sanakan.Common.Cache;
 using Microsoft.Extensions.DependencyInjection;
+using Sanakan.DiscordBot.Abstractions.Configuration;
 
 namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
 {
@@ -42,6 +43,7 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
             var serviceScopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
 
             _module = new(
+                new DefaultIconConfiguration(),
                 _waifuServiceMock.Object,
                 _shindenClientMock.Object,
                 NullLogger<PocketWaifuModule>.Instance,

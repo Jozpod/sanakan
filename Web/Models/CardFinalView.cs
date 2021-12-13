@@ -13,7 +13,7 @@ namespace Sanakan.Api.Models
     /// </summary>
     public class CardFinalView
     {
-        public CardFinalView() {}
+        public CardFinalView() { }
 
         public CardFinalView(Card card)
         {
@@ -114,7 +114,7 @@ namespace Sanakan.Api.Models
         /// <summary>
         /// The affection level
         /// </summary>
-        public string Affection { get; set; }
+        public string Affection { get; set; } = string.Empty;
 
         /// <summary>
         /// Specifies how many times card can be upgraded.
@@ -159,37 +159,37 @@ namespace Sanakan.Api.Models
         /// <summary>
         /// The full name of the characted.
         /// </summary>
-        public string Name { get; set; }
+        public string Name { get; set; } = null;
 
         /// <summary>
         /// Link do postaci
         /// </summary>
-        public string CharacterUrl { get; set; }
+        public string CharacterUrl { get; set; } = null;
 
         /// <summary>
         /// Źródło karty
         /// </summary>
-        public string Source { get; set; }
+        public string Source { get; set; } = null;
 
         /// <summary>
         /// Z jakiego tytułu jest postać
         /// </summary>
-        public string AnimeTitle { get; set; }
+        public string AnimeTitle { get; set; } = null;
 
         /// <summary>
         /// Link do obrazka karty
         /// </summary>
-        public string ImageUrl { get; set; }
+        public string ImageUrl { get; set; } = null;
 
         /// <summary>
         /// Link do obrazka karty w pomniejszonym rozmiarze
         /// </summary>
-        public string SmallImageUrl { get; set; }
+        public string SmallImageUrl { get; set; } = null;
 
         /// <summary>
         /// Link do obrazka karty który będzie się wyświetlał gdy ustawi się go na waifu
         /// </summary>
-        public string ProfileImageUrl { get; set; }
+        public string ProfileImageUrl { get; set; } = null;
 
         /// <summary>
         /// The market value

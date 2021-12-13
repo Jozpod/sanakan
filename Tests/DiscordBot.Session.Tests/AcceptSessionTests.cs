@@ -4,6 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.DAL.Models.Management;
 using Sanakan.DiscordBot.Abstractions;
+using Sanakan.DiscordBot.Abstractions.Configuration;
 using Sanakan.DiscordBot.Services.Abstractions;
 using System;
 using System.Threading.Tasks;
@@ -29,6 +30,7 @@ namespace Sanakan.DiscordBot.Session.Tests
 
             };
             var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton<IIconConfiguration>(new DefaultIconConfiguration());
             serviceCollection.AddSingleton(_moderatorServiceMock.Object);
             _serviceProvider = serviceCollection.BuildServiceProvider();
 
@@ -120,7 +122,7 @@ namespace Sanakan.DiscordBot.Session.Tests
 
             reactionMock
                 .Setup(pr => pr.Emote)
-                .Returns(Emojis.DeclineEmote);
+                .Returns(Emotes.DeclineEmote);
 
             userMessageMock
                 .Setup(pr => pr.Id)

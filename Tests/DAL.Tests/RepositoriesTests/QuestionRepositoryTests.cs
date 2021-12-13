@@ -26,8 +26,8 @@ namespace Sanakan.DAL.Tests
 
             var actual = await repository.GetByIdAsync(entity.Id);
             actual.Should().BeEquivalentTo(entity);
-            
-            repository.Remove(actual);
+
+            repository.Remove(actual!);
             await repository.SaveChangesAsync();
 
             actual = await repository.GetByIdAsync(entity.Id);

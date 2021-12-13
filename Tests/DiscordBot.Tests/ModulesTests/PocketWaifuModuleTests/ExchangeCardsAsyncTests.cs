@@ -2,7 +2,6 @@ using Discord;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Threading.Tasks;
 using Sanakan.DiscordBot.Modules;
-using Discord;
 using Moq;
 using Sanakan.DAL.Models;
 using System;
@@ -74,7 +73,7 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
 
             _sessionManagerMock
                 .Setup(pr => pr.Add(It.IsAny<IInteractionSession>()));
-                
+
             SetupSendMessage((message, embed) =>
             {
                 embed.Description.Should().NotBeNull();
