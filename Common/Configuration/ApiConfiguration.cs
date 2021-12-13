@@ -1,5 +1,4 @@
 ﻿using Sanakan.Configuration;
-using System;
 using System.Collections.Generic;
 
 namespace Sanakan.Common.Configuration

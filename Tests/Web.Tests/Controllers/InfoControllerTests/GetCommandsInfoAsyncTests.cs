@@ -3,7 +3,6 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Sanakan.Web.Tests.Controllers.InfoControllerTests
 {

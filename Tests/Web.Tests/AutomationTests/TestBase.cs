@@ -7,7 +7,6 @@ using OpenQA.Selenium.Support.UI;
 using System;
 using System.Net.Http;
 using System.Security.Cryptography;
-using System.Threading.Tasks;
 
 namespace Sanakan.Web.Tests.AutomationTests
 {

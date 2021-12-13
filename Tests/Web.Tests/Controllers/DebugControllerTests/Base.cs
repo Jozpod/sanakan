@@ -4,7 +4,6 @@ using Moq;
 using Sanakan.Common;
 using Sanakan.DiscordBot;
 using Sanakan.Web.Controllers;
-using System.Threading.Tasks;
 
 namespace Sanakan.Web.Tests.Controllers.DebugControllerTests
 {
