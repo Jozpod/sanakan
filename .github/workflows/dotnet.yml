@@ -30,28 +30,35 @@ jobs:
       - name: Run Tests
         continue-on-error: true
         # Parallel build produces invalid code coverage
-        # Once they add support to it following lines might be replaced with:
+        # Once they add support to it, following lines might be replaced with:
         # `dotnet test --no-build --verbosity minimal --configuration Release /p:CollectCoverage=true /p:CoverletOutput=../TestResults/ /p:MergeWith=../TestResults/coverlet.json /p:CoverletOutputFormat=\"lcov,json\"``
-        # Also discordBot project tests had to be separated as codecov can't figure out its dependency between web app.
+        # Also some project tests had to be separated as codecov can't figure out its dependency between web app.
         # Probably caused by indirect dependency injection via assembly.
         run: |
-          dotnet test Tests/Common.Tests/Common.Tests.csproj  --no-build --verbosity minimal --configuration Release /p:CollectCoverage=true /p:CoverletOutput=../TestResults/
-          dotnet test Tests/Daemon.Tests/Daemon.Tests.csproj  --no-build --verbosity minimal --configuration Release /p:CollectCoverage=true /p:CoverletOutput=../TestResults/ /p:MergeWith=../TestResults/coverlet.json
-          dotnet test Tests/DAL.Tests/DAL.Tests.csproj  --no-build --verbosity minimal --configuration Release /p:CollectCoverage=true /p:CoverletOutput=../TestResults/ /p:MergeWith=../TestResults/coverlet.json
-          dotnet test Tests/DiscordBot.Services.Tests/DiscordBot.Services.Tests.csproj  --no-build --verbosity minimal --configuration Release /p:CollectCoverage=true /p:CoverletOutput=../TestResults/ /p:MergeWith=../TestResults/coverlet.json
-          dotnet test Tests/DiscordBot.Session.Tests/DiscordBot.Session.Tests.csproj --no-build --verbosity minimal --configuration Release /p:CollectCoverage=true /p:CoverletOutput=../TestResults/ /p:MergeWith=../TestResults/coverlet.json
-          dotnet test Tests/DiscordBot.Supervisor.Tests/DiscordBot.Supervisor.Tests.csproj --no-build --verbosity minimal --configuration Release /p:CollectCoverage=true /p:CoverletOutput=../TestResults/ /p:MergeWith=../TestResults/coverlet.json
-          dotnet test Tests/Game.Tests/Game.Tests.csproj --no-build --verbosity minimal --configuration Release /p:CollectCoverage=true /p:CoverletOutput=../TestResults/ /p:MergeWith=../TestResults/coverlet.json
-          dotnet test Tests/DAL.MySql.Migrator.Tests/DAL.MySql.Migrator.Tests.csproj --no-build --verbosity minimal --configuration Release /p:CollectCoverage=true /p:CoverletOutput=../TestResults/ /p:MergeWith=../TestResults/coverlet.json
-          dotnet test Tests/DAL.MySql.Schema.Tests/DAL.MySql.Schema.Tests.csproj --no-build --verbosity minimal --configuration Release /p:CollectCoverage=true /p:CoverletOutput=../TestResults/ /p:MergeWith=../TestResults/coverlet.json
-          dotnet test Tests/ShindenApi.Tests/ShindenApi.Tests.csproj --no-build --verbosity minimal --configuration Release /p:CollectCoverage=true /p:CoverletOutput=../TestResults/ /p:MergeWith=../TestResults/coverlet.json
-          dotnet test Tests/TaskQueue.Tests/TaskQueue.Tests.csproj --no-build --verbosity minimal --configuration Release /p:CollectCoverage=true /p:CoverletOutput=../TestResults/ /p:MergeWith=../TestResults/coverlet.json
-          dotnet test Tests/Web.Tests/Web.Tests.csproj --no-build --verbosity minimal --configuration Release /p:CollectCoverage=true /p:CoverletOutput=../TestResults/ /p:MergeWith=../TestResults/coverlet.json /p:CoverletOutputFormat=opencover
-          dotnet test Tests/DiscordBot.Tests/DiscordBot.Tests.csproj --no-build --verbosity minimal --configuration Release /p:CollectCoverage=true /p:CoverletOutput=../TestResultsModules/  /p:CoverletOutputFormat=opencover
+          dotnet test Tests/Common.Tests/Common.Tests.csproj  --no-build --verbosity minimal --configuration Release /p:CoverletOutput=../TestResults/coverage.json /p:CoverletOutputFormat=json
+          dotnet test Tests/DAL.Tests/DAL.Tests.csproj  --no-build --verbosity minimal --configuration Release /p:CoverletOutput=../TestResults/coverage.json /p:MergeWith=../TestResults/coverlet.json /p:CoverletOutputFormat=json
+          dotnet test Tests/DiscordBot.Session.Tests/DiscordBot.Session.Tests.csproj --no-build --verbosity minimal --configuration Release /p:CoverletOutput=../TestResults/coverage.json /p:MergeWith=../TestResults/coverlet.json /p:CoverletOutputFormat=json
+          dotnet test Tests/DAL.MySql.Migrator.Tests/DAL.MySql.Migrator.Tests.csproj --no-build --verbosity minimal --configuration Release /p:CoverletOutput=../TestResults/coverage.json /p:MergeWith=../TestResults/coverlet.json /p:CoverletOutputFormat=json
+          dotnet test Tests/DAL.MySql.Schema.Tests/DAL.MySql.Schema.Tests.csproj --no-build --verbosity minimal --configuration Release /p:CoverletOutput=../TestResults/coverage.json /p:MergeWith=../TestResults/coverlet.json /p:CoverletOutputFormat=json
+          dotnet test Tests/Web.Tests/Web.Tests.csproj --no-build --verbosity minimal --configuration Release /p:CoverletOutput=../TestResults/coverage.json /p:MergeWith=../TestResults/coverlet.json /p:CoverletOutput=../TestResults/coverage.opencover.xml  /p:CoverletOutputFormat=opencover
+          dotnet test Tests/DiscordBot.Tests/DiscordBot.Tests.csproj --no-build --verbosity minimal --configuration Release
+          dotnet test Tests/ShindenApi.Tests/ShindenApi.Tests.csproj --no-build --verbosity minimal --configuration Release
+          dotnet test Tests/DiscordBot.Supervisor.Tests/DiscordBot.Supervisor.Tests.csproj --no-build --verbosity minimal --configuration Release
+          dotnet test Tests/DiscordBot.Services.Tests/DiscordBot.Services.Tests.csproj  --no-build --verbosity minimal --configuration Release
+          dotnet test Tests/Daemon.Tests/Daemon.Tests.csproj  --no-build --verbosity minimal --configuration Release
+          dotnet test Tests/Game.Tests/Game.Tests.csproj --no-build --verbosity minimal --configuration Release
+          dotnet test Tests/TaskQueue.Tests/TaskQueue.Tests.csproj --no-build --verbosity minimal --configuration Release
       - name: Publish coverage report to codecov.io
         uses: codecov/codecov-action@v2
         with:
-          files: ./Tests/TestResults/coverage.opencover.xml,./Tests/TestResultsModules/coverage.opencover.xml
+          files: "./Tests/TestResults/coverage.opencover.xml,\
+            ./Tests/TestResults/DiscordBot.Tests.coverage.xml,\
+            ./Tests/TestResults/ShindenApi.Tests.coverage,\
+            ./Tests/TestResults/DiscordBot.Supervisor.Tests.coverage.xml,\
+            ./Tests/TestResults/DiscordBot.Services.Tests.coverage.xml,\
+            ./Tests/TestResults/Daemon.Tests.coverage.xml,\
+            ./Tests/TestResults/Game.Tests.coverage.xml,\
+            ./Tests/TestResults/TaskQueue.Tests.coverage"
           name: codecov-umbrella
           fail_ci_if_error: true
           verbose: true

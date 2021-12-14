@@ -1,9 +1,11 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sanakan.DAL
 {
+    [ExcludeFromCodeCoverage]
     public class DatabaseFacade : IDatabaseFacade
     {
         private readonly IServiceScopeFactory _serviceScopeFactory;

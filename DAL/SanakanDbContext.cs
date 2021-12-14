@@ -6,9 +6,11 @@ using Sanakan.DAL.Models.Analytics;
 using Sanakan.DAL.Models.Configuration;
 using Sanakan.DAL.Models.Management;
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Sanakan.DAL
 {
+    [ExcludeFromCodeCoverage]
     public class SanakanDbContext : DbContext
     {
         private IOptionsMonitor<DatabaseConfiguration> _config;
