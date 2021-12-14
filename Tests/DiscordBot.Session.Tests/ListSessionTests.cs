@@ -1,14 +1,13 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Discord;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Sanakan.DAL.Models;
-using System;
-using System.Threading.Tasks;
-using Sanakan.DiscordBot.Session;
 using Moq;
-using Discord;
+using Sanakan.DAL.Models;
 using Sanakan.DiscordBot.Abstractions;
-using System.Linq;
 using Sanakan.DiscordBot.Abstractions.Configuration;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Sanakan.DiscordBot.Session.Tests
 {

@@ -1,11 +1,10 @@
+using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Threading.Tasks;
-using System;
+using Moq;
 using Sanakan.DAL.Models;
 using Sanakan.DiscordBot.Modules;
-using Discord;
-using Moq;
-using FluentAssertions;
+using System;
+using System.Threading.Tasks;
 
 namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
 {

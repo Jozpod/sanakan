@@ -1,10 +1,10 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Sanakan.DAL.Models;
-using System.Threading.Tasks;
+﻿using DiscordBot.Services;
 using FluentAssertions;
-using DiscordBot.Services;
-using System.Linq;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Sanakan.DAL.Models;
 using Sanakan.Game.Services.Abstractions;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Sanakan.Game.Tests.ImageProcessorTests
 {

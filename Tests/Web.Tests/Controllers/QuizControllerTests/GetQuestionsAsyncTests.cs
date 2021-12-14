@@ -3,10 +3,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.DAL.Models;
+using Sanakan.Web.Controllers;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Sanakan.Web.Controllers;
 
 namespace Sanakan.Web.Tests.Controllers.QuizControllerTests
 {

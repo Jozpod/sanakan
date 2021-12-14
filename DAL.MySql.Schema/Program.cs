@@ -1,20 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Sanakan.Common;
 using Sanakan.Common.Builder;
-using Sanakan.Common.Configuration;
 using Sanakan.DAL.Builder;
-using Sanakan.DAL.Models;
-using Sanakan.DAL.Models.Configuration;
-using Sanakan.DAL.Models.Management;
-using Sanakan.DAL.Repositories.Abstractions;
 using System;
-using System.Collections.Generic;
-using System.Data.Common;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 

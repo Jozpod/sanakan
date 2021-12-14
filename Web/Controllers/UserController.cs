@@ -1,9 +1,4 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -23,6 +18,11 @@ using Sanakan.ShindenApi.Models;
 using Sanakan.TaskQueue;
 using Sanakan.TaskQueue.Messages;
 using Sanakan.Web.Resources;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using static Sanakan.Web.ResponseExtensions;
 
 namespace Sanakan.Web.Controllers

@@ -1,12 +1,9 @@
 using FluentAssertions;
-using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Moq.Protected;
-using Sanakan.Common.Configuration;
 using Sanakan.DiscordBot.Services;
 using Sanakan.DiscordBot.Services.Abstractions;
-using System;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;

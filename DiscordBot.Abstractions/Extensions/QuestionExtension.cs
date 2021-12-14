@@ -1,6 +1,6 @@
-﻿using System.Linq;
-using Sanakan.DAL.Models;
+﻿using Sanakan.DAL.Models;
 using Sanakan.DiscordBot.Abstractions;
+using System.Linq;
 
 namespace Sanakan.Extensions
 {

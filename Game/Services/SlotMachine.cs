@@ -1,9 +1,9 @@
-using System.Collections.Generic;
 using Sanakan.Common;
 using Sanakan.DAL.Models;
 using Sanakan.Extensions;
 using Sanakan.Game.Models;
 using Sanakan.Game.Services.Abstractions;
+using System.Collections.Generic;
 
 namespace Sanakan.Game.Services
 {

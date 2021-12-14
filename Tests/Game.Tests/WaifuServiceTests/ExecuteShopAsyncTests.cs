@@ -1,13 +1,12 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Discord;
+using DiscordBot.Services.PocketWaifu;
+using FluentAssertions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.DAL.Models;
+using Sanakan.Game.Services.Abstractions;
 using System;
 using System.Threading.Tasks;
-using System.Collections.Generic;
-using FluentAssertions;
-using Discord;
-using Sanakan.Game.Services.Abstractions;
-using DiscordBot.Services.PocketWaifu;
 
 namespace Sanakan.Game.Tests.WaifuServiceTests
 {

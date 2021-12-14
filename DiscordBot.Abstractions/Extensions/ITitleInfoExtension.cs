@@ -1,10 +1,10 @@
-﻿using System.Collections.Generic;
-using Discord;
-using System;
-using System.Linq;
+﻿using Discord;
 using Sanakan.DiscordBot.Abstractions.Models;
 using Sanakan.ShindenApi.Models;
 using Sanakan.ShindenApi.Models.Enums;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Sanakan.Extensions
 {

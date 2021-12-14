@@ -1,9 +1,9 @@
-﻿using System.Text.Json.Serialization;
+﻿using Sanakan.Common;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using Sanakan.Common;
+using System.Text.Json.Serialization;
 
 namespace Sanakan.DAL.Models
 {

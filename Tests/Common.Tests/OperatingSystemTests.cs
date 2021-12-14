@@ -1,9 +1,7 @@
 ﻿using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Sanakan.Common;
 using Sanakan.Common.Builder;
-using System.Threading.Tasks;
 
 namespace Sanakan.Common.Tests
 {

@@ -1,9 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Web;
 using Discord;
 using DiscordBot.Services.PocketWaifu;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,6 +17,12 @@ using Sanakan.Services.PocketWaifu.Fight;
 using Sanakan.ShindenApi;
 using Sanakan.ShindenApi.Models;
 using Sanakan.ShindenApi.Utilities;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Web;
 using Item = Sanakan.DAL.Models.Item;
 
 namespace Sanakan.Game.Services

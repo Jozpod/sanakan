@@ -1,9 +1,8 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using Discord;
-using Discord.WebSocket;
+﻿using Discord;
 using Sanakan.Common;
 using Sanakan.DiscordBot.Abstractions.Models;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Sanakan.DiscordBot.Abstractions.Extensions
 {

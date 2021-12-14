@@ -30,7 +30,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Tests.Shared\Tests.Shared.csproj" />
     <ProjectReference Include="..\..\Web\Web.csproj" />
   </ItemGroup>
 

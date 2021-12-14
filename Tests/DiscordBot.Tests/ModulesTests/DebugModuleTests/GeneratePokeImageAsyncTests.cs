@@ -1,16 +1,13 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.DAL.Models;
-using System.Threading.Tasks;
 using Sanakan.DiscordBot.Modules;
-using Discord;
-using Sanakan.Configuration;
-using Sanakan.Common.Configuration;
-using System;
-using System.Collections.Generic;
 using Sanakan.Game.Models;
 using Sanakan.ShindenApi;
 using Sanakan.ShindenApi.Models;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace DiscordBot.ModulesTests.DebugModuleTests
 {

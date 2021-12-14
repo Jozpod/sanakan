@@ -7,7 +7,6 @@ using Microsoft.Extensions.Hosting.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Sanakan.Common;
 using Sanakan.Common.Builder;
 using Sanakan.Common.Configuration;
 using Sanakan.Common.Converters;

@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
-using Discord;
+﻿using Discord;
 using Sanakan.DiscordBot.Abstractions.Models;
 using Sanakan.ShindenApi.Models;
 using Sanakan.ShindenApi.Models.Enums;
+using System.Collections.Generic;
 
 namespace Sanakan.Extensions
 {

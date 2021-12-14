@@ -1,8 +1,8 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Net;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Sanakan.Common.Configuration;
+using System.Diagnostics.CodeAnalysis;
+using System.Net;
 
 namespace Sanakan.ShindenApi.Builder
 {

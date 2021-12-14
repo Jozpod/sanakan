@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using Sanakan.DAL.Models;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using Sanakan.DAL.Models;
 
 namespace Sanakan.DAL.Repositories
 {

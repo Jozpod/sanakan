@@ -1,12 +1,12 @@
 ﻿using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Threading.Tasks;
-using Sanakan.Web.Controllers;
-using System.Collections.Generic;
-using Sanakan.ShindenApi.Models;
 using Moq;
 using Sanakan.ShindenApi;
+using Sanakan.ShindenApi.Models;
+using Sanakan.Web.Controllers;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Sanakan.Web.Tests.Controllers.UserControllerTests
 {

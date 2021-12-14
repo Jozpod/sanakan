@@ -1,13 +1,12 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Threading.Tasks;
-using Sanakan.DiscordBot.Modules;
 using Discord;
+using FluentAssertions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.DAL.Models;
-using System;
-using FluentAssertions;
-using System.Collections.Generic;
+using Sanakan.DiscordBot.Modules;
 using Sanakan.DiscordBot.Session;
+using System;
+using System.Threading.Tasks;
 
 namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
 {
@@ -18,7 +17,7 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
     public class CraftCardAsyncTests : Base
     {
         [TestMethod]
-        public async Task Should_Craft_Card_And_Confirm_Message()
+        public async Task Should_Craft_Card_And_Send_Confirm_Message()
         {
             var utcNow = DateTime.UtcNow;
             var user = new User(1ul, utcNow);

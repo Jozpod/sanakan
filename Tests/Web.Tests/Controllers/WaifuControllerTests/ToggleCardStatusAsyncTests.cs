@@ -1,14 +1,14 @@
 ﻿using FluentAssertions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Threading.Tasks;
-using Sanakan.Web.Controllers;
-using Sanakan.DAL.Models;
-using System;
 using Moq;
-using System.Collections.Generic;
+using Sanakan.DAL.Models;
 using Sanakan.TaskQueue.Messages;
-using Microsoft.AspNetCore.Http;
+using Sanakan.Web.Controllers;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Sanakan.Web.Tests.Controllers.WaifuControllerTests
 {

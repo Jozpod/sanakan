@@ -1,25 +1,25 @@
 ﻿using Discord;
 using Discord.WebSocket;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Sanakan.Common;
+using Sanakan.Common.Configuration;
+using Sanakan.DAL;
+using Sanakan.DAL.Models;
+using Sanakan.DAL.Repositories.Abstractions;
+using Sanakan.DiscordBot;
+using Sanakan.DiscordBot.Abstractions.Extensions;
+using Sanakan.DiscordBot.Abstractions.Models;
+using Sanakan.Extensions;
+using Sanakan.TaskQueue;
+using Sanakan.TaskQueue.Messages;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Sanakan.DiscordBot;
-using Sanakan.Common.Configuration;
-using Sanakan.TaskQueue.Messages;
-using Sanakan.DAL.Repositories.Abstractions;
-using Sanakan.Extensions;
-using Sanakan.DiscordBot.Abstractions.Extensions;
-using Sanakan.DAL.Models;
-using Sanakan.DiscordBot.Abstractions.Models;
-using Sanakan.TaskQueue;
-using Sanakan.DAL;
 
 namespace Sanakan.Daemon.HostedService
 {

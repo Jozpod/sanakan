@@ -4,8 +4,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.ShindenApi;
 using Sanakan.ShindenApi.Models;
-using System.Threading.Tasks;
 using Sanakan.Web.Controllers;
+using System.Threading.Tasks;
 
 namespace Sanakan.Web.Tests.Controllers.UserControllerTests
 {

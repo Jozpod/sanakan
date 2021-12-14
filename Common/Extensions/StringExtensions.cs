@@ -1,8 +1,8 @@
-﻿using System;
+﻿using Sanakan.Common.Configuration;
+using System;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using Sanakan.Common.Configuration;
 
 namespace Sanakan.Extensions
 {

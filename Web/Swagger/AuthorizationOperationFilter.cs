@@ -1,9 +1,11 @@
 ﻿using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Sanakan.Web.Swagger
 {
+    [ExcludeFromCodeCoverage]
     public class AuthorizationOperationFilter : IOperationFilter
     {
         public void Apply(OpenApiOperation operation, OperationFilterContext context)

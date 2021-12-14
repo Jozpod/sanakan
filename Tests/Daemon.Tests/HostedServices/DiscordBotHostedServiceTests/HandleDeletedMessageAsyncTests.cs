@@ -2,12 +2,12 @@
 using Discord.WebSocket;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
+using Sanakan.Daemon.HostedService;
 using Sanakan.DAL.Models.Configuration;
 using Sanakan.Tests.Shared;
 using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
-using Sanakan.Daemon.HostedService;
 
 namespace Sanakan.Daemon.Tests.HostedServices.DiscordBotHostedServiceTests
 {

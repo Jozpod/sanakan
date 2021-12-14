@@ -215,13 +215,13 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            var gameDeckUser = card.GameDeck.UserId;
+            var gameDeckUserId = card.GameDeck.UserId;
             var guild = Context.Guild;
-            IUser user = await guild.GetUserAsync(gameDeckUser);
+            IUser user = await guild.GetUserAsync(gameDeckUserId);
 
             if (user == null)
             {
-                user = await Context.Client.GetUserAsync(gameDeckUser);
+                user = await Context.Client.GetUserAsync(gameDeckUserId);
             }
 
             var guildConfig = await _guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);

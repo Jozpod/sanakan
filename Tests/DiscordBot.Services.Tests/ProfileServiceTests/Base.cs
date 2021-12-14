@@ -1,12 +1,12 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
-using Sanakan.ShindenApi;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 using Sanakan.Common;
+using Sanakan.DiscordBot.Services;
 using Sanakan.DiscordBot.Services.Abstractions;
 using Sanakan.Game.Services.Abstractions;
-using Sanakan.DiscordBot.Services;
+using Sanakan.ShindenApi;
 
 namespace DiscordBot.ServicesTests.ProfileServiceTests
 {

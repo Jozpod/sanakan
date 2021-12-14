@@ -2,11 +2,9 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Sanakan.Common;
 using Sanakan.Common.Builder;
 using Sanakan.Common.Cache;
 using System.IO;
-using System.Threading.Tasks;
 
 namespace Sanakan.Common.Tests
 {

@@ -1,8 +1,8 @@
 ﻿using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
 using Sanakan.Web.Controllers;
+using System;
 
 namespace Sanakan.Web.Tests.Controllers.RichMessageControllerTests
 {

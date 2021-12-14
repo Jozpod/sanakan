@@ -6,10 +6,10 @@ using Moq;
 using Sanakan.Api.Models;
 using Sanakan.Common.Configuration;
 using Sanakan.Configuration;
+using Sanakan.Web.Controllers;
 using System;
 using System.Collections.Generic;
 using System.Security.Claims;
-using Sanakan.Web.Controllers;
 
 namespace Sanakan.Web.Tests.Controllers.TokenControllerTests
 {

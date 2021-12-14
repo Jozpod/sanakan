@@ -4,11 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Sanakan.Common.Builder;
 using Sanakan.ShindenApi.Builder;
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Sanakan.ShindenApi.Tests.IntegrationTests

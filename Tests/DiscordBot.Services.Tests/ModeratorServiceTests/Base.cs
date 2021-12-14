@@ -1,12 +1,12 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
-using Sanakan.DiscordBot.Services.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 using Sanakan.Common;
-using Sanakan.DiscordBot.Services;
 using Sanakan.Common.Cache;
 using Sanakan.DAL.Repositories.Abstractions;
+using Sanakan.DiscordBot.Services;
+using Sanakan.DiscordBot.Services.Abstractions;
 
 namespace DiscordBot.ServicesTests.ModeratorServiceTests
 {

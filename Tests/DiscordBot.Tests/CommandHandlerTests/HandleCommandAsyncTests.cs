@@ -1,15 +1,11 @@
 using Discord;
 using Discord.Commands;
+using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using System.Threading.Tasks;
-using Sanakan.Preconditions;
-using Microsoft.Extensions.DependencyInjection;
-using FluentAssertions;
-using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DAL.Models.Configuration;
-using System.Collections.Generic;
 using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace Sanakan.DiscordBot.Tests.CommandHandlerTests

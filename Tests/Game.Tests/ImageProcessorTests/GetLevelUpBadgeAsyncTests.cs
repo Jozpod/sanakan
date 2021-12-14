@@ -1,7 +1,7 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Threading.Tasks;
-using FluentAssertions;
+﻿using FluentAssertions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Sanakan.Game.Services.Abstractions;
+using System.Threading.Tasks;
 
 namespace Sanakan.Game.Tests
 {

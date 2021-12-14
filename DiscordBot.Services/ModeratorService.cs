@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Discord;
+﻿using Discord;
 using Discord.Commands;
 using Humanizer;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,6 +14,11 @@ using Sanakan.DiscordBot.Abstractions.Models;
 using Sanakan.DiscordBot.Services.Abstractions;
 using Sanakan.DiscordBot.Services.Resources;
 using Sanakan.Extensions;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Sanakan.DiscordBot.Services
 {

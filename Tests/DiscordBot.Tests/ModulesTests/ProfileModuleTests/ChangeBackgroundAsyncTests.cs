@@ -1,12 +1,12 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Threading.Tasks;
-using System;
-using Sanakan.DAL.Models;
-using Moq;
-using Sanakan.DiscordBot.Services;
-using System.Threading;
-using Sanakan.DiscordBot.Modules;
 using FluentAssertions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
+using Sanakan.DAL.Models;
+using Sanakan.DiscordBot.Modules;
+using Sanakan.DiscordBot.Services;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace DiscordBot.ModulesTests.ProfileModuleTests
 {

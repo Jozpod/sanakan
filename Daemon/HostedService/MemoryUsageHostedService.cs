@@ -1,16 +1,16 @@
-﻿using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Sanakan.Common;
+using Sanakan.Common.Configuration;
+using Sanakan.DAL;
 using Sanakan.DAL.Models.Analytics;
+using Sanakan.DAL.Repositories.Abstractions;
 using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using Sanakan.DAL.Repositories.Abstractions;
-using Sanakan.Common.Configuration;
-using Sanakan.DAL;
 
 namespace Sanakan.Daemon.HostedService
 {

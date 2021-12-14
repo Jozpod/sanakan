@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Sanakan.Common;
+﻿using Sanakan.Common;
 using Sanakan.DAL.Models;
 using Sanakan.Extensions;
 using Sanakan.Game.Extensions;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Sanakan.Api.Models
 {

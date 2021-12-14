@@ -1,6 +1,4 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Threading.Tasks;
-using FluentAssertions;
 using Sanakan.DiscordBot.Services.Abstractions;
 using System;
 

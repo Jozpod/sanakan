@@ -1,14 +1,14 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Threading.Tasks;
-using System;
-using Sanakan.ShindenApi.Models;
-using Moq;
-using Sanakan.ShindenApi;
-using System.Collections.Generic;
-using Sanakan.ShindenApi.Models.Enums;
-using Sanakan.DiscordBot.Session;
-using Sanakan.DiscordBot.Modules;
 using FluentAssertions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
+using Sanakan.DiscordBot.Modules;
+using Sanakan.DiscordBot.Session;
+using Sanakan.ShindenApi;
+using Sanakan.ShindenApi.Models;
+using Sanakan.ShindenApi.Models.Enums;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace DiscordBot.ModulesTests.ShindenModuleTests
 {

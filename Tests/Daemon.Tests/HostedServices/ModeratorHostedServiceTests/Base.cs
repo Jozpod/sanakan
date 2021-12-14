@@ -6,14 +6,14 @@ using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.Common;
+using Sanakan.Common.Cache;
 using Sanakan.Common.Configuration;
+using Sanakan.Daemon.HostedService;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot;
-using Sanakan.Daemon.HostedService;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Sanakan.Common.Cache;
 
 namespace Sanakan.Daemon.Tests.HostedServices.ModeratorHostedServiceTests
 {

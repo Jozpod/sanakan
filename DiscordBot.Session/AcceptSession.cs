@@ -1,6 +1,5 @@
 ﻿using Discord;
 using Microsoft.Extensions.DependencyInjection;
-using Sanakan.DiscordBot.Abstractions;
 using Sanakan.DiscordBot.Abstractions.Configuration;
 using Sanakan.DiscordBot.Abstractions.Extensions;
 using Sanakan.DiscordBot.Abstractions.Models;

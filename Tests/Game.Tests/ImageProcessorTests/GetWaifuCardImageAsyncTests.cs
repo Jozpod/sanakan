@@ -1,9 +1,9 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using FluentAssertions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Sanakan.DAL.Models;
+using Sanakan.Game.Services.Abstractions;
 using System;
 using System.Threading.Tasks;
-using FluentAssertions;
-using Sanakan.Game.Services.Abstractions;
 
 namespace Sanakan.Game.Tests.ImageProcessorTests
 {

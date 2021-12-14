@@ -1,10 +1,10 @@
 ﻿
+using FluentAssertions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using System.Text;
-using Microsoft.AspNetCore.Http;
 using System.IO;
-using FluentAssertions;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace Sanakan.Web.Test

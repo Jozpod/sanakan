@@ -3,9 +3,9 @@ using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.DAL.Models.Configuration;
-using System.Linq;
 using Sanakan.DiscordBot.Services.Abstractions;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace DiscordBot.ServicesTests.LandManagerTests
 {

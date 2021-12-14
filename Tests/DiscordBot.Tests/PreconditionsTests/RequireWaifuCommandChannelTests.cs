@@ -1,13 +1,13 @@
+using Discord;
 using Discord.Commands;
+using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using System.Threading.Tasks;
-using Sanakan.Preconditions;
-using Microsoft.Extensions.DependencyInjection;
-using Discord;
-using Sanakan.DAL.Repositories.Abstractions;
-using FluentAssertions;
 using Sanakan.DAL.Models.Configuration;
+using Sanakan.DAL.Repositories.Abstractions;
+using Sanakan.Preconditions;
+using System.Threading.Tasks;
 
 namespace Sanakan.DiscordBot.Tests.PreconditionsTests
 {

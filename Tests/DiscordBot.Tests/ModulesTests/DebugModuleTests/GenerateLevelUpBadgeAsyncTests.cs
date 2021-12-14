@@ -1,12 +1,12 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Discord;
-using System.Threading.Tasks;
-using Sanakan.DiscordBot.Modules;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
+using Sanakan.DiscordBot.Modules;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace DiscordBot.ModulesTests.DebugModuleTests
 {

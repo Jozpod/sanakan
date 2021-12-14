@@ -1,14 +1,14 @@
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using Sanakan.Game.Services;
 using Sanakan.Common;
-using Sanakan.ShindenApi;
-using Microsoft.Extensions.DependencyInjection;
-using Sanakan.Game.Services.Abstractions;
 using Sanakan.Common.Cache;
-using Microsoft.Extensions.Options;
 using Sanakan.Common.Configuration;
 using Sanakan.DAL.Repositories.Abstractions;
+using Sanakan.Game.Services;
+using Sanakan.Game.Services.Abstractions;
+using Sanakan.ShindenApi;
 
 namespace Sanakan.Game.Tests.WaifuServiceTests
 {

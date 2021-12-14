@@ -1,13 +1,13 @@
 using Discord;
+using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using System.Threading.Tasks;
-using FluentAssertions;
-using Sanakan.Game.Models;
 using Sanakan.DAL.Models;
-using System;
 using Sanakan.DiscordBot.Services.Abstractions;
+using Sanakan.Game.Models;
+using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace DiscordBot.ServicesTests.ProfileServiceTests
 {

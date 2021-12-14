@@ -6,9 +6,9 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.Common;
 using Sanakan.Common.Configuration;
+using Sanakan.Daemon.HostedService;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot;
-using Sanakan.Daemon.HostedService;
 
 namespace Sanakan.Daemon.Tests.HostedServices.ChaosHostedServiceTests
 {

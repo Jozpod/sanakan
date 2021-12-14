@@ -1,11 +1,10 @@
 using Discord;
+using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using System.Threading.Tasks;
-using FluentAssertions;
 using Sanakan.DiscordBot.Services.Abstractions;
-using System.Collections.Generic;
 using System;
+using System.Collections.Generic;
 
 namespace DiscordBot.ServicesTests.HelperServiceTests
 {

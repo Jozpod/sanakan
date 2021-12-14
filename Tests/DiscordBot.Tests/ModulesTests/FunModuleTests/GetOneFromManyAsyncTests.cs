@@ -1,12 +1,11 @@
+using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Threading.Tasks;
-using Sanakan.DiscordBot.Modules;
 using Moq;
-using System.Collections;
+using Sanakan.DiscordBot.Modules;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using FluentAssertions;
-using System;
+using System.Threading.Tasks;
 
 namespace DiscordBot.ModulesTests.FunModuleTests
 {

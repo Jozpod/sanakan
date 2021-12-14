@@ -1,8 +1,8 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using FluentAssertions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Sanakan.Game.Services.Abstractions;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
-using FluentAssertions;
-using Sanakan.Game.Services.Abstractions;
 
 namespace Sanakan.Game.Tests.ImageProcessorTests
 {

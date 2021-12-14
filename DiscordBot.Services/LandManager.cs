@@ -1,13 +1,13 @@
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Discord;
 using Microsoft.Extensions.Options;
 using Sanakan.Common.Configuration;
 using Sanakan.DAL.Models.Configuration;
 using Sanakan.DiscordBot.Abstractions.Models;
 using Sanakan.DiscordBot.Services.Abstractions;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Sanakan.DiscordBot.Services
 {

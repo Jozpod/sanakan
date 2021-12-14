@@ -1,17 +1,17 @@
 using Discord.Commands;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
-using Sanakan.DAL.Repositories.Abstractions;
-using Sanakan.DiscordBot.Services.Abstractions;
-using Sanakan.DiscordBot.Modules;
-using Microsoft.Extensions.Options;
-using Sanakan.Common.Configuration;
-using Sanakan.Common;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
-using Sanakan.DiscordBot.Session;
+using Microsoft.Extensions.Options;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
+using Sanakan.Common;
+using Sanakan.Common.Configuration;
+using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot;
 using Sanakan.DiscordBot.Abstractions.Configuration;
+using Sanakan.DiscordBot.Modules;
+using Sanakan.DiscordBot.Services.Abstractions;
+using Sanakan.DiscordBot.Session;
 
 namespace DiscordBot.ModulesTests.HelperModuleTests
 {

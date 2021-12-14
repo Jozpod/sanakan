@@ -1,8 +1,8 @@
-﻿using System;
+﻿using Sanakan.Api.Models;
 using Sanakan.Configuration;
-using System.Collections.Generic;
-using Sanakan.Api.Models;
 using Sanakan.Web.Models;
+using System;
+using System.Collections.Generic;
 
 namespace Sanakan.DiscordBot.Models
 {

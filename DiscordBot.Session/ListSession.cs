@@ -1,15 +1,14 @@
-﻿using System;
+﻿using Discord;
+using Microsoft.Extensions.DependencyInjection;
+using Sanakan.DAL.Models;
+using Sanakan.DiscordBot.Abstractions.Configuration;
+using Sanakan.Extensions;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Discord;
-using Microsoft.Extensions.DependencyInjection;
-using Sanakan.DAL.Models;
-using Sanakan.DiscordBot.Abstractions;
-using Sanakan.DiscordBot.Abstractions.Configuration;
-using Sanakan.Extensions;
 
 namespace Sanakan.DiscordBot.Session
 {

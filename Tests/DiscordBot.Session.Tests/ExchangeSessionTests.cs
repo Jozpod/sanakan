@@ -4,7 +4,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Repositories.Abstractions;
-using Sanakan.DiscordBot.Abstractions;
 using Sanakan.DiscordBot.Abstractions.Configuration;
 using Sanakan.Game.Models;
 using System;

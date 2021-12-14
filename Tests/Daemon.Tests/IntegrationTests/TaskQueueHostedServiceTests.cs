@@ -1,13 +1,10 @@
-﻿using FluentAssertions;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Sanakan.Common.Builder;
 using Sanakan.Common.Configuration;
-using Sanakan.Daemon.Builder;
 using Sanakan.Daemon.HostedService;
 using Sanakan.DAL;
 using Sanakan.DAL.Builder;
@@ -16,10 +13,7 @@ using Sanakan.TaskQueue;
 using Sanakan.TaskQueue.Builder;
 using Sanakan.TaskQueue.Messages;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 

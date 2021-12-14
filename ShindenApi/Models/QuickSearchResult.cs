@@ -1,5 +1,5 @@
-using System.Text.Json.Serialization;
 using Sanakan.ShindenApi.Models.Enums;
+using System.Text.Json.Serialization;
 
 namespace Sanakan.ShindenApi.Models
 {

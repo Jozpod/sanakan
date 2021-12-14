@@ -1,16 +1,16 @@
 using Discord;
+using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using System.Threading.Tasks;
-using FluentAssertions;
-using System;
 using Sanakan.DAL.Models;
 using Sanakan.DiscordBot.Services.Abstractions;
 using Sanakan.ShindenApi;
 using Sanakan.ShindenApi.Models;
-using System.Collections.Generic;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace DiscordBot.ServicesTests.ProfileServiceTests
 {

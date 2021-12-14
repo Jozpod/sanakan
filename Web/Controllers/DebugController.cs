@@ -1,10 +1,10 @@
-﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Sanakan.Common;
 using Sanakan.DiscordBot;
+using System.Threading.Tasks;
 
 namespace Sanakan.Web.Controllers
 {

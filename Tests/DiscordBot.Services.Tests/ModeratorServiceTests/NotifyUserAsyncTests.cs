@@ -1,9 +1,9 @@
 using Discord;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using System.Threading.Tasks;
-using System;
 using Sanakan.DiscordBot.Services.Abstractions;
+using System;
+using System.Threading.Tasks;
 
 namespace DiscordBot.ServicesTests.ModeratorServiceTests
 {

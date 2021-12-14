@@ -1,6 +1,6 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using FluentAssertions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Sanakan.DAL.Models;
-using FluentAssertions;
 using Sanakan.Game.Models;
 using Sanakan.Game.Services.Abstractions;
 

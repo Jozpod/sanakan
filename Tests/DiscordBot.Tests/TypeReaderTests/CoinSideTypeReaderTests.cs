@@ -3,7 +3,6 @@ using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using Sanakan.DiscordBot.Services;
 using Sanakan.Game.Models;
 using Sanakan.TypeReaders;
 using System;

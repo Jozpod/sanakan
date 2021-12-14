@@ -1,8 +1,5 @@
-using System.Text.Json.Serialization;
-using System;
 using Sanakan.ShindenApi.Utilities;
-using Sanakan.ShindenApi.Converters;
-using Sanakan.ShindenApi.Models.Enums;
+using System.Text.Json.Serialization;
 
 namespace Sanakan.ShindenApi.Models
 {

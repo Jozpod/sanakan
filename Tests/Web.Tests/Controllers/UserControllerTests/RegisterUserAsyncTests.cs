@@ -1,18 +1,18 @@
-﻿using FluentAssertions;
+﻿using Discord;
+using FluentAssertions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Sanakan.Api.Models;
-using System.Threading.Tasks;
-using Sanakan.Web.Controllers;
-using Microsoft.AspNetCore.Http;
-using Discord;
 using Moq;
+using Sanakan.Api.Models;
 using Sanakan.DAL.Models;
-using System;
 using Sanakan.ShindenApi;
-using System.Collections.Generic;
 using Sanakan.ShindenApi.Models;
 using Sanakan.TaskQueue.Messages;
+using Sanakan.Web.Controllers;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Sanakan.Web.Tests.Controllers.UserControllerTests
 {

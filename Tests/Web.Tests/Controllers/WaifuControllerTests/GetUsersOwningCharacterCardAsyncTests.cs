@@ -3,9 +3,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
+using Sanakan.Web.Controllers;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Sanakan.Web.Controllers;
 
 namespace Sanakan.Web.Tests.Controllers.WaifuControllerTests
 {

@@ -1,9 +1,11 @@
-﻿using System.Collections.Generic;
-using Sanakan.Api.Models;
+﻿using Sanakan.Api.Models;
 using Sanakan.DAL.Models;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Sanakan.Extensions
 {
+    [ExcludeFromCodeCoverage]
     public static class CardExtension
     {
         public static List<ExpeditionCard> ToExpeditionView(this IEnumerable<Card> cards, double karma)

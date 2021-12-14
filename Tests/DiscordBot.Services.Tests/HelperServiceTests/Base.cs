@@ -1,9 +1,9 @@
+using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using Microsoft.Extensions.Options;
 using Sanakan.Common.Configuration;
-using Sanakan.DiscordBot.Services.Abstractions;
 using Sanakan.DiscordBot.Services;
+using Sanakan.DiscordBot.Services.Abstractions;
 
 namespace DiscordBot.ServicesTests.HelperServiceTests
 {

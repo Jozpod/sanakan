@@ -1,13 +1,13 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Discord;
 using Microsoft.Extensions.DependencyInjection;
 using Sanakan.Extensions;
 using Sanakan.ShindenApi;
 using Sanakan.ShindenApi.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Sanakan.DiscordBot.Session
 {

@@ -1,20 +1,19 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
-using System.Net.Http;
-using System.Threading.Tasks;
-using Sanakan.Game.Services.Abstractions;
+﻿using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using System.IO;
-using Sanakan.Game.Builder;
-using Sanakan.Common.Builder;
+using Moq;
 using Moq.Protected;
-using System.Threading;
-using System.Net;
-using System.Security.Cryptography;
-using SixLabors.ImageSharp.PixelFormats;
+using Sanakan.Common.Builder;
+using Sanakan.Game.Builder;
+using Sanakan.Game.Services.Abstractions;
 using SixLabors.ImageSharp;
-using FluentAssertions;
+using SixLabors.ImageSharp.PixelFormats;
+using System.IO;
+using System.Net;
+using System.Net.Http;
+using System.Security.Cryptography;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Sanakan.Game.Tests
 {

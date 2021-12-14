@@ -1,13 +1,13 @@
 ﻿using FluentAssertions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.DAL.Models;
+using Sanakan.TaskQueue.Messages;
+using Sanakan.Web.Controllers;
 using System;
 using System.Threading.Tasks;
-using Sanakan.Web.Controllers;
-using Microsoft.AspNetCore.Http;
-using Sanakan.TaskQueue.Messages;
 
 namespace Sanakan.Web.Tests.Controllers.UserControllerTests
 {

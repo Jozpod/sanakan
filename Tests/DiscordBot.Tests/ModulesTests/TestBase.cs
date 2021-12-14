@@ -2,9 +2,9 @@ using Discord;
 using Discord.Commands;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using System.Reflection;
 using Sanakan.DiscordBot.Modules;
 using System;
+using System.Reflection;
 
 namespace DiscordBot.ModulesTests
 {

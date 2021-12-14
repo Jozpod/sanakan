@@ -1,7 +1,6 @@
 ﻿using Discord;
 using Discord.Commands;
 using Microsoft.Extensions.DependencyInjection;
-using Sanakan.Common;
 using Sanakan.Common.Cache;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Repositories.Abstractions;

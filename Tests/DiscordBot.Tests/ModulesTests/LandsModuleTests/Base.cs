@@ -1,10 +1,10 @@
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using Sanakan.DAL.Repositories.Abstractions;
-using Sanakan.DiscordBot.Services.Abstractions;
-using Sanakan.DiscordBot.Modules;
 using Sanakan.Common;
-using Microsoft.Extensions.DependencyInjection;
+using Sanakan.DAL.Repositories.Abstractions;
+using Sanakan.DiscordBot.Modules;
+using Sanakan.DiscordBot.Services.Abstractions;
 
 namespace DiscordBot.ModulesTests.LandsModuleTests
 {

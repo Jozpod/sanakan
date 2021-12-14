@@ -1,5 +1,4 @@
 ﻿using MySql.Data.MySqlClient;
-using System;
 using System.Threading.Tasks;
 
 namespace Sanakan.DAL.MySql

@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using MySqlConnector;
 using Sanakan.Common.Builder;
 using Sanakan.Common.Configuration;
 using Sanakan.DAL.Builder;

@@ -1,17 +1,11 @@
-﻿using Discord;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
+using Sanakan.Common;
 using Sanakan.Daemon.HostedService;
-using System.Threading.Tasks;
-using System.Reflection;
-using Discord.WebSocket;
-using Sanakan.Tests.Shared;
-using Sanakan.DiscordBot;
 using Sanakan.DiscordBot.Session;
 using System;
-using Discord.Commands;
 using System.Threading;
-using Sanakan.Common;
+using System.Threading.Tasks;
 
 namespace Sanakan.Daemon.Tests.HostedServices.SessionHostedServiceTests
 {

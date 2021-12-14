@@ -1,17 +1,10 @@
+using Discord;
+using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using Sanakan.DAL.Models;
-using System.Threading.Tasks;
-using Sanakan.DiscordBot.Modules;
-using Discord;
-using Sanakan.Configuration;
-using Sanakan.Common.Configuration;
-using System;
-using System.Collections.Generic;
-using Sanakan.ShindenApi.Models;
-using Sanakan.ShindenApi;
 using Sanakan.DAL.Models.Configuration;
-using FluentAssertions;
+using Sanakan.DiscordBot.Modules;
+using System.Threading.Tasks;
 
 namespace DiscordBot.ModulesTests.ModerationModuleTests
 {

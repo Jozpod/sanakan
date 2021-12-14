@@ -1,10 +1,10 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using FluentAssertions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.DAL.Models;
-using System;
-using FluentAssertions;
 using Sanakan.Game.Models;
 using Sanakan.Game.Services.Abstractions;
+using System;
 
 namespace Sanakan.Game.Tests.EventServiceTests
 {

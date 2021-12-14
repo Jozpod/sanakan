@@ -1,8 +1,4 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
-using Discord;
+﻿using Discord;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -14,6 +10,10 @@ using Sanakan.Configuration;
 using Sanakan.DiscordBot;
 using Sanakan.DiscordBot.Models;
 using Sanakan.Web.Models;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Threading.Tasks;
 using static Sanakan.Web.ResponseExtensions;
 
 namespace Sanakan.Web.Controllers

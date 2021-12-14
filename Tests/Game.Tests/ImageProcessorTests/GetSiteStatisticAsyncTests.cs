@@ -1,9 +1,9 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using Sanakan.ShindenApi.Models;
-using FluentAssertions;
+﻿using FluentAssertions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Sanakan.Game.Services.Abstractions;
+using Sanakan.ShindenApi.Models;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Sanakan.Game.Tests
 {

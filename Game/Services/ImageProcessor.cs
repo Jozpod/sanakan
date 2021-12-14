@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
-using System.Threading.Tasks;
-using DiscordBot.Services.PocketWaifu;
+﻿using DiscordBot.Services.PocketWaifu;
 using Microsoft.Extensions.Options;
 using Sanakan.Common;
 using Sanakan.Common.Configuration;
@@ -21,6 +15,12 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.Primitives;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace Sanakan.Game.Services
 {

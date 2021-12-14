@@ -1,6 +1,6 @@
-﻿using System;
-using Sanakan.DAL.Models;
+﻿using Sanakan.DAL.Models;
 using Sanakan.DiscordBot;
+using System;
 
 namespace Sanakan.Extensions
 {

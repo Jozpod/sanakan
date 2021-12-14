@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using Sanakan.DAL.Models;
+using System.Collections.Generic;
 using System.Text;
-using Sanakan.DAL.Models;
 
 namespace Sanakan.Extensions
 {

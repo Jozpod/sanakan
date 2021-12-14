@@ -1,5 +1,4 @@
-﻿using MySqlConnector;
-using Sanakan.DAL.Models;
+﻿using Sanakan.DAL.Models;
 using System;
 
 namespace Sanakan.DAL.MySql.Migrator.TableEnumerators

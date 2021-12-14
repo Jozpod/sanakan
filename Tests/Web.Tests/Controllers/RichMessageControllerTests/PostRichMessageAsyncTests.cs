@@ -1,12 +1,12 @@
-﻿using FluentAssertions;
+﻿using Discord;
+using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Sanakan.DiscordBot.Models;
-using System.Threading.Tasks;
-using Sanakan.Web.Controllers;
-using Discord;
 using Moq;
 using Sanakan.Configuration;
+using Sanakan.DiscordBot.Models;
+using Sanakan.Web.Controllers;
+using System.Threading.Tasks;
 
 namespace Sanakan.Web.Tests.Controllers.RichMessageControllerTests
 {

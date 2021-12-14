@@ -2,38 +2,56 @@ name: Build and Tests
 
 on:
   push:
-    branches: [ master ]
+    branches: [master]
   pull_request:
-    branches: [ master ]
+    branches: [master]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Cache Nuget
-      uses: actions/cache@v1
-      with:
-        path: ~/.nuget/packages
-        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
-        restore-keys: |
-          ${{ runner.os }}-nuget-
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: 5.0.x
-    - name: Restore dependencies
-      run: dotnet restore
-    - name: Build
-      run: dotnet build --configuration Release --no-restore
-    - name: Run Tests
-      continue-on-error: true
-      run: dotnet test --configuration Release --no-build --verbosity minimal /p:CollectCoverage=true /p:CoverletOutput=TestResults/ /p:MergeWith="../TestResults/coverage.json" /p:CoverletOutputFormat=lcov
-    - name: Publish coverage report to coveralls.io   
-      uses: coverallsapp/github-action@master   
-      with:
-       github-token: ${{ secrets.GITHUB_TOKEN }} 
-       path-to-lcov: Tests/Web.Tests/TestResults/coverage.info 
-
+      - uses: actions/checkout@v2
+      - name: Cache Nuget
+        uses: actions/cache@v1
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 5.0.x
+      - name: Restore dependencies
+        run: dotnet restore
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+      - name: Run Tests
+        continue-on-error: true
+        # Parallel build produces invalid code coverage
+        # Once they add support to it following lines might be replaced with:
+        # `dotnet test --no-build --verbosity minimal --configuration Release /p:CollectCoverage=true /p:CoverletOutput=../TestResults/ /p:MergeWith=../TestResults/coverlet.json /p:CoverletOutputFormat=\"lcov,json\"``
+        # Also discordBot project tests had to be separated as codecov can't figure out its dependency between web app.
+        # Probably caused by indirect dependency injection via assembly.
+        run: |
+          dotnet test Tests/Common.Tests/Common.Tests.csproj  --no-build --verbosity minimal --configuration Release /p:CollectCoverage=true /p:CoverletOutput=../TestResults/
+          dotnet test Tests/Daemon.Tests/Daemon.Tests.csproj  --no-build --verbosity minimal --configuration Release /p:CollectCoverage=true /p:CoverletOutput=../TestResults/ /p:MergeWith=../TestResults/coverlet.json
+          dotnet test Tests/DAL.Tests/DAL.Tests.csproj  --no-build --verbosity minimal --configuration Release /p:CollectCoverage=true /p:CoverletOutput=../TestResults/ /p:MergeWith=../TestResults/coverlet.json
+          dotnet test Tests/DiscordBot.Services.Tests/DiscordBot.Services.Tests.csproj  --no-build --verbosity minimal --configuration Release /p:CollectCoverage=true /p:CoverletOutput=../TestResults/ /p:MergeWith=../TestResults/coverlet.json
+          dotnet test Tests/DiscordBot.Session.Tests/DiscordBot.Session.Tests.csproj --no-build --verbosity minimal --configuration Release /p:CollectCoverage=true /p:CoverletOutput=../TestResults/ /p:MergeWith=../TestResults/coverlet.json
+          dotnet test Tests/DiscordBot.Supervisor.Tests/DiscordBot.Supervisor.Tests.csproj --no-build --verbosity minimal --configuration Release /p:CollectCoverage=true /p:CoverletOutput=../TestResults/ /p:MergeWith=../TestResults/coverlet.json
+          dotnet test Tests/Game.Tests/Game.Tests.csproj --no-build --verbosity minimal --configuration Release /p:CollectCoverage=true /p:CoverletOutput=../TestResults/ /p:MergeWith=../TestResults/coverlet.json
+          dotnet test Tests/DAL.MySql.Migrator.Tests/DAL.MySql.Migrator.Tests.csproj --no-build --verbosity minimal --configuration Release /p:CollectCoverage=true /p:CoverletOutput=../TestResults/ /p:MergeWith=../TestResults/coverlet.json
+          dotnet test Tests/DAL.MySql.Schema.Tests/DAL.MySql.Schema.Tests.csproj --no-build --verbosity minimal --configuration Release /p:CollectCoverage=true /p:CoverletOutput=../TestResults/ /p:MergeWith=../TestResults/coverlet.json
+          dotnet test Tests/ShindenApi.Tests/ShindenApi.Tests.csproj --no-build --verbosity minimal --configuration Release /p:CollectCoverage=true /p:CoverletOutput=../TestResults/ /p:MergeWith=../TestResults/coverlet.json
+          dotnet test Tests/TaskQueue.Tests/TaskQueue.Tests.csproj --no-build --verbosity minimal --configuration Release /p:CollectCoverage=true /p:CoverletOutput=../TestResults/ /p:MergeWith=../TestResults/coverlet.json
+          dotnet test Tests/Web.Tests/Web.Tests.csproj --no-build --verbosity minimal --configuration Release /p:CollectCoverage=true /p:CoverletOutput=../TestResults/ /p:MergeWith=../TestResults/coverlet.json /p:CoverletOutputFormat=opencover
+          dotnet test Tests/DiscordBot.Tests/DiscordBot.Tests.csproj --no-build --verbosity minimal --configuration Release /p:CollectCoverage=true /p:CoverletOutput=../TestResultsModules/  /p:CoverletOutputFormat=opencover
+      - name: Publish coverage report to codecov.io
+        uses: codecov/codecov-action@v2
+        with:
+          files: ./Tests/TestResults/coverage.opencover.xml,./Tests/TestResultsModules/coverage.opencover.xml
+          name: codecov-umbrella
+          fail_ci_if_error: true
+          verbose: true

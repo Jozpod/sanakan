@@ -1,7 +1,7 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Threading.Tasks;
-using Sanakan.DiscordBot.Modules;
 using FluentAssertions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Sanakan.DiscordBot.Modules;
+using System.Threading.Tasks;
 
 namespace DiscordBot.ModulesTests.HelperModuleTests
 {

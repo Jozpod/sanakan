@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Sanakan.TaskQueue.Messages;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 
 namespace Sanakan.TaskQueue.MessageHandlers

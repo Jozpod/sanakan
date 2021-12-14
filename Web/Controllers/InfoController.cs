@@ -1,13 +1,13 @@
-using System.Collections.Generic;
-using Microsoft.AspNetCore.Mvc;
 using Discord.Commands;
-using System.Linq;
-using System;
-using Sanakan.Api.Models;
-using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Http;
-using Sanakan.DiscordBot.Services.Abstractions;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
+using Sanakan.Api.Models;
 using Sanakan.Common.Configuration;
+using Sanakan.DiscordBot.Services.Abstractions;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Sanakan.Web.Controllers
 {

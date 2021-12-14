@@ -1,16 +1,16 @@
 using Discord;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Threading.Tasks;
 using Moq;
-using Sanakan.DiscordBot.Modules;
 using Sanakan.DAL.Models;
-using System;
+using Sanakan.DiscordBot.Modules;
 using Sanakan.ShindenApi;
 using Sanakan.ShindenApi.Models;
-using System.Collections.Generic;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
+using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace DiscordBot.ModulesTests.ShindenModuleTests
 {

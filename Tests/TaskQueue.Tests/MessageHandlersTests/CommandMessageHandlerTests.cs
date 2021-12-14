@@ -1,19 +1,11 @@
-﻿using Discord;
-using Discord.Commands;
+﻿using Discord.Commands;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using Sanakan.Common;
-using Sanakan.DAL.Models;
-using Sanakan.DAL.Repositories.Abstractions;
-using Sanakan.Game.Services.Abstractions;
 using Sanakan.TaskQueue.MessageHandlers;
 using Sanakan.TaskQueue.Messages;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 using static Sanakan.TaskQueue.Messages.CommandMessage;
 

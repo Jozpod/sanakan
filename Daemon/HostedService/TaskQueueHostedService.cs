@@ -1,12 +1,12 @@
-﻿using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Sanakan.Common;
+using Sanakan.TaskQueue;
+using Sanakan.TaskQueue.MessageHandlers;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Sanakan.TaskQueue.MessageHandlers;
-using Sanakan.TaskQueue;
 
 namespace Sanakan.Daemon.HostedService
 {

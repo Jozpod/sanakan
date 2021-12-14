@@ -1,16 +1,16 @@
-﻿using Discord.Commands;
-using System.Threading.Tasks;
-using Sanakan.Preconditions;
-using System.Linq;
-using System;
+﻿using Discord;
+using Discord.Commands;
+using Microsoft.Extensions.DependencyInjection;
+using Sanakan.Common;
 using Sanakan.DAL.Repositories.Abstractions;
-using Sanakan.DiscordBot.Services.Abstractions;
 using Sanakan.DiscordBot.Abstractions.Extensions;
 using Sanakan.DiscordBot.Abstractions.Models;
-using Sanakan.Common;
-using Discord;
-using Microsoft.Extensions.DependencyInjection;
 using Sanakan.DiscordBot.Resources;
+using Sanakan.DiscordBot.Services.Abstractions;
+using Sanakan.Preconditions;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Sanakan.DiscordBot.Modules
 {

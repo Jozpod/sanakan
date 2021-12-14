@@ -1,20 +1,20 @@
-﻿using Microsoft.Extensions.Hosting;
+﻿using Discord;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Sanakan.Common;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
+using Sanakan.Common.Configuration;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot;
-using Sanakan.Common.Configuration;
-using System.Linq;
 using Sanakan.DiscordBot.Abstractions.Extensions;
 using Sanakan.DiscordBot.Abstractions.Models;
-using Discord;
 using Sanakan.DiscordBot.Services.Abstractions;
 using Sanakan.DiscordBot.Supervisor;
+using System;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Sanakan.Daemon.HostedService
 {

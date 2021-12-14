@@ -1,11 +1,11 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using FluentAssertions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Sanakan.Common.Models;
 using Sanakan.DAL.Models;
+using Sanakan.Game.Services.Abstractions;
+using Sanakan.ShindenApi.Models;
 using System;
 using System.Threading.Tasks;
-using Sanakan.ShindenApi.Models;
-using Sanakan.Common.Models;
-using FluentAssertions;
-using Sanakan.Game.Services.Abstractions;
 
 namespace Sanakan.Game.Tests.ImageProcessorTests
 {
