@@ -2,7 +2,7 @@
 
 # Sanakan #
 
-[![codecov](https://codecov.io/gh/Jozpod/sanakan/branch/main/graph/badge.svg?token=1JF852LT8P)](https://codecov.io/gh/Jozpod/sanakan)
+[![codecov](https://codecov.io/gh/Jozpod/sanakan/branch/master/graph/badge.svg?token=OD5LNDJGLB)](https://codecov.io/gh/Jozpod/sanakan)
 ![workflow](https://github.com/Jozpod/sanakan/actions/workflows/dotnet.yml/badge.svg)
 [![CodeFactor](https://img.shields.io/codefactor/grade/github/Jozpod/sanakan/master)](https://www.codefactor.io/repository/github/jozpod/sanakan)
 [![License](https://img.shields.io/github/license/Jozpod/sanakan)](https://github.com/Jozpod/sanakan/blob/master/LICENSE)
