@@ -118,15 +118,15 @@ namespace Sanakan.DAL
                 var builder = modelBuilder.Entity<Card>();
 
                 builder.Property(pr => pr.ImageUrl)
-                    .HasMaxLength(50)
+                    .HasMaxLength(90)
                     .HasConversion(pr => pr == null ? null : pr.ToString(), pr => pr == null ? null : new Uri(pr));
 
                 builder.Property(pr => pr.CustomImageUrl)
-                    .HasMaxLength(50)
+                    .HasMaxLength(90)
                     .HasConversion(pr => pr == null ? null : pr.ToString(), pr => pr == null ? null : new Uri(pr));
 
                 builder.Property(pr => pr.CustomBorderUrl)
-                    .HasMaxLength(50)
+                    .HasMaxLength(90)
                     .HasConversion(pr => pr == null ? null : pr.ToString(), pr => pr == null ? null : new Uri(pr));
 
                 builder.HasCheckConstraint($"CK_{nameof(Card)}_{nameof(Card.Title)}", NotEmptyStringConstraint(nameof(Card.Title)));
@@ -139,11 +139,11 @@ namespace Sanakan.DAL
                 var builder = modelBuilder.Entity<GameDeck>();
 
                 builder.Property(pr => pr.BackgroundImageUrl)
-                   .HasMaxLength(50)
+                   .HasMaxLength(90)
                    .HasConversion(pr => pr == null ? null : pr.ToString(), pr => pr == null ? null : new Uri(pr));
 
                 builder.Property(pr => pr.ForegroundImageUrl)
-                   .HasMaxLength(50)
+                   .HasMaxLength(90)
                    .HasConversion(pr => pr == null ? null : pr.ToString(), pr => pr == null ? null : new Uri(pr));
 
                 builder.HasCheckConstraint($"CK_{nameof(GameDeck)}_{nameof(GameDeck.BackgroundImageUrl)}", NullableUrlConstraint(nameof(GameDeck.BackgroundImageUrl)));
