@@ -1476,12 +1476,12 @@ namespace Sanakan.DiscordBot.Modules
                 if (colorStatus == null)
                 {
                     kolorRep = $"**Kolor:** ❗\n\n";
-                    await _profileService.RomoveUserColorAsync(user);
+                    await _profileService.RemoveUserColorAsync(user);
                 }
                 else if (!colorStatus.IsActive(utcNow))
                 {
                     kolorRep = $"**Kolor:** ⚠\n\n";
-                    await _profileService.RomoveUserColorAsync(user);
+                    await _profileService.RemoveUserColorAsync(user);
                 }
             }
 
@@ -1858,6 +1858,13 @@ namespace Sanakan.DiscordBot.Modules
             var guildOptions = await _guildConfigRepository.GetGuildConfigOrCreateAsync(guildId);
 
             Embed embed;
+
+            if (guildOptions == null)
+            {
+                embed = Strings.ServerNotConfigured.ToEmbedMessage(EMType.Bot).Build();
+                await ReplyAsync(embed: embed);
+                return;
+            }
 
             if (canSet(guildOptions, channelId))
             {

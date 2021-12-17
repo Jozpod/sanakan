@@ -61,6 +61,8 @@ namespace Sanakan.Game.Services
             return _fontCollection.Install(fontStream);
         }
 
+        private IEnumerable<string> _extensions = new[] { "png", "jpeg", "gif", "jpg" };
+
         private async Task<Stream?> GetImageFromUrlAsync(string url, bool fixExt = false)
         {
             try
@@ -78,11 +80,10 @@ namespace Sanakan.Game.Services
                 }
 
                 var splited = url.Split(".");
-                var exts = new[] { "png", "jpeg", "gif", "jpg" };
 
-                foreach (var ext in exts)
+                foreach (var extension in _extensions)
                 {
-                    splited[splited.Length - 1] = ext;
+                    splited[splited.Length - 1] = extension;
                     response = await _httpClient.GetAsync(string.Join(".", splited));
 
                     if (!response.IsSuccessStatusCode)
@@ -178,21 +179,27 @@ namespace Sanakan.Game.Services
             var rangFont = new Font(_latoRegular, 16);
             var levelFont = new Font(_latoBold, 40);
 
-            var template = Image.Load(Paths.ProfileBodyPicture);
+            var imageStream = _fileSystem.OpenRead(Paths.ProfileBodyPicture);
+            var template = Image.Load(imageStream);
             var profilePic = new Image<Rgba32>(template.Width, template.Height);
+            imageStream.Close();
 
             if (!_fileSystem.Exists(databaseUser.BackgroundProfileUri))
             {
                 databaseUser.BackgroundProfileUri = Paths.DefaultBackgroundPicture;
             }
 
-            using var userBg = Image.Load(databaseUser.BackgroundProfileUri);
+            imageStream = _fileSystem.OpenRead(databaseUser.BackgroundProfileUri);
+            using var userBg = Image.Load(imageStream);
             profilePic.Mutate(x => x.DrawImage(userBg, _origin, 1));
             profilePic.Mutate(x => x.DrawImage(template, _origin, 1));
+            imageStream.Close();
 
             template.Dispose();
 
-            using var avatar = Image.Load(await GetImageFromUrlAsync(avatarUrl));
+            imageStream = await GetImageFromUrlAsync(avatarUrl);
+            using var avatar = Image.Load(imageStream);
+            imageStream.Close();
             using var avBack = new Image<Rgba32>(82, 82);
             avBack.Mutate(x => x.BackgroundColor(Rgba32.FromHex(colorRank)));
             avBack.Mutate(x => x.Round(42));
@@ -842,7 +849,7 @@ namespace Sanakan.Game.Services
                 characterImg = new Image<Rgba32>(_options.CurrentValue.CharacterImageWidth, _options.CurrentValue.CharacterImageHeight);
             }
 
-            using var stream = await GetImageFromUrlAsync(characterUrl ?? "http://cdn.shinden.eu/cdn1/other/placeholders/title/225x350.jpg", true);
+            using var stream = await GetImageFromUrlAsync(characterUrl ?? ShindenApi.Constants.PlaceholderImageUrl, true);
 
             if (stream == null)
             {
@@ -1240,14 +1247,14 @@ namespace Sanakan.Game.Services
             var image = new Image<Rgba32>(_options.CurrentValue.CharacterImageWidth, _options.CurrentValue.CharacterImageHeight);
 
             ApplyBorderBack(image, card);
-
-            using var chara = await GetCharacterPictureAsync(card.GetImage()!, card.FromFigure);
+            
+            var imageUrl = card.GetImage()!;
+            using var characterImage = await GetCharacterPictureAsync(imageUrl, card.FromFigure);
             var mov = card.FromFigure ? 0 : 13;
-            image.Mutate(x => x.DrawImage(chara, new Point(mov, mov), 1));
+            image.Mutate(x => x.DrawImage(characterImage, new Point(mov, mov), 1));
 
             using var bord = await LoadCustomBorderAsync(card);
             image.Mutate(x => x.DrawImage(bord, _origin, 1));
-
 
             if (AllowStatsOnNoStatsImage(card))
             {
@@ -1285,12 +1292,14 @@ namespace Sanakan.Game.Services
                 var imagePath = string.Format(Paths.DuelPicture, duelImage.Name, duelInfo.Side);
                 if (_fileSystem.Exists(imagePath))
                 {
-                    image = Image.Load(imagePath);
+                    var stream = _fileSystem.OpenRead(imagePath);
+                    image = Image.Load(stream);
                 }
                 else
                 {
                     imagePath = DuelImage.DefaultUri((int)duelInfo.Side);
-                    image = Image.Load(imagePath);
+                    var stream = _fileSystem.OpenRead(imagePath);
+                    image = Image.Load(stream);
                 }
             }
 

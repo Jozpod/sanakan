@@ -46,6 +46,7 @@ namespace Sanakan.DAL
         public DbSet<Answer> Answers { get; set; } = null!;
         public DbSet<RarityExcluded> RaritysExcludedFromPacks { get; set; } = null!;
         #endregion
+
         #region GuildConfig
         public DbSet<SelfRole> SelfRoles { get; set; } = null!;
         public DbSet<GuildOptions> Guilds { get; set; } = null!;
@@ -61,6 +62,7 @@ namespace Sanakan.DAL
         public DbSet<WaifuCommandChannel> WaifuCommandChannels { get; set; } = null!;
         public DbSet<WaifuFightChannel> WaifuFightChannels { get; set; } = null!;
         #endregion
+
         #region Analytics
         public DbSet<UserAnalytics> UsersData { get; set; } = null!;
         public DbSet<SystemAnalytics> SystemData { get; set; } = null!;
@@ -101,62 +103,66 @@ namespace Sanakan.DAL
 
             if (_config.CurrentValue.Provider == DatabaseProvider.MySql)
             {
-                modelBuilder.HasCharSet("utf8mb4", DelegationModes.ApplyToDatabases);
-
-                {
-                    var builder = modelBuilder.Entity<Card>();
-
-                    builder.Property(pr => pr.ImageUrl)
-                        .HasMaxLength(50)
-                        .HasConversion(pr => pr == null ? null : pr.ToString(), pr => pr == null ? null : new Uri(pr));
-
-                    builder.Property(pr => pr.CustomImageUrl)
-                        .HasMaxLength(50)
-                        .HasConversion(pr => pr == null ? null : pr.ToString(), pr => pr == null ? null : new Uri(pr));
-
-                    builder.Property(pr => pr.CustomBorderUrl)
-                        .HasMaxLength(50)
-                        .HasConversion(pr => pr == null ? null : pr.ToString(), pr => pr == null ? null : new Uri(pr));
-
-                    builder.HasCheckConstraint($"CK_{nameof(Card)}_{nameof(Card.Title)}", NotEmptyStringConstraint(nameof(Card.Title)));
-                    builder.HasCheckConstraint($"CK_{nameof(Card)}_{nameof(Card.ImageUrl)}", NullableUrlConstraint(nameof(Card.ImageUrl)));
-                    builder.HasCheckConstraint($"CK_{nameof(Card)}_{nameof(Card.CustomImageUrl)}", NullableUrlConstraint(nameof(Card.CustomImageUrl)));
-                    builder.HasCheckConstraint($"CK_{nameof(Card)}_{nameof(Card.CustomBorderUrl)}", NullableUrlConstraint(nameof(Card.CustomBorderUrl)));
-                }
-
-                {
-                    var builder = modelBuilder.Entity<GameDeck>();
-
-                    builder.Property(pr => pr.BackgroundImageUrl)
-                       .HasMaxLength(50)
-                       .HasConversion(pr => pr == null ? null : pr.ToString(), pr => pr == null ? null : new Uri(pr));
-
-                    builder.Property(pr => pr.ForegroundImageUrl)
-                       .HasMaxLength(50)
-                       .HasConversion(pr => pr == null ? null : pr.ToString(), pr => pr == null ? null : new Uri(pr));
-
-                    builder.HasCheckConstraint($"CK_{nameof(GameDeck)}_{nameof(GameDeck.BackgroundImageUrl)}", NullableUrlConstraint(nameof(GameDeck.BackgroundImageUrl)));
-                    builder.HasCheckConstraint($"CK_{nameof(GameDeck)}_{nameof(GameDeck.ForegroundColor)}", NullableColor(nameof(GameDeck.ForegroundColor)));
-                    builder.HasCheckConstraint($"CK_{nameof(GameDeck)}_{nameof(GameDeck.ForegroundImageUrl)}", NullableUrlConstraint(nameof(GameDeck.ForegroundImageUrl)));
-                }
-
-                {
-                    var builder = modelBuilder.Entity<User>();
-                    builder.HasCheckConstraint($"CK_{nameof(User)}_{nameof(User.BackgroundProfileUri)}", NotEmptyStringConstraint(nameof(User.BackgroundProfileUri)));
-                    builder.HasCheckConstraint($"CK_{nameof(User)}_{nameof(User.StatsReplacementProfileUri)}", NotEmptyStringConstraint(nameof(User.StatsReplacementProfileUri)));
-                }
+                onMySqlModelCreating(modelBuilder);
             }
-                
+
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(SanakanDbContext).Assembly);
         }
 
-        public string NullableColor(string property) => $"{property} REGEXP '^#([a-f0-9]{{3}}){{1,2}}$' OR {property} IS NULL";
-
-        public string NotEmptyStringConstraint(string property) => $"TRIM({property}) <> '' OR {property} IS NULL";
-
-        public string NullableUrlConstraint(string property)
+        #region MySqlModelCreating
+        private void onMySqlModelCreating(ModelBuilder modelBuilder)
         {
-            return $"{property} REGEXP '^https?' OR {property} IS NULL";
+            modelBuilder.HasCharSet("utf8mb4", DelegationModes.ApplyToDatabases);
+
+            {
+                var builder = modelBuilder.Entity<Card>();
+
+                builder.Property(pr => pr.ImageUrl)
+                    .HasMaxLength(50)
+                    .HasConversion(pr => pr == null ? null : pr.ToString(), pr => pr == null ? null : new Uri(pr));
+
+                builder.Property(pr => pr.CustomImageUrl)
+                    .HasMaxLength(50)
+                    .HasConversion(pr => pr == null ? null : pr.ToString(), pr => pr == null ? null : new Uri(pr));
+
+                builder.Property(pr => pr.CustomBorderUrl)
+                    .HasMaxLength(50)
+                    .HasConversion(pr => pr == null ? null : pr.ToString(), pr => pr == null ? null : new Uri(pr));
+
+                builder.HasCheckConstraint($"CK_{nameof(Card)}_{nameof(Card.Title)}", NotEmptyStringConstraint(nameof(Card.Title)));
+                builder.HasCheckConstraint($"CK_{nameof(Card)}_{nameof(Card.ImageUrl)}", NullableUrlConstraint(nameof(Card.ImageUrl)));
+                builder.HasCheckConstraint($"CK_{nameof(Card)}_{nameof(Card.CustomImageUrl)}", NullableUrlConstraint(nameof(Card.CustomImageUrl)));
+                builder.HasCheckConstraint($"CK_{nameof(Card)}_{nameof(Card.CustomBorderUrl)}", NullableUrlConstraint(nameof(Card.CustomBorderUrl)));
+            }
+
+            {
+                var builder = modelBuilder.Entity<GameDeck>();
+
+                builder.Property(pr => pr.BackgroundImageUrl)
+                   .HasMaxLength(50)
+                   .HasConversion(pr => pr == null ? null : pr.ToString(), pr => pr == null ? null : new Uri(pr));
+
+                builder.Property(pr => pr.ForegroundImageUrl)
+                   .HasMaxLength(50)
+                   .HasConversion(pr => pr == null ? null : pr.ToString(), pr => pr == null ? null : new Uri(pr));
+
+                builder.HasCheckConstraint($"CK_{nameof(GameDeck)}_{nameof(GameDeck.BackgroundImageUrl)}", NullableUrlConstraint(nameof(GameDeck.BackgroundImageUrl)));
+                builder.HasCheckConstraint($"CK_{nameof(GameDeck)}_{nameof(GameDeck.ForegroundColor)}", NullableColor(nameof(GameDeck.ForegroundColor)));
+                builder.HasCheckConstraint($"CK_{nameof(GameDeck)}_{nameof(GameDeck.ForegroundImageUrl)}", NullableUrlConstraint(nameof(GameDeck.ForegroundImageUrl)));
+            }
+
+            {
+                var builder = modelBuilder.Entity<User>();
+                builder.HasCheckConstraint($"CK_{nameof(User)}_{nameof(User.BackgroundProfileUri)}", NotEmptyStringConstraint(nameof(User.BackgroundProfileUri)));
+                builder.HasCheckConstraint($"CK_{nameof(User)}_{nameof(User.StatsReplacementProfileUri)}", NotEmptyStringConstraint(nameof(User.StatsReplacementProfileUri)));
+            }
         }
+
+        private string NullableColor(string property) => $"{property} REGEXP '^#([a-f0-9]{{3}}){{1,2}}$' OR {property} IS NULL";
+
+        private string NotEmptyStringConstraint(string property) => $"TRIM({property}) <> '' OR {property} IS NULL";
+
+        private string NullableUrlConstraint(string property) => $"{property} REGEXP '^https?' OR {property} IS NULL";
+        #endregion
     }
 }

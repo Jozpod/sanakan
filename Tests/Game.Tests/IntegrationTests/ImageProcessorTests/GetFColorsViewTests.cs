@@ -6,7 +6,7 @@ using Sanakan.Game.Services.Abstractions;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Sanakan.Game.Tests.ImageProcessorTests
+namespace Sanakan.Game.Tests.IntegrationTests.ImageProcessorTests
 {
     /// <summary>
     /// Defines tests for <see cref="IImageProcessor.GetFColorsView(System.Collections.Generic.IEnumerable{(string, uint)})"/> method.
@@ -17,7 +17,7 @@ namespace Sanakan.Game.Tests.ImageProcessorTests
     public class GetFColorsViewTests : Base
     {
         [TestMethod]
-        public void Should_Return_Color_View()
+        public async Task Should_Return_Color_View()
         {
             var currency = SCurrency.Sc;
             var colours = FColorExtensions.FColors;
@@ -26,7 +26,7 @@ namespace Sanakan.Game.Tests.ImageProcessorTests
 
             using var image = _imageProcessor.GetFColorsView(coloursSummary);
             image.Should().NotBeNull();
-            //await ShouldBeEqual("TestData/expected-f-colors.png", image);
+            await ShouldBeEqual("TestData/expected-f-colors.png", image);
         }
     }
 }

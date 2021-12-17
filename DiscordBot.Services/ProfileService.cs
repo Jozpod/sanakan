@@ -26,24 +26,21 @@ namespace Sanakan.DiscordBot.Services
         private readonly IShindenClient _shindenClient;
         private readonly IImageProcessor _imageProcessor;
         private readonly IFileSystem _fileSystem;
-        private readonly IServiceScopeFactory _serviceScopeFactory;
         private ILogger _logger;
 
         public ProfileService(
             IShindenClient shindenClient,
             IImageProcessor imageProcessor,
             IFileSystem fileSystem,
-            IServiceScopeFactory serviceScopeFactory,
             ILogger<ProfileService> logger)
         {
             _shindenClient = shindenClient;
             _imageProcessor = imageProcessor;
             _fileSystem = fileSystem;
             _logger = logger;
-            _serviceScopeFactory = serviceScopeFactory;
         }
 
-        public async Task RomoveUserColorAsync(IGuildUser user)
+        public async Task RemoveUserColorAsync(IGuildUser user, FColor ignored = FColor.None)
         {
             if (user == null)
             {
@@ -53,10 +50,18 @@ namespace Sanakan.DiscordBot.Services
             var colors = FColorExtensions.FColors;
             var guild = user.Guild;
             var roles = guild.Roles;
+            var userRoles = roles
+                .Join(user.RoleIds, pr => pr.Id, pr => pr, (src, dst) => src)
+                .ToList();
+
             foreach (uint color in colors)
             {
-                var role = roles
-                    .Join(user.RoleIds, pr => pr.Id, pr => pr, (src, dst) => src)
+                if (color == (uint)ignored)
+                {
+                    continue;
+                }
+
+                var role = userRoles
                     .FirstOrDefault(x => x.Name == color.ToString());
                 if (role == null)
                 {
@@ -71,6 +76,7 @@ namespace Sanakan.DiscordBot.Services
                     await role.DeleteAsync();
                     return;
                 }
+
                 await user.RemoveRoleAsync(role);
             }
         }

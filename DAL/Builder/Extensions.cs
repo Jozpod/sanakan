@@ -42,6 +42,11 @@ namespace Sanakan.DAL.Builder
                 {
                     optionsBuilder.UseSqlServer(config.ConnectionString);
                 }
+
+                if (config.Provider == DatabaseProvider.InMemory)
+                {
+                    optionsBuilder.UseInMemoryDatabase("SanakanDb");
+                }
             });
             return services;
         }

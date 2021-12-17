@@ -20,15 +20,10 @@ namespace DiscordBot.ServicesTests.ProfileServiceTests
   
         public Base()
         {
-            var serviceCollection = new ServiceCollection();
-            var serviceProvider = serviceCollection.BuildServiceProvider();
-            var serviceScopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
-
             _profileService = new ProfileService(
                 _shindenClientMock.Object,
                 _imageProcessorMock.Object,
                 _fileSystemMock.Object,
-                serviceScopeFactory,
                 NullLogger<ProfileService>.Instance);
         }
     }

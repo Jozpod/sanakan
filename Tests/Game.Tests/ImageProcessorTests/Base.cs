@@ -1,13 +1,18 @@
 ﻿using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Moq;
 using Moq.Protected;
+using Sanakan.Common;
 using Sanakan.Common.Builder;
+using Sanakan.Common.Configuration;
 using Sanakan.Game.Builder;
+using Sanakan.Game.Services;
 using Sanakan.Game.Services.Abstractions;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
+using System;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -22,41 +27,13 @@ namespace Sanakan.Game.Tests
         protected static IImageProcessor _imageProcessor;
         protected static Mock<IHttpClientFactory> _httpClientFactoryMock = new(MockBehavior.Strict);
         protected static Mock<HttpClientHandler> _httpClientHandlerMock = new(MockBehavior.Strict);
-        private static readonly SHA256 _sha256Hash;
+        protected static Mock<IOptionsMonitor<ImagingConfiguration>> _imagingConfigurationMock = new(MockBehavior.Strict);
+        protected static Mock<IResourceManager> _resourceManagerMock = new(MockBehavior.Strict);
+        protected static Mock<IFileSystem> _fileSystemMock = new(MockBehavior.Strict);
 
-        static Base()
-        {
-            _sha256Hash = SHA256.Create();
-            var httpClient = new HttpClient(_httpClientHandlerMock.Object);
+        protected Stream CreateFakeImage() => new MemoryStream(Convert.FromBase64String("R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"));
 
-            var serviceCollection = new ServiceCollection();
-
-            var builder = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
-
-            var configurationRoot = builder.Build();
-
-            serviceCollection.AddOptions();
-            serviceCollection.AddSingleton(configurationRoot);
-            serviceCollection.AddGameServices();
-            serviceCollection.AddFileSystem();
-            serviceCollection.AddConfiguration(configurationRoot);
-            serviceCollection.AddResourceManager()
-                .AddFontResources();
-            serviceCollection.AddSingleton(httpClient);
-            serviceCollection.AddSingleton(_httpClientFactoryMock.Object);
-            var serviceProvider = serviceCollection.BuildServiceProvider();
-
-            _httpClientFactoryMock
-                .Setup(pr => pr.CreateClient(nameof(IImageProcessor)))
-                .Returns(httpClient);
-
-            _imageProcessor = serviceProvider.GetRequiredService<IImageProcessor>();
-
-        }
-
-        protected void MockHttpGetImage(string filePath)
+        protected void MockHttpGetImage(Stream stream)
         {
             _httpClientHandlerMock
                .Protected()
@@ -64,7 +41,6 @@ namespace Sanakan.Game.Tests
                    ItExpr.Is<HttpRequestMessage>(pr => pr.Method == HttpMethod.Get),
                    ItExpr.IsAny<CancellationToken>())
                .ReturnsAsync(() => {
-                   var stream = File.OpenRead(filePath);
                    return new HttpResponseMessage
                    {
                        StatusCode = HttpStatusCode.OK,
@@ -73,22 +49,33 @@ namespace Sanakan.Game.Tests
                });
         }
 
-        protected async Task ShouldBeEqual(string expectedImageFilePath, Image<Rgba32> actualImage)
+        static Base()
         {
-            var expectedBytes = await File.ReadAllBytesAsync(expectedImageFilePath);
-            var expectedHash = _sha256Hash.ComputeHash(expectedBytes);
+            var httpClient = new HttpClient(_httpClientHandlerMock.Object);
 
-            var actualStream = new MemoryStream();
-            actualImage.SaveAsPng(actualStream);
-            var actualHash = _sha256Hash.ComputeHash(actualStream.ToArray());
+            _imagingConfigurationMock
+                .Setup(pr => pr.CurrentValue)
+                .Returns(new ImagingConfiguration
+                {
+                    CharacterImageWidth = 100,
+                    CharacterImageHeight = 100,
+                });
 
-            Utils.CompareByteArrays(actualHash, expectedHash).Should().BeTrue();
-        }
+            var assembly = typeof(IImageProcessor).Assembly;
 
-        protected void  SaveImage(Image<Rgba32> image)
-        {
-            var fileStream = File.OpenWrite("../../../TestData/test.png");
-            image.SaveAsPng(fileStream);
+            _resourceManagerMock
+                .Setup(pr => pr.GetResourceStream(It.IsAny<string>()))
+                .Returns(() => assembly.GetManifestResourceStream("Sanakan.Game.Fonts.Digital.ttf")!);
+
+            _httpClientFactoryMock
+                .Setup(pr => pr.CreateClient(nameof(IImageProcessor)))
+                .Returns(httpClient);
+
+            _imageProcessor = new ImageProcessor(
+                _imagingConfigurationMock.Object,
+                _resourceManagerMock.Object,
+                _fileSystemMock.Object,
+                _httpClientFactoryMock.Object);
         }
     }
 }

@@ -5,7 +5,7 @@ using Sanakan.ShindenApi.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Sanakan.Game.Tests
+namespace Sanakan.Game.Tests.IntegrationTests.ImageProcessorTests
 {
     /// <summary>
     /// Defines tests for <see cref="IImageProcessor.GetSiteStatisticAsync(UserInfo, Discord.Color, List{LastWatchedRead}?, List{LastWatchedRead}?)"/> method.
@@ -74,12 +74,12 @@ namespace Sanakan.Game.Tests
                 }
             };
 
-            //MockHttpGetImage("TestData/card-image.png");
+            MockHttpGetImage("TestData/card-image.png");
 
             var siteStatistics = await _imageProcessor.GetSiteStatisticAsync(shindenInfo, color, lastRead, lastWatch);
             siteStatistics.Should().NotBeNull();
 
-            //await ShouldBeEqual("TestData/expected-site-statistics.png", siteStatistics);
+            await ShouldBeEqual("TestData/expected-site-statistics.png", siteStatistics);
         }
     }
 }

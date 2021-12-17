@@ -1,16 +1,14 @@
 ﻿using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
 using Sanakan.DAL.Models;
 using Sanakan.Game.Services.Abstractions;
 using Sanakan.Services.PocketWaifu;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System;
-using System.IO;
 using System.Threading.Tasks;
 
-namespace Sanakan.Game.Tests.ImageProcessorTests
+namespace Sanakan.Game.Tests.IntegrationTests.ImageProcessorTests
 {
     /// <summary>
     /// Defines tests for <see cref="IImageProcessor.GetDuelCardImage(DuelInfo, DuelImage, Image{Rgba32}, Image{Rgba32})"/> method.
@@ -21,7 +19,7 @@ namespace Sanakan.Game.Tests.ImageProcessorTests
     public class GetDuelCardImageTests : Base
     {
         [TestMethod]
-        public void Should_Return_Duel_Card_Image()
+        public async Task Should_Return_Duel_Card_Image()
         {
             var duelInfo = new DuelInfo()
             {
@@ -35,16 +33,10 @@ namespace Sanakan.Game.Tests.ImageProcessorTests
             var win = new Image<Rgba32>(400, 400);
             var los = new Image<Rgba32>(400, 400);
 
-            _fileSystemMock
-                .Setup(pr => pr.Exists(It.IsAny<string>()))
-                .Returns(true);
-
-            _fileSystemMock
-                .Setup(pr => pr.OpenRead(It.IsAny<string>()))
-                .Returns(CreateFakeImage);
-
             var duelCardImage = _imageProcessor.GetDuelCardImage(duelInfo, duelImage, win, los);
             duelCardImage.Should().NotBeNull();
+
+            await ShouldBeEqual("TestData/expected-duel-card.png", duelCardImage);
         }
     }
 }

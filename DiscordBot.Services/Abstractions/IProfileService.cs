@@ -11,7 +11,7 @@ namespace Sanakan.DiscordBot.Services.Abstractions
 {
     public interface IProfileService
     {
-        Task RomoveUserColorAsync(IGuildUser user);
+        Task RemoveUserColorAsync(IGuildUser user, FColor ignored = FColor.None);
 
         bool HasSameColor(IGuildUser user, FColor color);
 

@@ -110,11 +110,11 @@ namespace Sanakan.Extensions
 
         public static bool IsHexTriplet(this string message) => _hexRegex.IsMatch(message);
 
-        public static bool IsCommand(this DiscordConfiguration sanakanConfiguration, string message)
+        public static bool IsCommand(this DiscordConfiguration configuration, string message)
         {
             if (_commandRegex == null)
             {
-                var prefix = sanakanConfiguration.Prefix.Replace(".", @"\.").Replace("?", @"\?");
+                var prefix = configuration.Prefix.Replace(".", @"\.").Replace("?", @"\?");
                 _commandRegex = new Regex($@"^{prefix}\w+", RegexOptions.Compiled);
             }
 

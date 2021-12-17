@@ -721,7 +721,7 @@ namespace Sanakan.DiscordBot.Modules
             if (color == FColor.CleanColor)
             {
                 colorTimeStatus.EndsOn = utcNow;
-                await _profileService.RomoveUserColorAsync(user);
+                await _profileService.RemoveUserColorAsync(user, color);
             }
             else
             {
@@ -731,7 +731,7 @@ namespace Sanakan.DiscordBot.Modules
                 }
                 else
                 {
-                    await _profileService.RomoveUserColorAsync(user);
+                    await _profileService.RemoveUserColorAsync(user);
                     colorTimeStatus.EndsOn = utcNow.AddMonths(1);
                 }
 

@@ -53,7 +53,7 @@ namespace DiscordBot.ModulesTests.ProfileModuleTests
                 .Returns(false);
 
             _profileServiceMock
-                .Setup(pr => pr.RomoveUserColorAsync(_guildUserMock.Object))
+                .Setup(pr => pr.RemoveUserColorAsync(_guildUserMock.Object, FColor.None))
                 .Returns(Task.CompletedTask);
 
             _profileServiceMock

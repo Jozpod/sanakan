@@ -3,7 +3,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Sanakan.Game.Services.Abstractions;
 using System.Threading.Tasks;
 
-namespace Sanakan.Game.Tests
+namespace Sanakan.Game.Tests.IntegrationTests.ImageProcessorTests
 {
     /// <summary>
     /// Defines tests for <see cref="IImageProcessor.GetLevelUpBadgeAsync(string, ulong, string, Discord.Color)"/> method.
@@ -21,12 +21,12 @@ namespace Sanakan.Game.Tests
             var avatarUrl = "https://test.com/avatar-url";
             var color = Discord.Color.Blue;
 
-            //MockHttpGetImage("TestData/card-image.png");
+            MockHttpGetImage("TestData/card-image.png");
 
             var badgeImage = await _imageProcessor.GetLevelUpBadgeAsync(name, level, avatarUrl, color);
             badgeImage.Should().NotBeNull();
 
-            //await ShouldBeEqual("TestData/expected-badge.png", badgeImage);
+            await ShouldBeEqual("TestData/expected-badge.png", badgeImage);
         }
     }
 }

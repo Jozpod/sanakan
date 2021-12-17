@@ -1,24 +1,20 @@
 ﻿using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
-using Moq.Protected;
 using Sanakan.Common.Models;
 using Sanakan.DAL.Models;
 using Sanakan.Game.Services.Abstractions;
 using Sanakan.ShindenApi.Models;
-using SixLabors.ImageSharp;
 using System;
-using System.Net;
-using System.Net.Http;
-using System.Threading;
 using System.Threading.Tasks;
 
-namespace Sanakan.Game.Tests.ImageProcessorTests
+namespace Sanakan.Game.Tests.IntegrationTests.ImageProcessorTests
 {
     /// <summary>
     /// Defines tests for <see cref="IImageProcessor.GetUserProfileAsync(UserInfo?, User, string, long, string, Discord.Color)"/> method.
     /// </summary>
+#if DEBUG
     [TestClass]
+#endif
     public class GetUserProfileAsyncTests : Base
     {
 
@@ -79,26 +75,7 @@ namespace Sanakan.Game.Tests.ImageProcessorTests
             var nickname = "test user";
             var color = Discord.Color.DarkerGrey;
 
-            _httpClientHandlerMock
-                .Protected()
-                .SetupSequence<Task<HttpResponseMessage>>("SendAsync",
-                    ItExpr.Is<HttpRequestMessage>(pr => pr.Method == HttpMethod.Get),
-                    ItExpr.IsAny<CancellationToken>())
-                .ReturnsAsync(() => {
-                    return new HttpResponseMessage
-                    {
-                        StatusCode = HttpStatusCode.OK,
-                        Content = new StreamContent(CreateFakeImage()),
-                    };
-                });
-
-            _fileSystemMock
-                .Setup(pr => pr.Exists(It.IsAny<string>()))
-                .Returns(true);
-
-            _fileSystemMock
-                .Setup(pr => pr.OpenRead(It.IsAny<string>()))
-                .Returns(CreateFakeImage);
+            MockHttpGetImage("TestData/user-avatar.png");
 
             var userProfileImage = await _imageProcessor.GetUserProfileAsync(
                 shindenUser,
@@ -108,6 +85,8 @@ namespace Sanakan.Game.Tests.ImageProcessorTests
                 nickname,
                 color);
             userProfileImage.Should().NotBeNull();
+
+            await ShouldBeEqual("TestData/expected-user-profile.png", userProfileImage);
         }
     }
 }

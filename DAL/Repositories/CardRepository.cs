@@ -14,7 +14,7 @@ namespace Sanakan.DAL.Repositories
         private readonly SanakanDbContext _dbContext;
         private readonly ICacheManager _cacheManager;
 
-        public CardRepository(
+        internal CardRepository(
             SanakanDbContext dbContext,
             ICacheManager cacheManager) : base(dbContext)
         {

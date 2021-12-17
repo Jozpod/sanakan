@@ -4,6 +4,7 @@ using Moq;
 using Moq.Protected;
 using Sanakan.DiscordBot.Services;
 using Sanakan.DiscordBot.Services.Abstractions;
+using System;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
@@ -30,7 +31,7 @@ namespace DiscordBot.ServicesTests
         [TestMethod]
         public async Task Should_Return_Event_Ids()
         {
-            var url = "https://test.com/test.txt";
+            var url = new Uri("https://test.com/test.txt");
             var content = "1;2;3";
 
             _httpClientHandlerMock

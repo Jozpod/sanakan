@@ -5,23 +5,27 @@ using Sanakan.Game.Services.Abstractions;
 using System;
 using System.Threading.Tasks;
 
-namespace Sanakan.Game.Tests.ImageProcessorTests
+namespace Sanakan.Game.Tests.IntegrationTests.ImageProcessorTests
 {
     /// <summary>
     /// Defines tests for <see cref="IImageProcessor.GetWaifuCardImageAsync(Card)"/> method.
     /// </summary>
+#if DEBUG
     [TestClass]
-    public class GetWaifuCardImageAsyncTests : Base
+#endif
+    public class GetWaifuCardAsyncTests : Base
     {
         [TestMethod]
-        public async Task Should_Return_Waif_Card_Image()
+        public async Task Should_Generate_Waifu_Card()
         {
             var card = new Card(1, "test", "test", 100, 50, Rarity.SSS, Dere.Bodere, DateTime.Now);
 
-            MockHttpGetImage(CreateFakeImage());
+            MockHttpGetImage("TestData/character.png");
 
-            var cardImage = await _imageProcessor.GetWaifuCardImageAsync(card);
-            cardImage.Should().NotBeNull();
+            var waifuCard = await _imageProcessor.GetWaifuCardImageAsync(card);
+            waifuCard.Should().NotBeNull();
+
+            await ShouldBeEqual("TestData/expected-waifu-card.png", waifuCard);
         }
     }
 }
