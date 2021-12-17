@@ -21,7 +21,6 @@ namespace DiscordBot.ServicesTests.ModeratorServiceTests
         {
             var userId = 1ul;
             var guildId = 1ul;
-            var commandContextMock = new Mock<ICommandContext>(MockBehavior.Strict);
             var guildMock = new Mock<IGuild>(MockBehavior.Strict);
             var guildUserMock = new Mock<IGuildUser>(MockBehavior.Strict);
             var duration = TimeSpan.FromMinutes(1);
@@ -40,10 +39,6 @@ namespace DiscordBot.ServicesTests.ModeratorServiceTests
                 .Setup(pr => pr.Id)
                 .Returns(guildId);
 
-            commandContextMock
-                .Setup(pr => pr.Guild)
-                .Returns(guildMock.Object);
-
             _penaltyInfoRepositoryMock
                 .Setup(pr => pr.GetMutedPenaltiesAsync(guildId))
                 .ReturnsAsync(muted);
@@ -56,7 +51,7 @@ namespace DiscordBot.ServicesTests.ModeratorServiceTests
                .Setup(pr => pr.Mention)
                .Returns("mention");
 
-            var result = await _moderatorService.GetMutedListAsync(commandContextMock.Object);
+            var result = await _moderatorService.GetMutedListAsync(guildMock.Object);
             result.Should().NotBeNull();
             result.Description.Should().NotBeNullOrEmpty();
         }

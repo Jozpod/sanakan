@@ -345,8 +345,8 @@ namespace Sanakan.Daemon.HostedService
             var timeStatusRepository = serviceScope.ServiceProvider.GetRequiredService<ITimeStatusRepository>();
             var penaltyInfoRepository = serviceScope.ServiceProvider.GetRequiredService<IPenaltyInfoRepository>();
 
-            var gConfig = await guildConfigRepository.GetGuildConfigOrCreateAsync(guild.Id);
-            guildConfigRepository.Remove(gConfig!);
+            var guildConfig = await guildConfigRepository.GetGuildConfigOrCreateAsync(guild.Id);
+            guildConfigRepository.Remove(guildConfig!);
 
             var stats = await timeStatusRepository.GetByGuildIdAsync(guild.Id);
             timeStatusRepository.RemoveRange(stats);

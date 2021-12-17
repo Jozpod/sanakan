@@ -15,7 +15,7 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
     public class BuyItemAsyncTests : Base
     {
         [TestMethod]
-        public async Task Should_Execute_Shop()
+        public async Task Should_Access_Shop()
         {
             _waifuServiceMock
                 .Setup(pr => pr.ExecuteShopAsync(ShopType.Normal, _userMock.Object, 0, "0"))

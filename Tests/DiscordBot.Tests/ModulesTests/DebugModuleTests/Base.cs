@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -22,7 +23,8 @@ namespace DiscordBot.ModulesTests.DebugModuleTests
     public class Base : TestBase
     {
         protected readonly DebugModule _module;
-        protected readonly Mock<IEventIdsImporter> eventIdsImporterMock = new(MockBehavior.Strict);
+        protected readonly Mock<IApplicationLifetime> _applicationLifetimeMock = new(MockBehavior.Strict);
+        protected readonly Mock<IEventIdsImporter> _eventIdsImporterMock = new(MockBehavior.Strict);
         protected readonly Mock<IFileSystem> _fileSystemMock = new(MockBehavior.Strict);
         protected readonly Mock<IDiscordClientAccessor> _discordClientAccessorMock = new(MockBehavior.Strict);
         protected readonly Mock<IShindenClient> _shindenClientMock = new(MockBehavior.Strict);
@@ -62,8 +64,9 @@ namespace DiscordBot.ModulesTests.DebugModuleTests
                 });
 
             _module = new(
+                _applicationLifetimeMock.Object,
                 new DefaultIconConfiguration(),
-                eventIdsImporterMock.Object,
+                _eventIdsImporterMock.Object,
                 _fileSystemMock.Object,
                 _discordClientAccessorMock.Object,
                 _shindenClientMock.Object,

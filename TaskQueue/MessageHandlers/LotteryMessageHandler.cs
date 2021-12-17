@@ -76,7 +76,7 @@ namespace Sanakan.TaskQueue.MessageHandlers
 
                 randomCard.Active = false;
                 randomCard.InCage = false;
-                randomCard.TagList.Clear();
+                randomCard.Tags.Clear();
                 randomCard.Expedition = ExpeditionCardType.None;
 
                 randomCard.GameDeckId = winnerUser.GameDeck.Id;

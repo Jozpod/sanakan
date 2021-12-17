@@ -40,10 +40,8 @@ namespace Sanakan.DiscordBot.Tests.PreconditionsTests
         public async Task Should_Return_Success()
         {
             var userId = 1ul;
-            var configuration = new DiscordConfiguration
-            {
-                AllowedToDebug = new[] { userId },
-            };
+            var configuration = new DiscordConfiguration();
+            configuration.AllowedToDebug.Add(userId);
 
             _userMock
                 .Setup(pr => pr.Id)

@@ -112,7 +112,7 @@ namespace Sanakan.Game.Services
                             if (t.Length < 1)
                                 continue;
 
-                            nList = list.Where(x => x.TagList.Any(c => c.Name.Equals(t, StringComparison.CurrentCultureIgnoreCase))).ToList();
+                            nList = list.Where(x => x.Tags.Any(c => c.Name.Equals(t, StringComparison.CurrentCultureIgnoreCase))).ToList();
                         }
                         return nList;
                     }
@@ -126,7 +126,7 @@ namespace Sanakan.Game.Services
                             if (t.Length < 1)
                                 continue;
 
-                            nList = list.Where(x => !x.TagList.Any(c => c.Name.Equals(t, StringComparison.CurrentCultureIgnoreCase))).ToList();
+                            nList = list.Where(x => !x.Tags.Any(c => c.Name.Equals(t, StringComparison.CurrentCultureIgnoreCase))).ToList();
                         }
                         return nList;
                     }
@@ -598,7 +598,7 @@ namespace Sanakan.Game.Services
             return nDef;
         }
 
-        public string GetDeathLog(FightHistory fight, List<PlayerInfo> players)
+        public string GetDeathLog(FightHistory fight, IEnumerable<PlayerInfo> players)
         {
             string deathLog = "";
             for (var i = 0; i < fight.Rounds.Count; i++)
@@ -623,7 +623,7 @@ namespace Sanakan.Game.Services
             return deathLog;
         }
 
-        public FightHistory MakeFightAsync(List<PlayerInfo> players, bool oneCard = false)
+        public FightHistory MakeFightAsync(IEnumerable<PlayerInfo> players, bool oneCard = false)
         {
             var totalCards = new List<CardWithHealth>();
 
@@ -716,7 +716,7 @@ namespace Sanakan.Game.Services
                     x.Cards.Any(c => c.GameDeckId == winningCard.GameDeckId));
             }
 
-            return new FightHistory(winner!) { Rounds = rounds };
+            return new FightHistory(winner) { Rounds = rounds };
         }
 
         public Embed GetActiveList(IEnumerable<Card> list)
@@ -1328,9 +1328,9 @@ namespace Sanakan.Game.Services
         }
 
         public async Task<IEnumerable<Card>> GetCardsFromWishlist(
-            List<ulong> cardsId,
-            List<ulong> charactersId,
-            List<ulong> titlesId,
+            IEnumerable<ulong> cardsId,
+            IEnumerable<ulong> charactersId,
+            IEnumerable<ulong> titlesId,
             List<Card> allCards,
             IEnumerable<Card> userCards)
         {

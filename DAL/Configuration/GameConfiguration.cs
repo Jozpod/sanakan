@@ -93,7 +93,7 @@ namespace Sanakan.DAL.Configuration
             builder.HasKey(pr => pr.Name);
 
             builder.HasOne(e => e.Card)
-                .WithMany(d => d.TagList);
+                .WithMany(d => d.Tags);
         }
 
         public void Configure(EntityTypeBuilder<CardArenaStats> builder)

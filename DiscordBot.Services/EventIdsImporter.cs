@@ -17,7 +17,7 @@ namespace Sanakan.DiscordBot.Services
             _httpClient = httpClient;
         }
 
-        public async Task<EventIdsImporterResult> RunAsync(string url)
+        public async Task<EventIdsImporterResult> RunAsync(Uri url)
         {
             var ids = new List<ulong>();
             var response = await _httpClient.GetAsync(url);

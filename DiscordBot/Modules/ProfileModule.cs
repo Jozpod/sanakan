@@ -113,12 +113,13 @@ namespace Sanakan.DiscordBot.Modules
         [Alias("sub")]
         [Summary("wyświetla daty zakończenia subskrypcji")]
         [Remarks(""), RequireCommandChannel]
-        public async Task ShowSubsAsync()
+        public async Task ShowSubscriptionsAsync()
         {
-            var databaseUser = await _userRepository.GetCachedFullUserAsync(Context.User.Id);
+            var user = Context.User;
+            var databaseUser = await _userRepository.GetCachedFullUserAsync(user.Id);
             var timeStatuses = databaseUser.TimeStatuses.Where(x => x.Type.IsSubType());
 
-            var stringBuilder = new StringBuilder($"**Subskrypcje** {Context.User.Mention}:\n\n", 50);
+            var stringBuilder = new StringBuilder($"**Subskrypcje** {user.Mention}:\n\n", 50);
             var utcNow = _systemClock.UtcNow;
 
             if (timeStatuses.Any())
@@ -218,14 +219,16 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            string stringRole = "";
+            var summary = new StringBuilder("**Dostępne role:**\n");
             foreach (var selfRole in config.SelfRoles)
             {
                 var gRole = guild.GetRole(selfRole?.RoleId ?? 0);
-                stringRole += $" `{selfRole.Name}` ";
+                summary.AppendFormat(" `{0}` ", selfRole.Name);
             }
 
-            await ReplyAsync($"**Dostępne role:**\n{stringRole}\n\nUżyj `s.przyznaj role [nazwa]` aby dodać lub `s.zdejmij role [nazwa]` odebrać sobie role.");
+            summary.Append($"\n\nUżyj `s.przyznaj role [nazwa]` aby dodać lub `s.zdejmij role [nazwa]` odebrać sobie role.");
+
+            await ReplyAsync(summary.ToString());
         }
 
         [Command("statystyki", RunMode = RunMode.Async)]

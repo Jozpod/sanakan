@@ -15,7 +15,7 @@ namespace DiscordBot.ModulesTests.ModerationModuleTests
     public class SetCommandWaifuChannelAsyncTests : Base
     {
         [TestMethod]
-        public async Task Should_Set_Channel()
+        public async Task Should_Set_Channel_And_Reply()
         {
             var guildId = 1ul;
             var guildOptions = new GuildOptions(guildId, 50);

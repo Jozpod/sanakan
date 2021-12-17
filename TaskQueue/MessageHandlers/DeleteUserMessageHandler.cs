@@ -27,7 +27,7 @@ namespace Sanakan.TaskQueue.MessageHandlers
             foreach (var card in databaseUser.GameDeck.Cards)
             {
                 card.InCage = false;
-                card.TagList.Clear();
+                card.Tags.Clear();
                 card.LastOwnerId = databaseUser.Id;
                 card.GameDeckId = fakeUser.GameDeck.Id;
             }

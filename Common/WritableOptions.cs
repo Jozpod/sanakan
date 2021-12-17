@@ -11,6 +11,10 @@ using System.Threading.Tasks;
 
 namespace Sanakan.Common
 {
+    /// <summary>
+    /// Implements options which can be saved to underlying file system.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     internal class WritableOptions<T> : IWritableOptions<T>
         where T : class, new()
     {
@@ -50,7 +54,7 @@ namespace Sanakan.Common
         public T Value => _options.CurrentValue;
         public T Get(string name) => _options.Get(name);
 
-        public async Task<bool> UpdateAsync(Action<T> applyChanges)
+        public async Task<bool> UpdateAsync(Action<T> applyChanges, bool saveChanges)
         {
             var fileProvider = _environment.ContentRootFileProvider;
             var fileInfo = fileProvider.GetFileInfo(_file);
@@ -58,12 +62,18 @@ namespace Sanakan.Common
 
             try
             {
-                using var stream = _fileSystem.Open(physicalPath, FileMode.Truncate);
+                
                 applyChanges(_options.CurrentValue);
-                await JsonSerializer.SerializeAsync(stream, _options.CurrentValue, _jsonSerializerOptions);
-                stream.Close();
 
-                _configuration.Reload();
+                if (saveChanges)
+                {
+                    using var stream = _fileSystem.Open(physicalPath, FileMode.Truncate);
+                    await JsonSerializer.SerializeAsync(stream, _options.CurrentValue, _jsonSerializerOptions);
+                    stream.Close();
+
+                    _configuration.Reload();
+                }
+
                 return true;
             }
             catch (Exception ex)

@@ -1,9 +1,10 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 
 namespace Sanakan.DiscordBot.Services.Abstractions
 {
     public interface IEventIdsImporter
     {
-        Task<EventIdsImporterResult> RunAsync(string url);
+        Task<EventIdsImporterResult> RunAsync(Uri url);
     }
 }

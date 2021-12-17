@@ -10,12 +10,12 @@ namespace Sanakan.DAL.Models.Configuration
         public ulong Id { get; set; }
 
         /// <summary>
-        /// The Discord user identifier.
+        /// The Discord user identifier which sent the report.
         /// </summary>
         public ulong UserId { get; set; }
 
         /// <summary>
-        /// The Discord message identifier.
+        /// The Discord message identifier which is going to be moderated.
         /// </summary>
         public ulong MessageId { get; set; }
 

@@ -1,8 +1,10 @@
 ﻿using SixLabors.ImageSharp.PixelFormats;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Sanakan.Game
 {
+    [ExcludeFromCodeCoverage]
     public static class Colors
     {
         public static Rgba32 SmokeyGrey = Rgba32.FromHex("#727272");

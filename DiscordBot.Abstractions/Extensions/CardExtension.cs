@@ -42,7 +42,7 @@ namespace Sanakan.Extensions
                 }
             }
 
-            foreach (var tagItem in card.TagList)
+            foreach (var tagItem in card.Tags)
             {
                 var tagName = tagItem.Name.ToLowerInvariant();
                 switch (tagName)
@@ -88,8 +88,8 @@ namespace Sanakan.Extensions
 
         public static string GetDesc(this Card card)
         {
-            var tags = string.Join(" ", card.TagList.Select(x => x.Name));
-            if (card.TagList.Count < 1)
+            var tags = string.Join(" ", card.Tags.Select(x => x.Name));
+            if (card.Tags.Count < 1)
             {
                 tags = "---";
             }
@@ -129,9 +129,9 @@ namespace Sanakan.Extensions
         }
         public static string GetDescSmall(this Card card)
         {
-            var tags = string.Join(" ", card.TagList.Select(x => x.Name));
+            var tags = string.Join(" ", card.Tags.Select(x => x.Name));
             var cardSummary = card.GetString(true, true, true, false, true);
-            if (card.TagList.Count < 1)
+            if (card.Tags.Count < 1)
             {
                 tags = "---";
             }

@@ -1,7 +1,42 @@
+using System;
+
 namespace Sanakan.ShindenApi.Utilities
 {
     public class UrlHelpers
     {
+        public static UrlParsingError ParseUrlToShindenId(Uri url, out ulong shindenId)
+        {
+            shindenId = 0;
+            var splited = url.ToString().Split('/');
+            bool http = splited[0].Equals("https:") || splited[0].Equals("http:");
+            int toChek = http ? 2 : 0;
+
+            if (splited.Length < (toChek == 2 ? 5 : 3))
+            {
+                return UrlParsingError.InvalidUrl;
+            }
+
+            if (splited[toChek].Equals("shinden.pl") || splited[toChek].Equals("www.shinden.pl"))
+            {
+                if (splited[++toChek].Equals("user") || splited[toChek].Equals("animelist") || splited[toChek].Equals("mangalist"))
+                {
+                    var data = splited[++toChek].Split('-');
+                    if (ulong.TryParse(data[0], out shindenId))
+                    {
+                        return UrlParsingError.None;
+                    }
+                }
+            }
+
+            if (splited[toChek].Equals("forum.shinden.pl")
+                || splited[toChek].Equals("www.forum.shinden.pl"))
+            {
+                return UrlParsingError.InvalidUrlForum;
+            }
+
+            return UrlParsingError.InvalidUrl;
+        }
+
         public static string GetBigImageURL(ulong? imageID)
         {
             if (!imageID.HasValue)

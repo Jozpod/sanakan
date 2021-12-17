@@ -15,7 +15,7 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
     public class SacrificeCardMultiAsyncTests : Base
     {
         [TestMethod]
-        public async Task Should_Sacrifice_Cards_And_Upgrade()
+        public async Task Should_Sacrifice_Cards_And_Upgrade_Card()
         {
             var utcNow = DateTime.UtcNow;
             var idToUpgrade = 1ul;

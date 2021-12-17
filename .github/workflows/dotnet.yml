@@ -36,13 +36,13 @@ jobs:
         # Probably caused by indirect dependency injection via assembly.
         run: |
           dotnet test Tests/Common.Tests/Common.Tests.csproj  --no-build --verbosity minimal --configuration Release /p:CoverletOutput=../TestResults/coverage.json /p:CoverletOutputFormat=json
-          dotnet test Tests/DAL.Tests/DAL.Tests.csproj  --no-build --verbosity minimal --configuration Release /p:CoverletOutput=../TestResults/coverage.json /p:MergeWith=../TestResults/coverlet.json /p:CoverletOutputFormat=json
-          dotnet test Tests/DiscordBot.Session.Tests/DiscordBot.Session.Tests.csproj --no-build --verbosity minimal --configuration Release /p:CoverletOutput=../TestResults/coverage.json /p:MergeWith=../TestResults/coverlet.json /p:CoverletOutputFormat=json
           dotnet test Tests/DAL.MySql.Migrator.Tests/DAL.MySql.Migrator.Tests.csproj --no-build --verbosity minimal --configuration Release /p:CoverletOutput=../TestResults/coverage.json /p:MergeWith=../TestResults/coverlet.json /p:CoverletOutputFormat=json
           dotnet test Tests/DAL.MySql.Schema.Tests/DAL.MySql.Schema.Tests.csproj --no-build --verbosity minimal --configuration Release /p:CoverletOutput=../TestResults/coverage.json /p:MergeWith=../TestResults/coverlet.json /p:CoverletOutputFormat=json
           dotnet test Tests/Web.Tests/Web.Tests.csproj --no-build --verbosity minimal --configuration Release /p:CoverletOutput=../TestResults/coverage.json /p:MergeWith=../TestResults/coverlet.json /p:CoverletOutput=../TestResults/coverage.opencover.xml  /p:CoverletOutputFormat=opencover
+          dotnet test Tests/DAL.Tests/DAL.Tests.csproj  --no-build --verbosity minimal --configuration Release
           dotnet test Tests/DiscordBot.Tests/DiscordBot.Tests.csproj --no-build --verbosity minimal --configuration Release
           dotnet test Tests/ShindenApi.Tests/ShindenApi.Tests.csproj --no-build --verbosity minimal --configuration Release
+          dotnet test Tests/DiscordBot.Session.Tests/DiscordBot.Session.Tests.csproj --no-build --verbosity minimal --configuration Release
           dotnet test Tests/DiscordBot.Supervisor.Tests/DiscordBot.Supervisor.Tests.csproj --no-build --verbosity minimal --configuration Release
           dotnet test Tests/DiscordBot.Services.Tests/DiscordBot.Services.Tests.csproj  --no-build --verbosity minimal --configuration Release
           dotnet test Tests/Daemon.Tests/Daemon.Tests.csproj  --no-build --verbosity minimal --configuration Release
@@ -52,8 +52,10 @@ jobs:
         uses: codecov/codecov-action@v2
         with:
           files: "./Tests/TestResults/coverage.opencover.xml,\
+            ./Tests/TestResults/DAL.Tests.coverage.xml,\
             ./Tests/TestResults/DiscordBot.Tests.coverage.xml,\
             ./Tests/TestResults/ShindenApi.Tests.coverage,\
+            ./Tests/TestResults/DiscordBot.Session.Tests.coverage.xml,\
             ./Tests/TestResults/DiscordBot.Supervisor.Tests.coverage.xml,\
             ./Tests/TestResults/DiscordBot.Services.Tests.coverage.xml,\
             ./Tests/TestResults/Daemon.Tests.coverage.xml,\

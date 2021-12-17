@@ -15,10 +15,12 @@ namespace DiscordBot.ModulesTests.DebugModuleTests
     public class ToggleSafariAsyncTests : Base
     {
         [TestMethod]
-        public async Task Should_Set_Option()
+        public async Task Should_Set_Option_And_Send_Confirm_Message()
         {
+            var saveChanges = true;
+
             _sanakanConfigurationMock
-                .Setup(pr => pr.UpdateAsync(It.IsAny<Action<SanakanConfiguration>>()))
+                .Setup(pr => pr.UpdateAsync(It.IsAny<Action<SanakanConfiguration>>(), saveChanges))
                 .ReturnsAsync(true);
 
             SetupSendMessage((message, embed) =>
@@ -26,7 +28,7 @@ namespace DiscordBot.ModulesTests.DebugModuleTests
                 embed.Should().NotBeNull();
             });
 
-            await _module.ToggleSafariAsync();
+            await _module.ToggleSafariAsync(saveChanges);
         }
     }
 }

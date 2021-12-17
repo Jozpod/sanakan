@@ -18,6 +18,10 @@ namespace Sanakan.DAL.Models
         RandomNormalBoosterPackS = 10,
         RandomNormalBoosterPackSS = 11,
         AffectionRecoveryGreat = 12,
+
+        /// <summary>
+        /// Blood samples.
+        /// </summary>
         BetterIncreaseUpgradeCnt = 13,
         CheckAffection = 14,
         SetCustomImage = 15,

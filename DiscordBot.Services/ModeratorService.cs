@@ -419,7 +419,7 @@ namespace Sanakan.DiscordBot.Services
             IGuildUser user,
             IMessageChannel channel,
             PenaltyInfo penaltyInfo,
-            string byWho = "automat")
+            string byWho = Constants.Automatic)
         {
             var durationFriendly = penaltyInfo.Duration.Humanize(4);
 
@@ -480,14 +480,13 @@ namespace Sanakan.DiscordBot.Services
             }
         }
 
-        public async Task<Embed> GetMutedListAsync(ICommandContext context)
+        public async Task<Embed> GetMutedListAsync(IGuild guild)
         {
             var stringBuilder = new StringBuilder("Brak", 100);
             using var serviceScope = _serviceScopeFactory.CreateScope();
             var serviceProvider = serviceScope.ServiceProvider;
             var penaltyInfoRepository = serviceProvider.GetRequiredService<IPenaltyInfoRepository>();
 
-            var guild = context.Guild;
             var penaltyList = await penaltyInfoRepository.GetMutedPenaltiesAsync(guild.Id);
 
             if (penaltyList.Any())

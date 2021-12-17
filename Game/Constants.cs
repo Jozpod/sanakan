@@ -2,9 +2,11 @@
 using Sanakan.Game.Models;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Sanakan.Game
 {
+    [ExcludeFromCodeCoverage]
     public static class Constants
     {
         public static ItemWithCost[] ItemsWithCost = new[]

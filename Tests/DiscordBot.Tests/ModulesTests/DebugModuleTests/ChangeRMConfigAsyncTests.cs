@@ -29,7 +29,7 @@ namespace DiscordBot.ModulesTests.DebugModuleTests
                 .Returns(guildId);
 
             _sanakanConfigurationMock
-                .Setup(pr => pr.UpdateAsync(It.IsAny<Action<SanakanConfiguration>>()))
+                .Setup(pr => pr.UpdateAsync(It.IsAny<Action<SanakanConfiguration>>(), true))
                 .ReturnsAsync(true);
 
             SetupSendMessage((message, embed) =>

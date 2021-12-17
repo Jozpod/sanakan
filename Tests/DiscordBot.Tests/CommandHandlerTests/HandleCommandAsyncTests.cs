@@ -57,7 +57,7 @@ namespace Sanakan.DiscordBot.Tests.CommandHandlerTests
         {
             var channelId = 1ul;
             var guildConfig = new GuildOptions(_guildId, 50);
-            _configuration.AllowedToDebug = new[] { _userId };
+            _configuration.AllowedToDebug.Add(_userId);
 
             _userMessageMock
                 .Setup(pr => pr.Author)

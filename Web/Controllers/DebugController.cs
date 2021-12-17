@@ -47,7 +47,7 @@ namespace Sanakan.Web.Controllers
         public async Task<IActionResult> UpdateBotAsync()
         {
             await _discordClientAccessor.LogoutAsync();
-            _fileSystem.Create("./updateNow");
+            _fileSystem.Create(Placeholders.UpdateNow);
             _logger.LogDebug("Update app from web.");
             return Ok();
         }

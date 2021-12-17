@@ -20,6 +20,7 @@ namespace DiscordBot.ModulesTests.DebugModuleTests
         {
             var utcNow = DateTime.UtcNow;
             var user = new User(1ul, utcNow);
+            var amount = 1000L;
             var guildUserMock = new Mock<IGuildUser>(MockBehavior.Strict);
 
             guildUserMock
@@ -47,7 +48,7 @@ namespace DiscordBot.ModulesTests.DebugModuleTests
                 embed.Description.Should().NotBeNullOrEmpty();
             });
 
-            await _module.ChangeUserAcAsync(guildUserMock.Object, 0);
+            await _module.ChangeUserAcAsync(guildUserMock.Object, amount);
         }
     }
 }

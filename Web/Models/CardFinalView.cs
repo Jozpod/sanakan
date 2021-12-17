@@ -48,7 +48,7 @@ namespace Sanakan.Api.Models
             IsOnExpedition = card.Expedition != ExpeditionCardType.None;
             SmallImageUrl = $"https://cdn2.shinden.eu/small/{card.Id}.png";
             ProfileImageUrl = $"https://cdn2.shinden.eu/profile/{card.Id}.png";
-            Tags = card.TagList.Select(x => x.Name).ToList();
+            Tags = card.Tags.Select(x => x.Name).ToList();
         }
 
         /// <summary>

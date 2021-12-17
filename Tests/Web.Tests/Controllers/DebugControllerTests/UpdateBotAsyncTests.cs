@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
+using Sanakan.Common;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -18,7 +19,7 @@ namespace Sanakan.Web.Tests.Controllers.DebugControllerTests
                 .Returns(Task.CompletedTask);
 
             _fileSystemMock
-                .Setup(pr => pr.Create(It.IsAny<string>()))
+                .Setup(pr => pr.Create(Placeholders.UpdateNow))
                 .Returns(new MemoryStream());
 
             var result = await _controller.UpdateBotAsync();

@@ -28,7 +28,7 @@ namespace Sanakan.DAL.Repositories
                 .Cards
                 .Include(x => x.GameDeck)
                 .Include(x => x.ArenaStats)
-                .Include(x => x.TagList)
+                .Include(x => x.Tags)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(x => x.Id == wid);
 
@@ -39,8 +39,8 @@ namespace Sanakan.DAL.Repositories
             var result = await _dbContext
                 .Cards
                .Include(x => x.ArenaStats)
-               .Include(x => x.TagList)
-               .Where(x => x.TagList
+               .Include(x => x.Tags)
+               .Where(x => x.Tags
                    .Any(c => c.Name.Equals(tag, StringComparison.CurrentCultureIgnoreCase)))
                .AsNoTracking()
                .ToListAsync();
@@ -71,7 +71,7 @@ namespace Sanakan.DAL.Repositories
                    .ThenInclude(x => x.ArenaStats)
                .Include(x => x.GameDeck)
                     .ThenInclude(x => x.Cards)
-                    .ThenInclude(x => x.TagList)
+                    .ThenInclude(x => x.Tags)
                .AsNoTracking()
                .AsSplitQuery()
                .FirstOrDefaultAsync();
@@ -92,7 +92,7 @@ namespace Sanakan.DAL.Repositories
                 .AsSplitQuery()
                 .Where(x => x.GameDeckId == gameDeckId)
                 .Include(x => x.ArenaStats)
-                .Include(x => x.TagList)
+                .Include(x => x.Tags)
                 .AsNoTracking();
 
 
@@ -149,13 +149,13 @@ namespace Sanakan.DAL.Repositories
         {
             var query = _dbContext.Cards
                .AsQueryable()
-               .Include(x => x.TagList)
+               .Include(x => x.Tags)
                .Include(x => x.GameDeck)
                .Where(x => x.CharacterId == characterId);
 
             if (cardQueryOptions.IncludeTagList)
             {
-                query = query.Include(pr => pr.TagList);
+                query = query.Include(pr => pr.Tags);
             }
 
             if (cardQueryOptions.IncludeArenaStats)
@@ -185,7 +185,7 @@ namespace Sanakan.DAL.Repositories
         {
             return _dbContext.Cards
                 .AsQueryable()
-                .Include(x => x.TagList)
+                .Include(x => x.Tags)
                 .Include(x => x.GameDeck)
                 .AsSplitQuery()
                 .Where(x => characterIds.Contains(x.CharacterId))
@@ -196,7 +196,7 @@ namespace Sanakan.DAL.Repositories
         public Task<List<Card>> GetByCharactersAndNotInUserGameDeckAsync(ulong userId, IEnumerable<ulong> characterIds)
         {
             return _dbContext.Cards
-                .Include(x => x.TagList)
+                .Include(x => x.Tags)
                 .Include(x => x.GameDeck)
                 .Where(x => x.GameDeckId != userId
                     && characterIds.Any(pr => pr == x.CharacterId))
@@ -221,7 +221,7 @@ namespace Sanakan.DAL.Repositories
                 .AsSplitQuery()
                 .Where(x => x.GameDeckId == gameDeckId)
                 .Include(x => x.ArenaStats)
-                .Include(x => x.TagList)
+                .Include(x => x.Tags)
                 .AsNoTracking()
                 .ToListAsync();
         }
@@ -233,7 +233,7 @@ namespace Sanakan.DAL.Repositories
                 .AsSplitQuery()
                 .Where(x => x.GameDeckId == gameDeckId)
                 .Include(x => x.ArenaStats)
-                .Include(x => x.TagList)
+                .Include(x => x.Tags)
                 .Skip(offset)
                 .Take(count)
                 .AsNoTracking()
@@ -254,7 +254,7 @@ namespace Sanakan.DAL.Repositories
 
             if (cardQueryOptions.IncludeTagList)
             {
-                query = query.Include(pr => pr.TagList);
+                query = query.Include(pr => pr.Tags);
             }
 
             if (cardQueryOptions.IncludeArenaStats)
@@ -283,7 +283,7 @@ namespace Sanakan.DAL.Repositories
         public Task<List<Card>> GetByIdFirstOrLastOwnerAsync(ulong discordUserId)
         {
             return _dbContext.Cards
-                .Include(x => x.TagList)
+                .Include(x => x.Tags)
                 .Where(x => (x.LastOwnerId == discordUserId || (x.FirstOwnerId == discordUserId
                     && x.LastOwnerId == 0))
                     && x.GameDeckId == 1)
@@ -306,7 +306,7 @@ namespace Sanakan.DAL.Repositories
 
             if (cardQueryOptions.IncludeTagList)
             {
-                query = query.Include(pr => pr.TagList);
+                query = query.Include(pr => pr.Tags);
             }
 
             if (cardQueryOptions.IncludeArenaStats)

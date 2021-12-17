@@ -6,7 +6,8 @@ namespace Sanakan.DAL.Models
     public class CardTag
     {
         [StringLength(30)]
-        public string Name { get; set; } = null;
+        [Required]
+        public string Name { get; set; } = string.Empty;
 
         public ulong CardId { get; set; }
 

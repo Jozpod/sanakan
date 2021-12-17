@@ -118,7 +118,7 @@ namespace Sanakan.Daemon.Tests.HostedServices.SupervisorHostedServiceTests
                     guildUserMock.Object,
                     notifyChannelMock.Object,
                     penaltyInfo,
-                    "automat"))
+                    DiscordBot.Constants.Automatic))
                 .Returns(Task.CompletedTask);
 
             var cancellationTokenSource = new CancellationTokenSource();

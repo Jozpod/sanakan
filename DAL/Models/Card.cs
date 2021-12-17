@@ -11,7 +11,7 @@ namespace Sanakan.DAL.Models
     {
         public Card()
         {
-            TagList = new List<CardTag>();
+            Tags = new List<CardTag>();
         }
 
         public Card(
@@ -32,7 +32,7 @@ namespace Sanakan.DAL.Models
             QualityOnStart = Quality.Broken;
             ExpeditionDate = date;
             PAS = PreAssembledFigure.None;
-            TagList = new List<CardTag>();
+            Tags = new List<CardTag>();
             CreatedOn = date;
             Name = name;
             StarStyle = StarStyle.Full;
@@ -155,7 +155,7 @@ namespace Sanakan.DAL.Models
 
         public DateTime ExpeditionDate { get; set; }
 
-        public virtual ICollection<CardTag> TagList { get; set; }
+        public virtual ICollection<CardTag> Tags { get; set; }
 
         public virtual CardArenaStats ArenaStats { get; set; } = null!;
 
@@ -225,7 +225,7 @@ namespace Sanakan.DAL.Models
             switch (expedition)
             {
                 case ExpeditionCardType.ExtremeItemWithExp:
-                    return !FromFigure && !HasTag(Tags.Favourite);
+                    return !FromFigure && !HasTag(Common.Tags.Favourite);
 
                 case ExpeditionCardType.NormalItemWithExp:
                     return !FromFigure;
@@ -351,13 +351,13 @@ namespace Sanakan.DAL.Models
 
         public bool HasTag(string tag)
         {
-            return TagList
+            return Tags
                 .Any(x => x.Name.Equals(tag, StringComparison.CurrentCultureIgnoreCase));
         }
 
         public bool HasAnyTag(IEnumerable<string> tags)
         {
-            return TagList
+            return Tags
                 .Any(x => tags.Any(t => t.Equals(x.Name, StringComparison.CurrentCultureIgnoreCase)));
         }
         public int GetHealthMax()

@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 namespace Sanakan.Game.Services
 {
-    public class SlotMachine : ISlotMachine
+    internal class SlotMachine : ISlotMachine
     {
         private readonly IRandomNumberGenerator _randomNumberGenerator;
         private const int Rows = 3;

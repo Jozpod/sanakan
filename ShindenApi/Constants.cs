@@ -1,5 +1,8 @@
-﻿namespace Sanakan.ShindenApi
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Sanakan.ShindenApi
 {
+    [ExcludeFromCodeCoverage]
     public static class Constants
     {
         public const string ShindenUrl = "https://shinden.pl/";

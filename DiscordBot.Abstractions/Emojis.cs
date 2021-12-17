@@ -23,7 +23,8 @@ namespace Sanakan.DiscordBot.Abstractions
         public static Emoji InboxTray = new Emoji("📥");
         public static Emoji CrossMark = new Emoji("❌");
         public static Emoji OutboxTray = new Emoji("📤");
-
+        public static Emoji SlotMachine = new Emoji("🎰");
+        
         public static Emoji OneEmote = new Emoji("\u0031\u20E3");
         public static Emoji TwoEmote = new Emoji("\u0032\u20E3");
     }

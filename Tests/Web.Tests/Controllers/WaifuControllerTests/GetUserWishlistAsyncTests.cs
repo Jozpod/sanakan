@@ -10,10 +10,10 @@ using System.Threading.Tasks;
 namespace Sanakan.Web.Tests.Controllers.WaifuControllerTests
 {
     /// <summary>
-    /// Defines tests for <see cref="WaifuController.GetUserCardsAsync(ulong)"/> method.
+    /// Defines tests for <see cref="WaifuController.GetUserWishlistAsync(ulong)"/> method.
     /// </summary>
     [TestClass]
-    public class GetUserCardsAsync : Base
+    public class GetUserWishlistAsyncTests : Base
     {
 
         [TestMethod]

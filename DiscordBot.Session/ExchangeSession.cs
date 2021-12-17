@@ -461,7 +461,7 @@ namespace Sanakan.DiscordBot.Session
                         }
 
                         card.Active = false;
-                        card.TagList.Clear();
+                        card.Tags.Clear();
                         card.Affection -= 1.5;
 
                         if (card.ExperienceCount > 1)
@@ -497,7 +497,7 @@ namespace Sanakan.DiscordBot.Session
                         }
 
                         card.Active = false;
-                        card.TagList.Clear();
+                        card.Tags.Clear();
                         card.Affection -= 1.5;
 
                         if (card.ExperienceCount > 1)

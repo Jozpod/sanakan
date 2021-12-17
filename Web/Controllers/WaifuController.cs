@@ -225,7 +225,7 @@ namespace Sanakan.Web.Controllers
             var gameDeck = user.GameDeck;
 
             var tagList = gameDeck.Cards
-                .SelectMany(x => x.TagList.Select(c => c.Name))
+                .SelectMany(x => x.Tags.Select(c => c.Name))
                 .Distinct()
                 .ToList();
 
@@ -316,13 +316,6 @@ namespace Sanakan.Web.Controllers
 
             _blockingPriorityQueue.TryEnqueue(message);
 
-            //var exe = new Executable($"api-repair oc{oldId} c{newId}", new Task<Task>(async () =>
-            //{
-
-            //}), Priority.High);
-
-            //await _executor.TryAdd(exe, TimeSpan.FromSeconds(1));
-
             return ShindenOk("Success");
         }
 
@@ -333,7 +326,7 @@ namespace Sanakan.Web.Controllers
         /// <param name="model">New card information.</param>
         [HttpPost("cards/character/{characterId}/update"), Authorize(Policy = AuthorizePolicies.Site)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status200OK)]
-        public IActionResult UpdateCardInfoAsync(
+        public IActionResult UpdateCardInfo(
             ulong characterId,
             [FromBody] CharacterCardInfoUpdate model)
         {
@@ -501,20 +494,19 @@ namespace Sanakan.Web.Controllers
 
         /// <summary>
         /// Tries to generate an image if it doesnt exist.
-        /// Wymusza na bocie wygenerowanie obrazka jeśli nie istnieje
         /// </summary>
-        /// <param name="id">id karty (wid)</param>
-        [HttpGet("card/{id}")]
+        /// <param name="cardId">The card identifier.</param>
+        [HttpGet("card/{cardId}")]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(Stream), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetCardAsync(ulong id)
+        public async Task<IActionResult> GetCardAsync(ulong cardId)
         {
-            if (!_fileSystem.Exists($"{Paths.CardsMiniatures}/{id}.png")
-                || !_fileSystem.Exists($"{Paths.Cards}/{id}.png")
-                || !_fileSystem.Exists($"{Paths.CardsInProfiles}/{id}.png"))
+            if (!_fileSystem.Exists($"{Paths.CardsMiniatures}/{cardId}.png")
+                || !_fileSystem.Exists($"{Paths.Cards}/{cardId}.png")
+                || !_fileSystem.Exists($"{Paths.CardsInProfiles}/{cardId}.png"))
             {
-                var card = await _cardRepository.GetByIdAsync(id);
+                var card = await _cardRepository.GetByIdAsync(cardId);
 
                 if (card == null)
                 {

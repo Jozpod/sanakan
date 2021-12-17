@@ -9,6 +9,7 @@ namespace Sanakan.Game
             ulong experience,
             double levelMultiplier = DefaultLevelMultiplier)
             => (ulong)Convert.ToInt64(Math.Floor(levelMultiplier * Math.Sqrt(experience)));
+
         public static ulong CalculateExpForLevel(
             ulong level,
             double levelMultiplier = DefaultLevelMultiplier)

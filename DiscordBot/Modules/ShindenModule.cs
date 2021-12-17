@@ -27,12 +27,6 @@ namespace Sanakan.DiscordBot.Modules
     [Name("Shinden"), RequireUserRole]
     public class ShindenModule : SanakanModuleBase
     {
-        public enum UrlParsingError
-        {
-            None,
-            InvalidUrl,
-            InvalidUrlForum
-        }
 
         private readonly IShindenClient _shindenClient;
         private readonly ISessionManager _sessionManager;
@@ -234,13 +228,13 @@ namespace Sanakan.DiscordBot.Modules
         [Alias("connect", "polacz", "połacz", "polącz")]
         [Summary("łączy funkcje bota, z kontem na stronie")]
         [Remarks("https://shinden.pl/user/136-mo0nisi44")]
-        public async Task ConnectAsync([Summary("adres do profilu")] string url)
+        public async Task ConnectAsync([Summary("adres do profilu")] Uri url)
         {
-            switch (ParseUrlToShindenId(url, out var shindenId))
+            switch (UrlHelpers.ParseUrlToShindenId(url, out var shindenId))
             {
-                case UrlParsingError.InvalidUrl:
-                    await ReplyAsync(embed: "Wygląda na to, że podałeś niepoprawny link.".ToEmbedMessage(EMType.Error).Build());
-                    return;
+                //case UrlParsingError.InvalidUrl:
+                //    await ReplyAsync(embed: "Wygląda na to, że podałeś niepoprawny link.".ToEmbedMessage(EMType.Error).Build());
+                //    return;
 
                 case UrlParsingError.InvalidUrlForum:
                     await ReplyAsync(embed: "Wygląda na to, że podałeś link do forum zamiast strony.".ToEmbedMessage(EMType.Error).Build());
@@ -261,7 +255,8 @@ namespace Sanakan.DiscordBot.Modules
             }
 
             var user = userResult.Value;
-            var userNameInDiscord = (Context.User as IGuildUser).Nickname ?? Context.User.Username;
+            var invokingUser = Context.User;
+            var userNameInDiscord = (invokingUser as IGuildUser).Nickname ?? invokingUser.Username;
 
             if (!user.Name.Equals(userNameInDiscord))
             {
@@ -275,7 +270,7 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            var databaseUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
+            var databaseUser = await _userRepository.GetUserOrCreateAsync(invokingUser.Id);
             databaseUser.ShindenId = shindenId;
 
             await _userRepository.SaveChangesAsync();
@@ -287,40 +282,7 @@ namespace Sanakan.DiscordBot.Modules
 
         }
 
-        private UrlParsingError ParseUrlToShindenId(string url, out ulong shindenId)
-        {
-            shindenId = 0;
-            var splited = url.Split('/');
-            bool http = splited[0].Equals("https:") || splited[0].Equals("http:");
-            int toChek = http ? 2 : 0;
-
-            if (splited.Length < (toChek == 2 ? 5 : 3))
-            {
-                return UrlParsingError.InvalidUrl;
-            }
-
-            if (splited[toChek].Equals("shinden.pl") || splited[toChek].Equals("www.shinden.pl"))
-            {
-                if (splited[++toChek].Equals("user") || splited[toChek].Equals("animelist") || splited[toChek].Equals("mangalist"))
-                {
-                    var data = splited[++toChek].Split('-');
-                    if (ulong.TryParse(data[0], out shindenId))
-                    {
-                        return UrlParsingError.None;
-                    }
-                }
-            }
-
-            if (splited[toChek].Equals("forum.shinden.pl")
-                || splited[toChek].Equals("www.forum.shinden.pl"))
-            {
-                return UrlParsingError.InvalidUrlForum;
-            }
-
-            return UrlParsingError.InvalidUrl;
-        }
-
-        private string[] GetSearchResponse(IEnumerable<object> list, string title)
+        private IEnumerable<string> GetSearchResponse(IEnumerable<object> list, string title)
         {
             var temp = new StringBuilder(2000);
             int messageNr = 0;

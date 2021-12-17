@@ -8,6 +8,7 @@ using Sanakan.DAL.Models;
 using Sanakan.DiscordBot.Abstractions.Configuration;
 using Sanakan.DiscordBot.Services;
 using Sanakan.Game.Models;
+using Sanakan.TypeReaders;
 using System;
 using System.Diagnostics.CodeAnalysis;
 
@@ -58,17 +59,18 @@ namespace Sanakan.DiscordBot.Builder
 
         public static void AddTypeReaders(this ICommandService commandService)
         {
-            commandService.AddTypeReader<SlotMachineSetting>(new TypeReaders.SlotMachineSettingTypeReader());
-            commandService.AddTypeReader<WishlistObjectType>(new TypeReaders.WishlistObjectTypeReader());
-            commandService.AddTypeReader<ExpeditionCardType>(new TypeReaders.ExpeditionTypeReader());
-            commandService.AddTypeReader<ProfileType>(new TypeReaders.ProfileTypeReader());
-            commandService.AddTypeReader<ConfigType>(new TypeReaders.ConfigTypeReader());
-            commandService.AddTypeReader<CoinSide>(new TypeReaders.CoinSideTypeReader());
-            commandService.AddTypeReader<HaremType>(new TypeReaders.HaremTypeReader());
-            commandService.AddTypeReader<TopType>(new TypeReaders.TopTypeReader());
-            commandService.AddTypeReader<bool>(new TypeReaders.BoolTypeReader());
-            commandService.AddTypeReader<Uri>(new TypeReaders.UrlTypeReader());
-            commandService.AddTypeReader<TimeSpan>(new TypeReaders.TimespanTypeReader());
+            commandService.AddTypeReader<SlotMachineSetting>(new SlotMachineSettingTypeReader());
+            commandService.AddTypeReader<WishlistObjectType>(new WishlistObjectTypeReader());
+            commandService.AddTypeReader<ExpeditionCardType>(new ExpeditionTypeReader());
+            commandService.AddTypeReader<ProfileType>(new ProfileTypeReader());
+            commandService.AddTypeReader<ConfigType>(new ConfigTypeReader());
+            commandService.AddTypeReader<CoinSide>(new CoinSideTypeReader());
+            commandService.AddTypeReader<HaremType>(new HaremTypeReader());
+            commandService.AddTypeReader<TopType>(new TopTypeReader());
+            commandService.AddTypeReader<bool>(new BoolTypeReader());
+            commandService.AddTypeReader<Uri>(new UrlTypeReader());
+            commandService.AddTypeReader<TimeSpan>(new TimespanTypeReader());
+            commandService.AddTypeReader<TimeSpan?>(new NullableTimespanTypeReader());
         }
 
         public static ResourceManagerBuilder AddImageResources(this ResourceManagerBuilder builder)

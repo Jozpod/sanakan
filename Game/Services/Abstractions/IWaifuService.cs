@@ -52,9 +52,9 @@ namespace Sanakan.Game.Services.Abstractions
 
         Task<Embed> BuildCardViewAsync(Card card, ITextChannel trashChannel, IUser owner);
 
-        FightHistory MakeFightAsync(List<PlayerInfo> players, bool oneCard = false);
+        FightHistory MakeFightAsync(IEnumerable<PlayerInfo> players, bool oneCard = false);
 
-        string GetDeathLog(FightHistory fight, List<PlayerInfo> players);
+        string GetDeathLog(FightHistory fight, IEnumerable<PlayerInfo> players);
 
         Embed GetShopView(ItemWithCost[] items, string name = "Sklepik", string currency = "TC");
 
@@ -87,10 +87,10 @@ namespace Sanakan.Game.Services.Abstractions
             List<ulong> titlesId);
 
         Task<IEnumerable<Card>> GetCardsFromWishlist(
-            List<ulong> cardsId,
-            List<ulong> charactersId,
-            List<ulong> titlesId,
-            List<Card> cards,
+            IEnumerable<ulong> cardsId,
+            IEnumerable<ulong> charactersId,
+            IEnumerable<ulong> titlesId,
+            List<Card> allCards,
             IEnumerable<Card> userCards);
 
         (TimeSpan, TimeSpan) GetRealTimeOnExpedition(Card card, double karma);

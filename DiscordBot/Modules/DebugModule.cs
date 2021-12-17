@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Commands;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Sanakan.Common;
@@ -40,6 +41,7 @@ namespace Sanakan.DiscordBot.Modules
     [Name(PrivateModules.Debug), Group("dev"), DontAutoLoad, RequireDev]
     public class DebugModule : SanakanModuleBase
     {
+        private readonly IApplicationLifetime _applicationLifetime;
         private readonly IIconConfiguration _iconsConfiguration;
         private readonly IEventIdsImporter _eventIdsImporter;
         private readonly IFileSystem _fileSystem;
@@ -63,6 +65,7 @@ namespace Sanakan.DiscordBot.Modules
         private readonly IServiceScope _serviceScope;
 
         public DebugModule(
+            IApplicationLifetime applicationLifetime,
             IIconConfiguration iconsConfiguration,
             IEventIdsImporter eventIdsImporter,
             IFileSystem fileSystem,
@@ -80,6 +83,7 @@ namespace Sanakan.DiscordBot.Modules
             ITaskManager taskManager,
             IServiceScopeFactory serviceScopeFactory)
         {
+            _applicationLifetime = applicationLifetime;
             _iconsConfiguration = iconsConfiguration;
             _eventIdsImporter = eventIdsImporter;
             _fileSystem = fileSystem;
@@ -164,7 +168,7 @@ namespace Sanakan.DiscordBot.Modules
         [Command("blacklist")]
         [Summary("dodaje/usuwa użytkownika do czarnej listy")]
         [Remarks("Karna")]
-        public async Task TransferCardAsync([Summary("użytkownik")] IUser user)
+        public async Task AddUserToBlackList([Summary("użytkownik")] IUser user)
         {
             var targetUser = await _userRepository.GetUserOrCreateAsync(user.Id);
 
@@ -260,20 +264,24 @@ namespace Sanakan.DiscordBot.Modules
             [Summary("id wiadomości")] ulong messageId,
             [Summary("reakcja")] string reaction)
         {
+            IEmote emote;
+
             try
             {
                 var guild = await Context.Client.GetGuildAsync(guildId);
                 var channel = (IMessageChannel)await guild.GetChannelAsync(channelId);
                 var message = await channel.GetMessageAsync(messageId);
 
-                if (Emote.TryParse(reaction, out var emote))
+                if (Emote.TryParse(reaction, out var parsedEmote))
                 {
-                    await message.AddReactionAsync(emote);
+                    emote = parsedEmote;
                 }
                 else
                 {
-                    await message.AddReactionAsync(new Emoji(reaction));
+                    emote = new Emoji(reaction);
                 }
+
+                await message.AddReactionAsync(emote);
             }
             catch (Exception ex)
             {
@@ -477,31 +485,31 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            var thisCards = await _cardRepository.GetByIdsAsync(wids, new CardQueryOptions
+            var cards = await _cardRepository.GetByIdsAsync(wids, new CardQueryOptions
             {
                 IncludeTagList = true,
             });
 
-            if (thisCards.Count < 1)
+            if (cards.Count < 1)
             {
                 await ReplyAsync(embed: "Nie odnaleziono kart!".ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
 
-            var reply = $"Karta {thisCards.First().GetString(false, false, true)} została przeniesiona.";
+            var reply = $"Karta {cards.First().GetString(false, false, true)} została przeniesiona.";
 
-            if (thisCards.Count > 1)
+            if (cards.Count > 1)
             {
-                reply = $"Przeniesiono {thisCards.Count} kart.";
+                reply = $"Przeniesiono {cards.Count} kart.";
             }
 
-            foreach (var thisCard in thisCards)
+            foreach (var card in cards)
             {
-                thisCard.Active = false;
-                thisCard.InCage = false;
-                thisCard.TagList.Clear();
-                thisCard.GameDeckId = discordUserId;
-                thisCard.Expedition = ExpeditionCardType.None;
+                card.Active = false;
+                card.InCage = false;
+                card.Tags.Clear();
+                card.GameDeckId = discordUserId;
+                card.Expedition = ExpeditionCardType.None;
             }
 
             await _cardRepository.SaveChangesAsync();
@@ -516,30 +524,30 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks("41231 41232")]
         public async Task RemoveCardsAsync([Summary("WIDs")] params ulong[] wids)
         {
-            var thisCards = await _cardRepository.GetByIdsAsync(wids, new CardQueryOptions
+            var cards = await _cardRepository.GetByIdsAsync(wids, new CardQueryOptions
             {
                 IncludeTagList = true,
                 IncludeArenaStats = true,
                 AsSingleQuery = true,
             });
 
-            if (thisCards.Count < 1)
+            if (cards.Count < 1)
             {
                 await ReplyAsync(embed: "Nie odnaleziono kart!".ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
 
-            var reply = $"Karta {thisCards.First().GetString(false, false, true)} została skasowana.";
+            var reply = $"Karta {cards.First().GetString(false, false, true)} została skasowana.";
 
-            if (thisCards.Count > 1)
+            if (cards.Count > 1)
             {
-                reply = $"Skasowano {thisCards.Count} kart.";
+                reply = $"Skasowano {cards.Count} kart.";
             }
 
-            foreach (var thisCard in thisCards)
+            foreach (var card in cards)
             {
-                _waifuService.DeleteCardImageIfExist(thisCard);
-                _cardRepository.Remove(thisCard);
+                _waifuService.DeleteCardImageIfExist(card);
+                _cardRepository.Remove(card);
             }
 
             await _cardRepository.SaveChangesAsync();
@@ -593,7 +601,7 @@ namespace Sanakan.DiscordBot.Modules
         [Command("mban", RunMode = RunMode.Async)]
         [Summary("banuje użytkowników z serwera")]
         [Remarks("Jupson Moe")]
-        public async Task MultiBankAsync(
+        public async Task MultiBanAsync(
             [Summary("użytkownicy")] params IGuildUser[] users)
         {
             var count = 0;
@@ -616,27 +624,27 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks("Sniku")]
         public async Task RestoreCardsAsync([Summary("użytkownik")] IGuildUser user)
         {
-            var thisCards = await _cardRepository.GetByIdFirstOrLastOwnerAsync(user.Id);
+            var cards = await _cardRepository.GetByIdFirstOrLastOwnerAsync(user.Id);
 
-            if (thisCards.Count < 1)
+            if (cards.Count < 1)
             {
                 await ReplyAsync(embed: "Nie odnaleziono kart!".ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
 
-            var reply = $"Karta {thisCards.First().GetString(false, false, true)} została przeniesiona.";
+            var reply = $"Karta {cards.First().GetString(false, false, true)} została przeniesiona.";
 
-            if (thisCards.Count > 1)
+            if (cards.Count > 1)
             {
-                reply = $"Przeniesiono {thisCards.Count} kart.";
+                reply = $"Przeniesiono {cards.Count} kart.";
             }
 
-            foreach (var thisCard in thisCards)
+            foreach (var card in cards)
             {
-                thisCard.Active = false;
-                thisCard.InCage = false;
-                thisCard.TagList.Clear();
-                thisCard.GameDeckId = user.Id;
+                card.Active = false;
+                card.InCage = false;
+                card.Tags.Clear();
+                card.GameDeckId = user.Id;
             }
 
             await _cardRepository.SaveChangesAsync();
@@ -677,7 +685,6 @@ namespace Sanakan.DiscordBot.Modules
         public async Task GenerateCardStatsAsync([Summary("WID")] ulong wid)
         {
             var stringBuilder = new StringBuilder(100);
-            var stats = new long[(int)Rarity.E + 1];
             var rarities = RarityExtensions.Rarities;
 
             foreach (var rarity in rarities)
@@ -711,7 +718,7 @@ namespace Sanakan.DiscordBot.Modules
         [Command("duser"), Priority(1)]
         [Summary("usuwa użytkownika o podanym id z bazy")]
         [Remarks("845155646123")]
-        public async Task FactoryUserAsync(
+        public async Task DeleteUserAsync(
             [Summary("id użytkownika")] ulong discordUserId,
             [Summary("czy usunąć karty?")] bool cards = false)
         {
@@ -729,7 +736,7 @@ namespace Sanakan.DiscordBot.Modules
                 foreach (var card in user.GameDeck.Cards)
                 {
                     card.InCage = false;
-                    card.TagList.Clear();
+                    card.Tags.Clear();
                     card.LastOwnerId = discordUserId;
                     card.GameDeckId = fakeUser.GameDeck.Id;
                 }
@@ -805,9 +812,9 @@ namespace Sanakan.DiscordBot.Modules
             [Summary("WID")] ulong wid,
             [Summary("tytuł")][Remainder] string? title = null)
         {
-            var thisCard = await _cardRepository.GetByIdAsync(wid);
+            var card = await _cardRepository.GetByIdAsync(wid);
 
-            if (thisCard == null)
+            if (card == null)
             {
                 await ReplyAsync(embed: $"Taka karta nie istnieje.".ToEmbedMessage(EMType.Error).Build());
                 return;
@@ -815,14 +822,14 @@ namespace Sanakan.DiscordBot.Modules
 
             if (title != null)
             {
-                thisCard.Title = title;
+                card.Title = title;
             }
             else
             {
-                var result = await _shindenClient.GetCharacterInfoAsync(thisCard.CharacterId);
+                var result = await _shindenClient.GetCharacterInfoAsync(card.CharacterId);
                 if (result.Value != null)
                 {
-                    thisCard.Title = result.Value.Relations?
+                    card.Title = result.Value.Relations?
                         .OrderBy(x => x.CharacterId)?
                         .FirstOrDefault()?.Title ?? Placeholders.Undefined;
                 }
@@ -832,7 +839,7 @@ namespace Sanakan.DiscordBot.Modules
 
             _cacheManager.ExpireTag(CacheKeys.Users);
 
-            await ReplyAsync(embed: $"Nowy tytuł to: `{thisCard.Title}`".ToEmbedMessage(EMType.Success).Build());
+            await ReplyAsync(embed: $"Nowy tytuł to: `{card.Title}`".ToEmbedMessage(EMType.Success).Build());
         }
 
         [Command("delq"), Priority(1)]
@@ -883,13 +890,10 @@ namespace Sanakan.DiscordBot.Modules
             [Summary("liczba znaków")] ulong count,
             [Summary("true/false - czy zapisać")] bool save = false)
         {
-            if (save)
+            await _config.UpdateAsync(opt =>
             {
-                await _config.UpdateAsync(opt =>
-                {
-                    opt.Experience.CharPerPacket = count;
-                });
-            }
+                opt.Experience.CharPerPacket = count;
+            }, save);
 
             var content = $"Ustawiono próg `{count}` znaków na pakiet. `Zapisano: {save.GetYesNo()}`"
                 .ToEmbedMessage(EMType.Success).Build();
@@ -903,13 +907,10 @@ namespace Sanakan.DiscordBot.Modules
             [Summary("liczba znaków")] long count,
             [Summary("true/false - czy zapisać")] bool save = false)
         {
-            if (save)
+            await _config.UpdateAsync(opt =>
             {
-                await _config.UpdateAsync(opt =>
-                {
-                    opt.Experience.CharPerPoint = count;
-                });
-            }
+                opt.Experience.CharPerPoint = count;
+            }, save);
 
             await ReplyAsync(embed: $"Ustawiono próg `{count}` znaków na punkt doświadczenia. `Zapisano: {save.GetYesNo()}`"
                 .ToEmbedMessage(EMType.Success).Build());
@@ -930,11 +931,12 @@ namespace Sanakan.DiscordBot.Modules
             if (hasSaved)
             {
                 embed = $"Banowanie uzytkownikow za spamowanie url: `{_config.Value.Discord.BanForUrlSpam}`".ToEmbedMessage(EMType.Success).Build();
-                await ReplyAsync(embed: embed);
-                return;
             }
-
-            embed = $"Wystapil blad podczas zapisywania".ToEmbedMessage(EMType.Error).Build();
+            else
+            {
+                embed = $"Wystapil blad podczas zapisywania".ToEmbedMessage(EMType.Error).Build();
+            }
+            
             await ReplyAsync(embed: embed);
         }
 
@@ -944,13 +946,10 @@ namespace Sanakan.DiscordBot.Modules
         public async Task ToggleSafariAsync(
             [Summary("true/false - czy zapisać")] bool save = false)
         {
-            if (save)
+            await _config.UpdateAsync(opt =>
             {
-                await _config.UpdateAsync(opt =>
-                {
-                    opt.Discord.SafariEnabled = !opt.Discord.SafariEnabled;
-                });
-            }
+                opt.Discord.SafariEnabled = !opt.Discord.SafariEnabled;
+            }, save);
 
             var embed = $"Safari: `{_config.Value.Discord.SafariEnabled.GetYesNo()}` `Zapisano: {save.GetYesNo()}`"
                 .ToEmbedMessage(EMType.Success)
@@ -976,7 +975,7 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("ustawia id eventu (kasowane są po restarcie)")]
         [Remarks("https://pastebin.com/raw/Y6a8gH5P")]
         public async Task SetWaifuEventIdsAsync(
-            [Summary("link do pliku z id postaci oddzielnymi średnikami")] string url)
+            [Summary("link do pliku z id postaci oddzielnymi średnikami")] Uri url)
         {
             var result = await _eventIdsImporter.RunAsync(url);
             Embed embed;
@@ -1081,26 +1080,28 @@ namespace Sanakan.DiscordBot.Modules
         {
             var item = itemType.ToItem(count, quality);
             var databaseUser = await _userRepository.GetUserOrCreateAsync(user.Id);
+            var gameDeck = databaseUser.GameDeck;
 
-            var thisItem = databaseUser
-                .GameDeck
-                .Items
+            var gameDeckItem = gameDeck.Items
                 .FirstOrDefault(x => x.Type == item.Type
                     && x.Quality == item.Quality);
 
-            if (thisItem == null)
+            if (gameDeckItem == null)
             {
-                thisItem = item;
-                databaseUser.GameDeck.Items.Add(thisItem);
+                gameDeckItem = item;
+                gameDeck.Items.Add(gameDeckItem);
             }
-            else thisItem.Count += count;
+            else
+            {
+                gameDeckItem.Count += count;
+            }
 
             await _userRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(CacheKeys.User(databaseUser.Id), CacheKeys.Users);
 
-            var cnt = (count > 1) ? $" x{count}" : "";
-            var content = $"{user.Mention} otrzymał _{item.Name}_{cnt}.".ToEmbedMessage(EMType.Success).Build();
+            var countFormatted = (count > 1) ? $" x{count}" : "";
+            var content = $"{user.Mention} otrzymał _{item.Name}_{countFormatted}.".ToEmbedMessage(EMType.Success).Build();
             await ReplyAsync(embed: content);
         }
 
@@ -1188,9 +1189,20 @@ namespace Sanakan.DiscordBot.Modules
             card.FromFigure = true;
             card.Quality = quality;
 
-            if (def != 0) card.DefenceBonus = def;
-            if (atk != 0) card.AttackBonus = atk;
-            if (hp != 0) card.HealthBonus = hp;
+            if (def != 0)
+            {
+                card.DefenceBonus = def;
+            }
+
+            if (atk != 0)
+            {
+                card.AttackBonus = atk;
+            }
+
+            if (hp != 0)
+            {
+                card.HealthBonus = hp;
+            }
 
             await _cardRepository.SaveChangesAsync();
 
@@ -1368,7 +1380,7 @@ namespace Sanakan.DiscordBot.Modules
 
             await _discordClientAccessor.LogoutAsync();
             await _taskManager.Delay(TimeSpan.FromMilliseconds(1500));
-            Environment.Exit(0);
+            _applicationLifetime.StopApplication();
         }
 
         [Command("update", RunMode = RunMode.Async)]
@@ -1380,9 +1392,9 @@ namespace Sanakan.DiscordBot.Modules
 
             await _discordClientAccessor.LogoutAsync();
 
-            using var _ = _fileSystem.Create("./updateNow");
+            using var _ = _fileSystem.Create(Placeholders.UpdateNow);
             await _taskManager.Delay(TimeSpan.FromMilliseconds(1500));
-            Environment.Exit(200);
+            _applicationLifetime.StopApplication();
         }
 
         [Command("rmconfig", RunMode = RunMode.Async)]
@@ -1449,24 +1461,31 @@ namespace Sanakan.DiscordBot.Modules
         public async Task IgnoreServerAsync()
         {
             var config = _config.Value;
+            var guildId = Context.Guild.Id;
 
-            if (config.Discord.BlacklistedGuilds.Contains(Context.Guild.Id))
+            Embed embed;
+
+            if (config.Discord.BlacklistedGuilds.Contains(guildId))
             {
+                embed = "Serwer został usunięty z czarnej listy.".ToEmbedMessage(EMType.Success).Build();
+
                 await _config.UpdateAsync(opt =>
                 {
-                    opt.Discord.BlacklistedGuilds.Remove(Context.Guild.Id);
+                    opt.Discord.BlacklistedGuilds.Remove(guildId);
                 });
-                await ReplyAsync(embed: "Serwer został usunięty z czarnej listy.".ToEmbedMessage(EMType.Success).Build());
+                
             }
             else
             {
+                embed = "Serwer został dodany do czarnej listy.".ToEmbedMessage(EMType.Success).Build();
 
                 await _config.UpdateAsync(opt =>
                 {
-                    opt.Discord.BlacklistedGuilds.Add(Context.Guild.Id);
+                    opt.Discord.BlacklistedGuilds.Add(guildId);
                 });
-                await ReplyAsync(embed: "Serwer został dodany do czarnej listy.".ToEmbedMessage(EMType.Success).Build());
             }
+
+            await ReplyAsync(embed: embed);
         }
 
         [Command("pomoc", RunMode = RunMode.Async)]

@@ -11,9 +11,13 @@ namespace Sanakan.DiscordBot.Services.Abstractions
     public interface IModeratorService
     {
         Task<EmbedBuilder> GetConfigurationAsync(GuildOptions config, ICommandContext context, ConfigType type);
+
         Task NotifyUserAsync(IUser user, string reason);
+
         Embed BuildTodo(IMessage message, IGuildUser who);
-        Task<Embed> GetMutedListAsync(ICommandContext context);
+
+        Task<Embed> GetMutedListAsync(IGuild guild);
+
         Task UnmuteUserAsync(
             IGuildUser user,
             IRole muteRole,
@@ -25,17 +29,18 @@ namespace Sanakan.DiscordBot.Services.Abstractions
            IRole? muteModRole,
            IRole? userRole,
            TimeSpan duration,
-           string reason = "nie podano",
+           string reason = Constants.NoReason,
            IEnumerable<ModeratorRoles>? modRoles = null);
 
         Task<PenaltyInfo> BanUserAysnc(
            IGuildUser user,
            TimeSpan duration,
-           string reason = "nie podano");
+           string reason = Constants.NoReason);
+
         Task NotifyAboutPenaltyAsync(
            IGuildUser user,
            IMessageChannel channel,
            PenaltyInfo penaltyInfo,
-           string byWho = "automat");
+           string byWho = Constants.Automatic);
     }
 }

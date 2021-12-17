@@ -43,12 +43,12 @@ namespace Sanakan.Common.Configuration
         /// <summary>
         /// The list of Discord user identifiers which can access diagnostics.
         /// </summary>
-        public ICollection<ulong> AllowedToDebug { get; set; } = new Collection<ulong>();
+        public ISet<ulong> AllowedToDebug { get; set; } = new HashSet<ulong>();
 
         /// <summary>
         /// The list of Discord guild ( servers ) identifiers to blacklist
         /// </summary>
-        public ICollection<ulong> BlacklistedGuilds { get; set; } = new Collection<ulong>();
+        public ISet<ulong> BlacklistedGuilds { get; set; } = new HashSet<ulong>();
 
         /// <summary>
         /// Gets or sets the maximum discord message length.

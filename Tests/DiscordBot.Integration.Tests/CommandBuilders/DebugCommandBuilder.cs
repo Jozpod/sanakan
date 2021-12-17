@@ -50,7 +50,7 @@ namespace Sanakan.DiscordBot.Integration.Tests.CommandBuilders
         public static string ChangeUserLevel(string prefix, string mention, long value) => $"{prefix}dev level {mention} {value}";
 
         /// <summary>
-        /// <see cref="DebugModule.MultiBankAsync(IGuildUser[])"/>.
+        /// <see cref="DebugModule.MultiBanAsync(IGuildUser[])"/>.
         /// </summary>
         public static string MultiBankAsync(string prefix) => $"{prefix}dev mban";
 
