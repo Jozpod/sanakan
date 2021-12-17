@@ -120,6 +120,17 @@ namespace Sanakan.DiscordBot.Integration.Tests
             message.Should().NotBeNull();
         }
 
+        [TestMethod]
+        public async Task TC510_Should_Resolve_Report()
+        {
+            var commandMessage = ModerationCommandBuilder.ResolveReport(Prefix, 1);
+            await Channel.SendMessageAsync(commandMessage);
+
+            var message = await WaitForMessageAsync();
+            message.Should().NotBeNull();
+            var embed = message.Embeds.FirstOrDefault();
+            embed.Should().NotBeNull();
+        }
 
         [TestMethod]
         public async Task TC520_Should_Ban_User()

@@ -12,6 +12,23 @@ namespace Sanakan.Common.Tests
     [TestClass]
     public class StringExtensionTests
     {
+
+        /// <summary>
+        /// Defines tests for <see cref="StringExtension.IsURLToImage(string)"/> class.
+        /// </summary>
+        [TestClass]
+        public class IsURLToImageTests
+        {
+            [TestMethod]
+            [DataRow("test", false)]
+            [DataRow("https://www.google.com", false)]
+            [DataRow("https://www.test.com/image.png", true)]
+            public void Should_Check_Url(string url, bool expected)
+            {
+                url.IsURLToImage().Should().Be(expected);
+            }
+        }
+
         /// <summary>
         /// Defines tests for <see cref="StringExtension.IsHexTriplet(string)"/> class.
         /// </summary>

@@ -70,7 +70,6 @@ namespace Sanakan.DiscordBot.Builder
             commandService.AddTypeReader<bool>(new BoolTypeReader());
             commandService.AddTypeReader<Uri>(new UrlTypeReader());
             commandService.AddTypeReader<TimeSpan>(new TimespanTypeReader());
-            commandService.AddTypeReader<TimeSpan?>(new NullableTimespanTypeReader());
         }
 
         public static ResourceManagerBuilder AddImageResources(this ResourceManagerBuilder builder)

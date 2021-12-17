@@ -18,6 +18,10 @@ namespace Sanakan.DAL.Models
         [StringLength(50)]
         public string Name { get; set; } = string.Empty;
 
+        /// <summary>
+        /// The shinden character identifier.
+        /// </summary>
+        /// <remarks>Link to character in shinden: https://shinden.pl/character/TitleId</remarks>
         public ulong? TitleId { get; set; }
 
         public uint CardCount { get; set; }

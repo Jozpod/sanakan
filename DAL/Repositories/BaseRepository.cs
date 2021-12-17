@@ -13,7 +13,7 @@ namespace Sanakan.DAL.Repositories
         private readonly SanakanDbContext _dbContext;
         private readonly DbSet<T> _dbSet;
 
-        internal BaseRepository(SanakanDbContext dbContext)
+        public BaseRepository(SanakanDbContext dbContext)
         {
             _dbContext = dbContext;
             _dbSet = dbContext.Set<T>();

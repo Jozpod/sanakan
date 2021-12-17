@@ -113,7 +113,7 @@ namespace Sanakan.DAL.Models
             {
                 CardCount = 5,
                 MinRarity = Rarity.A,
-                Name = "Startowy pakiet",
+                Name = BoosterPackTypes.Initial,
                 IsCardFromPackTradable = true
             });
         }

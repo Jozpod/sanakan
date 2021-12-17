@@ -51,7 +51,7 @@ namespace Sanakan.DiscordBot.Modules
         private readonly ITaskManager _taskManager;
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly IServiceScope _serviceScope;
-
+        private readonly IEnumerable<Rarity> rarityExcluded = new [] { Rarity.SS, Rarity.S, Rarity.A };
         public PocketWaifuModule(
             IIconConfiguration iconConfiguration,
             IWaifuService waifuService,
@@ -1585,7 +1585,7 @@ namespace Sanakan.DiscordBot.Modules
             var mention = Context.User.Mention;
             var gameDeck = databaseUser.GameDeck;
             var timeStatuses = databaseUser.TimeStatuses;
-            var freeCard = databaseUser.TimeStatuses.FirstOrDefault(x => x.Type == statusType);
+            var freeCard = timeStatuses.FirstOrDefault(x => x.Type == statusType);
 
             Embed embed;
 
@@ -1624,7 +1624,6 @@ namespace Sanakan.DiscordBot.Modules
             mission.Count(utcNow);
 
             freeCard.EndsOn = utcNow.AddHours(22);
-            var rarityExcluded = new List<Rarity>() { Rarity.SS, Rarity.S, Rarity.A };
             var characterInfo = await _waifuService.GetRandomCharacterAsync();
 
             var card = _waifuService.GenerateNewCard(
@@ -2052,11 +2051,13 @@ namespace Sanakan.DiscordBot.Modules
             }
 
             var databaseUser = await _userRepository.GetUserOrCreateAsync(user.Id);
-            var cardsInCage = databaseUser.GameDeck.Cards.Where(x => x.InCage);
             var gameDeck = databaseUser.GameDeck;
+            var cardsInCage = gameDeck.Cards.Where(x => x.InCage);
+            var utcNow = _systemClock.UtcNow;
 
-            var cntIn = cardsInCage.Count();
-            if (cntIn < 1)
+            var cardsCount = cardsInCage.Count();
+
+            if (cardsCount < 1)
             {
                 await ReplyAsync(embed: $"{user.Mention} nie posiadasz kart w klatce.".ToEmbedMessage(EMType.Info).Build());
                 return;
@@ -2075,17 +2076,17 @@ namespace Sanakan.DiscordBot.Modules
                     {
                         var characterInfo = charactersResult.Value;
 
-                        if (characterInfo?.Points != null)
+                        if (characterInfo.Points.Any(x => x.Name.Equals(user.Nickname ?? user.Username)))
                         {
-                            if (characterInfo.Points.Any(x => x.Name.Equals(user.Nickname ?? user.Username)))
-                            {
-                                card.Affection += 0.8;
-                            }
+                            card.Affection += 0.8;
                         }
                     }
 
-                    var span = _systemClock.UtcNow - card.CreatedOn;
-                    if (span.TotalDays > 5) card.Affection -= (int)span.TotalDays * 0.1;
+                    var span = utcNow - card.CreatedOn;
+                    if (span.TotalDays > 5)
+                    {
+                        card.Affection -= (int)span.TotalDays * 0.1;
+                    }
 
                     _ = card.CalculateCardPower();
                 }
@@ -2102,9 +2103,9 @@ namespace Sanakan.DiscordBot.Modules
 
                 gameDeck.Karma -= 0.1;
                 thisCard.InCage = false;
-                cntIn = 1;
+                cardsCount = 1;
 
-                var span = _systemClock.UtcNow - thisCard.CreatedOn;
+                var span = utcNow - thisCard.CreatedOn;
                 if (span.TotalDays > 5)
                 {
                     thisCard.Affection -= (int)span.TotalDays * 0.1;
@@ -2127,7 +2128,7 @@ namespace Sanakan.DiscordBot.Modules
 
             _cacheManager.ExpireTag(CacheKeys.User(databaseUser.Id), CacheKeys.Users);
 
-            await ReplyAsync(embed: $"{user.Mention} wyciągnął {cntIn} kart z klatki.".ToEmbedMessage(EMType.Success).Build());
+            await ReplyAsync(embed: $"{user.Mention} wyciągnął {cardsCount} kart z klatki.".ToEmbedMessage(EMType.Success).Build());
         }
 
         [Command("żusuń")]

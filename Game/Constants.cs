@@ -52,28 +52,32 @@ namespace Sanakan.Game
             new ItemWithCost(1500,  ItemType.BigRandomBoosterPackE.ToItem()),
         };
 
+        /// <summary>
+        /// Initial sample of characters used in free card retrieval.
+        /// </summary>
+        /// <remarks>Link to character in shinden: https://shinden.pl/character/character_id</remarks>
         public static List<ulong> CharacterTitleIds = new()
         {
-            7431,
-            50646,
-            10831,
-            54081,
-            53776,
-            12434,
-            44867,
-            51100,
-            4961,
-            55260,
-            53382,
-            53685,
-            35405,
-            54195,
-            2763,
-            43864,
-            52427,
-            52111,
-            53257,
-            45085
+            7431, // Nozomi Kasuga - Harukanaru Toki no Naka de 3
+            50646, // Anderson - Takarajima
+            10831, // Kamuro Ishigami - Kamikaze
+            54081, // Ryunosuke Sasaki - Nisekoi
+            53776, // Mion Hinomiya - Akarui Sekai Keikaku
+            12434, // Shijima Kurookano - Nabari no Ou
+            44867, // Eriko - Pokemon Advanced Generation
+            51100, // Milla Bassett - Seirei Tsukai no Blade Dance
+            4961, // Guld Goa Bowman - Macross Plus
+            55260, // Fecchan - Nichijou
+            53382, // Haruaki Yachi - C³
+            53685, // Sophie - Gosick
+            35405, // Fuugi -  MÄR
+            54195, // Syon Galva - Wild Fangs
+            2763, // Saotome Masami - Boogiepop wa Warawanai
+            43864, // Ryuuichirou Hoshi - Doujin Work
+            52427, // Benisuzume - Sidonia no Kishi
+            52111, // Eriko Tanaka - Route 225
+            53257, // Shin Nitta - Velvet Kiss
+            45085 // Akira - Minori Scramble!
         };
 
         public static List<RarityChance> RarityChances = new List<RarityChance>()

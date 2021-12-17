@@ -40,8 +40,14 @@ namespace Sanakan.Game.Services
         private readonly IResourceManager _resourceManager;
         private readonly ITaskManager _taskManager;
         private readonly IServiceScopeFactory _serviceScopeFactory;
-        private TimeSpan HalfAnHour = TimeSpan.FromMinutes(30);
-        private TimeSpan Hour = TimeSpan.FromHours(1);
+        private readonly TimeSpan _halfAnHour = TimeSpan.FromMinutes(30);
+        private readonly TimeSpan _hour = TimeSpan.FromHours(1);
+        private readonly TimeSpan _day = TimeSpan.FromDays(1);
+        private DateTime _charactersUpdatedOn = DateTime.MinValue;
+        private IEnumerable<ulong> _ids = Enumerable.Empty<ulong>();
+        public IEnumerable<ulong> EventIds { get; set; } = Enumerable.Empty<ulong>();
+        public bool EventState { get; set; } = false;
+        public bool EventEnabled { get; set; }
 
         public WaifuService(
             IOptionsMonitor<DiscordConfiguration> discordConfiguration,
@@ -69,11 +75,24 @@ namespace Sanakan.Game.Services
             _serviceScopeFactory = serviceScopeFactory;
         }
 
-        public bool EventState { get; set; } = false;
+        public void SetEventIds(IEnumerable<ulong> ids) => Ids = ids;
 
-        public DateTime LastUpdate { get; set; } = DateTime.MinValue;
+        public IEnumerable<ulong> Ids
+        {
+            get
+            {
+                if (EventEnabled && EventIds.Any())
+                {
+                    return EventIds;
+                }
 
-        public List<ulong> EventIds { get; set; } = new();
+                return _ids;
+            }
+            set
+            {
+                _ids = value;
+            }
+        }
 
         public List<Card> GetListInRightOrder(IEnumerable<Card> list, HaremType type, string tag)
         {
@@ -512,7 +531,9 @@ namespace Sanakan.Game.Services
                 card.FirstOwnerId = discordUserId.Value;
             }
 
-            var pictureUrl = UrlHelpers.GetPersonPictureURL(character.PictureId!.Value);
+            var pictureUrl = character.PictureId.HasValue ? 
+                UrlHelpers.GetPersonPictureURL(character.PictureId.Value)
+                : UrlHelpers.GetPlaceholderImageURL();
             var hasImage = pictureUrl != UrlHelpers.GetPlaceholderImageURL();
 
             if (hasImage)
@@ -741,33 +762,13 @@ namespace Sanakan.Game.Services
             return embed.Build();
         }
 
-        private List<ulong> _ids = new();
-
-        public bool EventEnabled { get; set; }
-
-        public List<ulong> Ids
-        {
-            get
-            {
-                if (EventEnabled && EventIds.Count > 0)
-                {
-                    return EventIds;
-                }
-
-                return _ids;
-            }
-            set
-            {
-                _ids = value;
-            }
-        }
-
         public async Task<CharacterInfo?> GetRandomCharacterAsync()
         {
             int check = 2;
-            var isNeedForUpdate = (_systemClock.UtcNow - LastUpdate).TotalDays >= 1;
+            var utcNow = _systemClock.UtcNow;
+            var shouldUpdateCharacters = (utcNow - _charactersUpdatedOn) > _day;
 
-            if (isNeedForUpdate)
+            if (shouldUpdateCharacters)
             {
                 var charactersResult = await _shindenClient.GetAllCharactersFromAnimeAsync();
 
@@ -776,7 +777,7 @@ namespace Sanakan.Game.Services
                     return null;
                 }
 
-                LastUpdate = _systemClock.UtcNow;
+                _charactersUpdatedOn = utcNow;
                 Ids = charactersResult.Value;
             }
 
@@ -898,28 +899,33 @@ namespace Sanakan.Game.Services
 
         public Embed GetBoosterPackList(IUser user, List<BoosterPack> packs)
         {
-            int groupCnt = 0;
-            int startGroup = 1;
-            string groupName = "";
-            string packString = "";
+            var groupCount = 0;
+            var startGroup = 1;
+            var groupName = string.Empty;
+            var packString = string.Empty;
+            var packsCount = packs.Count;
 
-            for (int i = 0; i < packs.Count + 1; i++)
+            for (var index = 0; index < packsCount + 1; index++)
             {
-                if (i == packs.Count || groupName != packs[i].Name)
+                if (index == packsCount || groupName != packs[index].Name)
                 {
-                    if (groupName != "")
+                    if (groupName != string.Empty)
                     {
-                        string count = groupCnt > 0 ? $"{startGroup}-{startGroup + groupCnt}" : $"{startGroup}";
+                        var count = groupCount > 0 ? $"{startGroup}-{startGroup + groupCount}" : $"{startGroup}";
                         packString += $"**[{count}]** {groupName}\n";
                     }
-                    if (i != packs.Count)
+
+                    if (index != packsCount)
                     {
-                        groupName = packs[i].Name;
-                        startGroup = i + 1;
-                        groupCnt = 0;
+                        groupName = packs[index].Name;
+                        startGroup = index + 1;
+                        groupCount = 0;
                     }
                 }
-                else ++groupCnt;
+                else
+                {
+                    ++groupCount;
+                }
             }
 
             return new EmbedBuilder
@@ -1480,7 +1486,7 @@ namespace Sanakan.Game.Services
             var duration = GetRealTimeOnExpedition(card, user.GameDeck.Karma);
             var baseExp = GetBaseExpPerMinuteFromExpedition(card.Expedition, card.Rarity);
             var baseItemsCnt = GetBaseItemsPerMinuteFromExpedition(card.Expedition, card.Rarity);
-            var multiplier = (duration.Item2 < Hour) ? ((duration.Item2 < HalfAnHour) ? 5d : 3d) : 1d;
+            var multiplier = (duration.Item2 < _hour) ? ((duration.Item2 < _halfAnHour) ? 5d : 3d) : 1d;
 
             var totalExp = GetProgressiveValueFromExpedition(baseExp, duration.Item1.TotalMinutes, 15d);
             var totalItemsCnt = (int)GetProgressiveValueFromExpedition(baseItemsCnt, duration.Item1.TotalMinutes, 25d);
@@ -1495,7 +1501,7 @@ namespace Sanakan.Game.Services
 
             var reward = "";
             var allowItems = true;
-            if (duration.Item2 < HalfAnHour)
+            if (duration.Item2 < _halfAnHour)
             {
                 reward = $"Wyprawa? Chyba po bułki do sklepu.\n\n";
                 affectionCost += 3.3;
@@ -1728,11 +1734,6 @@ namespace Sanakan.Game.Services
                 case ExpeditionCardType.UltimateHardcore:
                     return false;
             }
-        }
-
-        public void SetEventIds(IEnumerable<ulong> ids)
-        {
-            Ids = ids.ToList();
         }
     }
 }

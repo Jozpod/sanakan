@@ -17,13 +17,21 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
     public class OpenCageAsyncTests : Base
     {
         [TestMethod]
-        public async Task Should_Access_Market()
+        public async Task Should_Open_Cage()
         {
             var utcNow = DateTime.UtcNow;
             var user = new User(1ul, utcNow);
             var characterInfo = new CharacterInfo();
             var card = new Card(1ul, "title", "name", 100, 50, Rarity.A, Dere.Bodere, utcNow);
-            var gameDecks = new List<GameDeck>();
+            card.InCage = true;
+            user.GameDeck.Cards.Add(card);
+            var characterInfoResult = new Sanakan.ShindenApi.Result<CharacterInfo>
+            {
+                Value = new CharacterInfo
+                {
+
+                }
+            };
 
             _userMock
                 .Setup(pr => pr.Id)
@@ -41,21 +49,13 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
                 .Setup(pr => pr.UtcNow)
                 .Returns(utcNow);
 
-            _waifuServiceMock
-                .Setup(pr => pr.GetRandomCharacterAsync())
-                .ReturnsAsync(characterInfo);
-
-            _waifuServiceMock
-                .Setup(pr => pr.GenerateNewCard(user.Id, characterInfo, It.IsAny<IEnumerable<Rarity>>()))
-                .Returns(card);
+            _shindenClientMock
+                .Setup(pr => pr.GetCharacterInfoAsync(card.Id))
+                .ReturnsAsync(characterInfoResult);
 
             _userRepositoryMock
                 .Setup(pr => pr.SaveChangesAsync(default))
                 .Returns(Task.CompletedTask);
-
-            _gameDeckRepositoryMock
-                .Setup(pr => pr.GetByCardIdAndCharacterAsync(card.Id, card.CharacterId))
-                .ReturnsAsync(gameDecks);
 
             _cacheManagerMock
                  .Setup(pr => pr.ExpireTag(It.IsAny<string[]>()));
@@ -65,7 +65,7 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
                 embed.Description.Should().NotBeNull();
             });
 
-            await _module.GetFreeCardAsync();
+            await _module.OpenCageAsync();
         }
     }
 }

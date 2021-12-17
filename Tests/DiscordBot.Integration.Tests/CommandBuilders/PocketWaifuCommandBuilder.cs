@@ -54,8 +54,13 @@ namespace Sanakan.DiscordBot.Integration.Tests.CommandBuilders
         public static string DestroyCard(string prefix, ulong cardId) => $"{prefix}destroy {cardId}";
 
         /// <summary>
-        /// <see cref="PocketWaifuModule.CraftCardAsync()"/>.
+        /// <see cref="PocketWaifuModule.CraftCardAsync"/>.
         /// </summary>
         public static string CraftCard(string prefix) => $"{prefix}crafting";
+
+        /// <summary>
+        /// <see cref="PocketWaifuModule.GetFreeCardAsync"/>.
+        /// </summary>
+        public static string GetFreeCard(string prefix) => $"{prefix}karta+";
     }
 }

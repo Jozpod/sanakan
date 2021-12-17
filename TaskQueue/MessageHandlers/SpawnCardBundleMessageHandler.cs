@@ -63,7 +63,7 @@ namespace Sanakan.TaskQueue.MessageHandlers
                 CardCount = 2,
                 MinRarity = Rarity.E,
                 IsCardFromPackTradable = true,
-                Name = "Pakiet kart za aktywność",
+                Name = BoosterPackTypes.Activity,
                 CardSourceFromPack = CardSource.Activity
             };
 

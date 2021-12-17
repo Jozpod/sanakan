@@ -75,9 +75,24 @@ namespace Sanakan.DiscordBot.Integration.Tests.CommandBuilders
         public static string SetWaifuRole(string prefix, ulong roleId) => $"{prefix}mod waifur {roleId}";
 
         /// <summary>
-        /// <see cref="ModerationModule.ResolveReportAsync(ulong, string?, string)"/>.
+        /// <see cref="ModerationModule.ResolveReportAsync(ulong, System.TimeSpan?, string)"/>.
         /// </summary>
-        public static string ResolveReport(string prefix, ulong messageId, string durationStr, string reason) => $"{prefix}report {messageId} {durationStr} {reason}";
+        public static string ResolveReport(string prefix, ulong messageId, string durationStr = null, string reason = null)
+        {
+            var command = $"{prefix}mod report {messageId}";
+
+            if (!string.IsNullOrEmpty(durationStr))
+            {
+                command += $" {durationStr}";
+            }
+
+            if (!string.IsNullOrEmpty(reason))
+            {
+                command += $" {reason}";
+            }
+
+            return command;
+        }
 
         /// <summary>
         /// <see cref="ModerationModule.CheckUserAsync(IGuildUser)"/>.

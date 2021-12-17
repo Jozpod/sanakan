@@ -63,6 +63,7 @@ namespace Sanakan.DiscordBot
             var client = _discordClientAccessor.Client;
 
             _commandService.AddTypeReaders();
+
             var modules = await _commandService
                 .AddModulesAsync(typeof(CommandHandler).Assembly, _serviceProvider);
             _helperService.AddPublicModuleInfo(modules);

@@ -121,7 +121,7 @@ namespace Sanakan.Game.Services
                         TitleId = _randomNumberGenerator.GetOneRandomFrom(Constants.CharacterTitleIds),
                         Characters = new List<BoosterPackCharacter>(),
                         CardSourceFromPack = CardSource.Expedition,
-                        Name = "Losowa karta z wyprawy",
+                        Name = BoosterPackTypes.Adventure,
                         IsCardFromPackTradable = true,
                         MinRarity = Rarity.E,
                         CardCount = 1

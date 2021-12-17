@@ -4,6 +4,7 @@ using Moq;
 using Sanakan.DiscordBot.Integration.Tests.CommandBuilders;
 using Sanakan.ShindenApi;
 using Sanakan.ShindenApi.Models;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -38,13 +39,14 @@ namespace Sanakan.DiscordBot.Integration.Tests
         [TestMethod]
         public async Task TC403_Should_Show_Card_Image()
         {
-            var commandMessage = PocketWaifuCommandBuilder.ShowCardImage(Prefix, 1, false);
+            var commandMessage = PocketWaifuCommandBuilder.ShowCardImage(Prefix, 5, false);
             await Channel.SendMessageAsync(commandMessage);
 
             var message = await WaitForMessageAsync();
             message.Should().NotBeNull();
-            var embed = message.Embeds.FirstOrDefault();
-            embed.Should().NotBeNull();
+            var attachment = message.Attachments.FirstOrDefault();
+            attachment.Should().NotBeNull();
+            attachment.Url.Should().NotBeNull();
         }
 
         [TestMethod]
@@ -98,7 +100,51 @@ namespace Sanakan.DiscordBot.Integration.Tests
         }
 
         [TestMethod]
-        public async Task TC407_Should_Show_Cards()
+        public async Task TC407_Should_Get_Free_Card()
+        {
+            var characterId = 1488ul;
+            var charactersResult = new Result<List<ulong>>
+            {
+                Value = new List<ulong>
+                {
+                    characterId,
+                }
+            };
+            var characterResult = new Result<CharacterInfo>
+            {
+                Value = new CharacterInfo
+                {
+                    Relations = new List<StaffInfoRelation>
+                    {
+                        new StaffInfoRelation
+                        {
+                            FirstName = "Giga",
+                            LastName = "Chad",
+                            Title = "Giga Chad",
+                        }
+                    }
+                }
+            };
+
+            _shindenClientMock
+                .Setup(pr => pr.GetAllCharactersFromAnimeAsync())
+                .ReturnsAsync(charactersResult);
+
+            _shindenClientMock
+                .Setup(pr => pr.GetCharacterInfoAsync(characterId))
+                .ReturnsAsync(characterResult);
+
+            var commandMessage = PocketWaifuCommandBuilder.GetFreeCard(Prefix);
+            await Channel.SendMessageAsync(commandMessage);
+
+            var message = await WaitForMessageAsync();
+            message.Should().NotBeNull();
+            var embed = message.Embeds.FirstOrDefault();
+            embed.Should().NotBeNull();
+        }
+
+        [TestMethod]
+        public async Task TC499_Should_Show_Cards()
         {
             var commandMessage = PocketWaifuCommandBuilder.ShowCards(Prefix, "rarity");
             await Channel.SendMessageAsync(commandMessage);

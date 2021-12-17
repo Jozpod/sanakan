@@ -1,7 +1,11 @@
 ﻿using Discord;
 using Discord.WebSocket;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Hosting.Internal;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -21,6 +25,7 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using IApplicationLifetime = Microsoft.AspNetCore.Hosting.IApplicationLifetime;
 
 namespace Sanakan.DiscordBot.Integration.Tests
 {
@@ -32,6 +37,7 @@ namespace Sanakan.DiscordBot.Integration.Tests
         private static ServiceProvider _serviceProvider = null;
         private static IDiscordClientAccessor _discordClientAccessor = null;
         private static Mock<IShindenClient> _shindenClientMock = new();
+        private static Mock<IApplicationLifetime> _applicationLifetimeMock = new();
         private static DiscordConfiguration _configuration = null;
         private static SemaphoreSlim _semaphore = new SemaphoreSlim(0);
         private static IUserMessage? LastMessage = null;
@@ -80,6 +86,13 @@ namespace Sanakan.DiscordBot.Integration.Tests
                 .AddFontResources();
 
             services.AddSingleton(_shindenClientMock.Object);
+            services.AddSingleton(_applicationLifetimeMock.Object);
+            services.AddSingleton<IHostEnvironment>((sp) => {
+                return new HostingEnvironment()
+                {
+                    ContentRootFileProvider = new PhysicalFileProvider(Directory.GetCurrentDirectory()),
+                };
+            });
             services.AddGameServices();
             services.AddDiscordBot();
             services.AddDiscordIcons();

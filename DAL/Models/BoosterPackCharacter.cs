@@ -15,6 +15,7 @@ namespace Sanakan.DAL.Models
         }
 
         public ulong Id { get; set; }
+
         public ulong CharacterId { get; set; }
 
         public ulong BoosterPackId { get; set; }

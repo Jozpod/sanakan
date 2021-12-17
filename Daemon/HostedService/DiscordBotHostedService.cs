@@ -424,6 +424,7 @@ namespace Sanakan.Daemon.HostedService
 
             var config = _discordConfiguration.CurrentValue;
             var guildId = user.Guild.Id;
+            var guild = user.Guild;
 
             using var serviceScope = _serviceScopeFactory.CreateScope();
             var guildConfigRepository = serviceScope.ServiceProvider.GetRequiredService<IGuildConfigRepository>();
@@ -442,7 +443,7 @@ namespace Sanakan.Daemon.HostedService
                 }
 
                 var content = ReplaceTags(user, guildConfig.GoodbyeMessage);
-                var textChannel = (IMessageChannel)await user.Guild.GetChannelAsync(guildConfig.GreetingChannelId);
+                var textChannel = (IMessageChannel)await guild.GetChannelAsync(guildConfig.GreetingChannelId);
                 await textChannel.SendMessageAsync(content);
             }
 
