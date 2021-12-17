@@ -1,9 +1,9 @@
-﻿using Sanakan.Api.Models;
-using Sanakan.DAL.Models;
+﻿using Sanakan.DAL.Models;
+using Sanakan.Web.Models;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Sanakan.Extensions
+namespace Sanakan.Web.Extensions
 {
     [ExcludeFromCodeCoverage]
     public static class CardExtension

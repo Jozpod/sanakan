@@ -2,9 +2,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using Sanakan.Api.Models;
 using Sanakan.DAL.Models;
 using Sanakan.Web.Controllers;
+using Sanakan.Web.Models;
 using System;
 using System.Security.Claims;
 using System.Threading.Tasks;

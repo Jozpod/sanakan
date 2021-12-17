@@ -2,8 +2,8 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using Sanakan.Api.Models;
 using Sanakan.Common.Configuration;
+using Sanakan.Web.Models;
 using Sanakan.Web.Resources;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;

@@ -7,6 +7,7 @@ using Sanakan.Api.Models;
 using Sanakan.Common.Configuration;
 using Sanakan.Configuration;
 using Sanakan.Web.Controllers;
+using Sanakan.Web.Models;
 using System;
 using System.Collections.Generic;
 using System.Security.Claims;

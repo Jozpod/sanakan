@@ -2,13 +2,11 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.DAL.Models;
+using Sanakan.Game.Models;
 using Sanakan.Game.Services.Abstractions;
-using Sanakan.Services.PocketWaifu;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System;
-using System.IO;
-using System.Threading.Tasks;
 
 namespace Sanakan.Game.Tests.ImageProcessorTests
 {

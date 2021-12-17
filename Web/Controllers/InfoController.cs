@@ -2,12 +2,13 @@ using Discord.Commands;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using Sanakan.Api.Models;
 using Sanakan.Common.Configuration;
 using Sanakan.DiscordBot.Services.Abstractions;
+using Sanakan.Web.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using CommandAttribute = Sanakan.Web.Models.CommandAttribute;
 
 namespace Sanakan.Web.Controllers
 {
@@ -105,12 +106,12 @@ namespace Sanakan.Web.Controllers
                         Example = command.Remarks,
                         Description = command.Summary,
                         Aliases = new List<string>(),
-                        Attributes = new List<Api.Models.CommandAttribute>(),
+                        Attributes = new List<CommandAttribute>(),
                     };
 
                     foreach (var parameter in command.Parameters)
                     {
-                        commandSummary.Attributes.Add(new Api.Models.CommandAttribute
+                        commandSummary.Attributes.Add(new CommandAttribute
                         {
                             Name = parameter.Name,
                             Description = parameter.Summary

@@ -1,9 +1,9 @@
 ﻿using Discord;
-using DiscordBot.Services.PocketWaifu;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.DAL.Models;
+using Sanakan.Game.Models;
 using Sanakan.Game.Services.Abstractions;
 using System;
 using System.Threading.Tasks;

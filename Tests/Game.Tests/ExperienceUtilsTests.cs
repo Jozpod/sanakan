@@ -10,10 +10,10 @@ namespace Sanakan.Game.Tests
     public class ExperienceUtilsTests
     {
         [TestMethod]
-        [DataRow(1, 1)]
-        [DataRow(2, 1)]
-        [DataRow(3, 1)]
-        [DataRow(4, 1)]
+        [DataRow(1uL, 9uL)]
+        [DataRow(2uL, 33uL)]
+        [DataRow(3uL, 74uL)]
+        [DataRow(4uL, 131uL)]
         public void Should_Calculate_Experience_For_Given_Levels(ulong level, ulong expected)
         {
             var result = ExperienceUtils.CalculateExpForLevel(level);
@@ -21,10 +21,10 @@ namespace Sanakan.Game.Tests
         }
 
         [TestMethod]
-        [DataRow(100, 1)]
-        [DataRow(2000, 1)]
-        [DataRow(30000, 1)]
-        [DataRow(400000, 1)]
+        [DataRow(100uL, 3uL)]
+        [DataRow(2000uL, 15uL)]
+        [DataRow(30000uL, 60uL)]
+        [DataRow(400000uL, 221uL)]
         public void Should_Calculate_Level(ulong experience, ulong expected)
         {
             var result = ExperienceUtils.CalculateLevel(experience);

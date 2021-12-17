@@ -1,7 +1,7 @@
 ﻿using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Sanakan.Api.Models;
 using Sanakan.Web.Controllers;
+using Sanakan.Web.Models;
 using System;
 using System.Net.Http.Json;
 using System.Threading.Tasks;

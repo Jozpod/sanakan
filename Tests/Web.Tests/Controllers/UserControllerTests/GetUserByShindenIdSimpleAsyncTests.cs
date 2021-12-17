@@ -5,6 +5,7 @@ using Moq;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Repositories;
 using Sanakan.Web.Controllers;
+using Sanakan.Web.Models;
 using System;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -33,7 +34,7 @@ namespace Sanakan.Web.Tests.Controllers.UserControllerTests
 
             _jwtBuilderMock
                 .Setup(pr => pr.Build(It.IsAny<TimeSpan>(), It.IsAny<Claim[]>()))
-                .Returns(new Api.Models.TokenData());
+                .Returns(new TokenData());
 
             var result = await _controller.GetUserByShindenIdSimpleAsync(shindenUserId);
             var okObjectResult = result.Should().BeOfType<OkObjectResult>().Subject;

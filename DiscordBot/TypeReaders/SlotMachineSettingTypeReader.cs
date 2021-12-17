@@ -1,5 +1,5 @@
 ﻿using Discord.Commands;
-using Sanakan.DiscordBot.Services;
+using Sanakan.Game.Models;
 using System;
 using System.Threading.Tasks;
 
