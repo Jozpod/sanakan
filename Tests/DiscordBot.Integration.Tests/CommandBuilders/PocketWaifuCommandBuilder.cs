@@ -62,5 +62,10 @@ namespace Sanakan.DiscordBot.Integration.Tests.CommandBuilders
         /// <see cref="PocketWaifuModule.GetFreeCardAsync"/>.
         /// </summary>
         public static string GetFreeCard(string prefix) => $"{prefix}karta+";
+
+        /// <summary>
+        /// <see cref="PocketWaifuModule.UpdateCardAsync(ulong, bool)"/>.
+        /// </summary>
+        public static string UpdateCard(string prefix, ulong cardId) => $"{prefix}update {cardId}";
     }
 }

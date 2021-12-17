@@ -47,6 +47,9 @@ namespace Sanakan.DiscordBot.Integration.Tests
             var attachment = message.Attachments.FirstOrDefault();
             attachment.Should().NotBeNull();
             attachment.Url.Should().NotBeNull();
+
+            message = await WaitForMessageAsync();
+            message.Should().NotBeNull();
         }
 
         [TestMethod]
@@ -141,6 +144,36 @@ namespace Sanakan.DiscordBot.Integration.Tests
             message.Should().NotBeNull();
             var embed = message.Embeds.FirstOrDefault();
             embed.Should().NotBeNull();
+        }
+
+        [TestMethod]
+        public async Task TC408_Should_Update_Card()
+        {
+            var characterResult = new Result<CharacterInfo>
+            {
+                Value = new CharacterInfo
+                {
+                    Relations = new List<StaffInfoRelation>
+                    {
+                        new StaffInfoRelation
+                        {
+                            FirstName = "Giga",
+                            LastName = "Chad",
+                            Title = "Giga Chad",
+                        }
+                    }
+                }
+            };
+
+            _shindenClientMock
+                .Setup(pr => pr.GetCharacterInfoAsync(It.IsAny<ulong>()))
+                .ReturnsAsync(characterResult);
+
+            var commandMessage = PocketWaifuCommandBuilder.UpdateCard(Prefix, 5);
+            await Channel.SendMessageAsync(commandMessage);
+
+            var message = await WaitForMessageAsync();
+            message.Should().NotBeNull();
         }
 
         [TestMethod]
