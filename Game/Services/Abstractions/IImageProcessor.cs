@@ -1,5 +1,5 @@
 ﻿using Sanakan.DAL.Models;
-using Sanakan.Services.PocketWaifu;
+using Sanakan.Game.Models;
 using Sanakan.ShindenApi.Models;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;

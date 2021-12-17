@@ -3,9 +3,11 @@ using Sanakan.Configuration;
 using Sanakan.DiscordBot.Abstractions.Models;
 using Sanakan.DiscordBot.Models;
 using Sanakan.Extensions;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Sanakan.Web
 {
+    [ExcludeFromCodeCoverage]
     public static class RichMessageExtension
     {
         public static Embed ToEmbed(this RichMessage message)

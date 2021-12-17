@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Sanakan.Api.Models
+namespace Sanakan.Web.Models
 {
     /// <summary>
     /// Describes the card.

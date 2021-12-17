@@ -8,9 +8,7 @@ using System.Threading.Tasks;
 
 namespace Sanakan.TaskQueue.Tests
 {
-#if DEBUG
     [TestClass]
-#endif
     public class BlockingPriorityQueueTests
     {
         private readonly BlockingPriorityQueue _blockingPriorityQueue;
@@ -31,7 +29,22 @@ namespace Sanakan.TaskQueue.Tests
         }
 
         [TestMethod]
-        public void Should_Process_Messages()
+        public void Should_Process_Message()
+        {
+            var firstExpected = new ConnectUserMessage();
+
+            var cancellationTokenSource = new CancellationTokenSource();
+
+            _blockingPriorityQueue.TryEnqueue(firstExpected);
+            var enumerable = _blockingPriorityQueue.GetEnumerable(cancellationTokenSource.Token).GetEnumerator();
+            enumerable.MoveNext();
+            enumerable.Current.Should().Be(firstExpected);
+        }
+
+#if DEBUG
+        [TestMethod]
+#endif
+        public void Should_Sort_Messages_By_Priority_And_Process_Messages()
         {
             var firstExpected = new ConnectUserMessage();
             var secondExpected = new GiveCardsMessage();

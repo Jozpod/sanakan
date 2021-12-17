@@ -1,13 +1,12 @@
-﻿using DiscordBot.Services.PocketWaifu;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using Sanakan.Common;
 using Sanakan.Common.Configuration;
 using Sanakan.Common.Models;
 using Sanakan.DAL.Models;
 using Sanakan.Extensions;
 using Sanakan.Game.Extensions;
+using Sanakan.Game.Models;
 using Sanakan.Game.Services.Abstractions;
-using Sanakan.Services.PocketWaifu;
 using Sanakan.ShindenApi.Models;
 using Sanakan.ShindenApi.Utilities;
 using SixLabors.Fonts;

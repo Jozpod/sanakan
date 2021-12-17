@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Sanakan.Api.Models
+namespace Sanakan.Web.Models
 {
     /// <summary>
     /// Describes user profile in a website.
@@ -28,12 +28,12 @@ namespace Sanakan.Api.Models
         public List<CardFinalView> Gallery { get; set; } = null;
 
         /// <summary>
-        /// Lista wypraw
+        /// The list of expeditions
         /// </summary>
         public List<ExpeditionCard> Expeditions { get; set; } = null;
 
         /// <summary>
-        /// Lista tagów jakie ma użytkownik na kartach
+        /// The list of tags which user has in cards.
         /// </summary>
         public List<string> TagList { get; set; } = null;
 
@@ -48,32 +48,32 @@ namespace Sanakan.Api.Models
         public string? UserTitle { get; set; }
 
         /// <summary>
-        /// Pozycja obrazku tła profilu użytkownika
+        /// The image position in user profile background.
         /// </summary>
         public int BackgroundPosition { get; set; }
 
         /// <summary>
-        /// Pozycja obrazka postaci na tle profilu użytkownika
+        /// The image position in user profile foreground.
         /// </summary>
         public int ForegroundPosition { get; set; }
 
         /// <summary>
-        /// Obrazek tła profilu użytkownika
+        /// The image in user profile background.
         /// </summary>
         public string? BackgroundImageUrl { get; set; }
 
         /// <summary>
-        /// Obrazek postaci na tle profilu użytkownika
+        /// The character image in user profile foreground.
         /// </summary>
         public string? ForegroundImageUrl { get; set; }
 
         /// <summary>
-        /// Główny kolor profilu użytkownika
+        /// The main profile foreground color.
         /// </summary>
         public string? ForegroundColor { get; set; }
 
         /// <summary>
-        /// Karma użytkownika
+        /// The user karma.
         /// </summary>
         public double Karma { get; set; }
     }

@@ -2,9 +2,11 @@
 using Sanakan.Common.Builder;
 using Sanakan.Game.Services;
 using Sanakan.Game.Services.Abstractions;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Sanakan.Game.Builder
 {
+    [ExcludeFromCodeCoverage]
     public static class Extensions
     {
         public static IServiceCollection AddGameServices(this IServiceCollection services)

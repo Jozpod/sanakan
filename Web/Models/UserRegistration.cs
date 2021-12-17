@@ -1,15 +1,15 @@
 ﻿using Sanakan.Models;
 using System.Collections.Generic;
 
-namespace Sanakan.Api.Models
+namespace Sanakan.Web.Models
 {
     /// <summary>
-    /// Struktura rejestracji użytkownika
+    /// Describes user registration model.
     /// </summary>
     public class UserRegistration
     {
         /// <summary>
-        /// Czy posiada uprawnienia su
+        /// Specifies whether the user is super admin.
         /// </summary>
         public bool IsSuperAdmin { get; set; }
 

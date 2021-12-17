@@ -1,5 +1,4 @@
 ﻿using Discord;
-using DiscordBot.Services.PocketWaifu;
 using Sanakan.DAL.Models;
 using Sanakan.Game.Models;
 using Sanakan.ShindenApi.Models;

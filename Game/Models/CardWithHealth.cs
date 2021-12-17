@@ -1,6 +1,6 @@
 ﻿using Sanakan.DAL.Models;
 
-namespace Sanakan.Services.PocketWaifu.Fight
+namespace Sanakan.Game.Models
 {
     public class CardWithHealth
     {

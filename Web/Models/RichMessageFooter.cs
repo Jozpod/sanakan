@@ -1,17 +1,17 @@
 ﻿namespace Sanakan.Web.Models
 {
     /// <summary>
-    /// Stopka wiadomości - ostatnia linia
+    /// Describes message footer.
     /// </summary>
     public partial class RichMessageFooter
     {
         /// <summary>
-        /// Tesks ostatniej lini
+        /// The text.
         /// </summary>
         public string Text { get; set; } = null;
 
         /// <summary>
-        /// Obrazek ostatniej lini
+        /// Last line image link.
         /// </summary>
         public string ImageUrl { get; set; } = null;
     }

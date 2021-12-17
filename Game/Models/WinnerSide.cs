@@ -1,4 +1,4 @@
-﻿namespace DiscordBot.Services.PocketWaifu
+﻿namespace Sanakan.Game.Models
 {
     public enum WinnerSide : byte
     {

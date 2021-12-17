@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Sanakan.Api.Models
+namespace Sanakan.Web.Models
 {
     public class TokenData
     {

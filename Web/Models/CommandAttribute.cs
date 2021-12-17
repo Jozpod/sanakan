@@ -1,16 +1,17 @@
-﻿namespace Sanakan.Api.Models
+﻿namespace Sanakan.Web.Models
 {
     /// <summary>
-    ///  Atrybut polecenia
+    /// Describes command attribute.
     /// </summary>
     public class CommandAttribute
     {
         /// <summary>
-        ///  Nazwa
+        /// The name of attribute
         /// </summary>
         public string Name { get; set; } = string.Empty;
+
         /// <summary>
-        ///  Opis
+        /// The description
         /// </summary>
         public string Description { get; set; } = string.Empty;
     }

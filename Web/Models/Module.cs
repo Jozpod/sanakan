@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 
-namespace Sanakan.Api.Models
+namespace Sanakan.Web.Models
 {
     /// <summary>
-    /// Describees bot module.
+    /// Describes bot module.
     /// </summary>
     public class Module
     {

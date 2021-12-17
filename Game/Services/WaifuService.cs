@@ -1,5 +1,4 @@
 using Discord;
-using DiscordBot.Services.PocketWaifu;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Sanakan.Common;
@@ -13,7 +12,6 @@ using Sanakan.Extensions;
 using Sanakan.Game.Extensions;
 using Sanakan.Game.Models;
 using Sanakan.Game.Services.Abstractions;
-using Sanakan.Services.PocketWaifu.Fight;
 using Sanakan.ShindenApi;
 using Sanakan.ShindenApi.Models;
 using Sanakan.ShindenApi.Utilities;

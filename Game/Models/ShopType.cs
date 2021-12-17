@@ -2,7 +2,7 @@
 using Sanakan.Game;
 using Sanakan.Game.Models;
 
-namespace DiscordBot.Services.PocketWaifu
+namespace Sanakan.Game.Models
 {
     public enum ShopType : byte
     {

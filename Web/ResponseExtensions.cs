@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Sanakan.Web
 {
+    [ExcludeFromCodeCoverage]
     public static class ResponseExtensions
     {
         public class ShindenPayload

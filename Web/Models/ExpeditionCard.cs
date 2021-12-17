@@ -1,7 +1,7 @@
 ﻿using Sanakan.DAL.Models;
 using System;
 
-namespace Sanakan.Api.Models
+namespace Sanakan.Web.Models
 {
     /// <summary>
     /// Describes expedition card.

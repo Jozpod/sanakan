@@ -1,7 +1,7 @@
 using Sanakan.Common;
 using System.Text.Json.Serialization;
 
-namespace Sanakan.Services.PocketWaifu
+namespace Sanakan.Game.Models
 {
     public class DuelImage
     {

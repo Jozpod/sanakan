@@ -2,7 +2,6 @@
 
 namespace Sanakan.Game.Models
 {
-
     public class CardBoosterPackPool
     {
         public CardsPoolType Type { get; set; }

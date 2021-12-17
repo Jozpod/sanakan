@@ -1,35 +1,35 @@
 ﻿using System.Collections.Generic;
 
-namespace Sanakan.Api.Models
+namespace Sanakan.Web.Models
 {
     /// <summary>
-    /// Polecenie
+    /// Describes command.
     /// </summary>
     public class Command
     {
         /// <summary>
-        /// Przykład użycia
+        /// Tells how to use command.
         /// </summary>
         public string Example { get; set; } = null;
 
         /// <summary>
-        /// Opis
+        /// Describes the command.
         /// </summary>
         public string Description { get; set; } = null;
 
         /// <summary>
-        /// Głowna nazwa
+        /// The command name.
         /// </summary>
         public string Name { get; set; } = null;
 
         /// <summary>
-        /// Alternatywne nazwy
+        /// The list of command aliases.
         /// </summary>
-        public List<string> Aliases { get; set; } = null;
+        public List<string> Aliases { get; set; } = new();
 
         /// <summary>
-        /// Atrybuty polecenia
+        /// The command attributes.
         /// </summary>
-        public List<CommandAttribute> Attributes { get; set; } = null;
+        public List<CommandAttribute> Attributes { get; set; } = new();
     }
 }

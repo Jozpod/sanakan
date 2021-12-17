@@ -1,7 +1,6 @@
-using DiscordBot.Services.PocketWaifu;
 using Sanakan.DAL.Models;
 
-namespace Sanakan.Services.PocketWaifu
+namespace Sanakan.Game.Models
 {
     public class DuelInfo
     {
