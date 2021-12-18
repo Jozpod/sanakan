@@ -125,10 +125,9 @@ namespace Sanakan.DiscordBot.Services
             };
         }
 
-        private EmbedBuilder GetSelfRolesConfig(GuildOptions config, ICommandContext context)
+        private EmbedBuilder GetSelfRolesConfig(GuildOptions config, IGuild guild)
         {
             var stringBuilder = new StringBuilder("**AutoRole:**\n\n", 500);
-            var guild = context.Guild;
 
             if (config.SelfRoles.Any())
             {
@@ -147,10 +146,9 @@ namespace Sanakan.DiscordBot.Services
             return new EmbedBuilder().WithColor(EMType.Bot.Color()).WithDescription(description);
         }
 
-        private EmbedBuilder GetModRolesConfig(GuildOptions config, ICommandContext context)
+        private EmbedBuilder GetModRolesConfig(GuildOptions config, IGuild guild)
         {
             var stringBuilder = new StringBuilder("**Role moderatorów:**\n\n", 500);
-            var guild = context.Guild;
             var moderatorRoles = config.ModeratorRoles ?? Enumerable.Empty<ModeratorRoles>();
 
             if (moderatorRoles.Any())
@@ -170,17 +168,16 @@ namespace Sanakan.DiscordBot.Services
             return new EmbedBuilder().WithColor(EMType.Bot.Color()).WithDescription(description);
         }
 
-        private EmbedBuilder GetLandsConfig(GuildOptions config, ICommandContext context)
+        private EmbedBuilder GetLandsConfig(GuildOptions config, IGuild guild)
         {
             var stringBuilder = new StringBuilder("**Krainy:**\n\n", 500);
-            var guild = context.Guild;
             var lands = config.Lands ?? Enumerable.Empty<UserLand>();
 
             if (lands.Any())
             {
                 foreach (var land in lands)
                 {
-                    var mention = context.Guild.GetRole(land.ManagerId)?.Mention ?? "usunięta";
+                    var mention = guild.GetRole(land.ManagerId)?.Mention ?? "usunięta";
                     var roleMention = guild.GetRole(land.UnderlingId)?.Mention ?? "usunięta";
                     stringBuilder.AppendFormat("*{0}*: M:{1} U:{2}\n", land.Name, mention, roleMention);
                 }
@@ -194,10 +191,9 @@ namespace Sanakan.DiscordBot.Services
             return new EmbedBuilder().WithColor(EMType.Bot.Color()).WithDescription(description);
         }
 
-        private EmbedBuilder GetLevelRolesConfig(GuildOptions config, ICommandContext context)
+        private EmbedBuilder GetLevelRolesConfig(GuildOptions config, IGuild guild)
         {
             var stringBuilder = new StringBuilder("**Role na poziom:**\n\n", 500);
-            var guild = context.Guild;
 
             if (config.RolesPerLevel.Any())
             {
@@ -216,11 +212,10 @@ namespace Sanakan.DiscordBot.Services
             return new EmbedBuilder().WithColor(EMType.Bot.Color()).WithDescription(description);
         }
 
-        private async Task<EmbedBuilder> GetCmdChannelsConfig(GuildOptions config, ICommandContext context)
+        private async Task<EmbedBuilder> GetCmdChannelsConfig(GuildOptions config, IGuild guild)
         {
             var stringBuilder = new StringBuilder("**Kanały poleceń:**\n\n", 500);
             var commandChannels = config.CommandChannels ?? Enumerable.Empty<CommandChannel>();
-            var guild = context.Guild;
 
             if (commandChannels.Any())
             {
@@ -240,10 +235,9 @@ namespace Sanakan.DiscordBot.Services
             return new EmbedBuilder().WithColor(EMType.Bot.Color()).WithDescription(description);
         }
 
-        private async Task<EmbedBuilder> GetWaifuCmdChannelsConfig(GuildOptions config, ICommandContext context)
+        private async Task<EmbedBuilder> GetWaifuCmdChannelsConfig(GuildOptions config, IGuild guild)
         {
             var stringBuilder = new StringBuilder("**Kanały poleceń waifu:**\n\n", 500);
-            var guild = context.Guild;
             var waifuCommandChannels = config.WaifuConfig?.CommandChannels ?? Enumerable.Empty<WaifuCommandChannel>();
 
             if (waifuCommandChannels.Any())
@@ -264,10 +258,9 @@ namespace Sanakan.DiscordBot.Services
             return new EmbedBuilder().WithColor(EMType.Bot.Color()).WithDescription(description);
         }
 
-        private async Task<EmbedBuilder> GetWaifuFightChannelsConfig(GuildOptions config, ICommandContext context)
+        private async Task<EmbedBuilder> GetWaifuFightChannelsConfig(GuildOptions config, IGuild guild)
         {
             var stringBuilder = new StringBuilder("**Kanały walk waifu:**\n\n", 500);
-            var guild = context.Guild;
             var fightChannels = config.WaifuConfig?.FightChannels ?? Enumerable.Empty<WaifuFightChannel>();
 
             if (fightChannels.Any())
@@ -288,10 +281,9 @@ namespace Sanakan.DiscordBot.Services
             return new EmbedBuilder().WithColor(EMType.Bot.Color()).WithDescription(description);
         }
 
-        private async Task<EmbedBuilder> GetIgnoredChannelsConfig(GuildOptions config, ICommandContext context)
+        private async Task<EmbedBuilder> GetIgnoredChannelsConfig(GuildOptions config, IGuild guild)
         {
             var stringBuilder = new StringBuilder("**Kanały bez zliczania wiadomości:**\n\n", 500);
-            var guild = context.Guild;
 
             if (config.IgnoredChannels.Any())
             {
@@ -311,10 +303,9 @@ namespace Sanakan.DiscordBot.Services
             return new EmbedBuilder().WithColor(EMType.Bot.Color()).WithDescription(description);
         }
 
-        private async Task<EmbedBuilder> GetNonExpChannelsConfig(GuildOptions config, ICommandContext context)
+        private async Task<EmbedBuilder> GetNonExpChannelsConfig(GuildOptions config, IGuild guild)
         {
             var stringBuilder = new StringBuilder("**Kanały bez exp:**\n\n", 500);
-            var guild = context.Guild;
 
             if (config.ChannelsWithoutExperience.Any())
             {
@@ -334,10 +325,9 @@ namespace Sanakan.DiscordBot.Services
             return new EmbedBuilder().WithColor(EMType.Bot.Color()).WithDescription(description);
         }
 
-        private async Task<EmbedBuilder> GetNonSupChannelsConfig(GuildOptions config, ICommandContext context)
+        private async Task<EmbedBuilder> GetNonSupChannelsConfig(GuildOptions config, IGuild guild)
         {
             var stringBuilder = new StringBuilder("**Kanały bez nadzoru:**\n\n", 500);
-            var guild = context.Guild;
 
             if (config.ChannelsWithoutSupervision.Any())
             {
@@ -357,43 +347,46 @@ namespace Sanakan.DiscordBot.Services
             return new EmbedBuilder().WithColor(EMType.Bot.Color()).WithDescription(description);
         }
 
-        public async Task<EmbedBuilder> GetConfigurationAsync(GuildOptions config, ICommandContext context, ConfigType type)
+        public async Task<EmbedBuilder> GetConfigurationAsync(
+            GuildOptions config,
+            IGuild guild,
+            ConfigType type)
         {
             switch (type)
             {
                 case ConfigType.NonExpChannels:
-                    return await GetNonExpChannelsConfig(config, context);
+                    return await GetNonExpChannelsConfig(config, guild);
 
                 case ConfigType.IgnoredChannels:
-                    return await GetIgnoredChannelsConfig(config, context);
+                    return await GetIgnoredChannelsConfig(config, guild);
 
                 case ConfigType.NonSupChannels:
-                    return await GetNonSupChannelsConfig(config, context);
+                    return await GetNonSupChannelsConfig(config, guild);
 
                 case ConfigType.WaifuCmdChannels:
-                    return await GetWaifuCmdChannelsConfig(config, context);
+                    return await GetWaifuCmdChannelsConfig(config, guild);
 
                 case ConfigType.WaifuFightChannels:
-                    return await GetWaifuFightChannelsConfig(config, context);
+                    return await GetWaifuFightChannelsConfig(config, guild);
 
                 case ConfigType.CommandChannels:
-                    return await GetCmdChannelsConfig(config, context);
+                    return await GetCmdChannelsConfig(config, guild);
 
                 case ConfigType.LevelRoles:
-                    return GetLevelRolesConfig(config, context);
+                    return GetLevelRolesConfig(config, guild);
 
                 case ConfigType.Lands:
-                    return GetLandsConfig(config, context);
+                    return GetLandsConfig(config, guild);
 
                 case ConfigType.ModeratorRoles:
-                    return GetModRolesConfig(config, context);
+                    return GetModRolesConfig(config, guild);
 
                 case ConfigType.SelfRoles:
-                    return GetSelfRolesConfig(config, context);
+                    return GetSelfRolesConfig(config, guild);
 
                 default:
                 case ConfigType.Global:
-                    return await GetFullConfigurationAsync(config, context.Guild);
+                    return await GetFullConfigurationAsync(config, guild);
             }
         }
 

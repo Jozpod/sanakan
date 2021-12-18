@@ -8,6 +8,7 @@ using Sanakan.DiscordBot.Session;
 using Sanakan.ShindenApi;
 using Sanakan.ShindenApi.Models;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -20,14 +21,49 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
     public class UseItemAsyncTests : Base
     {
         [TestMethod]
-        public async Task Should_Consume_Item_And_Send_Confirm_Message()
+        [DataRow(ItemType.BetterIncreaseUpgradeCnt)]
+        [DataRow(ItemType.AffectionRecoveryBig)]
+        [DataRow(ItemType.AffectionRecoveryGreat)]
+        [DataRow(ItemType.AffectionRecoveryNormal)]
+        [DataRow(ItemType.AffectionRecoverySmall)]
+        [DataRow(ItemType.CardParamsReRoll)]
+        [DataRow(ItemType.BigRandomBoosterPackE)]
+        [DataRow(ItemType.ChangeCardImage)]
+        [DataRow(ItemType.ChangeStarType)]
+        [DataRow(ItemType.CheckAffection)]
+        [DataRow(ItemType.DereReRoll)]
+        [DataRow(ItemType.FigureBodyPart)]
+        [DataRow(ItemType.FigureHeadPart)]
+        [DataRow(ItemType.FigureLeftArmPart)]
+        [DataRow(ItemType.FigureRightArmPart)]
+        [DataRow(ItemType.FigureLeftLegPart)]
+        [DataRow(ItemType.FigureRightLegPart)]
+        [DataRow(ItemType.FigureSkeleton)]
+        [DataRow(ItemType.FigureClothesPart)]
+        [DataRow(ItemType.FigureUniversalPart)]
+        [DataRow(ItemType.IncreaseExpBig)]
+        [DataRow(ItemType.IncreaseExpSmall)]
+        [DataRow(ItemType.IncreaseUpgradeCount)]
+        [DataRow(ItemType.PreAssembledAsuna)]
+        [DataRow(ItemType.PreAssembledGintoki)]
+        [DataRow(ItemType.PreAssembledMegumin)]
+        [DataRow(ItemType.RandomNormalBoosterPackA)]
+        [DataRow(ItemType.RandomNormalBoosterPackB)]
+        [DataRow(ItemType.RandomNormalBoosterPackS)]
+        [DataRow(ItemType.RandomNormalBoosterPackSS)]
+        [DataRow(ItemType.RandomTitleBoosterPackSingleE)]
+        [DataRow(ItemType.ResetCardValue)]
+        [DataRow(ItemType.SetCustomBorder)]
+        [DataRow(ItemType.SetCustomImage)]
+        [DataRow(ItemType.RandomBoosterPackSingleE)]
+        public async Task Should_Consume_Item_And_Send_Confirm_Message(ItemType itemType)
         {
             var utcNow = DateTime.UtcNow;
             var user = new User(1ul, utcNow);
             var card = new Card(1ul, "title", "name", 100, 50, Rarity.C, Dere.Bodere, DateTime.UtcNow);
             card.Id = 1ul;
             user.GameDeck.Cards.Add(card);
-            user.GameDeck.Items.Add(new Item { Type = ItemType.BetterIncreaseUpgradeCnt, Count = 3 });
+            user.GameDeck.Items.Add(new Item { Type = itemType, Count = 3 });
             var itemNumber = 1;
             var characterInfoResult = new Result<CharacterInfo>()
             {
@@ -75,6 +111,21 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
 
             _cacheManagerMock
                 .Setup(pr => pr.ExpireTag(It.IsAny<string[]>()));
+
+            _randomNumberGeneratorMock
+                .Setup(pr => pr.GetRandomValue(32, 69))
+                .Returns(50);
+
+            _randomNumberGeneratorMock
+                .Setup(pr => pr.GetRandomValue(32, 66))
+                .Returns(50);
+
+            _randomNumberGeneratorMock
+                .Setup(pr => pr.GetOneRandomFrom(It.IsAny<IEnumerable<Dere>>()))
+                .Returns(Dere.Tsundere);
+
+            _waifuServiceMock
+                .Setup(pr => pr.DeleteCardImageIfExist(It.IsAny<Card>()));
 
             SetupSendMessage((message, embed) =>
             {

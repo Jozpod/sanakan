@@ -58,17 +58,17 @@ namespace Sanakan.Game.Services
                                 && n >= chance[EventType.MoreItems].Item1):
                     return EventType.MoreItems;
 
-                case int n when (n < chance[EventType.MoreExp].Item2
-                                && n >= chance[EventType.MoreExp].Item1):
-                    return EventType.MoreExp;
+                case int n when (n < chance[EventType.MoreExperience].Item2
+                                && n >= chance[EventType.MoreExperience].Item1):
+                    return EventType.MoreExperience;
 
-                case int n when (n < chance[EventType.IncAtk].Item2
-                                && n >= chance[EventType.IncAtk].Item1):
-                    return EventType.IncAtk;
+                case int n when (n < chance[EventType.IncreaseAttack].Item2
+                                && n >= chance[EventType.IncreaseAttack].Item1):
+                    return EventType.IncreaseAttack;
 
-                case int n when (n < chance[EventType.IncDef].Item2
-                                && n >= chance[EventType.IncDef].Item1):
-                    return EventType.IncDef;
+                case int n when (n < chance[EventType.IncreaseDefence].Item2
+                                && n >= chance[EventType.IncreaseDefence].Item1):
+                    return EventType.IncreaseDefence;
 
                 case int n when (n < chance[EventType.AddReset].Item2
                                 && n >= chance[EventType.AddReset].Item1):
@@ -82,17 +82,17 @@ namespace Sanakan.Game.Services
                                 && n >= chance[EventType.ChangeDere].Item1):
                     return EventType.ChangeDere;
 
-                case int n when (n < chance[EventType.DecAtk].Item2
-                                && n >= chance[EventType.DecAtk].Item1):
-                    return EventType.DecAtk;
+                case int n when (n < chance[EventType.DecreaseAttack].Item2
+                                && n >= chance[EventType.DecreaseAttack].Item1):
+                    return EventType.DecreaseAttack;
 
-                case int n when (n < chance[EventType.DecDef].Item2
-                                && n >= chance[EventType.DecDef].Item1):
-                    return EventType.DecDef;
+                case int n when (n < chance[EventType.DecreaseDefence].Item2
+                                && n >= chance[EventType.DecreaseDefence].Item1):
+                    return EventType.DecreaseDefence;
 
-                case int n when (n < chance[EventType.DecAff].Item2
-                                && n >= chance[EventType.DecAff].Item1):
-                    return EventType.DecAff;
+                case int n when (n < chance[EventType.DecreaseAffection].Item2
+                                && n >= chance[EventType.DecreaseAffection].Item1):
+                    return EventType.DecreaseAffection;
 
                 case int n when (n < chance[EventType.LoseCard].Item2
                                 && n >= chance[EventType.LoseCard].Item1):
@@ -132,7 +132,7 @@ namespace Sanakan.Game.Services
                 }
                 break;
 
-                case EventType.IncAtk:
+                case EventType.IncreaseAttack:
                 {
                     var max = card.Rarity.GetAttackMax();
                     card.Attack += randomValue;
@@ -146,7 +146,7 @@ namespace Sanakan.Game.Services
                 }
                 break;
 
-                case EventType.IncDef:
+                case EventType.IncreaseDefence:
                 {
                     var max = card.Rarity.GetDefenceMax();
                     card.Defence += randomValue;
@@ -160,7 +160,7 @@ namespace Sanakan.Game.Services
                 }
                 break;
 
-                case EventType.MoreExp:
+                case EventType.MoreExperience:
                 {
                     var addExp = _randomNumberGenerator.GetRandomValue(1, 5);
                     card.ExperienceCount += addExp;
@@ -188,14 +188,14 @@ namespace Sanakan.Game.Services
                 }
                 break;
 
-                case EventType.DecAff:
+                case EventType.DecreaseAffection:
                 {
                     card.Affection -= randomValue;
                     stringBuilder.Append("Wydarzenie: Zmniejszenie relacji.\n");
                 }
                 break;
 
-                case EventType.DecAtk:
+                case EventType.DecreaseAttack:
                 {
                     var min = card.Rarity.GetAttackMin();
                     card.Attack -= randomValue;
@@ -209,7 +209,7 @@ namespace Sanakan.Game.Services
                 }
                 break;
 
-                case EventType.DecDef:
+                case EventType.DecreaseDefence:
                 {
                     var min = card.Rarity.GetDefenceMin();
                     card.Defence -= randomValue;

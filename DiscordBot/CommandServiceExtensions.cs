@@ -3,11 +3,13 @@ using Sanakan.TaskQueue;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace Sanakan.DiscordBot.Extensions
 {
+    [ExcludeFromCodeCoverage]
     public static class CommandServiceExtensions
     {
         public static async Task<SearchResult> GetExecutableCommandAsync(

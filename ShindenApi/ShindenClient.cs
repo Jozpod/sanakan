@@ -568,7 +568,7 @@ namespace Sanakan.ShindenApi
         }
         #endregion
         #region Experimental
-        public async Task<Result<List<ulong>>> GetAllCharactersFromAnimeAsync()
+        public async Task<Result<IEnumerable<ulong>>> GetAllCharactersFromAnimeAsync()
         {
             await TryRenewSessionAsync();
 
@@ -583,12 +583,12 @@ namespace Sanakan.ShindenApi
 
             if (!response.IsSuccessStatusCode)
             {
-                return new Result<List<ulong>>();
+                return new Result<IEnumerable<ulong>>();
             }
 
             var result = await response.Content.ReadFromJsonAsync<List<ulong>>(_jsonSerializerOptions);
 
-            return new Result<List<ulong>>()
+            return new Result<IEnumerable<ulong>>()
             {
                 Value = result
             };

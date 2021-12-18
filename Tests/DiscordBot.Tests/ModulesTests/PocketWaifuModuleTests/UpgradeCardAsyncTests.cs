@@ -41,7 +41,7 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
                 .Returns(100);
 
             _waifuServiceMock
-                .Setup(pr => pr.GetAttactAfterLevelUp(It.IsAny<Rarity>(), It.IsAny<int>()))
+                .Setup(pr => pr.GetAttackAfterLevelUp(It.IsAny<Rarity>(), It.IsAny<int>()))
                 .Returns(100);
 
             _userRepositoryMock

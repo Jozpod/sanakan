@@ -1,10 +1,12 @@
 ﻿using Discord.Commands;
 using Sanakan.TaskQueue;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 
 namespace Sanakan.DiscordBot
 {
+    [ExcludeFromCodeCoverage]
     public class SearchResult
     {
         public IResult Result { get; set; } = null;

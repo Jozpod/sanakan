@@ -1,7 +1,9 @@
 ﻿using Sanakan.ShindenApi.Models.Enums;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Sanakan.ShindenApi
 {
+    [ExcludeFromCodeCoverage]
     public static class EnumsExtension
     {
         public static string ToQuery(this FavouriteType type, ulong id)

@@ -19,7 +19,7 @@ namespace Sanakan.Game.Services.Abstractions
 
         Embed GetBoosterPackList(IUser user, List<BoosterPack> packs);
 
-        double GetExperienceToUpgrade(Card toUp, Card toSac);
+        double GetExperienceToUpgrade(Card toUpgrade, Card toSacrifice);
 
         Embed GetActiveList(IEnumerable<Card> list);
 
@@ -27,7 +27,7 @@ namespace Sanakan.Game.Services.Abstractions
 
         int GetDefenceAfterLevelUp(Rarity oldRarity, int oldDefence);
 
-        int GetAttactAfterLevelUp(Rarity oldRarity, int oldAttack);
+        int GetAttackAfterLevelUp(Rarity oldRarity, int oldAttack);
 
         bool EventState { get; set; }
 
@@ -37,11 +37,11 @@ namespace Sanakan.Game.Services.Abstractions
 
         Embed GetItemList(IUser user, IEnumerable<Item> items);
 
-        Task<string> GetWaifuProfileImageUrlAsync(Card card, IMessageChannel trashCh);
+        Task<string> GetWaifuProfileImageUrlAsync(Card card, IMessageChannel trashChannel);
 
         List<Card> GetListInRightOrder(IEnumerable<Card> list, HaremType type, string tag);
 
-        Task<List<Card>> OpenBoosterPackAsync(ulong? discordUserId, BoosterPack pack);
+        Task<IEnumerable<Card>> OpenBoosterPackAsync(ulong? discordUserId, BoosterPack pack);
 
         Task<string> GetSafariViewAsync(SafariImage info, Card card, IMessageChannel trashChannel);
 
@@ -51,7 +51,7 @@ namespace Sanakan.Game.Services.Abstractions
 
         Task<Embed> BuildCardViewAsync(Card card, ITextChannel trashChannel, IUser owner);
 
-        FightHistory MakeFightAsync(IEnumerable<PlayerInfo> players, bool oneCard = false);
+        FightHistory MakeFight(IEnumerable<PlayerInfo> players, bool oneCard = false);
 
         string GetDeathLog(FightHistory fight, IEnumerable<PlayerInfo> players);
 
@@ -91,9 +91,5 @@ namespace Sanakan.Game.Services.Abstractions
             IEnumerable<ulong> titlesId,
             List<Card> allCards,
             IEnumerable<Card> userCards);
-
-        (TimeSpan, TimeSpan) GetRealTimeOnExpedition(Card card, double karma);
-
-        double GetProgressiveValueFromExpedition(double baseValue, double duration, double div);
     }
 }

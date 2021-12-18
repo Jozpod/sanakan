@@ -9,7 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace DiscordBot.ServicesTests.ModeratorServiceTests
+namespace DiscordBot.Services.Tests.ModeratorServiceTests
 {
     /// <summary>
     /// Defines tests for <see cref="IModeratorService.MuteUserAsync(IGuildUser, IRole?, IRole?, IRole?, TimeSpan, string, System.Collections.Generic.IEnumerable{ModeratorRoles}?)"/> method.

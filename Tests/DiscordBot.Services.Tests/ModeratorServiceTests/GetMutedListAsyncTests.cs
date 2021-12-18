@@ -8,7 +8,7 @@ using Sanakan.DiscordBot.Services.Abstractions;
 using System;
 using System.Threading.Tasks;
 
-namespace DiscordBot.ServicesTests.ModeratorServiceTests
+namespace DiscordBot.Services.Tests.ModeratorServiceTests
 {
     /// <summary>
     /// Defines tests for <see cref="IModeratorService.GetMutedListAsync(ICommandContext)"/> method.

@@ -3,11 +3,13 @@
 using Discord.Commands;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Threading.Tasks;
 
 namespace Sanakan.DiscordBot
 {
+    [ExcludeFromCodeCoverage]
     public class CommandService : ICommandService
     {
         private readonly Discord.Commands.CommandService _commandService;

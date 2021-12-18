@@ -10,7 +10,7 @@ namespace Sanakan.DiscordBot.Services.Abstractions
 {
     public interface IModeratorService
     {
-        Task<EmbedBuilder> GetConfigurationAsync(GuildOptions config, ICommandContext context, ConfigType type);
+        Task<EmbedBuilder> GetConfigurationAsync(GuildOptions config, IGuild guild, ConfigType type);
 
         Task NotifyUserAsync(IUser user, string reason);
 

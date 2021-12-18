@@ -4,6 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Models.Configuration;
+using Sanakan.DAL.Repositories;
 using Sanakan.DiscordBot.Modules;
 using System;
 using System.Threading.Tasks;
@@ -17,7 +18,7 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
     public class ShowCardAsyncTests : Base
     {
         [TestMethod]
-        public async Task Should_Send_Message_Containing_Card_Image()
+        public async Task Should_Send_Message_Containing_Card_Details()
         {
             var utcNow = DateTime.UtcNow;
             var user = new User(1ul, utcNow);
@@ -37,12 +38,12 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
             card.GameDeck = user.GameDeck;
 
             _cardRepositoryMock
-                .Setup(pr => pr.GetCardAsync(card.Id))
+                .Setup(pr => pr.GetByIdAsync(card.Id, It.IsAny<CardQueryOptions>()))
                 .ReturnsAsync(card);
 
             _guildMock
-               .Setup(pr => pr.Id)
-               .Returns(guildOptions.Id);
+                .Setup(pr => pr.Id)
+                .Returns(guildOptions.Id);
 
             _guildMock
                 .Setup(pr => pr.GetUserAsync(user.Id, CacheMode.AllowDownload, null))
@@ -56,16 +57,12 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
                .Setup(pr => pr.GetChannelAsync(user.Id, CacheMode.AllowDownload, null))
                .ReturnsAsync(textChannelMock.Object);
 
-            _waifuServiceMock
-                .Setup(pr => pr.BuildCardImageAsync(card, textChannelMock.Object, guildUserMock.Object, true))
-                .ReturnsAsync(new EmbedBuilder().Build());
-            
             SetupSendMessage((message, embed) =>
             {
                 embed.Should().NotBeNull();
             });
 
-            await _module.ShowCardImageAsync(card.Id);
+            await _module.ShowCardAsync(card.Id);
         }
     }
 }

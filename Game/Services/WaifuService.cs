@@ -560,7 +560,7 @@ namespace Sanakan.Game.Services
             return (int)((m * value) - c);
         }
 
-        public int GetAttactAfterLevelUp(Rarity oldRarity, int oldAtk)
+        public int GetAttackAfterLevelUp(Rarity oldRarity, int oldAtk)
         {
             var newRarity = oldRarity - 1;
             var newMax = newRarity.GetAttackMax();
@@ -642,7 +642,7 @@ namespace Sanakan.Game.Services
             return deathLog;
         }
 
-        public FightHistory MakeFightAsync(IEnumerable<PlayerInfo> players, bool oneCard = false)
+        public FightHistory MakeFight(IEnumerable<PlayerInfo> players, bool oneCard = false)
         {
             var totalCards = new List<CardWithHealth>();
 
@@ -944,7 +944,7 @@ namespace Sanakan.Game.Services
             }.Build();
         }
 
-        public async Task<List<Card>> OpenBoosterPackAsync(ulong? discordUserId, BoosterPack pack)
+        public async Task<IEnumerable<Card>> OpenBoosterPackAsync(ulong? discordUserId, BoosterPack pack)
         {
             var cardsFromPack = new List<Card>();
 
@@ -1102,7 +1102,7 @@ namespace Sanakan.Game.Services
             try
             {
                 var images = await _resourceManager
-                    .ReadFromJsonAsync<List<SafariImage>>(Paths.PokeList);
+                    .ReadFromJsonAsync<IEnumerable<SafariImage>>(Paths.PokeList);
 
                 if (images == null)
                 {
@@ -1438,8 +1438,7 @@ namespace Sanakan.Game.Services
 
         public double GetBaseExpPerMinuteFromExpedition(ExpeditionCardType expedition, Rarity rarity)
         {
-            var baseExp = 0d;
-
+            double baseExp;
             switch (expedition)
             {
                 case ExpeditionCardType.NormalItemWithExp:
@@ -1480,14 +1479,14 @@ namespace Sanakan.Game.Services
         public string EndExpedition(User user, Card card, bool showStats = false)
         {
             var items = new Dictionary<string, int>();
-
-            var duration = GetRealTimeOnExpedition(card, user.GameDeck.Karma);
+            var gameDeck = user.GameDeck;
+            var duration = GetRealTimeOnExpedition(card, gameDeck.Karma);
             var baseExp = GetBaseExpPerMinuteFromExpedition(card.Expedition, card.Rarity);
             var baseItemsCnt = GetBaseItemsPerMinuteFromExpedition(card.Expedition, card.Rarity);
             var multiplier = (duration.Item2 < _hour) ? ((duration.Item2 < _halfAnHour) ? 5d : 3d) : 1d;
 
             var totalExp = GetProgressiveValueFromExpedition(baseExp, duration.Item1.TotalMinutes, 15d);
-            var totalItemsCnt = (int)GetProgressiveValueFromExpedition(baseItemsCnt, duration.Item1.TotalMinutes, 25d);
+            var totalItemsCount = (int)GetProgressiveValueFromExpedition(baseItemsCnt, duration.Item1.TotalMinutes, 25d);
 
             var karmaCost = card.GetKarmaCostInExpeditionPerMinute() * duration.Item1.TotalMinutes;
             var affectionCost = card.GetCostOfExpeditionPerMinute() * duration.Item1.TotalMinutes * multiplier;
@@ -1501,7 +1500,7 @@ namespace Sanakan.Game.Services
             var allowItems = true;
             if (duration.Item2 < _halfAnHour)
             {
-                reward = $"Wyprawa? Chyba po bułki do sklepu.\n\n";
+                reward = "Wyprawa? Chyba po bułki do sklepu.\n\n";
                 affectionCost += 3.3;
             }
 
@@ -1510,7 +1509,7 @@ namespace Sanakan.Game.Services
                 var @event = _eventsService.RandomizeEvent(card.Expedition, (duration.Item1.TotalMinutes, duration.Item2.TotalMinutes));
                 (allowItems, reward) = _eventsService.ExecuteEvent(@event, user, card, reward);
 
-                totalItemsCnt += _eventsService.GetMoreItems(@event);
+                totalItemsCount += _eventsService.GetMoreItems(@event);
                 if (@event == EventType.ChangeDere)
                 {
                     card.Dere = _randomNumberGenerator.GetOneRandomFrom(DereExtensions.ListOfDeres);
@@ -1530,16 +1529,16 @@ namespace Sanakan.Game.Services
 
             if (duration.Item1 <= TimeSpan.FromMinutes(3))
             {
-                totalItemsCnt = 0;
+                totalItemsCount = 0;
                 totalExp /= 2;
             }
 
-            if (duration.Item1 <= TimeSpan.FromMinutes(1) || user.GameDeck.CanCreateDemon())
+            if (duration.Item1 <= TimeSpan.FromMinutes(1) || gameDeck.CanCreateDemon())
             {
                 karmaCost /= 2.5;
             }
 
-            if (duration.Item1 >= TimeSpan.FromHours(36) || user.GameDeck.CanCreateAngel())
+            if (duration.Item1 >= TimeSpan.FromHours(36) || gameDeck.CanCreateAngel())
             {
                 karmaCost *= 2.5;
             }
@@ -1547,22 +1546,25 @@ namespace Sanakan.Game.Services
             card.ExperienceCount += totalExp;
             card.Affection -= affectionCost;
 
-            double minAff = 0;
+            var minAff = 0d;
             reward += $"Zdobywa:\n+{totalExp.ToString("F")} exp ({card.ExperienceCount.ToString("F")})\n";
-            for (int i = 0; i < totalItemsCnt && allowItems; i++)
+            for (var i = 0; i < totalItemsCount && allowItems; i++)
             {
-                if (CheckChanceForItemInExpedition(i, totalItemsCnt, card.Expedition))
+                if (CheckChanceForItemInExpedition(i, totalItemsCount, card.Expedition))
                 {
                     var newItem = RandomizeItemForExpedition(card.Expedition);
-                    if (newItem == null) break;
+                    if (newItem == null)
+                    {
+                        break;
+                    }
 
                     minAff += newItem.BaseAffection();
 
-                    var thisItem = user.GameDeck.Items.FirstOrDefault(x => x.Type == newItem.Type && x.Quality == newItem.Quality);
+                    var thisItem = gameDeck.Items.FirstOrDefault(x => x.Type == newItem.Type && x.Quality == newItem.Quality);
                     if (thisItem == null)
                     {
                         thisItem = newItem;
-                        user.GameDeck.Items.Add(thisItem);
+                        gameDeck.Items.Add(thisItem);
                     }
                     else
                     {
@@ -1582,11 +1584,11 @@ namespace Sanakan.Game.Services
 
             if (showStats)
             {
-                reward += $"\n\nRT: {duration.Item1.ToString("F")} E: {totalExp.ToString("F")} AI: {minAff.ToString("F")} A: {affectionCost.ToString("F")} K: {karmaCost.ToString("F")} MI: {totalItemsCnt}";
+                reward += $"\n\nRT: {duration.Item1.ToString("F")} E: {totalExp.ToString("F")} AI: {minAff.ToString("F")} A: {affectionCost.ToString("F")} K: {karmaCost.ToString("F")} MI: {totalItemsCount}";
             }
 
             card.Expedition = ExpeditionCardType.None;
-            user.GameDeck.Karma -= karmaCost;
+            gameDeck.Karma -= karmaCost;
 
             return reward;
         }

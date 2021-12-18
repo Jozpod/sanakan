@@ -8,7 +8,7 @@ using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot.Services;
 using Sanakan.DiscordBot.Services.Abstractions;
 
-namespace DiscordBot.ServicesTests.ModeratorServiceTests
+namespace DiscordBot.Services.Tests.ModeratorServiceTests
 {
     [TestClass]
     public abstract class Base

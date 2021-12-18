@@ -80,7 +80,7 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
             var deathLog = "log";
 
             _waifuServiceMock
-                .Setup(pr => pr.MakeFightAsync(It.IsAny<List<PlayerInfo>>(), false))
+                .Setup(pr => pr.MakeFight(It.IsAny<List<PlayerInfo>>(), false))
                 .Returns(fightHistory);
 
             _waifuServiceMock

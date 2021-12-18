@@ -4,6 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Models.Configuration;
+using Sanakan.DAL.Repositories;
 using Sanakan.DiscordBot.Modules;
 using System;
 using System.Threading.Tasks;
@@ -17,7 +18,7 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
     public class ShowCardStringAsyncTests : Base
     {
         [TestMethod]
-        public async Task Should_Send_Message_Containing_Card_Image()
+        public async Task Should_Send_Message_Describing_Card()
         {
             var utcNow = DateTime.UtcNow;
             var user = new User(1ul, utcNow);
@@ -26,46 +27,34 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
             user.GameDeck.Cards.Add(card);
             user.GameDeck.UserId = user.Id;
             var guildUserMock = new Mock<IGuildUser>(MockBehavior.Strict);
-            var textChannelMock = new Mock<ITextChannel>(MockBehavior.Strict);
-            var guildOptions = new GuildOptions(1ul, 50)
-            {
-                WaifuConfig = new WaifuConfiguration
-                {
-                    TrashCommandsChannelId = 1ul,
-                }
-            };
             card.GameDeck = user.GameDeck;
 
             _cardRepositoryMock
-                .Setup(pr => pr.GetCardAsync(card.Id))
+                .Setup(pr => pr.GetByIdAsync(card.Id, It.IsAny<CardQueryOptions>()))
                 .ReturnsAsync(card);
 
             _guildMock
                .Setup(pr => pr.Id)
-               .Returns(guildOptions.Id);
+               .Returns(1ul);
+
+            guildUserMock
+                .Setup(pr => pr.Nickname)
+                .Returns("nickname");
+
+            guildUserMock
+                .Setup(pr => pr.GetAvatarUrl(ImageFormat.Auto, 128))
+                .Returns("https://test.com/avatar.png");
 
             _guildMock
                 .Setup(pr => pr.GetUserAsync(user.Id, CacheMode.AllowDownload, null))
                 .ReturnsAsync(guildUserMock.Object);
 
-            _guildConfigRepositoryMock
-                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildOptions.Id))
-                .ReturnsAsync(guildOptions);
-
-            _guildMock
-               .Setup(pr => pr.GetChannelAsync(user.Id, CacheMode.AllowDownload, null))
-               .ReturnsAsync(textChannelMock.Object);
-
-            _waifuServiceMock
-                .Setup(pr => pr.BuildCardImageAsync(card, textChannelMock.Object, guildUserMock.Object, true))
-                .ReturnsAsync(new EmbedBuilder().Build());
-            
             SetupSendMessage((message, embed) =>
             {
                 embed.Should().NotBeNull();
             });
 
-            await _module.ShowCardImageAsync(card.Id);
+            await _module.ShowCardStringAsync(card.Id);
         }
     }
 }

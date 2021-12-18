@@ -3,17 +3,17 @@
     public enum EventType : byte
     {
         MoreItems = 0,
-        MoreExp = 1,
-        IncAtk = 2,
-        IncDef = 3,
+        MoreExperience = 1,
+        IncreaseAttack = 2,
+        IncreaseDefence = 3,
         AddReset = 4,
         NewCard = 5,     // +
         
         None = 6,
         ChangeDere = 7,
-        DecAtk = 8, 
-        DecDef = 9,
-        DecAff = 10,
+        DecreaseAttack = 8, 
+        DecreaseDefence = 9,
+        DecreaseAffection = 10,
         LoseCard = 11,
         Fight = 12 // -
     }

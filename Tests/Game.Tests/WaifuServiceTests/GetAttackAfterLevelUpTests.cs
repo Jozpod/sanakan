@@ -6,10 +6,10 @@ using Sanakan.Game.Services.Abstractions;
 namespace Sanakan.Game.Tests.WaifuServiceTests
 {
     /// <summary>
-    /// Defines tests for <see cref="IWaifuService.GetAttactAfterLevelUp(Rarity, int)"/> method.
+    /// Defines tests for <see cref="IWaifuService.GetAttackAfterLevelUp(Rarity, int)"/> method.
     /// </summary>
     [TestClass]
-    public class GetAttactAfterLevelUpTests : Base
+    public class GetAttackAfterLevelUpTests : Base
     {
         [TestMethod]
         public void Should_Return_Value()
@@ -21,7 +21,7 @@ namespace Sanakan.Game.Tests.WaifuServiceTests
                 .Setup(pr => pr.GetRandomValue(105, 107))
                 .Returns(106);
 
-            var value = _waifuService.GetAttactAfterLevelUp(rarity, attack);
+            var value = _waifuService.GetAttackAfterLevelUp(rarity, attack);
             value.Should().BeGreaterThan(95);
         }
     }

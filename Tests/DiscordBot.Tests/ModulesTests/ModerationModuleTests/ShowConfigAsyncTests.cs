@@ -33,7 +33,7 @@ namespace DiscordBot.ModulesTests.ModerationModuleTests
                 .ReturnsAsync(guildConfig);
 
             _moderatorServiceMock
-                .Setup(pr => pr.GetConfigurationAsync(guildConfig, _commandContextMock.Object, ConfigType.Global))
+                .Setup(pr => pr.GetConfigurationAsync(guildConfig, _guildMock.Object, ConfigType.Global))
                 .ReturnsAsync(new EmbedBuilder());
 
             _guildConfigRepositoryMock

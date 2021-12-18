@@ -62,7 +62,7 @@ namespace Sanakan.ShindenApi
 
         Task<Result<List<LastWatchedRead>>> GetLastReadAsync(ulong userId, uint limit = 5);
 
-        Task<Result<List<ulong>>> GetAllCharactersFromAnimeAsync();
+        Task<Result<IEnumerable<ulong>>> GetAllCharactersFromAnimeAsync();
 
         Task<Result<List<FavCharacter>>> GetFavouriteCharactersAsync(ulong userId);
 

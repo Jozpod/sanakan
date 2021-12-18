@@ -950,7 +950,7 @@ namespace Sanakan.DiscordBot.Modules
             foreach (var pack in packs)
             {
                 var cards = await _waifuService.OpenBoosterPackAsync(user.Id, pack);
-                if (cards.Count < pack.CardCount)
+                if (cards.Count() < pack.CardCount)
                 {
                     embed = $"{mention} nie udało się otworzyć pakietu.".ToEmbedMessage(EMType.Error).Build();
                     await ReplyAsync(embed: embed);
@@ -1238,7 +1238,7 @@ namespace Sanakan.DiscordBot.Modules
             gameDeck.Karma += 1;
 
             card.Defence = _waifuService.GetDefenceAfterLevelUp(card.Rarity, card.Defence);
-            card.Attack = _waifuService.GetAttactAfterLevelUp(card.Rarity, card.Attack);
+            card.Attack = _waifuService.GetAttackAfterLevelUp(card.Rarity, card.Attack);
             card.UpgradesCount -= (card.Rarity == Rarity.SS ? 5 : 1);
             card.Rarity = --card.Rarity;
             card.Affection += 1;
@@ -3809,7 +3809,7 @@ namespace Sanakan.DiscordBot.Modules
                     }
                 };
 
-            var fight = _waifuService.MakeFightAsync(players);
+            var fight = _waifuService.MakeFight(players);
             var deathLog = _waifuService.GetDeathLog(fight, players);
 
             var fightResult = FightResult.Lose;

@@ -29,7 +29,7 @@ namespace Sanakan.TaskQueue.Tests
         }
 
         [TestMethod]
-        public void Should_Process_Message()
+        public void Should_Return_Message()
         {
             var firstExpected = new ConnectUserMessage();
 
@@ -41,36 +41,24 @@ namespace Sanakan.TaskQueue.Tests
             enumerable.Current.Should().Be(firstExpected);
         }
 
-#if DEBUG
         [TestMethod]
-#endif
-        public void Should_Sort_Messages_By_Priority_And_Process_Messages()
+        public void Should_Sort_Messages_By_Priority()
         {
             var firstExpected = new ConnectUserMessage();
             var secondExpected = new GiveCardsMessage();
 
             var cancellationTokenSource = new CancellationTokenSource();
-            cancellationTokenSource.CancelAfter(TimeSpan.FromSeconds(3));
 
-            var producer = Task.Run(async () =>
-            {
-                await Task.Delay(TimeSpan.FromSeconds(1));
-                _blockingPriorityQueue.TryEnqueue(secondExpected);
-                _blockingPriorityQueue.TryEnqueue(firstExpected);
-            }, cancellationTokenSource.Token);
+            _blockingPriorityQueue.TryEnqueue(secondExpected);
+            _blockingPriorityQueue.TryEnqueue(firstExpected);
 
-            var consumer = Task.Run(() =>
-            {
-                var enumerable = _blockingPriorityQueue.GetEnumerable(cancellationTokenSource.Token).GetEnumerator();
-                enumerable.MoveNext();
-                enumerable.Current.Should().Be(firstExpected);
-                enumerable.MoveNext();
-                enumerable.Current.Should().Be(secondExpected);
-            }, cancellationTokenSource.Token);
-
-            Task.WhenAll(producer, consumer).Wait();
-            producer.IsCompletedSuccessfully.Should().BeTrue();
-            consumer.IsCompletedSuccessfully.Should().BeTrue();
+            var enumerable = _blockingPriorityQueue.GetAsyncEnumerable(cancellationTokenSource.Token).GetAsyncEnumerator();
+            enumerable.MoveNextAsync();
+            var actual = enumerable.Current;
+            actual.Should().Be(firstExpected);
+            enumerable.MoveNextAsync();
+            actual = enumerable.Current;
+            actual.Should().Be(secondExpected);
         }
     }
 }

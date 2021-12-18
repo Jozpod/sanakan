@@ -31,11 +31,11 @@ namespace Sanakan.Daemon.HostedService
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            try
+            await Task.Run(async () =>
             {
-                await Task.Run(async () =>
+                foreach (var message in _blockingPriorityQueue.GetEnumerable(stoppingToken))
                 {
-                    foreach (var message in _blockingPriorityQueue.GetEnumerable(stoppingToken))
+                    try
                     {
                         stoppingToken.ThrowIfCancellationRequested();
 
@@ -47,16 +47,17 @@ namespace Sanakan.Daemon.HostedService
 
                         stoppingToken.ThrowIfCancellationRequested();
                     }
-                }, stoppingToken);
-            }
-            catch (OperationCanceledException)
-            {
-                _logger.LogInformation("Task queue has been stopped");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError("An error occurred while processing task", ex);
-            }
+                    catch (OperationCanceledException)
+                    {
+                        _logger.LogInformation("Task queue has been stopped");
+                        break;
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError("An error occurred while processing task", ex);
+                    }
+                }
+            }, stoppingToken);
         }
     }
 }

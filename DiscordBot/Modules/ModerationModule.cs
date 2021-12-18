@@ -505,7 +505,7 @@ namespace Sanakan.DiscordBot.Modules
 
             if (config == null)
             {
-                config = new GuildOptions(guildId, Sanakan.DAL.Constants.SafariLimit);
+                config = new GuildOptions(guildId, DAL.Constants.SafariLimit);
                 _guildConfigRepository.Add(config);
 
                 config.WaifuConfig = new WaifuConfiguration();
@@ -513,7 +513,7 @@ namespace Sanakan.DiscordBot.Modules
                 await _guildConfigRepository.SaveChangesAsync();
             }
 
-            var content = (await _moderatorService.GetConfigurationAsync(config, Context, type))
+            var content = (await _moderatorService.GetConfigurationAsync(config, guild, type))
                 .WithTitle($"Konfiguracja {guild.Name}:")
                 .Build();
 

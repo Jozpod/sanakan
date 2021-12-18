@@ -2,10 +2,12 @@
 using Discord.Commands;
 using Discord.WebSocket;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 
 namespace Sanakan.DiscordBot
 {
+    [ExcludeFromCodeCoverage]
     internal class DiscordSocketClientAccessor : IDiscordClientAccessor
     {
         private readonly DiscordSocketClient _client;

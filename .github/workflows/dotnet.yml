@@ -51,8 +51,7 @@ jobs:
       - name: Publish coverage report to codecov.io
         uses: codecov/codecov-action@v2
         with:
-          files: "./Tests/TestResults/coverage.opencover.xml,\
-            ./Tests/TestResults/DAL.Tests.coverage.xml,\
+          files: "./Tests/TestResults/DAL.Tests.coverage.xml,\
             ./Tests/TestResults/DiscordBot.Tests.coverage.xml,\
             ./Tests/TestResults/ShindenApi.Tests.coverage,\
             ./Tests/TestResults/DiscordBot.Session.Tests.coverage.xml,\
@@ -60,7 +59,8 @@ jobs:
             ./Tests/TestResults/DiscordBot.Services.Tests.coverage.xml,\
             ./Tests/TestResults/Daemon.Tests.coverage.xml,\
             ./Tests/TestResults/Game.Tests.coverage.xml,\
-            ./Tests/TestResults/TaskQueue.Tests.coverage"
+            ./Tests/TestResults/TaskQueue.Tests.coverage,\
+            ./Tests/TestResults/coverage.opencover.xml"
           name: codecov-umbrella
           fail_ci_if_error: true
           verbose: true
