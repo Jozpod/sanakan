@@ -38,7 +38,7 @@ jobs:
           dotnet test Tests/Common.Tests/Common.Tests.csproj  --no-build --verbosity minimal --configuration Release
           dotnet test Tests/DAL.MySql.Migrator.Tests/DAL.MySql.Migrator.Tests.csproj --no-build --verbosity minimal --configuration Release
           dotnet test Tests/DAL.MySql.Schema.Tests/DAL.MySql.Schema.Tests.csproj --no-build --verbosity minimal --configuration Release
-          dotnet test Tests/Web.Tests/Web.Tests.csproj --no-build --verbosity minimal --configuration Release /p:Exclude=\"[*]Sanakan.Web.Models*\"
+          dotnet test Tests/Web.Tests/Web.Tests.csproj --no-build --verbosity minimal --configuration Release /p:Exclude=\"[*]Sanakan.Web.Models*,[*]Sanakan.ShindenApi.Models*,[*]Sanakan.ShindenApi.Converters*,[*]Sanakan.Game.Models*\"
           dotnet test Tests/DAL.Tests/DAL.Tests.csproj  --no-build --verbosity minimal --configuration Release
           dotnet test Tests/DiscordBot.Tests/DiscordBot.Tests.csproj --no-build --verbosity minimal --configuration Release
           dotnet test Tests/ShindenApi.Tests/ShindenApi.Tests.csproj --no-build --verbosity minimal --configuration Release /p:Exclude=\"[*]Sanakan.ShindenApi.Models*,[*]Sanakan.ShindenApi.Converters*\"
@@ -52,15 +52,15 @@ jobs:
         uses: codecov/codecov-action@v2
         with:
           files: "./Tests/TestResults/DAL.Tests.coverage.xml,\
+            ./Tests/TestResults/Web.Tests.coverage.xml,\
             ./Tests/TestResults/DiscordBot.Tests.coverage.xml,\
-            ./Tests/TestResults/ShindenApi.Tests.coverage,\
+            ./Tests/TestResults/ShindenApi.Tests.coverage.xml,\
             ./Tests/TestResults/DiscordBot.Session.Tests.coverage.xml,\
             ./Tests/TestResults/DiscordBot.Supervisor.Tests.coverage.xml,\
             ./Tests/TestResults/DiscordBot.Services.Tests.coverage.xml,\
             ./Tests/TestResults/Daemon.Tests.coverage.xml,\
             ./Tests/TestResults/Game.Tests.coverage.xml,\
-            ./Tests/TestResults/TaskQueue.Tests.coverage,\
-            ./Tests/TestResults/Web.Tests.coverage.xml"
+            ./Tests/TestResults/TaskQueue.Tests.coverage.xml"
           name: codecov-umbrella
           fail_ci_if_error: true
           verbose: true

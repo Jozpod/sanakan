@@ -21,10 +21,14 @@ namespace Sanakan.Game.Extensions
 
             return $"{idStr} {name} **{card.GetCardRealRarity()}** {card.GetCardParams(showBaseHp, allowZero)} {upgradeCount}";
         }
+        
         private static string GetNameWithUrl(this Card card) => $"[{card.Name}]({card.GetCharacterUrl()})";
+        
         private static string GetCharacterUrl(this Card card) => UrlHelpers.GetCharacterURL(card.CharacterId);
+
         public static string GetViewValueForTop(this User user, TopType type)
         {
+            var gameDeck = user.GameDeck;
             switch (type)
             {
                 default:
@@ -56,25 +60,25 @@ namespace Sanakan.Game.Extensions
                     return $"{user.CommandsCount}";
 
                 case TopType.Card:
-                    return user.GameDeck.Cards
+                    return gameDeck.Cards
                         .OrderByDescending(x => x.CardPower)?
                         .FirstOrDefault()?.GetString(false, false, true) ?? "---";
 
                 case TopType.Cards:
-                    return $"{user.GameDeck.Cards.Count}";
+                    return $"{gameDeck.Cards.Count}";
 
                 case TopType.CardsPower:
                     return user.GameDeck.GetCardCountStats();
 
                 case TopType.Karma:
                 case TopType.KarmaNegative:
-                    return $"{user.GameDeck.Karma.ToString("F")}";
+                    return $"{gameDeck.Karma.ToString("F")}";
 
                 case TopType.Pvp:
-                    return $"{user.GameDeck.GlobalPVPRank}";
+                    return $"{gameDeck.GlobalPVPRank}";
 
                 case TopType.PvpSeason:
-                    return $"{user.GameDeck.SeasonalPVPRank}";
+                    return $"{gameDeck.SeasonalPVPRank}";
             }
         }
     }

@@ -18,11 +18,11 @@ namespace Sanakan.DiscordBot.Services.Abstractions
         Task<bool> SetUserColorAsync(IGuildUser user, ulong adminRoleId, FColor color);
 
         Task<SaveResult> SaveProfileImageAsync(
-            string imgUrl,
-            string path,
+            string imageUrl,
+            string filePath,
             int width = 0,
             int height = 0,
-            bool streach = false);
+            bool stretch = false);
 
         Task<List<string>> BuildListViewAsync(IEnumerable<User> userList, TopType topType, IGuild guild);
 

@@ -37,24 +37,6 @@ namespace Sanakan.Daemon.Test.HostedServices
         }
 
         [TestMethod]
-        public async Task Should_Cancel_Task_Queue()
-        {
-            var messages = new[]
-            {
-                new SafariMessage(),
-            };
-
-            _blockingPriorityQueueMock
-                .Setup(pr => pr.GetEnumerable(It.IsAny<CancellationToken>()))
-                .Returns(messages)
-                .Verifiable();
-
-            var cancellationTokenSource = new CancellationTokenSource();
-            cancellationTokenSource.Cancel();
-            await _service.StartAsync(cancellationTokenSource.Token);
-        }
-
-        [TestMethod]
         public async Task Should_Handle_Message()
         {
             var messages = new[]

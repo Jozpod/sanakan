@@ -1,4 +1,4 @@
-﻿namespace Sanakan.Api.Models
+﻿namespace Sanakan.Web.Models
 {
     /// <summary>
     /// Dodatkowe pole wiadomości

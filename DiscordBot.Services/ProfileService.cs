@@ -104,20 +104,21 @@ namespace Sanakan.DiscordBot.Services
                 return false;
             }
 
+            var guild = user.Guild;
             var colorNumeric = (uint)color;
-            var adminRole = user.Guild.GetRole(adminRoleId);
+            var adminRole = guild.GetRole(adminRoleId);
 
             if (adminRole == null)
             {
                 return false;
             }
 
-            var colorRole = user.Guild.Roles.FirstOrDefault(x => x.Name == colorNumeric.ToString());
+            var colorRole = guild.Roles.FirstOrDefault(x => x.Name == colorNumeric.ToString());
 
             if (colorRole == null)
             {
                 var dColor = new Color(colorNumeric);
-                var createdRole = await user.Guild.CreateRoleAsync(colorNumeric.ToString(), GuildPermissions.None, dColor, false, false);
+                var createdRole = await guild.CreateRoleAsync(colorNumeric.ToString(), GuildPermissions.None, dColor, false, false);
                 await createdRole.ModifyAsync(x => x.Position = adminRole.Position + 1);
                 await user.AddRoleAsync(createdRole);
                 return true;
@@ -256,10 +257,10 @@ namespace Sanakan.DiscordBot.Services
 
         public async Task<SaveResult> SaveProfileImageAsync(
             string? imageUrl,
-            string path,
+            string filePath,
             int width = 0,
             int height = 0,
-            bool streach = false)
+            bool stretch = false)
         {
             if (imageUrl == null)
             {
@@ -273,12 +274,12 @@ namespace Sanakan.DiscordBot.Services
 
             try
             {
-                if (_fileSystem.Exists(path))
+                if (_fileSystem.Exists(filePath))
                 {
-                    _fileSystem.Delete(path);
+                    _fileSystem.Delete(filePath);
                 }
 
-                await _imageProcessor.SaveImageFromUrlAsync(imageUrl, path, new Size(width, height), streach);
+                await _imageProcessor.SaveImageFromUrlAsync(imageUrl, filePath, new Size(width, height), stretch);
             }
             catch (Exception)
             {

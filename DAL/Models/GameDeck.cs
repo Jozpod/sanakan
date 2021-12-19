@@ -165,7 +165,7 @@ namespace Sanakan.DAL.Models
 
         public string GetCardCountStats()
         {
-            string stats = "";
+            var stats = string.Empty;
 
             foreach (var rarity in RarityExtensions.Rarities)
             {

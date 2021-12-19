@@ -415,10 +415,11 @@ namespace Sanakan.DiscordBot.Services
             string byWho = Constants.Automatic)
         {
             var durationFriendly = penaltyInfo.Duration.Humanize(4);
+            var color = (penaltyInfo.Type == PenaltyType.Mute) ? EMType.Warning.Color() : EMType.Error.Color();
 
             var embed = new EmbedBuilder
             {
-                Color = (penaltyInfo.Type == PenaltyType.Mute) ? EMType.Warning.Color() : EMType.Error.Color(),
+                Color = color,
                 Footer = new EmbedFooterBuilder().WithText($"Przez: {byWho}"),
                 Description = $"Powód: {penaltyInfo.Reason}".ElipseTrimToLength(1800),
                 Author = new EmbedAuthorBuilder().WithUser(user),
@@ -515,8 +516,9 @@ namespace Sanakan.DiscordBot.Services
 
         public Embed BuildTodo(IMessage message, IGuildUser who)
         {
-            string image = "";
-            if (message.Attachments.Count > 0)
+            var image = string.Empty;
+            
+            if (message.Attachments.Any())
             {
                 var first = message.Attachments.First();
 

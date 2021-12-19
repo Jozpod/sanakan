@@ -1217,7 +1217,7 @@ namespace Sanakan.Game.Services
                 imageUrl = message.Attachments.First().Url;
             }
 
-            var imgUrls = $"[_obrazek_]({imageUrl})\n[_możesz zmienić obrazek tutaj_]({card.GetCharacterUrl()}/edit_crossroad)";
+            var decription = $"{card.GetDesc()}[_obrazek_]({imageUrl})\n[_możesz zmienić obrazek tutaj_]({card.GetCharacterUrl()}/edit_crossroad)".ElipseTrimToLength(1800);
             var ownerString = ((owner as IGuildUser)?.Nickname ?? owner?.Username) ?? Placeholders.Undefined;
 
             return new EmbedBuilder
@@ -1228,7 +1228,7 @@ namespace Sanakan.Game.Services
                 {
                     Text = $"Należy do: {ownerString}"
                 },
-                Description = $"{card.GetDesc()}{imgUrls}".ElipseTrimToLength(1800)
+                Description = decription,
             }.Build();
         }
 

@@ -54,8 +54,12 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
                 .ReturnsAsync(guildOptions);
 
             _guildMock
-               .Setup(pr => pr.GetChannelAsync(user.Id, CacheMode.AllowDownload, null))
-               .ReturnsAsync(textChannelMock.Object);
+                .Setup(pr => pr.GetChannelAsync(user.Id, CacheMode.AllowDownload, null))
+                .ReturnsAsync(textChannelMock.Object);
+
+            _waifuServiceMock
+                .Setup(pr => pr.BuildCardViewAsync(card, textChannelMock.Object, guildUserMock.Object))
+                .ReturnsAsync(new EmbedBuilder().Build());
 
             SetupSendMessage((message, embed) =>
             {
