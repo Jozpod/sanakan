@@ -918,7 +918,7 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            var packs = boosterPacks.ToList().GetRange(numberOfPack - 1, count);
+            var packs = boosterPacks.Skip(numberOfPack - 1).Take(count);
             var cardsCount = packs.Sum(x => x.CardCount);
 
             if (cardsCount > 20)
@@ -935,17 +935,20 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            var mission = databaseUser.TimeStatuses
+            var timeStatuses = databaseUser.TimeStatuses;
+            var mission = timeStatuses
                 .FirstOrDefault(x => x.Type == StatusType.DPacket);
 
             if (mission == null)
             {
                 mission = new TimeStatus(StatusType.DPacket);
-                databaseUser.TimeStatuses.Add(mission);
+                timeStatuses.Add(mission);
             }
 
             var totalCards = new List<Card>();
             var charactersOnWishlist = new List<string>();
+            var utcNow = _systemClock.UtcNow;
+            var stats = databaseUser.Stats;
 
             foreach (var pack in packs)
             {
@@ -957,18 +960,18 @@ namespace Sanakan.DiscordBot.Modules
                     return;
                 }
 
-                mission.Count(_systemClock.UtcNow);
+                mission.Count(utcNow);
 
                 if (pack.CardSourceFromPack == CardSource.Activity || pack.CardSourceFromPack == CardSource.Migration)
                 {
-                    databaseUser.Stats.OpenedBoosterPacksActivity += 1;
+                    stats.OpenedBoosterPacksActivity += 1;
                 }
                 else
                 {
-                    databaseUser.Stats.OpenedBoosterPacks += 1;
+                    stats.OpenedBoosterPacks += 1;
                 }
 
-                gameDeck.BoosterPacks.Remove(pack);
+                boosterPacks.Remove(pack);
 
                 foreach (var card in cards)
                 {

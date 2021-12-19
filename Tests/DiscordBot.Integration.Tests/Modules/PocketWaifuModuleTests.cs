@@ -106,7 +106,7 @@ namespace Sanakan.DiscordBot.Integration.Tests
         public async Task TC407_Should_Get_Free_Card()
         {
             var characterId = 1488ul;
-            var charactersResult = new Result<List<ulong>>
+            var charactersResult = new Result<IEnumerable<ulong>>
             {
                 Value = new List<ulong>
                 {
@@ -174,6 +174,43 @@ namespace Sanakan.DiscordBot.Integration.Tests
 
             var message = await WaitForMessageAsync();
             message.Should().NotBeNull();
+        }
+
+        [TestMethod]
+        public async Task TC409_Should_Open_Card_Bundle()
+        {
+            var characterId = 1ul;
+            var charactersResult = new Result<IEnumerable<ulong>>
+            {
+                Value = new List<ulong>
+                {
+                    characterId
+                }
+            };
+            var characterInfoResult = new Sanakan.ShindenApi.Result<CharacterInfo>
+            {
+                Value = new CharacterInfo
+                {
+                    FirstName = "Test",
+                    LastName = "Character",
+                }
+            };
+
+            _shindenClientMock
+                .Setup(pr => pr.GetAllCharactersFromAnimeAsync())
+                .ReturnsAsync(charactersResult);
+
+            _shindenClientMock
+                .Setup(pr => pr.GetCharacterInfoAsync(characterId))
+                .ReturnsAsync(characterInfoResult);
+
+            var commandMessage = PocketWaifuCommandBuilder.OpenPacket(Prefix, 1, checkWishlists: false);
+            await Channel.SendMessageAsync(commandMessage);
+
+            var message = await WaitForMessageAsync();
+            message.Should().NotBeNull();
+            var embed = message.Embeds.FirstOrDefault();
+            embed.Should().NotBeNull();
         }
 
         [TestMethod]

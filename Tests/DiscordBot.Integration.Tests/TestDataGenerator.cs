@@ -32,6 +32,25 @@ namespace Sanakan.DiscordBot.Integration.Tests
             user.TcCount = 10000;
             dbContext.Users.Add(user);
             await dbContext.SaveChangesAsync();
+            var boosterPacks = new[]{
+                new BoosterPack
+                {
+                    Name = BoosterPackTypes.Activity,
+                    CardCount = 5,
+                    CardSourceFromPack = CardSource.Activity,
+                },
+                new BoosterPack
+                {
+                    Name = BoosterPackTypes.Activity,
+                    CardCount = 3,
+                    CardSourceFromPack = CardSource.Activity,
+                },
+            };
+            foreach (var boosterPack in boosterPacks)
+            {
+                user.GameDeck.BoosterPacks.Add(boosterPack);
+            }
+            await dbContext.SaveChangesAsync();
 
             var botUser = new User(botUserId, DateTime.UtcNow);
             dbContext.Users.Add(botUser);
