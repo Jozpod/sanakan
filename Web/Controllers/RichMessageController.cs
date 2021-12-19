@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using Sanakan.Api.Models;
 using Sanakan.Common;
 using Sanakan.Common.Configuration;
 using Sanakan.Configuration;

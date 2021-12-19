@@ -1,69 +1,67 @@
-﻿using Sanakan.Api.Models;
-using Sanakan.Configuration;
+﻿using Sanakan.Configuration;
 using Sanakan.Web.Models;
 using System;
 using System.Collections.Generic;
 
 namespace Sanakan.DiscordBot.Models
 {
-
     /// <summary>
-    /// Wiadomośc Embed generowane przez discorda, jedno z pól opcjonalnych musi zostać sprecyzowane
+    /// Embed message generated from Discord, One of the fields must be provided.
     /// </summary>
     public class RichMessage
     {
         /// <summary>
-        /// Adres do kótego prowadzi tytuł wiadomości
+        /// The url.
         /// </summary>
-        public string Url { get; set; } = null;
+        public string Url { get; set; } = string.Empty;
 
         /// <summary>
-        /// Tytuł wiadomości, opcjonalne
+        /// The message title.
         /// </summary>
-        public string Title { get; set; } = null;
+        public string Title { get; set; } = string.Empty;
 
         /// <summary>
-        /// Adres obrazka wyświetlanego na końcu wiadomości
+        /// The image url.
         /// </summary>
         public string ImageUrl { get; set; } = null;
 
         /// <summary>
-        /// Główna treść wiadomości, opcjonalne
+        /// The message description.
         /// </summary>
         public string Description { get; set; } = null;
 
         /// <summary>
-        /// Adres obrazka wyświetlanego po prawej stronie
+        /// The thumbnail image url.
         /// </summary>
         public string ThumbnailUrl { get; set; } = null;
 
         /// <summary>
-        /// Autor wiadomości - pierwsza linia
+        /// The message author.
         /// </summary>
         public RichMessageAuthor Author { get; set; } = null;
 
         /// <summary>
-        /// Stopka wiadomości - ostatnia linia
+        /// The message footer.
         /// </summary>
         public RichMessageFooter Footer { get; set; } = null;
 
         /// <summary>
-        /// Timestamp obok stopki
+        /// The message timestamp.
         /// </summary>
         public DateTimeOffset? Timestamp { get; set; }
 
         /// <summary>
-        /// Dodatkowe pola
+        /// Additional fields.
         /// </summary>
-        public List<RichMessageField> Fields { get; set; } = null;
+        public List<RichMessageField> Fields { get; set; } = new();
 
         /// <summary>
-        /// Typ wiadomości
+        /// The messgage type.
         /// </summary>
         public RichMessageType MessageType { get; set; }
 
         /// <summary>
-        /// Dodatkowa wiadomość poza Embedem
+        /// The additional message content.
         /// </summary>
         public string Content { get; set; } = null;
     }

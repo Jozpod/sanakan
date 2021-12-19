@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using Sanakan.Api.Models;
 using Sanakan.TaskQueue.Messages;
 using Sanakan.Web.Controllers;
 using Sanakan.Web.Models;
