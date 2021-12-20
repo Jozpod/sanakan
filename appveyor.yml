@@ -1,8 +1,8 @@
-version: '1.0.{build}'
+version: "1.0.{build}"
 image: Visual Studio 2019
 branches:
   only:
-  - master
+    - master
 init:
   - cmd: git config --global core.autocrlf true
 install:
@@ -10,6 +10,8 @@ before_build:
   - choco install opencover.portable
   - choco install codecov
   - cmd: dotnet --version
+  - ps: >-
+      Get-ChildItem .\ -include packages.lock.json -Recurse | foreach ($_) { remove-item $_.fullname -Force }
   - cmd: dotnet restore
 build_script:
   - cmd: dotnet build --configuration Release --no-restore
