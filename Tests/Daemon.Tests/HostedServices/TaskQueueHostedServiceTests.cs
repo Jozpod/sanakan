@@ -9,6 +9,7 @@ using Sanakan.TaskQueue;
 using Sanakan.TaskQueue.MessageHandlers;
 using Sanakan.TaskQueue.Messages;
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -42,10 +43,10 @@ namespace Sanakan.Daemon.Test.HostedServices
             var messages = new[]
             {
                 new SafariMessage(),
-            };
+            }.ToAsyncEnumerable();
 
             _blockingPriorityQueueMock
-                .Setup(pr => pr.GetEnumerable(It.IsAny<CancellationToken>()))
+                .Setup(pr => pr.GetAsyncEnumerable(It.IsAny<CancellationToken>()))
                 .Returns(messages)
                 .Verifiable();
 

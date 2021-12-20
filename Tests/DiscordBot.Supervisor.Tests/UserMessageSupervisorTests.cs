@@ -7,6 +7,7 @@ using Moq;
 using Sanakan.Common;
 using Sanakan.Common.Configuration;
 using System;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -69,6 +70,73 @@ namespace Sanakan.DiscordBot.Supervisor.Tests
                 _fileSystemMock.Object,
                 _fileSystemWatcherFactoryMock.Object,
                 _hostEnvironmentMock.Object);
+        }
+
+        [TestMethod]
+        public void Should_Replace_Urls()
+        {
+            var eventArgs = new FileSystemEventArgs(WatcherChangeTypes.Changed, "directory", "url.txt");
+            var invalidUrls = new[]
+            {
+                "https://invalid.url",
+            };
+
+            _fileSystemMock
+                .Setup(pr => pr.ReadAllLinesAsync(eventArgs.Name!))
+                .ReturnsAsync(invalidUrls);
+
+            _fileSystemWatcherMock.Raise(pr => pr.Changed += null, null, eventArgs);
+        }
+
+        [TestMethod]
+        public async Task Should_Refresh()
+        {
+            var guildId = 1ul;
+            var userId = 1ul;
+            var message = "test";
+            var utcNow = DateTime.UtcNow;
+
+            _systemClockMock.Reset();
+            _systemClockMock
+                .SetupSequence(pr => pr.UtcNow)
+                .Returns(utcNow)
+                .Returns(utcNow.AddMinutes(6));
+
+            var decision = await _userMessageSupervisor.MakeDecisionAsync(guildId, userId, message, false);
+            _userMessageSupervisor.Refresh();
+        }
+
+        [TestMethod]
+        public async Task Should_Reset()
+        {
+            var guildId = 1ul;
+            var userId = 1ul;
+            var messages = Enumerable.Range(1, 11).Select(pr => $"Message {pr}").ToList();
+            var utcNow = DateTime.UtcNow;
+
+            _systemClockMock.Reset();
+            var setup = _systemClockMock
+               .SetupSequence(pr => pr.UtcNow);
+
+            foreach (var item in messages.Take(10))
+            {
+                setup.Returns(utcNow);
+            }
+            
+            setup.Returns(utcNow.AddMinutes(6));
+
+            foreach (var message in messages.Take(10))
+            {
+                var decision = await _userMessageSupervisor.MakeDecisionAsync(guildId, userId, message, false);
+                decision.Should().Be(SupervisorAction.None);
+            }
+
+            {
+                var message = messages.Last();
+                var decision = await _userMessageSupervisor.MakeDecisionAsync(guildId, userId, message, false);
+                decision.Should().Be(SupervisorAction.None);
+            }
+            
         }
 
         [TestMethod]

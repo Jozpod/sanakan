@@ -38,6 +38,38 @@ namespace Sanakan.DiscordBot.Supervisor.Tests
         }
 
         [TestMethod]
+        public void Should_Refresh()
+        {
+            var utcNow = DateTime.UtcNow;
+            var guildId = 1ul;
+            var suspects = Enumerable.Range(1, 4).Select(pr => ("username", (ulong)pr)).ToList();
+            IEnumerable<ulong> usersToBan;
+
+            _systemClockMock.Reset();
+            _systemClockMock
+                .SetupSequence(pr => pr.UtcNow)
+                .Returns(utcNow)
+                .Returns(utcNow)
+                .Returns(utcNow)
+                .Returns(utcNow.AddMinutes(6))
+                .Returns(utcNow.AddMinutes(6));
+
+            foreach (var (username, userId) in suspects.Take(3))
+            {
+                usersToBan = _userJoinedGuildSupervisor.GetUsersToBanCauseRaid(guildId, username, userId);
+                usersToBan.Should().BeEmpty();
+            }
+
+            _userJoinedGuildSupervisor.Refresh();
+
+            {
+                var (username, userId) = suspects.Last();
+                usersToBan = _userJoinedGuildSupervisor.GetUsersToBanCauseRaid(guildId, username, userId);
+                usersToBan.Should().BeEmpty();
+            }
+        }
+
+        [TestMethod]
         public void Should_Return_Users()
         {
             var guildId = 1ul;

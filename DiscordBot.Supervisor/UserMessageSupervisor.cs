@@ -214,7 +214,7 @@ namespace Sanakan.DiscordBot.Supervisor
             var utcNow = _systemClock.UtcNow;
             foreach (var entry in _entries.Values)
             {
-                var hasExpired = (entry.ModifiedOn - utcNow) > _messageExpiry;
+                var hasExpired = (utcNow - entry.ModifiedOn) > _messageExpiry;
 
                 if (hasExpired)
                 {

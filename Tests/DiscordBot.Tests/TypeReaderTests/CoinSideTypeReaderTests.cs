@@ -36,5 +36,14 @@ namespace Sanakan.DiscordBot.Tests
             var result = await _typeReader.ReadAsync(_commandContextMock.Object, input, _serviceProvider);
             result.BestMatch.Should().Be(coinSide);
         }
+
+        [TestMethod]
+        public async Task Should_Return_Error()
+        {
+            var input = "test";
+            var result = await _typeReader.ReadAsync(_commandContextMock.Object, input, _serviceProvider);
+            result.IsSuccess.Should().BeFalse();
+            result.ErrorReason.Should().NotBeNullOrEmpty();
+        }
     }
 }
