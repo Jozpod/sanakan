@@ -69,6 +69,26 @@ namespace Sanakan.DiscordBot.Integration.Tests.CommandBuilders
         public static string UpdateCard(string prefix, ulong cardId) => $"{prefix}update {cardId}";
 
         /// <summary>
+        /// <see cref="PocketWaifuModule.UseItemAsync(int, ulong, string)"/>.
+        /// </summary>
+        public static string UseItem(string prefix, int itemNumber = 0, ulong cardId = 0)
+        {
+            var command = $"{prefix}use";
+
+            if(itemNumber != 0)
+            {
+                command += $" {itemNumber}";
+            }
+
+            if (cardId != 0)
+            {
+                command += $" {cardId}";
+            }
+
+            return command;
+        }
+
+        /// <summary>
         /// <see cref="PocketWaifuModule.OpenPacketAsync(int, int, bool)"/>.
         /// </summary>
         public static string OpenPacket(string prefix, int numberOfPack = 0, int count = 1, bool checkWishlists = false)

@@ -11,6 +11,7 @@ using Sanakan.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -133,7 +134,7 @@ namespace Sanakan.DiscordBot.Services
             {
                 foreach (var param in commandInfo.Parameters)
                 {
-                    stringBuilder.AppendFormat("*{0}* - *{0}*\n", param.Name, param.Summary);
+                    stringBuilder.AppendFormat("*{0}* - *{1}*\n", param.Name, param.Summary);
                 }
             }
 

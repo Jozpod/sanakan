@@ -214,6 +214,25 @@ namespace Sanakan.DiscordBot.Integration.Tests
         }
 
         [TestMethod]
+        public async Task TC410_Should_Use_Item()
+        {
+            var characterId = 2ul;
+            var characterInfo = new Result<CharacterInfo>();
+
+            _shindenClientMock
+                .Setup(pr => pr.GetCharacterInfoAsync(characterId))
+                .ReturnsAsync(characterInfo);
+
+            var commandMessage = PocketWaifuCommandBuilder.UseItem(Prefix, 1, characterId);
+            await Channel.SendMessageAsync(commandMessage);
+
+            var message = await WaitForMessageAsync();
+            message.Should().NotBeNull();
+            var embed = message.Embeds.FirstOrDefault();
+            embed.Should().NotBeNull();
+        }
+
+        [TestMethod]
         public async Task TC499_Should_Show_Cards()
         {
             var commandMessage = PocketWaifuCommandBuilder.ShowCards(Prefix, "rarity");

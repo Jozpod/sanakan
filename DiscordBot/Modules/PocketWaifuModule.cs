@@ -366,8 +366,8 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("używa przedmiot na karcie lub nie")]
         [Remarks("1 4212 2"), RequireWaifuCommandChannel]
         public async Task UseItemAsync(
-            [Summary("nr przedmiotu")] int itemNumber,
-            [Summary("WID")] ulong wid = 0,
+            [Summary("numer przedmiotu")] int itemNumber,
+            [Summary("identyfikator karty (WID)")] ulong wid = 0,
             [Summary("liczba przedmiotów/link do obrazka/typ gwiazdki")] string itemsCountOrImageLinkOrStarType = "1")
         {
             var discordUser = Context.User;
@@ -832,13 +832,19 @@ namespace Sanakan.DiscordBot.Modules
             mission.Count(utcNow, (uint)itemCount);
 
             if (!noCardOperation && card.Dere == Dere.Tsundere)
+            {
                 affectionInc *= 1.2;
+            }
 
             if (item.Type.HasDifferentQualities())
+            {
                 affectionInc += affectionInc * bonusFromQ;
+            }
 
             if (consumeItem)
+            {
                 item.Count -= itemCount;
+            }
 
             if (!noCardOperation)
             {

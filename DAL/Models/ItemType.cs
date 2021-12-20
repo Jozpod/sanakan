@@ -3,6 +3,9 @@ using System.Collections.Generic;
 
 namespace Sanakan.DAL.Models
 {
+    /// <summary>
+    /// Describes items which can be bought from shop and then consumed by given card.
+    /// </summary>
     public enum ItemType : byte
     {
         AffectionRecoverySmall = 0,
@@ -400,7 +403,7 @@ namespace Sanakan.DAL.Models
             }
         }
 
-        public static string Name(this ItemType type, string quality = "")
+        public static string ToString(this ItemType type, string quality = "")
         {
             if (!string.IsNullOrEmpty(quality))
                 quality = $" {quality}";
@@ -546,7 +549,7 @@ namespace Sanakan.DAL.Models
 
             return new Item
             {
-                Name = type.Name(quality.ToName()),
+                Name = ToString(type, quality.ToName()),
                 Quality = quality,
                 Count = count,
                 Type = type,
@@ -578,7 +581,7 @@ namespace Sanakan.DAL.Models
 
             return new BoosterPack
             {
-                Name = type.Name(),
+                Name = ToString(type),
                 CardCount = type.Count(),
                 MinRarity = type.MinRarity(),
                 CardSourceFromPack = type.GetSource(),
