@@ -176,7 +176,7 @@ namespace Sanakan.DiscordBot.Modules
             }
             else
             {
-                payload.PList = list;
+                payload.CharacterList = list;
                 await SendSearchResponseAsync(Context, toSend, session, payload);
             }
         }
@@ -348,7 +348,7 @@ namespace Sanakan.DiscordBot.Modules
             }
             else
             {
-                payload.SList = list;
+                payload.AnimeMangaList = list;
                 await SendSearchResponseAsync(context, toSend, session, payload);
             }
         }

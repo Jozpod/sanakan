@@ -17,8 +17,8 @@ namespace Sanakan.DiscordBot.Session
         public class SearchSessionPayload
         {
             public IEnumerable<IMessage> Messages { get; set; } = Enumerable.Empty<IMessage>();
-            public List<QuickSearchResult> SList { get; set; } = new();
-            public List<CharacterSearchResult> PList { get; set; } = new();
+            public List<QuickSearchResult> AnimeMangaList { get; set; } = new();
+            public List<CharacterSearchResult> CharacterList { get; set; } = new();
         }
 
         public SearchSession(
@@ -39,7 +39,8 @@ namespace Sanakan.DiscordBot.Session
           IServiceProvider serviceProvider,
           CancellationToken cancellationToken = default)
         {
-            var content = sessionContext.Message?.Content;
+            var message = sessionContext.Message;
+            var content = message?.Content;
 
             if (content == null)
             {
@@ -57,27 +58,30 @@ namespace Sanakan.DiscordBot.Session
             }
 
             var shindenClient = serviceProvider.GetRequiredService<IShindenClient>();
+            var channel = sessionContext.Channel;
 
-            if (_payload.SList != null)
+            if (_payload.AnimeMangaList.Any())
             {
-                if (number > 0 && _payload.SList.Count >= number)
+                var list = _payload.AnimeMangaList;
+                if (number > 0 && list.Count >= number)
                 {
-                    var parameter = _payload.SList[number - 1];
+                    var parameter = list[number - 1];
                     var animeMangaInfo = (await shindenClient.GetAnimeMangaInfoAsync(parameter.TitleId)).Value;
-                    await sessionContext.Channel.SendMessageAsync("", false, animeMangaInfo!.ToEmbed());
-                    await sessionContext.Message.DeleteAsync();
+                    await channel.SendMessageAsync("", false, animeMangaInfo!.ToEmbed());
+                    await message.DeleteAsync();
                     return;
                 }
             }
-            if (_payload.PList != null)
+            if (_payload.CharacterList.Any())
             {
-                if (number > 0 && _payload.PList.Count >= number)
+                var list = _payload.CharacterList;
+                if (number > 0 && list.Count >= number)
                 {
-                    var person = _payload.PList.ToArray()[number - 1];
+                    var person = list[number - 1];
                     var characterInfo = (await shindenClient.GetCharacterInfoAsync(person.Id)).Value;
 
-                    await sessionContext.Channel.SendMessageAsync("", false, characterInfo!.ToEmbed());
-                    await sessionContext.Message.DeleteAsync();
+                    await channel.SendMessageAsync("", false, characterInfo!.ToEmbed());
+                    await message.DeleteAsync();
                     return;
                 }
             }
@@ -85,7 +89,7 @@ namespace Sanakan.DiscordBot.Session
             return;
         }
 
-        private async Task DisposeAction()
+        public override async ValueTask DisposeAsync()
         {
             if (_payload.Messages == null)
             {
@@ -104,8 +108,8 @@ namespace Sanakan.DiscordBot.Session
 
             _payload.Messages = null;
 
-            _payload.SList = null;
-            _payload.PList = null;
+            _payload.AnimeMangaList = null;
+            _payload.CharacterList = null;
         }
     }
 }

@@ -8,6 +8,7 @@ using Sanakan.Game.Services.Abstractions;
 using Sanakan.ShindenApi.Models;
 using SixLabors.ImageSharp;
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
@@ -22,8 +23,23 @@ namespace Sanakan.Game.Tests.ImageProcessorTests
     public class GetUserProfileAsyncTests : Base
     {
 
-        [TestMethod]
-        public async Task Should_Return_User_Profile_Image()
+        public static IEnumerable<object[]> EnumerateAllProfileTypes
+        {
+            get
+            {
+                foreach (var showWaifuInProfile in new[] { false, true })
+                {
+                    foreach (var profileType in Enum.GetValues<ProfileType>())
+                    {
+                        yield return new object[] { profileType, showWaifuInProfile };
+                    }
+                }
+            }
+        }
+
+        [DynamicData("EnumerateAllProfileTypes")]
+        [DataTestMethod]
+        public async Task Should_Return_User_Profile_Image(ProfileType profileType, bool showWaifuInProfile)
         {
             var shindenUser = new UserInfo
             {
@@ -46,6 +62,16 @@ namespace Sanakan.Game.Tests.ImageProcessorTests
                     Minutes = 4,
                     Years = 5,
                 },
+                WatchedStatus = new ReadWatchStatuses
+                {
+                    Completed = 1,
+                    Dropped = 2,
+                    Hold = 3,
+                    InProgress = 4,
+                    Plan = 5,
+                    Skip = 6,
+                    Total = 21,
+                },
                 MeanMangaScore = new MeanScore
                 {
                     Rating = 4.20,
@@ -63,12 +89,17 @@ namespace Sanakan.Game.Tests.ImageProcessorTests
                 TcCount = 69,
                 ExperienceCount = 1443001,
                 MessagesCount = 1488,
-                ProfileType = ProfileType.Cards,
+                ProfileType = profileType,
+                ShowWaifuInProfile = showWaifuInProfile,
             };
             var card1 = new Card(1ul, "test card 1", "test card 1", 100, 50, Rarity.SSS, Dere.Dandere, DateTime.UtcNow);
+            card1.Quality = Quality.Zeta;
             var card2 = new Card(2ul, "test card 2", "test card 2", 100, 50, Rarity.A, Dere.Bodere, DateTime.UtcNow);
+            card2.Quality = Quality.Omega;
             var card3 = new Card(3ul, "test card 3", "test card 3", 100, 50, Rarity.E, Dere.Tsundere, DateTime.UtcNow);
+            card3.Quality = Quality.Gamma;
             var card4 = new Card(4ul, "test card 4", "test card 4", 100, 50, Rarity.S, Dere.Yami, DateTime.UtcNow);
+            card4.Quality = Quality.Alpha;
             databaseUser.GameDeck.FavouriteWaifuId = 1ul;
             databaseUser.GameDeck.Cards.Add(card1);
             databaseUser.GameDeck.Cards.Add(card2);

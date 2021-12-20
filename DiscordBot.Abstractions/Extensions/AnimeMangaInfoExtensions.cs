@@ -8,31 +8,8 @@ using System.Linq;
 
 namespace Sanakan.Extensions
 {
-    public static class ITitleInfoExtension
+    public static class AnimeMangaInfoExtensions
     {
-        //public static Embed ToEmbed(this ITitleInfo info)
-        //{
-        //    if (info is IAnimeTitleInfo iam)
-        //    {
-        //        return iam.ToEmbed();
-        //    }
-        //    return (info as IMangaTitleInfo)?.ToEmbed();
-        //}
-
-        //public static Embed ToEmbed(this MangaTitleInfo info)
-        //{
-        //    return new EmbedBuilder()
-        //    {
-        //        Title = info.Title.TrimToLength(EmbedBuilder.MaxTitleLength),
-        //        Description = info.Description.Content.TrimToLength(1000),
-        //        ThumbnailUrl = info.CoverUrl,
-        //        Color = EMType.Info.Color(),
-        //        Fields = info.GetFields(),
-        //        Footer = info.GetFooter(),
-        //        Url = info.MangaUrl,
-        //    }.Build();
-        //}
-
         public static Embed ToEmbed(this AnimeMangaInfo info)
         {
             return new EmbedBuilder()

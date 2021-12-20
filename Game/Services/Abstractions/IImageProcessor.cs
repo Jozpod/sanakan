@@ -43,8 +43,6 @@ namespace Sanakan.Game.Services.Abstractions
 
         Image<Rgba32> GetCatchThatWaifuImage(Image<Rgba32> card, string imageUrl, int xPos, int yPos);
 
-        Task<Image<Rgba32>> GetWaifuCardAsync(string url, Card card);
-
         Task<Image<Rgba32>> GetWaifuCardImageAsync(Card card);
     }
 }

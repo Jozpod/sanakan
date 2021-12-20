@@ -287,7 +287,9 @@ namespace Sanakan.DiscordBot.Session
             }
 
             if (!player.Cards.Any(x => x.Id == card.Id))
+            {
                 return;
+            }
 
             player.Accepted = false;
             player.Cards.Remove(card);
@@ -314,12 +316,14 @@ namespace Sanakan.DiscordBot.Session
 
         private async Task HandleReactionAsync(SessionContext context)
         {
-            if (context.Message.Id != _payload.Message.Id)
+            var messageId = _payload.Message.Id;
+
+            if (context.Message.Id != messageId)
             {
                 return;
             }
 
-            if (!(await _payload.Message.Channel.GetMessageAsync(_payload.Message.Id) is IUserMessage message))
+            if (!(await _payload.Message.Channel.GetMessageAsync(messageId) is IUserMessage message))
             {
                 return;
             }
@@ -352,12 +356,14 @@ namespace Sanakan.DiscordBot.Session
         private async Task HandleReactionInAdd(IReaction reaction, IUserMessage userMessage)
         {
             var userId = reaction.GetUserId();
-            if (reaction.Emote.Equals(_iconConfiguration.OneEmote) && userId == _payload.SourcePlayer.DiscordId)
+            var emote = reaction.Emote;
+
+            if (emote.Equals(_iconConfiguration.OneEmote) && userId == _payload.SourcePlayer.DiscordId)
             {
                 _payload.SourcePlayer.Accepted = true;
                 ResetExpiry();
             }
-            else if (reaction.Emote.Equals(_iconConfiguration.TwoEmote) && userId == _payload.DestinationPlayer.DiscordId)
+            else if (emote.Equals(_iconConfiguration.TwoEmote) && userId == _payload.DestinationPlayer.DiscordId)
             {
                 _payload.DestinationPlayer.Accepted = true;
                 ResetExpiry();
@@ -392,13 +398,14 @@ namespace Sanakan.DiscordBot.Session
             var userRepository = _serviceProvider.GetRequiredService<IUserRepository>();
             _cacheManager = _serviceProvider.GetRequiredService<ICacheManager>();
             var userId = reaction.GetUserId();
+            var emote = reaction.Emote;
 
             if (userId != player.DiscordId)
             {
                 return;
             }
 
-            if (reaction.Emote.Equals(Emojis.Checked))
+            if (emote.Equals(_iconConfiguration.Accept))
             {
                 if (_payload.State == ExchangeStatus.AcceptSourcePlayer)
                 {
@@ -454,7 +461,8 @@ namespace Sanakan.DiscordBot.Session
 
                     foreach (var sourceCard in sourceCards)
                     {
-                        var card = sourceUser.GameDeck.Cards.FirstOrDefault(x => x.Id == sourceCard.Id);
+                        var gameDeck = sourceUser.GameDeck;
+                        var card = gameDeck.Cards.FirstOrDefault(x => x.Id == sourceCard.Id);
                         if (card == null)
                         {
                             continue;
@@ -480,7 +488,7 @@ namespace Sanakan.DiscordBot.Session
                             card.FirstOwnerId = sourceUser.Id;
                         }
 
-                        sourceUser.GameDeck.RemoveFromWaifu(card);
+                        gameDeck.RemoveFromWaifu(card);
 
                         card.GameDeckId = destinationUser.GameDeck.Id;
 
@@ -490,7 +498,8 @@ namespace Sanakan.DiscordBot.Session
 
                     foreach (var destinationCard in destinationCards)
                     {
-                        var card = destinationUser.GameDeck.Cards.FirstOrDefault(x => x.Id == destinationCard.Id);
+                        var gameDeck = destinationUser.GameDeck;
+                        var card = gameDeck.Cards.FirstOrDefault(x => x.Id == destinationCard.Id);
                         if (card == null)
                         {
                             continue;
@@ -523,7 +532,7 @@ namespace Sanakan.DiscordBot.Session
                             card.FirstOwnerId = destinationUser.Id;
                         }
 
-                        destinationUser.GameDeck.RemoveFromWaifu(card);
+                        gameDeck.RemoveFromWaifu(card);
 
                         card.GameDeckId = sourceUser.GameDeck.Id;
 
@@ -541,7 +550,8 @@ namespace Sanakan.DiscordBot.Session
                         CacheKeys.Users);
                 }
             }
-            else if (reaction.Emote.Equals(_iconConfiguration.Decline) && _payload.State != ExchangeStatus.End)
+            else if (emote.Equals(_iconConfiguration.Decline)
+                    && _payload.State != ExchangeStatus.End)
             {
                 ResetExpiry();
                 _payload.Tips = $"{player.Mention} odrzucił propozycje wymiany!";

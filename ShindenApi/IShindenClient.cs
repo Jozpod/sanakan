@@ -52,6 +52,8 @@ namespace Sanakan.ShindenApi
 
         Task<Result<TitleRelations>> GetRelationsAsync(ulong titleId);
 
+        Task<Result<List<StaffSearchResult>>> SearchStaffAsync(string name);
+
         Task<Result<List<QuickSearchResult>>> QuickSearchAsync(string search, QuickSearchType type);
 
         Task<Result<List<QuickSearchResult>>> QuickSearchAsync(string search);

@@ -1,8 +1,14 @@
 ﻿using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
+using Moq.Protected;
 using Sanakan.DAL.Models;
 using Sanakan.Game.Services.Abstractions;
 using System;
+using System.Collections.Generic;
+using System.Net;
+using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sanakan.Game.Tests.ImageProcessorTests
@@ -13,12 +19,60 @@ namespace Sanakan.Game.Tests.ImageProcessorTests
     [TestClass]
     public class GetWaifuInProfileCardAsyncTests : Base
     {
-        [TestMethod]
-        public async Task Should_Generate_Waifu_In_Profile()
+
+        public static IEnumerable<object[]> EnumerateAllCardTypes
+        {
+            get
+            {
+                foreach (var customBorderUrl in new[] { new Uri("https://test.com/image.png"), null })
+                {
+                    foreach (var fromFigure in new[] { false, true })
+                    {
+                        foreach (var quality in Enum.GetValues<Quality>())
+                        {
+                            yield return new object[] { quality, fromFigure, customBorderUrl };
+                        }
+                    }
+                }
+            }
+        }
+
+        [DynamicData("EnumerateAllCardTypes")]
+        [DataTestMethod]
+        public async Task Should_Generate_Waifu_In_Profile(Quality quality, bool fromFigure, Uri? customBorderUrl)
         {
             var card = new Card(1, "test", "test", 100, 50, Rarity.SSS, Dere.Bodere, DateTime.Now);
+            card.CustomBorderUrl = customBorderUrl;
+            card.Quality = quality;
+            card.FromFigure = fromFigure;
 
-            MockHttpGetImage(CreateFakeImage());
+            _httpClientHandlerMock
+                .Protected()
+                .SetupSequence<Task<HttpResponseMessage>>("SendAsync",
+                    ItExpr.Is<HttpRequestMessage>(pr => pr.Method == HttpMethod.Get),
+                    ItExpr.IsAny<CancellationToken>())
+                .ReturnsAsync(() => {
+                    return new HttpResponseMessage
+                    {
+                        StatusCode = HttpStatusCode.OK,
+                        Content = new StreamContent(CreateFakeImage()),
+                    };
+                })
+                .ReturnsAsync(() => {
+                    return new HttpResponseMessage
+                    {
+                        StatusCode = HttpStatusCode.OK,
+                        Content = new StreamContent(CreateFakeImage()),
+                    };
+                });
+
+            _fileSystemMock
+                .Setup(pr => pr.OpenRead(It.IsAny<string>()))
+                .Returns(CreateFakeImage);
+
+            _fileSystemMock
+                .Setup(pr => pr.Exists(It.IsAny<string>()))
+                .Returns(true);
 
             var waifuInProfile = await _imageProcessor.GetWaifuInProfileCardAsync(card);
             waifuInProfile.Should().NotBeNull();

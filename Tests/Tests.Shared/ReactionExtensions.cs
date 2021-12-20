@@ -1,11 +1,27 @@
 ﻿using Discord;
 using Discord.WebSocket;
+using Moq;
 using System.Reflection;
 
 namespace Sanakan.Tests.Shared
 {
     public static class ReactionExtensions
     {
+        public static IReaction CreateReaction(
+           ulong userId,
+           IEmote emote)
+        {
+            var messageChannelMock = new Mock<ISocketMessageChannel>();
+
+            return CreateReaction(
+                messageChannelMock.Object,
+                1ul,
+                Optional<SocketUserMessage>.Unspecified,
+                userId,
+                Optional<IUser>.Unspecified,
+                emote);
+        }
+
         public static IReaction CreateReaction(
             ISocketMessageChannel messageChannel,
             ulong messageId,

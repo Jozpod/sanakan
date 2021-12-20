@@ -8,5 +8,6 @@
         <CollectCoverage>true</CollectCoverage>
         <CoverletOutputFormat>opencover</CoverletOutputFormat>
         <CoverletOutput>../TestResults/$(MSBuildProjectName).coverage.xml</CoverletOutput>
+        <Exclude>[*]Sanakan.TaskQueue.Messages*%2c[*]Sanakan.Game.Models*%2c[*]Sanakan.ShindenApi.Models*%2c[*]Sanakan.ShindenApi.Converters*%2c[*]Sanakan.DiscordBot.Services.Models*%2c[*]Sanakan.Web.Models*</Exclude>
     </PropertyGroup>
 </Project>

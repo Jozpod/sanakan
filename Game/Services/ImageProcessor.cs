@@ -244,15 +244,18 @@ namespace Sanakan.Game.Services
             var mMsg = TextMeasurer.Measure($"{databaseUser.MessagesCount}", new RendererOptions(rangFont));
             profilePic.Mutate(x => x.DrawText($"{databaseUser.MessagesCount}", rangFont, defFontColor, new Point((int)(125 - mMsg.Width) / 2, 445)));
 
-            if (databaseUser.GameDeck.FavouriteWaifuId != 0 && databaseUser.ShowWaifuInProfile)
-            {
-                var tChar = databaseUser.GameDeck.Cards
-                    .OrderBy(x => x.Rarity)
-                    .FirstOrDefault(x => x.CharacterId == databaseUser.GameDeck.FavouriteWaifuId);
+            var favouriteWaifuId = databaseUser.GameDeck.FavouriteWaifuId;
 
-                if (tChar != null)
+            if (favouriteWaifuId.HasValue
+                && databaseUser.ShowWaifuInProfile)
+            {
+                var favouriteCard = databaseUser.GameDeck.Cards
+                    .OrderBy(x => x.Rarity)
+                    .FirstOrDefault(x => x.CharacterId == favouriteWaifuId);
+
+                if (favouriteCard != null)
                 {
-                    using var cardImage = await GetWaifuInProfileCardAsync(tChar);
+                    using var cardImage = await GetWaifuInProfileCardAsync(favouriteCard);
                     cardImage.Mutate(x => x.Resize(new ResizeOptions
                     {
                         Mode = ResizeMode.Max,
@@ -347,7 +350,8 @@ namespace Sanakan.Game.Services
 
                 case ProfileType.Image:
                     {
-                        using var userBackground = Image.Load(databaseUser.StatsReplacementProfileUri);
+                        using var stream = _fileSystem.OpenRead(databaseUser.StatsReplacementProfileUri!);
+                        using var userBackground = Image.Load(stream);
                         image.Mutate(x => x.DrawImage(userBackground, _origin, 1));
                     }
                     break;
@@ -459,7 +463,7 @@ namespace Sanakan.Game.Services
 
             if (status.Total.HasValue && status.Total > 0)
             {
-                using var bar = GetStatusBar(
+                using var statusBar = GetStatusBar(
                     status.Total.Value,
                     status.InProgress!.Value,
                     status.Completed!.Value,
@@ -468,8 +472,8 @@ namespace Sanakan.Game.Services
                     status.Dropped!.Value,
                     status.Plan!.Value);
 
-                bar.Mutate(x => x.Round(5));
-                baseImg.Mutate(x => x.DrawImage(bar, new Point(startPointX, startPointY), 1));
+                statusBar.Mutate(x => x.Round(5));
+                baseImg.Mutate(x => x.DrawImage(statusBar, new Point(startPointX, startPointY), 1));
             }
 
             startPointY += 24;
@@ -931,10 +935,14 @@ namespace Sanakan.Game.Services
                 borderStr = GetCustomBorderString(card);
             }
 
-            var image = Image.Load(borderStr);
+            var stream = _fileSystem.OpenRead(borderStr);
+            var image = Image.Load(stream);
+            stream.Close();
 
-            using var dereImage = Image.Load(dereStr);
+            stream = _fileSystem.OpenRead(borderStr);
+            using var dereImage = Image.Load(stream);
             image.Mutate(x => x.DrawImage(dereImage, _origin, 1));
+            stream.Close();
 
             return image;
         }
@@ -1107,7 +1115,8 @@ namespace Sanakan.Game.Services
             var path = string.Format(Paths.PWCGStatsPicture, card.Quality);
             if (_fileSystem.Exists(path))
             {
-                using var stats = Image.Load(path);
+                using var stream = _fileSystem.OpenRead(path);
+                using var stats = Image.Load(stream);
                 image.Mutate(x => x.DrawImage(stats, _origin, 1));
             }
 
@@ -1146,7 +1155,9 @@ namespace Sanakan.Game.Services
             {
                 case Quality.Zeta:
                     if (card.CustomBorderUrl != null)
+                    {
                         return false;
+                    }
                     return true;
 
                 default:
@@ -1214,8 +1225,9 @@ namespace Sanakan.Game.Services
 
             if (isFromFigureOriginalBorder && _fileSystem.Exists(backBorderStr))
             {
-                using var back = Image.Load(backBorderStr);
-                image.Mutate(x => x.DrawImage(back, _origin, 1));
+                using var stream = _fileSystem.OpenRead(backBorderStr);
+                using var backBorderImage = Image.Load(stream);
+                image.Mutate(x => x.DrawImage(backBorderImage, _origin, 1));
             }
         }
 
@@ -1252,8 +1264,8 @@ namespace Sanakan.Game.Services
             var mov = card.FromFigure ? 0 : 13;
             image.Mutate(x => x.DrawImage(characterImage, new Point(mov, mov), 1));
 
-            using var bord = await LoadCustomBorderAsync(card);
-            image.Mutate(x => x.DrawImage(bord, _origin, 1));
+            using var borderImage = await LoadCustomBorderAsync(card);
+            image.Mutate(x => x.DrawImage(borderImage, _origin, 1));
 
             if (AllowStatsOnNoStatsImage(card))
             {
@@ -1339,16 +1351,6 @@ namespace Sanakan.Game.Services
             var image = Image.Load(pokeImg);
             image.Mutate(x => x.DrawImage(card, new Point(xPos, yPos), 1));
             return image;
-        }
-
-        public async Task<Image<Rgba32>> GetWaifuCardAsync(string? url, Card card)
-        {
-            if (url == null)
-            {
-                return await GetWaifuCardImageAsync(card);
-            }
-
-            return Image.Load(url);
         }
 
         public async Task<Image<Rgba32>> GetWaifuCardImageAsync(Card card)

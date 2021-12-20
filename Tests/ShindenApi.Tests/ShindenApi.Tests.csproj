@@ -34,11 +34,17 @@
     <None Remove="TestData\remove-from-favourites-result.json" />
     <None Remove="TestData\remove-title-result.json" />
     <None Remove="TestData\reviews-result.json" />
+    <None Remove="TestData\search-character-result.json" />
+    <None Remove="TestData\search-staff-result.json" />
+    <None Remove="TestData\search-user-result.json" />
     <None Remove="TestData\staff-info-result.json" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="TestData\add-to-favourites-result.json" />
+    <EmbeddedResource Include="TestData\search-user-result.json" />
+    <EmbeddedResource Include="TestData\search-character-result.json" />
+    <EmbeddedResource Include="TestData\search-staff-result.json" />
     <EmbeddedResource Include="TestData\rate-result.json" />
     <EmbeddedResource Include="TestData\anime-info-result.json" />
     <EmbeddedResource Include="TestData\remove-from-favourites-result.json" />
