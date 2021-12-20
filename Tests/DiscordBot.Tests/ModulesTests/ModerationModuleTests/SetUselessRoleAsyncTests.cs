@@ -16,7 +16,7 @@ namespace DiscordBot.ModulesTests.ModerationModuleTests
     public class SetUselessRoleAsync : Base
     {
         [TestMethod]
-        public async Task Should_Add_Land_Role_And_Send_Message()
+        public async Task Should_Add_Role_And_Send_Confirm_Message()
         {
             var guildConfig = new GuildOptions(1ul, 50);
             var roleMock = new Mock<IRole>(MockBehavior.Strict);
@@ -49,7 +49,7 @@ namespace DiscordBot.ModulesTests.ModerationModuleTests
                 embed.Description.Should().NotBeNull();
             });
 
-            await _module.SetUserRoleAsync(roleMock.Object);
+            await _module.SetUselessRoleAsync(roleMock.Object, 20);
         }
     }
 }

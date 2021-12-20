@@ -39,7 +39,7 @@ namespace Sanakan.Web.Tests.Controllers.WaifuControllerTests
         }
 
         [TestMethod]
-        public async Task Should_Return_Ok()
+        public async Task Should_Enqueue_Task_And_Return_Ok()
         {
             var cardId = 1ul;
             var discordUserId = 1ul;
@@ -58,7 +58,7 @@ namespace Sanakan.Web.Tests.Controllers.WaifuControllerTests
                 .ReturnsAsync(user);
 
             _blockingPriorityQueueMock
-                .Setup(pr => pr.TryEnqueue(It.IsAny<BaseMessage>()))
+                .Setup(pr => pr.TryEnqueue(It.IsAny<ToggleCardMessage>()))
                 .Returns(true);
 
             var result = await _controller.ToggleCardStatusAsync(cardId);

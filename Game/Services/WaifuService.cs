@@ -1245,7 +1245,10 @@ namespace Sanakan.Game.Services
             }.Build();
         }
 
-        public async Task<IEnumerable<Embed>> GetContentOfWishlist(List<ulong> cardsId, List<ulong> charactersId, List<ulong> titlesId)
+        public async Task<IEnumerable<Embed>> GetContentOfWishlist(
+            IEnumerable<ulong> cardsId,
+            IEnumerable<ulong> charactersId,
+            IEnumerable<ulong> titlesId)
         {
             var contentTable = new List<string>();
 

@@ -30,7 +30,7 @@ namespace Sanakan.DiscordBot.Session
         {
             public IMessage? Message { get; set; }
 
-            public List<Item> Items { get; set; } = null;
+            public List<Item> Items { get; set; } = new();
 
             public PlayerInfo? PlayerInfo { get; set; } = null;
 
@@ -179,7 +179,8 @@ namespace Sanakan.DiscordBot.Session
 
             if (await _payload.Message.Channel.GetMessageAsync(_payload.Message.Id) is IUserMessage userMessage)
             {
-                await userMessage.ModifyAsync(x => x.Embed = BuildEmbed());
+                var embed = BuildEmbed();
+                await userMessage.ModifyAsync(x => x.Embed = embed);
             }
         }
 
@@ -219,7 +220,8 @@ namespace Sanakan.DiscordBot.Session
 
             if (await _payload.Message.Channel.GetMessageAsync(_payload.Message.Id) is IUserMessage userMessage)
             {
-                await userMessage.ModifyAsync(x => x.Embed = BuildEmbed());
+                var embed = BuildEmbed();
+                await userMessage.ModifyAsync(x => x.Embed = embed);
             }
         }
 
@@ -248,9 +250,10 @@ namespace Sanakan.DiscordBot.Session
                 return;
             }
 
+            var emote = reaction.Emote;
             var discordUserId = _payload.PlayerInfo.DiscordId;
 
-            if (reaction.Emote.Equals(_iconConfiguration.Decline))
+            if (emote.Equals(_iconConfiguration.Decline))
             {
                 await userMessage.ModifyAsync(x => x.Embed = $"{_payload.Name}\n\nOdrzucono tworzenie karty."
                     .ToEmbedMessage(EMType.Bot).Build());
@@ -260,7 +263,7 @@ namespace Sanakan.DiscordBot.Session
                 return;
             }
 
-            if (!reaction.Emote.Equals(Emojis.Checked))
+            if (!emote.Equals(_iconConfiguration.Accept))
             {
                 return;
             }
@@ -286,10 +289,11 @@ namespace Sanakan.DiscordBot.Session
             var gameDeck = user.GameDeck;
             newCard.Source = CardSource.Crafting;
             newCard.Affection = gameDeck.AffectionFromKarma();
+            var items = gameDeck.Items;
 
             foreach (var item in _payload.PlayerInfo.Items)
             {
-                var thisItem = gameDeck.Items
+                var thisItem = items
                     .FirstOrDefault(x => x.Type == item.Type
                         && x.Quality == item.Quality);
 
@@ -307,11 +311,11 @@ namespace Sanakan.DiscordBot.Session
                 thisItem.Count -= item.Count;
                 if (thisItem.Count < 1)
                 {
-                    gameDeck.Items.Remove(thisItem);
+                    items.Remove(thisItem);
                 }
             }
 
-            if (!error)
+            if (error)
             {
                 await userMessage.ModifyAsync(x => x.Embed = $"{_payload.Name}\n\nBrakuje przedmiotów, tworzenie karty nie powiodło się."
                     .ToEmbedMessage(EMType.Bot).Build());

@@ -11,24 +11,12 @@ namespace Sanakan.TaskQueue.Messages
             Priority = priority;
         }
 
-        public int CompareTo(BaseMessage? other)
+        public int CompareTo(BaseMessage? other) => other switch
         {
-            if (other == null)
-            {
-                return -1;
-            }
-
-            if (Priority < other.Priority)
-            {
-                return 1;
-            }
-
-            if (Priority > other.Priority)
-            {
-                return -1;
-            }
-
-            return 0;
-        }
+            null => -1,
+            var message when message.Priority > Priority => 1,
+            var message when message.Priority < Priority => -1,
+            _ => 0
+        };
     }
 }

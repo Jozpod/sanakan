@@ -290,19 +290,19 @@ namespace Sanakan.DAL.Repositories
                 .ToListAsync();
         }
 
-        public async Task<List<Card>> GetByIdsAsync(ulong[] ids)
+        public async Task<List<Card>> GetByIdsAsync(IEnumerable<ulong> cardIds)
         {
             var result = await _dbContext.Cards
-               .Where(x => ids.Contains(x.Id))
+               .Where(x => cardIds.Contains(x.Id))
                .ToListAsync();
 
             return result;
         }
 
-        public Task<List<Card>> GetByIdsAsync(ulong[] ids, CardQueryOptions cardQueryOptions)
+        public Task<List<Card>> GetByIdsAsync(IEnumerable<ulong> cardIds, CardQueryOptions cardQueryOptions)
         {
             var query = _dbContext.Cards
-               .Where(x => ids.Contains(x.Id));
+               .Where(x => cardIds.Contains(x.Id));
 
             if (cardQueryOptions.IncludeTagList)
             {

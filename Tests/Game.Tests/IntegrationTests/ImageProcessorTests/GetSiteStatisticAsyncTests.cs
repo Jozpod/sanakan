@@ -74,12 +74,12 @@ namespace Sanakan.Game.Tests.IntegrationTests.ImageProcessorTests
                 }
             };
 
-            MockHttpGetImage("TestData/card-image.png");
+            MockHttpGetImage("card-image.png");
 
             var siteStatistics = await _imageProcessor.GetSiteStatisticAsync(shindenInfo, color, lastRead, lastWatch);
             siteStatistics.Should().NotBeNull();
 
-            await ShouldBeEqual("TestData/expected-site-statistics.png", siteStatistics);
+            await ShouldBeEqual("expected-site-statistics.png", siteStatistics);
         }
     }
 }

@@ -64,7 +64,7 @@ namespace Sanakan.Game.Tests.IntegrationTests.ImageProcessorTests
                    ItExpr.Is<HttpRequestMessage>(pr => pr.Method == HttpMethod.Get),
                    ItExpr.IsAny<CancellationToken>())
                .ReturnsAsync(() => {
-                   var stream = File.OpenRead(filePath);
+                   var stream = File.OpenRead(Path.Combine("TestData", filePath));
                    return new HttpResponseMessage
                    {
                        StatusCode = HttpStatusCode.OK,
@@ -75,7 +75,7 @@ namespace Sanakan.Game.Tests.IntegrationTests.ImageProcessorTests
 
         protected async Task ShouldBeEqual(string expectedImageFilePath, Image<Rgba32> actualImage)
         {
-            var expectedBytes = await File.ReadAllBytesAsync(expectedImageFilePath);
+            var expectedBytes = await File.ReadAllBytesAsync(Path.Combine("TestData", expectedImageFilePath));
             var expectedHash = _sha256Hash.ComputeHash(expectedBytes);
 
             var actualStream = new MemoryStream();
@@ -85,7 +85,7 @@ namespace Sanakan.Game.Tests.IntegrationTests.ImageProcessorTests
             Utils.CompareByteArrays(actualHash, expectedHash).Should().BeTrue();
         }
 
-        protected void  SaveImage(Image<Rgba32> image)
+        protected void SaveImage(Image<Rgba32> image)
         {
             var fileStream = File.OpenWrite("../../../TestData/test.png");
             image.SaveAsPng(fileStream);

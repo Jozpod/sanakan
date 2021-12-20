@@ -20,7 +20,7 @@ namespace Sanakan.Game.Tests.ImageProcessorTests
     public class GetWaifuInProfileCardAsyncTests : Base
     {
 
-        public static IEnumerable<object[]> EnumerateAllCardTypes
+        public static IEnumerable<object?[]> EnumerateAllCardTypes
         {
             get
             {
@@ -30,7 +30,7 @@ namespace Sanakan.Game.Tests.ImageProcessorTests
                     {
                         foreach (var quality in Enum.GetValues<Quality>())
                         {
-                            yield return new object[] { quality, fromFigure, customBorderUrl };
+                            yield return new object?[] { quality, fromFigure, customBorderUrl };
                         }
                     }
                 }

@@ -20,12 +20,12 @@ namespace Sanakan.Game.Tests.IntegrationTests.ImageProcessorTests
         {
             var card = new Card(1, "test", "test", 100, 50, Rarity.SSS, Dere.Bodere, DateTime.Now);
 
-            MockHttpGetImage("TestData/character.png");
+            MockHttpGetImage("character.png");
 
             var cardImage = await _imageProcessor.GetWaifuCardImageAsync(card);
             cardImage.Should().NotBeNull();
 
-            await ShouldBeEqual("TestData/expected-waifu-card.png", cardImage);
+            await ShouldBeEqual("expected-waifu-card.png", cardImage);
         }
     }
 }

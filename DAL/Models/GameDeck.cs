@@ -250,7 +250,7 @@ namespace Sanakan.DAL.Models
                 .FirstOrDefault()?.CardPower ?? 0;
         }
 
-        public List<ulong> GetTitlesWishList()
+        public IEnumerable<ulong> GetTitlesWishList()
         {
             return Wishes
                 .Where(x => x.Type == WishlistObjectType.Title)
@@ -258,7 +258,7 @@ namespace Sanakan.DAL.Models
                 .ToList();
         }
 
-        public List<ulong> GetCardsWishList()
+        public IEnumerable<ulong> GetCardsWishList()
         {
             return Wishes
                 .Where(x => x.Type == WishlistObjectType.Card)
@@ -266,7 +266,7 @@ namespace Sanakan.DAL.Models
                 .ToList();
         }
 
-        public List<ulong> GetCharactersWishList()
+        public IEnumerable<ulong> GetCharactersWishList()
         {
             return Wishes
                 .Where(x => x.Type == WishlistObjectType.Character)

@@ -3,6 +3,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
+using Sanakan.ShindenApi;
+using Sanakan.ShindenApi.Models;
+using Sanakan.TaskQueue.Messages;
 using Sanakan.Web.Controllers;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -16,33 +19,27 @@ namespace Sanakan.Web.Tests.Controllers.WaifuControllerTests
     public class GenerateCharacterCardAsyncTests : Base
     {
         [TestMethod]
-        public async Task Should_Return_NotFound()
+        public async Task Should_Enqueue_Task_And_Return_Ok()
         {
-            var userId = 0ul;
-            var expected = new List<ulong>();
+            var characterId = 1ul;
+            var characterResult = new Result<CharacterInfo>
+            {
+                Value = new CharacterInfo
+                {
+                }
+            };
 
-            _userRepositoryMock
-                .Setup(pr => pr.GetUserShindenIdsByHavingCharacterAsync(userId))
-                .ReturnsAsync(expected);
+            _shindenClientMock
+                .Setup(pr => pr.GetCharacterInfoAsync(characterId))
+                .ReturnsAsync(characterResult);
 
-            var result = await _controller.GetUserIdsOwningCharacterCardAsync(userId);
+            _blockingPriorityQueueMock
+                .Setup(pr => pr.TryEnqueue(It.IsAny<UpdateCardPictureMessage>()))
+                .Returns(true);
+            
+            var result = await _controller.GenerateCharacterCardAsync(characterId);
             var okObjectResult = result.Should().BeOfType<ObjectResult>().Subject;
-            okObjectResult.StatusCode.Should().Be(StatusCodes.Status404NotFound);
-        }
-
-        [TestMethod]
-        public async Task Should_Return_Ok()
-        {
-            var userId = 0ul;
-            var expected = new List<ulong>() { 0ul };
-
-            _userRepositoryMock
-                .Setup(pr => pr.GetUserShindenIdsByHavingCharacterAsync(userId))
-                .ReturnsAsync(expected);
-
-            var result = await _controller.GetUserIdsOwningCharacterCardAsync(userId);
-            var okObjectResult = result.Should().BeOfType<OkObjectResult>().Subject;
-            okObjectResult.Value.Should().Be(expected);
+            okObjectResult.Value.Should().NotBeNull();
         }
     }
 }

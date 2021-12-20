@@ -1,9 +1,13 @@
+using Discord;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.DAL.Models;
 using Sanakan.DiscordBot.Modules;
+using Sanakan.ShindenApi;
+using Sanakan.ShindenApi.Models;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -16,42 +20,54 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
     public class SearchWhoWantsCardsFromAnimeAsyncTests : Base
     {
         [TestMethod]
-        public async Task Should_Change_Card_And_Return_Confirm_Message()
+        public async Task Should_Return_Message()
         {
+            var animeId = 1ul;
             var user = new User(1ul, DateTime.UtcNow);
-            var card = new Card(1ul, "title", "name", 100, 50, Rarity.C, Dere.Bodere, DateTime.UtcNow);
-            user.GameDeck.Karma = 2000;
-            card.Affection = 50;
-            user.GameDeck.Cards.Add(card);
-            user.GameDeck.Items.Add(new Item { Type = ItemType.BetterIncreaseUpgradeCnt, Count = 3 });
-            var waifuId = 1ul;
-            card.Id = waifuId;
+            user.GameDeck.Id = user.Id;
+            var animeMangaInfoResult = new Result<AnimeMangaInfo>
+            {
+                Value = new AnimeMangaInfo
+                {
+                    Title = new TitleEntry
+                    {
+                        FinishDate = DateTime.UtcNow,
+                        Title = "test",
+                        Description = new AnimeMangaInfoDescription
+                        {
+                            OtherDescription = "test",
+                        },
+                        TitleOther = new List<TitleOther>
+                        {
 
-            _userMock
-                .Setup(pr => pr.Id)
-                .Returns(user.Id);
+                        }
+                    }
+                }
+            };
+            var userMock = new Mock<IUser>(MockBehavior.Strict);
+            var gameDecks = new List<GameDeck>
+            {
+                user.GameDeck,
+            };
 
-            _userMock
-                .Setup(pr => pr.Mention)
-                .Returns("user mention");
+            _shindenClientMock
+                .Setup(pr => pr.GetAnimeMangaInfoAsync(animeId))
+                .ReturnsAsync(animeMangaInfoResult);
 
-            _userRepositoryMock
-                .Setup(pr => pr.GetUserOrCreateAsync(user.Id))
-                .ReturnsAsync(user);
+            _gameDeckRepositoryMock
+                .Setup(pr => pr.GetByAnimeIdAsync(animeId))
+                .ReturnsAsync(gameDecks);
 
-            _userRepositoryMock
-                .Setup(pr => pr.SaveChangesAsync(It.IsAny<CancellationToken>()))
-                .Returns(Task.CompletedTask);
-
-            _cacheManagerMock
-                .Setup(pr => pr.ExpireTag(It.IsAny<string[]>()));
+            _discordClientMock
+                .Setup(pr => pr.GetUserAsync(user.Id, CacheMode.AllowDownload, null))
+                .ReturnsAsync(userMock.Object);
 
             SetupSendMessage((message, embed) =>
             {
                 embed.Description.Should().NotBeNull();
             });
 
-            await _module.ChangeCardAsync(waifuId);
+            await _module.SearchWhoWantsCardsFromAnimeAsync(animeId);
         }
     }
 }

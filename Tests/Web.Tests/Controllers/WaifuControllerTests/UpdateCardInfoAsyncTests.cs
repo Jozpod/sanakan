@@ -12,13 +12,13 @@ using System.Threading.Tasks;
 namespace Sanakan.Web.Tests.Controllers.WaifuControllerTests
 {
     /// <summary>
-    /// Defines tests for <see cref="WaifuController.UpdateCardInfoAsync(ulong, CharacterCardInfoUpdate)"/> method.
+    /// Defines tests for <see cref="WaifuController.UpdateCardInfo(ulong, CharacterCardInfoUpdate)"/> method.
     /// </summary>
     [TestClass]
     public class UpdateCardInfoAsyncTests : Base
     {
         [TestMethod]
-        public void Should_Return_Ok()
+        public void Should_Queue_Task_And_Return_Ok()
         {
             var characterId = 1ul;
             var expected = new List<ulong>() { 0ul };

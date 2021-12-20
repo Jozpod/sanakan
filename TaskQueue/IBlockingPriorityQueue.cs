@@ -7,6 +7,7 @@ namespace Sanakan.TaskQueue
     public interface IBlockingPriorityQueue
     {
         bool TryEnqueue(BaseMessage message);
-        IEnumerable<BaseMessage> GetEnumerable(CancellationToken token = default);
+
+        IAsyncEnumerable<BaseMessage> GetAsyncEnumerable(CancellationToken token = default);
     }
 }

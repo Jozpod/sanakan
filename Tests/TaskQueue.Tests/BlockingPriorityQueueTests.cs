@@ -29,15 +29,15 @@ namespace Sanakan.TaskQueue.Tests
         }
 
         [TestMethod]
-        public void Should_Return_Message()
+        public async Task Should_Return_Message()
         {
             var firstExpected = new ConnectUserMessage();
 
             var cancellationTokenSource = new CancellationTokenSource();
 
             _blockingPriorityQueue.TryEnqueue(firstExpected);
-            var enumerable = _blockingPriorityQueue.GetEnumerable(cancellationTokenSource.Token).GetEnumerator();
-            enumerable.MoveNext();
+            var enumerable = _blockingPriorityQueue.GetAsyncEnumerable(cancellationTokenSource.Token).GetAsyncEnumerator();
+            await  enumerable.MoveNextAsync();
             enumerable.Current.Should().Be(firstExpected);
         }
 

@@ -33,10 +33,9 @@ namespace Sanakan.DiscordBot.Session.Tests.CraftSessionTests
 
             _payload.Message = _userMessageMock.Object;
             _payload.PlayerInfo = new Game.Models.PlayerInfo();
-            _payload.PlayerInfo.Items = new List<DAL.Models.Item>();
-            _payload.Items = new List<DAL.Models.Item>();
-            _payload.Items.Add(new DAL.Models.Item());
-            _payload.Items.Add(new DAL.Models.Item());
+            var item = new DAL.Models.Item();
+            _payload.PlayerInfo.Items.Add(item);
+            _payload.Items.Add(item);
 
             await _session.ExecuteAsync(context, _serviceProvider);
         }

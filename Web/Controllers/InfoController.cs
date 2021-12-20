@@ -34,7 +34,7 @@ namespace Sanakan.Web.Controllers
         [HttpGet("commands")]
         [ProducesResponseType(typeof(ObjectResult), StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(typeof(Commands), StatusCodes.Status200OK)]
-        public IActionResult GetCommandsInfoAsync()
+        public IActionResult GetCommandsInfo()
         {
             try
             {

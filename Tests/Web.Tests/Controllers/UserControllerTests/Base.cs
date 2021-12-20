@@ -26,7 +26,7 @@ namespace Sanakan.Web.Tests.Controllers.UserControllerTests
         protected readonly Mock<IUserContext> _userContextMock = new(MockBehavior.Strict);
         protected readonly Mock<IJwtBuilder> _jwtBuilderMock = new(MockBehavior.Strict);
         protected readonly Mock<IRequestBodyReader> _requestBodyReaderMock = new(MockBehavior.Strict);
-        private readonly SanakanConfiguration _configuration;
+        protected readonly SanakanConfiguration _configuration;
 
         public Base()
         {

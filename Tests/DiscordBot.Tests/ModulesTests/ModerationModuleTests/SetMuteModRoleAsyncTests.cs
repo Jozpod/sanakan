@@ -10,13 +10,13 @@ using System.Threading.Tasks;
 namespace DiscordBot.ModulesTests.ModerationModuleTests
 {
     /// <summary>
-    /// Defines tests for <see cref="ModerationModule.SetWaifuRoleAsync(IRole)"/> method.
+    /// Defines tests for <see cref="ModerationModule.SetMuteModRoleAsync(IRole)"/> method.
     /// </summary>
     [TestClass]
-    public class SetWaifuRoleAsyncTests : Base
+    public class SetMuteModRoleAsyncTests : Base
     {
         [TestMethod]
-        public async Task Should_Set_Waifu_Role_And_Send_Confirm_Message()
+        public async Task Should_Set_Role_And_Send_Confirm_Message()
         {
             var guildConfig = new GuildOptions(1ul, 50);
             var roleMock = new Mock<IRole>(MockBehavior.Strict);
@@ -49,7 +49,7 @@ namespace DiscordBot.ModulesTests.ModerationModuleTests
                 embed.Description.Should().NotBeNull();
             });
 
-            await _module.SetWaifuRoleAsync(roleMock.Object);
+            await _module.SetMuteModRoleAsync(roleMock.Object);
         }
     }
 }

@@ -400,16 +400,15 @@ namespace Sanakan.Web.Controllers
                 return ShindenNotFound("Wishlist not found!");
             }
 
-
             var characterIds = gameDeck.GetCharactersWishList();
             var titleIds = gameDeck.GetTitlesWishList();
-            var cardsId = gameDeck.GetCardsWishList();
+            var cardIds = gameDeck.GetCardsWishList();
 
             var allCards = new List<Card>();
 
-            if (cardsId != null)
+            if (cardIds.Any())
             {
-                var cards = await _cardRepository.GetByIdsAsync(cardsId.ToArray(), new CardQueryOptions
+                var cards = await _cardRepository.GetByIdsAsync(cardIds, new CardQueryOptions
                 {
                     IncludeTagList = true,
                     AsNoTracking = true,
@@ -419,7 +418,7 @@ namespace Sanakan.Web.Controllers
             }
 
             var result = await _waifuService.GetCardsFromWishlist(
-                cardsId!,
+                cardIds,
                 characterIds,
                 titleIds,
                 allCards,
@@ -583,14 +582,14 @@ namespace Sanakan.Web.Controllers
         /// <param name="boosterPacks">The bundle of cards model.</param>
         /// <response code="404">User not found</response>
         /// <response code="500">Model is Invalid</response>
-        [HttpPost("shinden/{id}/boosterpack"), Authorize(Policy = AuthorizePolicies.Site)]
+        [HttpPost("shinden/{shindenUserId}/boosterpack"), Authorize(Policy = AuthorizePolicies.Site)]
         [ProducesResponseType(typeof(UserWithToken), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GiveShindenUserAPacksAsync(
-            ulong shindenUserId, [FromBody] List<CardBoosterPack> boosterPacks)
+            ulong shindenUserId, [FromBody] IEnumerable<CardBoosterPack> boosterPacks)
         {
-            if (boosterPacks?.Count < 1)
+            if (boosterPacks.Count() < 1)
             {
                 return ShindenInternalServerError(Strings.ModelIsInvalid);
             }
@@ -654,7 +653,7 @@ namespace Sanakan.Web.Controllers
         /// </summary>
         /// <param name="shindenUserId">The Shinden user identifier.</param>
         /// <param name="boosterPacks">The list of booster packs.</param>
-        [HttpPost("shinden/{id}/boosterpack/open"), Authorize(Policy = AuthorizePolicies.Site)]
+        [HttpPost("shinden/{shindenUserId}/boosterpack/open"), Authorize(Policy = AuthorizePolicies.Site)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status503ServiceUnavailable)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status406NotAcceptable)]
@@ -662,9 +661,9 @@ namespace Sanakan.Web.Controllers
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status200OK)]
         public async Task<IActionResult> GiveShindenUserAPacksAndOpenAsync(
-            ulong shindenUserId, [FromBody] List<CardBoosterPack> boosterPacks)
+            ulong shindenUserId, [FromBody] IEnumerable<CardBoosterPack> boosterPacks)
         {
-            if (boosterPacks?.Count < 1)
+            if (boosterPacks.Count() < 1)
             {
                 return ShindenInternalServerError(Strings.ModelIsInvalid);
             }

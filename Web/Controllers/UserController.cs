@@ -310,20 +310,20 @@ namespace Sanakan.Web.Controllers
 
                 if (oldUsers.Any())
                 {
-                    var rmcs = _config
+                    var richMessageConfigs = _config
                         .CurrentValue
                         .RMConfig
                         .Where(x => x.Type == RichMessageType.AdminNotify);
 
-                    foreach (var rmc in rmcs)
+                    foreach (var richMessageConfig in richMessageConfigs)
                     {
-                        var guild = await client.GetGuildAsync(rmc.GuildId);
+                        var guild = await client.GetGuildAsync(richMessageConfig.GuildId);
                         if (guild == null)
                         {
                             continue;
                         }
 
-                        var channel = await guild.GetTextChannelAsync(rmc.ChannelId);
+                        var channel = await guild.GetTextChannelAsync(richMessageConfig.ChannelId);
 
                         if (channel == null)
                         {

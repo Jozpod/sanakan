@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 namespace Sanakan.DiscordBot.Session.Tests.CraftSessionTests
 {
     /// <summary>
-    /// Defines tests for <see cref="CraftSession.HandleMessageAsyncTests"/> method.
+    /// Defines tests for <see cref="CraftSession.HandleMessageAsync"/> method.
     /// </summary>
     [TestClass]
     public class HandleMessageAsyncTests : Base

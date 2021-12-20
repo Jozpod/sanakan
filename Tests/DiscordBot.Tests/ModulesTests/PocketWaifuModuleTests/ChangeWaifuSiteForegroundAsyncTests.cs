@@ -47,7 +47,7 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
                 embed.Description.Should().NotBeNull();
             });
 
-            await _module.ChangeWaifuSiteBackgroundAsync(imageUrl);
+            await _module.ChangeWaifuSiteForegroundAsync(imageUrl);
         }
     }
 }

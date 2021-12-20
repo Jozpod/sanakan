@@ -2404,7 +2404,8 @@
         "dependencies": {
           "Discord.Net": "2.4.0",
           "MSTest.TestAdapter": "2.2.8",
-          "MSTest.TestFramework": "2.2.8"
+          "MSTest.TestFramework": "2.2.8",
+          "Moq": "4.16.1"
         }
       },
       "Sanakan.Web": {

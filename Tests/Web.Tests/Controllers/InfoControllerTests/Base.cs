@@ -13,19 +13,22 @@ namespace Sanakan.Web.Tests.Controllers.InfoControllerTests
         protected readonly InfoController _controller;
         protected readonly Mock<IHelperService> _helperServiceMock = new(MockBehavior.Strict);
         protected readonly Mock<IOptionsMonitor<DiscordConfiguration>> _discordConfigurationMock = new(MockBehavior.Strict);
+        protected readonly DiscordConfiguration _configuration;
 
         public Base()
         {
+            _configuration = new DiscordConfiguration
+            {
+                Prefix = ".",
+            };
+
+            _discordConfigurationMock
+                .Setup(pr => pr.CurrentValue)
+                .Returns(_configuration);
+
             _controller = new InfoController(
                 _helperServiceMock.Object,
                 _discordConfigurationMock.Object);
-        }
-
-        [TestMethod]
-        public void Should_Retrieve_Commands()
-        {
-
-            var commands = _controller.GetCommandsInfoAsync();
         }
     }
 }

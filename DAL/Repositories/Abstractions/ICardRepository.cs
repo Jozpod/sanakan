@@ -10,22 +10,38 @@ namespace Sanakan.DAL.Repositories.Abstractions
         ISaveRepository
     {
         Task<Card?> GetCardAsync(ulong wid);
+
         Task<List<Card>> GetCardsWithTagAsync(string tag);
+
         Task<List<Card>> GetCardsByCharacterIdAsync(ulong characterId);
+
         Task<User?> GetUserCardsAsync(ulong shindenUserId);
-        Task<List<Card>> GetByIdsAsync(ulong[] ids);
-        Task<List<Card>> GetByIdsAsync(ulong[] ids, CardQueryOptions cardQueryOptions);
+
+        Task<List<Card>> GetByIdsAsync(IEnumerable<ulong> ids);
+
+        Task<List<Card>> GetByIdsAsync(IEnumerable<ulong> ids, CardQueryOptions cardQueryOptions);
+
         Task<List<Card>> GetByCharacterIdAsync(ulong characterId);
+
         Task<List<Card>> GetByCharacterIdAsync(ulong characterId, CardQueryOptions cardQueryOptions);
         Task<Card?> GetByIdAsync(ulong id);
+
         Task<Card?> GetByIdAsync(ulong id, CardQueryOptions cardQueryOptions);
+
         Task<List<Card>> GetByIdFirstOrLastOwnerAsync(ulong discordUserId);
+
         Task<int> CountByRarityAndSucceedingIdAsync(Rarity rarity, ulong wid);
+
         Task<List<Card>> GetByCharactersAndNotInUserGameDeckAsync(ulong userId, IEnumerable<ulong> characterIds);
+
         Task<List<Card>> GetByCharacterIdsAsync(IEnumerable<ulong> characterIds);
+
         Task<List<Card>> GetByGameDeckIdAsync(ulong gameDeckId, int offset, int count);
+
         Task<List<Card>> GetByGameDeckIdAsync(ulong gameDeckId);
+
         Task<List<ulong>> GetByExcludedGameDeckIdsAsync(IEnumerable<ulong> allUsers);
+
         Task<List<Card>> GetAsync(ulong gameDeckId, CardsQueryFilter filter);
     }
 }

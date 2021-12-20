@@ -1,3 +1,4 @@
+using Discord;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -22,7 +23,9 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
             var card = new Card(1ul, "title", "name", 100, 50, Rarity.E, Dere.Bodere, DateTime.UtcNow);
             card.Id = 1ul;
             user.GameDeck.Cards.Add(card);
-            var expeditionCardType = ExpeditionCardType.DarkItems;
+            user.GameDeck.Karma = 1001;
+            var expeditionCardType = ExpeditionCardType.LightExp;
+            var imageUrl = "https://test.com/image.png";
 
             _userMock
                 .Setup(pr => pr.Id)
@@ -46,6 +49,14 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
 
             _cacheManagerMock
                 .Setup(pr => pr.ExpireTag(It.IsAny<string[]>()));
+
+            _guildUserMock
+                .Setup(pr => pr.Nickname)
+                .Returns("nickname");
+
+            _userMock
+                .Setup(pr => pr.GetAvatarUrl(ImageFormat.Auto, 128))
+                .Returns(imageUrl);
 
             SetupSendMessage((message, embed) =>
             {

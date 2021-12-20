@@ -17,7 +17,7 @@ namespace Sanakan.Web.Tests.Controllers.WaifuControllerTests
     public class GetShindenUserWishlistAsyncTests : Base
     {
         [TestMethod]
-        public async Task Should_Return_Ok()
+        public async Task Should_Return_Ok_With_Wishlist()
         {
             var shindenUserId = 1ul;
             var user = new User(1ul, DateTime.UtcNow);

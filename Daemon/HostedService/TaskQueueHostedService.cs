@@ -31,33 +31,30 @@ namespace Sanakan.Daemon.HostedService
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            await Task.Run(async () =>
+            await foreach (var message in _blockingPriorityQueue.GetAsyncEnumerable(stoppingToken))
             {
-                foreach (var message in _blockingPriorityQueue.GetEnumerable(stoppingToken))
+                try
                 {
-                    try
-                    {
-                        stoppingToken.ThrowIfCancellationRequested();
+                    stoppingToken.ThrowIfCancellationRequested();
 
-                        using var serviceScope = _serviceScopeFactory.CreateScope();
-                        var serviceProvider = serviceScope.ServiceProvider;
-                        var messageHandler = serviceProvider.GetMessageHandler(message);
+                    using var serviceScope = _serviceScopeFactory.CreateScope();
+                    var serviceProvider = serviceScope.ServiceProvider;
+                    var messageHandler = serviceProvider.GetMessageHandler(message);
 
-                        await messageHandler.HandleAsync(message);
+                    await messageHandler.HandleAsync(message);
 
-                        stoppingToken.ThrowIfCancellationRequested();
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        _logger.LogInformation("Task queue has been stopped");
-                        break;
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError("An error occurred while processing task", ex);
-                    }
+                    stoppingToken.ThrowIfCancellationRequested();
                 }
-            }, stoppingToken);
+                catch (OperationCanceledException)
+                {
+                    _logger.LogInformation("Task queue has been stopped");
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError("An error occurred while processing task", ex);
+                }
+            }
         }
     }
 }

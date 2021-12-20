@@ -32,7 +32,7 @@ namespace Sanakan.Web.Tests.Controllers.WaifuControllerTests
         }
 
         [TestMethod]
-        public async Task Should_Return_Ok()
+        public async Task Should_Return_Ok_With_Cards()
         {
             var discordUserId = 1ul;
             var shindenUserId = 1ul;

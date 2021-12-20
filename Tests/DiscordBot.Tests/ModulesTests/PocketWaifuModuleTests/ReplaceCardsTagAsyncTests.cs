@@ -22,6 +22,7 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
             var card = new Card(1ul, "title", "name", 100, 50, Rarity.A, Dere.Bodere, utcNow);
             var tag = new CardTag { Name = "oldtag" };
             card.Tags.Add(tag);
+            user.GameDeck.Cards.Add(card);
 
             _userMock
                 .Setup(pr => pr.Id)

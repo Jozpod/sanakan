@@ -98,16 +98,15 @@ namespace Sanakan.DiscordBot.Modules
         {
             var user = Context.User;
             var userMention = user.Mention;
+            var userId = user.Id;
 
             var sessionPayload = new ListSession<Card>.ListSessionPayload
             {
                 Bot = Context.Client.CurrentUser,
             };
 
-            var userId = Context.User.Id;
-
             var session = new ListSession<Card>(userId, _systemClock.UtcNow, sessionPayload);
-            _sessionManager.Remove(session);
+            _sessionManager.RemoveIfExists<ListSession<Card>>(userId);
 
             if (type == HaremType.Tag && tag == null)
             {
@@ -2528,18 +2527,18 @@ namespace Sanakan.DiscordBot.Modules
             [Summary("wid karty")] ulong wid,
             [Summary("czy zamienić oznaczenia na nicki?")] bool showNames = false)
         {
-            var thisCards = await _cardRepository.GetByIdAsync(wid, new CardQueryOptions
+            var cards = await _cardRepository.GetByIdAsync(wid, new CardQueryOptions
             {
                 IncludeTagList = true,
             });
 
-            if (thisCards == null)
+            if (cards == null)
             {
                 await ReplyAsync(embed: $"Nie odnaleziono karty.".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
-            var wishlists = await _gameDeckRepository.GetByCardIdAndCharacterAsync(thisCards.Id, thisCards.CharacterId);
+            var wishlists = await _gameDeckRepository.GetByCardIdAndCharacterAsync(cards.Id, cards.CharacterId);
 
             if (wishlists.Count < 1)
             {
@@ -2547,7 +2546,7 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            string usersStr = "";
+            var usersStr = string.Empty;
             if (showNames)
             {
                 foreach (var deck in wishlists)
@@ -2564,7 +2563,7 @@ namespace Sanakan.DiscordBot.Modules
                 usersStr = string.Join("\n", wishlists.Select(x => $"<@{x.Id}>"));
             }
 
-            var content = $"**{thisCards.GetNameWithUrl()} chcą:**\n\n {usersStr}"
+            var content = $"**{cards.GetNameWithUrl()} chcą:**\n\n {usersStr}"
                 .ElipseTrimToLength(2000)
                 .ToEmbedMessage(EMType.Info)
                 .Build();
@@ -2598,7 +2597,7 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            string usersStr = "";
+            var usersStr = string.Empty;
             if (showNames)
             {
                 foreach (var deck in wishlists)
@@ -2627,10 +2626,11 @@ namespace Sanakan.DiscordBot.Modules
         public async Task UnleashCardAsync([Summary("WID")] ulong wid)
         {
             int cost = 250;
-            var databaseUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
+            var user = Context.User;
+            var databaseUser = await _userRepository.GetUserOrCreateAsync(user.Id);
             var gameDeck = databaseUser.GameDeck;
             var card = gameDeck.Cards.FirstOrDefault(x => x.Id == wid);
-            var mention = Context.User.Mention;
+            var mention = user.Mention;
 
             if (card == null)
             {
@@ -2811,8 +2811,9 @@ namespace Sanakan.DiscordBot.Modules
         public async Task ChangeWaifuSiteBackgroundPositionAsync(
             [Summary("pozycja w % od 0 do 100")] uint position)
         {
-            var databaseUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
-            var mention = Context.User.Mention;
+            var user = Context.User;
+            var databaseUser = await _userRepository.GetUserOrCreateAsync(user.Id);
+            var mention = user.Mention;
 
             if (position > 100)
             {

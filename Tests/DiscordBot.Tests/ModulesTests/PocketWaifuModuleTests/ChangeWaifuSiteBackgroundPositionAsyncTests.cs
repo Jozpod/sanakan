@@ -18,10 +18,10 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
         [TestMethod]
         public async Task Should_Change_Waifu_Site_Boreground_Position_And_Send_Confirm_Message()
         {
-            var imageUrl = "https://test.com/image.jpg";
             var utcNow = DateTime.UtcNow;
             var user = new User(1ul, utcNow);
             user.TcCount = 2000;
+            var position = 100u;
 
             _userRepositoryMock
                 .Setup(pr => pr.GetUserOrCreateAsync(user.Id))
@@ -47,7 +47,7 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
                 embed.Description.Should().NotBeNull();
             });
 
-            await _module.ChangeWaifuSiteBackgroundAsync(imageUrl);
+            await _module.ChangeWaifuSiteBackgroundPositionAsync(position);
         }
     }
 }

@@ -75,7 +75,7 @@ namespace Sanakan.Game.Tests.IntegrationTests.ImageProcessorTests
             var nickname = "test user";
             var color = Discord.Color.DarkerGrey;
 
-            MockHttpGetImage("TestData/user-avatar.png");
+            MockHttpGetImage("user-avatar.png");
 
             var userProfileImage = await _imageProcessor.GetUserProfileAsync(
                 shindenUser,
@@ -86,7 +86,7 @@ namespace Sanakan.Game.Tests.IntegrationTests.ImageProcessorTests
                 color);
             userProfileImage.Should().NotBeNull();
 
-            await ShouldBeEqual("TestData/expected-user-profile.png", userProfileImage);
+            await ShouldBeEqual("expected-user-profile.png", userProfileImage);
         }
     }
 }

@@ -21,12 +21,12 @@ namespace Sanakan.Game.Tests.IntegrationTests.ImageProcessorTests
             var avatarUrl = "https://test.com/avatar-url";
             var color = Discord.Color.Blue;
 
-            MockHttpGetImage("TestData/card-image.png");
+            MockHttpGetImage("card-image.png");
 
             var badgeImage = await _imageProcessor.GetLevelUpBadgeAsync(name, level, avatarUrl, color);
             badgeImage.Should().NotBeNull();
 
-            await ShouldBeEqual("TestData/expected-badge.png", badgeImage);
+            await ShouldBeEqual("expected-badge.png", badgeImage);
         }
     }
 }

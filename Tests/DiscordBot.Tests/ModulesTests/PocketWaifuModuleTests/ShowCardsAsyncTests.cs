@@ -8,6 +8,9 @@ using Sanakan.DiscordBot.Modules;
 using System;
 using System.Threading.Tasks;
 using Sanakan.Game.Models;
+using Sanakan.DiscordBot.Session;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
 {
@@ -18,7 +21,7 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
     public class ShowCardsAsyncTests : Base
     {
         [TestMethod]
-        public async Task Should_Send_Message_Containing_Card_Image()
+        public async Task Should_Send_Message_Containing_Cards()
         {
             var utcNow = DateTime.UtcNow;
             var user = new User(1ul, utcNow);
@@ -26,47 +29,62 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
             card.Expedition = ExpeditionCardType.DarkExp;
             user.GameDeck.Cards.Add(card);
             user.GameDeck.UserId = user.Id;
-            var guildUserMock = new Mock<IGuildUser>(MockBehavior.Strict);
-            var textChannelMock = new Mock<ITextChannel>(MockBehavior.Strict);
-            var guildOptions = new GuildOptions(1ul, 50)
-            {
-                WaifuConfig = new WaifuConfiguration
-                {
-                    TrashCommandsChannelId = 1ul,
-                }
-            };
-            card.GameDeck = user.GameDeck;
+            var dmChannelMock = new Mock<IDMChannel>(MockBehavior.Strict);
+            var userMessageMock = new Mock<IUserMessage>(MockBehavior.Strict);
+            var haremType = HaremType.Affection;
+            var tag = "test_tag";
+            var cards = new List<Card> { };
 
-            _cardRepositoryMock
-                .Setup(pr => pr.GetCardAsync(card.Id))
-                .ReturnsAsync(card);
+            _userRepositoryMock
+                .Setup(pr => pr.GetCachedFullUserAsync(user.Id))
+                .ReturnsAsync(user);
 
-            _guildMock
-               .Setup(pr => pr.Id)
-               .Returns(guildOptions.Id);
+            _userMock
+                .Setup(pr => pr.Id)
+                .Returns(user.Id);
 
-            _guildMock
-                .Setup(pr => pr.GetUserAsync(user.Id, CacheMode.AllowDownload, null))
-                .ReturnsAsync(guildUserMock.Object);
+            _userMock
+                .Setup(pr => pr.Mention)
+                .Returns("user mention");
 
-            _guildConfigRepositoryMock
-                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildOptions.Id))
-                .ReturnsAsync(guildOptions);
+            _systemClockMock
+                .Setup(pr => pr.UtcNow)
+                .Returns(utcNow);
 
-            _guildMock
-               .Setup(pr => pr.GetChannelAsync(user.Id, CacheMode.AllowDownload, null))
-               .ReturnsAsync(textChannelMock.Object);
+            _sessionManagerMock
+                .Setup(pr => pr.RemoveIfExists<ListSession<Card>>(user.Id));
 
             _waifuServiceMock
-                .Setup(pr => pr.BuildCardImageAsync(card, textChannelMock.Object, guildUserMock.Object, true))
-                .ReturnsAsync(new EmbedBuilder().Build());
-            
+                .Setup(pr => pr.GetListInRightOrder(It.IsAny<IEnumerable<Card>>(), haremType, tag))
+                .Returns(cards);
+
+            _guildUserMock
+                .Setup(pr => pr.GetOrCreateDMChannelAsync(null))
+                .ReturnsAsync(dmChannelMock.Object);
+
+            dmChannelMock
+                .Setup(pr => pr.SendMessageAsync(
+                    It.IsAny<string>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<Embed>(),
+                    It.IsAny<RequestOptions>(),
+                    It.IsAny<AllowedMentions>(),
+                    It.IsAny<MessageReference>()))
+                .ReturnsAsync(userMessageMock.Object);
+
+            userMessageMock
+                .Setup(pr => pr.AddReactionAsync(It.IsAny<IEmote>(), null))
+                .Returns(Task.CompletedTask);
+
+            _sessionManagerMock
+                .Setup(pr => pr.Add(It.IsAny<IInteractionSession>()));
+
             SetupSendMessage((message, embed) =>
             {
                 embed.Should().NotBeNull();
             });
 
-            await _module.ShowCardImageAsync(card.Id);
+            await _module.ShowCardsAsync(haremType, tag);
         }
     }
 }

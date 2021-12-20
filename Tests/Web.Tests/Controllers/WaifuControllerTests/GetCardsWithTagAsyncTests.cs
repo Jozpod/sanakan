@@ -17,7 +17,7 @@ namespace Sanakan.Web.Tests.Controllers.WaifuControllerTests
     public class GetCardsWithTagAsyncTests : Base
     {
         [TestMethod]
-        public async Task Should_Return_Ok()
+        public async Task Should_Return_Ok_With_Cards()
         {
             var tag = "tag";
             var cards = new List<Card>

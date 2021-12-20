@@ -9,6 +9,7 @@ using Sanakan.Game.Services.Abstractions;
 using Sanakan.ShindenApi;
 using Sanakan.TaskQueue;
 using Sanakan.Web.Controllers;
+using System;
 
 namespace Sanakan.Web.Tests.Controllers.WaifuControllerTests
 {
@@ -29,6 +30,16 @@ namespace Sanakan.Web.Tests.Controllers.WaifuControllerTests
 
         public Base()
         {
+            _optionsMock
+                .Setup(pr => pr.CurrentValue)
+                .Returns(new ApiConfiguration
+                {
+                    Jwt = new JwtConfiguration
+                    {
+                        UserWithTokenExpiry = TimeSpan.FromHours(1),
+                    }
+                });
+
             _controller = new WaifuController(
                 _shindenClientMock.Object,
                 _blockingPriorityQueueMock.Object,

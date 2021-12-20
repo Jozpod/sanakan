@@ -26,7 +26,7 @@ namespace Sanakan.Game.Tests.IntegrationTests.ImageProcessorTests
 
             using var image = _imageProcessor.GetFColorsView(coloursSummary);
             image.Should().NotBeNull();
-            await ShouldBeEqual("TestData/expected-f-colors.png", image);
+            await ShouldBeEqual("expected-f-colors.png", image);
         }
     }
 }

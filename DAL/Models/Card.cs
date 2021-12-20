@@ -97,6 +97,10 @@ namespace Sanakan.DAL.Models
         [Required]
         public string Name { get; set; } = string.Empty;
 
+        /// <summary>
+        /// The Shinden character identifier.
+        /// </summary>
+        /// <remarks>Link to character in Shinden: https://shinden.pl/character/CharacterId</remarks>
         public ulong CharacterId { get; set; }
 
         public DateTime CreatedOn { get; set; }

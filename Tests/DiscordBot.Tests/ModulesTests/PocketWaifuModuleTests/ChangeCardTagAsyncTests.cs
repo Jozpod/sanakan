@@ -10,30 +10,29 @@ using System.Threading.Tasks;
 namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
 {
     /// <summary>
-    /// Defines tests for <see cref="PocketWaifuModule.ChangeWaifuSiteForegroundPositionAsync(uint)"/> method.
+    /// Defines tests for <see cref="PocketWaifuModule.ChangeCardTagAsync(string, ulong[])"/> method.
     /// </summary>
     [TestClass]
-    public class ChangeWaifuSiteForegroundPositionAsyncTests : Base
+    public class ChangeCardTagAsyncTests : Base
     {
         [TestMethod]
-        public async Task Should_Change_Waifu_Site_Foreground_Position_And_Send_Confirm_Message()
+        public async Task Should_Change_Card_Tags_And_Send_Confirm_Message()
         {
+            var tag = "testtag";
             var utcNow = DateTime.UtcNow;
             var user = new User(1ul, utcNow);
-            user.TcCount = 2000;
-            var position = 100u;
+
+            _userMock
+                .Setup(pr => pr.Id)
+                .Returns(user.Id);
+
+            _userMock
+                .Setup(pr => pr.Mention)
+                .Returns("mention");
 
             _userRepositoryMock
                 .Setup(pr => pr.GetUserOrCreateAsync(user.Id))
                 .ReturnsAsync(user);
-
-            _guildUserMock
-               .Setup(pr => pr.Id)
-               .Returns(user.Id);
-
-            _guildUserMock
-                .Setup(pr => pr.Mention)
-                .Returns("mention");
 
             _userRepositoryMock
                 .Setup(pr => pr.SaveChangesAsync(default))
@@ -47,7 +46,7 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
                 embed.Description.Should().NotBeNull();
             });
 
-            await _module.ChangeWaifuSiteForegroundPositionAsync(position);
+            await _module.ChangeCardTagAsync(tag);
         }
     }
 }

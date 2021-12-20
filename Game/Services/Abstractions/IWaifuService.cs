@@ -81,9 +81,9 @@ namespace Sanakan.Game.Services.Abstractions
         Task<string> GenerateAndSaveCardAsync(Card card, CardImageType type = CardImageType.Normal);
 
         Task<IEnumerable<Embed>> GetContentOfWishlist(
-            List<ulong> cardsId,
-            List<ulong> charactersId,
-            List<ulong> titlesId);
+            IEnumerable<ulong> cardsId,
+            IEnumerable<ulong> charactersId,
+            IEnumerable<ulong> titlesId);
 
         Task<IEnumerable<Card>> GetCardsFromWishlist(
             IEnumerable<ulong> cardsId,
