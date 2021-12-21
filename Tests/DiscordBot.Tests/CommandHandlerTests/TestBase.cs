@@ -39,6 +39,7 @@ namespace Sanakan.DiscordBot.Tests.CommandHandlerTests
         protected readonly Mock<ICacheManager> _cacheManagerMock = new(MockBehavior.Strict);
         protected readonly Mock<IUserRepository> _userRepositoryMock = new(MockBehavior.Strict);
         protected readonly Mock<IGuildConfigRepository> _guildConfigRepositoryMock = new(MockBehavior.Strict);
+        protected readonly Mock<ICommandsAnalyticsRepository> _commandsAnalyticsRepositoryMock = new(MockBehavior.Strict);
         protected readonly Mock<IQuestionRepository> _guestionRepositoryMock = new(MockBehavior.Strict);
         protected readonly Mock<IGameDeckRepository> _gameDeckRepositoryMock = new(MockBehavior.Strict);
         protected readonly Mock<ICardRepository> _cardRepositoryMock = new(MockBehavior.Strict);
@@ -61,6 +62,7 @@ namespace Sanakan.DiscordBot.Tests.CommandHandlerTests
             serviceCollection.AddSingleton(_cacheManagerMock.Object);
             serviceCollection.AddSingleton(_userRepositoryMock.Object);
             serviceCollection.AddSingleton(_guildConfigRepositoryMock.Object);
+            serviceCollection.AddSingleton(_commandsAnalyticsRepositoryMock.Object);
             serviceCollection.AddSingleton(_guestionRepositoryMock.Object);
             serviceCollection.AddSingleton(_systemClockMock.Object);
             serviceCollection.AddSingleton(_operatingSystemMock.Object);

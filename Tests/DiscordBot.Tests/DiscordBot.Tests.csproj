@@ -34,6 +34,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\DiscordBot\DiscordBot.csproj" />
+    <ProjectReference Include="..\Tests.Shared\Tests.Shared.csproj" />
   </ItemGroup>
 
 </Project>

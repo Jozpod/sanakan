@@ -1,12 +1,18 @@
 using Discord;
 using Discord.Commands;
 using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
+using Sanakan.DAL.Models.Analytics;
 using Sanakan.DAL.Models.Configuration;
+using Sanakan.TaskQueue.Messages;
+using Sanakan.Tests.Shared;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Sanakan.DiscordBot.Tests.CommandHandlerTests
 {
@@ -420,6 +426,24 @@ namespace Sanakan.DiscordBot.Tests.CommandHandlerTests
             }
         }
 
+        private CommandInfo CreateCommand(string moduleName, string commandName, RunMode runMode)
+        {
+            var serviceCollection = new ServiceCollection();
+            var serviceProvider = serviceCollection.BuildServiceProvider();
+            var commandService = new Discord.Commands.CommandService();
+            var moduleBuilder = DiscordInternalExtensions.CreateModuleBuilder(commandService, null);
+
+            moduleBuilder.WithName(moduleName);
+            moduleBuilder.Group = ".";
+            moduleBuilder.AddCommand(commandName, (cc, objs, sp, ci) => Task.CompletedTask, cb =>
+            {
+                cb.WithRunMode(runMode);
+            });
+
+            var moduleInfo = DiscordInternalExtensions.CreateModuleInfo(moduleBuilder, commandService, serviceProvider);
+            return moduleInfo.Commands.First();
+        }
+
         [TestMethod]
         public void Should_Process_Command_Sync()
         {
@@ -432,11 +456,11 @@ namespace Sanakan.DiscordBot.Tests.CommandHandlerTests
             var guildMock = new Mock<IGuild>(MockBehavior.Strict);
             var commands = new List<CommandMatch>
             {
-                new CommandMatch(null, "command"),
+                new CommandMatch(CreateCommand("module", "command", RunMode.Sync), "command"),
             };
-            var commandName = "test";
+            var commandName = "command";
             var messageText = $".{commandName}";
-            var commandSearchResult = Discord.Commands.SearchResult.FromSuccess("commands", commands);
+            var commandSearchResult = Discord.Commands.SearchResult.FromSuccess("command", commands);
 
             _commandServiceMock
                 .Setup(pr => pr.Search(commandName))
@@ -497,6 +521,17 @@ namespace Sanakan.DiscordBot.Tests.CommandHandlerTests
             _systemClockMock
                 .Setup(pr => pr.UtcNow)
                 .Returns(DateTime.UtcNow);
+
+            _commandsAnalyticsRepositoryMock
+                .Setup(pr => pr.Add(It.IsAny<CommandsAnalytics>()));
+
+            _commandsAnalyticsRepositoryMock
+                .Setup(pr => pr.SaveChangesAsync(default))
+                .Returns(Task.CompletedTask);
+
+            _blockingPriorityQueueMock
+                .Setup(pr => pr.TryEnqueue(It.IsAny<CommandMessage>()))
+                .Returns(true);
 
             _discordClientAccessorMock
                 .Raise(pr => pr.MessageReceived += null, _userMessageMock.Object);
@@ -514,11 +549,11 @@ namespace Sanakan.DiscordBot.Tests.CommandHandlerTests
             var guildMock = new Mock<IGuild>(MockBehavior.Strict);
             var commands = new List<CommandMatch>
             {
-                new CommandMatch(null, "command"),
+                new CommandMatch(CreateCommand("module", "command", RunMode.Async), "command"),
             };
-            var commandName = "test";
+            var commandName = "command";
             var messageText = $".{commandName}";
-            var commandSearchResult = Discord.Commands.SearchResult.FromSuccess("commands", commands);
+            var commandSearchResult = Discord.Commands.SearchResult.FromSuccess("command", commands);
 
             _commandServiceMock
                 .Setup(pr => pr.Search(commandName))
@@ -579,6 +614,13 @@ namespace Sanakan.DiscordBot.Tests.CommandHandlerTests
             _systemClockMock
                 .Setup(pr => pr.UtcNow)
                 .Returns(DateTime.UtcNow);
+
+            _commandsAnalyticsRepositoryMock
+                .Setup(pr => pr.Add(It.IsAny<CommandsAnalytics>()));
+
+            _commandsAnalyticsRepositoryMock
+                .Setup(pr => pr.SaveChangesAsync(default))
+                .Returns(Task.CompletedTask);
 
             _discordClientAccessorMock
                 .Raise(pr => pr.MessageReceived += null, _userMessageMock.Object);
