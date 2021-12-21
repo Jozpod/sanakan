@@ -8,9 +8,7 @@ namespace Sanakan.Game.Tests
     /// <summary>
     /// Defines tests for <see cref="IImageProcessor.GetLevelUpBadgeAsync(string, ulong, string, Discord.Color)"/> method.
     /// </summary>
-#if DEBUG
     [TestClass]
-#endif
     public class GetLevelUpBadgeAsyncTests : Base
     {
         [TestMethod]

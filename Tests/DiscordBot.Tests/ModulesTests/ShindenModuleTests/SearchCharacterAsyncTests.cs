@@ -25,7 +25,7 @@ namespace DiscordBot.ModulesTests.ShindenModuleTests
             var characterName = "test";
             var characterId = 1ul;
             var utcNow = DateTime.UtcNow;
-            var searchCharacterResult = new Result<List<CharacterSearchResult>>
+            var searchCharacterResult = new ShindenResult<List<CharacterSearchResult>>
             {
                 Value = new List<CharacterSearchResult>
                 {
@@ -35,7 +35,7 @@ namespace DiscordBot.ModulesTests.ShindenModuleTests
                     }
                 }
             };
-            var characterInfoResult = new Result<CharacterInfo>
+            var characterInfoResult = new ShindenResult<CharacterInfo>
             {
                 Value = new CharacterInfo
                 {

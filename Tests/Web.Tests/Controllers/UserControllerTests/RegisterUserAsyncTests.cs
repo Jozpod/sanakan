@@ -49,7 +49,7 @@ namespace Sanakan.Web.Tests.Controllers.UserControllerTests
                 Username = "username",
                 ForumUserId = shindenUserId,
             };
-            var searchUserResult = new Result<List<UserSearchResult>>
+            var searchUserResult = new ShindenResult<List<UserSearchResult>>
             {
                 Value = new List<UserSearchResult>
                 {
@@ -59,7 +59,7 @@ namespace Sanakan.Web.Tests.Controllers.UserControllerTests
                     }
                 }
             };
-            var userResult = new Result<UserInfo>
+            var userResult = new ShindenResult<UserInfo>
             {
                 Value = new UserInfo
                 {
@@ -137,7 +137,7 @@ namespace Sanakan.Web.Tests.Controllers.UserControllerTests
                 DiscordUserId = 1ul,
                 Username = "username",
             };
-            var searchUserResult = new Result<List<UserSearchResult>>
+            var searchUserResult = new ShindenResult<List<UserSearchResult>>
             {
                 Value = new List<UserSearchResult>
                 {
@@ -147,7 +147,7 @@ namespace Sanakan.Web.Tests.Controllers.UserControllerTests
                     }
                 }
             };
-            var userResult = new Result<UserInfo>
+            var userResult = new ShindenResult<UserInfo>
             {
                 Value = new UserInfo
                 {

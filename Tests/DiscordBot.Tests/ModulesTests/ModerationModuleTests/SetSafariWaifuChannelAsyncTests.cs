@@ -49,7 +49,7 @@ namespace DiscordBot.ModulesTests.ModerationModuleTests
                 embed.Description.Should().NotBeNullOrEmpty();
             });
 
-            await _module.SetTrashCmdWaifuChannelAsync();
+            await _module.SetSafariWaifuChannelAsync();
         }
     }
 }

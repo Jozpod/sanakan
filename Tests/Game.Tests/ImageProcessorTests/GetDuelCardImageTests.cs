@@ -13,9 +13,7 @@ namespace Sanakan.Game.Tests.ImageProcessorTests
     /// <summary>
     /// Defines tests for <see cref="IImageProcessor.GetDuelCardImage(DuelInfo, DuelImage, Image{Rgba32}, Image{Rgba32})"/> method.
     /// </summary>
-#if DEBUG
     [TestClass]
-#endif
     public class GetDuelCardImageTests : Base
     {
         [TestMethod]

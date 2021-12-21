@@ -19,7 +19,7 @@ namespace Sanakan.Web.Tests.Controllers.UserControllerTests
         public async Task Should_Return_Shinden_User_Details()
         {
             var shindenUserId = 1ul;
-            var userResult = new Result<UserInfo>
+            var userResult = new ShindenResult<UserInfo>
             {
                 Value = new UserInfo
                 {

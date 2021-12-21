@@ -24,7 +24,7 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
             var card = new Card(1ul, "title", "name", 100, 50, Rarity.A, Dere.Bodere, DateTime.UtcNow);
             card.Expedition = ExpeditionCardType.DarkExp;
             user.GameDeck.Cards.Add(card);
-            var characterInfoResult = new Result<CharacterInfo>()
+            var characterInfoResult = new ShindenResult<CharacterInfo>()
             {
                 Value = new CharacterInfo(),
             };

@@ -72,6 +72,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DiscordBot.Integration.Test
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Web.Integration.Tests", "Tests\Web.Integration.Tests\Web.Integration.Tests.csproj", "{FE121BC6-ED83-4ABB-A30C-FD932E66A8CE}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShindenApi.Fake", "ShindenApi.Fake\ShindenApi.Fake.csproj", "{CF39825D-7C4F-40FB-BC7A-2C96EF211827}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -265,6 +267,12 @@ Global
 		{FE121BC6-ED83-4ABB-A30C-FD932E66A8CE}.Release|Any CPU.Build.0 = Release|Any CPU
 		{FE121BC6-ED83-4ABB-A30C-FD932E66A8CE}.Test|Any CPU.ActiveCfg = Test|Any CPU
 		{FE121BC6-ED83-4ABB-A30C-FD932E66A8CE}.Test|Any CPU.Build.0 = Test|Any CPU
+		{CF39825D-7C4F-40FB-BC7A-2C96EF211827}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CF39825D-7C4F-40FB-BC7A-2C96EF211827}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CF39825D-7C4F-40FB-BC7A-2C96EF211827}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CF39825D-7C4F-40FB-BC7A-2C96EF211827}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CF39825D-7C4F-40FB-BC7A-2C96EF211827}.Test|Any CPU.ActiveCfg = Test|Any CPU
+		{CF39825D-7C4F-40FB-BC7A-2C96EF211827}.Test|Any CPU.Build.0 = Test|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

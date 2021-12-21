@@ -26,7 +26,7 @@ namespace DiscordBot.ModulesTests.DebugModuleTests
             {
                 safariImage,
             };
-            var characterInfoResult = new Result<CharacterInfo>
+            var characterInfoResult = new ShindenResult<CharacterInfo>
             {
                 Value = new CharacterInfo
                 {

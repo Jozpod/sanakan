@@ -27,7 +27,7 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
             var dmChannelMock = new Mock<IDMChannel>(MockBehavior.Strict);
             var card = new Card(1ul, "title", "name", 100, 50, Rarity.A, Dere.Bodere, utcNow);
             var cards = new List<Card> { card };
-            var characterInfoResult = new Result<CharacterInfo>
+            var characterInfoResult = new ShindenResult<CharacterInfo>
             {
                 Value = new CharacterInfo
                 {

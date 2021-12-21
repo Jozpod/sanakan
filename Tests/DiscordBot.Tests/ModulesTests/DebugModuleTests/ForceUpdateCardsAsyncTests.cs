@@ -25,7 +25,7 @@ namespace DiscordBot.ModulesTests.DebugModuleTests
             {
                 card,
             };
-            var characterInfoResult = new Result<CharacterInfo>
+            var characterInfoResult = new ShindenResult<CharacterInfo>
             {
                 Value = new CharacterInfo
                 {

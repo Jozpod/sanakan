@@ -1,25 +1,33 @@
 ﻿using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Sanakan.Game.Services.Abstractions;
+using SixLabors.Primitives;
+using System.Threading.Tasks;
 
 namespace Sanakan.Game.Tests.ImageProcessorTests
 {
     /// <summary>
     /// Defines tests for <see cref="IImageProcessor.SaveImageFromUrlAsync(string, string)"/> method.
     /// </summary>
-#if DEBUG
     [TestClass]
-#endif
     public class SaveImageFromUrlAsyncTests : Base
     {
         [TestMethod]
-        public void Should_Return_Waifu_Image()
+        public async Task Should_Stretch_And_Save_Image()
         {
             var imageUrl = "TestData/card-image.png";
             var filePath = "TestData/card-image.png";
 
-            using var image = _imageProcessor.SaveImageFromUrlAsync(imageUrl, filePath);
-            image.Should().NotBeNull();
+            await _imageProcessor.SaveImageFromUrlAsync(imageUrl, filePath, new Size(300, 300), true);
+        }
+
+        [TestMethod]
+        public async Task Should_Save_Image()
+        {
+            var imageUrl = "TestData/card-image.png";
+            var filePath = "TestData/card-image.png";
+
+            await _imageProcessor.SaveImageFromUrlAsync(imageUrl, filePath);
         }
     }
 }

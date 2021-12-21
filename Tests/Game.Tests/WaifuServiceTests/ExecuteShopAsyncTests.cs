@@ -116,7 +116,7 @@ namespace Sanakan.Game.Tests.WaifuServiceTests
             var specialCommand = "1";
             var user = new User(1ul, DateTime.UtcNow);
             user.AcCount = 1000;
-            var animeMangaInfoResult = new Result<AnimeMangaInfo>
+            var animeMangaInfoResult = new ShindenResult<AnimeMangaInfo>
             {
                 Value = new AnimeMangaInfo
                 {
@@ -130,7 +130,7 @@ namespace Sanakan.Game.Tests.WaifuServiceTests
                 }
             };
 
-            var charactersResult = new Result<TitleCharacters>
+            var charactersResult = new ShindenResult<TitleCharacters>
             {
                 Value = new TitleCharacters
                 {

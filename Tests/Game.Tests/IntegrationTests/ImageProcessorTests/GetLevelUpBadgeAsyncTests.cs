@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 namespace Sanakan.Game.Tests.IntegrationTests.ImageProcessorTests
 {
     /// <summary>
-    /// Defines tests for <see cref="IImageProcessor.GetLevelUpBadgeAsync(string, ulong, string, Discord.Color)"/> method.
+    /// Defines integration tests for <see cref="IImageProcessor.GetLevelUpBadgeAsync(string, ulong, string, Discord.Color)"/> method.
     /// </summary>
 #if DEBUG
     [TestClass]

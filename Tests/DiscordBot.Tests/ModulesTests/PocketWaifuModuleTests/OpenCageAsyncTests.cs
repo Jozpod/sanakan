@@ -25,7 +25,7 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
             var card = new Card(1ul, "title", "name", 100, 50, Rarity.A, Dere.Bodere, utcNow);
             card.InCage = true;
             user.GameDeck.Cards.Add(card);
-            var characterInfoResult = new Sanakan.ShindenApi.Result<CharacterInfo>
+            var characterInfoResult = new Sanakan.ShindenApi.ShindenResult<CharacterInfo>
             {
                 Value = new CharacterInfo
                 {

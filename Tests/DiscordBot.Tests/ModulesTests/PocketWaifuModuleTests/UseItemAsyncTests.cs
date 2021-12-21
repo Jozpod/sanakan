@@ -65,7 +65,7 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
             user.GameDeck.Cards.Add(card);
             user.GameDeck.Items.Add(new Item { Type = itemType, Count = 3 });
             var itemNumber = 1;
-            var characterInfoResult = new Result<CharacterInfo>()
+            var characterInfoResult = new ShindenResult<CharacterInfo>()
             {
                 Value = new CharacterInfo
                 {

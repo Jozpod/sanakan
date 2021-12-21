@@ -24,7 +24,7 @@ namespace Sanakan.Web.Tests.Controllers.WaifuControllerTests
             var oldCharacterId = 1ul;
             var newCharacterId = 2ul;
             var expected = new List<ulong>() { 0ul };
-            var characterInfoResult = new Result<CharacterInfo>
+            var characterInfoResult = new ShindenResult<CharacterInfo>
             {
                 Value = new CharacterInfo
                 {

@@ -21,7 +21,7 @@ namespace DiscordBot.ModulesTests.ShindenModuleTests
         public async Task Should_Send_Message_Containing_New_Epsiodes()
         {
             var dmChannelMock = new Mock<IDMChannel>(MockBehavior.Strict);
-            var epsiodesResult = new Result<List<NewEpisode>>()
+            var epsiodesResult = new ShindenResult<List<NewEpisode>>()
             {
                 Value = new List<NewEpisode>
                 {

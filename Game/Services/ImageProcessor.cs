@@ -116,7 +116,7 @@ namespace Sanakan.Game.Services
             return font;
         }
 
-        private void CheckProfileImageSize(Image<Rgba32> image, Size size, bool strech)
+        private void CheckProfileImageSize(Image<Rgba32> image, Size size, bool stretch)
         {
             if (image.Width > size.Width || image.Height > size.Height)
             {
@@ -129,8 +129,10 @@ namespace Sanakan.Game.Services
                 return;
             }
 
-            if (!strech)
+            if (!stretch)
+            {
                 return;
+            }
 
             if (image.Width < size.Width || image.Height < size.Height)
             {
@@ -145,14 +147,14 @@ namespace Sanakan.Game.Services
         public async Task SaveImageFromUrlAsync(string url, string path)
             => await SaveImageFromUrlAsync(url, path, Size.Empty);
 
-        public async Task SaveImageFromUrlAsync(string imageUrl, string filePath, Size size, bool strech = false)
+        public async Task SaveImageFromUrlAsync(string imageUrl, string filePath, Size size, bool stretch = false)
         {
             using var stream = await GetImageFromUrlAsync(imageUrl, true);
             using var image = Image.Load(stream);
 
             if (size.Height > 0 || size.Width > 0)
             {
-                CheckProfileImageSize(image, size, strech);
+                CheckProfileImageSize(image, size, stretch);
             }
 
             image.SaveToPath(filePath, _fileSystem);

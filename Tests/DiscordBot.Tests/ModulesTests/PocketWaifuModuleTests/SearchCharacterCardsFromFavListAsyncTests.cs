@@ -24,7 +24,7 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
             user.ShindenId = 1ul;
             var card = new Card(1ul, "test", "test", 10, 10, Rarity.E, Dere.Tsundere, DateTime.UtcNow);
             user.GameDeck.Cards.Add(card);
-            var charactersResult = new Sanakan.ShindenApi.Result<List<FavCharacter>>
+            var charactersResult = new Sanakan.ShindenApi.ShindenResult<List<FavCharacter>>
             {
                 Value = new List<FavCharacter>
                 {

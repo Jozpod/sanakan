@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace Sanakan.Game.Tests.IntegrationTests.ImageProcessorTests
 {
     /// <summary>
-    /// Defines tests for <see cref="IImageProcessor.GetWaifuCardImageAsync(Card)"/> method.
+    /// Defines integration tests for <see cref="IImageProcessor.GetWaifuCardImageAsync(Card)"/> method.
     /// </summary>
 #if DEBUG
     [TestClass]

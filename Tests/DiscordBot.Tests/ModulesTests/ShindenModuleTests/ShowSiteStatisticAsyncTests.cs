@@ -28,18 +28,18 @@ namespace DiscordBot.ModulesTests.ShindenModuleTests
             var utcNow = DateTime.UtcNow;
             var user = new User(1ul, utcNow);
             user.ShindenId = 1ul;
-            var userInfoResult = new Result<UserInfo>
+            var userInfoResult = new ShindenResult<UserInfo>
             {
                 Value = new UserInfo
                 {
 
                 }
             };
-            var lastWatchResult = new Result<List<LastWatchedRead>>()
+            var lastWatchResult = new ShindenResult<List<LastWatchedRead>>()
             {
                 Value = new List<LastWatchedRead>(),
             };
-            var lastReadResult = new Result<List<LastWatchedRead>>()
+            var lastReadResult = new ShindenResult<List<LastWatchedRead>>()
             {
                 Value = new List<LastWatchedRead>(),
             };

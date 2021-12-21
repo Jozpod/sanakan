@@ -19,5 +19,10 @@ namespace Sanakan.Common.Configuration
         /// The database engine connection string.
         /// </summary>
         public string ConnectionString { get; set; } = string.Empty;
+
+        /// <summary>
+        /// The database seed configuration.
+        /// </summary>
+        public DatabaseSeedConfiguration Seed { get; set; } = null;
     }
 }

@@ -13,7 +13,7 @@ namespace Sanakan.Game.Services.Abstractions
     {
         Task SaveImageFromUrlAsync(string imageUrl, string filePath);
 
-        Task SaveImageFromUrlAsync(string imageUrl, string filePath, Size size, bool strech = false);
+        Task SaveImageFromUrlAsync(string imageUrl, string filePath, Size size, bool stretch = false);
 
         Task<Image<Rgba32>> GetUserProfileAsync(
             UserInfo? shindenUser,

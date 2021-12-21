@@ -4,7 +4,7 @@
     {
         public ToggleCardMessage() : base(Priority.Low) { }
 
-        public ulong WId { get; set; }
+        public ulong CardId { get; set; }
         public ulong DiscordUserId { get; set; }
     }
 }

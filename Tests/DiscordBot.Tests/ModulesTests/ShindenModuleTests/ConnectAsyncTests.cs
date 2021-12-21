@@ -26,7 +26,7 @@ namespace DiscordBot.ModulesTests.ShindenModuleTests
             var shindenUserId = 123456ul;
             var userProfileUrl = new Uri($"https://shinden.pl/user/{shindenUserId}- test");
             var nickname = "nickname";
-            var userInfoResult = new Result<UserInfo>
+            var userInfoResult = new ShindenResult<UserInfo>
             {
                 Value = new UserInfo
                 {

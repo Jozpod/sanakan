@@ -31,7 +31,7 @@ namespace DiscordBot.ModulesTests.ShindenModuleTests
                 TitleId = 1,
             };
 
-            var searchResult = new Result<List<QuickSearchResult>>
+            var searchResult = new ShindenResult<List<QuickSearchResult>>
             {
                 Value = new List<QuickSearchResult>
                 {
@@ -39,7 +39,7 @@ namespace DiscordBot.ModulesTests.ShindenModuleTests
                 }
             };
 
-            var animeMangaInfoResult = new Result<AnimeMangaInfo>
+            var animeMangaInfoResult = new ShindenResult<AnimeMangaInfo>
             {
                 Value = new AnimeMangaInfo
                 {

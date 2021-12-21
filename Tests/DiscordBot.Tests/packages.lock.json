@@ -1993,20 +1993,6 @@
           "System.Text.Json": "5.0.2"
         }
       },
-      "Sanakan.Daemon": {
-        "type": "Project",
-        "dependencies": {
-          "Discord.Net": "2.4.0",
-          "Microsoft.Extensions.DependencyInjection": "5.0.2",
-          "Sanakan.Common": "0.0.1",
-          "Sanakan.DAL": "0.0.1",
-          "Sanakan.DiscordBot": "0.0.1",
-          "Sanakan.DiscordBot.Abstractions": "0.0.1",
-          "Sanakan.DiscordBot.Supervisor": "0.0.1",
-          "Sanakan.Game": "0.0.1",
-          "Sanakan.TaskQueue": "0.0.1"
-        }
-      },
       "Sanakan.DAL": {
         "type": "Project",
         "dependencies": {
@@ -2071,18 +2057,6 @@
           "Sanakan.Game": "0.0.1"
         }
       },
-      "Sanakan.DiscordBot.Supervisor": {
-        "type": "Project",
-        "dependencies": {
-          "Discord.Net": "2.4.0",
-          "Humanizer.Core.pl": "2.11.10",
-          "Microsoft.Extensions.DependencyInjection": "5.0.2",
-          "Microsoft.Extensions.Options": "5.0.0",
-          "Sanakan.Common": "0.0.1",
-          "Sanakan.DAL": "0.0.1",
-          "SixLabors.ImageSharp.Drawing": "1.0.0-beta0006"
-        }
-      },
       "Sanakan.Game": {
         "type": "Project",
         "dependencies": {
@@ -2104,6 +2078,15 @@
           "Sanakan.DAL": "0.0.1",
           "Sanakan.DiscordBot.Abstractions": "0.0.1",
           "Sanakan.Game": "0.0.1"
+        }
+      },
+      "Sanakan.Tests.Shared": {
+        "type": "Project",
+        "dependencies": {
+          "Discord.Net": "2.4.0",
+          "MSTest.TestAdapter": "2.2.8",
+          "MSTest.TestFramework": "2.2.8",
+          "Moq": "4.16.1"
         }
       },
       "Shinden.NET": {

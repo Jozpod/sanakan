@@ -20,7 +20,7 @@ namespace Sanakan.Web.Tests.Controllers.UserControllerTests
         public async Task Should_Change_Nickname()
         {
             var name = "test";
-            var userSearchResults = new Result<List<UserSearchResult>>
+            var userSearchResults = new ShindenResult<List<UserSearchResult>>
             {
                 Value = new List<UserSearchResult>
                 {

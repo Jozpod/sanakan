@@ -29,7 +29,7 @@ namespace DiscordBot.ServicesTests.ProfileServiceTests
             var databaseUser = new User(1ul, DateTime.UtcNow);
             databaseUser.ShindenId = 1ul;
             var topPosition = 1;
-            var userInfoResult = new Result<UserInfo>
+            var userInfoResult = new ShindenResult<UserInfo>
             {
                 Value = new UserInfo
                 {

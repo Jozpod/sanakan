@@ -168,6 +168,11 @@
           "Discord.Net.Rest": "2.4.0"
         }
       },
+      "HtmlAgilityPack": {
+        "type": "Transitive",
+        "resolved": "1.11.39",
+        "contentHash": "9xk8l+68NaHe3RmfzAOO0A5DcotDO4lAilUnmZpu6h/EpBCfDVrxr7aNClIGK/p3vPiypVzpUCENm72UKfIVjg=="
+      },
       "Humanizer.Core": {
         "type": "Transitive",
         "resolved": "2.11.10",
@@ -2388,6 +2393,20 @@
           "SixLabors.ImageSharp.Drawing": "1.0.0-beta0006"
         }
       },
+      "Sanakan.ShindenApi.Fake": {
+        "type": "Project",
+        "dependencies": {
+          "HtmlAgilityPack": "1.11.39",
+          "Microsoft.EntityFrameworkCore": "5.0.11",
+          "Microsoft.EntityFrameworkCore.Sqlite": "5.0.11",
+          "Microsoft.Extensions.Configuration": "5.0.0",
+          "Microsoft.Extensions.Configuration.FileExtensions": "5.0.0",
+          "Microsoft.Extensions.Configuration.Json": "5.0.0",
+          "Microsoft.Extensions.DependencyInjection": "5.0.2",
+          "Microsoft.Extensions.Logging.Console": "5.0.0",
+          "Shinden.NET": "0.0.1"
+        }
+      },
       "Sanakan.TaskQueue": {
         "type": "Project",
         "dependencies": {
@@ -2425,6 +2444,7 @@
           "Sanakan.DiscordBot": "0.0.1",
           "Sanakan.DiscordBot.Supervisor": "0.0.1",
           "Sanakan.Game": "0.0.1",
+          "Sanakan.ShindenApi.Fake": "0.0.1",
           "Sanakan.TaskQueue": "0.0.1",
           "Swashbuckle.AspNetCore.SwaggerGen": "6.2.3",
           "Swashbuckle.AspNetCore.SwaggerUI": "6.2.3",

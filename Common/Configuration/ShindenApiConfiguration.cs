@@ -5,6 +5,11 @@ namespace Sanakan.Common.Configuration
     public class ShindenApiConfiguration
     {
         /// <summary>
+        /// The option which specifies whether to use fake in-memory API.
+        /// </summary>
+        public bool UseFake { get; set; }
+
+        /// <summary>
         /// The Shinden API base url.
         /// </summary>
         public Uri BaseUrl { get; set; } = null;

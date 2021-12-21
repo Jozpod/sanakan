@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace Sanakan.Game.Tests.IntegrationTests.ImageProcessorTests
 {
     /// <summary>
-    /// Defines tests for <see cref="IImageProcessor.GetSiteStatisticAsync(UserInfo, Discord.Color, List{LastWatchedRead}?, List{LastWatchedRead}?)"/> method.
+    /// Defines integration tests for <see cref="IImageProcessor.GetSiteStatisticAsync(UserInfo, Discord.Color, List{LastWatchedRead}?, List{LastWatchedRead}?)"/> method.
     /// </summary>
 #if DEBUG
     [TestClass]

@@ -68,7 +68,7 @@ namespace Sanakan.DiscordBot.Integration.Tests
         public async Task TC405_Should_Add_To_WishList()
         {
             var objectId = 1ul;
-            var characterInfoResult = new Result<CharacterInfo>
+            var characterInfoResult = new ShindenResult<CharacterInfo>
             {
                 Value = new CharacterInfo
                 {
@@ -106,14 +106,14 @@ namespace Sanakan.DiscordBot.Integration.Tests
         public async Task TC407_Should_Get_Free_Card()
         {
             var characterId = 1488ul;
-            var charactersResult = new Result<IEnumerable<ulong>>
+            var charactersResult = new ShindenResult<IEnumerable<ulong>>
             {
                 Value = new List<ulong>
                 {
                     characterId,
                 }
             };
-            var characterResult = new Result<CharacterInfo>
+            var characterResult = new ShindenResult<CharacterInfo>
             {
                 Value = new CharacterInfo
                 {
@@ -149,7 +149,7 @@ namespace Sanakan.DiscordBot.Integration.Tests
         [TestMethod]
         public async Task TC408_Should_Update_Card()
         {
-            var characterResult = new Result<CharacterInfo>
+            var characterResult = new ShindenResult<CharacterInfo>
             {
                 Value = new CharacterInfo
                 {
@@ -180,14 +180,14 @@ namespace Sanakan.DiscordBot.Integration.Tests
         public async Task TC409_Should_Open_Card_Bundle()
         {
             var characterId = 1ul;
-            var charactersResult = new Result<IEnumerable<ulong>>
+            var charactersResult = new ShindenResult<IEnumerable<ulong>>
             {
                 Value = new List<ulong>
                 {
                     characterId
                 }
             };
-            var characterInfoResult = new Sanakan.ShindenApi.Result<CharacterInfo>
+            var characterInfoResult = new Sanakan.ShindenApi.ShindenResult<CharacterInfo>
             {
                 Value = new CharacterInfo
                 {
@@ -217,7 +217,7 @@ namespace Sanakan.DiscordBot.Integration.Tests
         public async Task TC410_Should_Use_Item()
         {
             var characterId = 2ul;
-            var characterInfo = new Result<CharacterInfo>();
+            var characterInfo = new ShindenResult<CharacterInfo>();
 
             _shindenClientMock
                 .Setup(pr => pr.GetCharacterInfoAsync(characterId))

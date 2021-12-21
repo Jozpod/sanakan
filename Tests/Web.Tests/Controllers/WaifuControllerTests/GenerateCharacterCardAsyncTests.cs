@@ -22,7 +22,7 @@ namespace Sanakan.Web.Tests.Controllers.WaifuControllerTests
         public async Task Should_Enqueue_Task_And_Return_Ok()
         {
             var characterId = 1ul;
-            var characterResult = new Result<CharacterInfo>
+            var characterResult = new ShindenResult<CharacterInfo>
             {
                 Value = new CharacterInfo
                 {

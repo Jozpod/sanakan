@@ -15,7 +15,7 @@ namespace Sanakan.DiscordBot.Integration.Tests
         [TestMethod]
         public async Task TC301_Should_Get_Site_Statistics()
         {
-            var userInfo = new ShindenApi.Result<UserInfo>
+            var userInfo = new ShindenApi.ShindenResult<UserInfo>
             {
                 Value = new UserInfo
                 {
@@ -24,7 +24,7 @@ namespace Sanakan.DiscordBot.Integration.Tests
                 }
             };
 
-            var lastWatchResult = new ShindenApi.Result<List<LastWatchedRead>>
+            var lastWatchResult = new ShindenApi.ShindenResult<List<LastWatchedRead>>
             {
                 Value = new List<LastWatchedRead>
                 {
@@ -38,7 +38,7 @@ namespace Sanakan.DiscordBot.Integration.Tests
                 }
             };
 
-            var lastReadResult = new ShindenApi.Result<List<LastWatchedRead>>
+            var lastReadResult = new ShindenApi.ShindenResult<List<LastWatchedRead>>
             {
                 Value = new List<LastWatchedRead>
                 {
@@ -76,7 +76,7 @@ namespace Sanakan.DiscordBot.Integration.Tests
         [TestMethod]
         public async Task TC302_Should_Get_New_Epsiodes()
         {
-            var result = new ShindenApi.Result<List<NewEpisode>>()
+            var result = new ShindenApi.ShindenResult<List<NewEpisode>>()
             {
                 Value = new List<NewEpisode>
                 {
@@ -111,7 +111,7 @@ namespace Sanakan.DiscordBot.Integration.Tests
         {
             var shindenId = 42069ul;
             var shindenUrl = $"https://shinden.pl/user/{shindenId}-test";
-            var userInfoResult = new ShindenApi.Result<UserInfo>
+            var userInfoResult = new ShindenApi.ShindenResult<UserInfo>
             {
                 Value = new UserInfo
                 {

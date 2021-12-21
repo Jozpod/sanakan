@@ -22,7 +22,7 @@ namespace Sanakan.TaskQueue.MessageHandlers
         public override async Task HandleAsync(ToggleCardMessage message)
         {
             var databaseUser = await _userRepository.GetUserOrCreateAsync(message.DiscordUserId);
-            var userCard = databaseUser.GameDeck.Cards.FirstOrDefault(x => x.Id == message.WId);
+            var userCard = databaseUser.GameDeck.Cards.FirstOrDefault(x => x.Id == message.CardId);
             userCard.Active = !userCard.Active;
             await _userRepository.SaveChangesAsync();
 

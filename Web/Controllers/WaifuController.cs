@@ -839,7 +839,7 @@ namespace Sanakan.Web.Controllers
             _blockingPriorityQueue.TryEnqueue(new ToggleCardMessage
             {
                 DiscordUserId = discordId.Value,
-                WId = wid,
+                CardId = wid,
             });
 
             return ShindenOk("Card status toggled");

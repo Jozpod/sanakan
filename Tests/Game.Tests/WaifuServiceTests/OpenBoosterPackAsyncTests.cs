@@ -60,7 +60,7 @@ namespace Sanakan.Game.Tests.WaifuServiceTests
                 TitleId = 1ul,
                 CardCount = 10,
             };
-            var charactersResult = new Result<TitleCharacters>
+            var charactersResult = new ShindenResult<TitleCharacters>
             {
                 Value = new TitleCharacters
                 {
@@ -77,7 +77,7 @@ namespace Sanakan.Game.Tests.WaifuServiceTests
                     }
                 }
             };
-            var characterInfoResult = new Result<CharacterInfo>
+            var characterInfoResult = new ShindenResult<CharacterInfo>
             {
                 Value = new CharacterInfo
                 {
@@ -122,7 +122,7 @@ namespace Sanakan.Game.Tests.WaifuServiceTests
                 },
                 CardCount = 10,
             };
-            var characterInfoResult = new Result<CharacterInfo>
+            var characterInfoResult = new ShindenResult<CharacterInfo>
             {
                 Value = new CharacterInfo
                 {
@@ -158,11 +158,11 @@ namespace Sanakan.Game.Tests.WaifuServiceTests
             {
                 CardCount = 10,
             };
-            var charactersResult = new Result<List<ulong>>
+            var charactersResult = new ShindenResult<List<ulong>>
             {
                 Value = new List<ulong> { 1, 2, 3 }
             };
-            var charactersFromAnimeResult = new Result<IEnumerable<ulong>>
+            var charactersFromAnimeResult = new ShindenResult<IEnumerable<ulong>>
             {
                 Value = new[]
                 {
@@ -171,7 +171,7 @@ namespace Sanakan.Game.Tests.WaifuServiceTests
                     3ul
                 }
             };
-            var characterInfoResult = new Result<CharacterInfo>
+            var characterInfoResult = new ShindenResult<CharacterInfo>
             {
                 Value = new CharacterInfo
                 {

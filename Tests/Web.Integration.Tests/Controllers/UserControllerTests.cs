@@ -38,7 +38,7 @@ namespace Sanakan.Web.Integration.Tests
         public async Task Should_Find_Shinden_User()
         {
             var username = "username";
-            var userSearchResults = new Result<List<UserSearchResult>>
+            var userSearchResults = new ShindenResult<List<UserSearchResult>>
             {
                 Value = new List<UserSearchResult>
                 {
@@ -76,7 +76,7 @@ namespace Sanakan.Web.Integration.Tests
                 ForumUserId = userId,
             };
 
-            var searchResult = new ShindenApi.Result<List<UserSearchResult>>
+            var searchResult = new ShindenApi.ShindenResult<List<UserSearchResult>>
             {
                 Value = new List<UserSearchResult>
                 {
@@ -87,7 +87,7 @@ namespace Sanakan.Web.Integration.Tests
                 }
             };
 
-            var userResult = new ShindenApi.Result<UserInfo>
+            var userResult = new ShindenApi.ShindenResult<UserInfo>
             {
                 Value = new UserInfo
                 {

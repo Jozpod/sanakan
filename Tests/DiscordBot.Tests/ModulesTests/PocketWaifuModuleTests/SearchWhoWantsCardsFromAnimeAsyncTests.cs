@@ -25,7 +25,7 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
             var animeId = 1ul;
             var user = new User(1ul, DateTime.UtcNow);
             user.GameDeck.Id = user.Id;
-            var animeMangaInfoResult = new Result<AnimeMangaInfo>
+            var animeMangaInfoResult = new ShindenResult<AnimeMangaInfo>
             {
                 Value = new AnimeMangaInfo
                 {

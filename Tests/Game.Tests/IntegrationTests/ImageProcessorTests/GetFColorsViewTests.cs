@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace Sanakan.Game.Tests.IntegrationTests.ImageProcessorTests
 {
     /// <summary>
-    /// Defines tests for <see cref="IImageProcessor.GetFColorsView(System.Collections.Generic.IEnumerable{(string, uint)})"/> method.
+    /// Defines integration tests for <see cref="IImageProcessor.GetFColorsView(System.Collections.Generic.IEnumerable{(string, uint)})"/> method.
     /// </summary>
 #if DEBUG
     [TestClass]

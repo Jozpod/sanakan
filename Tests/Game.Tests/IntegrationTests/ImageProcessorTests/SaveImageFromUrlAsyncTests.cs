@@ -5,7 +5,7 @@ using Sanakan.Game.Services.Abstractions;
 namespace Sanakan.Game.Tests.IntegrationTests.ImageProcessorTests
 {
     /// <summary>
-    /// Defines tests for <see cref="IImageProcessor.SaveImageFromUrlAsync(string, string)"/> method.
+    /// Defines integration tests for <see cref="IImageProcessor.SaveImageFromUrlAsync(string, string)"/> method.
     /// </summary>
 #if DEBUG
     [TestClass]

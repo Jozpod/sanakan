@@ -24,14 +24,14 @@ namespace Sanakan.Game.Tests.WaifuServiceTests
         {
             var utcNow = DateTime.UtcNow;
             var characterId = 1ul;
-            var characterResult = new Result<IEnumerable<ulong>>
+            var characterResult = new ShindenResult<IEnumerable<ulong>>
             {
                 Value = new List<ulong>
                 {
                     characterId
                 }
             };
-            var characterInfoResult = new Result<CharacterInfo>
+            var characterInfoResult = new ShindenResult<CharacterInfo>
             {
                 Value = new CharacterInfo
                 {

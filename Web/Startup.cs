@@ -23,6 +23,7 @@ using Sanakan.DiscordBot.Session.Builder;
 using Sanakan.DiscordBot.Supervisor;
 using Sanakan.Game.Builder;
 using Sanakan.ShindenApi.Builder;
+using Sanakan.ShindenApi.Fake.Builder;
 using Sanakan.TaskQueue.Builder;
 using Sanakan.Web.Resources;
 using Sanakan.Web.Swagger;
@@ -58,6 +59,10 @@ namespace Sanakan.Web
             var localeConfiguration = Configuration
                 .GetSection("Locale")
                 .Get<LocaleConfiguration>();
+
+            var shindenApiConfiguration = Configuration
+             .GetSection("ShindenApi")
+             .Get<ShindenApiConfiguration>();
 
             CultureInfo.DefaultThreadCurrentCulture = localeConfiguration.Language;
             CultureInfo.DefaultThreadCurrentUICulture = localeConfiguration.Language;
@@ -143,6 +148,7 @@ namespace Sanakan.Web
                 options.CustomSchemaIds(x => x.FullName);
             });
 
+            services.AddScoped<DatabaseSeeder>();
             services.AddHttpContextAccessor();
             services.AddJwtBuilder();
             services.AddRequestBodyReader();
@@ -163,7 +169,16 @@ namespace Sanakan.Web
             services.AddRepositories();
             services.AddDatabaseFacade();
             services.AddTaskQueue();
-            services.AddShindenApi();
+
+            if (shindenApiConfiguration.UseFake)
+            {
+                services.AddFakeShindenApi();
+            }
+            else
+            {
+                services.AddShindenApi();
+            }
+            
             services.AddGameServices();
             services.AddTimer();
             services.AddSupervisorServices();

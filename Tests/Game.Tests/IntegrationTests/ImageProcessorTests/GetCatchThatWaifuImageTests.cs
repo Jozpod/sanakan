@@ -7,7 +7,7 @@ using SixLabors.ImageSharp.PixelFormats;
 namespace Sanakan.Game.Tests.IntegrationTests.ImageProcessorTests
 {
     /// <summary>
-    /// Defines tests for <see cref="IImageProcessor.GetCatchThatWaifuImage(Image{Rgba32}, string, int, int)"/> method.
+    /// Defines integration tests for <see cref="IImageProcessor.GetCatchThatWaifuImage(Image{Rgba32}, string, int, int)"/> method.
     /// </summary>
 #if DEBUG
     [TestClass]

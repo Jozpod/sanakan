@@ -59,7 +59,7 @@ namespace Sanakan.DiscordBot.Session
             {
                 TitleId = 1,
             };
-            var animeMangaInfoResult = new Result<AnimeMangaInfo>
+            var animeMangaInfoResult = new ShindenResult<AnimeMangaInfo>
             {
                 Value = new AnimeMangaInfo
                 {
@@ -120,7 +120,7 @@ namespace Sanakan.DiscordBot.Session
             {
                 Id = 1,
             };
-            var animeMangaInfoResult = new Result<CharacterInfo>
+            var animeMangaInfoResult = new ShindenResult<CharacterInfo>
             {
                 Value = new CharacterInfo
                 {

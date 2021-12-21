@@ -19,7 +19,6 @@ namespace Sanakan.Game.Tests.ImageProcessorTests
     [TestClass]
     public class GetWaifuInProfileCardAsyncTests : Base
     {
-
         public static IEnumerable<object?[]> EnumerateAllCardTypes
         {
             get

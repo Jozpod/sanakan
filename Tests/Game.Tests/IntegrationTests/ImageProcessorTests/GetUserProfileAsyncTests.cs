@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace Sanakan.Game.Tests.IntegrationTests.ImageProcessorTests
 {
     /// <summary>
-    /// Defines tests for <see cref="IImageProcessor.GetUserProfileAsync(UserInfo?, User, string, long, string, Discord.Color)"/> method.
+    /// Defines integration tests for <see cref="IImageProcessor.GetUserProfileAsync(UserInfo?, User, string, long, string, Discord.Color)"/> method.
     /// </summary>
 #if DEBUG
     [TestClass]

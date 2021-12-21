@@ -5,15 +5,19 @@ using Sanakan.DAL.Models;
 using Sanakan.Game.Services.Abstractions;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Collections.Generic;
+using Moq.Protected;
+using System.Net.Http;
+using Moq;
+using System.Threading;
+using System.Net;
 
 namespace Sanakan.Game.Tests.ImageProcessorTests
 {
     /// <summary>
-    /// Defines tests for <see cref="IImageProcessor.GetFColorsView(System.Collections.Generic.IEnumerable{(string, uint)})"/> method.
+    /// Defines tests for <see cref="IImageProcessor.GetFColorsView(IEnumerable{(string, uint)})"/> method.
     /// </summary>
-#if DEBUG
     [TestClass]
-#endif
     public class GetFColorsViewTests : Base
     {
         [TestMethod]
@@ -26,7 +30,6 @@ namespace Sanakan.Game.Tests.ImageProcessorTests
 
             using var image = _imageProcessor.GetFColorsView(coloursSummary);
             image.Should().NotBeNull();
-            //await ShouldBeEqual("TestData/expected-f-colors.png", image);
         }
     }
 }

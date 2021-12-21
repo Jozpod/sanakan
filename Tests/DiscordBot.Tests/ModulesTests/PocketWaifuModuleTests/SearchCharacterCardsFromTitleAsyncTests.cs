@@ -28,7 +28,7 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
             var user = new User(1ul, utcNow);
             user.TcCount = 2000;
             var card = new Card(1ul, "title", "name", 100, 50, Rarity.A, Dere.Bodere, utcNow);
-            var charactersResult = new Result<TitleCharacters>
+            var charactersResult = new ShindenResult<TitleCharacters>
             {
                 Value = new TitleCharacters
                 {
