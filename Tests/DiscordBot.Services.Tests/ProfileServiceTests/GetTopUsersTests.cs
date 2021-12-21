@@ -37,7 +37,7 @@ namespace DiscordBot.ServicesTests.ProfileServiceTests
         [DataRow(TopType.PvpSeason)]
         [DataRow(TopType.PostsMonthly)]
         [DataRow(TopType.PostsMonthlyCharacter)]
-        public async Task Should_Return_Ordered_Users(TopType topType)
+        public void Should_Return_Ordered_Users(TopType topType)
         {
             var utcNow = DateTime.UtcNow;
             var users = Enumerable.Range(0, 5)
