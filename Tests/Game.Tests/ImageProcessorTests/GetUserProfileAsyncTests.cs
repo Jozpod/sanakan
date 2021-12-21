@@ -37,7 +37,7 @@ namespace Sanakan.Game.Tests.ImageProcessorTests
             }
         }
 
-        [DynamicData("EnumerateAllProfileTypes")]
+        [DynamicData(nameof(EnumerateAllProfileTypes))]
         [DataTestMethod]
         public async Task Should_Return_User_Profile_Image(ProfileType profileType, bool showWaifuInProfile)
         {

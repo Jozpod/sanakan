@@ -55,7 +55,7 @@ namespace Sanakan.Game.Services.Abstractions
 
         string GetDeathLog(FightHistory fight, IEnumerable<PlayerInfo> players);
 
-        Embed GetShopView(ItemWithCost[] items, string name = "Sklepik", string currency = "TC");
+        Embed GetShopView(IEnumerable<ItemWithCost> items, string name = "Sklepik", string currency = "TC");
 
         Task<IEnumerable<Embed>> GetWaifuFromCharacterSearchResult(
             string title,

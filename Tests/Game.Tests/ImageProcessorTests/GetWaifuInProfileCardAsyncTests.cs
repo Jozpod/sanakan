@@ -37,7 +37,7 @@ namespace Sanakan.Game.Tests.ImageProcessorTests
             }
         }
 
-        [DynamicData("EnumerateAllCardTypes")]
+        [DynamicData(nameof(EnumerateAllCardTypes))]
         [DataTestMethod]
         public async Task Should_Generate_Waifu_In_Profile(Quality quality, bool fromFigure, Uri? customBorderUrl)
         {

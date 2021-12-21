@@ -251,7 +251,7 @@ namespace Sanakan.DAL.Models
         public bool IsPVPSeasonalRankActive(DateTime date)
             => GameDeck.IsPVPSeasonalRankActive(date);
 
-        public bool SendAnyMsgInMonth()
+        public bool HasSentAnyMessagesInMonth()
             => (MessagesCount - MessagesCountAtDate) > 0;
 
         public ulong GetRemainingExp(ulong nextLevelExperience)

@@ -11,45 +11,45 @@ namespace Sanakan.Game
     {
         public static ItemWithCost[] ItemsWithCost = new[]
         {
-            new ItemWithCost(3,     ItemType.AffectionRecoverySmall.ToItem()),
-            new ItemWithCost(14,    ItemType.AffectionRecoveryNormal.ToItem()),
-            new ItemWithCost(109,   ItemType.AffectionRecoveryBig.ToItem()),
-            new ItemWithCost(29,    ItemType.DereReRoll.ToItem()),
-            new ItemWithCost(79,    ItemType.CardParamsReRoll.ToItem()),
-            new ItemWithCost(1099,  ItemType.IncreaseUpgradeCount.ToItem()),
-            new ItemWithCost(69,    ItemType.ChangeCardImage.ToItem()),
-            new ItemWithCost(999,   ItemType.SetCustomImage.ToItem()),
-            new ItemWithCost(659,   ItemType.SetCustomBorder.ToItem()),
-            new ItemWithCost(149,   ItemType.ChangeStarType.ToItem()),
-            new ItemWithCost(99,    ItemType.RandomBoosterPackSingleE.ToItem()),
-            new ItemWithCost(999,   ItemType.BigRandomBoosterPackE.ToItem()),
-            new ItemWithCost(1199,  ItemType.RandomTitleBoosterPackSingleE.ToItem()),
-            new ItemWithCost(199,   ItemType.RandomNormalBoosterPackB.ToItem()),
-            new ItemWithCost(499,   ItemType.RandomNormalBoosterPackA.ToItem()),
-            new ItemWithCost(899,   ItemType.RandomNormalBoosterPackS.ToItem()),
-            new ItemWithCost(1299,  ItemType.RandomNormalBoosterPackSS.ToItem()),
-            new ItemWithCost(569,   ItemType.ResetCardValue.ToItem()),
+            new ItemWithCost(1, 3,     ItemType.AffectionRecoverySmall.ToItem()),
+            new ItemWithCost(2, 14,    ItemType.AffectionRecoveryNormal.ToItem()),
+            new ItemWithCost(3, 109,   ItemType.AffectionRecoveryBig.ToItem()),
+            new ItemWithCost(4, 29,    ItemType.DereReRoll.ToItem()),
+            new ItemWithCost(5, 79,    ItemType.CardParamsReRoll.ToItem()),
+            new ItemWithCost(6, 1099,  ItemType.IncreaseUpgradeCount.ToItem()),
+            new ItemWithCost(7, 69,    ItemType.ChangeCardImage.ToItem()),
+            new ItemWithCost(8, 999,   ItemType.SetCustomImage.ToItem()),
+            new ItemWithCost(9, 659,   ItemType.SetCustomBorder.ToItem()),
+            new ItemWithCost(10, 149,   ItemType.ChangeStarType.ToItem()),
+            new ItemWithCost(11, 99,    ItemType.RandomBoosterPackSingleE.ToItem()),
+            new ItemWithCost(12, 999,   ItemType.BigRandomBoosterPackE.ToItem()),
+            new ItemWithCost(13, 1199,  ItemType.RandomTitleBoosterPackSingleE.ToItem()),
+            new ItemWithCost(14, 199,   ItemType.RandomNormalBoosterPackB.ToItem()),
+            new ItemWithCost(15, 499,   ItemType.RandomNormalBoosterPackA.ToItem()),
+            new ItemWithCost(16, 899,   ItemType.RandomNormalBoosterPackS.ToItem()),
+            new ItemWithCost(17, 1299,  ItemType.RandomNormalBoosterPackSS.ToItem()),
+            new ItemWithCost(18, 569,   ItemType.ResetCardValue.ToItem()),
         };
 
         public static ItemWithCost[] ItemsWithCostForPVP = new []
         {
-            new ItemWithCost(169,    ItemType.AffectionRecoveryNormal.ToItem()),
-            new ItemWithCost(1699,   ItemType.IncreaseExpBig.ToItem()),
-            new ItemWithCost(1699,   ItemType.CheckAffection.ToItem()),
-            new ItemWithCost(16999,  ItemType.IncreaseUpgradeCount.ToItem()),
-            new ItemWithCost(46999,  ItemType.BetterIncreaseUpgradeCnt.ToItem()),
-            new ItemWithCost(4699,   ItemType.ChangeCardImage.ToItem()),
-            new ItemWithCost(269999, ItemType.SetCustomImage.ToItem()),
+            new ItemWithCost(1, 169,    ItemType.AffectionRecoveryNormal.ToItem()),
+            new ItemWithCost(2, 1699,   ItemType.IncreaseExpBig.ToItem()),
+            new ItemWithCost(3, 1699,   ItemType.CheckAffection.ToItem()),
+            new ItemWithCost(4, 16999,  ItemType.IncreaseUpgradeCount.ToItem()),
+            new ItemWithCost(5, 46999,  ItemType.BetterIncreaseUpgradeCnt.ToItem()),
+            new ItemWithCost(6, 4699,   ItemType.ChangeCardImage.ToItem()),
+            new ItemWithCost(7, 269999, ItemType.SetCustomImage.ToItem()),
         };
 
         public static ItemWithCost[] ItemsWithCostForActivityShop = new[]
         {
-            new ItemWithCost(6,     ItemType.AffectionRecoveryBig.ToItem()),
-            new ItemWithCost(65,    ItemType.IncreaseExpBig.ToItem()),
-            new ItemWithCost(500,   ItemType.IncreaseUpgradeCount.ToItem()),
-            new ItemWithCost(1800,  ItemType.SetCustomImage.ToItem()),
-            new ItemWithCost(150,   ItemType.RandomBoosterPackSingleE.ToItem()),
-            new ItemWithCost(1500,  ItemType.BigRandomBoosterPackE.ToItem()),
+            new ItemWithCost(1, 6,     ItemType.AffectionRecoveryBig.ToItem()),
+            new ItemWithCost(2, 65,    ItemType.IncreaseExpBig.ToItem()),
+            new ItemWithCost(3, 500,   ItemType.IncreaseUpgradeCount.ToItem()),
+            new ItemWithCost(4, 1800,  ItemType.SetCustomImage.ToItem()),
+            new ItemWithCost(5, 150,   ItemType.RandomBoosterPackSingleE.ToItem()),
+            new ItemWithCost(6, 1500,  ItemType.BigRandomBoosterPackE.ToItem()),
         };
 
         /// <summary>

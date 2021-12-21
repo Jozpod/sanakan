@@ -1,6 +1,7 @@
 ﻿using Sanakan.DAL.Models;
 using Sanakan.Game;
 using Sanakan.Game.Models;
+using System.Collections.Generic;
 
 namespace Sanakan.Game.Models
 {
@@ -29,7 +30,7 @@ namespace Sanakan.Game.Models
             }
         }
 
-        public static ItemWithCost[] GetItemsWithCostForShop(this ShopType shopType)
+        public static IList<ItemWithCost> GetItemsWithCostForShop(this ShopType shopType)
         {
             switch (shopType)
             {

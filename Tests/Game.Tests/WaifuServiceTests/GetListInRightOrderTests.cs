@@ -15,7 +15,17 @@ namespace Sanakan.Game.Tests.WaifuServiceTests
     public class GetListInRightOrderTests : Base
     {
         [TestMethod]
-        public void Should_Return_Embed()
+        [DataRow(HaremType.Attack)]
+        [DataRow(HaremType.Blocked)]
+        [DataRow(HaremType.Cage)]
+        [DataRow(HaremType.CustomPicture)]
+        [DataRow(HaremType.Defence)]
+        [DataRow(HaremType.Broken)]
+        [DataRow(HaremType.Health)]
+        [DataRow(HaremType.NoPicture)]
+        [DataRow(HaremType.NoTag)]
+        [DataRow(HaremType.Blocked)]
+        public void Should_Return_Embed(HaremType haremType)
         {
             var card1 = new Card(1, "test 1", "test 1", 100, 50, Rarity.SSS, Dere.Bodere, DateTime.Now);
             var card2 = new Card(1, "test 2", "test 2", 100, 50, Rarity.SSS, Dere.Bodere, DateTime.Now);
@@ -24,7 +34,6 @@ namespace Sanakan.Game.Tests.WaifuServiceTests
                 card1,
                 card2,
             };
-            var haremType = HaremType.Affection;
             var tag = "test";
 
             var orderedCards = _waifuService.GetListInRightOrder(cards, haremType, tag);

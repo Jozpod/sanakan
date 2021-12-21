@@ -3170,11 +3170,12 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks("1"), RequireWaifuCommandChannel]
         public async Task ChangeDeckCardStatusAsync([Summary("WID(opcjonalne)")] ulong wid = 0)
         {
-            var userId = Context.User.Id;
+            var user = Context.User;
+            var userId = user.Id;
             var databaseUser = await _userRepository.GetCachedFullUserAsync(userId);
             var gameDeck = databaseUser.GameDeck;
             var activeCards = gameDeck.Cards.Where(x => x.Active).ToList();
-            var mention = Context.User.Mention;
+            var mention = user.Mention;
 
             if (wid == 0)
             {
@@ -3186,7 +3187,7 @@ namespace Sanakan.DiscordBot.Modules
 
                 try
                 {
-                    var dm = await Context.User.GetOrCreateDMChannelAsync();
+                    var dm = await user.GetOrCreateDMChannelAsync();
                     await dm.SendMessageAsync(embed: _waifuService.GetActiveList(activeCards));
                     await dm.CloseAsync();
 

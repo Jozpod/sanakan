@@ -2,15 +2,5 @@ using Sanakan.DAL.Models;
 
 namespace Sanakan.Game.Models
 {
-    public class ItemWithCost
-    {
-        public ItemWithCost(int cost, Item item)
-        {
-            Cost = cost;
-            Item = item;
-        }
-
-        public Item Item { get; set; }
-        public int Cost { get; set; }
-    }
+    public record ItemWithCost(int Index, int Cost, Item Item);
 }

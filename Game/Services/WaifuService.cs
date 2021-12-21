@@ -286,7 +286,7 @@ namespace Sanakan.Game.Services
                 return GetShopView(itemsToBuy, shopType.GetShopName(), shopType.GetShopCurrencyName());
             }
 
-            if (selectedItem > itemsToBuy.Length)
+            if (selectedItem > itemsToBuy.Count)
             {
                 return $"{mention} nie odnaleznino takiego przedmiotu do zakupu.".ToEmbedMessage(EMType.Error).Build();
             }
@@ -1232,16 +1232,19 @@ namespace Sanakan.Game.Services
             }.Build();
         }
 
-        public Embed GetShopView(ItemWithCost[] items, string name = "Sklepik", string currency = "TC")
+        public Embed GetShopView(IEnumerable<ItemWithCost> items, string name = "Sklepik", string currency = "TC")
         {
-            string embedString = "";
-            for (int i = 0; i < items.Length; i++)
-                embedString += $"**[{i + 1}]** _{items[i].Item.Name}_ - {items[i].Cost} {currency}\n";
+            var embedString = new StringBuilder($"**{name}**:\n\n");
+
+            foreach (var item in items)
+            {
+                embedString.AppendFormat("**[{0}]** _{1}_ - {2} {3}\n", item.Index, item.Item.Name, item.Cost, currency);
+            }
 
             return new EmbedBuilder
             {
                 Color = EMType.Info.Color(),
-                Description = $"**{name}**:\n\n{embedString}".ElipseTrimToLength(2000)
+                Description = embedString.ToString().ElipseTrimToLength(2000)
             }.Build();
         }
 

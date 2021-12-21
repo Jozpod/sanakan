@@ -168,7 +168,8 @@ namespace Sanakan.DiscordBot.Services
                         .OrderByDescending(x => x.MessagesCount - x.MessagesCountAtDate).ToList();
 
                 case TopType.PostsMonthlyCharacter:
-                    return list.Where(x => x.IsCharCounterActive(date) && x.SendAnyMsgInMonth())
+                    return list
+                        .Where(x => x.IsCharCounterActive(date) && x.HasSentAnyMessagesInMonth())
                         .OrderByDescending(x => x.CharacterCountFromDate / (x.MessagesCount - x.MessagesCountAtDate)).ToList();
 
                 case TopType.Commands:
