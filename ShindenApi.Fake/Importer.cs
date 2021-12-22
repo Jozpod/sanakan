@@ -28,7 +28,7 @@ namespace Sanakan.ShindenApi.Fake
             _shindenWebScraper = shindenWebScraper;
         }
 
-        public async Task Test()
+        public async Task RunAsync()
         {
             await _dbContext.Database.EnsureDeletedAsync();
             await _dbContext.Database.EnsureCreatedAsync();
@@ -46,14 +46,11 @@ namespace Sanakan.ShindenApi.Fake
                 await _dbContext.SaveChangesAsync();
             }
 
-            var pagesLeft = 10;
+            var pagesLeft = 5;
 
             while(pagesLeft > 0)
             {
                 var animeDetails = await _shindenWebScraper.GetAnimeDetailsAsync(scrapeStats.Page);
-
-                //var serieNodes = seriesDocument
-                //    .SelectNodes("/html/body/div[2]/div/section[2]/section/article/ul");
 
                 var illustrations = new List<Illustration>();
 
@@ -62,7 +59,7 @@ namespace Sanakan.ShindenApi.Fake
 
                     if (await _dbContext.Illustrations.AnyAsync(pr => pr.Id == animeDetail.Id))
                     {
-                        _logger.LogInformation($"Skipping {animeDetail.Name}");
+                        _logger.LogWarning($"Skipping {animeDetail.Name}");
                         continue;
                     }
 
@@ -70,42 +67,40 @@ namespace Sanakan.ShindenApi.Fake
                     {
                         Id = animeDetail.Id,
                         Name = animeDetail.Name,
-                        Type = IllustrationType.Unknown
+                        Type = IllustrationType.Anime
                     };
 
                     _dbContext.Illustrations.Add(illustration);
                     await _dbContext.SaveChangesAsync();
 
-                    //var serieDocument = await _shindenWebScraper.GetAnimeDetailAsync(animeDetail.Id);
-                    //var characterNodes = serieDocument
-                    //    .SelectNodes("/html/body/div[2]/div/article/div/section[4]/section/div");
+                    var details = await _shindenWebScraper.GetAnimeDetailAsync(animeDetail.Id);
 
-                    //var titleNode = serieDocument.SelectSingleNode("//h1[contains(@class, 'page-title')]");
-                    //var illustrationType = titleNode.InnerText.Split(":")[0];
-                    //illustration.Type = ParseType(illustrationType);
-                    //await _dbContext.SaveChangesAsync();
+                    if(details == null)
+                    {
+                        _logger.LogError($"Could not retrieve information for: {animeDetail.Name}");
+                        continue;
+                    }
 
-                    //foreach (var characterNode in characterNodes)
-                    //{
+                    foreach (var character in details.Characters)
+                    {
+                        var characterEntity = await _dbContext.Characters.FindAsync(character.Id);
 
-                    //    var character = await _dbContext.Characters.FindAsync(characterId);
+                        if (characterEntity == null)
+                        {
+                            characterEntity = new Character
+                            {
+                                Id = character.Id,
+                                ImageId = character.ImageId,
+                                Name = character.Name,
+                            };
 
-                    //    if(character == null)
-                    //    {
-                    //        character = new Character
-                    //        {
-                    //            Id = characterId,
-                    //            ImageId = imageId,
-                    //            Name = characterName,
-                    //        };
+                            _dbContext.Characters.Add(characterEntity);
+                        }
 
-                    //        _dbContext.Characters.Add(character);
-                    //    }
+                        illustration.Characters.Add(characterEntity);
+                    }
 
-                    //    illustration.Characters.Add(character);
-                    //}
-
-                    //await _dbContext.SaveChangesAsync();
+                    await _dbContext.SaveChangesAsync();
                 }
 
                 scrapeStats.Page++;

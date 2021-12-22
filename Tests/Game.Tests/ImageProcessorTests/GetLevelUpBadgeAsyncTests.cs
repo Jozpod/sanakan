@@ -19,12 +19,8 @@ namespace Sanakan.Game.Tests
             var avatarUrl = "https://test.com/avatar-url";
             var color = Discord.Color.Blue;
 
-            //MockHttpGetImage("TestData/card-image.png");
-
             var badgeImage = await _imageProcessor.GetLevelUpBadgeAsync(name, level, avatarUrl, color);
             badgeImage.Should().NotBeNull();
-
-            //await ShouldBeEqual("TestData/expected-badge.png", badgeImage);
         }
     }
 }

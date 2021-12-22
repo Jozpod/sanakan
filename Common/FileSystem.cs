@@ -6,6 +6,13 @@ namespace Sanakan.Common
 {
     internal class FileSystem : IFileSystem
     {
+        private readonly string _baseDirectory;
+
+        public FileSystem()
+        {
+            _baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+        }
+
         public Stream Create(string path) => File.Create(path);
 
         public DirectoryInfo CreateDirectory(string path) => Directory.CreateDirectory(path);

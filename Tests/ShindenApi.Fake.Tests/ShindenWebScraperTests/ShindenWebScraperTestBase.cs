@@ -17,6 +17,7 @@ namespace Sanakan.ShindenApi.Fake.Tests
     {
         private readonly HttpClient _httpClient;
         protected readonly Mock<HttpClientHandler> _httpClientHandlerMock = new(MockBehavior.Strict);
+        protected readonly Mock<IHttpClientFactory> _httpClientFactoryMock = new(MockBehavior.Strict);
 
         public ShindenWebScraper _shindenWebScraper { get; set; }
 
@@ -42,9 +43,13 @@ namespace Sanakan.ShindenApi.Fake.Tests
             _httpClient = new HttpClient(_httpClientHandlerMock.Object);
             _httpClient.BaseAddress = new Uri("https://test.com");
 
+            _httpClientFactoryMock
+                .Setup(pr => pr.CreateClient(nameof(ShindenWebScraper)))
+                .Returns(_httpClient);
+
             _shindenWebScraper = new ShindenWebScraper(
                 NullLogger<ShindenWebScraper>.Instance,
-                _httpClient);
+                _httpClientFactoryMock.Object);
         }
     }
 }

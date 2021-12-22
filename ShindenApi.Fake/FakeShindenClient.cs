@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Sanakan.ShindenApi.Models;
 using Sanakan.ShindenApi.Models.Enums;
 using Shinden.API;
@@ -14,17 +15,25 @@ namespace Sanakan.ShindenApi.Fake
     /// <summary>
     /// Implements simple shinden webscraper and lookup database.
     /// </summary>
-    internal class FakeShindenClient : IShindenClient
+    internal class FakeShindenClient : IShindenClient, IDisposable
     {
+        private readonly IServiceScope _serviceScope;
         private readonly WebScrapedDbContext _dbContext;
         private readonly ShindenWebScraper _shindenWebScraper;
 
         public FakeShindenClient(
-            WebScrapedDbContext dbContext,
+            IServiceScopeFactory serviceScopeFactory,
             ShindenWebScraper shindenWebScraper)
         {
-            _dbContext = dbContext;
+            _serviceScope = serviceScopeFactory.CreateScope();
+            _dbContext = _serviceScope.ServiceProvider.GetRequiredService<WebScrapedDbContext>();
             _shindenWebScraper = shindenWebScraper;
+            
+        }
+
+        public void Dispose()
+        {
+            _serviceScope.Dispose();
         }
 
         public Task<ShindenResult<Modification>> AddToFavouritesAsync(ulong userId, FavouriteType favouriteType, ulong favouriteId)

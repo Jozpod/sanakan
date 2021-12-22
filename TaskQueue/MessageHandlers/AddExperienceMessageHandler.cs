@@ -124,9 +124,9 @@ namespace Sanakan.TaskQueue.MessageHandlers
                 return;
             }
 
-            foreach (var lvlRole in config.RolesPerLevel)
+            foreach (var levelRole in config.RolesPerLevel)
             {
-                var role = guild.GetRole(lvlRole.RoleId);
+                var role = guild.GetRole(levelRole.RoleId);
                 if (role == null)
                 {
                     continue;
@@ -134,10 +134,12 @@ namespace Sanakan.TaskQueue.MessageHandlers
 
                 bool hasRole = roleIds.Any(roleId => roleId == role.Id);
 
-                if (level >= lvlRole.Level)
+                if (level >= levelRole.Level)
                 {
                     if (!hasRole)
+                    {
                         await discordUser.AddRoleAsync(role);
+                    }
                 }
                 else if (hasRole)
                 {

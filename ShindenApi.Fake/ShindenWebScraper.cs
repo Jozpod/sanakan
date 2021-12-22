@@ -17,10 +17,10 @@ namespace Sanakan.ShindenApi.Fake
 
         public ShindenWebScraper(
             ILogger<ShindenWebScraper> logger,
-            HttpClient httpClient)
+            IHttpClientFactory httpClientFactory)
         {
             _logger = logger;
-            _httpClient = httpClient;
+            _httpClient = httpClientFactory.CreateClient(nameof(ShindenWebScraper));
             _httpClient.BaseAddress = new Uri("https://shinden.pl/");
             _httpClient.DefaultRequestHeaders.UserAgent
                 .ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36");
@@ -142,7 +142,7 @@ namespace Sanakan.ShindenApi.Fake
             }
 
             var (type, name) = ParsePageTitle(document);
-            var characterNodes = document.SelectNodes("/html/body/div[2]/div/article/div/section[4]/section/div");
+            var characterNodes = document.SelectNodes("//section[contains(@class, 'ch-st-list')]/div");
             var imageId = GetSideImageId(document);
             var characters = new List<CharacterDetail>();
 
@@ -163,7 +163,7 @@ namespace Sanakan.ShindenApi.Fake
             var document = await _httpClient.GetDocumentAsync(query);
 
             var serieNodes = document
-                .SelectNodes("/html/body/div[2]/div/section[2]/section/article/ul");
+                .SelectNodes("//section[contains(@class, 'title-table')]/article/ul");
 
             var results = new List<BasicMangaDetail>();
 
@@ -186,11 +186,22 @@ namespace Sanakan.ShindenApi.Fake
 
             if (document == null)
             {
-                return null;
+                query = $"/titles/{animeId}";
+                document = await _httpClient.GetDocumentAsync(query);
+
+                if (document == null)
+                {
+                    return null;
+                }
+
+                if (document.InnerText.Contains("Trwa ładowanie"))
+                {
+                    return null;
+                }
             }
 
             var (type, name) = ParsePageTitle(document);
-            var characterNodes = document.SelectNodes("/html/body/div[2]/div/article/div/section[4]/section/div");
+            var characterNodes = document.SelectNodes("//section[contains(@class, 'ch-st-list')]/div");
             var imageId = GetSideImageId(document);
 
             var characters = new List<CharacterDetail>();
@@ -212,7 +223,7 @@ namespace Sanakan.ShindenApi.Fake
             var seriesDocument = await _httpClient.GetDocumentAsync(query);
 
             var serieNodes = seriesDocument
-                .SelectNodes("/html/body/div[2]/div/section[2]/section/article/ul");
+                .SelectNodes("//section[contains(@class, 'title-table')]/article/ul");
 
             var results = new List<BasicAnimeDetail>();
 
@@ -233,6 +244,12 @@ namespace Sanakan.ShindenApi.Fake
         {
             var characterImageNode = htmlNode.SelectSingleNode("//a[@class = 'img']");
             var characterLinkNode = htmlNode.SelectSingleNode("./span[1]/div/h3/a");
+
+            if (characterLinkNode == null)
+            {
+                throw new Exception("Invalid node");
+            }
+
             var imageIdStr = characterImageNode.GetDataAttribute("over-image").Value;
             var characterImageId = ulong.Parse(imageIdStr);
             var characterName = characterLinkNode.InnerText;

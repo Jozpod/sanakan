@@ -7,7 +7,8 @@ namespace Sanakan.Common.Configuration
     public class DatabaseSeedConfiguration
     {
         public bool Enabled { get; set; }
-        public IEnumerable<GuildSeedConfiguration> Guilds { get; set; } = Enumerable.Empty<GuildSeedConfiguration>();
+
+        public List<GuildSeedConfiguration> Guilds { get; set; } = new();
 
         public class GuildSeedConfiguration
         {
@@ -15,13 +16,56 @@ namespace Sanakan.Common.Configuration
 
             public ulong? SafariLimit { get; set; }
 
+            public ulong? LogChannelId { get; set; }
+
+            public ulong? NsfwChannelId { get; set; }
+
+            public ulong? TodoChannelId { get; set; }
+
+            public ulong? ReportChannelId { get; set; }
+
+            public ulong? NotificationChannelId { get; set; }
+
+            public ulong? GreetingChannelId { get; set; }
+
+            public ulong? NonSupChannelId { get; set; }
+
+            public ulong? NonExpChannelId { get; set; }
+
+            public ulong? IgnoredChannelId { get; set; }
+
+            public ulong? TrashCommandsChannelId { get; set; }
+
+            public ulong? CommandChannelId { get; set; }
+
+            public ulong? CommandWaifuChannelId { get; set; }
+
+            public ulong? FightWaifuChannelId { get; set; }
+
+            public ulong? SafariWaifuChannelId { get; set; }
+
+            public ulong? AdminRoleId { get; set; }
+
+            public ulong? WaifuRoleId { get; set; }
+
             public ulong? UserRoleId { get; set; }
 
             public ulong? MuteRoleId { get; set; }
 
-            public ulong? MuteModRoleId { get; set; }
+            public ulong? ModMuteRoleId { get; set; }
 
-            public IEnumerable<UserSeedConfiguration> Users { get; set; } = Enumerable.Empty<UserSeedConfiguration>();
+            public ulong? GlobalEmotesRoleId { get; set; }
+
+            public List<RolesPerLevelSeedConfiguration> RolesPerLevel { get; set; } = new();
+
+            public List<UserSeedConfiguration> Users { get; set; } = new();
+        }
+
+        public class RolesPerLevelSeedConfiguration
+        {
+            public ulong Level { get; set; }
+
+            public ulong RoleId { get; set; }
         }
 
         public class UserSeedConfiguration
@@ -43,6 +87,8 @@ namespace Sanakan.Common.Configuration
             public ulong? AcCount { get; set; }
 
             public ulong? PVPCoins { get; set; }
+
+            public double? Karma { get; set; }
 
             public ProfileType? ProfileType { get; set; }
 

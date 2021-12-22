@@ -220,6 +220,10 @@ namespace Sanakan.Web
                 options.DefaultModelsExpandDepth(-1);
                 options.InjectStylesheet("/swagger-theme.css");
             });
+
+            using var serviceScope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope();
+            var databaseSeeder = serviceScope.ServiceProvider.GetService<DatabaseSeeder>();
+            databaseSeeder.RunAsync().GetAwaiter().GetResult();
         }
     }
 }

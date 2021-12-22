@@ -227,6 +227,11 @@ namespace Sanakan.DiscordBot
             switch (discordResult.Error)
             {
                 case CommandError.UnknownCommand:
+#if DEBUG
+                    embed = "Nie znaleziono polecenia"
+                       .ToEmbedMessage(EMType.Error).Build();
+                    await channel.SendMessageAsync(embed: embed);
+#endif
                     break;
 
                 case CommandError.MultipleMatches:

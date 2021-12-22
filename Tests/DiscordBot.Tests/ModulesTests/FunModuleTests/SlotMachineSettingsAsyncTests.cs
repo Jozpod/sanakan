@@ -3,6 +3,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.DAL.Models;
 using Sanakan.DiscordBot.Modules;
+using Sanakan.Game.Models;
 using System;
 using System.Threading.Tasks;
 
@@ -15,10 +16,26 @@ namespace DiscordBot.ModulesTests.FunModuleTests
     public class SlotMachineSettingsAsyncTests : Base
     {
         [TestMethod]
+        public async Task Should_Message_Containing_Info()
+        {
+            var utcNow = DateTime.UtcNow;
+
+            SetupSendMessage((message, embed) =>
+            {
+                embed.Should().NotBeNull();
+                embed.Description.Should().NotBeNull();
+            });
+
+            await _module.SlotMachineSettingsAsync();
+        }
+
+        [TestMethod]
         public async Task Should_Set_Machine_And_Send_Confirm_Message()
         {
             var utcNow = DateTime.UtcNow;
             var user = new User(1ul, utcNow);
+            var setting = SlotMachineSetting.Beat;
+            var value = "10";
 
             _guildUserMock
                 .Setup(pr => pr.Id)
@@ -31,10 +48,6 @@ namespace DiscordBot.ModulesTests.FunModuleTests
             _userRepositoryMock
                 .Setup(pr => pr.GetUserOrCreateAsync(user.Id))
                 .ReturnsAsync(user);
-
-            _systemClockMock
-                .Setup(pr => pr.UtcNow)
-                .Returns(utcNow);
 
             _userRepositoryMock
                 .Setup(pr => pr.SaveChangesAsync(default))
@@ -49,7 +62,7 @@ namespace DiscordBot.ModulesTests.FunModuleTests
                 embed.Description.Should().NotBeNull();
             });
 
-            await _module.SlotMachineSettingsAsync();
+            await _module.SlotMachineSettingsAsync(setting, value);
         }
     }
 }

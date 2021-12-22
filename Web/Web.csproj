@@ -53,6 +53,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="..\Pictures\**" LinkBase="Pictures">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Update="Resources\Strings.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>

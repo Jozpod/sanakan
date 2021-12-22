@@ -138,7 +138,7 @@ namespace Sanakan.DAL.Models.Configuration
         public string? Prefix { get; set; }
 
         /// <summary>
-        /// 
+        /// The pocket waifu discord configuration.
         /// </summary>
 
         public virtual WaifuConfiguration? WaifuConfig { get; set; }

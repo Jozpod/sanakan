@@ -314,7 +314,9 @@ namespace Sanakan.DiscordBot.Modules
         [Alias("set slot")]
         [Summary("ustawia automat")]
         [Remarks("info"), RequireCommandChannel]
-        public async Task SlotMachineSettingsAsync([Summary("typ nastaw (info - wyświetla informacje)")] SlotMachineSetting setting = SlotMachineSetting.Info, [Summary("wartość nastawy")] string value = "info")
+        public async Task SlotMachineSettingsAsync(
+            [Summary("typ nastaw (info - wyświetla informacje)")] SlotMachineSetting setting = SlotMachineSetting.Info,
+            [Summary("wartość nastawy")] string value = "info")
         {
             var user = Context.User;
 
@@ -427,8 +429,9 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            var invokingUserId = Context.User.Id;
-            var mention = Context.User.Mention;
+            var invokingUser = Context.User;
+            var invokingUserId = invokingUser.Id;
+            var mention = invokingUser.Mention;
 
             if (user.Id == invokingUserId)
             {
@@ -436,7 +439,7 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            if (await _userRepository.ExistsByDiscordIdAsync(user.Id))
+            if (!await _userRepository.ExistsByDiscordIdAsync(user.Id))
             {
                 await ReplyAsync(embed: Strings.UserDoesNotExistInDatabase.ToEmbedMessage(EMType.Error).Build());
                 return;

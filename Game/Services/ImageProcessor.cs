@@ -843,13 +843,16 @@ namespace Sanakan.Game.Services
 
         private async Task<Image<Rgba32>> GetCharacterPictureAsync(string characterUrl, bool ultimate)
         {
-            var characterImg = Image.Load(Paths.PWEmptyPicture);
+            var stream = _fileSystem.OpenRead(Paths.PWEmptyPicture);
+            var characterImg = Image.Load(stream);
+            stream.Close();
+
             if (ultimate)
             {
                 characterImg = new Image<Rgba32>(_options.CurrentValue.CharacterImageWidth, _options.CurrentValue.CharacterImageHeight);
             }
 
-            using var stream = await GetImageFromUrlAsync(characterUrl ?? ShindenApi.Constants.PlaceholderImageUrl, true);
+            stream = await GetImageFromUrlAsync(characterUrl ?? ShindenApi.Constants.PlaceholderImageUrl, true);
 
             if (stream == null)
             {

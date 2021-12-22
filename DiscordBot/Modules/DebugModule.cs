@@ -758,43 +758,50 @@ namespace Sanakan.DiscordBot.Modules
             [Summary("wartość tc")] long value)
         {
             var user = await _userRepository.GetUserOrCreateAsync(discordUserId);
-            var cards = user.GameDeck.Cards.OrderByDescending(x => x.CreatedOn).ToList();
+            var gameDeck = user.GameDeck;
+            var cards = gameDeck.Cards.OrderByDescending(x => x.CreatedOn).ToList();
 
             foreach (var card in cards)
             {
                 value -= 50;
-                user.GameDeck.Cards.Remove(card);
+                gameDeck.Cards.Remove(card);
 
                 if (value <= 0)
+                {
                     break;
+                }
             }
 
             if (value > 0)
             {
                 var kct = value / 50;
-                if (user.GameDeck.Karma > 0)
+                if (gameDeck.Karma > 0)
                 {
-                    user.GameDeck.Karma -= kct;
-                    if (user.GameDeck.Karma < 0)
-                        user.GameDeck.Karma = 0;
+                    gameDeck.Karma -= kct;
+                    if (gameDeck.Karma < 0)
+                    {
+                        gameDeck.Karma = 0;
+                    }
                 }
                 else
                 {
                     user.GameDeck.Karma += kct;
-                    if (user.GameDeck.Karma > 0)
-                        user.GameDeck.Karma = 0;
+                    if (gameDeck.Karma > 0)
+                    {
+                        gameDeck.Karma = 0;
+                    }
                 }
 
-                user.GameDeck.CTCount -= kct;
-                if (user.GameDeck.CTCount < 0)
+                gameDeck.CTCount -= kct;
+                if (gameDeck.CTCount < 0)
                 {
-                    user.GameDeck.CTCount = 0;
+                    gameDeck.CTCount = 0;
                     kct = 0;
                 }
 
                 if (kct > 0)
                 {
-                    user.GameDeck.Items.Clear();
+                    gameDeck.Items.Clear();
                 }
             }
 

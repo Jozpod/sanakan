@@ -37,9 +37,9 @@
     <ProjectReference Include="..\..\Daemon\Daemon.csproj" />
     <ProjectReference Include="..\..\DiscordBot\DiscordBot.csproj" />
   </ItemGroup>
-  
+
   <ItemGroup>
-    <Content Include="Pictures\**">
+    <Content Include="..\..\Pictures\**" LinkBase="Pictures">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

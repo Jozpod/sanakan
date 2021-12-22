@@ -21,11 +21,17 @@ namespace DiscordBot.ModulesTests.FunModuleTests
         {
             var value = 1000u;
             var sourceUser = new User(1ul, DateTime.UtcNow);
+            sourceUser.ScCount = 5000;
             var targetUser = new User(2ul, DateTime.UtcNow);
+            var targetUserMock = new Mock<IGuildUser>(MockBehavior.Strict);
 
-            _guildUserMock
+            targetUserMock
                 .Setup(pr => pr.Id)
                 .Returns(targetUser.Id);
+
+            targetUserMock
+              .Setup(pr => pr.Mention)
+              .Returns("target user mention");
 
             _userMock
                 .Setup(pr => pr.Id)
@@ -51,12 +57,15 @@ namespace DiscordBot.ModulesTests.FunModuleTests
                .Setup(pr => pr.SaveChangesAsync(It.IsAny<CancellationToken>()))
                .Returns(Task.CompletedTask);
 
+            _cacheManagerMock
+                .Setup(pr => pr.ExpireTag(It.IsAny<string[]>()));
+
             SetupSendMessage((message, embed) =>
             {
                 embed.Description.Should().NotBeNull();
             });
 
-            await _module.GiveUserScAsync(_guildUserMock.Object, value);
+            await _module.GiveUserScAsync(targetUserMock.Object, value);
         }
     }
 }
