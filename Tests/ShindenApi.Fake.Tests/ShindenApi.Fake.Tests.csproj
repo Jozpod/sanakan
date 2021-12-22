@@ -2,19 +2,10 @@
 
   <PropertyGroup>
     <IsPackable>false</IsPackable>
-    <AssemblyName>Sanakan.ShindenApi.Tests</AssemblyName>
-    <RootNamespace>Sanakan.ShindenApi.Tests</RootNamespace>
+    <AssemblyName>Sanakan.ShindenApi.Fake.Tests</AssemblyName>
+    <RootNamespace>Sanakan.ShindenApi.Fake.Tests</RootNamespace>
     <Configurations>Debug;Release;Test</Configurations>
   </PropertyGroup>
-
-  <ItemGroup>
-    <None Remove="appsettings.json" />
-    <None Remove="TestData\*.json" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="TestData\*.json" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="FluentAssertions" Version="6.1.0" />
@@ -29,23 +20,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\ShindenApi\ShindenApi.csproj" />
+    <ProjectReference Include="..\..\ShindenApi.Fake\ShindenApi.Fake.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <EditorConfigFiles Remove="C:\Users\jozefpodlecki\Documents\Shinden\sanakan\Tests\ShindenApi.Tests\.editorconfig" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="appsettings.json">
+    <None Update="TestData\*.htm">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </Content>
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="C:\Users\jozefpodlecki\Documents\Shinden\sanakan\Tests\ShindenApi.Tests\.editorconfig" />
+    </None>
   </ItemGroup>
 
 </Project>

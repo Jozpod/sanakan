@@ -37,7 +37,7 @@ namespace Sanakan.Game.Tests.ImageProcessorTests
 
             _fileSystemMock
                 .Setup(pr => pr.OpenRead(It.IsAny<string>()))
-                .Returns(CreateFakeImage);
+                .Returns(Utils.CreateFakeImage);
 
             var duelCardImage = _imageProcessor.GetDuelCardImage(duelInfo, duelImage, win, los);
             duelCardImage.Should().NotBeNull();

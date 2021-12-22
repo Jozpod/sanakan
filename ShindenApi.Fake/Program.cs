@@ -28,7 +28,7 @@ namespace Sanakan.ShindenApi.Fake
             serviceCollection.AddCache(configurationRoot.GetSection("Cache"));
             serviceCollection.AddConfiguration(configurationRoot);
             serviceCollection.AddFileSystem();
-            serviceCollection.AddHttpClient<ShindenWebScraper>();
+            serviceCollection.AddHttpClient<Importer>();
             serviceCollection.AddFakeShindenApi();
             serviceCollection.AddLogging(config => config.AddConsole());
 
@@ -38,7 +38,7 @@ namespace Sanakan.ShindenApi.Fake
             using var serviceScope = serviceScopeFactory.CreateScope();
             serviceProvider = serviceScope.ServiceProvider;
 
-            var webScraper = serviceProvider.GetRequiredService<ShindenWebScraper>();
+            var webScraper = serviceProvider.GetRequiredService<Importer>();
 
             await webScraper.Test();
         }

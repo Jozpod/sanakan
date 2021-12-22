@@ -5,6 +5,7 @@ using Moq;
 using Moq.Protected;
 using Sanakan.Common.Builder;
 using Sanakan.Game.Builder;
+using Sanakan.Game.Services;
 using Sanakan.Game.Services.Abstractions;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -45,11 +46,12 @@ namespace Sanakan.Game.Tests.IntegrationTests.ImageProcessorTests
             serviceCollection.AddResourceManager()
                 .AddFontResources();
             serviceCollection.AddSingleton(httpClient);
+            serviceCollection.AddImageResolver();
             serviceCollection.AddSingleton(_httpClientFactoryMock.Object);
             var serviceProvider = serviceCollection.BuildServiceProvider();
 
             _httpClientFactoryMock
-                .Setup(pr => pr.CreateClient(nameof(IImageProcessor)))
+                .Setup(pr => pr.CreateClient(nameof(ImageResolver)))
                 .Returns(httpClient);
 
             _imageProcessor = serviceProvider.GetRequiredService<IImageProcessor>();
@@ -63,7 +65,8 @@ namespace Sanakan.Game.Tests.IntegrationTests.ImageProcessorTests
                .Setup<Task<HttpResponseMessage>>("SendAsync",
                    ItExpr.Is<HttpRequestMessage>(pr => pr.Method == HttpMethod.Get),
                    ItExpr.IsAny<CancellationToken>())
-               .ReturnsAsync(() => {
+               .ReturnsAsync(() =>
+               {
                    var stream = File.OpenRead(Path.Combine("TestData", filePath));
                    return new HttpResponseMessage
                    {

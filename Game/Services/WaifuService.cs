@@ -682,7 +682,9 @@ namespace Sanakan.Game.Services
                         target.Health -= damage;
 
                         if (target.Health < 1)
+                        {
                             target.Health = 0;
+                        }
 
                         var hpSnap = round.Cards.FirstOrDefault(x => x.CardId == target.Card.Id);
                         if (hpSnap == null)

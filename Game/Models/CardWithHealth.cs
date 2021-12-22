@@ -2,7 +2,7 @@
 
 namespace Sanakan.Game.Models
 {
-    public class CardWithHealth
+    public record CardWithHealth
     {
         public Card Card { get; set; } = null;
 

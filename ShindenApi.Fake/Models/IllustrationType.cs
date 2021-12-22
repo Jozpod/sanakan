@@ -6,5 +6,7 @@
         Anime = 1,
         Manga = 2,
         Novel = 3,
+        WebToon = 4,
+        WebNovel = 5,
     }
 }

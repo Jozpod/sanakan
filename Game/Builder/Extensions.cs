@@ -19,6 +19,18 @@ namespace Sanakan.Game.Builder
             return services;
         }
 
+        public static IServiceCollection AddImageResolver(this IServiceCollection services)
+        {
+            services.AddSingleton<IImageResolver, ImageResolver>();
+            return services;
+        }
+
+        public static IServiceCollection AddFakeImageResolver(this IServiceCollection services)
+        {
+            services.AddSingleton<IImageResolver, FakeImageResolver>();
+            return services;
+        }
+
         public static ResourceManagerBuilder AddFontResources(this ResourceManagerBuilder builder)
         {
             var assembly = typeof(Extensions).Assembly;

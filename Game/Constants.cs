@@ -80,7 +80,7 @@ namespace Sanakan.Game
             45085 // Akira - Minori Scramble!
         };
 
-        public static List<RarityChance> RarityChances = new List<RarityChance>()
+        public static IEnumerable<RarityChance> RarityChances = new []
             {
                 new RarityChance(5,    Rarity.SS),
                 new RarityChance(25,   Rarity.S ),

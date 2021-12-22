@@ -45,29 +45,9 @@ namespace Sanakan.Game.Tests.ImageProcessorTests
             card.Quality = quality;
             card.FromFigure = fromFigure;
 
-            _httpClientHandlerMock
-                .Protected()
-                .SetupSequence<Task<HttpResponseMessage>>("SendAsync",
-                    ItExpr.Is<HttpRequestMessage>(pr => pr.Method == HttpMethod.Get),
-                    ItExpr.IsAny<CancellationToken>())
-                .ReturnsAsync(() => {
-                    return new HttpResponseMessage
-                    {
-                        StatusCode = HttpStatusCode.OK,
-                        Content = new StreamContent(CreateFakeImage()),
-                    };
-                })
-                .ReturnsAsync(() => {
-                    return new HttpResponseMessage
-                    {
-                        StatusCode = HttpStatusCode.OK,
-                        Content = new StreamContent(CreateFakeImage()),
-                    };
-                });
-
             _fileSystemMock
                 .Setup(pr => pr.OpenRead(It.IsAny<string>()))
-                .Returns(CreateFakeImage);
+                .Returns(Utils.CreateFakeImage);
 
             _fileSystemMock
                 .Setup(pr => pr.Exists(It.IsAny<string>()))

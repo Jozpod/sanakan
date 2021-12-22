@@ -74,6 +74,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Web.Integration.Tests", "Te
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShindenApi.Fake", "ShindenApi.Fake\ShindenApi.Fake.csproj", "{CF39825D-7C4F-40FB-BC7A-2C96EF211827}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShindenApi.Fake.Tests", "Tests\ShindenApi.Fake.Tests\ShindenApi.Fake.Tests.csproj", "{6FF2E2C1-46AB-4674-8872-368A79AA72BE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -273,6 +275,12 @@ Global
 		{CF39825D-7C4F-40FB-BC7A-2C96EF211827}.Release|Any CPU.Build.0 = Release|Any CPU
 		{CF39825D-7C4F-40FB-BC7A-2C96EF211827}.Test|Any CPU.ActiveCfg = Test|Any CPU
 		{CF39825D-7C4F-40FB-BC7A-2C96EF211827}.Test|Any CPU.Build.0 = Test|Any CPU
+		{6FF2E2C1-46AB-4674-8872-368A79AA72BE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6FF2E2C1-46AB-4674-8872-368A79AA72BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6FF2E2C1-46AB-4674-8872-368A79AA72BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6FF2E2C1-46AB-4674-8872-368A79AA72BE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6FF2E2C1-46AB-4674-8872-368A79AA72BE}.Test|Any CPU.ActiveCfg = Test|Any CPU
+		{6FF2E2C1-46AB-4674-8872-368A79AA72BE}.Test|Any CPU.Build.0 = Test|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -294,6 +302,7 @@ Global
 		{821719B0-4CC2-44EE-B8B2-75E6664913CE} = {87B94D2E-E158-475B-951E-FE4F00B8E6B7}
 		{F8FDB09F-72A1-4F77-B30C-6F2FFEFD7A25} = {87B94D2E-E158-475B-951E-FE4F00B8E6B7}
 		{FE121BC6-ED83-4ABB-A30C-FD932E66A8CE} = {87B94D2E-E158-475B-951E-FE4F00B8E6B7}
+		{6FF2E2C1-46AB-4674-8872-368A79AA72BE} = {87B94D2E-E158-475B-951E-FE4F00B8E6B7}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {47BFA7D9-55FD-4775-914F-3FD89318D8D9}

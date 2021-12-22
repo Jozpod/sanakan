@@ -1,21 +1,30 @@
-﻿using Sanakan.ShindenApi.Models;
+﻿using Microsoft.EntityFrameworkCore;
+using Sanakan.ShindenApi.Models;
 using Sanakan.ShindenApi.Models.Enums;
 using Shinden.API;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Sanakan.ShindenApi.Fake
 {
+    /// <summary>
+    /// Implements simple shinden webscraper and lookup database.
+    /// </summary>
     internal class FakeShindenClient : IShindenClient
     {
         private readonly WebScrapedDbContext _dbContext;
+        private readonly ShindenWebScraper _shindenWebScraper;
 
-        public FakeShindenClient(WebScrapedDbContext dbContext)
+        public FakeShindenClient(
+            WebScrapedDbContext dbContext,
+            ShindenWebScraper shindenWebScraper)
         {
             _dbContext = dbContext;
+            _shindenWebScraper = shindenWebScraper;
         }
 
         public Task<ShindenResult<Modification>> AddToFavouritesAsync(ulong userId, FavouriteType favouriteType, ulong favouriteId)
@@ -40,34 +49,114 @@ namespace Sanakan.ShindenApi.Fake
             });
         }
 
-        public Task<ShindenResult<List<ulong>>> GetAllCharactersAsync()
+        public async Task<ShindenResult<List<ulong>>> GetAllCharactersAsync()
         {
-            throw new NotImplementedException();
+            return new ShindenResult<List<ulong>>
+            {
+                Value = await _dbContext.Characters.Select(pr => pr.Id).ToListAsync(),
+            };
         }
 
-        public Task<ShindenResult<IEnumerable<ulong>>> GetAllCharactersFromAnimeAsync()
+        public async Task<ShindenResult<IEnumerable<ulong>>> GetAllCharactersFromAnimeAsync()
         {
-            throw new NotImplementedException();
+            return new ShindenResult<IEnumerable<ulong>>
+            {
+                Value = await _dbContext.Characters
+                    .Where(pr => pr.Illustrations.Any(npr => npr.Type == Models.IllustrationType.Anime))
+                    .Select(pr => pr.Id)
+                    .ToListAsync(),
+            };
         }
 
-        public Task<ShindenResult<List<ulong>>> GetAllCharactersFromMangaAsync()
+        public async Task<ShindenResult<List<ulong>>> GetAllCharactersFromMangaAsync()
         {
-            throw new NotImplementedException();
+            return new ShindenResult<List<ulong>>
+            {
+                Value = await _dbContext.Characters
+                    .Where(pr => pr.Illustrations.Any(npr => npr.Type == Models.IllustrationType.Manga))
+                    .Select(pr => pr.Id)
+                    .ToListAsync(),
+            };
         }
 
-        public Task<ShindenResult<AnimeMangaInfo>> GetAnimeMangaInfoAsync(ulong titleId)
+        public async Task<ShindenResult<List<CharacterSearchResult>>> SearchCharacterAsync(string name)
         {
-            throw new NotImplementedException();
+            var characters = await _shindenWebScraper.GetCharactersAsync(name);
+
+            return new ShindenResult<List<CharacterSearchResult>>
+            {
+                Value = characters.Select(pr => new CharacterSearchResult
+                {
+                    Id = pr.Id,
+                    FirstName = pr.Name,
+                }).ToList(),
+            };
         }
 
-        public Task<ShindenResult<CharacterInfo>> GetCharacterInfoAsync(ulong characterId)
+        public async Task<ShindenResult<List<UserSearchResult>>> SearchUserAsync(string nick)
         {
-            throw new NotImplementedException();
+            var users = await _shindenWebScraper.GetUsersAsync(nick);
+
+            return new ShindenResult<List<UserSearchResult>>
+            {
+                Value = users.Select(pr => new UserSearchResult
+                {
+                    Id = pr.Id,
+                    Name = pr.Username,
+                }).ToList(),
+            };
         }
 
-        public Task<ShindenResult<TitleCharacters>> GetCharactersAsync(ulong titleId)
+        public async Task<ShindenResult<AnimeMangaInfo>> GetAnimeMangaInfoAsync(ulong titleId)
         {
-            throw new NotImplementedException();
+            return new ShindenResult<AnimeMangaInfo>
+            {
+                Value = new AnimeMangaInfo
+                {
+                    Title = new TitleEntry
+                    {
+                        TitleId = titleId,
+                        Description = new AnimeMangaInfoDescription
+                        {
+                            
+                        }
+                    }
+                },
+            };
+        }
+
+        public async Task<ShindenResult<CharacterInfo>> GetCharacterInfoAsync(ulong characterId)
+        {
+            var character = await _dbContext.Characters.FindAsync(characterId);
+
+            return new ShindenResult<CharacterInfo>
+            {
+                Value = new CharacterInfo()
+                {
+                    CharacterId = characterId,
+                    FirstName = character?.Name ?? $"Test character {characterId}"
+                }
+            };
+        }
+
+        public async Task<ShindenResult<TitleCharacters>> GetCharactersAsync(ulong titleId)
+        {
+            var characterIds = await _dbContext.Characters
+                .Where(pr => pr.Illustrations.Any(npr => npr.Type == Models.IllustrationType.Manga))
+                .Select(pr => pr.Id)
+                .ToListAsync();
+            
+            var titleCharacters = new TitleCharacters();
+
+            titleCharacters.Relations = characterIds.Select(pr => new StaffInfoRelation
+            {
+                CharacterId = pr
+            }).ToList();
+
+            return new ShindenResult<TitleCharacters>
+            {
+                Value = titleCharacters,
+            };
         }
 
         public Task<ShindenResult<TitleEpisodes>> GetEpisodesAsync(ulong episodeId)
@@ -82,27 +171,45 @@ namespace Sanakan.ShindenApi.Fake
 
         public Task<ShindenResult<List<FavCharacter>>> GetFavouriteCharactersAsync(ulong userId)
         {
-            throw new NotImplementedException();
+            return Task.FromResult(new ShindenResult<List<FavCharacter>>
+            {
+                Value = new List<FavCharacter>(),
+            });
         }
 
-        public Task<ShindenResult<IllustrationInfo>> GetIllustrationInfoAsync(ulong titleId)
+        public async Task<ShindenResult<IllustrationInfo>> GetIllustrationInfoAsync(ulong titleId)
         {
-            throw new NotImplementedException();
+            return new ShindenResult<IllustrationInfo>
+            {
+                Value = new IllustrationInfo
+                {
+
+                }
+            };
         }
 
         public Task<ShindenResult<List<LastWatchedRead>>> GetLastReadAsync(ulong userId, uint limit = 5)
         {
-            throw new NotImplementedException();
+            return Task.FromResult(new ShindenResult<List<LastWatchedRead>>
+            {
+                Value = new List<LastWatchedRead>(),
+            });
         }
 
         public Task<ShindenResult<List<LastWatchedRead>>> GetLastWatchedAsync(ulong userId, uint limit = 5)
         {
-            throw new NotImplementedException();
+            return Task.FromResult(new ShindenResult<List<LastWatchedRead>>
+            {
+                Value = new List<LastWatchedRead>(),
+            });
         }
 
         public Task<ShindenResult<List<NewEpisode>>> GetNewEpisodesAsync()
         {
-            throw new NotImplementedException();
+            return Task.FromResult(new ShindenResult<List<NewEpisode>>
+            {
+                Value = new List<NewEpisode>(),
+            });
         }
 
         public Task<ShindenResult<TitleRecommendation>> GetRecommendationsAsync(ulong titleId)
@@ -148,12 +255,18 @@ namespace Sanakan.ShindenApi.Fake
 
         public Task<ShindenResult<List<QuickSearchResult>>> QuickSearchAsync(string search, QuickSearchType type)
         {
-            throw new NotImplementedException();
+            return Task.FromResult(new ShindenResult<List<QuickSearchResult>>
+            {
+                Value = new List<QuickSearchResult>(),
+            });
         }
 
         public Task<ShindenResult<List<QuickSearchResult>>> QuickSearchAsync(string search)
         {
-            throw new NotImplementedException();
+            return Task.FromResult(new ShindenResult<List<QuickSearchResult>>
+            {
+                Value = new List<QuickSearchResult>(),
+            });
         }
 
         public Task<ShindenResult<Status>> RateAnimeAsync(ulong titleId, AnimeRateType type, uint value)
@@ -200,17 +313,7 @@ namespace Sanakan.ShindenApi.Fake
             });
         }
 
-        public Task<ShindenResult<List<CharacterSearchResult>>> SearchCharacterAsync(string name)
-        {
-            throw new NotImplementedException();
-        }
-
         public Task<ShindenResult<List<StaffSearchResult>>> SearchStaffAsync(string name)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<ShindenResult<List<UserSearchResult>>> SearchUserAsync(string nick)
         {
             throw new NotImplementedException();
         }

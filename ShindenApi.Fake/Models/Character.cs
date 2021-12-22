@@ -7,9 +7,9 @@ namespace Sanakan.ShindenApi.Fake.Models
 {
     public class Character
     {
-        public int Id { get; set; }
+        public ulong Id { get; set; }
 
-        public int ImageId { get; set; }
+        public ulong ImageId { get; set; }
 
         [StringLength(50)]
         public string Name { get; set; } = string.Empty;

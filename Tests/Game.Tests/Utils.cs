@@ -1,7 +1,12 @@
-﻿namespace Sanakan.Game.Tests
+﻿using System;
+using System.IO;
+
+namespace Sanakan.Game.Tests
 {
     public static class Utils
     {
+        public static Stream CreateFakeImage() => new MemoryStream(Convert.FromBase64String("R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"));
+
         // Copyright (c) 2008-2013 Hafthor Stefansson
         // Distributed under the MIT/X11 software license
         // Ref: http://www.opensource.org/licenses/mit-license.php.

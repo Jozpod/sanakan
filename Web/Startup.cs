@@ -173,10 +173,12 @@ namespace Sanakan.Web
             if (shindenApiConfiguration.UseFake)
             {
                 services.AddFakeShindenApi();
+                services.AddFakeImageResolver();
             }
             else
             {
                 services.AddShindenApi();
+                services.AddImageResolver();
             }
             
             services.AddGameServices();

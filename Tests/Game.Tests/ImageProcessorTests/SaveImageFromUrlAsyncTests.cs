@@ -1,7 +1,9 @@
 ﻿using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 using Sanakan.Game.Services.Abstractions;
 using SixLabors.Primitives;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace Sanakan.Game.Tests.ImageProcessorTests
@@ -18,6 +20,14 @@ namespace Sanakan.Game.Tests.ImageProcessorTests
             var imageUrl = "TestData/card-image.png";
             var filePath = "TestData/card-image.png";
 
+            _imageResolverMock
+                .Setup(pr => pr.GetAsync(It.IsAny<string>()))
+                .ReturnsAsync(Utils.CreateFakeImage);
+
+            _fileSystemMock
+                .Setup(pr => pr.OpenWrite(It.IsAny<string>()))
+                .Returns(() => new MemoryStream());
+
             await _imageProcessor.SaveImageFromUrlAsync(imageUrl, filePath, new Size(300, 300), true);
         }
 
@@ -26,6 +36,14 @@ namespace Sanakan.Game.Tests.ImageProcessorTests
         {
             var imageUrl = "TestData/card-image.png";
             var filePath = "TestData/card-image.png";
+
+            _imageResolverMock
+                .Setup(pr => pr.GetAsync(It.IsAny<string>()))
+                .ReturnsAsync(Utils.CreateFakeImage);
+
+            _fileSystemMock
+                .Setup(pr => pr.OpenWrite(It.IsAny<string>()))
+                .Returns(() => new MemoryStream());
 
             await _imageProcessor.SaveImageFromUrlAsync(imageUrl, filePath);
         }

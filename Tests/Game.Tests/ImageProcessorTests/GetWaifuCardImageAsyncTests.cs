@@ -18,8 +18,6 @@ namespace Sanakan.Game.Tests.ImageProcessorTests
         {
             var card = new Card(1, "test", "test", 100, 50, Rarity.SSS, Dere.Bodere, DateTime.Now);
 
-            MockHttpGetImage(CreateFakeImage());
-
             var cardImage = await _imageProcessor.GetWaifuCardImageAsync(card);
             cardImage.Should().NotBeNull();
         }

@@ -8,6 +8,6 @@ namespace Sanakan.ShindenApi.Fake.Models
 
         public int Page { get; set; }
 
-        public DateTime ModifiedOn{ get; set; }
+        public DateTime ModifiedOn { get; set; }
     }
 }

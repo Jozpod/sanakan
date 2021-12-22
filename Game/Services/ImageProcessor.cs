@@ -34,18 +34,18 @@ namespace Sanakan.Game.Services
         private readonly FontFamily _latoRegular;
         private readonly Point _origin = new(0, 0);
         private readonly IFileSystem _fileSystem;
-        private readonly HttpClient _httpClient;
+        private readonly IImageResolver _imageResolver;
 
         public ImageProcessor(
             IOptionsMonitor<ImagingConfiguration> options,
             IResourceManager resourceManager,
             IFileSystem fileSystem,
-            IHttpClientFactory _httpClientFactory)
+            IImageResolver imageResolver)
         {
             _options = options;
             _resourceManager = resourceManager;
             _fileSystem = fileSystem;
-            _httpClient = _httpClientFactory.CreateClient(nameof(IImageProcessor));
+            _imageResolver = imageResolver;
             _fontCollection = new FontCollection();
 
             _digital = LoadFontFromStream(Resources.DigitalFont);
@@ -62,18 +62,18 @@ namespace Sanakan.Game.Services
 
         private IEnumerable<string> _extensions = new[] { "png", "jpeg", "gif", "jpg" };
 
-        private async Task<Stream?> GetImageFromUrlAsync(string url, bool fixExt = false)
+        private async Task<Stream?> GetImageFromUrlAsync(string url, bool fixedExtension = false)
         {
             try
             {
-                var response = await _httpClient.GetAsync(url);
+                var stream = await _imageResolver.GetAsync(url);
 
-                if (response.IsSuccessStatusCode)
+                if (stream != null)
                 {
-                    return await response.Content.ReadAsStreamAsync();
+                    return stream;
                 }
 
-                if (!fixExt)
+                if (!fixedExtension)
                 {
                     return null;
                 }
@@ -83,14 +83,9 @@ namespace Sanakan.Game.Services
                 foreach (var extension in _extensions)
                 {
                     splited[splited.Length - 1] = extension;
-                    response = await _httpClient.GetAsync(string.Join(".", splited));
+                    stream = await _imageResolver.GetAsync(url);
 
-                    if (!response.IsSuccessStatusCode)
-                    {
-                        return null;
-                    }
-
-                    return await response.Content.ReadAsStreamAsync();
+                    return stream;
                 }
             }
             catch (Exception)

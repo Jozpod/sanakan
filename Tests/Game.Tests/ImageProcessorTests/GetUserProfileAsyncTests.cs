@@ -110,26 +110,17 @@ namespace Sanakan.Game.Tests.ImageProcessorTests
             var nickname = "test user";
             var color = Discord.Color.DarkerGrey;
 
-            _httpClientHandlerMock
-                .Protected()
-                .SetupSequence<Task<HttpResponseMessage>>("SendAsync",
-                    ItExpr.Is<HttpRequestMessage>(pr => pr.Method == HttpMethod.Get),
-                    ItExpr.IsAny<CancellationToken>())
-                .ReturnsAsync(() => {
-                    return new HttpResponseMessage
-                    {
-                        StatusCode = HttpStatusCode.OK,
-                        Content = new StreamContent(CreateFakeImage()),
-                    };
-                });
-
             _fileSystemMock
                 .Setup(pr => pr.Exists(It.IsAny<string>()))
                 .Returns(true);
 
             _fileSystemMock
                 .Setup(pr => pr.OpenRead(It.IsAny<string>()))
-                .Returns(CreateFakeImage);
+                .Returns(Utils.CreateFakeImage);
+
+            _imageResolverMock
+                .Setup(pr => pr.GetAsync(It.IsAny<string>()))
+                .ReturnsAsync(Utils.CreateFakeImage);
 
             var userProfileImage = await _imageProcessor.GetUserProfileAsync(
                 shindenUser,

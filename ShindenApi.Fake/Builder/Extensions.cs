@@ -15,6 +15,7 @@ namespace Sanakan.ShindenApi.Fake.Builder
                 optionsBuilder.UseSqlite("Data Source=FakeShinden.db;");
             });
             services.AddSingleton<IShindenClient, FakeShindenClient>();
+            services.AddSingleton<ShindenWebScraper>();
             return services;
         }
     }

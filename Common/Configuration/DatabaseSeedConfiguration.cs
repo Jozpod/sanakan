@@ -1,6 +1,4 @@
-﻿using Sanakan.DAL;
-using System;
-using System.Collections;
+﻿using Sanakan.Common.Models;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -15,13 +13,13 @@ namespace Sanakan.Common.Configuration
         {
             public ulong Id { get; set; }
 
-            public ulong SafariLimit { get; set; }
+            public ulong? SafariLimit { get; set; }
 
-            public ulong UserRoleId { get; set; }
+            public ulong? UserRoleId { get; set; }
 
-            public ulong MuteRoleId { get; set; }
+            public ulong? MuteRoleId { get; set; }
 
-            public ulong MuteModRoleId { get; set; }
+            public ulong? MuteModRoleId { get; set; }
 
             public IEnumerable<UserSeedConfiguration> Users { get; set; } = Enumerable.Empty<UserSeedConfiguration>();
         }
@@ -30,27 +28,27 @@ namespace Sanakan.Common.Configuration
         {
             public ulong Id { get; set; }
 
-            public ulong Level { get; set; }
+            public ulong? Level { get; set; }
 
-            public bool IsDeveloper { get; set; }
+            public double? ExperiencePercentage { get; set; }
 
-            public ulong NumberOfCards { get; set; }
+            public int? NumberOfCards { get; set; }
 
-            public ulong NumberOfItems { get; set; }
+            public ulong? NumberOfItems { get; set; }
 
-            public ulong ScCount { get; set; }
+            public ulong? ScCount { get; set; }
 
-            public ulong TcCount { get; set; }
+            public ulong? TcCount { get; set; }
 
-            public ulong AcCount { get; set; }
+            public ulong? AcCount { get; set; }
 
-            public ulong ExperienceCount { get; set; }
+            public ulong? PVPCoins { get; set; }
 
-            public ulong ProfileType { get; set; }
+            public ProfileType? ProfileType { get; set; }
 
-            public ulong MessagesCount { get; set; }
+            public ulong? MessagesCount { get; set; }
 
-            public ulong CommandsCount { get; set; }
+            public ulong? CommandsCount { get; set; }
         }
     }
 }

@@ -498,8 +498,9 @@ namespace Sanakan.DiscordBot.Modules
         {
             var scCost = 3000;
             var tcCost = 1000;
-            var mention = Context.User.Mention;
-            var databaseUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
+            var user = Context.User;
+            var mention = user.Mention;
+            var databaseUser = await _userRepository.GetUserOrCreateAsync(user.Id);
 
             if (databaseUser.ScCount < scCost && currency == SCurrency.Sc)
             {
@@ -563,9 +564,10 @@ namespace Sanakan.DiscordBot.Modules
         {
             var tcCost = 2500;
             var scCost = 5000;
-            var mention = Context.User.Mention;
+            var user = Context.User;
+            var mention = user.Mention;
 
-            var databaseUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
+            var databaseUser = await _userRepository.GetUserOrCreateAsync(user.Id);
             if (databaseUser.ScCount < scCost && currency == SCurrency.Sc)
             {
                 await ReplyAsync(embed: $"{mention} nie posiadasz wystarczającej liczby SC!".ToEmbedMessage(EMType.Error).Build());
