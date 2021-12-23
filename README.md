@@ -75,7 +75,7 @@ See commands section below for list of available commands.
 
 #### Sqlite ####
 
-Replace Database section in `appsettings.json`
+Replace `Database` section in `appsettings.json`
 
 ```json
 {
@@ -86,6 +86,70 @@ Replace Database section in `appsettings.json`
   },
 }
 ```
+
+#### Inital Seed ####
+
+You can also initally define guild configuration in `Database:Seed` section.
+Entries in `Guilds[].Users` will create users with specified parameters.
+
+```json
+"Seed": {
+  "Enabled": false,
+  "Guilds": [
+    {
+      "Id": -1,
+      "SafariLimit": null,
+      "AdminRoleId": null,
+      "UserRoleId": null,
+      "MuteRoleId": null,
+      "ModMuteRoleId": null,
+      "WaifuRoleId": null,
+      "GlobalEmotesRoleId": null,
+      "TrashCommandsChannelId": null,
+      "LogChannelId": null,
+      "NsfwChannelId": null,
+      "TodoChannelId": null,
+      "ReportChannelId": null,
+      "NotificationChannelId": null,
+      "GreetingChannelId": null,
+      "NonSupChannelId": null,
+      "NonExpChannelId": null,
+      "IgnoredChannelId": null,
+      "CommandChannelId": null,
+      "CommandWaifuChannelId": null,
+      "FightWaifuChannelId": null,
+      "SafariWaifuChannelId": null,
+      "RolesPerLevel": [{
+        "Level": -1,
+        "RoleId": -1
+      }],
+      "Users": [
+        {
+          "Id": -1,
+          "Level": 20,
+          "ExperiencePercentage": 0.5,
+          "NumberOfCards": 10,
+          "NumberOfItems": 100,
+          "ScCount": 10000,
+          "TcCount": 10000,
+          "AcCount": 10000,
+          "PVPCoins": 10000,
+          "Karma": 2000,
+          "ProfileType": "Statistics",
+          "MessagesCount": 20,
+          "CommandsCount": 20
+        }
+      ]
+    }
+  ]
+}
+```
+
+### Shinden API ###
+
+#### Fake API ####
+
+When option in `ShindenApi:UseFake` is enabled. The bot will webscrape the shinden website for any information relating to anime/manga/character/user.
 
 ## Commands ##
 
@@ -403,6 +467,7 @@ All commands require developer permission.
 ### Shinden API
 |                   Name                    |         Type         |                 Default                 | Description                                                       |
 | :---------------------------------------: | :------------------: | :-------------------------------------: | :---------------------------------------------------------------- |
+| **[`UseFake`](#UseFake)** | `{Boolean}` | `` | When enabled, it will webscrape shinden website for anime/manga/character/user entries. |
 | **[`BaseUrl`](#BaseUrl)** | `{String}` | `` | The Shinden API base url. |
 | **[`Token`](#Token)** | `{String}` | `` | The API token which is supplied in certain requests sent to Shinden API. |
 | **[`UserAgent`](#UserAgent)**  | `{String}` | `` |  Lets servers and network peers identify the application, operating system, vendor, and/or version of the request. |
