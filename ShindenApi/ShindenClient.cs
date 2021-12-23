@@ -498,8 +498,7 @@ namespace Sanakan.ShindenApi
 
             var query = QueryHelpers.AddQueryString("user/login", queryData);
 
-            var response = await _httpClient.PostAsync(query, content);
-            var logInResult = await SendAsync<LogInResult>(query);
+            var logInResult = await SendAsync<LogInResult>(query, HttpMethod.Post);
 
             if (logInResult.Value == null)
             {

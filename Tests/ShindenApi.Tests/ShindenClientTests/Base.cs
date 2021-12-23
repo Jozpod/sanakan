@@ -26,6 +26,19 @@ namespace Sanakan.ShindenApi.Tests
         private const string _resourcePath = "Sanakan.ShindenApi.Tests.TestData.{0}";
         protected HttpClient _httpClient;
 
+        protected void MockHttp(HttpMethod httpMethod, HttpStatusCode statusCode)
+        {
+            _httpClientHandlerMock
+                .Protected()
+                .Setup<Task<HttpResponseMessage>>("SendAsync",
+                    ItExpr.Is<HttpRequestMessage>(pr => pr.Method == httpMethod),
+                    ItExpr.IsAny<CancellationToken>())
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = statusCode,
+                });
+        }
+
         protected void MockHttpOk(string resourceName, HttpMethod httpMethod)
         {
             var resourcePath = string.Format(_resourcePath, resourceName);
