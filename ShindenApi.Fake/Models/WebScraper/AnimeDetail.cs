@@ -1,11 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace Sanakan.ShindenApi.Fake.Models.WebScraper
 {
-    public record BasicAnimeDetail(ulong Id, string Name);
-    public record AnimeDetail(ulong Id, string Name, IEnumerable<CharacterDetail> Characters, ulong? ImageId = null) : BasicAnimeDetail(Id, Name);
+    public record BasicAnimeDetail(ulong Id, string Name, ulong? ImageId = null);
+    public record AnimeDetail(
+        ulong Id,
+        string Name,
+        IllustrationType Type,
+        IEnumerable<CharacterDetail> Characters,
+        ulong? ImageId = null) : BasicAnimeDetail(Id, Name, ImageId);
 }

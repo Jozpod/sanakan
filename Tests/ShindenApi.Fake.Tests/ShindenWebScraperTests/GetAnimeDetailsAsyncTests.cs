@@ -19,7 +19,7 @@ namespace Sanakan.ShindenApi.Fake.Tests
         {
             MockHttpOk("Lista Anime - Shinden.htm");
 
-            var details = await _shindenWebScraper.GetAnimeDetailsAsync(1);
+            var details = await _shindenWebScraper.GetAnimeDetailsAsync(page: 1);
             details.Should().NotBeEmpty();
             var item = details.First();
             item.Id.Should().NotBe(0);

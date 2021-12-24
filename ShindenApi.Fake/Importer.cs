@@ -50,7 +50,7 @@ namespace Sanakan.ShindenApi.Fake
 
             while(pagesLeft > 0)
             {
-                var animeDetails = await _shindenWebScraper.GetAnimeDetailsAsync(scrapeStats.Page);
+                var animeDetails = await _shindenWebScraper.GetAnimeDetailsAsync(page: scrapeStats.Page);
 
                 var illustrations = new List<Illustration>();
 

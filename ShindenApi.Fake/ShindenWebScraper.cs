@@ -1,4 +1,5 @@
 ﻿using HtmlAgilityPack;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Sanakan.ShindenApi.Fake.Models;
 using Sanakan.ShindenApi.Fake.Models.WebScraper;
@@ -24,25 +25,6 @@ namespace Sanakan.ShindenApi.Fake
             _httpClient.BaseAddress = new Uri("https://shinden.pl/");
             _httpClient.DefaultRequestHeaders.UserAgent
                 .ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36");
-        }
-
-        public IllustrationType ParseType(string illustrationType)
-        {
-            switch (illustrationType.ToLowerInvariant())
-            {
-                case "anime":
-                    return IllustrationType.Anime;
-                case "manga":
-                    return IllustrationType.Manga;
-                case "novel":
-                    return IllustrationType.Novel;
-                case "webtoon":
-                    return IllustrationType.WebToon;
-                case "webnovel":
-                    return IllustrationType.WebNovel;
-                default:
-                    return IllustrationType.Unknown;
-            }
         }
 
         public async Task<UserDetail?> GetUserAsync(ulong userId)
@@ -142,6 +124,7 @@ namespace Sanakan.ShindenApi.Fake
             }
 
             var (type, name) = ParsePageTitle(document);
+            var illustrationType = ParseType(type);
             var characterNodes = document.SelectNodes("//section[contains(@class, 'ch-st-list')]/div");
             var imageId = GetSideImageId(document);
             var characters = new List<CharacterDetail>();
@@ -152,28 +135,41 @@ namespace Sanakan.ShindenApi.Fake
                 characters.Add(character);
             }
 
-            var result = new MangaDetail(mangaId, name, characters, imageId);
+            var result = new MangaDetail(
+                mangaId,
+                name,
+                illustrationType,
+                characters,
+                imageId);
 
             return result;
         }
 
-        public async Task<IEnumerable<BasicMangaDetail>> GetMangaDetailsAsync(int page)
+        public async Task<IEnumerable<BasicMangaDetail>> GetMangaDetailsAsync(
+            string? search = null,
+            string sortBy = "ranking-rate",
+            string sortOrder = "desc",
+            int page = 0)
         {
-            var query = $"/manga?sort_by=ranking-rate&sort_order=desc&page={page}";
+            var query = BuildQuery("/manga", search, sortBy, sortOrder, page);
+
             var document = await _httpClient.GetDocumentAsync(query);
 
             var serieNodes = document
-                .SelectNodes("//section[contains(@class, 'title-table')]/article/ul");
+                .SelectNodes("//section[contains(@class, 'title-table')]/article/ul[@class = 'div-row']");
 
             var results = new List<BasicMangaDetail>();
 
             foreach (var serieNode in serieNodes)
             {
-                var linkNode = serieNode.SelectSingleNode("./li[2]/h3/a");
+                var imageNode = serieNode.SelectSingleNode("./li[@class = 'cover-col']/a");
+                var imageSrc = imageNode.Attributes.FirstOrDefault(pr => pr.Name == "href").Value;
+                var imageId = imageSrc.GetIdFromLink();
+                var linkNode = serieNode.SelectSingleNode("./li[@class = 'desc-col']/h3/a");
                 var link = linkNode.Attributes.FirstOrDefault(pr => pr.Name == "href").Value;
                 var name = linkNode.InnerText;
                 var id = link.GetIdFromLink();
-                results.Add(new(id!.Value, name));
+                results.Add(new(id!.Value, name, imageId));
             }
 
             return results;
@@ -201,6 +197,7 @@ namespace Sanakan.ShindenApi.Fake
             }
 
             var (type, name) = ParsePageTitle(document);
+            var illustrationType = ParseType(type);
             var characterNodes = document.SelectNodes("//section[contains(@class, 'ch-st-list')]/div");
             var imageId = GetSideImageId(document);
 
@@ -212,29 +209,42 @@ namespace Sanakan.ShindenApi.Fake
                 characters.Add(character);
             }
 
-            var result = new AnimeDetail(animeId, name, characters, imageId);
+            var result = new AnimeDetail(
+                animeId,
+                name,
+                illustrationType,
+                characters,
+                imageId);
 
             return result;
         }
 
-        public async Task<IEnumerable<BasicAnimeDetail>> GetAnimeDetailsAsync(int page)
+        public async Task<IEnumerable<BasicAnimeDetail>> GetAnimeDetailsAsync(
+            string? search = null,
+            string sortBy = "ranking-rate",
+            string sortOrder = "desc",
+            int page = 0)
         {
-            var query = $"/series?sort_by=ranking-rate&sort_order=desc&page={page}";
+            var query = BuildQuery("/series", search, sortBy, sortOrder, page);
+
             var seriesDocument = await _httpClient.GetDocumentAsync(query);
 
             var serieNodes = seriesDocument
-                .SelectNodes("//section[contains(@class, 'title-table')]/article/ul");
+                .SelectNodes("//section[contains(@class, 'title-table')]/article/ul[@class = 'div-row']");
 
             var results = new List<BasicAnimeDetail>();
 
             foreach (var serieNode in serieNodes)
             {
-                var linkNode = serieNode.SelectSingleNode("./li[2]/h3/a");
+                var imageNode = serieNode.SelectSingleNode("./li[@class = 'cover-col']/a");
+                var imageSrc = imageNode.Attributes.FirstOrDefault(pr => pr.Name == "href").Value;
+                var imageId = imageSrc.GetIdFromLink();
+                var linkNode = serieNode.SelectSingleNode("./li[@class = 'desc-col']/h3/a");
                 var serieLink = linkNode.Attributes.FirstOrDefault(pr => pr.Name == "href").Value;
                 var serieName = linkNode.InnerText;
                 var serieId = serieLink.GetIdFromLink();
 
-                results.Add(new(serieId!.Value, serieName));
+                results.Add(new(serieId!.Value, serieName, imageId));
             }
 
             return results;
@@ -280,6 +290,57 @@ namespace Sanakan.ShindenApi.Fake
 
             var imageId = imageLink.GetIdFromLink();
             return imageId;
+        }
+
+        private IllustrationType ParseType(string illustrationType)
+        {
+            switch (illustrationType.ToLowerInvariant())
+            {
+                case "anime":
+                    return IllustrationType.Anime;
+                case "manga":
+                    return IllustrationType.Manga;
+                case "novel":
+                    return IllustrationType.Novel;
+                case "webtoon":
+                    return IllustrationType.WebToon;
+                case "webnovel":
+                    return IllustrationType.WebNovel;
+                default:
+                    return IllustrationType.Unknown;
+            }
+        }
+
+        private string BuildQuery(
+            string baseUrl,
+            string? search = null,
+            string sortBy = "ranking-rate",
+            string sortOrder = "desc",
+            int page = 0)
+        {
+            var queryData = new Dictionary<string, string>();
+
+            if (!string.IsNullOrEmpty(sortBy))
+            {
+                queryData["sort_by"] = sortBy;
+            }
+
+            if (!string.IsNullOrEmpty(sortOrder))
+            {
+                queryData["sort_order"] = sortOrder;
+            }
+
+            if (!string.IsNullOrEmpty(search))
+            {
+                queryData[nameof(search)] = search;
+            }
+
+            if (page != 0)
+            {
+                queryData[nameof(page)] = page.ToString();
+            }
+
+            return QueryHelpers.AddQueryString(baseUrl, queryData);
         }
     }
 }

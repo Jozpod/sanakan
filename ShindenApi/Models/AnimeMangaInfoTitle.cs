@@ -82,7 +82,7 @@ namespace Sanakan.ShindenApi.Models
         public string Title { get; set; } = null;
 
         [JsonPropertyName("title_other")]
-        public List<TitleOther> TitleOther { get; set; } = null;
+        public List<TitleOther> TitleOther { get; set; } = new();
 
         [JsonPropertyName("tags")]
         public AnimeMangaInfoTags TagCategories { get; set; } = null;

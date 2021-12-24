@@ -20,7 +20,7 @@ namespace Sanakan.DiscordBot.Session
         private readonly IMessageChannel _notifyChannel;
         private readonly IRole _userRole;
         private readonly IRole _muteRole;
-        private IIconConfiguration _iconConfiguration;
+        private IIconConfiguration _iconConfiguration = null;
 
         public AcceptSession(
             ulong ownerId,

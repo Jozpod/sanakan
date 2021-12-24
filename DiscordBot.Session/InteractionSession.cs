@@ -16,7 +16,7 @@ namespace Sanakan.DiscordBot.Session
         public RunMode RunMode { get; }
         public SessionExecuteCondition SessionExecuteCondition { get; }
         public bool IsRunning { get; set; }
-        public IServiceProvider ServiceProvider { get; set; }
+        public IServiceProvider ServiceProvider { get; set; } = null;
 
         public InteractionSession(
             ulong ownerId,

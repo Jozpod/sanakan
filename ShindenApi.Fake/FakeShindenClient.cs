@@ -118,6 +118,26 @@ namespace Sanakan.ShindenApi.Fake
 
         public async Task<ShindenResult<AnimeMangaInfo>> GetAnimeMangaInfoAsync(ulong titleId)
         {
+            var animeDetails = await _shindenWebScraper.GetAnimeDetailAsync(titleId);
+            var mangaDetails = await _shindenWebScraper.GetMangaDetailAsync(titleId);
+            var title = string.Empty;
+            ulong? imageId = null;
+            IllustrationType type = IllustrationType.Anime;
+
+            if (animeDetails != null)
+            {
+                title = animeDetails.Name;
+                type = IllustrationType.Anime;
+                imageId = animeDetails.ImageId;
+            }
+
+            if (mangaDetails != null)
+            {
+                title = mangaDetails.Name;
+                type = IllustrationType.Manga;
+                imageId = mangaDetails.ImageId;
+            }
+
             return new ShindenResult<AnimeMangaInfo>
             {
                 Value = new AnimeMangaInfo
@@ -125,9 +145,19 @@ namespace Sanakan.ShindenApi.Fake
                     Title = new TitleEntry
                     {
                         TitleId = titleId,
+                        Title = title,
+                        CoverId = imageId ?? 0,
+                        Type = type,
+                        Manga = new MangaInfo
+                        {
+
+                        },
+                        Anime = new AnimeInfo
+                        {
+
+                        },
                         Description = new AnimeMangaInfoDescription
                         {
-                            
                         }
                     }
                 },
@@ -262,12 +292,35 @@ namespace Sanakan.ShindenApi.Fake
             });
         }
 
-        public Task<ShindenResult<List<QuickSearchResult>>> QuickSearchAsync(string search, QuickSearchType type)
+        public async Task<ShindenResult<List<QuickSearchResult>>> QuickSearchAsync(string search, QuickSearchType type)
         {
-            return Task.FromResult(new ShindenResult<List<QuickSearchResult>>
+            List<QuickSearchResult> results;
+
+            if (type == QuickSearchType.Anime)
             {
-                Value = new List<QuickSearchResult>(),
-            });
+                var details = await _shindenWebScraper.GetAnimeDetailsAsync(search: search);
+
+                results = details.Select(pr => new QuickSearchResult
+                {
+                    TitleId = pr.Id,
+                    Title = pr.Name,
+                }).ToList();
+            }
+            else
+            {
+                var details = await _shindenWebScraper.GetMangaDetailsAsync(search: search);
+
+                results = details.Select(pr => new QuickSearchResult
+                {
+                    TitleId = pr.Id,
+                    Title = pr.Name,
+                }).ToList();
+            }
+
+            return new ShindenResult<List<QuickSearchResult>>
+            {
+                Value = results,
+            };
         }
 
         public Task<ShindenResult<List<QuickSearchResult>>> QuickSearchAsync(string search)

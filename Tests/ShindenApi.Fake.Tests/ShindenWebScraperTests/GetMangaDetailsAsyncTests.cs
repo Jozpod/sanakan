@@ -16,7 +16,7 @@ namespace Sanakan.ShindenApi.Fake.Tests
         {
             MockHttpOk("Lista Mang - Shinden.htm");
 
-            var details = await _shindenWebScraper.GetMangaDetailsAsync(1);
+            var details = await _shindenWebScraper.GetMangaDetailsAsync(page: 1);
             details.Should().NotBeEmpty();
             var item = details.First();
             item.Id.Should().NotBe(0);

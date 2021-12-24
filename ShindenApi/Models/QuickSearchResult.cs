@@ -22,5 +22,7 @@ namespace Sanakan.ShindenApi.Models
 
         [JsonPropertyName("title_status")]
         public string TitleStatus { get; set; } = null;
+
+        public override string ToString() => Title;
     }
 }
