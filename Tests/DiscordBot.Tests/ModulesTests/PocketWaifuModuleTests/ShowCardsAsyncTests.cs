@@ -52,7 +52,7 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
                 .Returns(utcNow);
 
             _sessionManagerMock
-                .Setup(pr => pr.RemoveIfExists<ListSession<Card>>(user.Id));
+                .Setup(pr => pr.RemoveIfExists<ListSession>(user.Id));
 
             _waifuServiceMock
                 .Setup(pr => pr.GetListInRightOrder(It.IsAny<IEnumerable<Card>>(), haremType, tag))

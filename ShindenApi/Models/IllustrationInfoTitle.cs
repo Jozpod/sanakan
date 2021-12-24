@@ -83,9 +83,6 @@ namespace Sanakan.ShindenApi.Models
         [JsonPropertyName("title_id")]
         public ulong TitleId { get; set; }
 
-        [JsonPropertyName("title_status")]
-        public string TitleStatus { get; set; } = string.Empty;
-
         [JsonIgnore]
         public IEnumerable<AnimeMangaInfoEntity> Tags => TagCategories == null ? Enumerable.Empty<AnimeMangaInfoEntity>() :
             new[] {

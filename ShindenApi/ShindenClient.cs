@@ -54,6 +54,8 @@ namespace Sanakan.ShindenApi
             {
                 NumberHandling = JsonNumberHandling.AllowReadingFromString,
             };
+            _jsonSerializerOptions.Converters.Add(new MangaStatusConverter());
+            _jsonSerializerOptions.Converters.Add(new AnimeStatusConverter());
             _jsonSerializerOptions.Converters.Add(new GenderConverter());
             _jsonSerializerOptions.Converters.Add(new LanguageConverter());
             _jsonSerializerOptions.Converters.Add(new MpaaRatingConverter());

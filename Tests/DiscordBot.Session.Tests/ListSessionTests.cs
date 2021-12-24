@@ -17,8 +17,8 @@ namespace Sanakan.DiscordBot.Session.Tests
     [TestClass]
     public class ListSessionTests
     {
-        private readonly ListSession<Card>.ListSessionPayload _payload;
-        private readonly ListSession<Card> _session;
+        private readonly ListSession _session;
+        private readonly Mock<IUser> _userMock = new(MockBehavior.Strict);
         private readonly Mock<IUserMessage> _userMessageMock = new (MockBehavior.Strict);
         private readonly Mock<IMessageChannel> _messageChannelMock = new (MockBehavior.Strict);
         private readonly Mock<IReaction> _reactionMock = new (MockBehavior.Strict);
@@ -26,25 +26,15 @@ namespace Sanakan.DiscordBot.Session.Tests
 
         public ListSessionTests()
         {
-            _payload = new ListSession<Card>.ListSessionPayload
-            {
-                Embed = new EmbedBuilder(),
-                ItemsPerPage = 5,
-                ListItems = Enumerable.Range(0, 10).Select(pr => {
-                    var card = new Card(
-                        (ulong)pr,
-                        $"Character {pr}",
-                        $"Title {pr}",
-                        pr * 10,
-                        pr * 5,
-                        Rarity.A,
-                        Dere.Dandere,
-                        DateTime.UtcNow);
-                    card.Id = (ulong)pr;
-                    return card;
-                }).ToList(),
-            };
-            _session = new(1ul, DateTime.UtcNow, _payload);
+            var items = Enumerable.Range(0, 10).Select(pr => $"Item {pr}").ToList();
+
+            _session = new(
+                1ul,
+                DateTime.UtcNow,
+                items,
+                _userMock.Object,
+                _userMessageMock.Object,
+                new EmbedBuilder());
 
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddSingleton<IIconConfiguration>(new DefaultIconConfiguration());
@@ -52,10 +42,27 @@ namespace Sanakan.DiscordBot.Session.Tests
         }
 
         [TestMethod]
+        public async Task Should_Quit_Wrong_Message()
+        {
+            var messageId = 1ul;
+            var context = new SessionContext
+            {
+                Message = _userMessageMock.Object,
+                AddReaction = _reactionMock.Object,
+            };
+
+            _userMessageMock
+                .SetupSequence(pr => pr.Id)
+                .Returns(2ul)
+                .Returns(messageId);
+
+            await _session.ExecuteAsync(context, _serviceProvider);
+        }
+
+        [TestMethod]
         public async Task Should_Modify_Message_On_Add_Reaction()
         {
             var messageId = 1ul;
-            _payload.Message = _userMessageMock.Object;
             var context = new SessionContext
             {
                 Message = _userMessageMock.Object,
@@ -89,8 +96,6 @@ namespace Sanakan.DiscordBot.Session.Tests
         public async Task Should_Modify_Message_On_Remove_Reaction()
         {
             var messageId = 1ul;
-            _payload.CurrentPage = 1;
-            _payload.Message = _userMessageMock.Object;
             var context = new SessionContext
             {
                 Message = _userMessageMock.Object,
@@ -114,10 +119,38 @@ namespace Sanakan.DiscordBot.Session.Tests
                 .ReturnsAsync(_userMessageMock.Object);
 
             _reactionMock
-                .Setup(pr => pr.Emote)
+                .SetupSequence(pr => pr.Emote)
+                .Returns(Emojis.RightwardsArrow)
                 .Returns(Emojis.LeftwardsArrow);
 
             await _session.ExecuteAsync(context, _serviceProvider);
+            await _session.ExecuteAsync(context, _serviceProvider);
+        }
+
+        [TestMethod]
+        public async Task Should_Remove_All_Reactions()
+        {
+            _userMessageMock
+                .Setup(pr => pr.RemoveAllReactionsAsync(null))
+                .Returns(Task.CompletedTask);
+
+            await _session.DisposeAsync();
+        }
+
+        [TestMethod]
+        public async Task Should_Remove_Bot_Reactions()
+        {
+            _session.ServiceProvider = _serviceProvider;
+
+            _userMessageMock
+                .Setup(pr => pr.RemoveAllReactionsAsync(null))
+                .ThrowsAsync(new Exception());
+
+            _userMessageMock
+               .Setup(pr => pr.RemoveReactionAsync(It.IsAny<IEmote>(), _userMock.Object, null))
+               .Returns(Task.CompletedTask);
+
+            await _session.DisposeAsync();
         }
     }
 }

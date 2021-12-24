@@ -31,12 +31,8 @@ namespace Sanakan.DiscordBot.Session.Tests.CraftSessionTests
                 .Setup(pr => pr.Content)
                 .Returns("dodaj 1");
 
-            _payload.Message = _userMessageMock.Object;
-            _payload.PlayerInfo = new Game.Models.PlayerInfo();
-            _payload.PlayerInfo.Items = new List<DAL.Models.Item>();
-            _payload.Items = new List<DAL.Models.Item>();
-            _payload.Items.Add(new DAL.Models.Item());
-            _payload.Items.Add(new DAL.Models.Item());
+            _ownedItems.Add(new DAL.Models.Item());
+            _ownedItems.Add(new DAL.Models.Item());
 
             await _session.ExecuteAsync(context, _serviceProvider);
         }

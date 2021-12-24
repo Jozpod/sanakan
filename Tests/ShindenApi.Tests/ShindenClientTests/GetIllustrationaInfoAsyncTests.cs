@@ -18,7 +18,7 @@ namespace Sanakan.ShindenApi.Tests
         {
             var expected = new IllustrationInfo
             {
-                Title = new IllustrationInfoTitleManga
+                Entry = new IllustrationInfoTitleManga
                 {
                     TagCategories = new AnimeMangaInfoTags
                     {
@@ -53,7 +53,7 @@ namespace Sanakan.ShindenApi.Tests
                     RatingTotalCount = 1,
                     Dmca = true,
                     TitleId = 1,
-                    TitleStatus = string.Empty,
+                    Status = MangaStatus.NotSpecified,
                     AddDate = new DateTime(2021, 11, 11, 12, 12, 12),
                     FinishDate = new DateTime(2009, 2, 13, 23, 31, 31),
                     StartDate = new DateTime(2009, 2, 13, 23, 31, 31),
@@ -109,7 +109,7 @@ namespace Sanakan.ShindenApi.Tests
         {
             var expected = new IllustrationInfo
             {
-                Title = new IllustrationInfoTitleAnime
+                Entry = new IllustrationInfoTitleAnime
                 {
                     TagCategories = new AnimeMangaInfoTags
                     {
@@ -144,7 +144,7 @@ namespace Sanakan.ShindenApi.Tests
                     RatingTotalCount = 1,
                     Dmca = false,
                     TitleId = 1,
-                    TitleStatus = string.Empty,
+                    Status = AnimeStatus.NotSpecified,
                     AddDate = new DateTime(2021, 11, 11, 12, 12, 12),
                     FinishDate = new DateTime(2009, 2, 13, 23, 31, 31),
                     StartDate = new DateTime(2009, 2, 13, 23, 31, 31),
@@ -159,7 +159,7 @@ namespace Sanakan.ShindenApi.Tests
                     {
                         AnimeType = AnimeType.Ova,
                         EpisodeTime = TimeSpan.FromMinutes(40),
-                        Episodes = 1,
+                        EpisodesCount = 1,
                         RatingMusicCnt = 1,
                         RatingGraphicsCnt = 1,
                         RatingGraphicsSum = 1,

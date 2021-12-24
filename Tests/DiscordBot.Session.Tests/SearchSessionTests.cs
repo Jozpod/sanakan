@@ -21,23 +21,31 @@ namespace Sanakan.DiscordBot.Session
     [TestClass]
     public class SearchSessionTests
     {
-        private readonly SearchSession _session;
+        private SearchSession _session;
         private readonly Mock<IUserRepository> _userRepositoryMock = new(MockBehavior.Strict);
         private readonly ServiceProvider _serviceProvider;
-        private readonly SearchSessionPayload _payload;
         private readonly Mock<IMessageChannel> _messageChannelMock = new(MockBehavior.Strict);
         private readonly Mock<IUserMessage> _userMessageMock = new(MockBehavior.Strict);
         private readonly Mock<IShindenClient> _shindenClientMock = new(MockBehavior.Strict);
+        private readonly List<QuickSearchResult> _animeMangaList = new();
+        private readonly List<CharacterSearchResult> _characterList = new();
+        private readonly Mock<IMessage> _messageMock = new(MockBehavior.Strict);
 
         public SearchSessionTests()
         {
-            _payload = new SearchSessionPayload();
+            var messages = new[] { _messageMock.Object };
+
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddSingleton(_shindenClientMock.Object);
             serviceCollection.AddSingleton(_userRepositoryMock.Object);
 
             _serviceProvider = serviceCollection.BuildServiceProvider();
-            _session = new(1ul, DateTime.UtcNow, _payload);
+            _session = new(
+                1ul,
+                DateTime.UtcNow,
+                messages,
+                _animeMangaList,
+                _characterList);
         }
 
         [TestMethod]
@@ -75,10 +83,15 @@ namespace Sanakan.DiscordBot.Session
                         {
 
                         },
+                        Type = IllustrationType.Anime,
+                        Anime = new AnimeInfo
+                        {
+                            
+                        },
                     }
                 }
             };
-            _payload.AnimeMangaList.Add(result);
+            _animeMangaList.Add(result);
 
             _shindenClientMock
                 .Setup(pr => pr.GetAnimeMangaInfoAsync(result.TitleId))
@@ -127,7 +140,7 @@ namespace Sanakan.DiscordBot.Session
 
                 }
             };
-            _payload.CharacterList.Add(result);
+            _characterList.Add(result);
 
             _shindenClientMock
                 .Setup(pr => pr.GetCharacterInfoAsync(result.Id))
@@ -148,6 +161,30 @@ namespace Sanakan.DiscordBot.Session
                 .Returns(Task.CompletedTask);
 
             await _session.ExecuteAsync(context, _serviceProvider);
+        }
+
+        [TestMethod]
+        public async Task Should_Remove_Messages()
+        {
+            var messageId = 1ul;
+
+            _messageMock
+                .Setup(pr => pr.Id)
+                .Returns(messageId);
+
+            _messageMock
+                .Setup(pr => pr.Channel)
+                .Returns(_messageChannelMock.Object);
+
+            _messageChannelMock
+                .Setup(pr => pr.GetMessageAsync(messageId, CacheMode.AllowDownload, null))
+                .ReturnsAsync(_messageMock.Object);
+
+            _messageMock
+               .Setup(pr => pr.DeleteAsync(null))
+               .Returns(Task.CompletedTask);
+
+            await _session.DisposeAsync();
         }
     }
 }

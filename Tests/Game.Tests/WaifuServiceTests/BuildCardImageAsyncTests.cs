@@ -6,6 +6,7 @@ using Sanakan.DAL.Models;
 using Sanakan.Game.Services.Abstractions;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace Sanakan.Game.Tests.WaifuServiceTests
@@ -41,8 +42,13 @@ namespace Sanakan.Game.Tests.WaifuServiceTests
                  .Setup(pr => pr.Exists(It.IsAny<string>()))
                  .Returns(true);
 
+            _fileSystemMock
+                .Setup(pr => pr.OpenRead(It.IsAny<string>()))
+                .Returns(new MemoryStream());
+
             channelMock
                 .Setup(pr => pr.SendFileAsync(
+                    It.IsAny<Stream>(),
                     It.IsAny<string>(),
                     It.IsAny<string>(),
                     It.IsAny<bool>(),

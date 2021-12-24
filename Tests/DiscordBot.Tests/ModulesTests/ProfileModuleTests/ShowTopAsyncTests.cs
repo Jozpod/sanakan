@@ -35,7 +35,7 @@ namespace DiscordBot.ModulesTests.ProfileModuleTests
                 .Returns(utcNow);
 
             _sessionManagerMock
-                .Setup(pr => pr.RemoveIfExists<ListSession<string>>(user.Id));
+                .Setup(pr => pr.RemoveIfExists<ListSession>(user.Id));
 
             _userRepositoryMock
                 .Setup(pr => pr.GetCachedAllUsersAsync())

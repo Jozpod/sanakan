@@ -143,7 +143,7 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            var notifChannel = await guild.GetChannelAsync(config.NotificationChannelId);
+            var notifyChannel = (ITextChannel)await guild.GetChannelAsync(config.NotificationChannelId);
             var userRole = guild.GetRole(config.UserRoleId!.Value);
             var muteRole = guild.GetRole(config.MuteRoleId);
 
@@ -159,28 +159,22 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            const int daysInYear = 365;
-            var duration = TimeSpan.FromDays(_randomNumberGenerator.GetRandomValue(daysInYear) + 1);
-
-            var acceptPayload = new AcceptSession.AcceptSessionPayload
-            {
-                Bot = Context.Client.CurrentUser,
-                NotifyChannel = (ITextChannel)notifChannel,
-                MuteRole = muteRole,
-                UserRole = userRole,
-                User = user,
-                Duration = duration,
-            };
-
-            var session = new AcceptSession(user.Id, _systemClock.UtcNow, acceptPayload);
             _sessionManager.RemoveIfExists<AcceptSession>(user.Id);
 
             var content = $"{user.Mention} na pewno chcesz muta?".ToEmbedMessage(EMType.Error).Build();
             var replyMessage = await ReplyAsync(embed: content);
             await replyMessage.AddReactionsAsync(_iconConfiguration.AcceptDecline);
 
-            acceptPayload.MessageId = replyMessage.Id;
-            acceptPayload.Channel = replyMessage.Channel;
+            var session = new AcceptSession(
+                user.Id,
+                _systemClock.UtcNow,
+                Context.Client.CurrentUser,
+                user,
+                replyMessage,
+                replyMessage.Channel,
+                notifyChannel,
+                userRole,
+                muteRole);
 
             _sessionManager.Add(session);
         }

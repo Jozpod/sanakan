@@ -21,7 +21,7 @@ namespace Sanakan.Daemon.HostedService
     {
         private readonly ILogger _logger;
         private readonly ISystemClock _systemClock;
-        private readonly IDiscordClientAccessor _discordSocketClientAccessor;
+        private readonly IDiscordClientAccessor _discordClientAccessor;
         private readonly IOptionsMonitor<DaemonsConfiguration> _options;
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly ITimer _timer;
@@ -42,19 +42,19 @@ namespace Sanakan.Daemon.HostedService
             _logger = logger;
             _options = options;
             _systemClock = systemClock;
-            _discordSocketClientAccessor = discordSocketClientAccessor;
+            _discordClientAccessor = discordSocketClientAccessor;
             _serviceScopeFactory = serviceScopeFactory;
             _timer = timer;
             _sessionManager = sessionManager;
             _taskManager = taskManager;
-            _discordSocketClientAccessor.LoggedIn += LoggedIn;
+            _discordClientAccessor.LoggedIn += LoggedIn;
         }
 
         private Task LoggedIn()
         {
-            _discordSocketClientAccessor.MessageReceived += HandleMessageAsync;
-            _discordSocketClientAccessor.ReactionAdded += HandleReactionAddedAsync;
-            _discordSocketClientAccessor.ReactionRemoved += HandleReactionRemovedAsync;
+            _discordClientAccessor.MessageReceived += HandleMessageAsync;
+            _discordClientAccessor.ReactionAdded += HandleReactionAddedAsync;
+            _discordClientAccessor.ReactionRemoved += HandleReactionRemovedAsync;
             return Task.CompletedTask;
         }
 
@@ -86,6 +86,8 @@ namespace Sanakan.Daemon.HostedService
             _isRunning = true;
             var utcNow = _systemClock.UtcNow;
             var expiredSessions = _sessionManager.GetExpired(utcNow);
+            using var serviceScope = _serviceScopeFactory.CreateScope();
+            var serviceProvider = serviceScope.ServiceProvider;
 
             foreach (var expiredSession in expiredSessions)
             {
@@ -98,6 +100,7 @@ namespace Sanakan.Daemon.HostedService
                     }
 
                     _sessionManager.Remove(expiredSession);
+                    expiredSession.ServiceProvider = serviceProvider;
                     await expiredSession.DisposeAsync();
                 }
                 catch (Exception ex)
@@ -112,6 +115,8 @@ namespace Sanakan.Daemon.HostedService
         private async Task RunSessions(IEnumerable<IInteractionSession> sessions, SessionContext sessionPayload)
         {
             var utcNow = _systemClock.UtcNow;
+            using var serviceScope = _serviceScopeFactory.CreateScope();
+            var serviceProvider = serviceScope.ServiceProvider;
 
             foreach (var session in sessions)
             {
@@ -121,24 +126,29 @@ namespace Sanakan.Daemon.HostedService
                     _sessionManager.Remove(session);
                 }
 
-                using var serviceScope = _serviceScopeFactory.CreateScope();
-                var serviceProvider = serviceScope.ServiceProvider;
-
-                switch (session.RunMode)
+                try
                 {
-                    case RunMode.Async:
-                        await session.ExecuteAsync(sessionPayload, serviceProvider);
-                        _sessionManager.Remove(session);
-                        await session.DisposeAsync();
-                        break;
+                    switch (session.RunMode)
+                    {
+                        case RunMode.Async:
+                            await session.ExecuteAsync(sessionPayload, serviceProvider);
+                            _sessionManager.Remove(session);
+                            await session.DisposeAsync();
+                            break;
 
-                    default:
-                    case RunMode.Sync:
-                        await session.ExecuteAsync(sessionPayload, serviceProvider);
-                        _sessionManager.Remove(session);
-                        await session.DisposeAsync();
-                        break;
+                        default:
+                        case RunMode.Sync:
+                            // TO-DO
+                            await session.ExecuteAsync(sessionPayload, serviceProvider);
+                            _sessionManager.Remove(session);
+                            await session.DisposeAsync();
+                            break;
+                    }
                 }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error occurred while handling session {0} {1}", session, session.OwnerId);
+                }              
             }
         }
 
@@ -165,7 +175,7 @@ namespace Sanakan.Daemon.HostedService
                 return;
             }
 
-            var client = _discordSocketClientAccessor.Client;
+            var client = _discordClientAccessor.Client;
 
             var sessionPayload = new SessionContext
             {
@@ -222,7 +232,7 @@ namespace Sanakan.Daemon.HostedService
                 return;
             }
 
-            var client = _discordSocketClientAccessor.Client;
+            var client = _discordClientAccessor.Client;
 
             var sessionPayload = new SessionContext
             {
@@ -267,7 +277,7 @@ namespace Sanakan.Daemon.HostedService
                 return;
             }
 
-            var client = _discordSocketClientAccessor.Client;
+            var client = _discordClientAccessor.Client;
 
             var message = await channel.GetMessageAsync(userMessage.Id);
             if (message == null)

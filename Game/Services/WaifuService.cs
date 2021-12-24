@@ -17,6 +17,7 @@ using Sanakan.ShindenApi.Models;
 using Sanakan.ShindenApi.Utilities;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -1186,7 +1187,8 @@ namespace Sanakan.Game.Services
 
                 if (imageUrl != null)
                 {
-                    var message = await trashChannel.SendFileAsync(imageUrl);
+                    var stream = _fileSystem.OpenRead(imageUrl);
+                    var message = await trashChannel.SendFileAsync(stream, Path.GetFileName(imageUrl));
                     imageUrl = message.Attachments.First().Url;
                 }
             }

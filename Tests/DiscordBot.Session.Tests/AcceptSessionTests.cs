@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
+using Sanakan.Common;
 using Sanakan.DAL.Models.Management;
 using Sanakan.DiscordBot.Abstractions;
 using Sanakan.DiscordBot.Abstractions.Configuration;
@@ -20,62 +21,133 @@ namespace Sanakan.DiscordBot.Session.Tests
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly AcceptSession _session;
-        private readonly AcceptSessionPayload _payload;
         private readonly Mock<IModeratorService> _moderatorServiceMock = new(MockBehavior.Strict);
-        
+        private readonly Mock<IRandomNumberGenerator> _randomNumberGeneratorMock = new(MockBehavior.Strict);
+        private readonly Mock<IUserMessage> _userMessageMock = new(MockBehavior.Strict);
+        private readonly Mock<IMessageChannel> _messageChannelMock = new(MockBehavior.Strict);
+        private readonly Mock<IMessageChannel> _notifyChannelMock = new(MockBehavior.Strict);
+        private readonly Mock<IUser> _botUserMock = new(MockBehavior.Strict);
+        private readonly Mock<IGuildUser> _guildUserMock = new(MockBehavior.Strict);
+        private readonly Mock<IReaction> _reactionMock = new(MockBehavior.Strict);
+        private readonly Mock<IRole> _muteRoleMock = new(MockBehavior.Strict);
+        private readonly Mock<IRole> _userRoleMock = new(MockBehavior.Strict);
+
         public AcceptSessionTests()
         {
-            _payload = new AcceptSessionPayload
-            {
-
-            };
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddSingleton<IIconConfiguration>(new DefaultIconConfiguration());
             serviceCollection.AddSingleton(_moderatorServiceMock.Object);
+            serviceCollection.AddSingleton(_randomNumberGeneratorMock.Object);
             _serviceProvider = serviceCollection.BuildServiceProvider();
 
-            _session = new(1ul, DateTime.UtcNow, _payload);
+            _session = new(
+                1ul,
+                DateTime.UtcNow,
+                _botUserMock.Object,
+                _guildUserMock.Object,
+                _userMessageMock.Object,
+                _messageChannelMock.Object,
+                _notifyChannelMock.Object,
+                _userRoleMock.Object,
+                _muteRoleMock.Object);
+        }
+
+        [TestMethod]
+        public async Task Should_Quit_Wrong_Message()
+        {
+            var messageId = 1ul;
+            var context = new SessionContext
+            {
+                UserId = 1ul,
+                Message = _userMessageMock.Object,
+                AddReaction = _reactionMock.Object,
+            };
+
+            _userMessageMock
+                .SetupSequence(pr => pr.Id)
+                .Returns(2ul)
+                .Returns(messageId);
+
+            await _session.ExecuteAsync(context, _serviceProvider);
+        }
+
+        [TestMethod]
+        public async Task Should_Quit_Wrong_User()
+        {
+            var messageId = 1ul;
+            var context = new SessionContext
+            {
+                UserId = 2ul,
+                Message = _userMessageMock.Object,
+                AddReaction = _reactionMock.Object,
+            };
+
+            _userMessageMock
+                .SetupSequence(pr => pr.Id)
+                .Returns(messageId);
+
+            await _session.ExecuteAsync(context, _serviceProvider);
+        }
+
+        [TestMethod]
+        public async Task Should_Quit_Wrong_Emoji()
+        {
+            var messageId = 1ul;
+            var context = new SessionContext
+            {
+                UserId = 1ul,
+                Message = _userMessageMock.Object,
+                AddReaction = _reactionMock.Object,
+            };
+
+            _userMessageMock
+                .SetupSequence(pr => pr.Id)
+                .Returns(messageId);
+
+            _reactionMock
+                .Setup(pr => pr.Emote)
+                .Returns(Emojis.HandSign);
+
+            await _session.ExecuteAsync(context, _serviceProvider);
         }
 
         [TestMethod]
         public async Task Should_Handle_Accept()
         {
-            _payload.MessageId = 1ul;
-            var messageChannelMock = new Mock<IMessageChannel>(MockBehavior.Strict);
-            var userMessageMock = new Mock<IUserMessage>(MockBehavior.Strict);
-            var guildUserMock = new Mock<IGuildUser>(MockBehavior.Strict);
-            var reactionMock = new Mock<IReaction>(MockBehavior.Strict);
-            _payload.User = guildUserMock.Object;
-            _payload.Channel = messageChannelMock.Object;
+            var messageId = 1ul;
             var context = new SessionContext
             {
                 UserId = 1ul,
-                Message = userMessageMock.Object,
-                AddReaction = reactionMock.Object,
+                Message = _userMessageMock.Object,
+                AddReaction = _reactionMock.Object,
             };
             var penaltyInfo = new PenaltyInfo();
 
-            guildUserMock
+            _guildUserMock
                .Setup(pr => pr.Mention)
                .Returns("user mention");
 
-            reactionMock
+            _reactionMock
                 .Setup(pr => pr.Emote)
                 .Returns(Emojis.Checked);
 
-            userMessageMock
+            _userMessageMock
                 .Setup(pr => pr.Id)
-                .Returns(_payload.MessageId);
+                .Returns(messageId);
 
-            userMessageMock
+            _userMessageMock
                 .Setup(pr => pr.DeleteAsync(null))
                 .Returns(Task.CompletedTask);
 
-            messageChannelMock
-                .Setup(pr => pr.GetMessageAsync(_payload.MessageId, CacheMode.AllowDownload, null))
-                .ReturnsAsync(userMessageMock.Object);
+            _messageChannelMock
+                .Setup(pr => pr.GetMessageAsync(messageId, CacheMode.AllowDownload, null))
+                .ReturnsAsync(_userMessageMock.Object);
 
-            messageChannelMock
+            _randomNumberGeneratorMock
+                .Setup(pr => pr.GetRandomValue(365))
+                .Returns(1);
+
+            _messageChannelMock
                 .Setup(pr => pr.SendMessageAsync(
                     It.IsAny<string>(),
                     It.IsAny<bool>(),
@@ -83,21 +155,25 @@ namespace Sanakan.DiscordBot.Session.Tests
                     It.IsAny<RequestOptions>(),
                     It.IsAny<AllowedMentions>(),
                     It.IsAny<MessageReference>()))
-                .ReturnsAsync(userMessageMock.Object);
+                .ReturnsAsync(_userMessageMock.Object);
 
             _moderatorServiceMock
                 .Setup(pr => pr.MuteUserAsync(
-                    _payload.User,
-                    _payload.MuteRole,
+                    _guildUserMock.Object,
+                    _muteRoleMock.Object,
                     null,
-                    _payload.UserRole,
-                    _payload.Duration,
+                    _userRoleMock.Object,
+                    It.IsAny<TimeSpan>(),
                     It.IsAny<string>(),
                     null))
                 .ReturnsAsync(penaltyInfo);
 
             _moderatorServiceMock
-                .Setup(pr => pr.NotifyAboutPenaltyAsync(_payload.User, _payload.NotifyChannel, penaltyInfo, "Sanakan"))
+                .Setup(pr => pr.NotifyAboutPenaltyAsync(
+                    _guildUserMock.Object,
+                    _notifyChannelMock.Object,
+                    penaltyInfo,
+                    "Sanakan"))
                 .Returns(Task.CompletedTask);
 
             await _session.ExecuteAsync(context, _serviceProvider);
@@ -106,33 +182,53 @@ namespace Sanakan.DiscordBot.Session.Tests
         [TestMethod]
         public async Task Should_Handle_Decline()
         {
-            _payload.MessageId = 1ul;
-            var messageChannelMock = new Mock<IMessageChannel>(MockBehavior.Strict);
-            var userMessageMock = new Mock<IUserMessage>(MockBehavior.Strict);
-            var guildUserMock = new Mock<IGuildUser>(MockBehavior.Strict);
-            var reactionMock = new Mock<IReaction>(MockBehavior.Strict);
-            _payload.User = guildUserMock.Object;
-            _payload.Channel = messageChannelMock.Object;
+            var messageId = 1ul;
             var context = new SessionContext
             {
                 UserId = 1ul,
-                Message = userMessageMock.Object,
-                AddReaction = reactionMock.Object,
+                Message = _userMessageMock.Object,
+                AddReaction = _reactionMock.Object,
             };
 
-            reactionMock
+            _reactionMock
                 .Setup(pr => pr.Emote)
                 .Returns(Emotes.DeclineEmote);
 
-            userMessageMock
+            _userMessageMock
                 .Setup(pr => pr.Id)
-                .Returns(_payload.MessageId);
+                .Returns(messageId);
 
-            messageChannelMock
-                .Setup(pr => pr.GetMessageAsync(_payload.MessageId, CacheMode.AllowDownload, null))
-                .ReturnsAsync(userMessageMock.Object);
+            _messageChannelMock
+                .Setup(pr => pr.GetMessageAsync(messageId, CacheMode.AllowDownload, null))
+                .ReturnsAsync(_userMessageMock.Object);
 
             await _session.ExecuteAsync(context, _serviceProvider);
+        }
+
+        [TestMethod]
+        public async Task Should_Remove_Reaction()
+        {
+            _session.ServiceProvider = _serviceProvider;
+
+            _userMessageMock
+                .Setup(pr => pr.RemoveAllReactionsAsync(null))
+                .ThrowsAsync(new Exception());
+
+            _userMessageMock
+                .Setup(pr => pr.RemoveReactionAsync(It.IsAny<IEmote>(), It.IsAny<IUser>(), null))
+                .Returns(Task.CompletedTask);
+
+            await _session.DisposeAsync();
+        }
+
+        [TestMethod]
+        public async Task Should_Remove_Reactions()
+        {
+            _userMessageMock
+                .Setup(pr => pr.RemoveAllReactionsAsync(null))
+                .Returns(Task.CompletedTask);
+
+            await _session.DisposeAsync();
         }
     }
 }

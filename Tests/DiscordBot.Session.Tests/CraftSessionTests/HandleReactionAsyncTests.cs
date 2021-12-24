@@ -46,9 +46,6 @@ namespace Sanakan.DiscordBot.Session.Tests.CraftSessionTests
                 .Returns(1ul)
                 .Returns(1ul);
 
-            _payload.Message = _userMessageMock.Object;
-            _payload.PlayerInfo = new Game.Models.PlayerInfo();
-
             await _session.ExecuteAsync(context, _serviceProvider);
         }
 
@@ -61,18 +58,16 @@ namespace Sanakan.DiscordBot.Session.Tests.CraftSessionTests
                 AddReaction = _reactionMock.Object,
             };
 
-            _payload.Message = _userMessageMock.Object;
-            _payload.PlayerInfo = new Game.Models.PlayerInfo
-            {
-                DiscordId = 1ul,
-            };
-            _payload.PlayerInfo.Accepted = true;
             var utcNow = DateTime.UtcNow;
             var user = new User(1ul, utcNow);
             var card = new Card(1ul, "title", "name", 100, 50, Rarity.E, Dere.Bodere, DateTime.UtcNow);
             var item = new Item { Quality = Quality.Alpha, Type = ItemType.AffectionRecoveryBig };
             user.GameDeck.Items.Add(item);
-            _payload.PlayerInfo.Items.Add(item);
+
+            _playerInfo.DiscordId = 1ul;
+            _playerInfo.Accepted = true;
+            _playerInfo.Items.Add(item);
+
             card.Id = 1ul;
             var characterInfo = new ShindenApi.Models.CharacterInfo();
 
@@ -94,7 +89,7 @@ namespace Sanakan.DiscordBot.Session.Tests.CraftSessionTests
                .Returns(Emojis.Checked);
 
             _userRepositoryMock
-                .Setup(pr => pr.GetUserOrCreateAsync(_payload.PlayerInfo.DiscordId))
+                .Setup(pr => pr.GetUserOrCreateAsync(_playerInfo.DiscordId))
                 .ReturnsAsync(user);
 
             _waifuServiceMock
@@ -103,7 +98,7 @@ namespace Sanakan.DiscordBot.Session.Tests.CraftSessionTests
 
             _waifuServiceMock
                 .Setup(pr => pr.GenerateNewCard(
-                    _payload.PlayerInfo.DiscordId,
+                    _playerInfo.DiscordId,
                     characterInfo,
                     It.IsAny<Rarity>()))
                 .Returns(card);
@@ -116,6 +111,16 @@ namespace Sanakan.DiscordBot.Session.Tests.CraftSessionTests
                .Setup(pr => pr.ExpireTag(It.IsAny<string[]>()));
 
             await _session.ExecuteAsync(context, _serviceProvider);
+        }
+
+        [TestMethod]
+        public async Task Should_Remove_Reactions()
+        {
+            _userMessageMock
+                .Setup(pr => pr.RemoveAllReactionsAsync(null))
+                .Returns(Task.CompletedTask);
+
+            await _session.DisposeAsync();
         }
     }
 }

@@ -6,11 +6,13 @@ using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.Primitives;
 using SixLabors.Shapes;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 
 namespace Sanakan.Extensions
 {
+    [ExcludeFromCodeCoverage]
     public static class ImageExtension
     {
         private static IImageEncoder _jpgEncoder = new JpegEncoder() { Quality = 85 };

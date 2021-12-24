@@ -323,32 +323,35 @@ namespace Sanakan.DiscordBot.Modules
         public async Task ShowTopAsync(
             [Summary("rodzaj topki (poziom/sc/tc/pc/ac/posty(m/ms)/kart(a/y/ym)/karma(-))/pvp(s)")] TopType topType = TopType.Level)
         {
-            var payload = new ListSession<string>.ListSessionPayload
-            {
-                Bot = Context.Client.CurrentUser,
-            };
-
             var utcNow = _systemClock.UtcNow;
             var discordUserId = Context.User.Id;
-            var session = new ListSession<string>(discordUserId, utcNow, payload, SessionExecuteCondition.ReactionAdded);
-            _sessionManager.RemoveIfExists<ListSession<string>>(discordUserId);
+            
+            _sessionManager.RemoveIfExists<ListSession>(discordUserId);
 
             var building = await ReplyAsync(embed: $"🔨 Trwa budowanie topki...".ToEmbedMessage(EMType.Bot).Build());
             var users = await _userRepository.GetCachedAllUsersAsync();
             var topUsers = _profileService.GetTopUsers(users, topType, utcNow);
-            payload.ListItems = await _profileService.BuildListViewAsync(topUsers, topType, Context.Guild);
+            var items = await _profileService.BuildListViewAsync(topUsers, topType, Context.Guild);
 
-            payload.Embed = new EmbedBuilder
+            var embedBuilder = new EmbedBuilder
             {
                 Color = EMType.Info.Color(),
                 Title = $"Topka {topType.Name()}"
             };
 
             await building.DeleteAsync();
-            var message = await ReplyAsync(embed: session.BuildPage(0));
+            var embed = ListSessionUtils.BuildPage(embedBuilder, items);
+            var message = await ReplyAsync(embed: embed);
             await message.AddReactionsAsync(_iconConfiguration.LeftRightArrows);
+            var bot = Context.Client.CurrentUser;
 
-            payload.Message = message;
+            var session = new ListSession(
+                discordUserId,
+                utcNow,
+                items,
+                bot,
+                message,
+                embedBuilder);
             _sessionManager.Add(session);
         }
 

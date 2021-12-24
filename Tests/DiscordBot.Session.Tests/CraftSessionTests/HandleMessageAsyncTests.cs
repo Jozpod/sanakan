@@ -39,9 +39,6 @@ namespace Sanakan.DiscordBot.Session.Tests.CraftSessionTests
                 .Returns(1ul)
                 .Returns(1ul);
 
-            _payload.Message = _userMessageMock.Object;
-            _payload.PlayerInfo = new Game.Models.PlayerInfo();
-
             await _session.ExecuteAsync(context, _serviceProvider);
         }
 
@@ -63,9 +60,6 @@ namespace Sanakan.DiscordBot.Session.Tests.CraftSessionTests
                 .Returns(1ul)
                 .Returns(1ul);
 
-            _payload.Message = _userMessageMock.Object;
-            _payload.PlayerInfo = new Game.Models.PlayerInfo();
-
             await _session.ExecuteAsync(context, _serviceProvider);
         }
 
@@ -86,9 +80,6 @@ namespace Sanakan.DiscordBot.Session.Tests.CraftSessionTests
                 .SetupSequence(pr => pr.Id)
                 .Returns(1ul)
                 .Returns(2ul);
-
-            _payload.Message = _userMessageMock.Object;
-            _payload.PlayerInfo = new Game.Models.PlayerInfo();
 
             await _session.ExecuteAsync(context, _serviceProvider);
         }
@@ -114,9 +105,6 @@ namespace Sanakan.DiscordBot.Session.Tests.CraftSessionTests
             _userMessageMock
                 .Setup(pr => pr.Content)
                 .Returns(" ");
-
-            _payload.Message = _userMessageMock.Object;
-            _payload.PlayerInfo = new Game.Models.PlayerInfo();
 
             await _session.ExecuteAsync(context, _serviceProvider);
         }

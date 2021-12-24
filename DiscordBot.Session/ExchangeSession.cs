@@ -20,39 +20,37 @@ namespace Sanakan.DiscordBot.Session
 {
     public class ExchangeSession : InteractionSession
     {
-        private readonly ExchangeSessionPayload _payload;
         private ICacheManager _cacheManager = null;
         private IIconConfiguration _iconConfiguration = null;
         private IServiceProvider _serviceProvider = null;
-
-        public class ExchangeSessionPayload
-        {
-            public IMessage Message { get; set; } = null;
-
-            public PlayerInfo SourcePlayer { get; set; } = null;
-
-            public PlayerInfo DestinationPlayer { get; set; } = null;
-
-            public string Name { get; set; } = null;
-
-            public string Tips { get; set; } = null;
-
-            public ExchangeStatus State { get; set; } = ExchangeStatus.Add;
-
-        }
+        private readonly IUserMessage _userMessage;
+        private readonly PlayerInfo _sourcePlayer;
+        private readonly PlayerInfo _destinationPlayer;
+        private string _name;
+        private string _tips;
+        private ExchangeStatus _state;
 
         public ExchangeSession(
-          ulong ownerId,
-          DateTime createdOn,
-          ExchangeSessionPayload payload)
-            : base(
+            ulong ownerId,
+            DateTime createdOn,
+            IUserMessage userMessage,
+            PlayerInfo sourcePlayer,
+            PlayerInfo destinationPlayer,
+            string name,
+            string tips)
+        : base(
           ownerId,
           createdOn,
           TimeSpan.FromMinutes(2),
           Discord.Commands.RunMode.Sync,
           SessionExecuteCondition.AllEvents)
         {
-            _payload = payload;
+            _userMessage = userMessage;
+            _sourcePlayer = sourcePlayer;
+            _destinationPlayer = destinationPlayer;
+            _name = name;
+            _tips = tips;
+            _state = ExchangeStatus.Add;
         }
 
         public override async Task ExecuteAsync(
@@ -60,23 +58,47 @@ namespace Sanakan.DiscordBot.Session
            IServiceProvider serviceProvider,
            CancellationToken cancellationToken = default)
         {
-            IsRunning = true;
-            _serviceProvider = serviceProvider;
-
-            if (_payload.SourcePlayer == null || _payload.DestinationPlayer == null || _payload.Message == null)
+            try
             {
-                return;
-            }
+                IsRunning = true;
+                _serviceProvider = serviceProvider;
 
-            _iconConfiguration = _serviceProvider.GetRequiredService<IIconConfiguration>();
-            await HandleMessageAsync(sessionContext);
-            await HandleReactionAsync(sessionContext);
-            IsRunning = false;
+                _iconConfiguration = _serviceProvider.GetRequiredService<IIconConfiguration>();
+
+                var messageId = _userMessage.Id;
+                var reaction = sessionContext.AddReaction ?? sessionContext.RemoveReaction;
+
+                if (sessionContext.Message.Id == messageId)
+                {
+                    if (reaction == null)
+                    {
+                        return;
+                    }
+
+                    await HandleReactionAsync(reaction);
+                }
+                else
+                {
+                    if (reaction != null)
+                    {
+                        return;
+                    }
+
+                    await HandleMessageAsync(sessionContext);
+                }
+
+                IsRunning = false;
+            }
+            finally
+            {
+                IsRunning = true;
+            }
+           
         }
 
         public Embed BuildEmbed()
         {
-            var description = $"{_payload.Name}\n\n{_payload.SourcePlayer.CustomString}\n\n{_payload.DestinationPlayer.CustomString}\n\n{_payload.Tips}".ElipseTrimToLength(2000);
+            var description = $"{_name}\n\n{_sourcePlayer.CustomString}\n\n{_destinationPlayer.CustomString}\n\n{_tips}".ElipseTrimToLength(2000);
             return new EmbedBuilder
             {
                 Color = EMType.Warning.Color(),
@@ -86,22 +108,12 @@ namespace Sanakan.DiscordBot.Session
 
         private async Task HandleMessageAsync(SessionContext context)
         {
-            if (context.AddReaction != null || context.RemoveReaction != null)
+            if (_state != ExchangeStatus.Add)
             {
                 return;
             }
 
-            if (_payload.State != ExchangeStatus.Add)
-            {
-                return;
-            }
-
-            if (context.Message.Id == _payload.Message.Id)
-            {
-                return;
-            }
-
-            if (context.Message.Channel.Id != _payload.Message.Channel.Id)
+            if (context.Message.Channel.Id != _userMessage.Channel.Id)
             {
                 return;
             }
@@ -130,16 +142,16 @@ namespace Sanakan.DiscordBot.Session
             var userMessage = context.Message;
             var userId = context.UserId;
 
-            if (userId == _payload.SourcePlayer.DiscordId)
+            if (userId == _sourcePlayer.DiscordId)
             {
-                thisPlayer = _payload.SourcePlayer;
-                targetPlayer = _payload.DestinationPlayer;
+                thisPlayer = _sourcePlayer;
+                targetPlayer = _destinationPlayer;
             }
 
-            if (userId == _payload.DestinationPlayer.DiscordId)
+            if (userId == _destinationPlayer.DiscordId)
             {
-                thisPlayer = _payload.DestinationPlayer;
-                targetPlayer = _payload.SourcePlayer;
+                thisPlayer = _destinationPlayer;
+                targetPlayer = _sourcePlayer;
             }
 
             if (thisPlayer == null)
@@ -158,13 +170,14 @@ namespace Sanakan.DiscordBot.Session
 
                 if (ulong.TryParse(WIDStr, out var WID))
                 {
-                    await HandleDeleteAsync(thisPlayer, WID, userMessage!);
+                    await HandleDeleteAsync(thisPlayer, WID!);
                 }
                 ResetExpiry();
             }
             else if (commandType.Contains("dodaj"))
             {
                 var ids = new List<ulong>();
+
                 foreach (var WIDStr in splitedCommand)
                 {
                     if (ulong.TryParse(WIDStr, out var WID))
@@ -175,7 +188,7 @@ namespace Sanakan.DiscordBot.Session
 
                 if (ids.Any())
                 {
-                    await HandleAddAsync(thisPlayer, ids, userMessage!, targetPlayer!);
+                    await HandleAddAsync(thisPlayer, ids, targetPlayer!);
                 }
                 else
                 {
@@ -186,49 +199,49 @@ namespace Sanakan.DiscordBot.Session
             }
         }
 
-        private async Task HandleAddAsync(PlayerInfo player, IEnumerable<ulong> wids, IUserMessage message, PlayerInfo target)
+        private async Task HandleAddAsync(PlayerInfo player, IEnumerable<ulong> cardIds, PlayerInfo target)
         {
-            bool error = false;
+            bool hasError = false;
             bool added = false;
             var gameDeckCards = player.DatabaseUser.GameDeck.Cards;
-            var cards = wids.Join(gameDeckCards, pr => pr, pr => pr.Id, (src, dst) => dst);
+            var cards = cardIds.Join(gameDeckCards, pr => pr, pr => pr.Id, (src, dst) => dst);
             var targetGamedeck = target.DatabaseUser.GameDeck;
 
             foreach (var card in cards)
             {
                 if (card == null)
                 {
-                    error = true;
+                    hasError = true;
                     continue;
                 }
 
                 if (card.Expedition != ExpeditionCardType.None)
                 {
-                    error = true;
+                    hasError = true;
                     continue;
                 }
 
                 if (card.InCage || !card.IsTradable || card.IsBroken)
                 {
-                    error = true;
+                    hasError = true;
                     continue;
                 }
 
                 if (card.Dere == Dere.Yato)
                 {
-                    error = true;
+                    hasError = true;
                     continue;
                 }
 
                 if (card.Dere == Dere.Yami && targetGamedeck.IsGood())
                 {
-                    error = true;
+                    hasError = true;
                     continue;
                 }
 
                 if (card.Dere == Dere.Raito && targetGamedeck.IsEvil())
                 {
-                    error = true;
+                    hasError = true;
                     continue;
                 }
 
@@ -241,14 +254,14 @@ namespace Sanakan.DiscordBot.Session
                 {
                     if (card.PAS != PreAssembledFigure.None)
                     {
-                        error = true;
+                        hasError = true;
                         continue;
                     }
 
                     if (targetGamedeck.Cards
                         .Any(x => x.FromFigure && x.CharacterId == card.CharacterId))
                     {
-                        error = true;
+                        hasError = true;
                         continue;
                     }
                 }
@@ -262,27 +275,24 @@ namespace Sanakan.DiscordBot.Session
 
             if (added)
             {
-                await message.AddReactionAsync(_iconConfiguration.InboxTray);
+                await _userMessage.AddReactionAsync(_iconConfiguration.InboxTray);
             }
 
-            if (error)
+            if (hasError)
             {
-                await message.AddReactionAsync(_iconConfiguration.CrossMark);
+                await _userMessage.AddReactionAsync(_iconConfiguration.CrossMark);
             }
 
-            if (await _payload.Message.Channel.GetMessageAsync(_payload.Message.Id) is IUserMessage userMessage)
-            {
-                var embed = BuildEmbed();
-                await userMessage.ModifyAsync(x => x.Embed = embed);
-            }
+            var embed = BuildEmbed();
+            await _userMessage.ModifyAsync(x => x.Embed = embed);
         }
 
-        private async Task HandleDeleteAsync(PlayerInfo player, ulong wid, IUserMessage message)
+        private async Task HandleDeleteAsync(PlayerInfo player, ulong cardId)
         {
-            var card = player.Cards.FirstOrDefault(x => x.Id == wid);
+            var card = player.Cards.FirstOrDefault(x => x.Id == cardId);
             if (card == null)
             {
-                await message.AddReactionAsync(_iconConfiguration.CrossMark);
+                await _userMessage.AddReactionAsync(_iconConfiguration.CrossMark);
                 return;
             }
 
@@ -295,12 +305,8 @@ namespace Sanakan.DiscordBot.Session
             player.Cards.Remove(card);
             player.CustomString = BuildProposition(player);
 
-            await message.AddReactionAsync(Emojis.OutboxTray);
-
-            if (await _payload.Message.Channel.GetMessageAsync(_payload.Message.Id) is IUserMessage userMessage)
-            {
-                await userMessage.ModifyAsync(x => x.Embed = BuildEmbed());
-            }
+            await _userMessage.AddReactionAsync(Emojis.OutboxTray);
+            await _userMessage.ModifyAsync(x => x.Embed = BuildEmbed());
         }
 
         public string BuildProposition(PlayerInfo player)
@@ -314,85 +320,74 @@ namespace Sanakan.DiscordBot.Session
             return $"{mention} oferuje:\n{string.Join("\n", player.Cards.Select(x => x.GetString(false, false, true)))}";
         }
 
-        private async Task HandleReactionAsync(SessionContext context)
+        private async Task HandleReactionAsync(IReaction reaction)
         {
-            var messageId = _payload.Message.Id;
-
-            if (context.Message.Id != messageId)
-            {
-                return;
-            }
-
-            if (!(await _payload.Message.Channel.GetMessageAsync(messageId) is IUserMessage message))
-            {
-                return;
-            }
-
-            var reaction = context.AddReaction ?? context.RemoveReaction;
-
-            if (reaction == null || message == null)
-            {
-                return;
-            }
-
-            switch (_payload.State)
+            switch (_state)
             {
                 case ExchangeStatus.AcceptSourcePlayer:
-                    await HandleUserReactionInAccept(reaction, _payload.SourcePlayer, message);
+                    await HandleUserReactionInAccept(reaction, _sourcePlayer);
                     break;
 
                 case ExchangeStatus.AcceptDestinationPlayer:
-                    await HandleUserReactionInAccept(reaction, _payload.DestinationPlayer, message);
+                    await HandleUserReactionInAccept(reaction, _destinationPlayer);
                     break;
 
                 default:
                 case ExchangeStatus.Add:
-                    await HandleReactionInAdd(reaction, message);
+                    await HandleReactionInAdd(reaction);
                     break;
             }
 
         }
 
-        private async Task HandleReactionInAdd(IReaction reaction, IUserMessage userMessage)
+        private async Task HandleReactionInAdd(IReaction reaction)
         {
             var userId = reaction.GetUserId();
             var emote = reaction.Emote;
 
-            if (emote.Equals(_iconConfiguration.OneEmote) && userId == _payload.SourcePlayer.DiscordId)
+            if (emote.Equals(_iconConfiguration.OneEmote) && userId == _sourcePlayer.DiscordId)
             {
-                _payload.SourcePlayer.Accepted = true;
+                _sourcePlayer.Accepted = true;
                 ResetExpiry();
             }
-            else if (emote.Equals(_iconConfiguration.TwoEmote) && userId == _payload.DestinationPlayer.DiscordId)
+            else if (emote.Equals(_iconConfiguration.TwoEmote) && userId == _destinationPlayer.DiscordId)
             {
-                _payload.DestinationPlayer.Accepted = true;
+                _destinationPlayer.Accepted = true;
                 ResetExpiry();
             }
 
-            if (_payload.SourcePlayer.Accepted && _payload.DestinationPlayer.Accepted)
+            if (_sourcePlayer.Accepted && _destinationPlayer.Accepted)
             {
-                _payload.State = ExchangeStatus.AcceptSourcePlayer;
-                _payload.Tips = $"{_payload.SourcePlayer.Mention} daj {_iconConfiguration.Accept} aby zaakceptować, lub {_iconConfiguration.Decline} aby odrzucić.";
+                _state = ExchangeStatus.AcceptSourcePlayer;
+                _tips = $"{_sourcePlayer.Mention} daj {_iconConfiguration.Accept} aby zaakceptować, lub {_iconConfiguration.Decline} aby odrzucić.";
 
-                await userMessage.RemoveAllReactionsAsync();
-                await userMessage.ModifyAsync(x => x.Embed = BuildEmbed());
-                await userMessage.AddReactionsAsync(_iconConfiguration.AcceptDecline);
+                await _userMessage.RemoveAllReactionsAsync();
+                await _userMessage.ModifyAsync(x => x.Embed = BuildEmbed());
+                await _userMessage.AddReactionsAsync(_iconConfiguration.AcceptDecline);
             }
         }
 
-        public double GetAvgValue(List<Card> cards)
+        public double GetAverageValue(IEnumerable<Card> cards)
         {
-            if (cards.Count < 1) return 0.01;
+            if (!cards.Any())
+            {
+                return 0.01;
+            }
+
             return cards.Average(x => x.MarketValue);
         }
 
-        public double GetAvgRarity(List<Card> cards)
+        public double GetAverageRarity(IEnumerable<Card> cards)
         {
-            if (cards.Count < 1) return (int)Rarity.E;
+            if (!cards.Any())
+            {
+                return (int)Rarity.E;
+            }
+
             return cards.Average(x => (int)x.Rarity);
         }
 
-        private async Task HandleUserReactionInAccept(IReaction reaction, PlayerInfo player, IUserMessage message)
+        private async Task HandleUserReactionInAccept(IReaction reaction, PlayerInfo player)
         {
             var messageChannel = false;
             var userRepository = _serviceProvider.GetRequiredService<IUserRepository>();
@@ -407,33 +402,33 @@ namespace Sanakan.DiscordBot.Session
 
             if (emote.Equals(_iconConfiguration.Accept))
             {
-                if (_payload.State == ExchangeStatus.AcceptSourcePlayer)
+                if (_state == ExchangeStatus.AcceptSourcePlayer)
                 {
                     messageChannel = true;
                     ResetExpiry();
-                    _payload.State = ExchangeStatus.AcceptDestinationPlayer;
-                    _payload.Tips = $"{_payload.DestinationPlayer.Mention} daj {_iconConfiguration.Accept} aby zaakceptować, lub {_iconConfiguration.Decline} aby odrzucić.";
+                    _state = ExchangeStatus.AcceptDestinationPlayer;
+                    _tips = $"{_destinationPlayer.Mention} daj {_iconConfiguration.Accept} aby zaakceptować, lub {_iconConfiguration.Decline} aby odrzucić.";
                 }
-                else if (_payload.State == ExchangeStatus.AcceptDestinationPlayer)
+                else if (_state == ExchangeStatus.AcceptDestinationPlayer)
                 {
-                    _payload.Tips = $"Wymiana zakończona!";
+                    _tips = $"Wymiana zakończona!";
                     messageChannel = true;
-                    var sourceCards = _payload.SourcePlayer.Cards;
-                    var destinationCards = _payload.DestinationPlayer.Cards;
+                    var sourceCards = _sourcePlayer.Cards;
+                    var destinationCards = _destinationPlayer.Cards;
 
                     if (sourceCards.Count == 0 && destinationCards.Count == 0)
                     {
                         return;
                     }
 
-                    var sourceUser = await userRepository.GetUserOrCreateAsync(_payload.SourcePlayer.DiscordId);
-                    var destinationUser = await userRepository.GetUserOrCreateAsync(_payload.DestinationPlayer.DiscordId);
+                    var sourceUser = await userRepository.GetUserOrCreateAsync(_sourcePlayer.DiscordId);
+                    var destinationUser = await userRepository.GetUserOrCreateAsync(_destinationPlayer.DiscordId);
 
-                    double avgValueP1 = GetAvgValue(sourceCards);
-                    double avgValueP2 = GetAvgValue(destinationCards);
+                    var avgValueP1 = GetAverageValue(sourceCards);
+                    var avgValueP2 = GetAverageValue(destinationCards);
 
-                    double avgRarP1 = GetAvgRarity(sourceCards);
-                    double avgRarP2 = GetAvgRarity(destinationCards);
+                    var avgRarP1 = GetAverageRarity(sourceCards);
+                    var avgRarP2 = GetAverageRarity(destinationCards);
 
                     var avgRarDif = avgRarP1 - avgRarP2;
 
@@ -542,50 +537,35 @@ namespace Sanakan.DiscordBot.Session
 
                     await userRepository.SaveChangesAsync();
 
-                    _payload.State = ExchangeStatus.End;
+                    _state = ExchangeStatus.End;
 
                     _cacheManager.ExpireTag(
-                        CacheKeys.User(_payload.SourcePlayer.DiscordId),
-                        CacheKeys.User(_payload.DestinationPlayer.DiscordId),
+                        CacheKeys.User(_sourcePlayer.DiscordId),
+                        CacheKeys.User(_destinationPlayer.DiscordId),
                         CacheKeys.Users);
                 }
             }
             else if (emote.Equals(_iconConfiguration.Decline)
-                    && _payload.State != ExchangeStatus.End)
+                    && _state != ExchangeStatus.End)
             {
                 ResetExpiry();
-                _payload.Tips = $"{player.Mention} odrzucił propozycje wymiany!";
+                _tips = $"{player.Mention} odrzucił propozycje wymiany!";
                 messageChannel = true;
             }
 
-            if (message != null && messageChannel)
+            if (messageChannel)
             {
-                await message.ModifyAsync(x => x.Embed = BuildEmbed());
+                await _userMessage.ModifyAsync(x => x.Embed = BuildEmbed());
             }
         }
 
         public override async ValueTask DisposeAsync()
         {
-            if (_payload.Message == null)
+            try
             {
-                return;
+                await _userMessage.RemoveAllReactionsAsync();
             }
-
-            if (await _payload.Message.Channel.GetMessageAsync(_payload.Message.Id) is IUserMessage userMessage)
-            {
-                try
-                {
-                    await userMessage.RemoveAllReactionsAsync();
-                }
-                catch (Exception) { }
-            }
-
-            _payload.Message = null;
-            _payload.Name = null;
-            _payload.Tips = null;
-            _payload.SourcePlayer = null;
-            _payload.DestinationPlayer = null;
-            _serviceProvider = null;
+            catch (Exception) { }
         }
     }
 }

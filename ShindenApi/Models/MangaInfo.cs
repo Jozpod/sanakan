@@ -11,7 +11,7 @@ namespace Sanakan.ShindenApi.Models
         public ulong? TitleId { get; set; }
 
         [JsonPropertyName("chapters")]
-        public ulong ChaptersCount { get; set; }
+        public ulong? ChaptersCount { get; set; }
 
         [JsonPropertyName("rating_lines_sum")]
         public double RatingLinesSum { get; set; }

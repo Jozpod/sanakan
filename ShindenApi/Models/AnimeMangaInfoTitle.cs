@@ -91,7 +91,22 @@ namespace Sanakan.ShindenApi.Models
         public ulong TitleId { get; set; }
 
         [JsonPropertyName("title_status")]
-        public string TitleStatus { get; set; } = null;
+        public string TitleStatus
+        {
+            get
+            {
+                return string.Empty;
+            }
+            set
+            {
+                AnimeStatus = AnimeStatus.Parse(value);
+                MangaStatus = MangaStatus.Parse(value);
+            }
+        }
+
+        public AnimeStatus AnimeStatus { get; set; }
+
+        public MangaStatus MangaStatus { get; set; }
 
         [JsonPropertyName("type")]
         public string TypeStr
@@ -109,42 +124,8 @@ namespace Sanakan.ShindenApi.Models
                 else
                 {
                     Type = IllustrationType.Manga;
-                    switch (value)
-                    {
-                        case "light_novel":
-                            MangaType = MangaType.LightNovel;
-                            break;
-                        case "doujinshi":
-                            MangaType = MangaType.Doujinshi;
-                            break;
-                        case "novel":
-                            MangaType = MangaType.LightNovel;
-                            break;
-                        case "one_shot":
-                            MangaType = MangaType.OneShot;
-                            break;
-                        case "one shot":
-                            MangaType = MangaType.OneShot;
-                            break;
-                        case "doujin":
-                            MangaType = MangaType.Doujinshi;
-                            break;
-                        case "manhua":
-                            MangaType = MangaType.Manhua;
-                            break;
-                        case "manhwa":
-                            MangaType = MangaType.Manhwa;
-                            break;
-                        case "manga":
-                            MangaType = MangaType.Manga;
-                            break;
-                        default:
-                            MangaType = MangaType.NotSpecified;
-                            break;
-                    }
+                    MangaType = EnumsExtension.Parse(MangaType, value);
                 }
-
-
             }
         }
 

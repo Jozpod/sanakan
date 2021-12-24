@@ -1,8 +1,12 @@
 ﻿using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 using Sanakan.Game.Services.Abstractions;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats;
+using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
+using System.IO;
 
 namespace Sanakan.Game.Tests.ImageProcessorTests
 {
@@ -15,12 +19,19 @@ namespace Sanakan.Game.Tests.ImageProcessorTests
         [TestMethod]
         public void Should_Return_Waifu_Image()
         {
-            var card = new Image<Rgba32>(100, 100);
+            var cardImage = new Image<Rgba32>(100, 100);
             var imageUrl = "TestData/card-image.png";
             var xPos = 0;
             var yPos = 0;
+            var stream = new MemoryStream();
+            cardImage.Save(stream, new PngEncoder());
+            stream.Seek(0, SeekOrigin.Begin);
 
-            using var image = _imageProcessor.GetCatchThatWaifuImage(card, imageUrl, xPos, yPos);
+            _fileSystemMock
+                .Setup(pr => pr.OpenRead(It.IsAny<string>()))
+                .Returns(stream);
+
+            using var image = _imageProcessor.GetCatchThatWaifuImage(cardImage, imageUrl, xPos, yPos);
             image.Should().NotBeNull();
         }
     }

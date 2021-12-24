@@ -18,7 +18,7 @@ namespace Sanakan.ShindenApi.Models
         public AnimeType AnimeType { get; set; }
 
         [JsonPropertyName("episodes")]
-        public ulong Episodes { get; set; }
+        public ulong? EpisodesCount { get; set; }
 
         [JsonPropertyName("rating_music_cnt")]
         public double RatingMusicCnt { get; set; }

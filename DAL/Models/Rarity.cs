@@ -25,12 +25,18 @@ namespace Sanakan.DAL.Models
 
         public static Rarity GetRarityFromValue(long value)
         {
-            if (value > 100000) return Rarity.SS;
-            if (value > 10000) return Rarity.S;
-            if (value > 8000) return Rarity.A;
-            if (value > 6000) return Rarity.B;
-            if (value > 4000) return Rarity.C;
-            if (value > 2000) return Rarity.D;
+            if (value > 100000)
+                return Rarity.SS;
+            if (value > 10000)
+                return Rarity.S;
+            if (value > 8000)
+                return Rarity.A;
+            if (value > 6000)
+                return Rarity.B;
+            if (value > 4000)
+                return Rarity.C;
+            if (value > 2000)
+                return Rarity.D;
             return Rarity.E;
         }
 

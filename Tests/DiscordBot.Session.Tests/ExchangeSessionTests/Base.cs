@@ -24,21 +24,28 @@ namespace Sanakan.DiscordBot.Session.ExchangeSessionTests
         protected readonly Mock<IUserRepository> _userRepositoryMock = new(MockBehavior.Strict);
         protected readonly Mock<ICacheManager> _cacheManagerMock = new(MockBehavior.Strict);
         protected readonly ServiceProvider _serviceProvider;
-        protected readonly ExchangeSessionPayload _payload;
         protected readonly Mock<IUser> _userMock = new();
         protected readonly Mock<IUserMessage> _userMessageMock = new();
         protected readonly Mock<IMessageChannel> _messageChannelMock = new(MockBehavior.Strict);
+        protected readonly PlayerInfo _sourcePlayer = new();
+        protected readonly PlayerInfo _destinationPlayer = new();
 
         public Base()
         {
-            _payload = new ExchangeSessionPayload();
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddSingleton<IIconConfiguration>(new DefaultIconConfiguration());
             serviceCollection.AddSingleton(_userRepositoryMock.Object);
             serviceCollection.AddSingleton(_cacheManagerMock.Object);
 
             _serviceProvider = serviceCollection.BuildServiceProvider();
-            _session = new(1ul, DateTime.UtcNow, _payload);
+            _session = new(
+                1ul,
+                DateTime.UtcNow,
+                _userMessageMock.Object,
+                _sourcePlayer,
+                _destinationPlayer,
+                string.Empty,
+                string.Empty);
         }
     }
 }

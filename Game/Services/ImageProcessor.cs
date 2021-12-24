@@ -175,25 +175,21 @@ namespace Sanakan.Game.Services
             var rangFont = new Font(_latoRegular, 16);
             var levelFont = new Font(_latoBold, 40);
 
-            var imageStream = _fileSystem.OpenRead(Paths.ProfileBodyPicture);
-            var template = Image.Load(imageStream);
+            var template = LoadImage(Paths.ProfileBodyPicture);
             var profilePic = new Image<Rgba32>(template.Width, template.Height);
-            imageStream.Close();
 
             if (!_fileSystem.Exists(databaseUser.BackgroundProfileUri))
             {
                 databaseUser.BackgroundProfileUri = Paths.DefaultBackgroundPicture;
             }
 
-            imageStream = _fileSystem.OpenRead(databaseUser.BackgroundProfileUri);
-            using var userBg = Image.Load(imageStream);
-            profilePic.Mutate(x => x.DrawImage(userBg, _origin, 1));
+            using var userBackground = LoadImage(databaseUser.BackgroundProfileUri);
+            profilePic.Mutate(x => x.DrawImage(userBackground, _origin, 1));
             profilePic.Mutate(x => x.DrawImage(template, _origin, 1));
-            imageStream.Close();
 
             template.Dispose();
 
-            imageStream = await GetImageFromUrlAsync(avatarUrl);
+            var imageStream = await GetImageFromUrlAsync(avatarUrl);
             using var avatar = Image.Load(imageStream);
             imageStream.Close();
             using var avBack = new Image<Rgba32>(82, 82);
@@ -614,8 +610,13 @@ namespace Sanakan.Game.Services
             return cover;
         }
 
-        private async Task<Image<Rgba32>> GetLastRWList(List<LastWatchedRead>? lastRead, List<LastWatchedRead>? lastWatch)
+        private async Task<Image<Rgba32>> GetLastRWList(
+            IEnumerable<LastWatchedRead>? lastRead,
+            IEnumerable<LastWatchedRead>? lastWatch)
         {
+            lastRead ??= Enumerable.Empty<LastWatchedRead>();
+            lastWatch ??= Enumerable.Empty<LastWatchedRead>();
+
             var titleFont = new Font(_latoBold, 10);
             var nameFont = new Font(_latoBold, 16);
             var fColor = Colors.LemonGrass;
@@ -624,52 +625,38 @@ namespace Sanakan.Game.Services
             var image = new Image<Rgba32>(175, 248);
             image.Mutate(x => x.DrawText("Ostatnio obejrzane:", nameFont, fColor, new Point(0, 5)));
 
-            if (lastWatch != null)
+            var yOffset = 0;
+            foreach (var last in lastWatch.Take(4))
             {
-                int max = -1;
-                foreach (var last in lastWatch)
+                using var stream = await GetImageFromUrlAsync(last.AnimeCoverUrl, true);
+                using var cover = GetLastRWListCover(stream!);
+                if (cover != null)
                 {
-                    if (++max >= 3)
-                    {
-                        break;
-                    }
-
-                    using var stream = await GetImageFromUrlAsync(last.AnimeCoverUrl, true);
-                    using var cover = GetLastRWListCover(stream!);
-                    if (cover != null)
-                    {
-                        image.Mutate(x => x.DrawImage(cover, new Point(0, startY + (35 * max)), 1));
-                    }
-
-                    image.Mutate(x => x.DrawText($"{last.Title.ElipseTrimToLength(29)}", titleFont, fColor, new Point(25, startY + (35 * max))));
-                    image.Mutate(x => x.DrawText($"{last.EpisodeNo} / {last.EpisodesCount}", titleFont, fColor, new Point(25, startY + 11 + (35 * max))));
+                    image.Mutate(x => x.DrawImage(cover, new Point(0, startY + (35 * yOffset)), 1));
                 }
+
+                image.Mutate(x => x.DrawText($"{last.Title.ElipseTrimToLength(29)}", titleFont, fColor, new Point(25, startY + (35 * yOffset))));
+                image.Mutate(x => x.DrawText($"{last.EpisodeNo} / {last.EpisodesCount}", titleFont, fColor, new Point(25, startY + 11 + (35 * yOffset))));
+                yOffset++;
             }
 
             startY += 128;
             image.Mutate(x => x.DrawText("Ostatnio przeczytane:", nameFont, fColor, new Point(0, 133)));
 
-            if (lastRead != null)
+            yOffset = 0;
+            foreach (var last in lastRead.Take(4))
             {
-                int max = -1;
-                foreach (var last in lastRead)
+                using var stream = await GetImageFromUrlAsync(last.MangaCoverUrl, true);
+                using var cover = GetLastRWListCover(stream!);
+
+                if (cover != null)
                 {
-                    if (++max >= 3)
-                    {
-                        break;
-                    }
-
-                    using var stream = await GetImageFromUrlAsync(last.MangaCoverUrl, true);
-                    using var cover = GetLastRWListCover(stream!);
-
-                    if (cover != null)
-                    {
-                        image.Mutate(x => x.DrawImage(cover, new Point(0, startY + (35 * max)), 1));
-                    }
-
-                    image.Mutate(x => x.DrawText($"{last.Title.ElipseTrimToLength(29)}", titleFont, fColor, new Point(25, startY + (35 * max))));
-                    image.Mutate(x => x.DrawText($"{last.ChapterNo} / {last.ChaptersCount}", titleFont, fColor, new Point(25, startY + 11 + (35 * max))));
+                    image.Mutate(x => x.DrawImage(cover, new Point(0, startY + (35 * yOffset)), 1));
                 }
+
+                image.Mutate(x => x.DrawText($"{last.Title.ElipseTrimToLength(29)}", titleFont, fColor, new Point(25, startY + (35 * yOffset))));
+                image.Mutate(x => x.DrawText($"{last.ChapterNo} / {last.ChaptersCount}", titleFont, fColor, new Point(25, startY + 11 + (35 * yOffset))));
+                yOffset++;
             }
 
             return image;
@@ -843,16 +830,14 @@ namespace Sanakan.Game.Services
 
         private async Task<Image<Rgba32>> GetCharacterPictureAsync(string characterUrl, bool ultimate)
         {
-            var stream = _fileSystem.OpenRead(Paths.PWEmptyPicture);
-            var characterImg = Image.Load(stream);
-            stream.Close();
+            var characterImg = LoadImage(Paths.PWEmptyPicture);
 
             if (ultimate)
             {
                 characterImg = new Image<Rgba32>(_options.CurrentValue.CharacterImageWidth, _options.CurrentValue.CharacterImageHeight);
             }
 
-            stream = await GetImageFromUrlAsync(characterUrl ?? ShindenApi.Constants.PlaceholderImageUrl, true);
+            var stream = await GetImageFromUrlAsync(characterUrl ?? ShindenApi.Constants.PlaceholderImageUrl, true);
 
             if (stream == null)
             {
@@ -935,14 +920,10 @@ namespace Sanakan.Game.Services
                 borderStr = GetCustomBorderString(card);
             }
 
-            var stream = _fileSystem.OpenRead(borderStr);
-            var image = Image.Load(stream);
-            stream.Close();
+            var image = LoadImage(borderStr);
 
-            stream = _fileSystem.OpenRead(borderStr);
-            using var dereImage = Image.Load(stream);
+            using var dereImage = LoadImage(borderStr);
             image.Mutate(x => x.DrawImage(dereImage, _origin, 1));
-            stream.Close();
 
             return image;
         }
@@ -1115,8 +1096,7 @@ namespace Sanakan.Game.Services
             var path = string.Format(Paths.PWCGStatsPicture, card.Quality);
             if (_fileSystem.Exists(path))
             {
-                using var stream = _fileSystem.OpenRead(path);
-                using var stats = Image.Load(stream);
+                using var stats = LoadImage(path);
                 image.Mutate(x => x.DrawImage(stats, _origin, 1));
             }
 
@@ -1173,13 +1153,13 @@ namespace Sanakan.Game.Services
             var position = _origin;
             var opacity = 1;
 
-            using var shield = Image.Load(Paths.ShieldPicture);
+            using var shield = LoadImage(Paths.ShieldPicture);
             image.Mutate(x => x.DrawImage(shield, position, opacity));
 
-            using var heart = Image.Load(Paths.HeartPicture);
+            using var heart = LoadImage(Paths.HeartPicture);
             image.Mutate(x => x.DrawImage(heart, position, opacity));
 
-            using var fire = Image.Load(Paths.FirePicture);
+            using var fire = LoadImage(Paths.FirePicture);
             image.Mutate(x => x.DrawImage(fire, position, opacity));
 
             var starType = card.GetCardStarType();
@@ -1188,7 +1168,7 @@ namespace Sanakan.Game.Services
             var starX = 239 - (18 * starCnt);
             for (int i = 0; i < starCnt; i++)
             {
-                using var starStyle = Image.Load(string.Format(Paths.PWStarPicture, starType, card.StarStyle));
+                using var starStyle = LoadImage(string.Format(Paths.PWStarPicture, starType, card.StarStyle));
                 image.Mutate(x => x.DrawImage(starStyle, new Point(starX, 30), 1));
 
                 starX += 36;
@@ -1213,7 +1193,7 @@ namespace Sanakan.Game.Services
 
             if (applyNegativeStats)
             {
-                using var neg = Image.Load(Paths.NegativeStatsPicture);
+                using var neg = LoadImage(Paths.NegativeStatsPicture);
                 image.Mutate(x => x.DrawImage(neg, _origin, 1));
             }
         }
@@ -1225,8 +1205,7 @@ namespace Sanakan.Game.Services
 
             if (isFromFigureOriginalBorder && _fileSystem.Exists(backBorderStr))
             {
-                using var stream = _fileSystem.OpenRead(backBorderStr);
-                using var backBorderImage = Image.Load(stream);
+                using var backBorderImage = LoadImage(backBorderStr);
                 image.Mutate(x => x.DrawImage(backBorderImage, _origin, 1));
             }
         }
@@ -1296,21 +1275,19 @@ namespace Sanakan.Game.Services
 
             if (duelImage == null)
             {
-                image = Image.Load(DuelImage.DefaultUri((int)duelInfo.Side));
+                image = LoadImage(DuelImage.DefaultUri((int)duelInfo.Side));
             }
             else
             {
                 var imagePath = string.Format(Paths.DuelPicture, duelImage.Name, duelInfo.Side);
                 if (_fileSystem.Exists(imagePath))
                 {
-                    var stream = _fileSystem.OpenRead(imagePath);
-                    image = Image.Load(stream);
+                    image = LoadImage(imagePath);
                 }
                 else
                 {
                     imagePath = DuelImage.DefaultUri((int)duelInfo.Side);
-                    var stream = _fileSystem.OpenRead(imagePath);
-                    image = Image.Load(stream);
+                    image = LoadImage(imagePath);
                 }
             }
 
@@ -1348,7 +1325,7 @@ namespace Sanakan.Game.Services
 
         public Image<Rgba32> GetCatchThatWaifuImage(Image<Rgba32> card, string pokeImg, int xPos, int yPos)
         {
-            var image = Image.Load(pokeImg);
+            var image = LoadImage(pokeImg);
             image.Mutate(x => x.DrawImage(card, new Point(xPos, yPos), 1));
             return image;
         }
@@ -1367,6 +1344,12 @@ namespace Sanakan.Game.Services
             }
 
             return image;
+        }
+
+        private Image<Rgba32> LoadImage(string path)
+        {
+            using var stream = _fileSystem.OpenRead(path);
+            return Image.Load(stream);
         }
     }
 }

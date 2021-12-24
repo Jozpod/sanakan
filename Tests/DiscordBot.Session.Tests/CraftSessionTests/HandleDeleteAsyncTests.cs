@@ -31,11 +31,9 @@ namespace Sanakan.DiscordBot.Session.Tests.CraftSessionTests
                 .Setup(pr => pr.Content)
                 .Returns("usun 1");
 
-            _payload.Message = _userMessageMock.Object;
-            _payload.PlayerInfo = new Game.Models.PlayerInfo();
             var item = new DAL.Models.Item();
-            _payload.PlayerInfo.Items.Add(item);
-            _payload.Items.Add(item);
+            _playerInfo.Items.Add(item);
+            _ownedItems.Add(item);
 
             await _session.ExecuteAsync(context, _serviceProvider);
         }

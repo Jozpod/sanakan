@@ -17,6 +17,8 @@ namespace Sanakan.DiscordBot.Session
 
         bool IsRunning { get; }
 
+        IServiceProvider ServiceProvider { get; set; }
+
         bool HasExpired(DateTime currentDate);
 
         Task ExecuteAsync(

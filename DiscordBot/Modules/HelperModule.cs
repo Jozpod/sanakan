@@ -300,33 +300,28 @@ namespace Sanakan.DiscordBot.Modules
                     return;
                 }
 
-                var payload = new AcceptSession.AcceptSessionPayload
-                {
-                    Bot = Context.Client.CurrentUser,
-                    NotifyChannel = notificationChannel,
-                    MuteRole = muteRole,
-                    UserRole = userRole,
-                    User = guildUser,
-                };
-
-                var session = new AcceptSession(guildUser.Id, utcNow, payload);
-
                 if (_sessionManager.Exists<AcceptSession>(replyAuthorId))
                 {
                     await ReplyAsync(embed: $"?????????".ToEmbedMessage(EMType.Error).Build());
                     return;
                 }
 
-                _sessionManager.Remove(session);
                 embed = $"{guildUser.Mention} raportujesz samego siebie? Może pomogę! Na pewno chcesz muta?"
                     .ToEmbedMessage(EMType.Error).Build();
 
                 var userMessage = await ReplyAsync(embed: embed);
-
                 await userMessage.AddReactionsAsync(_iconConfiguration.AcceptDecline);
 
-                payload.MessageId = userMessage.Id;
-                payload.Channel = userMessage.Channel;
+                var session = new AcceptSession(
+                    guildUser.Id,
+                    utcNow,
+                    Context.Client.CurrentUser,
+                    guildUser,
+                    userMessage,
+                    notificationChannel,
+                    userMessage.Channel,
+                    muteRole,
+                    userRole);
 
                 _sessionManager.Add(session);
                 return;
@@ -355,7 +350,7 @@ namespace Sanakan.DiscordBot.Modules
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error occurred while saving raport", ex);
+                _logger.LogError(ex, "Error occurred while saving raport");
                 await botMessage.DeleteAsync();
             }
         }

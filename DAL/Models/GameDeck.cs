@@ -74,9 +74,13 @@ namespace Sanakan.DAL.Models
         public int CardsInGalleryCount { get; set; }
 
         public virtual ICollection<Card> Cards { get; set; }
+
         public virtual ICollection<Item> Items { get; set; }
+
         public virtual IList<BoosterPack> BoosterPacks { get; set; }
+
         public virtual ICollection<CardPvPStats> PvPStats { get; set; }
+
         public virtual ICollection<WishlistObject> Wishes { get; set; }
 
         public virtual ExperienceContainer ExperienceContainer { get; set; } = null!;

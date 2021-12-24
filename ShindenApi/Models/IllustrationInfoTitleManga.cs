@@ -12,6 +12,9 @@ namespace Sanakan.ShindenApi.Models
         [JsonPropertyName("type")]
         public MangaType Type { get; set; }
 
+        [JsonPropertyName("title_status")]
+        public MangaStatus Status { get; set; }
+
         public string CoverUrl => UrlHelpers.GetBigImageURL(CoverId);
     }
 }

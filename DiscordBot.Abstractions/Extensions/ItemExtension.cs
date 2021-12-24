@@ -7,20 +7,18 @@ namespace Sanakan.Extensions
     public static class ItemExtension
     {
 
-        private static readonly StringBuilder _stringBuilder = new (200);
-
         public static string ToItemList(this IEnumerable<Item> itemList)
         {
-            _stringBuilder.Clear();
+            var stringBuilder = new StringBuilder(200);
 
             var index = 0;
             foreach (var item in itemList)
             {
-                _stringBuilder.AppendFormat("**[{0}]** {1} x{2}\n", index + 1, item.Name, item.Count);
+                stringBuilder.AppendFormat("**[{0}]** {1} x{2}\n", index + 1, item.Name, item.Count);
                 index++;
             }
 
-            return _stringBuilder.ToString();
+            return stringBuilder.ToString();
         }
     }
 }

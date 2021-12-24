@@ -100,13 +100,7 @@ namespace Sanakan.DiscordBot.Modules
             var userMention = user.Mention;
             var userId = user.Id;
 
-            var sessionPayload = new ListSession<Card>.ListSessionPayload
-            {
-                Bot = Context.Client.CurrentUser,
-            };
-
-            var session = new ListSession<Card>(userId, _systemClock.UtcNow, sessionPayload);
-            _sessionManager.RemoveIfExists<ListSession<Card>>(userId);
+            _sessionManager.RemoveIfExists<ListSession>(userId);
 
             if (type == HaremType.Tag && tag == null)
             {
@@ -125,21 +119,46 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            sessionPayload.Enumerable = false;
-            sessionPayload.ListItems = _waifuService.GetListInRightOrder(cards, type, tag!);
-            sessionPayload.Embed = new EmbedBuilder
+            var bot = Context.Client.CurrentUser;
+
+            var embedBuilder = new EmbedBuilder
             {
                 Color = EMType.Info.Color(),
                 Title = "Harem"
             };
 
+            var items = _waifuService.GetListInRightOrder(cards, type, tag!)
+                .Select(card =>
+                {
+                    var marks = new[]
+                   {
+                        card.InCage ? "[C]" : "",
+                        card.Active ? "[A]" : "",
+                        card.IsUnique ? (card.FromFigure ? "[F]" : "[U]") : "",
+                        card.Expedition != ExpeditionCardType.None ? "[W]" : "",
+                        card.IsBroken ? "[B]" : (card.IsUnusable ? "[N]" : ""),
+                    };
+
+                    var mark = marks.Any(x => x != "") ? $"**{string.Join("", marks)}** " : "";
+                    return $"{mark}{card.GetString(false, false, true)}";
+                })
+                .ToList();
+
             try
             {
                 var dmChannel = await user.GetOrCreateDMChannelAsync();
-                var message = await dmChannel.SendMessageAsync(embed: session.BuildPage(0));
+                var embed = ListSessionUtils.BuildPage(embedBuilder, items);
+                var message = await dmChannel.SendMessageAsync(embed: embed);
                 await message.AddReactionsAsync(_iconConfiguration.LeftRightArrows);
 
-                sessionPayload.Message = message;
+                var session = new ListSession(
+                    userId,
+                    _systemClock.UtcNow,
+                    items,
+                    bot,
+                    message,
+                    embedBuilder);
+
                 _sessionManager.Add(session);
 
                 await ReplyAsync(embed: $"{userMention} lista poszła na PW!".ToEmbedMessage(EMType.Success).Build());
@@ -372,11 +391,7 @@ namespace Sanakan.DiscordBot.Modules
         {
             var discordUser = Context.User;
             var mention = discordUser.Mention;
-
-            var sessionPayload = new CraftSession.CraftSessionPayload();
             var utcNow = _systemClock.UtcNow;
-
-            var session = new CraftSession(discordUser.Id, utcNow, sessionPayload);
 
             if (_sessionManager.Exists<CraftSession>(discordUser.Id))
             {
@@ -3444,10 +3459,6 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            var payload = new ExchangeSession.ExchangeSessionPayload();
-
-            var session = new ExchangeSession(sourceUserId, _systemClock.UtcNow, payload);
-
             if (_sessionManager.Exists<ExchangeSession>(sourceUserId))
             {
                 await ReplyAsync(embed: $"{sourceUser.Mention} Ty lub twój partner znajdujecie się obecnie w trakcie wymiany.".ToEmbedMessage(EMType.Error).Build());
@@ -3463,7 +3474,7 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            payload.SourcePlayer = new PlayerInfo
+            var sourcePlayer = new PlayerInfo
             {
                 DiscordId = sourceUserId,
                 Mention = sourceUser.Mention,
@@ -3473,7 +3484,7 @@ namespace Sanakan.DiscordBot.Modules
                 Cards = new List<Card>()
             };
 
-            payload.DestinationPlayer = new PlayerInfo
+            var destinationPlayer = new PlayerInfo
             {
                 DiscordId = destinationUser.Id,
                 Mention = destinationUser.Mention,
@@ -3483,12 +3494,25 @@ namespace Sanakan.DiscordBot.Modules
                 Cards = new List<Card>()
             };
 
-            payload.Name = "🔄 **Wymiana:**";
-            payload.Tips = $"Polecenia: `dodaj [WID]`, `usuń [WID]`.\n\n\u0031\u20E3 - zakończenie dodawania {sourceUser.Mention}\n\u0032\u20E3 - zakończenie dodawania {destinationUser.Mention}";
-
-            var message = await ReplyAsync(embed: session.BuildEmbed());
+            var name = "🔄 **Wymiana:**";
+            var tips = $"Polecenia: `dodaj [WID]`, `usuń [WID]`.\n\n\u0031\u20E3 - zakończenie dodawania {sourceUser.Mention}\n\u0032\u20E3 - zakończenie dodawania {destinationUser.Mention}";
+            var description = $"{name}\n\n\n\n\n\n{tips}".ElipseTrimToLength(2000);
+            var embed = new EmbedBuilder
+            {
+                Color = EMType.Warning.Color(),
+                Description = description,
+            }.Build();
+            var message = await ReplyAsync(embed: embed);
             await message.AddReactionsAsync(_iconConfiguration.LeftRightArrows);
-            payload.Message = message;
+
+            var session = new ExchangeSession(
+                sourceUserId,
+                _systemClock.UtcNow,
+                message,
+                sourcePlayer,
+                destinationPlayer,
+                name,
+                tips);
 
             _sessionManager.Add(session);
         }
@@ -3530,28 +3554,36 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            var payload = new CraftSession.CraftSessionPayload
+            var playerInfo = new PlayerInfo
             {
-                PlayerInfo = new PlayerInfo
-                {
-                    DiscordId = discordUser.Id,
-                    Mention = discordUser.Mention,
-                    DatabaseUser = databaseUser,
-                    Accepted = false,
-                    CustomString = "",
-                    Items = new List<Item>()
-                },
-                Name = "⚒ **Tworzenie:**",
-                Tips = $"Polecenia: `dodaj/usuń [nr przedmiotu] [liczba]`.",
-                Items = gameDeck.Items.ToList(),
+                DiscordId = discordUser.Id,
+                Mention = discordUser.Mention,
+                DatabaseUser = databaseUser,
+                Accepted = false,
+                CustomString = "",
+                Items = new List<Item>()
             };
+
+            var name = "⚒ **Tworzenie:**";
+            var tips = "Polecenia: `dodaj/usuń [nr przedmiotu] [liczba]`.";
+            var ownedItems = gameDeck.Items.ToList();
+            var craftingView = $"**Posiadane:**\n{ownedItems.ToItemList()}\n**Użyte:**\n\n**Karta:** ---";
+
+            var embed = new EmbedBuilder
+            {
+                Color = EMType.Bot.Color(),
+                Description = $"{name}\n\n{craftingView}\n\n{tips}"
+            }.Build();
+            var userMessage = await ReplyAsync(embed: embed);
 
             var session = new CraftSession(
                 discordUser.Id,
                 _systemClock.UtcNow,
-                payload);
-            var userMessage = await ReplyAsync(embed: session.BuildEmbed());
-            payload.Message = userMessage;
+                userMessage,
+                ownedItems,
+                playerInfo,
+                name,
+                tips);
 
             await userMessage.AddReactionsAsync(_iconConfiguration.AcceptDecline);
 

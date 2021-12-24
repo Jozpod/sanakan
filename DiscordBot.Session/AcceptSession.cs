@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Microsoft.Extensions.DependencyInjection;
+using Sanakan.Common;
 using Sanakan.DiscordBot.Abstractions.Configuration;
 using Sanakan.DiscordBot.Abstractions.Extensions;
 using Sanakan.DiscordBot.Abstractions.Models;
@@ -12,37 +13,38 @@ namespace Sanakan.DiscordBot.Session
 {
     public class AcceptSession : InteractionSession
     {
-        private readonly AcceptSessionPayload _payload;
-        public class AcceptSessionPayload
-        {
-            public ulong MessageId { get; set; }
-
-            public IMessageChannel Channel { get; set; } = null;
-
-            public IUser Bot { get; set; } = null;
-
-            public TimeSpan Duration { get; set; }
-
-            public IRole UserRole { get; set; } = null;
-
-            public IRole MuteRole { get; set; } = null;
-
-            public IGuildUser User { get; set; } = null;
-
-            public ITextChannel NotifyChannel { get; set; } = null;
-        }
+        private readonly IUser _bot;
+        private readonly IGuildUser _user;
+        private readonly IUserMessage _userMessage;
+        private readonly IMessageChannel _messageChannel;
+        private readonly IMessageChannel _notifyChannel;
+        private readonly IRole _userRole;
+        private readonly IRole _muteRole;
+        private IIconConfiguration _iconConfiguration;
 
         public AcceptSession(
             ulong ownerId,
             DateTime createdOn,
-            AcceptSessionPayload payload) : base(
+            IUser bot,
+            IGuildUser user,
+            IUserMessage userMessage,
+            IMessageChannel messageChannel,
+            IMessageChannel notifyChannel,
+            IRole userRole,
+            IRole muteRole) : base(
             ownerId,
             createdOn,
             TimeSpan.FromMinutes(2),
             Discord.Commands.RunMode.Sync,
             SessionExecuteCondition.AllEvents)
         {
-            _payload = payload;
+            _bot = bot;
+            _user = user;
+            _userMessage = userMessage;
+            _messageChannel = messageChannel;
+            _notifyChannel = notifyChannel;
+            _userRole = userRole;
+            _muteRole = muteRole;
         }
 
         public override async Task ExecuteAsync(
@@ -50,13 +52,15 @@ namespace Sanakan.DiscordBot.Session
             IServiceProvider serviceProvider,
             CancellationToken cancellationToken = default)
         {
-            var iconConfiguration = serviceProvider.GetRequiredService<IIconConfiguration>();
+            _iconConfiguration = serviceProvider.GetRequiredService<IIconConfiguration>();
+            var moderatorService = serviceProvider.GetRequiredService<IModeratorService>();
+            var randomNumberGenerator = serviceProvider.GetRequiredService<IRandomNumberGenerator>();
 
             try
             {
                 IsRunning = true;
 
-                if (context.Message.Id != _payload.MessageId)
+                if (context.Message.Id != _userMessage.Id)
                 {
                     return;
                 }
@@ -66,45 +70,48 @@ namespace Sanakan.DiscordBot.Session
                     return;
                 }
 
-                var channel = _payload.Channel;
-                var userMessage = await channel.GetMessageAsync(_payload.MessageId) as IUserMessage;
-
-                if (userMessage == null)
-                {
-                    return;
-                }
-
                 var reaction = context.AddReaction ?? context.RemoveReaction;
 
-                if (reaction.Emote.Equals(iconConfiguration.Decline)
-                    || !reaction.Emote.Equals(iconConfiguration.Accept))
+                if (reaction.Emote.Equals(_iconConfiguration.Decline)
+                    || !reaction.Emote.Equals(_iconConfiguration.Accept))
                 {
                     return;
                 }
 
-                var moderatorService = serviceProvider.GetRequiredService<IModeratorService>();
-
-                if (userMessage != null)
-                {
-                    await userMessage.DeleteAsync();
-                }
+                const int daysInYear = 365;
+                var duration = TimeSpan.FromDays(randomNumberGenerator.GetRandomValue(daysInYear) + 1);
+                await _userMessage.DeleteAsync();
 
                 var reason = "Chciał to dostał :)";
                 var info = await moderatorService.MuteUserAsync(
-                    _payload.User,
-                    _payload.MuteRole,
+                    _user,
+                    _muteRole,
                     null,
-                    _payload.UserRole,
-                    _payload.Duration,
+                    _userRole,
+                    duration,
                     reason);
-                await moderatorService.NotifyAboutPenaltyAsync(_payload.User, _payload.NotifyChannel, info, "Sanakan");
+                await moderatorService.NotifyAboutPenaltyAsync(_user, _notifyChannel, info, "Sanakan");
 
-                var content = $"{_payload.User.Mention} został wyciszony.".ToEmbedMessage(EMType.Success).Build();
-                await channel.SendMessageAsync(embed: content);
+                var content = $"{_user.Mention} został wyciszony.".ToEmbedMessage(EMType.Success).Build();
+                await _messageChannel.SendMessageAsync(embed: content);
             }
             finally
             {
                 IsRunning = false;
+            }
+        }
+
+        public override async ValueTask DisposeAsync()
+        {
+            try
+            {
+                await _userMessage.RemoveAllReactionsAsync();
+            }
+            catch (Exception)
+            {
+                _iconConfiguration ??= ServiceProvider.GetRequiredService<IIconConfiguration>();
+
+                await _userMessage.RemoveReactionsAsync(_bot, _iconConfiguration.AcceptDecline);
             }
         }
     }

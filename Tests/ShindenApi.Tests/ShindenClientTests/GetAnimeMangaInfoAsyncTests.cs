@@ -161,7 +161,7 @@ namespace Sanakan.ShindenApi.Tests
                     {
                         AnimeType = AnimeType.Ova,
                         EpisodeTime = TimeSpan.FromMinutes(40),
-                        Episodes = 1,
+                        EpisodesCount = 1,
                         RatingMusicCnt = 1,
                         RatingGraphicsCnt = 1,
                         RatingGraphicsSum = 1,

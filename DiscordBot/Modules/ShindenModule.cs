@@ -135,9 +135,6 @@ namespace Sanakan.DiscordBot.Modules
             [Summary("imie")][Remainder] string name)
         {
             var discordUserId = Context.User.Id;
-            var payload = new SearchSession.SearchSessionPayload();
-
-            var session = new SearchSession(discordUserId, _systemClock.UtcNow, payload);
 
             if (_sessionManager.Exists<SearchSession>(discordUserId))
             {
@@ -173,12 +170,18 @@ namespace Sanakan.DiscordBot.Modules
                 }.Build();
 
                 await ReplyAsync("", false, embed);
+                return;
             }
-            else
-            {
-                payload.CharacterList = list;
-                await SendSearchResponseAsync(Context, toSend, session, payload);
-            }
+
+            var messages = await SendMessagesAsync(toSend);
+            
+            var session = new SearchSession(
+                discordUserId,
+                _systemClock.UtcNow,
+                messages,
+                characterList: list);
+
+            _sessionManager.Add(session);
         }
 
         [Command("strona", RunMode = RunMode.Async)]
@@ -319,10 +322,6 @@ namespace Sanakan.DiscordBot.Modules
 
             var discordUser = context.User;
 
-            var payload = new SearchSession.SearchSessionPayload();
-
-            var session = new SearchSession(discordUser.Id, _systemClock.UtcNow, payload);
-
             if (_sessionManager.Exists<SearchSession>(discordUser.Id))
             {
                 return;
@@ -345,21 +344,25 @@ namespace Sanakan.DiscordBot.Modules
                 var first = list.First();
                 var info = (await _shindenClient.GetAnimeMangaInfoAsync(first.TitleId)).Value;
                 await context.Channel.SendMessageAsync("", false, info!.ToEmbed());
+                return;
             }
-            else
-            {
-                payload.AnimeMangaList = list;
-                await SendSearchResponseAsync(context, toSend, session, payload);
-            }
+
+            var messages = await SendMessagesAsync(toSend);
+
+            var session = new SearchSession(
+                discordUser.Id,
+                _systemClock.UtcNow,
+                messages,
+                animeMangaList: list);
+
+            _sessionManager.Add(session);
         }
 
-        private async Task SendSearchResponseAsync(
-            ICommandContext context,
-            IEnumerable<string?> toSend,
-            SearchSession session,
-            SearchSession.SearchSessionPayload payload)
+        private async Task<IEnumerable<IUserMessage>> SendMessagesAsync(IEnumerable<string?> toSend)
         {
             var messages = new List<IUserMessage>(10);
+            var channel = Context.Channel;
+
             foreach (var item in toSend)
             {
                 if (item == null)
@@ -368,12 +371,11 @@ namespace Sanakan.DiscordBot.Modules
 
                 }
 
-                var message = await context.Channel.SendMessageAsync(item);
+                var message = await channel.SendMessageAsync(item);
                 messages.Add(message);
             }
 
-            payload.Messages = messages;
-            _sessionManager.Add(session);
+            return messages;
         }
 
         private string GetResponseFromSearchCode(HttpStatusCode code)

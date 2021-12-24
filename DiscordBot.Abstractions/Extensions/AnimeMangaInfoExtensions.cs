@@ -26,17 +26,19 @@ namespace Sanakan.Extensions
 
         public static EmbedFooterBuilder GetFooter(this AnimeMangaInfo info)
         {
-            string start = "";
-            string finish = "";
+            var start = "";
+            var finish = "";
+            var finishDate = info.Title.FinishDate;
+            var startDate = info.Title.StartDate;
 
-            if (info.Title.FinishDate.HasValue)
+            if (finishDate.HasValue)
             {
-                finish = info.Title.FinishDate.HasValue ? $" - {info.Title.FinishDate.Value.ToShortDateString()}" : "";
+                finish = finishDate.HasValue ? $" - {finishDate.Value.ToShortDateString()}" : "";
             }
 
-            if (info.Title.StartDate.HasValue)
+            if (startDate.HasValue)
             {
-                start = info.Title.StartDate.Value.ToShortDateString();
+                start = startDate.Value.ToShortDateString();
             }
 
             return new EmbedFooterBuilder()
@@ -109,18 +111,19 @@ namespace Sanakan.Extensions
         public static List<EmbedFieldBuilder> GetFields(this AnimeMangaInfo info)
         {
             var fields = new List<EmbedFieldBuilder>();
+            var entry = info.Title;
 
-            if (info.Title.TitleOther.Any())
+            if (entry.TitleOther.Any())
             {
                 fields.Add(new EmbedFieldBuilder()
                 {
                     Name = "Tytuły alternatywne",
-                    Value = string.Join(", ", info.Title.TitleOther).ElipseTrimToLength(EmbedFieldBuilder.MaxFieldValueLength),
+                    Value = string.Join(", ", entry.TitleOther).ElipseTrimToLength(EmbedFieldBuilder.MaxFieldValueLength),
                     IsInline = false
                 });
             }
 
-            foreach (var tagType in info.Title.Tags)
+            foreach (var tagType in entry.Tags)
             {
                 fields.Add(new EmbedFieldBuilder()
                 {
@@ -134,73 +137,76 @@ namespace Sanakan.Extensions
             fields.Add(new EmbedFieldBuilder()
             {
                 Name = "Id",
-                Value = info.Title.TitleId,
+                Value = entry.TitleId,
                 IsInline = true
             });
 
-            if (info.Title.TotalRating.HasValue)
+            if (entry.TotalRating.HasValue)
             {
-                if (info.Title.TotalRating > 0)
+                if (entry.TotalRating > 0)
                 {
                     fields.Add(new EmbedFieldBuilder()
                     {
                         Name = "Ocena ogólna",
-                        Value = info.Title.TotalRating.Value.ToString("0.0"),
+                        Value = entry.TotalRating.Value.ToString("0.0"),
                         IsInline = true
                     });
                 }
             }
 
-            string typeVal = "--";
-            string statVal = "--";
-            //if (info is IAnimeTitleInfo aif)
-            //{
-            //    typeVal = aif.Type.ToName();
-            //    statVal = aif.Status.ToName();
+            var typeHumanized = "--";
+            var statusHumanized = "--";
 
-            //    if (aif.EpisodesCount.HasValue)
-            //    {
-            //        if (aif.EpisodesCount > 0)
-            //        {
-            //            fields.Add(new EmbedFieldBuilder()
-            //            {
-            //                Name = "Epizody",
-            //                Value = aif.EpisodesCount,
-            //                IsInline = true
-            //            });
-            //        }
-            //    }
-            //}
-            //else if (info is IMangaTitleInfo mif)
-            //{
-            //    typeVal = mif.Type.ToName();
-            //    statVal = mif.Status.ToName();
+            if(entry.Type == IllustrationType.Anime)
+            {
+                typeHumanized = entry.Anime.AnimeType.ToName();
+                statusHumanized = entry.AnimeStatus.ToName();
+                var episodesCount = entry.Anime.EpisodesCount;
 
-            //    if (mif.ChaptersCount.HasValue)
-            //    {
-            //        if (mif.ChaptersCount > 0)
-            //        {
-            //            fields.Add(new EmbedFieldBuilder()
-            //            {
-            //                Name = "Rozdziały",
-            //                Value = mif.ChaptersCount,
-            //                IsInline = true
-            //            });
-            //        }
-            //    }
-            //}
+                if (episodesCount.HasValue)
+                {
+                    if (episodesCount.Value > 0)
+                    {
+                        fields.Add(new EmbedFieldBuilder()
+                        {
+                            Name = "Epizody",
+                            Value = episodesCount,
+                            IsInline = true
+                        });
+                    }
+                }
+            }
+            if(entry.Type == IllustrationType.Manga)
+            {
+                typeHumanized = entry.MangaType.ToName();
+                statusHumanized = entry.MangaStatus.ToName();
+                var chaptersCount = entry.Manga.ChaptersCount;
+
+                if (chaptersCount.HasValue)
+                {
+                    if (chaptersCount > 0)
+                    {
+                        fields.Add(new EmbedFieldBuilder()
+                        {
+                            Name = "Rozdziały",
+                            Value = chaptersCount,
+                            IsInline = true
+                        });
+                    }
+                }
+            }
 
             fields.Add(new EmbedFieldBuilder()
             {
                 Name = "Typ",
-                Value = typeVal,
+                Value = typeHumanized,
                 IsInline = true
             });
 
             fields.Add(new EmbedFieldBuilder()
             {
                 Name = "Status",
-                Value = statVal,
+                Value = statusHumanized,
                 IsInline = true
             });
 

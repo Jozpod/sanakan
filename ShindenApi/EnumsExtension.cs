@@ -100,13 +100,20 @@ namespace Sanakan.ShindenApi
         {
             switch (str)
             {
-                case "tv": return AnimeType.Tv;
-                case "ona": return AnimeType.Ona;
-                case "ova": return AnimeType.Ova;
-                case "movie": return AnimeType.Movie;
-                case "music": return AnimeType.Music;
-                case "special": return AnimeType.Special;
-                default: return AnimeType.NotSpecified;
+                case "tv":
+                    return AnimeType.Tv;
+                case "ona":
+                    return AnimeType.Ona;
+                case "ova":
+                    return AnimeType.Ova;
+                case "movie":
+                    return AnimeType.Movie;
+                case "music":
+                    return AnimeType.Music;
+                case "special":
+                    return AnimeType.Special;
+                default:
+                    return AnimeType.NotSpecified;
             }
         }
 
@@ -114,16 +121,26 @@ namespace Sanakan.ShindenApi
         {
             switch (str)
             {
-                case "light_novel": return MangaType.LightNovel;
-                case "doujinshi": return MangaType.Doujinshi;
-                case "novel": return MangaType.LightNovel;
-                case "one_shot": return MangaType.OneShot;
-                case "one shot": return MangaType.OneShot;
-                case "doujin": return MangaType.Doujinshi;
-                case "manhua": return MangaType.Manhua;
-                case "manhwa": return MangaType.Manhwa;
-                case "manga": return MangaType.Manga;
-                default: return MangaType.NotSpecified;
+                case "light_novel":
+                    return MangaType.LightNovel;
+                case "doujinshi":
+                    return MangaType.Doujinshi;
+                case "novel":
+                    return MangaType.LightNovel;
+                case "one_shot":
+                    return MangaType.OneShot;
+                case "one shot":
+                    return MangaType.OneShot;
+                case "doujin":
+                    return MangaType.Doujinshi;
+                case "manhua":
+                    return MangaType.Manhua;
+                case "manhwa":
+                    return MangaType.Manhwa;
+                case "manga":
+                    return MangaType.Manga;
+                default:
+                    return MangaType.NotSpecified;
             }
         }
 
@@ -131,11 +148,16 @@ namespace Sanakan.ShindenApi
         {
             switch (str)
             {
-                case "currently airing": return AnimeStatus.CurrentlyAiring;
-                case "finished airing": return AnimeStatus.FinishedAiring;
-                case "not yet aired": return AnimeStatus.NotYetAired;
-                case "proposal": return AnimeStatus.Proposal;
-                default: return AnimeStatus.NotSpecified;
+                case "currently airing":
+                    return AnimeStatus.CurrentlyAiring;
+                case "finished airing":
+                    return AnimeStatus.FinishedAiring;
+                case "not yet aired":
+                    return AnimeStatus.NotYetAired;
+                case "proposal":
+                    return AnimeStatus.Proposal;
+                default:
+                    return AnimeStatus.NotSpecified;
             }
         }
 
@@ -143,10 +165,14 @@ namespace Sanakan.ShindenApi
         {
             switch (str)
             {
-                case "finished": return MangaStatus.Finished;
-                case "publishing": return MangaStatus.Publishing;
-                case "not yet published": return MangaStatus.NotYetPublished;
-                default: return MangaStatus.NotSpecified;
+                case "finished":
+                    return MangaStatus.Finished;
+                case "publishing":
+                    return MangaStatus.Publishing;
+                case "not yet published":
+                    return MangaStatus.NotYetPublished;
+                default: 
+                    return MangaStatus.NotSpecified;
             }
         }
 
@@ -173,15 +199,6 @@ namespace Sanakan.ShindenApi
                 case "translated": return AlternativeTitleType.Translated;
                 case "alternative": return AlternativeTitleType.Alternative;
                 default: return AlternativeTitleType.NotSpecified;
-            }
-        }
-
-        public static UserStatus Parse(this UserStatus status, string str)
-        {
-            switch (str)
-            {
-                case "active": return UserStatus.Active;
-                default: return UserStatus.NotSpecified;
             }
         }
     }

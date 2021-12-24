@@ -22,27 +22,22 @@ namespace Sanakan.DiscordBot.Session
 {
     public class CraftSession : InteractionSession
     {
-        private readonly CraftSessionPayload _payload = null;
         private IIconConfiguration _iconConfiguration = null;
         private IServiceProvider _serviceProvider = null;
-
-        public class CraftSessionPayload
-        {
-            public IMessage? Message { get; set; }
-
-            public List<Item> Items { get; set; } = new();
-
-            public PlayerInfo? PlayerInfo { get; set; } = null;
-
-            public string Name { get; set; } = null;
-
-            public string Tips { get; set; } = null;
-        }
+        private readonly IUserMessage _userMessage;
+        private readonly IList<Item> _items;
+        private readonly PlayerInfo _playerInfo;
+        private readonly string _name;
+        private readonly string _tips;
 
         public CraftSession(
             ulong ownerId,
             DateTime createdOn,
-            CraftSessionPayload payload)
+            IUserMessage userMessage,
+            IList<Item> items,
+            PlayerInfo playerInfo,
+            string name,
+            string tips)
             : base(
                 ownerId,
                 createdOn,
@@ -50,7 +45,11 @@ namespace Sanakan.DiscordBot.Session
                 RunMode.Sync,
                 SessionExecuteCondition.AllEvents)
         {
-            _payload = payload;
+            _userMessage = userMessage;
+            _items = items;
+            _playerInfo = playerInfo;
+            _name = name;
+            _tips = tips;
         }
 
         public override async Task ExecuteAsync(
@@ -60,11 +59,6 @@ namespace Sanakan.DiscordBot.Session
         {
             IsRunning = true;
             _serviceProvider = serviceProvider;
-
-            if (_payload.PlayerInfo == null || _payload.Message == null)
-            {
-                return;
-            }
 
             _iconConfiguration = _serviceProvider.GetRequiredService<IIconConfiguration>();
             await HandleMessageAsync(context);
@@ -76,12 +70,12 @@ namespace Sanakan.DiscordBot.Session
         {
             var message = context.Message;
 
-            if (message.Id == _payload.Message.Id)
+            if (message.Id == _userMessage.Id)
             {
                 return;
             }
 
-            if (message.Channel.Id != _payload.Message.Channel.Id)
+            if (message.Channel.Id != _userMessage.Channel.Id)
             {
                 return;
             }
@@ -132,69 +126,66 @@ namespace Sanakan.DiscordBot.Session
 
             if (commandType.Contains("usuń") || commandType.Contains("usun"))
             {
-                await HandleDeleteAsync(itemNumber - 1, itemCount, message!);
+                await HandleDeleteAsync(itemNumber - 1, itemCount!);
                 ResetExpiry();
             }
             else if (commandType.Contains("dodaj"))
             {
-                await HandleAddAsync(itemNumber - 1, itemCount, message!);
+                await HandleAddAsync(itemNumber - 1, itemCount!);
                 ResetExpiry();
             }
         }
 
-        private async Task HandleAddAsync(int number, long count, IUserMessage message)
+        private async Task HandleAddAsync(int number, long count)
         {
-            if (number >= _payload.Items.Count)
+            if (number >= _items.Count)
             {
-                await message.AddReactionAsync(_iconConfiguration.CrossMark);
+                await _userMessage.AddReactionAsync(_iconConfiguration.CrossMark);
                 return;
             }
 
-            var firstItem = _payload.Items[number];
+            var firstItem = _items[number];
             if (firstItem.Count <= count)
             {
                 count = firstItem.Count;
-                _payload.Items.Remove(firstItem);
+                _items.Remove(firstItem);
             }
             else
             {
                 firstItem.Count -= count;
             }
 
-            var secondItem = _payload.PlayerInfo.Items
+            var secondItem = _playerInfo.Items
                 .FirstOrDefault(x => x.Type == firstItem.Type
                     && x.Quality == firstItem.Quality);
 
             if (secondItem == null)
             {
                 secondItem = firstItem.Type.ToItem(count, firstItem.Quality);
-                _payload.PlayerInfo.Items.Add(secondItem);
+                _playerInfo.Items.Add(secondItem);
             }
             else
             {
                 secondItem.Count += count;
             }
 
-            await message.AddReactionAsync(_iconConfiguration.InboxTray);
+            await _userMessage.AddReactionAsync(_iconConfiguration.InboxTray);
 
-            if (await _payload.Message.Channel.GetMessageAsync(_payload.Message.Id) is IUserMessage userMessage)
-            {
-                var embed = BuildEmbed();
-                await userMessage.ModifyAsync(x => x.Embed = embed);
-            }
+            var embed = BuildEmbed();
+            await _userMessage.ModifyAsync(x => x.Embed = embed);
         }
 
-        private async Task HandleDeleteAsync(int number, long count, IUserMessage message)
+        private async Task HandleDeleteAsync(int number, long count)
         {
-            var playerItems = _payload.PlayerInfo.Items;
+            var playerItems = _playerInfo.Items;
 
             if (number >= playerItems.Count)
             {
-                await message.AddReactionAsync(_iconConfiguration.CrossMark);
+                await _userMessage.AddReactionAsync(_iconConfiguration.CrossMark);
                 return;
             }
 
-            var items = _payload.Items;
+            var items = _items;
             var firstItem = playerItems[number];
             if (firstItem.Count <= count)
             {
@@ -216,13 +207,10 @@ namespace Sanakan.DiscordBot.Session
                 secondItem.Count += count;
             }
 
-            await message.AddReactionAsync(Emojis.OutboxTray);
+            await _userMessage.AddReactionAsync(Emojis.OutboxTray);
 
-            if (await _payload.Message.Channel.GetMessageAsync(_payload.Message.Id) is IUserMessage userMessage)
-            {
-                var embed = BuildEmbed();
-                await userMessage.ModifyAsync(x => x.Embed = embed);
-            }
+            var embed = BuildEmbed();
+            await _userMessage.ModifyAsync(x => x.Embed = embed);
         }
 
         private async Task HandleReactionAsync(SessionContext context)
@@ -231,14 +219,7 @@ namespace Sanakan.DiscordBot.Session
             var userRepository = _serviceProvider.GetRequiredService<IUserRepository>();
             var waifuService = _serviceProvider.GetRequiredService<IWaifuService>();
 
-            if (context.Message.Id != _payload.Message.Id)
-            {
-                return;
-            }
-
-            var userMessage = await _payload.Message.Channel.GetMessageAsync(_payload.Message.Id) as IUserMessage;
-
-            if (userMessage == null)
+            if (context.Message.Id != _userMessage.Id)
             {
                 return;
             }
@@ -251,11 +232,11 @@ namespace Sanakan.DiscordBot.Session
             }
 
             var emote = reaction.Emote;
-            var discordUserId = _payload.PlayerInfo.DiscordId;
+            var discordUserId = _playerInfo.DiscordId;
 
             if (emote.Equals(_iconConfiguration.Decline))
             {
-                await userMessage.ModifyAsync(x => x.Embed = $"{_payload.Name}\n\nOdrzucono tworzenie karty."
+                await _userMessage.ModifyAsync(x => x.Embed = $"{_name}\n\nOdrzucono tworzenie karty."
                     .ToEmbedMessage(EMType.Bot).Build());
 
                 cacheManager.ExpireTag(CacheKeys.User(discordUserId), CacheKeys.Users);
@@ -270,7 +251,7 @@ namespace Sanakan.DiscordBot.Session
 
             bool error = true;
 
-            if (!_payload.PlayerInfo.Accepted)
+            if (!_playerInfo.Accepted)
             {
                 return;
             }
@@ -278,7 +259,7 @@ namespace Sanakan.DiscordBot.Session
             error = false;
 
             var user = await userRepository.GetUserOrCreateAsync(discordUserId);
-            var totalCValue = _payload.PlayerInfo.Items.Sum(x => x.Type.CValue() * x.Count);
+            var totalCValue = _playerInfo.Items.Sum(x => x.Type.CValue() * x.Count);
             var rarity = RarityExtensions.GetRarityFromValue(totalCValue);
             var characterInfo = await waifuService.GetRandomCharacterAsync();
             var newCard = waifuService.GenerateNewCard(
@@ -291,7 +272,7 @@ namespace Sanakan.DiscordBot.Session
             newCard.Affection = gameDeck.AffectionFromKarma();
             var items = gameDeck.Items;
 
-            foreach (var item in _payload.PlayerInfo.Items)
+            foreach (var item in _playerInfo.Items)
             {
                 var thisItem = items
                     .FirstOrDefault(x => x.Type == item.Type
@@ -317,8 +298,10 @@ namespace Sanakan.DiscordBot.Session
 
             if (error)
             {
-                await userMessage.ModifyAsync(x => x.Embed = $"{_payload.Name}\n\nBrakuje przedmiotów, tworzenie karty nie powiodło się."
-                    .ToEmbedMessage(EMType.Bot).Build());
+                var embed = $"{_name}\n\nBrakuje przedmiotów, tworzenie karty nie powiodło się."
+                    .ToEmbedMessage(EMType.Bot)
+                    .Build();
+                await _userMessage.ModifyAsync(x => x.Embed = embed);
             }
             else
             {
@@ -328,28 +311,31 @@ namespace Sanakan.DiscordBot.Session
 
                 var cardSummary = newCard.GetString(false, false, true);
 
-                await userMessage.ModifyAsync(x => x.Embed = $"{_payload.Name}\n\n**Utworzono:** {cardSummary}"
-                    .ToEmbedMessage(EMType.Success).Build());
+                var embed = $"{_name}\n\n**Utworzono:** {cardSummary}"
+                    .ToEmbedMessage(EMType.Success).Build();
+                await _userMessage.ModifyAsync(x => x.Embed = embed);
             }
 
-            cacheManager.ExpireTag(CacheKeys.User(_payload.PlayerInfo.DiscordId), CacheKeys.Users);
+            cacheManager.ExpireTag(CacheKeys.User(_playerInfo.DiscordId), CacheKeys.Users);
         }
 
         public Embed BuildEmbed()
         {
-            var owned = _payload.Items.ToItemList();
-            var used = _payload.PlayerInfo.Items.ToItemList();
+            var owned = _items.ToItemList();
+            var usedItems = _playerInfo.Items;
+            var used = usedItems.ToItemList();
 
             var summary = "---";
-            var value = _payload.PlayerInfo.Items.Sum(x => x.Type.CValue() * x.Count);
+            var value = usedItems.Sum(x => x.Type.CValue() * x.Count);
+
             if (value > 1000)
             {
-                _payload.PlayerInfo.Accepted = true;
+                _playerInfo.Accepted = true;
                 summary = RarityExtensions.GetRarityFromValue(value).ToString();
             }
             else
             {
-                _payload.PlayerInfo.Accepted = false;
+                _playerInfo.Accepted = false;
             }
 
             var craftingView = $"**Posiadane:**\n{owned}\n**Użyte:**\n{used}\n**Karta:** {summary}";
@@ -357,27 +343,15 @@ namespace Sanakan.DiscordBot.Session
             return new EmbedBuilder
             {
                 Color = EMType.Bot.Color(),
-                Description = $"{_payload.Name}\n\n{craftingView}\n\n{_payload.Tips}"
+                Description = $"{_name}\n\n{craftingView}\n\n{_tips}"
             }.Build();
         }
 
         public override async ValueTask DisposeAsync()
         {
-            if (_payload.Message == null)
-            {
-                return;
-            }
-
-            var userMessage = await _payload.Message.Channel.GetMessageAsync(_payload.Message.Id) as IUserMessage;
-
-            if (userMessage == null)
-            {
-                return;
-            }
-
             try
             {
-                await userMessage.RemoveAllReactionsAsync();
+                await _userMessage.RemoveAllReactionsAsync();
             }
             catch (Exception) { }
 

@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Sanakan.DAL.Models;
 using Sanakan.DiscordBot.Abstractions.Configuration;
+using Sanakan.DiscordBot.Abstractions.Models;
 using Sanakan.Extensions;
 using System;
 using System.Collections.Generic;
@@ -12,33 +13,82 @@ using System.Threading.Tasks;
 
 namespace Sanakan.DiscordBot.Session
 {
-    public class ListSession<T> : InteractionSession
+    public static class ListSessionUtils
     {
-        private readonly ListSessionPayload _payload;
-        private static readonly StringBuilder _stringBuilder = new StringBuilder(500);
-        private IIconConfiguration _iconConfiguration = null;
-
-        public class ListSessionPayload
+        public static Embed BuildPage(
+           EmbedBuilder embedBuilder,
+           IEnumerable<string> items,
+           int currentPage = 0,
+           int itemsPerPage = 10,
+           bool isEnumerable = false)
         {
-            public bool Enumerable { get; set; }
+            var itemsCount = items.Count();
+            var maxPage = ((itemsCount % itemsPerPage) == 0) ?
+                (itemsCount / itemsPerPage) : ((itemsCount / itemsPerPage) + 1);
 
-            public IMessage Message { get; set; } = null;
+            var stringBuilder = new StringBuilder(500);
+            int firstItem = currentPage * itemsPerPage;
+            int lastItem = itemsPerPage - 1 + (currentPage * itemsPerPage);
 
-            public int ItemsPerPage { get; set; } = 10;
+            var exceededList = lastItem >= itemsCount;
 
-            public List<T> ListItems { get; set; } = null;
+            var footerText = $"{currentPage + 1} z {maxPage}";
+            embedBuilder.Footer = new EmbedFooterBuilder().WithText(footerText);
+            var count = exceededList ? (itemsCount - firstItem) : itemsPerPage;
+            var itemsOnPage = items.Skip(firstItem).Take(count);
+            var index = 0;
 
-            public EmbedBuilder Embed { get; set; } = null;
+            foreach (var item in itemsOnPage)
+            {
+                if (isEnumerable)
+                {
+                    var itemPosition = index + 1 + (currentPage * itemsPerPage);
+                    stringBuilder.AppendFormat("**{0}**: {1}\n", itemPosition, item);
+                }
+                else
+                {
+                    stringBuilder.AppendFormat("{0}\n", item);
+                }
 
-            public int CurrentPage { get; set; }
+                index++;
+            }
 
-            public IUser Bot { get; set; } = null;
+            embedBuilder.Description = stringBuilder.ToString().ElipseTrimToLength(1800);
+            stringBuilder.Clear();
+
+            return embedBuilder.Build();
         }
+
+        public static int MaxPage<T>(
+            IEnumerable<T> items,
+            int itemsPerPage)
+        {
+            var count = items.Count();
+
+            return ((count % itemsPerPage) == 0) ? (count / itemsPerPage) : ((count / itemsPerPage) + 1);
+        }
+    }
+
+    public class ListSession : InteractionSession
+    {
+        private IIconConfiguration _iconConfiguration = null;
+        private bool _isEnumerable;
+        private readonly int _itemsPerPage;
+        private IEnumerable<string> _items;
+        private readonly EmbedBuilder _embedBuilder;
+        private int _currentPage;
+        private readonly IUser _bot;
+        private readonly IUserMessage _userMessage;
 
         public ListSession(
             ulong ownerId,
             DateTime createdOn,
-            ListSessionPayload payload,
+            IEnumerable<string> items,
+            IUser bot,
+            IUserMessage userMessage,
+            EmbedBuilder embedBuilder,
+            int itemsPerPage = 10,
+            bool isEnumerable = false,
             SessionExecuteCondition executeCondition = SessionExecuteCondition.AllReactions) : base(
             ownerId,
             createdOn,
@@ -46,113 +96,40 @@ namespace Sanakan.DiscordBot.Session
             Discord.Commands.RunMode.Sync,
             executeCondition)
         {
-            _payload = payload;
+            _items = items;
+            _bot = bot;
+            _currentPage = 0;
+            _itemsPerPage = itemsPerPage;
+            _isEnumerable = isEnumerable;
+            _userMessage = userMessage;
+            _embedBuilder = embedBuilder;
         }
 
-        public string CardToString(Card card)
-        {
-            var marks = new[]
-            {
-                card.InCage ? "[C]" : "",
-                card.Active ? "[A]" : "",
-                card.IsUnique ? (card.FromFigure ? "[F]" : "[U]") : "",
-                card.Expedition != ExpeditionCardType.None ? "[W]" : "",
-                card.IsBroken ? "[B]" : (card.IsUnusable ? "[N]" : ""),
-            };
-
-            var mark = marks.Any(x => x != "") ? $"**{string.Join("", marks)}** " : "";
-            return $"{mark}{card.GetString(false, false, true)}";
-        }
-
-        public Embed BuildPage(int page)
-        {
-            int firstItem = page * _payload.ItemsPerPage;
-            int lastItem = (_payload.ItemsPerPage - 1) + (page * _payload.ItemsPerPage);
-            var exceededList = lastItem >= _payload.ListItems.Count;
-            var embed = _payload.Embed;
-
-            var footerText = $"{_payload.CurrentPage + 1} z {MaxPage()}";
-            embed.Footer = new EmbedFooterBuilder().WithText(footerText);
-            var count = exceededList ? (_payload.ListItems.Count - firstItem) : _payload.ItemsPerPage;
-            var itemsOnPage = _payload.ListItems
-                .GetRange(firstItem, count);
-
-            lock (_stringBuilder)
-            {
-                for (var i = 0; i < itemsOnPage.Count; i++)
-                {
-                    var item = itemsOnPage[i];
-                    var formattedItem = string.Empty;
-
-                    if (item is Card card)
-                    {
-                        formattedItem = CardToString(card);
-                    }
-                    else
-                    {
-                        formattedItem = item.ToString();
-                    }
-
-                    if (_payload.Enumerable)
-                    {
-                        var index = (i + 1) + (page * _payload.ItemsPerPage);
-                        _stringBuilder.AppendFormat("**{0}**: {1}\n", index, formattedItem);
-                    }
-                    else
-                    {
-                        _stringBuilder.AppendFormat("{0}\n", formattedItem);
-                    }
-                }
-
-                embed.Description = _stringBuilder.ToString().ElipseTrimToLength(1800);
-                _stringBuilder.Clear();
-            }
-
-            return embed.Build();
-        }
-
-        private int MaxPage()
-        {
-            var listItems = _payload.ListItems;
-            var count = listItems.Count;
-
-            return ((count % 10) == 0) ? (count / 10) : ((count / 10) + 1);
-        }
-
-        private int MaxPageReal() => MaxPage() - 1;
+        private int MaxPageReal() => ListSessionUtils.MaxPage(_items, _itemsPerPage) - 1;
 
         public override async Task ExecuteAsync(
             SessionContext context,
             IServiceProvider serviceProvider,
             CancellationToken cancellationToken = default)
         {
-            var message = _payload.Message;
+            if (context.Message.Id != _userMessage.Id)
+            {
+                return;
+            }
+
             _iconConfiguration = serviceProvider.GetRequiredService<IIconConfiguration>();
-
-            if (context.Message.Id != message.Id)
-            {
-                return;
-            }
-
-            var userMessage = await message.Channel.GetMessageAsync(message.Id) as IUserMessage;
-
-            if (userMessage == null)
-            {
-                return;
-            }
-
             var reaction = context.AddReaction ?? context.RemoveReaction;
             var emote = reaction.Emote;
 
             if (emote.Equals(_iconConfiguration.LeftwardsArrow))
             {
-                if (--_payload.CurrentPage < 0)
+                if (--_currentPage < 0)
                 {
-                    _payload.CurrentPage = MaxPageReal();
+                    _currentPage = MaxPageReal();
                 }
 
-                var embed = BuildPage(_payload.CurrentPage);
-                await userMessage.ModifyAsync(x => x.Embed = embed);
+                var embed = ListSessionUtils.BuildPage(_embedBuilder, _items, _currentPage, _itemsPerPage, _isEnumerable);
+                await _userMessage.ModifyAsync(x => x.Embed = embed);
 
                 ResetExpiry();
                 return;
@@ -160,13 +137,13 @@ namespace Sanakan.DiscordBot.Session
 
             if (emote.Equals(_iconConfiguration.RightwardsArrow))
             {
-                if (++_payload.CurrentPage > MaxPageReal())
+                if (++_currentPage > MaxPageReal())
                 {
-                    _payload.CurrentPage = 0;
+                    _currentPage = 0;
                 }
 
-                var embed = BuildPage(_payload.CurrentPage);
-                await userMessage.ModifyAsync(x => x.Embed = embed);
+                var embed = ListSessionUtils.BuildPage(_embedBuilder, _items, _currentPage, _itemsPerPage, _isEnumerable);
+                await _userMessage.ModifyAsync(x => x.Embed = embed);
 
                 ResetExpiry();
             }
@@ -174,31 +151,19 @@ namespace Sanakan.DiscordBot.Session
 
         public override async ValueTask DisposeAsync()
         {
-            if (_payload.Message == null)
-            {
-                return;
-            }
-
-            var userMessage = await _payload.Message.Channel.GetMessageAsync(_payload.Message.Id) as IUserMessage;
-
-            if (userMessage == null)
-            {
-                _payload.Message = null;
-                _payload.ListItems = null;
-                return;
-            }
-
             try
             {
-                await userMessage.RemoveAllReactionsAsync();
+                await _userMessage.RemoveAllReactionsAsync();
             }
             catch (Exception)
             {
-                await userMessage.RemoveReactionsAsync(_payload.Bot, _iconConfiguration.LeftRightArrows);
+                _iconConfiguration ??= ServiceProvider.GetRequiredService<IIconConfiguration>();
+
+                await _userMessage.RemoveReactionsAsync(_bot, _iconConfiguration.LeftRightArrows);
             }
 
-            _payload.Message = null;
-            _payload.ListItems = null;
+            _iconConfiguration = null;
+            _items = null;
         }
     }
 }

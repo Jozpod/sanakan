@@ -1,5 +1,6 @@
 ﻿using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Sanakan.Common;
 using Sanakan.Common.Models;
 using Sanakan.DAL.Models;
 using Sanakan.Game.Services.Abstractions;
@@ -60,6 +61,7 @@ namespace Sanakan.Game.Tests.IntegrationTests.ImageProcessorTests
                 ExperienceCount = 1443001,
                 MessagesCount = 1488,
                 ProfileType = ProfileType.Cards,
+                StatsReplacementProfileUri = $"{Paths.SavedData}/SR1.png",
             };
             var card1 = new Card(1ul, "test card 1", "test card 1", 100, 50, Rarity.SSS, Dere.Dandere, DateTime.UtcNow);
             var card2 = new Card(2ul, "test card 2", "test card 2", 100, 50, Rarity.A, Dere.Bodere, DateTime.UtcNow);

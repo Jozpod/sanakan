@@ -44,6 +44,7 @@ namespace DiscordBot.ModulesTests.ShindenModuleTests
                 {
                     Title = new TitleEntry
                     {
+                        Type = IllustrationType.Manga,
                         FinishDate = DateTime.UtcNow,
                         Title = "test",
                         Description = new AnimeMangaInfoDescription
@@ -53,6 +54,11 @@ namespace DiscordBot.ModulesTests.ShindenModuleTests
                         TitleOther = new List<TitleOther>
                         {
 
+                        },
+                        MangaStatus = MangaStatus.Publishing,
+                        Manga = new MangaInfo
+                        {
+                            ChaptersCount = 10,
                         }
                     }
                 }
@@ -81,7 +87,7 @@ namespace DiscordBot.ModulesTests.ShindenModuleTests
             SetupSendMessage((message, embed) =>
             {
                 embed.Should().NotBeNull();
-                embed.Fields.Should().HaveCount(3);
+                embed.Fields.Should().HaveCount(4);
             });
 
             await _module.SearchMangaAsync(title);

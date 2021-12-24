@@ -2,10 +2,10 @@
 {
     public enum AnimeStatus : byte
     {
-        NotSpecified,
-        FinishedAiring,
-        CurrentlyAiring,
-        NotYetAired,
-        Proposal,
+        NotSpecified = 0,
+        FinishedAiring = 1,
+        CurrentlyAiring = 2,
+        NotYetAired = 3,
+        Proposal = 4,
     }
 }
