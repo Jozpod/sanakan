@@ -120,10 +120,18 @@ namespace Sanakan.Daemon.HostedService
 
             foreach (var session in sessions)
             {
-                if (session.HasExpired(utcNow) && !session.IsRunning)
+                if (session.HasExpired(utcNow))
                 {
+                    if (session.IsRunning)
+                    {
+                        _logger.LogWarning("Expired session is running");
+                        continue;
+                    }
+
+                    session.ServiceProvider = serviceProvider;
                     await session.DisposeAsync();
                     _sessionManager.Remove(session);
+                    continue;
                 }
 
                 try

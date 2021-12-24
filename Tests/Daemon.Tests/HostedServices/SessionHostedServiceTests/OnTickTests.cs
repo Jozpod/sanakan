@@ -45,6 +45,9 @@ namespace Sanakan.Daemon.Tests.HostedServices.SessionHostedServiceTests
                 .Verifiable();
 
             sessionMock
+               .SetupSet(pr => pr.ServiceProvider = It.IsAny<IServiceProvider>());
+
+            sessionMock
                 .Setup(pr => pr.DisposeAsync())
                 .Returns(ValueTask.CompletedTask)
                 .Verifiable();
