@@ -16,6 +16,42 @@ namespace DiscordBot.ModulesTests.LandsModuleTests
     public class RemovePersonAsyncTests : Base
     {
         [TestMethod]
+        public async Task Should_Return_Error_Message_No_Land()
+        {
+            var guildOptions = new GuildOptions(1ul, 50);
+            var guildUserMock = new Mock<IGuildUser>(MockBehavior.Strict);
+            var roleMock = new Mock<IRole>(MockBehavior.Strict);
+            var roleIds = new List<ulong>();
+
+            _guildMock
+                .Setup(pr => pr.Id)
+                .Returns(guildOptions.Id);
+
+            _guildConfigRepositoryMock
+                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildOptions.Id))
+                .ReturnsAsync(guildOptions);
+
+            _guildUserMock
+                .Setup(pr => pr.RoleIds)
+                .Returns(roleIds);
+
+            _landManagerMock
+                .Setup(pr => pr.DetermineLand(
+                    It.IsAny<IEnumerable<UserLand>>(),
+                    It.IsAny<IEnumerable<ulong>>(),
+                    It.IsAny<string?>()))
+                .Returns(null as UserLand);
+
+            SetupSendMessage((message, embed) =>
+            {
+                embed.Should().NotBeNull();
+                embed.Description.Should().NotBeNullOrEmpty();
+            });
+
+            await _module.RemovePersonAsync(guildUserMock.Object);
+        }
+
+        [TestMethod]
         public async Task Should_Remove_Person()
         {
             var guildOptions = new GuildOptions(1ul, 50);
