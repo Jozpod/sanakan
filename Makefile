@@ -1,8 +1,11 @@
-all-update: backup update full-build
+all-update:
+	backup update full-build
 
-all-update-debug: update restore build-debug
+all-update-debug:
+	update restore build-debug
 
-full-build: restore build
+full-build:
+	restore build
 
 run-debug:
 	dotnet --project Web/Web.csproj --configuration Debug

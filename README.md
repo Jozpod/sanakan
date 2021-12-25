@@ -151,6 +151,29 @@ Entries in `Guilds[].Users` will create users with specified parameters.
 
 When option in `ShindenApi:UseFake` is enabled. The bot will webscrape the shinden website for any information relating to anime/manga/character/user.
 
+## Deployment ##
+
+> ℹ️   [Specify runtime identifier which matches your machine before publishing app](https://docs.microsoft.com/en-us/dotnet/core/rid-catalog)
+
+### Linux ###
+
+```console
+sh Run.sh
+```
+
+Debug mode
+
+```console
+sh RunDebug.sh
+```
+
+### Windows ###
+
+```console
+dotnet publish Web/Web.csproj --configuration Release --runtime win-x64 --output ./publish
+
+```
+
 ## Commands ##
 
 ### Moderation ###

@@ -145,7 +145,7 @@ namespace Sanakan.DiscordBot.Modules
 
             if (searchResult.Value == null)
             {
-                var content = GetResponseFromSearchCode(System.Net.HttpStatusCode.BadRequest)
+                var content = GetResponseFromSearchCode(searchResult.StatusCode)
                     .ToEmbedMessage(EMType.Error).Build();
                 await ReplyAsync(embed: content);
                 return;
@@ -230,7 +230,7 @@ namespace Sanakan.DiscordBot.Modules
         [Command("połącz")]
         [Alias("connect", "polacz", "połacz", "polącz")]
         [Summary("łączy funkcje bota, z kontem na stronie")]
-        [Remarks("https://shinden.pl/user/136-mo0nisi44")]
+        [Remarks("https://shinden.pl/user/123-user-1")]
         public async Task ConnectAsync([Summary("adres do profilu")] Uri url)
         {
             switch (UrlHelpers.ParseUrlToShindenId(url, out var shindenId))
@@ -252,8 +252,9 @@ namespace Sanakan.DiscordBot.Modules
 
             if (userResult.Value == null)
             {
-                await ReplyAsync(embed: $"Wystapil blad podczas polaczenia konta".ToEmbedMessage(EMType.Error).Build());
-                //await ReplyAsync(embed: $"Brak połączenia z Shindenem! ({response.Code})".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync(embed: $"Wystapil blad podczas polaczenia konta. {userResult.StatusCode}"
+                    .ToEmbedMessage(EMType.Error)
+                    .Build());
                 return;
             }
 
@@ -331,7 +332,7 @@ namespace Sanakan.DiscordBot.Modules
 
             if (searchResult.Value == null)
             {
-                await context.Channel.SendMessageAsync("", false, GetResponseFromSearchCode(HttpStatusCode.BadRequest)
+                await context.Channel.SendMessageAsync("", false, GetResponseFromSearchCode(searchResult.StatusCode)
                     .ToEmbedMessage(EMType.Error).Build());
                 return;
             }

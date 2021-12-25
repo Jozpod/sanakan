@@ -167,8 +167,9 @@ namespace Sanakan.Daemon.HostedService
             IGuildUser user,
             IRole? muteRole,
             IRole? muteModRole,
-            IEnumerable<OwnedRole> ownerRoles)
+            IEnumerable<OwnedRole>? ownerRoles)
         {
+            ownerRoles ??= Enumerable.Empty<OwnedRole>();
             var roleIds = user.RoleIds;
 
             if (muteRole != null)
@@ -187,21 +188,20 @@ namespace Sanakan.Daemon.HostedService
                 }
             }
 
-            if (ownerRoles != null)
+            var guild = user.Guild;
+
+            foreach (var ownerRole in ownerRoles)
             {
-                foreach (var ownerRole in ownerRoles)
+                var role = guild.GetRole(ownerRole.RoleId);
+
+                if (role == null)
                 {
-                    var role = user.Guild.GetRole(ownerRole.RoleId);
+                    continue;
+                }
 
-                    if (role == null)
-                    {
-                        continue;
-                    }
-
-                    if (!roleIds.Contains(role.Id))
-                    {
-                        await user.AddRoleAsync(role.Id);
-                    }
+                if (!roleIds.Contains(role.Id))
+                {
+                    await user.AddRoleAsync(role.Id);
                 }
             }
         }
@@ -212,6 +212,7 @@ namespace Sanakan.Daemon.HostedService
             IEnumerable<OwnedRole>? ownerRoles,
             IRole? modMuteRole = null)
         {
+            ownerRoles ??= Enumerable.Empty<OwnedRole>();
             var roleIds = user.RoleIds;
 
             if (muteRole != null)
@@ -230,21 +231,20 @@ namespace Sanakan.Daemon.HostedService
                 }
             }
 
-            if (ownerRoles != null)
+            var guild = user.Guild;
+
+            foreach (var ownerRole in ownerRoles)
             {
-                foreach (var ownerRole in ownerRoles)
+                var role = guild.GetRole(ownerRole.RoleId);
+
+                if (role == null)
                 {
-                    var role = user.Guild.GetRole(ownerRole.RoleId);
+                    continue;
+                }
 
-                    if (role == null)
-                    {
-                        continue;
-                    }
-
-                    if (!roleIds.Contains(role.Id))
-                    {
-                        await user.AddRoleAsync(role.Id);
-                    }
+                if (!roleIds.Contains(role.Id))
+                {
+                    await user.RemoveRoleAsync(role.Id);
                 }
             }
         }

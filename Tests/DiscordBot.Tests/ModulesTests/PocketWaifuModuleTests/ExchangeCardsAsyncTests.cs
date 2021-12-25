@@ -72,7 +72,7 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
                 .Setup(pr => pr.Exists<ExchangeSession>(sourceUser.Id));
 
             _sessionManagerMock
-                .Setup(pr => pr.Add(It.IsAny<IInteractionSession>()));
+                .Setup(pr => pr.Add(It.IsAny<ExchangeSession>()));
 
             SetupSendMessage((message, embed) =>
             {

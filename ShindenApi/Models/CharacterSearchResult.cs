@@ -18,5 +18,7 @@ namespace Sanakan.ShindenApi.Models
 
         [JsonPropertyName("all_names")]
         public string Names { get; set; } = null;
+
+        public override string ToString() => $"{FirstName} {LastName}";
     }
 }

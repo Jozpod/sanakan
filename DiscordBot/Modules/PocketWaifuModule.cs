@@ -2064,7 +2064,7 @@ namespace Sanakan.DiscordBot.Modules
         [Alias("cage")]
         [Summary("otwiera klatkę z kartami (sprecyzowanie wid wyciąga tylko jedną kartę)")]
         [Remarks(""), RequireWaifuCommandChannel]
-        public async Task OpenCageAsync([Summary("WID(opcjonalne)")] ulong wid = 0)
+        public async Task OpenCageAsync([Summary("identifykator karty (WID) (opcjonalne)")] ulong? cardId = null)
         {
             var user = Context.User as IGuildUser;
             if (user == null)
@@ -2085,7 +2085,7 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            if (wid == 0)
+            if (!cardId.HasValue)
             {
                 gameDeck.Karma += 0.01;
 
@@ -2115,7 +2115,7 @@ namespace Sanakan.DiscordBot.Modules
             }
             else
             {
-                var thisCard = cardsInCage.FirstOrDefault(x => x.Id == wid);
+                var thisCard = cardsInCage.FirstOrDefault(x => x.Id == cardId.Value);
                 if (thisCard == null)
                 {
                     await ReplyAsync(embed: $"{user.Mention} taka karta nie znajduje się w twojej klatce."

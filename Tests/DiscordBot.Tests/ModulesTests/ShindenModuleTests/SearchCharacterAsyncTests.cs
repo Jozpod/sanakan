@@ -7,6 +7,7 @@ using Sanakan.ShindenApi;
 using Sanakan.ShindenApi.Models;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace DiscordBot.ModulesTests.ShindenModuleTests
@@ -16,8 +17,7 @@ namespace DiscordBot.ModulesTests.ShindenModuleTests
     /// </summary>
     [TestClass]
     public class SearchCharacterAsyncTests : Base
-    {
-        
+    {  
         [TestMethod]
         public async Task Should_Return_Character_Info_First()
         {
@@ -32,6 +32,7 @@ namespace DiscordBot.ModulesTests.ShindenModuleTests
                     new CharacterSearchResult
                     {
                         Id = characterId,
+                        FirstName = "Test 1",
                     }
                 }
             };
@@ -67,6 +68,117 @@ namespace DiscordBot.ModulesTests.ShindenModuleTests
             {
                 embed.Should().NotBeNull();
             });
+
+            await _module.SearchCharacterAsync(characterName);
+        }
+
+        [TestMethod]
+        public async Task Should_Split_Text()
+        {
+            var userId = 1ul;
+            var characterName = "test";
+            var characterId = 1ul;
+            var utcNow = DateTime.UtcNow;
+            var searchCharacterResult = new ShindenResult<List<CharacterSearchResult>>
+            {
+                Value = Enumerable.Range(0, 100).Select(pr => new CharacterSearchResult
+                {
+                    Id = (ulong)pr,
+                    FirstName = "First name",
+                    LastName = $"Last name {pr}",
+                }).ToList(),
+            };
+            var characterInfoResult = new ShindenResult<CharacterInfo>
+            {
+                Value = new CharacterInfo
+                {
+
+                }
+            };
+
+            _sessionManagerMock
+                 .Setup(pr => pr.Exists<SearchSession>(userId))
+                 .Returns(false);
+
+            _userMock
+                .Setup(pr => pr.Id)
+                .Returns(userId);
+
+            _systemClockMock
+                .Setup(pr => pr.UtcNow)
+                .Returns(utcNow);
+
+            _shindenClientMock
+                .Setup(pr => pr.SearchCharacterAsync(characterName))
+                .ReturnsAsync(searchCharacterResult);
+
+            _shindenClientMock
+                .Setup(pr => pr.GetCharacterInfoAsync(characterId))
+                .ReturnsAsync(characterInfoResult);
+
+            _sessionManagerMock
+                .Setup(pr => pr.Add(It.IsAny<SearchSession>()));
+
+            SetupSendMessage();
+
+            await _module.SearchCharacterAsync(characterName);
+        }
+
+        [TestMethod]
+        public async Task Should_Start_Session()
+        {
+            var userId = 1ul;
+            var characterName = "test";
+            var characterId = 1ul;
+            var utcNow = DateTime.UtcNow;
+            var searchCharacterResult = new ShindenResult<List<CharacterSearchResult>>
+            {
+                Value = new List<CharacterSearchResult>
+                {
+                    new CharacterSearchResult
+                    {
+                        Id = characterId,
+                        FirstName = "Test 1",
+                    },
+                     new CharacterSearchResult
+                    {
+                        Id = 2ul,
+                        FirstName = "Test 2",
+                    }
+                }
+            };
+            var characterInfoResult = new ShindenResult<CharacterInfo>
+            {
+                Value = new CharacterInfo
+                {
+
+                }
+            };
+
+            _sessionManagerMock
+                 .Setup(pr => pr.Exists<SearchSession>(userId))
+                 .Returns(false);
+
+            _userMock
+                .Setup(pr => pr.Id)
+                .Returns(userId);
+
+            _systemClockMock
+                .Setup(pr => pr.UtcNow)
+                .Returns(utcNow);
+
+            _shindenClientMock
+                .Setup(pr => pr.SearchCharacterAsync(characterName))
+                .ReturnsAsync(searchCharacterResult);
+
+            _shindenClientMock
+                .Setup(pr => pr.GetCharacterInfoAsync(characterId))
+                .ReturnsAsync(characterInfoResult);
+
+            _sessionManagerMock
+                .Setup(pr => pr.Add(It.IsAny<SearchSession>()));
+
+            SetupSendMessage();
 
             await _module.SearchCharacterAsync(characterName);
         }

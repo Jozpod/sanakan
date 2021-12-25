@@ -23,8 +23,10 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
             var user = new User(1ul, DateTime.UtcNow);
             var card = new Card(1ul, "title", "name", 100, 50, Rarity.E, Dere.Bodere, DateTime.UtcNow);
             card.Id = 1ul;
+            card.IsTradable = true;
             user.GameDeck.Wishes.Add(new WishlistObject { ObjectName = "Test" });
-            var cards = new List<Card>();
+            user.GameDeck.Cards.Add(card);
+            var cards = new List<Card>() { card };
             var dmChannelMock = new Mock<IDMChannel>(MockBehavior.Strict);
             var embeds = new[]
             {
@@ -62,6 +64,20 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
                      _discordClientMock.Object,
                      true))
                 .ReturnsAsync(embeds);
+
+            dmChannelMock
+                .Setup(pr => pr.SendMessageAsync(
+                    It.IsAny<string>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<Embed>(),
+                    It.IsAny<RequestOptions>(),
+                    It.IsAny<AllowedMentions>(),
+                    It.IsAny<MessageReference>()))
+                .ReturnsAsync(null as IUserMessage);
+
+            _taskManagerMock
+                .Setup(pr => pr.Delay(It.IsAny<TimeSpan>()))
+                .Returns(Task.CompletedTask);
 
             SetupSendMessage((message, embed) =>
             {

@@ -3,7 +3,11 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.DAL.Models;
 using Sanakan.DiscordBot.Modules;
+using Sanakan.ShindenApi;
+using Sanakan.ShindenApi.Models;
+using Sanakan.ShindenApi.Models.Enums;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
@@ -15,12 +19,54 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
     public class AddToWishlistAsyncTests : Base
     {
         [TestMethod]
-        public async Task Should_Add_To_Wish_List()
+        [DataRow(WishlistObjectType.Character)]
+        [DataRow(WishlistObjectType.Card)]
+        [DataRow(WishlistObjectType.Title)]
+        public async Task Should_Add_To_Wish_List(WishlistObjectType wishlistObjectType)
         {
-            var wishlistObjectType = WishlistObjectType.Card;
             var objectId = 1ul;
             var user = new User(1ul, DateTime.UtcNow);
             var card = new Card(1ul, "test", "test", 10, 10, Rarity.E, Dere.Tsundere, DateTime.UtcNow);
+            var animeMangaInfoResult = new ShindenResult<AnimeMangaInfo>
+            {
+                Value = new AnimeMangaInfo
+                {
+                    Title = new TitleEntry
+                    {
+                        Type = IllustrationType.Anime,
+                        FinishDate = DateTime.UtcNow,
+                        Title = "test",
+                        Description = new AnimeMangaInfoDescription
+                        {
+                            OtherDescription = "test",
+                        },
+                        TitleOther = new List<TitleOther>
+                        {
+
+                        },
+                        AnimeStatus = AnimeStatus.CurrentlyAiring,
+                        Anime = new AnimeInfo
+                        {
+                            EpisodesCount = 10,
+                        },
+                    }
+                }
+            };
+            var characterResult = new ShindenResult<CharacterInfo>
+            {
+                Value = new CharacterInfo
+                {
+                    Relations = new List<StaffInfoRelation>
+                    {
+                        new StaffInfoRelation
+                        {
+                            FirstName = "Giga",
+                            LastName = "Chad",
+                            Title = "Giga Chad",
+                        }
+                    }
+                }
+            };
 
             _userMock
                 .Setup(pr => pr.Id)
@@ -37,6 +83,14 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
             _cardRepositoryMock
                 .Setup(pr => pr.GetByIdAsync(objectId))
                 .ReturnsAsync(card);
+
+            _shindenClientMock
+                .Setup(pr => pr.GetAnimeMangaInfoAsync(objectId))
+                .ReturnsAsync(animeMangaInfoResult);
+
+            _shindenClientMock
+                .Setup(pr => pr.GetCharacterInfoAsync(objectId))
+                .ReturnsAsync(characterResult);
 
             _userRepositoryMock
                .Setup(pr => pr.SaveChangesAsync(default))

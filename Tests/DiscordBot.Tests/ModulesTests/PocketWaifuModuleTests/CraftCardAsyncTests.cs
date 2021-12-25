@@ -57,7 +57,7 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
                 .Setup(pr => pr.ExpireTag(It.IsAny<string[]>()));
 
             _sessionManagerMock
-                .Setup(pr => pr.Add(It.IsAny<IInteractionSession>()));
+                .Setup(pr => pr.Add(It.IsAny<CraftSession>()));
 
             SetupSendMessage((message, embed) =>
             {

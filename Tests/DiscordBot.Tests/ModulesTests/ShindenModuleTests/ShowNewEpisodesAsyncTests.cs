@@ -27,6 +27,8 @@ namespace DiscordBot.ModulesTests.ShindenModuleTests
                 {
                     new NewEpisode
                     {
+                        EpisodeLength = TimeSpan.FromMinutes(20),
+                        AddDate = DateTime.UtcNow,
                     }
                 }
             };

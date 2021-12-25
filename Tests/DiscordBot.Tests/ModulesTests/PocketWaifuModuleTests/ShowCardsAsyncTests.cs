@@ -77,7 +77,7 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
                 .Returns(Task.CompletedTask);
 
             _sessionManagerMock
-                .Setup(pr => pr.Add(It.IsAny<IInteractionSession>()));
+                .Setup(pr => pr.Add(It.IsAny<ListSession>()));
 
             SetupSendMessage((message, embed) =>
             {

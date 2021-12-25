@@ -25,7 +25,7 @@ namespace Sanakan.Daemon.Tests.HostedServices.ModeratorHostedServiceTests
         protected readonly Mock<IDiscordClientAccessor> _discordSocketClientAccessorMock = new(MockBehavior.Strict);
         protected readonly Mock<IDiscordClient> _discordClientMock = new(MockBehavior.Strict);
         protected readonly Mock<ISystemClock> _systemClockMock = new(MockBehavior.Strict);
-        protected readonly FakeTimer _fakeTimer = new();
+        protected readonly Mock<ITimer> _timerMock = new(MockBehavior.Strict);
         protected readonly Mock<ITaskManager> _taskManagerMock = new(MockBehavior.Strict);
         protected readonly Mock<ICacheManager> _cacheManagerMock = new(MockBehavior.Strict);
 
@@ -56,7 +56,7 @@ namespace Sanakan.Daemon.Tests.HostedServices.ModeratorHostedServiceTests
                 _discordSocketClientAccessorMock.Object,
                 _daemonsConfigurationMock.Object,
                 serviceScopeFactory,
-                _fakeTimer,
+                _timerMock.Object,
                 _taskManagerMock.Object,
                 _cacheManagerMock.Object);
         }

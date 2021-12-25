@@ -74,7 +74,7 @@ namespace DiscordBot.ModulesTests.ProfileModuleTests
                 .Returns(Task.CompletedTask);
 
             _sessionManagerMock
-                .Setup(pr => pr.Add(It.IsAny<IInteractionSession>()));
+                .Setup(pr => pr.Add(It.IsAny<ListSession>()));
 
            await _module.ShowTopAsync();
         }
