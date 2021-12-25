@@ -30,11 +30,14 @@ namespace Sanakan.DAL.Models
         public long CTCount { get; set; }
 
         /// <summary>
-        /// The character identifier.
+        /// The Shinden character identifier.
         /// </summary>
         public ulong? FavouriteWaifuId { get; set; }
+
         public double Karma { get; set; }
+
         public ulong ItemsDropped { get; set; }
+
         public bool WishlistIsPrivate { get; set; }
 
         public long PVPCoins { get; set; }

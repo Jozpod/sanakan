@@ -813,7 +813,9 @@ namespace Sanakan.DiscordBot.Modules
             }
 
             if (!noCardOperation && card.CharacterId == gameDeck.FavouriteWaifuId)
+            {
                 affectionInc *= 1.15;
+            }
 
             if (!noCardOperation)
             {
@@ -1114,11 +1116,12 @@ namespace Sanakan.DiscordBot.Modules
 
             if (card.RestartCount > 1 && card.RestartCount % 10 == 0 && card.RestartCount <= 100)
             {
-                var inUserItem = gameDeck.Items.FirstOrDefault(x => x.Type == ItemType.SetCustomImage);
+                var items = gameDeck.Items;
+                var inUserItem = items.FirstOrDefault(x => x.Type == ItemType.SetCustomImage);
                 if (inUserItem == null)
                 {
                     inUserItem = ItemType.SetCustomImage.ToItem();
-                    gameDeck.Items.Add(inUserItem);
+                    items.Add(inUserItem);
                 }
                 else
                 {
@@ -1274,11 +1277,12 @@ namespace Sanakan.DiscordBot.Modules
                 if (databaseUser.Stats.UpgradedToSSS++ % 10 == 0
                     && card.RestartCount < 1)
                 {
-                    var inUserItem = gameDeck.Items.FirstOrDefault(x => x.Type == ItemType.SetCustomImage);
+                    var items = gameDeck.Items;
+                    var inUserItem = items.FirstOrDefault(x => x.Type == ItemType.SetCustomImage);
                     if (inUserItem == null)
                     {
                         inUserItem = ItemType.SetCustomImage.ToItem();
-                        gameDeck.Items.Add(inUserItem);
+                        items.Add(inUserItem);
                     }
                     else
                     {
@@ -4149,7 +4153,7 @@ namespace Sanakan.DiscordBot.Modules
                 Description = string.Format(Strings.PocketWaifuUserStats, parameters),
             };
 
-            if (gameDeck.FavouriteWaifuId != null)
+            if (gameDeck.FavouriteWaifuId.HasValue)
             {
                 var favouriteCard = gameDeck
                     .Cards

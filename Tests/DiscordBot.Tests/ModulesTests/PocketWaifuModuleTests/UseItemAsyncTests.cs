@@ -64,12 +64,24 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
             card.Id = 1ul;
             user.GameDeck.Cards.Add(card);
             user.GameDeck.Items.Add(new Item { Type = itemType, Count = 3 });
+            var figure = new Figure { IsFocus = true };
+            user.GameDeck.Figures.Add(figure);
             var itemNumber = 1;
             var characterInfoResult = new ShindenResult<CharacterInfo>()
             {
                 Value = new CharacterInfo
                 {
-
+                    Pictures = new List<ImagePicture>
+                    {
+                        new ImagePicture
+                        {
+                            ArtifactId = 1ul,
+                        },
+                        new ImagePicture
+                        {
+                            ArtifactId = 2ul,
+                        }
+                    }
                 }
             };
 
@@ -133,7 +145,60 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
                 embed.Description.Should().NotBeNullOrEmpty();
             });
 
-            await _module.UseItemAsync(itemNumber, card.Id);
+            var itemsCountOrImageLinkOrStarType = "1";
+
+            if(itemType == ItemType.ChangeStarType)
+            {
+                itemsCountOrImageLinkOrStarType = "waz";
+            }
+
+            if (itemType == ItemType.SetCustomImage
+                || itemType == ItemType.SetCustomBorder)
+            {
+                itemsCountOrImageLinkOrStarType = "https://test.com/image.png";
+            }
+
+            if (itemType == ItemType.IncreaseUpgradeCount)
+            {
+                card.Affection = 10;
+            }
+
+            if (itemType == ItemType.FigureSkeleton)
+            {
+                card.Rarity = Rarity.SSS;
+            }
+
+            switch (itemType)
+            {
+                case ItemType.FigureUniversalPart:
+                    figure.FocusedPart = FigurePart.All;
+                    break;
+                case ItemType.FigureHeadPart:
+                    figure.FocusedPart = FigurePart.Head;
+                    break;
+                case ItemType.FigureBodyPart:
+                    figure.FocusedPart = FigurePart.Body;
+                    break;
+                case ItemType.FigureLeftArmPart:
+                    figure.FocusedPart = FigurePart.LeftArm;
+                    break;
+                case ItemType.FigureRightArmPart:
+                    figure.FocusedPart = FigurePart.RightArm;
+                    break;
+                case ItemType.FigureLeftLegPart:
+                    figure.FocusedPart = FigurePart.LeftLeg;
+                    break;
+                case ItemType.FigureRightLegPart:
+                    figure.FocusedPart = FigurePart.RightArm;
+                    break;
+                case ItemType.FigureClothesPart:
+                    figure.FocusedPart = FigurePart.Clothes;
+                    break;
+                default:
+                    break;
+            }
+
+            await _module.UseItemAsync(itemNumber, card.Id , itemsCountOrImageLinkOrStarType);
         }
     }
 }

@@ -16,12 +16,99 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
     public class ResetCardAsyncTests : Base
     {
         [TestMethod]
+        public async Task Should_Send_Error_Message_No_Card()
+        {
+            var utcNow = DateTime.UtcNow;
+            var user = new User(1ul, utcNow);
+            user.GameDeck.UserId = user.Id;
+
+            _userMock
+                .Setup(pr => pr.Id)
+                .Returns(user.Id);
+
+            _userMock
+                .Setup(pr => pr.Mention)
+                .Returns("user mention");
+
+            _userRepositoryMock
+                .Setup(pr => pr.GetUserOrCreateAsync(user.Id))
+                .ReturnsAsync(user);
+
+            SetupSendMessage((message, embed) =>
+            {
+                embed.Description.Should().NotBeNull();
+            });
+
+            await _module.ResetCardAsync(1);
+        }
+
+        [TestMethod]
+        public async Task Should_Send_Error_Message_Not_SSS()
+        {
+            var utcNow = DateTime.UtcNow;
+            var user = new User(1ul, utcNow);
+            var card = new Card(1ul, "title", "name", 100, 50, Rarity.A, Dere.Bodere, utcNow);
+            user.GameDeck.Cards.Add(card);
+            user.GameDeck.UserId = user.Id;
+
+            _userMock
+                .Setup(pr => pr.Id)
+                .Returns(user.Id);
+
+            _userMock
+                .Setup(pr => pr.Mention)
+                .Returns("user mention");
+
+            _userRepositoryMock
+                .Setup(pr => pr.GetUserOrCreateAsync(user.Id))
+                .ReturnsAsync(user);
+
+            SetupSendMessage((message, embed) =>
+            {
+                embed.Description.Should().NotBeNull();
+            });
+
+            await _module.ResetCardAsync(card.Id);
+        }
+
+        [TestMethod]
+        public async Task Should_Send_Error_Message_From_Figure()
+        {
+            var utcNow = DateTime.UtcNow;
+            var user = new User(1ul, utcNow);
+            var card = new Card(1ul, "title", "name", 100, 50, Rarity.SSS, Dere.Bodere, utcNow);
+            card.FromFigure = true;
+            user.GameDeck.Cards.Add(card);
+            user.GameDeck.UserId = user.Id;
+
+            _userMock
+                .Setup(pr => pr.Id)
+                .Returns(user.Id);
+
+            _userMock
+                .Setup(pr => pr.Mention)
+                .Returns("user mention");
+
+            _userRepositoryMock
+                .Setup(pr => pr.GetUserOrCreateAsync(user.Id))
+                .ReturnsAsync(user);
+
+            SetupSendMessage((message, embed) =>
+            {
+                embed.Description.Should().NotBeNull();
+            });
+
+            await _module.ResetCardAsync(card.Id);
+        }
+
+        [TestMethod]
         public async Task Should_Reset_Card_And_Send_Confirm_Message()
         {
             var utcNow = DateTime.UtcNow;
             var user = new User(1ul, utcNow);
             var card = new Card(1ul, "title", "name", 100, 50, Rarity.SSS, Dere.Bodere, utcNow);
             card.Expedition = ExpeditionCardType.None;
+            card.RestartCount = 9;
             user.GameDeck.Cards.Add(card);
             user.GameDeck.UserId = user.Id;
 

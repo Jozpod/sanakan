@@ -131,7 +131,9 @@ namespace Sanakan.DAL.Models
 
             var partType = part.Type.GetPartType();
             if (partType != FocusedPart && partType != FigurePart.All)
+            {
                 return false;
+            }
 
             switch (FocusedPart)
             {

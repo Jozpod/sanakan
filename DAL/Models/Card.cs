@@ -77,6 +77,9 @@ namespace Sanakan.DAL.Models
 
         public double Affection { get; set; }
 
+        /// <summary>
+        /// The number of available upgrades.
+        /// </summary>
         public int UpgradesCount { get; set; }
 
         public int RestartCount { get; set; }
