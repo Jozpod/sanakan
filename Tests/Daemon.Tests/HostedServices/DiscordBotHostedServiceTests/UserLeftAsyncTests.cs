@@ -1,6 +1,9 @@
 ﻿using Discord;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
+using Sanakan.DAL.Models.Configuration;
+using Sanakan.TaskQueue.Messages;
+using System.Threading.Tasks;
 
 namespace Sanakan.Daemon.Tests.HostedServices.DiscordBotHostedServiceTests
 {
@@ -8,12 +11,80 @@ namespace Sanakan.Daemon.Tests.HostedServices.DiscordBotHostedServiceTests
     public class UserLeftAsyncTests : Base
     {
         [TestMethod]
-        public void Should_Exit_Not_User_Message()
+        public async Task Should_Handle_User_Left()
         {
-            var messageMock = new Mock<IMessage>(MockBehavior.Strict);
+            await StartAsync();
+            var guildUserMock = new Mock<IGuildUser>(MockBehavior.Strict);
+            var guildMock = new Mock<IGuild>(MockBehavior.Strict);
+            var guildChannelMock = new Mock<IGuildChannel>(MockBehavior.Strict);
+            var messageChannelMock = guildChannelMock.As<IMessageChannel>();
+            var dmChannelMock = new Mock<IDMChannel>(MockBehavior.Strict);
+            var guildId = 1ul;
+            var guildOptions = new GuildOptions(guildId, 50);
+            guildOptions.GoodbyeMessage = "test";
+
+            guildUserMock
+                .Setup(pr => pr.Id)
+                .Returns(1ul);
+
+            guildUserMock
+               .Setup(pr => pr.Guild)
+               .Returns(guildMock.Object);
+
+            guildUserMock
+               .Setup(pr => pr.Mention)
+               .Returns("mention");
+
+            guildUserMock
+                .Setup(pr => pr.Nickname)
+                .Returns("nickname");
+
+            guildMock
+                .Setup(pr => pr.Id)
+                .Returns(guildId);
+
+            _guildConfigRepositoryMock
+                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildId))
+                .ReturnsAsync(guildOptions);
+
+            guildMock
+                .Setup(pr => pr.GetChannelAsync(guildOptions.GreetingChannelId, CacheMode.AllowDownload, null))
+                .ReturnsAsync(guildChannelMock.Object);
+
+            messageChannelMock
+                .Setup(pr => pr.SendMessageAsync(
+                    It.IsAny<string>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<Embed>(),
+                    It.IsAny<RequestOptions>(),
+                    It.IsAny<AllowedMentions>(),
+                    It.IsAny<MessageReference>()))
+                .ReturnsAsync(null as IUserMessage);
+
+            guildUserMock
+                .Setup(pr => pr.GetOrCreateDMChannelAsync(null))
+                .ReturnsAsync(dmChannelMock.Object);
+
+            dmChannelMock
+                .Setup(pr => pr.SendMessageAsync(
+                    It.IsAny<string>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<Embed>(),
+                    It.IsAny<RequestOptions>(),
+                    It.IsAny<AllowedMentions>(),
+                    It.IsAny<MessageReference>()))
+                .ReturnsAsync(null as IUserMessage);
+
+            dmChannelMock
+                .Setup(pr => pr.CloseAsync(null))
+                .Returns(Task.CompletedTask);
+
+            _blockingPriorityQueueMock
+                .Setup(pr => pr.TryEnqueue(It.IsAny<DeleteUserMessage>()))
+                .Returns(true);
 
             _discordSocketClientAccessorMock.Raise(pr => pr.LoggedIn += null);
-            _discordSocketClientAccessorMock.Raise(pr => pr.MessageReceived += null, messageMock.Object);
+            _discordSocketClientAccessorMock.Raise(pr => pr.UserLeft += null, guildUserMock.Object);
         }
 
     }

@@ -20,16 +20,16 @@ test:
 	dotnet test Tests/Common.Tests/Common.Tests.csproj  --no-build --verbosity minimal --configuration Release
 	dotnet test Tests/DAL.MySql.Migrator.Tests/DAL.MySql.Migrator.Tests.csproj --no-build --verbosity minimal --configuration Release
 	dotnet test Tests/DAL.MySql.Schema.Tests/DAL.MySql.Schema.Tests.csproj --no-build --verbosity minimal --configuration Release
-	dotnet test Tests/Web.Tests/Web.Tests.csproj --no-build --verbosity minimal --configuration Release /p:Exclude=\"[*]Sanakan.Web.Models*\"
+	dotnet test Tests/Web.Tests/Web.Tests.csproj --no-build --verbosity minimal --configuration Release
 	dotnet test Tests/DAL.Tests/DAL.Tests.csproj  --no-build --verbosity minimal --configuration Release
 	dotnet test Tests/DiscordBot.Tests/DiscordBot.Tests.csproj --no-build --verbosity minimal --configuration Release
-	dotnet test Tests/ShindenApi.Tests/ShindenApi.Tests.csproj --no-build --verbosity minimal --configuration Release /p:Exclude=\"[*]Sanakan.ShindenApi.Models*,[*]Sanakan.ShindenApi.Converters*\"
+	dotnet test Tests/ShindenApi.Tests/ShindenApi.Tests.csproj --no-build --verbosity minimal --configuration Release
 	dotnet test Tests/DiscordBot.Session.Tests/DiscordBot.Session.Tests.csproj --no-build --verbosity minimal --configuration Release
 	dotnet test Tests/DiscordBot.Supervisor.Tests/DiscordBot.Supervisor.Tests.csproj --no-build --verbosity minimal --configuration Release
-	dotnet test Tests/DiscordBot.Services.Tests/DiscordBot.Services.Tests.csproj  --no-build --verbosity minimal --configuration Release /p:Exclude=\"[*]Sanakan.DiscordBot.Services.Models*\"
+	dotnet test Tests/DiscordBot.Services.Tests/DiscordBot.Services.Tests.csproj  --no-build --verbosity minimal --configuration Release
 	dotnet test Tests/Daemon.Tests/Daemon.Tests.csproj  --no-build --verbosity minimal --configuration Release
-	dotnet test Tests/Game.Tests/Game.Tests.csproj --no-build --verbosity minimal --configuration Release /p:Exclude=\"[*]Sanakan.Game.Models*\"
-	dotnet test Tests/TaskQueue.Tests/TaskQueue.Tests.csproj --no-build --verbosity minimal --configuration Release /p:Exclude=\"[*]Sanakan.TaskQueue.Messages*\"
+	dotnet test Tests/Game.Tests/Game.Tests.csproj --no-build --verbosity minimal --configuration Release
+	dotnet test Tests/TaskQueue.Tests/TaskQueue.Tests.csproj --no-build --verbosity minimal --configuration Release
 
 publish-test-coverage:
 	codecov -f "./Tests/TestResults/DAL.Tests.coverage.xml" `

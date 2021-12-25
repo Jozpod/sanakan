@@ -18,7 +18,7 @@ namespace Sanakan.Daemon.Tests.HostedServices.SessionHostedServiceTests
     public class HandleMessageAsyncTests : Base
     {
         [TestMethod]
-        public async Task Should_Dispose_Expired_Session()
+        public async Task Should_Handle_Message()
         {
             var userMessageMock = new Mock<IUserMessage>(MockBehavior.Strict);
             var userMock = new Mock<IUser>(MockBehavior.Strict);

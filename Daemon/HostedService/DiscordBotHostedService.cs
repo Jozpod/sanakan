@@ -159,6 +159,7 @@ namespace Sanakan.Daemon.HostedService
             var userRepository = serviceProvider.GetRequiredService<IUserRepository>();
 
             var config = await guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
+
             if (config != null)
             {
                 var role = config.UserRoleId.HasValue ? guild.GetRole(config.UserRoleId.Value) : null;
@@ -170,12 +171,14 @@ namespace Sanakan.Daemon.HostedService
                     }
                 }
 
-                if (config.ChannelsWithoutExperience.Any(x => x.ChannelId == message.Channel.Id))
+                var channelId = message.Channel.Id;
+
+                if (config.ChannelsWithoutExperience.Any(x => x.ChannelId == channelId))
                 {
                     calculateExperience = false;
                 }
 
-                if (config.IgnoredChannels.Any(x => x.ChannelId == message.Channel.Id))
+                if (config.IgnoredChannels.Any(x => x.ChannelId == channelId))
                 {
                     countMessages = false;
                 }
@@ -405,9 +408,9 @@ namespace Sanakan.Daemon.HostedService
 
             try
             {
-                var pw = await user.GetOrCreateDMChannelAsync();
-                await pw.SendMessageAsync(ReplaceTags(user, guildConfig.WelcomeMessagePM));
-                await pw.CloseAsync();
+                var dmChannel = await user.GetOrCreateDMChannelAsync();
+                await dmChannel.SendMessageAsync(ReplaceTags(user, guildConfig.WelcomeMessagePM));
+                await dmChannel.CloseAsync();
             }
             catch (Exception ex)
             {
@@ -477,20 +480,17 @@ namespace Sanakan.Daemon.HostedService
                 return;
             }
 
-            if (newMessage.Channel is SocketGuildChannel gChannel)
+            if (newMessage.Channel is IGuildChannel guildChannel)
             {
-                if (_discordConfiguration.CurrentValue.BlacklistedGuilds.Any(x => x == gChannel.Guild.Id))
+                var guild = guildChannel.Guild;
+                if (_discordConfiguration.CurrentValue
+                    .BlacklistedGuilds.Any(x => x == guildChannel.Guild.Id))
                 {
                     return;
                 }
 
-                _ = Task.Run(async () =>
-                {
-                    await LogMessageAsync(gChannel, oldMessage.Value, newMessage);
-                });
+                await LogMessageAsync(guild, oldMessage.Value, newMessage);
             }
-
-            await Task.CompletedTask;
         }
 
         private async Task HandleDeletedMessageAsync(Cacheable<IMessage, ulong> cachedMessage, IChannel channel)
@@ -513,19 +513,20 @@ namespace Sanakan.Daemon.HostedService
                 return;
             }
 
-            if (message.Channel is IGuildChannel gChannel)
+            if (message.Channel is IGuildChannel guildChannel)
             {
-                if (_discordConfiguration.CurrentValue.BlacklistedGuilds.Any(x => x == gChannel.Guild.Id))
+                var guild = guildChannel.Guild;
+                if (_discordConfiguration.CurrentValue.BlacklistedGuilds.Any(x => x == guild.Id))
                 {
                     return;
                 }
 
-                await LogMessageAsync(gChannel, message);
+                await LogMessageAsync(guild, message);
             }
 
         }
 
-        private async Task LogMessageAsync(IGuildChannel channel, IMessage oldMessage, IMessage? newMessage = null)
+        private async Task LogMessageAsync(IGuild guild, IMessage oldMessage, IMessage? newMessage = null)
         {
             using var serviceScope = _serviceScopeFactory.CreateScope();
             var guildConfigRepository = serviceScope.ServiceProvider.GetRequiredService<IGuildConfigRepository>();
@@ -535,7 +536,6 @@ namespace Sanakan.Daemon.HostedService
                 return;
             }
 
-            var guild = channel.Guild;
             var config = await guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
 
             if (config == null)
@@ -553,7 +553,8 @@ namespace Sanakan.Daemon.HostedService
             try
             {
                 var jumpUrl = (newMessage == null) ? "" : $"{newMessage.GetJumpUrl()}";
-                await textChannel.SendMessageAsync(jumpUrl, embed: BuildMessage(oldMessage, newMessage));
+                var embed = BuildMessage(oldMessage, newMessage);
+                await textChannel.SendMessageAsync(jumpUrl, embed: embed);
             }
             catch (Exception ex)
             {
