@@ -7,9 +7,9 @@ using Sanakan.DAL.Models.Management;
 using Sanakan.DiscordBot.Abstractions;
 using Sanakan.DiscordBot.Abstractions.Configuration;
 using Sanakan.DiscordBot.Services.Abstractions;
+using Sanakan.DiscordBot.Session.Abstractions;
 using System;
 using System.Threading.Tasks;
-using static Sanakan.DiscordBot.Session.AcceptSession;
 
 namespace Sanakan.DiscordBot.Session.Tests
 {

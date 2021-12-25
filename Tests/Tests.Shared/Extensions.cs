@@ -1,9 +1,7 @@
-﻿using Discord;
-using Discord.Commands;
+﻿using Discord.Commands;
 using Discord.Commands.Builders;
 using System;
 using System.Reflection;
-using System.Threading.Tasks;
 
 namespace Sanakan.Tests.Shared
 {

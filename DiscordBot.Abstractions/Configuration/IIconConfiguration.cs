@@ -62,6 +62,11 @@ namespace Sanakan.DiscordBot.Abstractions.Configuration
         /// <summary>
         /// Used for Accept/Decline interaction with bot.
         /// </summary>
+        public IEmote[] ExchangeOneTwo { get; }
+
+        /// <summary>
+        /// Used for Accept/Decline interaction with bot.
+        /// </summary>
         public IEmote[] AcceptDecline { get; }
 
         /// <summary>

@@ -1,4 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Sanakan.DiscordBot.Session.Abstractions;
 using System.Threading.Tasks;
 
 namespace Sanakan.DiscordBot.Session.Tests.CraftSessionTests

@@ -2,7 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Sanakan.DAL.Models;
 using Sanakan.DiscordBot.Abstractions.Configuration;
-using Sanakan.DiscordBot.Abstractions.Models;
+using Sanakan.DiscordBot.Session.Abstractions;
 using Sanakan.Extensions;
 using System;
 using System.Collections.Generic;
@@ -107,14 +107,14 @@ namespace Sanakan.DiscordBot.Session
 
         private int MaxPageReal() => ListSessionUtils.MaxPage(_items, _itemsPerPage) - 1;
 
-        public override async Task ExecuteAsync(
+        public override async Task<bool> ExecuteAsync(
             SessionContext context,
             IServiceProvider serviceProvider,
             CancellationToken cancellationToken = default)
         {
             if (context.Message.Id != _userMessage.Id)
             {
-                return;
+                return false;
             }
 
             _iconConfiguration = serviceProvider.GetRequiredService<IIconConfiguration>();
@@ -132,7 +132,7 @@ namespace Sanakan.DiscordBot.Session
                 await _userMessage.ModifyAsync(x => x.Embed = embed);
 
                 ResetExpiry();
-                return;
+                return false;
             }
 
             if (emote.Equals(_iconConfiguration.RightwardsArrow))
@@ -147,6 +147,8 @@ namespace Sanakan.DiscordBot.Session
 
                 ResetExpiry();
             }
+
+            return false;
         }
 
         public override async ValueTask DisposeAsync()

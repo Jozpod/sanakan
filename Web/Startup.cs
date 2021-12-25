@@ -191,6 +191,9 @@ namespace Sanakan.Web
 
             if (!CurrentEnvironment.IsEnvironment("Test"))
             {
+#if DEBUG
+                services.AddExchangeWithBotHostedService();
+#endif
                 services.AddHostedServices();
             }
         }

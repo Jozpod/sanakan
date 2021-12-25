@@ -1,6 +1,4 @@
 ﻿using Sanakan.DAL.Models;
-using Sanakan.Game;
-using Sanakan.Game.Models;
 using System.Collections.Generic;
 
 namespace Sanakan.Game.Models

@@ -2,10 +2,8 @@ using Discord;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using Sanakan.DAL.Models;
 using Sanakan.DiscordBot.Modules;
 using Sanakan.Game.Models;
-using System;
 using System.Threading.Tasks;
 
 namespace DiscordBot.ModulesTests.PocketWaifuModuleTests

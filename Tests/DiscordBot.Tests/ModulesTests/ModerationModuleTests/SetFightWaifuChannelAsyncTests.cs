@@ -1,4 +1,3 @@
-using Discord;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;

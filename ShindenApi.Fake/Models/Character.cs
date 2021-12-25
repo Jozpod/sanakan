@@ -14,6 +14,8 @@ namespace Sanakan.ShindenApi.Fake.Models
         [StringLength(50)]
         public string Name { get; set; } = string.Empty;
 
+        public string? Biography { get; set; }
+
         public ICollection<Illustration> Illustrations { get; set; } = new Collection<Illustration>();
     }
 }

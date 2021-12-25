@@ -1,7 +1,6 @@
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Sanakan.ShindenApi.Models;
-using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 

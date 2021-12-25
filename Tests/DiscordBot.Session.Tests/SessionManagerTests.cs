@@ -1,6 +1,8 @@
 ﻿using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Sanakan.DiscordBot.Session.Abstractions;
 using System;
+using System.Linq;
 
 namespace Sanakan.DiscordBot.Session.Tests
 {
@@ -22,7 +24,7 @@ namespace Sanakan.DiscordBot.Session.Tests
         {
             var session = new CraftSession(1, DateTime.UtcNow, null, null, null, null, null);
             _sessionManager.Add(session);
-            _sessionManager.Exists<CraftSession>(session.OwnerId).Should().BeTrue();
+            _sessionManager.Exists<CraftSession>(session.OwnerIds.First()).Should().BeTrue();
         }
 
         [TestMethod]

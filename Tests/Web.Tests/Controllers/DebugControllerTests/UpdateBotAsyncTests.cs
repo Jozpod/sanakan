@@ -1,7 +1,6 @@
 ﻿using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
 using Sanakan.Common;
 using System.IO;
 using System.Threading.Tasks;

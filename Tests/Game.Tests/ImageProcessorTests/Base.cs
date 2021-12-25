@@ -4,8 +4,6 @@ using Sanakan.Common;
 using Sanakan.Common.Configuration;
 using Sanakan.Game.Services;
 using Sanakan.Game.Services.Abstractions;
-using System;
-using System.IO;
 
 namespace Sanakan.Game.Tests
 {

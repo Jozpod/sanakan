@@ -14,6 +14,7 @@
     <ProjectReference Include="..\Common\Common.csproj" />
     <ProjectReference Include="..\DAL\DAL.csproj" />
     <ProjectReference Include="..\DiscordBot.Abstractions\DiscordBot.Abstractions.csproj" />
+    <ProjectReference Include="..\DiscordBot.Session.Abstractions\DiscordBot.Session.Abstractions.csproj" />
     <ProjectReference Include="..\Game\Game.csproj" />
   </ItemGroup>
 

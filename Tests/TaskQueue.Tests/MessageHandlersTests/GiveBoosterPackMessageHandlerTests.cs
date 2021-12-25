@@ -1,12 +1,8 @@
-﻿using Discord;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using Sanakan.Common;
 using Sanakan.Common.Cache;
 using Sanakan.DAL.Models;
-using Sanakan.DAL.Models.Configuration;
 using Sanakan.DAL.Repositories.Abstractions;
-using Sanakan.Game.Services.Abstractions;
 using Sanakan.TaskQueue.MessageHandlers;
 using Sanakan.TaskQueue.Messages;
 using System;

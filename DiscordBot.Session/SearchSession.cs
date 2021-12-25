@@ -1,5 +1,6 @@
 using Discord;
 using Microsoft.Extensions.DependencyInjection;
+using Sanakan.DiscordBot.Session.Abstractions;
 using Sanakan.Extensions;
 using Sanakan.ShindenApi;
 using Sanakan.ShindenApi.Models;
@@ -34,7 +35,7 @@ namespace Sanakan.DiscordBot.Session
             _characterList = characterList ?? new();
         }
 
-        public override async Task ExecuteAsync(
+        public override async Task<bool> ExecuteAsync(
           SessionContext sessionContext,
           IServiceProvider serviceProvider,
           CancellationToken cancellationToken = default)
@@ -44,17 +45,17 @@ namespace Sanakan.DiscordBot.Session
 
             if (content == null)
             {
-                return;
+                return false;
             }
 
             if (content.ToLower() == "koniec")
             {
-                return;
+                return false;
             }
 
             if (!int.TryParse(content, out var number))
             {
-                return;
+                return false;
             }
 
             var shindenClient = serviceProvider.GetRequiredService<IShindenClient>();
@@ -69,7 +70,7 @@ namespace Sanakan.DiscordBot.Session
                     var animeMangaInfo = (await shindenClient.GetAnimeMangaInfoAsync(parameter.TitleId)).Value;
                     await channel.SendMessageAsync("", false, animeMangaInfo!.ToEmbed());
                     await message.DeleteAsync();
-                    return;
+                    return false;
                 }
             }
 
@@ -83,10 +84,11 @@ namespace Sanakan.DiscordBot.Session
 
                     await channel.SendMessageAsync("", false, characterInfo!.ToEmbed());
                     await message.DeleteAsync();
-                    return;
+                    return false;
                 }
             }
 
+            return false;
         }
 
         public override async ValueTask DisposeAsync()

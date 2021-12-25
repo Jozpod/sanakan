@@ -6,8 +6,6 @@ using Shinden.API;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Sanakan.ShindenApi.Fake
@@ -173,6 +171,11 @@ namespace Sanakan.ShindenApi.Fake
                 Value = new CharacterInfo()
                 {
                     CharacterId = characterId,
+                    PictureId = character?.ImageId,
+                    Biography = new CharacterBio
+                    {
+                        Biography = character?.Biography,
+                    },
                     FirstName = character?.Name ?? $"Test character {characterId}"
                 }
             };

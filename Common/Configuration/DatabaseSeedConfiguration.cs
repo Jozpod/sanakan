@@ -1,6 +1,5 @@
 ﻿using Sanakan.Common.Models;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Sanakan.Common.Configuration
 {

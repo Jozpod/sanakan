@@ -8,7 +8,9 @@ using Sanakan.Common;
 using Sanakan.Common.Configuration;
 using Sanakan.DiscordBot;
 using Sanakan.DiscordBot.Abstractions.Extensions;
-using Sanakan.DiscordBot.Session;
+using Sanakan.DiscordBot.Session.Abstractions;
+using Sanakan.TaskQueue;
+using Sanakan.TaskQueue.Messages;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,6 +26,7 @@ namespace Sanakan.Daemon.HostedService
         private readonly IDiscordClientAccessor _discordClientAccessor;
         private readonly IOptionsMonitor<DaemonsConfiguration> _options;
         private readonly IServiceScopeFactory _serviceScopeFactory;
+        private readonly IBlockingPriorityQueue _blockingPriorityQueue;
         private readonly ITimer _timer;
         private readonly ISessionManager _sessionManager;
         private readonly ITaskManager _taskManager;
@@ -33,8 +36,9 @@ namespace Sanakan.Daemon.HostedService
             ILogger<SessionHostedService> logger,
             IOptionsMonitor<DaemonsConfiguration> options,
             ISystemClock systemClock,
-            IDiscordClientAccessor discordSocketClientAccessor,
+            IDiscordClientAccessor discordClientAccessor,
             IServiceScopeFactory serviceScopeFactory,
+            IBlockingPriorityQueue blockingPriorityQueue,
             ISessionManager sessionManager,
             ITaskManager taskManager,
             ITimer timer)
@@ -42,7 +46,8 @@ namespace Sanakan.Daemon.HostedService
             _logger = logger;
             _options = options;
             _systemClock = systemClock;
-            _discordClientAccessor = discordSocketClientAccessor;
+            _discordClientAccessor = discordClientAccessor;
+            _blockingPriorityQueue = blockingPriorityQueue;
             _serviceScopeFactory = serviceScopeFactory;
             _timer = timer;
             _sessionManager = sessionManager;
@@ -95,7 +100,7 @@ namespace Sanakan.Daemon.HostedService
                 {
                     if(expiredSession.IsRunning)
                     {
-                        _logger.LogWarning("Expired session is still running. Owner: {0}, Type - {1}", expiredSession.OwnerId, expiredSession);
+                        _logger.LogWarning("Expired session is still running. Owner: {0}, Type - {1}", expiredSession.OwnerIds.First(), expiredSession);
                         continue;
                     }
 
@@ -112,7 +117,7 @@ namespace Sanakan.Daemon.HostedService
             _isRunning = false;
         }
 
-        private async Task RunSessions(IEnumerable<IInteractionSession> sessions, SessionContext sessionPayload)
+        private async Task RunSessions(IEnumerable<IInteractionSession> sessions, SessionContext sessionContext)
         {
             var utcNow = _systemClock.UtcNow;
             using var serviceScope = _serviceScopeFactory.CreateScope();
@@ -139,23 +144,29 @@ namespace Sanakan.Daemon.HostedService
                     switch (session.RunMode)
                     {
                         case RunMode.Async:
-                            await session.ExecuteAsync(sessionPayload, serviceProvider);
-                            _sessionManager.Remove(session);
-                            await session.DisposeAsync();
+                            var hasCompleted = await session.ExecuteAsync(sessionContext, serviceProvider);
+
+                            if (hasCompleted)
+                            {
+                                _sessionManager.Remove(session);
+                                await session.DisposeAsync();
+                            }
                             break;
 
                         default:
                         case RunMode.Sync:
-                            // TO-DO
-                            await session.ExecuteAsync(sessionPayload, serviceProvider);
-                            _sessionManager.Remove(session);
-                            await session.DisposeAsync();
+
+                            _blockingPriorityQueue.TryEnqueue(new SessionMessage
+                            {
+                                Session = session,
+                                Context = sessionContext
+                            });;
                             break;
                     }
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error occurred while handling session {0} {1}", session, session.OwnerId);
+                    _logger.LogError(ex, "Error occurred while handling session {0} {1}", session, session.OwnerIds.First());
                 }              
             }
         }

@@ -2,16 +2,13 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using Sanakan.DAL.Models;
 using Sanakan.DAL.Repositories.Abstractions;
-using Sanakan.DiscordBot.Abstractions.Configuration;
-using Sanakan.Game.Models;
+using Sanakan.DiscordBot.Session.Abstractions;
 using Sanakan.ShindenApi;
 using Sanakan.ShindenApi.Models;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using static Sanakan.DiscordBot.Session.SearchSession;
 
 namespace Sanakan.DiscordBot.Session
 {

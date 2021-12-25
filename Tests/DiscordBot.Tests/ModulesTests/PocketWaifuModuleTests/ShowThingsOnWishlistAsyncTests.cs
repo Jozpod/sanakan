@@ -6,7 +6,6 @@ using Sanakan.DAL.Models;
 using Sanakan.DiscordBot.Modules;
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace DiscordBot.ModulesTests.PocketWaifuModuleTests

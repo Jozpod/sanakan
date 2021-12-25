@@ -46,11 +46,11 @@ namespace Sanakan.DiscordBot.Builder
 
                 if (discordConfiguration.IconTheme == "Default")
                 {
-                    iconConfiguration = new ShindenIconConfiguration();
+                    iconConfiguration = new DefaultIconConfiguration();
                     return iconConfiguration;
                 }
 
-                iconConfiguration = new DefaultIconConfiguration();
+                iconConfiguration = new ShindenIconConfiguration();
                 return iconConfiguration;
             });
 

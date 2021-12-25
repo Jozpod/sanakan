@@ -2,7 +2,6 @@ using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Sanakan.ShindenApi.Models;
 using Sanakan.ShindenApi.Models.Enums;
-using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 

@@ -5,7 +5,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.Daemon.HostedService;
 using Sanakan.DiscordBot;
-using Sanakan.DiscordBot.Session;
+using Sanakan.DiscordBot.Session.Abstractions;
 using Sanakan.Tests.Shared;
 using System;
 using System.Threading;
@@ -97,7 +97,7 @@ namespace Sanakan.Daemon.Tests.HostedServices.SessionHostedServiceTests
                     It.IsAny<SessionContext>(),
                     It.IsAny<IServiceProvider>(),
                     It.IsAny<CancellationToken>()))
-                .Returns(Task.CompletedTask)
+                .ReturnsAsync(false)
                 .Verifiable();
 
             _sessionManagerMock

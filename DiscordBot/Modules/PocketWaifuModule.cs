@@ -14,6 +14,7 @@ using Sanakan.DiscordBot.Abstractions.Extensions;
 using Sanakan.DiscordBot.Abstractions.Models;
 using Sanakan.DiscordBot.Resources;
 using Sanakan.DiscordBot.Session;
+using Sanakan.DiscordBot.Session.Abstractions;
 using Sanakan.Extensions;
 using Sanakan.Game;
 using Sanakan.Game.Extensions;
@@ -3507,10 +3508,11 @@ namespace Sanakan.DiscordBot.Modules
                 Description = description,
             }.Build();
             var message = await ReplyAsync(embed: embed);
-            await message.AddReactionsAsync(_iconConfiguration.LeftRightArrows);
+            await message.AddReactionsAsync(_iconConfiguration.ExchangeOneTwo);
 
             var session = new ExchangeSession(
                 sourceUserId,
+                destinationUser.Id,
                 _systemClock.UtcNow,
                 message,
                 sourcePlayer,

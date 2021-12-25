@@ -13,6 +13,7 @@ using Sanakan.DiscordBot.Abstractions.Models;
 using Sanakan.DiscordBot.Resources;
 using Sanakan.DiscordBot.Services.Abstractions;
 using Sanakan.DiscordBot.Session;
+using Sanakan.DiscordBot.Session.Abstractions;
 using Sanakan.Preconditions;
 using System;
 using System.Linq;

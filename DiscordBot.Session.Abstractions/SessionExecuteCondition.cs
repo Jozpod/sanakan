@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Sanakan.DiscordBot.Session
+namespace Sanakan.DiscordBot.Session.Abstractions
 {
     [Flags]
     public enum SessionExecuteCondition : byte

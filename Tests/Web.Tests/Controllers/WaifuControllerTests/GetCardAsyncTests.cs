@@ -7,7 +7,6 @@ using Sanakan.DAL.Models;
 using Sanakan.Game.Models;
 using Sanakan.Web.Controllers;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 

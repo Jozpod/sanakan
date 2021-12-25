@@ -1,13 +1,10 @@
 using Discord;
-using Discord.Commands;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.DAL.Models.Configuration;
-using Sanakan.DAL.Models.Management;
 using Sanakan.DiscordBot.Services;
 using Sanakan.DiscordBot.Services.Abstractions;
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 

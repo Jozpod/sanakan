@@ -3,9 +3,7 @@ using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.DiscordBot.Services.Abstractions;
-using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace DiscordBot.Services.Tests.ModeratorServiceTests
 {

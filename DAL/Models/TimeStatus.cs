@@ -132,6 +132,6 @@ namespace Sanakan.DAL.Models
             }
         }
 
-        public bool IsActive(DateTime dateTime) => EndsOn.HasValue && EndsOn.Value < dateTime;
+        public bool IsActive(DateTime dateTime) => EndsOn.HasValue && EndsOn.Value > dateTime;
     }
 }

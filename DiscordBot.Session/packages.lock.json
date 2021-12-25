@@ -1340,6 +1340,13 @@
           "SixLabors.ImageSharp.Drawing": "1.0.0-beta0006"
         }
       },
+      "Sanakan.DiscordBot.Session.Abstractions": {
+        "type": "Project",
+        "dependencies": {
+          "Discord.Net": "2.4.0",
+          "Microsoft.Extensions.DependencyInjection": "5.0.2"
+        }
+      },
       "Sanakan.Game": {
         "type": "Project",
         "dependencies": {
@@ -1360,6 +1367,7 @@
           "Sanakan.Common": "0.0.1",
           "Sanakan.DAL": "0.0.1",
           "Sanakan.DiscordBot.Abstractions": "0.0.1",
+          "Sanakan.DiscordBot.Session.Abstractions": "0.0.1",
           "Sanakan.Game": "0.0.1"
         }
       },

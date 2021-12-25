@@ -5,7 +5,7 @@ using Sanakan.Common;
 using Sanakan.Common.Cache;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot.Modules;
-using Sanakan.DiscordBot.Session;
+using Sanakan.DiscordBot.Session.Abstractions;
 using Sanakan.Game.Services.Abstractions;
 using Sanakan.ShindenApi;
 

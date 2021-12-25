@@ -1,14 +1,11 @@
 ﻿using Discord.Commands;
-using Discord.Commands.Builders;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Sanakan.Tests.Shared;
 using Sanakan.Web.Models;
-using System;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 
 namespace Sanakan.Web.Tests.Controllers.InfoControllerTests

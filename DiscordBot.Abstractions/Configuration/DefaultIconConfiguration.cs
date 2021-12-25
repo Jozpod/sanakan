@@ -26,6 +26,8 @@ namespace Sanakan.DiscordBot.Abstractions.Configuration
 
         public IEmote RightwardsArrow => Emojis.RightwardsArrow;
 
+        public IEmote[] ExchangeOneTwo => new[] { OneEmote, TwoEmote };
+
         public IEmote[] AcceptDecline => new[] { Accept, Decline };
 
         public IEmote[] LeftRightArrows => new[] { LeftwardsArrow, RightwardsArrow };

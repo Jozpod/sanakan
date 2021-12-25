@@ -5,7 +5,6 @@ using Moq;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Models.Configuration;
 using Sanakan.DiscordBot.Modules;
-using Sanakan.ShindenApi.Models;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;

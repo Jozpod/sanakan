@@ -3,14 +3,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.Common.Cache;
-using Sanakan.DAL.Models;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot.Abstractions.Configuration;
 using Sanakan.Game.Models;
 using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using static Sanakan.DiscordBot.Session.ExchangeSession;
 
 namespace Sanakan.DiscordBot.Session.ExchangeSessionTests
 {
@@ -40,6 +36,7 @@ namespace Sanakan.DiscordBot.Session.ExchangeSessionTests
             _serviceProvider = serviceCollection.BuildServiceProvider();
             _session = new(
                 1ul,
+                2ul,
                 DateTime.UtcNow,
                 _userMessageMock.Object,
                 _sourcePlayer,

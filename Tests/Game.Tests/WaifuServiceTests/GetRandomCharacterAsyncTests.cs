@@ -1,8 +1,6 @@
-﻿using Discord;
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using Sanakan.DAL.Models;
 using Sanakan.Game.Services.Abstractions;
 using Sanakan.ShindenApi;
 using Sanakan.ShindenApi.Models;

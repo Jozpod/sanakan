@@ -1,13 +1,9 @@
 ﻿using FluentAssertions;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Repositories;
-using Sanakan.ShindenApi;
-using Sanakan.ShindenApi.Models;
-using Sanakan.TaskQueue.Messages;
 using Sanakan.Web.Controllers;
 using System;
 using System.Collections.Generic;

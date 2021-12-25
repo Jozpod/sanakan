@@ -1,13 +1,11 @@
-﻿using Discord;
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.DAL.Models;
 using Sanakan.Game.Services.Abstractions;
+using Sanakan.ShindenApi.Models;
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
-using Sanakan.ShindenApi.Models;
 
 namespace Sanakan.Game.Tests.WaifuServiceTests
 {

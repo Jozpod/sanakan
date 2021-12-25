@@ -1,13 +1,14 @@
 ﻿using Discord.Commands;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Sanakan.DiscordBot.Session
+namespace Sanakan.DiscordBot.Session.Abstractions
 {
-    public interface IInteractionSession : IAsyncDisposable
+    public interface IInteractionSession : IAsyncDisposable, IComparable<IInteractionSession>
     {
-        ulong OwnerId { get; }
+        IEnumerable<ulong> OwnerIds { get; }
 
         Type Type { get; }
 
@@ -17,11 +18,13 @@ namespace Sanakan.DiscordBot.Session
 
         bool IsRunning { get; }
 
+        DateTime ExpiresOn { get; }
+
         IServiceProvider ServiceProvider { get; set; }
 
         bool HasExpired(DateTime currentDate);
 
-        Task ExecuteAsync(
+        Task<bool> ExecuteAsync(
             SessionContext sessionPayload,
             IServiceProvider serviceProvider,
             CancellationToken cancellationToken = default);

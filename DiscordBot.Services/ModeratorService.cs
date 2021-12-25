@@ -1,5 +1,4 @@
 ﻿using Discord;
-using Discord.Commands;
 using Humanizer;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;

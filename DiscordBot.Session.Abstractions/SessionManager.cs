@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Sanakan.DiscordBot.Session
+namespace Sanakan.DiscordBot.Session.Abstractions
 {
     internal class SessionManager : ISessionManager
     {
@@ -20,7 +20,9 @@ namespace Sanakan.DiscordBot.Session
             var exists = false;
             lock (SyncRoot)
             {
-                exists = _sessions.Any(pr => pr.OwnerId == discordUserId && pr.Type == typeof(T));
+                exists = _sessions
+                    .Any(pr => pr.OwnerIds.Contains(discordUserId)
+                        && pr.Type == typeof(T));
             }
             return exists;
         }
@@ -45,7 +47,9 @@ namespace Sanakan.DiscordBot.Session
         {
             lock (SyncRoot)
             {
-                var session = _sessions.FirstOrDefault(pr => pr.OwnerId == discordUserId && pr.Type == typeof(T));
+                var session = _sessions
+                    .FirstOrDefault(pr => pr.OwnerIds.Contains(discordUserId)
+                        && pr.Type == typeof(T));
 
                 if(session != null)
                 {
@@ -59,7 +63,7 @@ namespace Sanakan.DiscordBot.Session
         {
             lock (SyncRoot)
             {
-                var filtered = _sessions.Where(pr => pr.OwnerId == OwnerId
+                var filtered = _sessions.Where(pr => pr.OwnerIds.Contains(OwnerId)
                     && pr.SessionExecuteCondition.HasFlag(executeCondition))
                     .ToList();
 

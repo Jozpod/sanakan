@@ -1,5 +1,4 @@
-﻿using Discord;
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.DAL.Models;
@@ -8,7 +7,6 @@ using Sanakan.Game.Services.Abstractions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Sanakan.Game.Tests.WaifuServiceTests
 {

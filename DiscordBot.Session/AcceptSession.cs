@@ -5,7 +5,9 @@ using Sanakan.DiscordBot.Abstractions.Configuration;
 using Sanakan.DiscordBot.Abstractions.Extensions;
 using Sanakan.DiscordBot.Abstractions.Models;
 using Sanakan.DiscordBot.Services.Abstractions;
+using Sanakan.DiscordBot.Session.Abstractions;
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -47,7 +49,7 @@ namespace Sanakan.DiscordBot.Session
             _muteRole = muteRole;
         }
 
-        public override async Task ExecuteAsync(
+        public override async Task<bool> ExecuteAsync(
             SessionContext context,
             IServiceProvider serviceProvider,
             CancellationToken cancellationToken = default)
@@ -62,12 +64,12 @@ namespace Sanakan.DiscordBot.Session
 
                 if (context.Message.Id != _userMessage.Id)
                 {
-                    return;
+                    return false;
                 }
 
-                if (context.UserId != OwnerId)
+                if (OwnerIds.Any(pr => pr == context.UserId))
                 {
-                    return;
+                    return false;
                 }
 
                 var reaction = context.AddReaction ?? context.RemoveReaction;
@@ -75,7 +77,7 @@ namespace Sanakan.DiscordBot.Session
                 if (reaction.Emote.Equals(_iconConfiguration.Decline)
                     || !reaction.Emote.Equals(_iconConfiguration.Accept))
                 {
-                    return;
+                    return false;
                 }
 
                 const int daysInYear = 365;
@@ -94,6 +96,7 @@ namespace Sanakan.DiscordBot.Session
 
                 var content = $"{_user.Mention} został wyciszony.".ToEmbedMessage(EMType.Success).Build();
                 await _messageChannel.SendMessageAsync(embed: content);
+                return true;
             }
             finally
             {

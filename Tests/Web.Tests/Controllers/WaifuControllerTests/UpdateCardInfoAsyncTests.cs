@@ -1,5 +1,4 @@
 ﻿using FluentAssertions;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -7,7 +6,6 @@ using Sanakan.TaskQueue.Messages;
 using Sanakan.Web.Controllers;
 using Sanakan.Web.Models;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace Sanakan.Web.Tests.Controllers.WaifuControllerTests
 {

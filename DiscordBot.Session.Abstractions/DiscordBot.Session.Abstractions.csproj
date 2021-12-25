@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AssemblyName>Sanakan.DiscordBot.Session.Abstractions</AssemblyName>
+    <RootNamespace>Sanakan.DiscordBot.Session.Abstractions</RootNamespace>
+    <Configurations>Debug;Release;Test</Configurations>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Discord.Net" Version="2.4.0" />
+  </ItemGroup>
+  
+</Project>

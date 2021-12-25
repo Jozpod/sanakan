@@ -1,13 +1,9 @@
-﻿using HtmlAgilityPack;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Sanakan.ShindenApi.Fake.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
-using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Sanakan.ShindenApi.Fake
@@ -46,7 +42,7 @@ namespace Sanakan.ShindenApi.Fake
                 await _dbContext.SaveChangesAsync();
             }
 
-            var pagesLeft = 5;
+            var pagesLeft = 20;
 
             while(pagesLeft > 0)
             {
@@ -92,6 +88,7 @@ namespace Sanakan.ShindenApi.Fake
                                 Id = character.Id,
                                 ImageId = character.ImageId,
                                 Name = character.Name,
+                                Biography = character.Biography,
                             };
 
                             _dbContext.Characters.Add(characterEntity);

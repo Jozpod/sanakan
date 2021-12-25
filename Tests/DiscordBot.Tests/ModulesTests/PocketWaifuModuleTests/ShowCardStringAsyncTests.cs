@@ -3,7 +3,6 @@ using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.DAL.Models;
-using Sanakan.DAL.Models.Configuration;
 using Sanakan.DAL.Repositories;
 using Sanakan.DiscordBot.Modules;
 using System;

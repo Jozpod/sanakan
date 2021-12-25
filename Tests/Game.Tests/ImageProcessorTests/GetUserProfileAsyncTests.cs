@@ -1,17 +1,12 @@
 ﻿using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using Moq.Protected;
 using Sanakan.Common.Models;
 using Sanakan.DAL.Models;
 using Sanakan.Game.Services.Abstractions;
 using Sanakan.ShindenApi.Models;
-using SixLabors.ImageSharp;
 using System;
 using System.Collections.Generic;
-using System.Net;
-using System.Net.Http;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sanakan.Game.Tests.ImageProcessorTests

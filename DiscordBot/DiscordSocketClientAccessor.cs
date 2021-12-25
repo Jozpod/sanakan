@@ -33,6 +33,24 @@ namespace Sanakan.DiscordBot
 
         public ICommandContext GetCommandContext(IUserMessage message) => new CommandContext(_client, message);
 
+        public event Func<IGuild, Task> GuildAvailable
+        {
+            add
+            {
+                lock (_syncRoot)
+                {
+                    _client.GuildAvailable += value;
+                }
+            }
+            remove
+            {
+                lock (_syncRoot)
+                {
+                    _client.GuildAvailable -= value;
+                }
+            }
+        }
+
         public event Func<IGuildUser, Task> UserJoined
         {
             add
@@ -50,6 +68,7 @@ namespace Sanakan.DiscordBot
                 }
             }
         }
+
         public event Func<Cacheable<IUserMessage, ulong>, ISocketMessageChannel, IReaction, Task> ReactionAdded
         {
             add

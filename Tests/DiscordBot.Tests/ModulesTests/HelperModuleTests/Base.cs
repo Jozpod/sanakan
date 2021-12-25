@@ -11,7 +11,7 @@ using Sanakan.DiscordBot;
 using Sanakan.DiscordBot.Abstractions.Configuration;
 using Sanakan.DiscordBot.Modules;
 using Sanakan.DiscordBot.Services.Abstractions;
-using Sanakan.DiscordBot.Session;
+using Sanakan.DiscordBot.Session.Abstractions;
 
 namespace DiscordBot.ModulesTests.HelperModuleTests
 {

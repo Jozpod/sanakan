@@ -3,6 +3,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.DAL.Models;
 using Sanakan.DiscordBot.Abstractions;
+using Sanakan.DiscordBot.Session.Abstractions;
 using System;
 using System.Threading;
 using System.Threading.Tasks;

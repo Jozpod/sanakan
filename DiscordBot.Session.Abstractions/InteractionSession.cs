@@ -1,16 +1,20 @@
 ﻿using Discord.Commands;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Sanakan.DiscordBot.Session
+namespace Sanakan.DiscordBot.Session.Abstractions
 {
-    public abstract class InteractionSession : IInteractionSession, IComparable<InteractionSession>
+    public abstract class InteractionSession : IInteractionSession
     {
-        public ulong OwnerId { get; }
+        public IEnumerable<ulong> OwnerIds { get; }
+
         private readonly DateTime _createdOn;
         private readonly TimeSpan _expiryPeriod;
         private DateTime _expiresOn;
+
+        public DateTime ExpiresOn => _expiresOn;
 
         public Type Type { get; }
         public RunMode RunMode { get; }
@@ -25,7 +29,23 @@ namespace Sanakan.DiscordBot.Session
             RunMode runMode,
             SessionExecuteCondition sessionExecuteCondition)
         {
-            OwnerId = ownerId;
+            OwnerIds = new [] { ownerId };
+            _createdOn = createdOn;
+            _expiryPeriod = expiryPeriod;
+            _expiresOn = createdOn + expiryPeriod;
+            RunMode = runMode;
+            Type = GetType();
+            SessionExecuteCondition = sessionExecuteCondition;
+        }
+
+        public InteractionSession(
+            IEnumerable<ulong> ownerIds,
+            DateTime createdOn,
+            TimeSpan expiryPeriod,
+            RunMode runMode,
+            SessionExecuteCondition sessionExecuteCondition)
+        {
+            OwnerIds = ownerIds;
             _createdOn = createdOn;
             _expiryPeriod = expiryPeriod;
             _expiresOn = createdOn + expiryPeriod;
@@ -36,7 +56,7 @@ namespace Sanakan.DiscordBot.Session
 
         public bool HasExpired(DateTime currentDate) => _expiresOn <= currentDate;
 
-        public abstract Task ExecuteAsync(
+        public abstract Task<bool> ExecuteAsync(
             SessionContext sessionPayload,
             IServiceProvider serviceProvider,
             CancellationToken cancellationToken = default);
@@ -48,14 +68,14 @@ namespace Sanakan.DiscordBot.Session
         }
 
         /// <inheritdoc/>
-        public int CompareTo(InteractionSession? other)
+        public int CompareTo(IInteractionSession? other)
         {
-            if (_expiresOn > other._expiresOn)
+            if (_expiresOn > other.ExpiresOn)
             {
                 return 1;
             }
 
-            if (_expiresOn < other._expiresOn)
+            if (_expiresOn < other.ExpiresOn)
             {
                 return -1;
             }

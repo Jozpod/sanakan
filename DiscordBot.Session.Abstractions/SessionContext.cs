@@ -1,6 +1,6 @@
 ﻿using Discord;
 
-namespace Sanakan.DiscordBot.Session
+namespace Sanakan.DiscordBot.Session.Abstractions
 {
     public class SessionContext
     {

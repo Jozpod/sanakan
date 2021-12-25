@@ -81,9 +81,13 @@ namespace Sanakan.ShindenApi.Fake
                 return null;
             }
 
+            var biographyNode = document
+                .SelectSingleNode("//td[contains(text(),'Biografia:')]/following-sibling::td[1]")
+                ?.InnerText;
+
             var (type, name) = ParsePageTitle(document);
             var imageId = GetSideImageId(document);
-            var result = new CharacterDetail(characterId, name, imageId);
+            var result = new CharacterDetail(characterId, name, biographyNode, imageId);
 
             return result;
         }
@@ -92,6 +96,11 @@ namespace Sanakan.ShindenApi.Fake
         {
             var query = $"/character?type=contains&search={name}";
             var document = await _httpClient.GetDocumentAsync(query);
+
+            if (document == null)
+            {
+                return Enumerable.Empty<CharacterDetail>();
+            }
 
             var characterNodes = document
                .SelectNodes("//li[@class = 'data-view-list']");
@@ -106,7 +115,7 @@ namespace Sanakan.ShindenApi.Fake
                 var characterImageNode = characterNode.SelectSingleNode("./div/div/img");
                 var imageLink = characterImageNode.Attributes.FirstOrDefault(pr => pr.Name == "src").Value;
                 var imageId = imageLink.GetIdFromLink();
-                results.Add(new CharacterDetail(id!.Value, characterName, imageId));
+                results.Add(new CharacterDetail(id!.Value, characterName, null, imageId));
             }
             
             return results;
@@ -154,6 +163,11 @@ namespace Sanakan.ShindenApi.Fake
             var query = BuildQuery("/manga", search, sortBy, sortOrder, page);
 
             var document = await _httpClient.GetDocumentAsync(query);
+
+            if (document == null)
+            {
+                return Enumerable.Empty<BasicMangaDetail>();
+            }
 
             var serieNodes = document
                 .SelectNodes("//section[contains(@class, 'title-table')]/article/ul[@class = 'div-row']");
@@ -265,7 +279,7 @@ namespace Sanakan.ShindenApi.Fake
             var characterName = characterLinkNode.InnerText;
             var characterLink = characterLinkNode.Attributes.FirstOrDefault(pr => pr.Name == "href").Value;
             var characterId = characterLink.GetIdFromLink();
-            return new(characterId!.Value, characterName, characterImageId);
+            return new(characterId!.Value, characterName, null, characterImageId);
         }
 
         private (string, string) ParsePageTitle(HtmlNode htmlNode)

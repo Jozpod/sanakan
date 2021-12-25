@@ -3,7 +3,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Sanakan.DAL.Models;
 using Sanakan.Game.Models;
 using System;
-using System.Threading.Tasks;
 
 namespace Sanakan.Game.Tests
 {

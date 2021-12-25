@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.DAL.Models;
-using Sanakan.DAL.Repositories;
 using Sanakan.Game.Models;
 using Sanakan.TaskQueue.Messages;
 using Sanakan.Web.Controllers;

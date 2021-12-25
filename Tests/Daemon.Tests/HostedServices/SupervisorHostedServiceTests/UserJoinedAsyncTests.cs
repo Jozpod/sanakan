@@ -3,7 +3,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.Daemon.HostedService;
 using Sanakan.DAL.Models.Configuration;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 

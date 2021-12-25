@@ -6,7 +6,6 @@ using Sanakan.DAL.Models;
 using Sanakan.DAL.Repositories;
 using Sanakan.Web.Controllers;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Sanakan.Web.Tests.Controllers.WaifuControllerTests

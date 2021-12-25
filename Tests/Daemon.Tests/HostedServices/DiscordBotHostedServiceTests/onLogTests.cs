@@ -1,7 +1,5 @@
 ﻿using Discord;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
-using Sanakan.DAL.Models.Configuration;
 using System.Threading.Tasks;
 
 namespace Sanakan.Daemon.Tests.HostedServices.DiscordBotHostedServiceTests

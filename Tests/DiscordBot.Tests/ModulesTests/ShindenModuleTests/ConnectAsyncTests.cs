@@ -3,12 +3,9 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.DAL.Models;
 using Sanakan.DiscordBot.Modules;
-using Sanakan.DiscordBot.Session;
 using Sanakan.ShindenApi;
 using Sanakan.ShindenApi.Models;
-using Sanakan.ShindenApi.Models.Enums;
 using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 

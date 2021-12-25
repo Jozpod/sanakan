@@ -15,6 +15,7 @@ using Sanakan.DiscordBot.Resources;
 using Sanakan.DiscordBot.Services;
 using Sanakan.DiscordBot.Services.Abstractions;
 using Sanakan.DiscordBot.Session;
+using Sanakan.DiscordBot.Session.Abstractions;
 using Sanakan.Extensions;
 using Sanakan.Game;
 using Sanakan.Game.Models;

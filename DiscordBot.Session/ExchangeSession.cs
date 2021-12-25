@@ -7,6 +7,7 @@ using Sanakan.DiscordBot.Abstractions;
 using Sanakan.DiscordBot.Abstractions.Configuration;
 using Sanakan.DiscordBot.Abstractions.Extensions;
 using Sanakan.DiscordBot.Abstractions.Models;
+using Sanakan.DiscordBot.Session.Abstractions;
 using Sanakan.Extensions;
 using Sanakan.Game.Extensions;
 using Sanakan.Game.Models;
@@ -32,6 +33,7 @@ namespace Sanakan.DiscordBot.Session
 
         public ExchangeSession(
             ulong ownerId,
+            ulong participantId,
             DateTime createdOn,
             IUserMessage userMessage,
             PlayerInfo sourcePlayer,
@@ -39,7 +41,7 @@ namespace Sanakan.DiscordBot.Session
             string name,
             string tips)
         : base(
-          ownerId,
+          new[] { ownerId, participantId },
           createdOn,
           TimeSpan.FromMinutes(2),
           Discord.Commands.RunMode.Sync,
@@ -53,7 +55,7 @@ namespace Sanakan.DiscordBot.Session
             _state = ExchangeStatus.Add;
         }
 
-        public override async Task ExecuteAsync(
+        public override async Task<bool> ExecuteAsync(
            SessionContext sessionContext,
            IServiceProvider serviceProvider,
            CancellationToken cancellationToken = default)
@@ -68,11 +70,16 @@ namespace Sanakan.DiscordBot.Session
                 var messageId = _userMessage.Id;
                 var reaction = sessionContext.AddReaction ?? sessionContext.RemoveReaction;
 
+                if (_state == ExchangeStatus.End)
+                {
+                    return true;
+                }
+
                 if (sessionContext.Message.Id == messageId)
                 {
                     if (reaction == null)
                     {
-                        return;
+                        return false;
                     }
 
                     await HandleReactionAsync(reaction);
@@ -81,7 +88,7 @@ namespace Sanakan.DiscordBot.Session
                 {
                     if (reaction != null)
                     {
-                        return;
+                        return false;
                     }
 
                     await HandleMessageAsync(sessionContext);
@@ -93,7 +100,8 @@ namespace Sanakan.DiscordBot.Session
             {
                 IsRunning = true;
             }
-           
+
+            return false;
         }
 
         public Embed BuildEmbed()
@@ -113,7 +121,7 @@ namespace Sanakan.DiscordBot.Session
                 return;
             }
 
-            if (context.Message.Channel.Id != _userMessage.Channel.Id)
+            if (context.Channel.Id != _userMessage.Channel.Id)
             {
                 return;
             }
@@ -320,22 +328,18 @@ namespace Sanakan.DiscordBot.Session
             return $"{mention} oferuje:\n{string.Join("\n", player.Cards.Select(x => x.GetString(false, false, true)))}";
         }
 
-        private async Task HandleReactionAsync(IReaction reaction)
+        private async Task<bool> HandleReactionAsync(IReaction reaction)
         {
             switch (_state)
             {
                 case ExchangeStatus.AcceptSourcePlayer:
-                    await HandleUserReactionInAccept(reaction, _sourcePlayer);
-                    break;
-
+                    return await HandleUserReactionInAccept(reaction, _sourcePlayer);
                 case ExchangeStatus.AcceptDestinationPlayer:
-                    await HandleUserReactionInAccept(reaction, _destinationPlayer);
-                    break;
-
+                    return await HandleUserReactionInAccept(reaction, _destinationPlayer);
                 default:
                 case ExchangeStatus.Add:
                     await HandleReactionInAdd(reaction);
-                    break;
+                    return false;
             }
 
         }
@@ -387,17 +391,18 @@ namespace Sanakan.DiscordBot.Session
             return cards.Average(x => (int)x.Rarity);
         }
 
-        private async Task HandleUserReactionInAccept(IReaction reaction, PlayerInfo player)
+        private async Task<bool> HandleUserReactionInAccept(IReaction reaction, PlayerInfo player)
         {
             var messageChannel = false;
             var userRepository = _serviceProvider.GetRequiredService<IUserRepository>();
             _cacheManager = _serviceProvider.GetRequiredService<ICacheManager>();
             var userId = reaction.GetUserId();
             var emote = reaction.Emote;
+            var canComplete = false;
 
             if (userId != player.DiscordId)
             {
-                return;
+                return canComplete;
             }
 
             if (emote.Equals(_iconConfiguration.Accept))
@@ -418,7 +423,7 @@ namespace Sanakan.DiscordBot.Session
 
                     if (sourceCards.Count == 0 && destinationCards.Count == 0)
                     {
-                        return;
+                        return canComplete;
                     }
 
                     var sourceUser = await userRepository.GetUserOrCreateAsync(_sourcePlayer.DiscordId);
@@ -538,6 +543,7 @@ namespace Sanakan.DiscordBot.Session
                     await userRepository.SaveChangesAsync();
 
                     _state = ExchangeStatus.End;
+                    canComplete = true;
 
                     _cacheManager.ExpireTag(
                         CacheKeys.User(_sourcePlayer.DiscordId),
@@ -557,6 +563,8 @@ namespace Sanakan.DiscordBot.Session
             {
                 await _userMessage.ModifyAsync(x => x.Embed = BuildEmbed());
             }
+
+            return canComplete;
         }
 
         public override async ValueTask DisposeAsync()

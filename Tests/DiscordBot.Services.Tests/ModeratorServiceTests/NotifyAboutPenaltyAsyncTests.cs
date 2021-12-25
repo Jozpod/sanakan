@@ -1,10 +1,10 @@
 using Discord;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
+using Sanakan.DAL.Models.Management;
 using Sanakan.DiscordBot.Services.Abstractions;
 using System;
 using System.Threading.Tasks;
-using Sanakan.DAL.Models.Management;
 
 namespace DiscordBot.Services.Tests.ModeratorServiceTests
 {

@@ -1,5 +1,4 @@
 ﻿using Discord;
-using Discord.Commands;
 using Sanakan.DAL.Models.Configuration;
 using Sanakan.DAL.Models.Management;
 using System;

@@ -9,7 +9,8 @@ using Sanakan.Common;
 using Sanakan.Common.Configuration;
 using Sanakan.Daemon.HostedService;
 using Sanakan.DiscordBot;
-using Sanakan.DiscordBot.Session;
+using Sanakan.DiscordBot.Session.Abstractions;
+using Sanakan.TaskQueue;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,6 +25,7 @@ namespace Sanakan.Daemon.Tests.HostedServices.SessionHostedServiceTests
         protected readonly Mock<ISystemClock> _systemClockMock = new(MockBehavior.Strict);
         protected readonly Mock<IDiscordClientAccessor> _discordClientAccessorMock = new(MockBehavior.Strict);
         protected readonly Mock<IDiscordClient> _discordClientMock = new(MockBehavior.Strict);
+        protected readonly Mock<IBlockingPriorityQueue> _blockingPriorityQueueMock = new(MockBehavior.Strict);
         protected readonly Mock<ISessionManager> _sessionManagerMock = new(MockBehavior.Strict);
         protected readonly Mock<ITaskManager> _taskManagerMock = new(MockBehavior.Strict);
         protected readonly Mock<ITimer> _timerMock = new(MockBehavior.Strict);
@@ -60,6 +62,7 @@ namespace Sanakan.Daemon.Tests.HostedServices.SessionHostedServiceTests
                 _systemClockMock.Object,
                 _discordClientAccessorMock.Object,
                 serviceScopeFactory,
+                _blockingPriorityQueueMock.Object,
                 _sessionManagerMock.Object,
                 _taskManagerMock.Object,
                 _timerMock.Object);

@@ -1,13 +1,9 @@
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using Sanakan.Common.Configuration;
-using Sanakan.Configuration;
 using Sanakan.DAL.Models;
-using Sanakan.DAL.Repositories;
 using Sanakan.DiscordBot.Modules;
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 

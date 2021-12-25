@@ -8,6 +8,7 @@ using Sanakan.DiscordBot.Abstractions;
 using Sanakan.DiscordBot.Abstractions.Configuration;
 using Sanakan.DiscordBot.Abstractions.Extensions;
 using Sanakan.DiscordBot.Abstractions.Models;
+using Sanakan.DiscordBot.Session.Abstractions;
 using Sanakan.Extensions;
 using Sanakan.Game.Models;
 using Sanakan.Game.Services.Abstractions;
@@ -52,7 +53,7 @@ namespace Sanakan.DiscordBot.Session
             _tips = tips;
         }
 
-        public override async Task ExecuteAsync(
+        public override async Task<bool> ExecuteAsync(
             SessionContext context,
             IServiceProvider serviceProvider,
             CancellationToken cancellationToken = default)
@@ -64,6 +65,7 @@ namespace Sanakan.DiscordBot.Session
             await HandleMessageAsync(context);
             await HandleReactionAsync(context);
             IsRunning = false;
+            return false;
         }
 
         private async Task HandleMessageAsync(SessionContext context)
@@ -213,7 +215,7 @@ namespace Sanakan.DiscordBot.Session
             await _userMessage.ModifyAsync(x => x.Embed = embed);
         }
 
-        private async Task HandleReactionAsync(SessionContext context)
+        private async Task<bool> HandleReactionAsync(SessionContext context)
         {
             var cacheManager = _serviceProvider.GetRequiredService<ICacheManager>();
             var userRepository = _serviceProvider.GetRequiredService<IUserRepository>();
@@ -221,14 +223,14 @@ namespace Sanakan.DiscordBot.Session
 
             if (context.Message.Id != _userMessage.Id)
             {
-                return;
+                return false;
             }
 
             var reaction = context.AddReaction ?? context.RemoveReaction;
 
             if (reaction == null)
             {
-                return;
+                return false;
             }
 
             var emote = reaction.Emote;
@@ -241,22 +243,22 @@ namespace Sanakan.DiscordBot.Session
 
                 cacheManager.ExpireTag(CacheKeys.User(discordUserId), CacheKeys.Users);
 
-                return;
+                return true;
             }
 
             if (!emote.Equals(_iconConfiguration.Accept))
             {
-                return;
+                return false;
             }
 
-            bool error = true;
+            bool hasError = true;
 
             if (!_playerInfo.Accepted)
             {
-                return;
+                return false;
             }
 
-            error = false;
+            hasError = false;
 
             var user = await userRepository.GetUserOrCreateAsync(discordUserId);
             var totalCValue = _playerInfo.Items.Sum(x => x.Type.CValue() * x.Count);
@@ -280,13 +282,13 @@ namespace Sanakan.DiscordBot.Session
 
                 if (thisItem == null)
                 {
-                    error = true;
+                    hasError = true;
                     break;
                 }
 
                 if (thisItem.Count < item.Count)
                 {
-                    error = true;
+                    hasError = true;
                     break;
                 }
                 thisItem.Count -= item.Count;
@@ -296,7 +298,7 @@ namespace Sanakan.DiscordBot.Session
                 }
             }
 
-            if (error)
+            if (hasError)
             {
                 var embed = $"{_name}\n\nBrakuje przedmiotów, tworzenie karty nie powiodło się."
                     .ToEmbedMessage(EMType.Bot)
@@ -317,6 +319,7 @@ namespace Sanakan.DiscordBot.Session
             }
 
             cacheManager.ExpireTag(CacheKeys.User(_playerInfo.DiscordId), CacheKeys.Users);
+            return true;
         }
 
         public Embed BuildEmbed()

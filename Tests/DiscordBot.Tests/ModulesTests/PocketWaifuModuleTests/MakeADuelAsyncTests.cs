@@ -4,7 +4,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.DAL.Models;
 using Sanakan.DiscordBot.Modules;
-using Sanakan.DiscordBot.Session;
 using Sanakan.Game.Models;
 using System;
 using System.Collections.Generic;

@@ -2,7 +2,7 @@
 using Moq;
 using Sanakan.Common;
 using Sanakan.Daemon.HostedService;
-using Sanakan.DiscordBot.Session;
+using Sanakan.DiscordBot.Session.Abstractions;
 using System;
 using System.Threading;
 using System.Threading.Tasks;

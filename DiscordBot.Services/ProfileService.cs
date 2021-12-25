@@ -1,7 +1,6 @@
 ﻿using Discord;
 using DiscordBot.Services;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Sanakan.Common;
 using Sanakan.DAL.Models;

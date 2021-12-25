@@ -8,6 +8,7 @@ using Sanakan.DiscordBot.Abstractions.Extensions;
 using Sanakan.DiscordBot.Abstractions.Models;
 using Sanakan.DiscordBot.Resources;
 using Sanakan.DiscordBot.Session;
+using Sanakan.DiscordBot.Session.Abstractions;
 using Sanakan.Extensions;
 using Sanakan.Game.Services.Abstractions;
 using Sanakan.Preconditions;
