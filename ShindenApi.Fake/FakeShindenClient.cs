@@ -221,11 +221,39 @@ namespace Sanakan.ShindenApi.Fake
 
         public async Task<ShindenResult<IllustrationInfo>> GetIllustrationInfoAsync(ulong titleId)
         {
+            var animeDetails = await _shindenWebScraper.GetAnimeDetailAsync(titleId);
+            var mangaDetails = await _shindenWebScraper.GetMangaDetailAsync(titleId);
+            var title = string.Empty;
+            IllustrationInfoTitle? entry = null;
+
+            ulong? imageId;
+            if (animeDetails != null)
+            {
+                title = animeDetails.Name;
+                imageId = animeDetails.ImageId;
+                entry = new IllustrationInfoTitleAnime
+                {
+                    CoverId = imageId,
+                    Title = title,
+                };
+            }
+
+            if (mangaDetails != null)
+            {
+                title = mangaDetails.Name;
+                imageId = mangaDetails.ImageId;
+                entry = new IllustrationInfoTitleManga
+                {
+                    CoverId = imageId,
+                    Title = title,
+                };
+            }
+
             return new ShindenResult<IllustrationInfo>
             {
                 Value = new IllustrationInfo
                 {
-
+                    Entry = entry!,
                 }
             };
         }

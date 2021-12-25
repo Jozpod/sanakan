@@ -23,7 +23,7 @@ namespace Sanakan.ShindenApi.Models
         public DateTime? AddDate { get; set; }
 
         [JsonPropertyName("cover_artifact_id")]
-        public ulong CoverId { get; set; }
+        public ulong? CoverId { get; set; }
 
         [JsonPropertyName("finish_date")]
         [JsonConverter(typeof(DateTimeFromUnixEpochConverter))]

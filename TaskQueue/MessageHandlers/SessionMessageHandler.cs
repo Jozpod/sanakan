@@ -27,8 +27,12 @@ namespace Sanakan.TaskQueue.MessageHandlers
 
             if(hasCompleted)
             {
+                _logger.LogDebug("Session {} has completed", session);
                 await session.DisposeAsync();
             }
+
+            message.Session = null;
+            message.Context.Client = null;
         }
     }
 }

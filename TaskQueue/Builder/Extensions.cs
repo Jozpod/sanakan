@@ -11,6 +11,7 @@ namespace Sanakan.TaskQueue.Builder
         public static IServiceCollection AddTaskQueue(this IServiceCollection services)
         {
             services.AddSingleton<IBlockingPriorityQueue, BlockingPriorityQueue>();
+            services.AddScoped<IMessageHandler<SessionMessage>, SessionMessageHandler>();
             services.AddScoped<IMessageHandler<AddExperienceMessage>, AddExperienceMessageHandler>();
             services.AddScoped<IMessageHandler<ConnectUserMessage>, ConnectUserMessageHandler>();
             services.AddScoped<IMessageHandler<CommandMessage>, CommandMessageHandler>();

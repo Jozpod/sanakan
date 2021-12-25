@@ -76,6 +76,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShindenApi.Fake", "ShindenA
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShindenApi.Fake.Tests", "Tests\ShindenApi.Fake.Tests\ShindenApi.Fake.Tests.csproj", "{6FF2E2C1-46AB-4674-8872-368A79AA72BE}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DiscordBot.Session.Abstractions", "DiscordBot.Session.Abstractions\DiscordBot.Session.Abstractions.csproj", "{CC1B6767-5B7D-489F-BB5C-099D44CCDD8D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -281,6 +283,12 @@ Global
 		{6FF2E2C1-46AB-4674-8872-368A79AA72BE}.Release|Any CPU.Build.0 = Release|Any CPU
 		{6FF2E2C1-46AB-4674-8872-368A79AA72BE}.Test|Any CPU.ActiveCfg = Test|Any CPU
 		{6FF2E2C1-46AB-4674-8872-368A79AA72BE}.Test|Any CPU.Build.0 = Test|Any CPU
+		{CC1B6767-5B7D-489F-BB5C-099D44CCDD8D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CC1B6767-5B7D-489F-BB5C-099D44CCDD8D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CC1B6767-5B7D-489F-BB5C-099D44CCDD8D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CC1B6767-5B7D-489F-BB5C-099D44CCDD8D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CC1B6767-5B7D-489F-BB5C-099D44CCDD8D}.Test|Any CPU.ActiveCfg = Test|Any CPU
+		{CC1B6767-5B7D-489F-BB5C-099D44CCDD8D}.Test|Any CPU.Build.0 = Test|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
