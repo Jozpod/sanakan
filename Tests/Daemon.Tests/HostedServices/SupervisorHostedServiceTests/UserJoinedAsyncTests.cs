@@ -18,12 +18,11 @@ namespace Sanakan.Daemon.Tests.HostedServices.SupervisorHostedServiceTests
         [TestMethod]
         public async Task Should_Verify_User_Join_Ban()
         {
-            var guildId = 1ul;
             var userId = 1ul;
             var username = "username";
             var guildUserMock = new Mock<IGuildUser>(MockBehavior.Strict);
             var guildMock = new Mock<IGuild>(MockBehavior.Strict);
-            var guildOptions = new GuildOptions(guildId, 50ul)
+            var guildOptions = new GuildOptions(1ul, 50ul)
             {
                 WaifuConfig = new WaifuConfiguration
                 {
@@ -32,39 +31,51 @@ namespace Sanakan.Daemon.Tests.HostedServices.SupervisorHostedServiceTests
                 },
                 MuteRoleId = 1ul,
             };
-            var userIds = Enumerable.Empty<ulong>();
+            guildOptions.SupervisionEnabled = true;
+            var userIds = new[] { userId };
+
+            guildMock
+                .Setup(pr => pr.Id)
+                .Returns(guildOptions.Id);
+
+            guildMock
+                .Setup(pr => pr.GetUserAsync(userId, CacheMode.AllowDownload, null))
+                .ReturnsAsync(guildUserMock.Object);
+
+            guildMock
+                .Setup(pr => pr.AddBanAsync(guildUserMock.Object, 0, It.IsAny<string>(), null))
+                .Returns(Task.CompletedTask);
 
             guildUserMock
                 .Setup(pr => pr.Id)
-                .Returns(userId)
-                .Verifiable();
+                .Returns(userId);
 
             guildUserMock
                 .Setup(pr => pr.IsBot)
-                .Returns(false)
-                .Verifiable();
+                .Returns(false);
 
             guildUserMock
                 .Setup(pr => pr.IsWebhook)
-                .Returns(false)
-                .Verifiable();
+                .Returns(false);
 
             guildUserMock
                 .Setup(pr => pr.Username)
-                .Returns(username)
-                .Verifiable();
+                .Returns(username);
+
+            guildUserMock
+                .Setup(pr => pr.Nickname)
+                .Returns("nickname");
 
             guildUserMock
                 .Setup(pr => pr.Guild)
-                .Returns(guildMock.Object)
-                .Verifiable();
+                .Returns(guildMock.Object);
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildId))
+                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildOptions.Id))
                 .ReturnsAsync(guildOptions);
 
             _userJoinedGuildSupervisorMock
-                .Setup(pr => pr.GetUsersToBanCauseRaid(guildId, username, userId))
+                .Setup(pr => pr.GetUsersToBanCauseRaid(guildOptions.Id, username, userId))
                 .Returns(userIds);
 
             var cancellationTokenSource = new CancellationTokenSource();
