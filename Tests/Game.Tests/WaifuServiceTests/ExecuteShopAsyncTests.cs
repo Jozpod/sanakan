@@ -110,7 +110,7 @@ namespace Sanakan.Game.Tests.WaifuServiceTests
 
         [DynamicData(nameof(EnumerateAllItems))]
         [DataTestMethod]
-        public async Task Should_Return_Embed_Witm_Item(ShopType shopType, int selectedItem)
+        public async Task Should_Return_Embed_With_Item(ShopType shopType, int selectedItem)
         {
             var userMock = new Mock<IUser>(MockBehavior.Strict);
             var specialCommand = "1";

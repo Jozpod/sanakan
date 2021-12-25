@@ -21,7 +21,7 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
     public class MakeADuelAsyncTests : Base
     {
         [TestMethod]
-        public async Task Should_Perform_Duel_And_Send_Message_Containging_Results_Invoking_User_Won()
+        public async Task Should_Perform_Duel_And_Send_Message_Containing_Results_Invoking_User_Won()
         {
             var utcNow = DateTime.UtcNow;
             var user = new User(1ul, utcNow);

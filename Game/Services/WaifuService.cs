@@ -620,13 +620,14 @@ namespace Sanakan.Game.Services
 
         public string GetDeathLog(FightHistory fight, IEnumerable<PlayerInfo> players)
         {
-            string deathLog = "";
-            for (var i = 0; i < fight.Rounds.Count; i++)
+            var stringBuilder = new StringBuilder(100);
+
+            for (var index = 0; index < fight.Rounds.Count; index++)
             {
-                var deadCards = fight.Rounds[i].Cards.Where(x => x.Hp <= 0);
+                var deadCards = fight.Rounds[index].Cards.Where(x => x.Hp <= 0);
                 if (deadCards.Any())
                 {
-                    deathLog += $"**Runda {i + 1}**:\n";
+                    stringBuilder.AppendFormat("**Runda {0}**:\n", index + 1);
                     foreach (var deadCard in deadCards)
                     {
                         var thisCard = players
@@ -634,13 +635,13 @@ namespace Sanakan.Game.Services
                             .Cards
                             .First(x => x.Id == deadCard.CardId);
 
-                        deathLog += $"❌ {thisCard.GetString(true, false, true, true)}\n";
+                        stringBuilder.AppendFormat("❌ {0}\n", thisCard.GetString(true, false, true, true));
                     }
-                    deathLog += "\n";
+                    stringBuilder.Append('\n');
                 }
             }
 
-            return deathLog;
+            return stringBuilder.ToString();
         }
 
         public FightHistory MakeFight(IEnumerable<PlayerInfo> players, bool oneCard = false)
@@ -1169,7 +1170,8 @@ namespace Sanakan.Game.Services
                 imagePath = safariImageType.DefaultUri();
             }
 
-            var message = await trashChannel.SendFileAsync(imagePath);
+            var image = _fileSystem.OpenRead(imagePath);
+            var message = await trashChannel.SendFileAsync(image, Path.GetFileName(imagePath));
             return message.Attachments.First().Url;
         }
 
@@ -1289,19 +1291,16 @@ namespace Sanakan.Game.Services
                 {
                     var animeMangaInfo = result.Value;
                     ulong id = 0;
-                    string animeMangaTitle = string.Empty;
+                    string? url = null;
 
-                    var url = "https://shinden.pl/";
                     if (animeMangaInfo.Title.Type == IllustrationType.Anime)
                     {
                         id = animeMangaInfo.Title.Anime.TitleId!.Value;
-                        animeMangaTitle = HttpUtility.HtmlDecode(animeMangaInfo.Title.Title);
                         url = UrlHelpers.GetSeriesURL(animeMangaInfo.Title.Anime.TitleId.Value);
                     }
                     else if (animeMangaInfo.Title.Type == IllustrationType.Manga)
                     {
                         id = animeMangaInfo.Title.Manga.TitleId!.Value;
-                        animeMangaTitle = HttpUtility.HtmlDecode(animeMangaInfo.Title.Title);
                         url = UrlHelpers.GetMangaURL(id);
                     }
 

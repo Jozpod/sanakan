@@ -11,6 +11,7 @@ namespace Sanakan.Game.Models
         }
 
         public List<HpSnapshot> Cards { get; set; }
+
         public List<AttackInfo> Fights { get; set; }
     }
 }

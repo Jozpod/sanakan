@@ -38,6 +38,13 @@ namespace Sanakan.Game.Tests.WaifuServiceTests
             var serviceProvider = serviceCollection.BuildServiceProvider();
             var serviceScopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
 
+            _discordConfigurationMock
+              .Setup(pr => pr.CurrentValue)
+              .Returns(new DiscordConfiguration
+              {
+                  MaxMessageLength = 2000,
+              });
+
             _waifuService = new WaifuService(
                 _discordConfigurationMock.Object,
                 _eventsServiceMock.Object,
