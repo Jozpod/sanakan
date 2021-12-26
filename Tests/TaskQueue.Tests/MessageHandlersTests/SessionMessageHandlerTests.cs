@@ -14,7 +14,8 @@ namespace Sanakan.TaskQueue.Tests.MessageHandlersTests
     public class SessionMessageHandlerTests
     {
         private readonly SessionMessageHandler _messageHandler;
-        
+        private readonly Mock<ISessionManager> _sessionManagerMock = new(MockBehavior.Strict);
+
         public SessionMessageHandlerTests()
         {
             var serviceCollection = new ServiceCollection();
@@ -23,6 +24,7 @@ namespace Sanakan.TaskQueue.Tests.MessageHandlersTests
 
             _messageHandler = new(
                 NullLogger<SessionMessageHandler>.Instance,
+                _sessionManagerMock.Object,
                 serviceScopeFactory);
         }
 
@@ -39,6 +41,8 @@ namespace Sanakan.TaskQueue.Tests.MessageHandlersTests
             sessionMock
                 .Setup(pr => pr.ExecuteAsync(message.Context, It.IsAny<IServiceProvider>(), default))
                 .ReturnsAsync(true);
+
+                _sessionManagerMock
 
             sessionMock
                 .Setup(pr => pr.DisposeAsync())
