@@ -10,7 +10,10 @@ using System.Threading.Tasks;
 
 namespace Sanakan.DiscordBot.Integration.Tests
 {
-    public partial class TestBase
+#if DEBUG
+    [TestClass]
+#endif
+    public class PocketWaifuModuleTests : TestBase
     {
         [TestMethod]
         public async Task TC401_Should_Send_Card_To_Expedition()

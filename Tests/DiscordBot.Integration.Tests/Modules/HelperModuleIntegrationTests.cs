@@ -6,7 +6,10 @@ using System.Threading.Tasks;
 
 namespace Sanakan.DiscordBot.Integration.Tests
 {
-    public partial class TestBase
+#if DEBUG
+    [TestClass]
+#endif
+    public class HelperModuleIntegrationTests : TestBase
     {
         [TestMethod]
         public async Task TC101_Should_Return_Latency()

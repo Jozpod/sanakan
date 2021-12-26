@@ -22,6 +22,13 @@ namespace Sanakan.Daemon.Builder
             return services;
         }
 
+        public static IServiceCollection AddDatabaseSeedHostedService(this IServiceCollection services)
+        {
+            services.AddHostedService<DatabaseSeedHostedService>();
+
+            return services;
+        }
+
         public static IServiceCollection AddExchangeWithBotHostedService(this IServiceCollection services)
         {
             services.AddHostedService<ExchangeBotHostedService>();

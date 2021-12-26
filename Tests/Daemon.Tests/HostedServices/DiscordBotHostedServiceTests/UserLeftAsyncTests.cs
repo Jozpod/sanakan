@@ -39,6 +39,14 @@ namespace Sanakan.Daemon.Tests.HostedServices.DiscordBotHostedServiceTests
                 .Setup(pr => pr.Nickname)
                 .Returns("nickname");
 
+            guildUserMock
+                .Setup(pr => pr.IsBot)
+                .Returns(false);
+
+            guildUserMock
+                .Setup(pr => pr.IsWebhook)
+                .Returns(false);
+
             guildMock
                 .Setup(pr => pr.Id)
                 .Returns(guildId);

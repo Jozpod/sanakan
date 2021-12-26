@@ -10,7 +10,10 @@ using System.Threading.Tasks;
 
 namespace Sanakan.DiscordBot.Integration.Tests
 {
-    public partial class TestBase
+#if DEBUG
+    [TestClass]
+#endif
+    public class ShindenModuleIntegrationTests : TestBase
     {
         [TestMethod]
         public async Task TC301_Should_Get_Site_Statistics()

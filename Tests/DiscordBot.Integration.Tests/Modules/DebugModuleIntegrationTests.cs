@@ -8,7 +8,10 @@ using System.Threading.Tasks;
 
 namespace Sanakan.DiscordBot.Integration.Tests
 {
-    public partial class TestBase
+#if DEBUG
+    [TestClass]
+#endif
+    public class DebugModuleIntegrationTests : TestBase
     {
         [TestMethod]
         public async Task TC701_Should_Change_User_Ac()

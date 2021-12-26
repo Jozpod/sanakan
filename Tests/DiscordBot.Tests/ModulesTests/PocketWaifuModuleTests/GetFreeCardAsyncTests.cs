@@ -17,6 +17,37 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
     public class GetFreeCardAsyncTests : Base
     {
         [TestMethod]
+        public async Task Should_Send_Error_Message_Invoked_Already()
+        {
+            var utcNow = DateTime.UtcNow;
+            var user = new User(1ul, utcNow);
+            user.TimeStatuses.Add(new TimeStatus(StatusType.Card) { EndsOn = utcNow.AddDays(1) });
+
+            _userMock
+                .Setup(pr => pr.Id)
+                .Returns(user.Id);
+
+            _userMock
+                .Setup(pr => pr.Mention)
+                .Returns("user mention");
+
+            _userRepositoryMock
+                .Setup(pr => pr.GetUserOrCreateAsync(user.Id))
+                .ReturnsAsync(user);
+
+            _systemClockMock
+                .Setup(pr => pr.UtcNow)
+                .Returns(utcNow);
+
+            SetupSendMessage((message, embed) =>
+            {
+                embed.Description.Should().NotBeNull();
+            });
+
+            await _module.GetFreeCardAsync();
+        }
+
+        [TestMethod]
         public async Task Should_Get_Free_Card_And_Send_Confirm_Message()
         {
             var utcNow = DateTime.UtcNow;

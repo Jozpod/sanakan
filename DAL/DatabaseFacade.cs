@@ -41,7 +41,7 @@ namespace Sanakan.DAL
             var serviceProvider = serviceScope.ServiceProvider;
             var sanakanDbContext = serviceProvider.GetRequiredService<SanakanDbContext>();
             var databaseFacade = sanakanDbContext.Database;
-            _created = await databaseFacade.EnsureCreatedAsync(stoppingToken).ConfigureAwait(true);
+            _created = await databaseFacade.EnsureCreatedAsync(stoppingToken);
 
             _semaphore.Release();
 

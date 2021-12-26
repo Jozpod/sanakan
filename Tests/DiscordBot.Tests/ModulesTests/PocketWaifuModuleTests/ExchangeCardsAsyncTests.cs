@@ -16,9 +16,8 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
     [TestClass]
     public class ExchangeCardsAsyncTests : Base
     {
-
         [TestMethod]
-        public async Task Should_Add_To_Wish_List()
+        public async Task Should_Start_Session_And_Send_Confirm_Message()
         {
             var utcNow = DateTime.UtcNow;
             var guildUserMock = new Mock<IGuildUser>(MockBehavior.Strict);
@@ -43,33 +42,24 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
                 .Returns("target mention");
 
             _userRepositoryMock
-                .Setup(pr => pr.GetUserOrCreateAsync(sourceUser.Id))
+                .Setup(pr => pr.GetCachedFullUserAsync(sourceUser.Id))
                 .ReturnsAsync(sourceUser);
 
             _userRepositoryMock
-                .Setup(pr => pr.GetUserOrCreateAsync(destinationUser.Id))
+                .Setup(pr => pr.GetCachedFullUserAsync(destinationUser.Id))
                 .ReturnsAsync(destinationUser);
 
             _systemClockMock
                 .Setup(pr => pr.UtcNow)
                 .Returns(utcNow);
 
-            _messageChannelMock
-                .Setup(pr => pr.SendMessageAsync(
-                    It.IsAny<string>(),
-                    It.IsAny<bool>(),
-                    It.IsAny<Embed>(),
-                    It.IsAny<RequestOptions>(),
-                    It.IsAny<AllowedMentions>(),
-                    It.IsAny<MessageReference>()))
-                .ReturnsAsync(userMessageMock.Object);
-
-            userMessageMock
+            _userMessageMock
                 .Setup(pr => pr.AddReactionAsync(It.IsAny<IEmote>(), null))
                 .Returns(Task.CompletedTask);
 
             _sessionManagerMock
-                .Setup(pr => pr.Exists<ExchangeSession>(sourceUser.Id));
+                .Setup(pr => pr.Exists<ExchangeSession>(sourceUser.Id))
+                .Returns(false);
 
             _sessionManagerMock
                 .Setup(pr => pr.Add(It.IsAny<ExchangeSession>()));
@@ -79,7 +69,7 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
                 embed.Description.Should().NotBeNull();
             });
 
-            await _module.ExchangeCardsAsync(_guildUserMock.Object);
+            await _module.ExchangeCardsAsync(guildUserMock.Object);
         }
     }
 }

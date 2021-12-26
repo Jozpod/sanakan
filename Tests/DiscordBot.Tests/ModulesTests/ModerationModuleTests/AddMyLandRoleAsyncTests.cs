@@ -37,6 +37,10 @@ namespace DiscordBot.ModulesTests.ModerationModuleTests
                 .Returns("manager");
 
             _underlingRoleMock
+                .Setup(pr => pr.Id)
+                .Returns(2ul);
+
+            _underlingRoleMock
                 .Setup(pr => pr.Mention)
                 .Returns("underling");
 
@@ -57,7 +61,7 @@ namespace DiscordBot.ModulesTests.ModerationModuleTests
                 embed.Description.Should().NotBeNullOrEmpty();
             });
 
-            await _module.AddMyLandRoleAsync(_managerRoleMock.Object, _underlingRoleMock.Object);
+            await _module.AddMyLandRoleAsync(_managerRoleMock.Object, _underlingRoleMock.Object, "test land");
         }
     }
 }

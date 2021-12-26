@@ -4,25 +4,23 @@ using Moq;
 using Sanakan.DAL.Models;
 using Sanakan.DiscordBot.Modules;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
 {
     /// <summary>
-    /// Defines tests for <see cref="PocketWaifuModule.ChangeCardTagAsync(string, ulong[])"/> method.
+    /// Defines tests for <see cref="PocketWaifuModule.ChangeWaifuSiteForegroundColorAsync(string)"/> method.
     /// </summary>
     [TestClass]
-    public class ChangeCardTagAsyncTests : Base
+    public class ChangeWaifuSiteForegroundColorAsyncTests : Base
     {
         [TestMethod]
-        public async Task Should_Change_Card_Tags_And_Send_Confirm_Message()
+        public async Task Should_Set_Color_And_Send_Confirm_Message()
         {
-            var tag = "testtag";
             var utcNow = DateTime.UtcNow;
             var user = new User(1ul, utcNow);
-            var card = new Card(1ul, "title", "name", 100, 50, Rarity.C, Dere.Bodere, DateTime.UtcNow);
-            card.Id = 1ul;
-            user.GameDeck.Cards.Add(card);
+            user.TcCount = 500;
 
             _userMock
                 .Setup(pr => pr.Id)
@@ -30,25 +28,22 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
 
             _userMock
                 .Setup(pr => pr.Mention)
-                .Returns("mention");
+                .Returns("user mention");
 
             _userRepositoryMock
                 .Setup(pr => pr.GetUserOrCreateAsync(user.Id))
                 .ReturnsAsync(user);
 
             _userRepositoryMock
-                .Setup(pr => pr.SaveChangesAsync(default))
-                .Returns(Task.CompletedTask);
-
-            _cacheManagerMock
-                .Setup(pr => pr.ExpireTag(It.IsAny<string[]>()));
+               .Setup(pr => pr.SaveChangesAsync(It.IsAny<CancellationToken>()))
+               .Returns(Task.CompletedTask);
 
             SetupSendMessage((message, embed) =>
             {
                 embed.Description.Should().NotBeNull();
             });
 
-            await _module.ChangeCardTagAsync(tag, card.Id);
+            await _module.ChangeWaifuSiteForegroundColorAsync("#FAFAFA");
         }
     }
 }

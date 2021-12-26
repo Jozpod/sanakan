@@ -184,7 +184,7 @@ namespace Sanakan.ShindenApi.Fake
         public async Task<ShindenResult<TitleCharacters>> GetCharactersAsync(ulong titleId)
         {
             var characterIds = await _dbContext.Characters
-                .Where(pr => pr.Illustrations.Any(npr => npr.Type == Models.IllustrationType.Manga))
+                .Where(pr => pr.Illustrations.Any(npr => npr.Id == titleId))
                 .Select(pr => pr.Id)
                 .ToListAsync();
             
@@ -302,9 +302,26 @@ namespace Sanakan.ShindenApi.Fake
             throw new NotImplementedException();
         }
 
-        public Task<ShindenResult<UserInfo>> GetUserInfoAsync(ulong userId)
+        public async Task<ShindenResult<UserInfo>> GetUserInfoAsync(ulong userId)
         {
-            throw new NotImplementedException();
+            var user = await _shindenWebScraper.GetUserAsync(userId);
+
+            if(user == null)
+            {
+                return new ShindenResult<UserInfo>
+                {
+                    Value = null,
+                };
+            }
+
+            return new ShindenResult<UserInfo>
+            {
+                Value = new UserInfo
+                {
+                    Id = user.Id,
+                    Name = user.Username,
+                },
+            };
         }
 
         public Task<ShindenResult<IncreaseWatched>> IncreaseNumberOfWatchedEpisodesAsync(ulong userId, ulong titleId)

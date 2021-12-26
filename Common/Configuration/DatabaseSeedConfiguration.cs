@@ -79,6 +79,10 @@ namespace Sanakan.Common.Configuration
 
             public int? NumberOfCards { get; set; }
 
+            public int? ActiveCards { get; set; }
+
+            public int? WishListItems { get; set; }
+
             public ulong? NumberOfItems { get; set; }
 
             public ulong? ScCount { get; set; }

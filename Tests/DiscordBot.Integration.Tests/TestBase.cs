@@ -28,33 +28,30 @@ using IApplicationLifetime = Microsoft.AspNetCore.Hosting.IApplicationLifetime;
 
 namespace Sanakan.DiscordBot.Integration.Tests
 {
-#if DEBUG
-    [TestClass]
-#endif
-    public partial class TestBase
+    public abstract class TestBase
     {
-        private static ServiceProvider _serviceProvider = null;
-        private static IDiscordClientAccessor _discordClientAccessor = null;
-        private static Mock<IShindenClient> _shindenClientMock = new();
-        private static Mock<IApplicationLifetime> _applicationLifetimeMock = new();
-        private static DiscordConfiguration _configuration = null;
-        private static SemaphoreSlim _semaphore = new SemaphoreSlim(0);
-        private static IUserMessage? LastMessage = null;
-        private static IGuild Guild = null;
-        private static ITextChannel Channel = null;
-        private static string Prefix = ".";
-        private static IDatabaseFacade DatabaseFacade = null;
-        private static DiscordIntegrationTestOptions _discordIntegrationTestOptions = null;
+        protected static ServiceProvider _serviceProvider = null;
+        protected static IDiscordClientAccessor _discordClientAccessor = null;
+        protected static Mock<IShindenClient> _shindenClientMock = new();
+        protected static Mock<IApplicationLifetime> _applicationLifetimeMock = new();
+        protected static DiscordConfiguration _configuration = null;
+        protected static SemaphoreSlim _semaphore = new SemaphoreSlim(0);
+        protected static IUserMessage? LastMessage = null;
+        protected static IGuild Guild = null;
+        protected static ITextChannel Channel = null;
+        protected static string Prefix = ".";
+        protected static IDatabaseFacade DatabaseFacade = null;
+        protected static DiscordIntegrationTestOptions _discordIntegrationTestOptions = null;
         private static TaskQueueHostedService _taskQueueHostedService = null;
         private static SessionHostedService _sessionHostedService = null;
-        private static CancellationToken _cancellationToken;
-        private static SemaphoreSlim _guildAvailableSemaphore = new SemaphoreSlim(0);
+        protected static CancellationToken _cancellationToken;
+        protected static SemaphoreSlim _guildAvailableSemaphore = new SemaphoreSlim(0);
 
         public static DiscordSocketClient FakeUserClient { get; private set; } = null;
         public static ISelfUser BotUser { get; private set; } = null;
         public static ISelfUser FakeUser { get; private set; } = null;
 
-        [ClassInitialize]
+        [ClassInitialize(InheritanceBehavior.BeforeEachDerivedClass)]
         public static async Task ClassInitialize(TestContext context)
         {
             var services = new ServiceCollection();
@@ -149,9 +146,7 @@ namespace Sanakan.DiscordBot.Integration.Tests
             var sessionHostedServiceTask = _sessionHostedService.StartAsync(_cancellationToken);
         }
 
-
-
-        [ClassCleanup]
+        [ClassCleanup(InheritanceBehavior.BeforeEachDerivedClass)]
         public static async Task ClassCleanup()
         {
             if (DatabaseFacade != null)
@@ -180,13 +175,13 @@ namespace Sanakan.DiscordBot.Integration.Tests
             }
         }
 
-        private static async Task<IUserMessage?> WaitForMessageAsync()
+        protected static async Task<IUserMessage?> WaitForMessageAsync()
         {
             await _semaphore.WaitAsync(TimeSpan.FromSeconds(7));
             return LastMessage;
         }
 
-        private static Task MessageReceivedAsync(IMessage message)
+        protected static Task MessageReceivedAsync(IMessage message)
         {
             var userMessage = message as IUserMessage;
 

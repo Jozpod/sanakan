@@ -48,7 +48,7 @@ namespace DiscordBot.ModulesTests.ModerationModuleTests
                 embed.Description.Should().NotBeNull();
             });
 
-            await _module.SetSelfRoleAsync(roleMock.Object);
+            await _module.SetSelfRoleAsync(roleMock.Object, "test role");
         }
     }
 }

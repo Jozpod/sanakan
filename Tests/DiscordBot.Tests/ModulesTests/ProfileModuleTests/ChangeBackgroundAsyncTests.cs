@@ -52,7 +52,7 @@ namespace DiscordBot.ModulesTests.ProfileModuleTests
                 .Returns(Task.CompletedTask);
 
             _cacheManagerMock
-                .Setup(pr => pr.ExpireTag(It.IsAny<string>()));
+                .Setup(pr => pr.ExpireTag(It.IsAny<string[]>()));
 
             SetupSendMessage((message, embed) =>
             {

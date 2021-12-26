@@ -6,7 +6,10 @@ using System.Threading.Tasks;
 
 namespace Sanakan.DiscordBot.Integration.Tests
 {
-    public partial class TestBase
+#if DEBUG
+    [TestClass]
+#endif
+    public class ModerationModuleIntegrationTests : TestBase
     {
         [TestMethod]
         public async Task TC501_Should_Set_Admin_Role()

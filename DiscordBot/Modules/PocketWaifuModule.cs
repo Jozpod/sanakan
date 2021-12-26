@@ -3343,7 +3343,15 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            var charactersResult = await _shindenClient.GetFavouriteCharactersAsync(databaseUser.ShindenId!.Value);
+            var shindenId = databaseUser.ShindenId;
+
+            if (!shindenId.HasValue)
+            {
+                await ReplyAsync(embed: Strings.UserNotConnectedToShinden.ToEmbedMessage(EMType.Error).Build());
+                return;
+            }
+
+            var charactersResult = await _shindenClient.GetFavouriteCharactersAsync(shindenId.Value);
 
             if (charactersResult.Value == null)
             {
@@ -3803,7 +3811,7 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            if ((utcNow - gameDeck.PVPSeasonBeginDate.AddMonths(1)).TotalSeconds > 1)
+            if ((utcNow - gameDeck.PVPSeasonBeginDate) > TimeSpan.FromDays(30))
             {
                 gameDeck.PVPSeasonBeginDate = new DateTime(
                     utcNow.Year,
@@ -3812,17 +3820,22 @@ namespace Sanakan.DiscordBot.Modules
                 gameDeck.SeasonalPVPRank = 0;
             }
 
+#if DEBUG
+            var minPlayersCount = 1;
+#else
+            var minPlayersCount = 10;
+#endif
             var allPvpPlayers = await _gameDeckRepository.GetCachedPlayersForPVP(databaseUser.Id);
 
-            if (allPvpPlayers.Count < 10)
+            if (allPvpPlayers.Count < minPlayersCount)
             {
                 await ReplyAsync(embed: $"{mention} zbyt mała liczba graczy ma utworzoną poprawną talię!".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
-            double toLong = 1;
+            var toLong = 1d;
             var pvpPlayersInRange = allPvpPlayers.Where(x => x.IsNearMatchMakingRatio(gameDeck)).ToList();
-            for (var mmratio = 0.5d; pvpPlayersInRange.Count < 10; mmratio += (0.5 * toLong))
+            for (var mmratio = 0.5d; pvpPlayersInRange.Count < minPlayersCount; mmratio += (0.5 * toLong))
             {
                 pvpPlayersInRange = allPvpPlayers.Where(x => x.IsNearMatchMakingRatio(gameDeck, mmratio)).ToList();
                 toLong += 0.5;
@@ -3890,7 +3903,8 @@ namespace Sanakan.DiscordBot.Modules
 
             var wStr = fight.Winner == null ? "Remis!" : $"Zwycięża {fight.Winner.Mention}!";
             var content = $"⚔️ **Pojedynek**:\n{mention} vs. {discordEnemyUser.Mention}\n\n{deathLog.ElipseTrimToLength(2000)}\n{wStr}\n{info}"
-                .ToEmbedMessage(EMType.Bot).Build();
+                .ToEmbedMessage(EMType.Bot)
+                .Build();
             await ReplyAsync(embed: content);
         }
 

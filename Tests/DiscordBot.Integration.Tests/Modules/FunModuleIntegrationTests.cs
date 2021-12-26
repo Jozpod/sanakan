@@ -7,7 +7,10 @@ using System.Threading.Tasks;
 
 namespace Sanakan.DiscordBot.Integration.Tests
 {
-    public partial class TestBase
+#if DEBUG
+    [TestClass]
+#endif
+    public class FunModuleIntegrationTests : TestBase
     {
         [TestMethod]
         public async Task TC001_Should_Receive_Daily_Sc_Coins()

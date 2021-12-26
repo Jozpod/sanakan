@@ -16,6 +16,7 @@ using Sanakan.Common.Builder;
 using Sanakan.Common.Configuration;
 using Sanakan.Common.Converters;
 using Sanakan.Daemon.Builder;
+using Sanakan.DAL;
 using Sanakan.DAL.Builder;
 using Sanakan.DiscordBot.Builder;
 using Sanakan.DiscordBot.Services.Builder;
@@ -148,7 +149,9 @@ namespace Sanakan.Web
                 options.CustomSchemaIds(x => x.FullName);
             });
 
-            services.AddScoped<DatabaseSeeder>();
+            services.AddScoped<IDatabaseSeeder, DatabaseSeeder>();
+            services.AddDatabaseSeedHostedService();
+
             services.AddHttpContextAccessor();
             services.AddJwtBuilder();
             services.AddRequestBodyReader();
@@ -223,10 +226,6 @@ namespace Sanakan.Web
                 options.DefaultModelsExpandDepth(-1);
                 options.InjectStylesheet("/swagger-theme.css");
             });
-
-            using var serviceScope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope();
-            var databaseSeeder = serviceScope.ServiceProvider.GetService<DatabaseSeeder>();
-            databaseSeeder.RunAsync().GetAwaiter().GetResult();
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Options;
+using Sanakan.Common;
 using Sanakan.Common.Configuration;
 using Sanakan.DAL;
 using Sanakan.DAL.Models;
@@ -6,6 +7,7 @@ using Sanakan.DAL.Models.Configuration;
 using Sanakan.Game;
 using Sanakan.Game.Services.Abstractions;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
@@ -13,22 +15,25 @@ using System.Threading.Tasks;
 namespace Sanakan.Web
 {
     [ExcludeFromCodeCoverage]
-    public class DatabaseSeeder
+    public class DatabaseSeeder : IDatabaseSeeder
     {
         private readonly SanakanDbContext _dbContext;
         private readonly IDatabaseFacade _databaseFacade;
         private readonly IWaifuService _waifuService;
+        private readonly IRandomNumberGenerator _randomNumberGenerator;
         private readonly DatabaseSeedConfiguration _configuration;
 
         public DatabaseSeeder(
             SanakanDbContext dbContext,
             IDatabaseFacade databaseFacade,
             IWaifuService waifuService,
+            IRandomNumberGenerator randomNumberGenerator,
             IOptions<DatabaseSeedConfiguration> configuration)
         {
             _dbContext = dbContext;
             _databaseFacade = databaseFacade;
             _waifuService = waifuService;
+            _randomNumberGenerator = randomNumberGenerator;
             _configuration = configuration.Value;
         }
 
@@ -202,8 +207,40 @@ namespace Sanakan.Web
                         {
                             var character = await _waifuService.GetRandomCharacterAsync();
                             var card = _waifuService.GenerateNewCard(user.Id, character!);
+                            card.Active = true;
                             user.GameDeck.Cards.Add(card);
                         }
+
+                        var activeCards = new List<Card>();
+                        var cards = user.GameDeck.Cards.ToList();
+                        var cardsToActivate = userSeed.ActiveCards.HasValue ? 
+                            Enumerable.Range(1, userSeed.ActiveCards.Value)
+                            : Enumerable.Empty<int>();
+                        var wishListItems = userSeed.WishListItems.HasValue ?
+                            Enumerable.Range(1, userSeed.WishListItems.Value)
+                            : Enumerable.Empty<int>();
+
+                        foreach (var _ in cardsToActivate)
+                        {
+                            var card = _randomNumberGenerator.GetOneRandomFrom(cards);
+                            card.Active = true;
+                            activeCards.Add(card);
+                            cards.Remove(card);
+                        }
+                        user.GameDeck.DeckPower = activeCards.Sum(x => x.CalculateCardPower());
+
+                        foreach (var _ in wishListItems)
+                        {
+                            var character = await _waifuService.GetRandomCharacterAsync();
+
+                            user.GameDeck.Wishes.Add(new WishlistObject
+                            {
+                                ObjectId = character.CharacterId,
+                                Type = WishlistObjectType.Character,
+                                ObjectName = character.ToString(),
+                            });
+                        }
+
                         await _dbContext.SaveChangesAsync();
                     }
 

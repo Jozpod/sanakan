@@ -1,7 +1,7 @@
-name: Build, Tests, Code Coverage
+name: Build and Tests
 
 on:
-  push:
+  pull_request:
     branches: [master]
 
 jobs:
@@ -46,19 +46,3 @@ jobs:
           dotnet test Tests/Daemon.Tests/Daemon.Tests.csproj  --no-build --verbosity minimal --configuration Release
           dotnet test Tests/Game.Tests/Game.Tests.csproj --no-build --verbosity minimal --configuration Release
           dotnet test Tests/TaskQueue.Tests/TaskQueue.Tests.csproj --no-build --verbosity minimal --configuration Release
-      - name: Publish coverage report to codecov.io
-        uses: codecov/codecov-action@v2
-        with:
-          files: "./Tests/TestResults/DAL.Tests.coverage.xml,\
-            ./Tests/TestResults/Web.Tests.coverage.xml,\
-            ./Tests/TestResults/DiscordBot.Tests.coverage.xml,\
-            ./Tests/TestResults/ShindenApi.Tests.coverage.xml,\
-            ./Tests/TestResults/DiscordBot.Session.Tests.coverage.xml,\
-            ./Tests/TestResults/DiscordBot.Supervisor.Tests.coverage.xml,\
-            ./Tests/TestResults/DiscordBot.Services.Tests.coverage.xml,\
-            ./Tests/TestResults/Daemon.Tests.coverage.xml,\
-            ./Tests/TestResults/Game.Tests.coverage.xml,\
-            ./Tests/TestResults/TaskQueue.Tests.coverage.xml"
-          name: codecov-umbrella
-          fail_ci_if_error: true
-          verbose: true

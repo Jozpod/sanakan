@@ -22,7 +22,9 @@ namespace DiscordBot.ModulesTests.ProfileModuleTests
         {
             var utcNow = DateTime.UtcNow;
             var user = new User(1ul, utcNow);
+            user.TcCount = 1000;
             var guildOptions = new GuildOptions(1ul, 50);
+            var roleId = guildOptions.GlobalEmotesRoleId = 1ul;
             var roleMock = new Mock<IRole>(MockBehavior.Strict);
             var roleIds = new List<ulong>();
 
@@ -50,6 +52,10 @@ namespace DiscordBot.ModulesTests.ProfileModuleTests
                 .Setup(pr => pr.GetRole(guildOptions.GlobalEmotesRoleId))
                 .Returns(roleMock.Object);
 
+            roleMock
+                .Setup(pr => pr.Id)
+                .Returns(roleId);
+
             _userRepositoryMock
                 .Setup(pr => pr.GetUserOrCreateAsync(user.Id))
                 .ReturnsAsync(user);
@@ -57,6 +63,10 @@ namespace DiscordBot.ModulesTests.ProfileModuleTests
             _guildConfigRepositoryMock
                 .Setup(pr => pr.GetCachedGuildFullConfigAsync(user.Id))
                 .ReturnsAsync(guildOptions);
+
+            _systemClockMock
+                .Setup(pr => pr.UtcNow)
+                .Returns(utcNow);
 
             _userRepositoryMock
                .Setup(pr => pr.SaveChangesAsync(default))

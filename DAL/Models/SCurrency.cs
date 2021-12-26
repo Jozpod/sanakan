@@ -3,6 +3,6 @@
     public enum SCurrency : byte
     {
         Sc = 0,
-        Tc = 0
+        Tc = 1
     }
 }

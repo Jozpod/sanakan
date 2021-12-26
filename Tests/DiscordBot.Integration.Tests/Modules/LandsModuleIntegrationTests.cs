@@ -6,7 +6,10 @@ using System.Threading.Tasks;
 
 namespace Sanakan.DiscordBot.Integration.Tests
 {
-    public partial class TestBase
+#if DEBUG
+    [TestClass]
+#endif
+    public class LandsModuleIntegrationTests : TestBase
     {
         [TestMethod]
         public async Task TC201_Should_Show_People_In_Land()

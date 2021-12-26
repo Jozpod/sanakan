@@ -6,7 +6,10 @@ using System.Threading.Tasks;
 
 namespace Sanakan.DiscordBot.Integration.Tests
 {
-    public partial class TestBase
+#if DEBUG
+    [TestClass]
+#endif
+    public class ProfileModuleIntegrationTests : TestBase
     {
         [TestMethod]
         public async Task TC601_Should_Show_Roles()

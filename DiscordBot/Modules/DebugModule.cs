@@ -343,13 +343,25 @@ namespace Sanakan.DiscordBot.Modules
         public async Task GiveawayCardsMultiAsync(
             [Summary("id użytkownika")] ulong id,
             [Summary("liczba kart")] uint count,
-            [Summary("czas w hh:mm:ss")] TimeSpan duration,
+            [Summary("czas w dd | hh:mm | hh:mm:ss")] TimeSpan duration,
             [Summary("liczba powtórzeń")] uint repeatCount = 1)
         {
+            var delayTimespan = TimeSpan.FromSeconds(10);
+#if DEBUG
+
+            var totalLotteryTime = repeatCount * (delayTimespan + duration);
+            var finishTime = _systemClock.UtcNow + totalLotteryTime;
+
+            var embed = $"Koniec wszystkich loterii: {finishTime}"
+                   .ToEmbedMessage(EMType.Info)
+                   .Build();
+            await ReplyAsync(embed: embed);
+#endif
+
             for (uint i = 0; i < repeatCount; i++)
             {
                 await GiveawayCardsAsync(id, count, duration);
-                await _taskManager.Delay(TimeSpan.FromSeconds(10));
+                await _taskManager.Delay(delayTimespan);
             }
         }
 
@@ -943,7 +955,7 @@ namespace Sanakan.DiscordBot.Modules
             {
                 embed = $"Wystapil blad podczas zapisywania".ToEmbedMessage(EMType.Error).Build();
             }
-            
+
             await ReplyAsync(embed: embed);
         }
 
@@ -1480,7 +1492,7 @@ namespace Sanakan.DiscordBot.Modules
                 {
                     opt.Discord.BlacklistedGuilds.Remove(guildId);
                 });
-                
+
             }
             else
             {

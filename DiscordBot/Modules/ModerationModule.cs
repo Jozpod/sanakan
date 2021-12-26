@@ -1741,6 +1741,7 @@ namespace Sanakan.DiscordBot.Modules
                 }
 
                 var multiplier = 1;
+
                 if (databaseUser.WarningsCount > 30)
                 {
                     multiplier = 30;

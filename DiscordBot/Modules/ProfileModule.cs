@@ -657,6 +657,7 @@ namespace Sanakan.DiscordBot.Modules
             if (global == null)
             {
                 global = new TimeStatus(StatusType.Globals, guildid);
+                global.EndsOn = _systemClock.UtcNow;
                 databaseUser.TimeStatuses.Add(global);
             }
 

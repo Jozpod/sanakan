@@ -18,8 +18,9 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
         [TestMethod]
         public async Task Should_Increase_Card_Limit_And_Send_Confirm_Message()
         {
-            var count = 50u;
+            var count = 10u;
             var user = new User(1ul, DateTime.UtcNow);
+            user.TcCount = 1200;
 
             _userMock
                .Setup(pr => pr.Id)
