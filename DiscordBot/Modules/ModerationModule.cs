@@ -1445,13 +1445,14 @@ namespace Sanakan.DiscordBot.Modules
             {
                 if (roleIds.Contains(globalRole.Id))
                 {
-                    var sub = timeStatuses.FirstOrDefault(x => x.Type == statusType && x.GuildId == guildId);
-                    if (sub == null)
+                    var timeStatus = timeStatuses.FirstOrDefault(x => x.Type == statusType
+                        && x.GuildId == guildId);
+                    if (timeStatus == null)
                     {
                         report.Append("**Globalki:** ❗\n\n");
                         await user.RemoveRoleAsync(globalRole);
                     }
-                    else if (!sub.IsActive(utcNow))
+                    else if (!timeStatus.IsActive(utcNow))
                     {
                         report.Append("**Globalki:** ⚠\n\n");
                         await user.RemoveRoleAsync(globalRole);
@@ -1517,17 +1518,10 @@ namespace Sanakan.DiscordBot.Modules
                     else
                     {
                         var userSearchResult = await _shindenClient.SearchUserAsync(realNick);
-                        if (userSearchResult.Value == null)
+                        var userSearch = userSearchResult.Value ?? new List<ShindenApi.Models.UserSearchResult>();
+                        if (!userSearch.Any(x => x.Name.Equals(realNick, StringComparison.Ordinal)))
                         {
-                            var userSearch = userSearchResult.Value ?? new List<ShindenApi.Models.UserSearchResult>();
-                            if (!userSearch.Any(x => x.Name.Equals(realNick, StringComparison.Ordinal)))
-                            {
-                                nickRep = $"**Nick:** ⚠";
-                            }
-                        }
-                        else
-                        {
-                            nickRep = $"**Nick:** ⚠";
+                            nickRep = "**Nick:** ⚠";
                         }
                     }
                 }

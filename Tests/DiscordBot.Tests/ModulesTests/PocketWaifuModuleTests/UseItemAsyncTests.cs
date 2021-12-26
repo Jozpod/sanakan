@@ -156,6 +156,7 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
                 || itemType == ItemType.SetCustomBorder)
             {
                 itemsCountOrImageLinkOrStarType = "https://test.com/image.png";
+                card.ImageUrl = new Uri("https://test.com/old-image.png");
             }
 
             if (itemType == ItemType.IncreaseUpgradeCount)
