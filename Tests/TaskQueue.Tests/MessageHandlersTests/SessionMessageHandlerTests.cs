@@ -42,7 +42,8 @@ namespace Sanakan.TaskQueue.Tests.MessageHandlersTests
                 .Setup(pr => pr.ExecuteAsync(message.Context, It.IsAny<IServiceProvider>(), default))
                 .ReturnsAsync(true);
 
-                _sessionManagerMock
+            _sessionManagerMock
+                .Setup(pr => pr.Remove(message.Session));
 
             sessionMock
                 .Setup(pr => pr.DisposeAsync())
