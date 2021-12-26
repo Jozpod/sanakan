@@ -50,8 +50,13 @@ namespace Sanakan.Game.Tests.WaifuServiceTests
                 .Returns<IEnumerable<ulong>>(items => items.First());
 
             _shindenClientMock
-                .Setup(pr => pr.GetCharacterInfoAsync(characterId))
+                .SetupSequence(pr => pr.GetCharacterInfoAsync(characterId))
+                .ReturnsAsync(new ShindenResult<CharacterInfo>())
                 .ReturnsAsync(characterInfoResult);
+
+            _taskManagerMock
+                .Setup(pr => pr.Delay(It.IsAny<TimeSpan>()))
+                .Returns(Task.CompletedTask);
 
             var characterInfo = await _waifuService.GetRandomCharacterAsync();
             characterInfo.Should().NotBeNull();

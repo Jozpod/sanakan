@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.DAL.Models;
+using Sanakan.DAL.Repositories;
 using Sanakan.Web.Controllers;
 using System;
 using System.Collections.Generic;
@@ -25,22 +26,29 @@ namespace Sanakan.Web.Tests.Controllers.WaifuControllerTests
             {
                 new Card(1ul, "title", "name", 100, 50, Rarity.B, Dere.Bodere, DateTime.UtcNow),
             };
+            user.GameDeck.Wishes.Add(new WishlistObject { Type = WishlistObjectType.Character, ObjectId = 1ul });
 
             _userRepositoryMock
                 .Setup(pr => pr.GetCachedFullUserByShindenIdAsync(shindenUserId))
                 .ReturnsAsync(user);
 
+            _cardRepositoryMock
+                .Setup(pr => pr.GetByIdsAsync(
+                    It.IsAny<IEnumerable<ulong>>(),
+                    It.IsAny<CardQueryOptions>()))
+                .ReturnsAsync(cards);
+
             _waifuServiceMock
                 .Setup(pr => pr.GetCardsFromWishlist(
-                    It.IsAny<List<ulong>>(),
-                    It.IsAny<List<ulong>>(),
-                    It.IsAny<List<ulong>>(),
+                    It.IsAny<IEnumerable<ulong>>(),
+                    It.IsAny<IEnumerable<ulong>>(),
+                    It.IsAny<IEnumerable<ulong>>(),
                     It.IsAny<List<Card>>(),
                     It.IsAny<IEnumerable<Card>>()))
                 .ReturnsAsync(cards);
 
             var result = await _controller.GetShindenUserWishlistAsync(shindenUserId);
-            var okObjectResult = result.Should().BeOfType<ObjectResult>().Subject;
+            var okObjectResult = result.Should().BeOfType<OkObjectResult>().Subject;
             okObjectResult.Value.Should().NotBeNull();
         }
     }

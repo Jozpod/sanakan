@@ -1,11 +1,32 @@
-﻿using System;
+﻿using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Png;
+using SixLabors.ImageSharp.PixelFormats;
+using System;
 using System.IO;
 
 namespace Sanakan.Game.Tests
 {
     public static class Utils
     {
-        public static Stream CreateFakeImage() => new MemoryStream(Convert.FromBase64String("R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"));
+        public static Stream CreateFakeImage()
+        {
+            var cardImage = new Image<Rgba32>(50, 50);
+            var stream = new MemoryStream();
+            cardImage.Save(stream, new PngEncoder());
+            stream.Seek(0, SeekOrigin.Begin);
+
+            return stream;
+        }
+
+        public static Stream CreateFakeImage(int width = 50, int height = 50)
+        {
+            var cardImage = new Image<Rgba32>(width, height);
+            var stream = new MemoryStream();
+            cardImage.Save(stream, new PngEncoder());
+            stream.Seek(0, SeekOrigin.Begin);
+
+            return stream;
+        }
 
         // Copyright (c) 2008-2013 Hafthor Stefansson
         // Distributed under the MIT/X11 software license

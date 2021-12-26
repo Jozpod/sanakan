@@ -824,8 +824,8 @@ namespace Sanakan.Game.Services
                 var tempContentString = $"";
                 var gameDeckUser = await client.GetUserAsync(card.GameDeck.UserId);
 
-                var usrName = (mention ? (gameDeckUser?.Mention) : (gameDeckUser?.Username)) ?? Placeholders.Undefined;
-                tempContentString += $"{usrName} **[{card.Id}]** **{card.GetCardRealRarity()}** {card.GetStatusIcons()}\n";
+                var userName = (mention ? (gameDeckUser?.Mention) : (gameDeckUser?.Username)) ?? Placeholders.Undefined;
+                tempContentString += $"{userName} **[{card.Id}]** **{card.GetCardRealRarity()}** {card.GetStatusIcons()}\n";
 
                 if ((contentString.Length + tempContentString.Length) <= 2000)
                 {
@@ -1349,7 +1349,9 @@ namespace Sanakan.Game.Services
         {
             var characters = new List<ulong>();
             if (charactersId != null)
+            {
                 characters.AddRange(charactersId);
+            }
 
             if (titlesId != null)
             {
@@ -1357,7 +1359,7 @@ namespace Sanakan.Game.Services
                 {
                     var response = await _shindenClient.GetCharactersAsync(id);
 
-                    if (response != null)
+                    if (response.Value == null)
                     {
                         continue;
                     }
@@ -1373,7 +1375,8 @@ namespace Sanakan.Game.Services
 
             if (characters.Any())
             {
-                characters = characters.Distinct()
+                characters = characters
+                    .Distinct()
                     .Where(c => !userCards.Any(x => x.CharacterId == c))
                     .ToList();
 

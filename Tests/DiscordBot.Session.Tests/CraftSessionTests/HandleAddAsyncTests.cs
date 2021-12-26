@@ -11,7 +11,9 @@ namespace Sanakan.DiscordBot.Session.Tests.CraftSessionTests
     public class HandleAddAsyncTests : Base
     {
         [TestMethod]
-        public async Task Should_Handle_Add_Command_Correctly()
+        [DataRow("dodaj 1")]
+        [DataRow("dodaj 1 1")]
+        public async Task Should_Handle_Add_Command_Correctly(string message)
         {
             var context = new SessionContext
             {
@@ -29,7 +31,7 @@ namespace Sanakan.DiscordBot.Session.Tests.CraftSessionTests
 
             _userMessageMock
                 .Setup(pr => pr.Content)
-                .Returns("dodaj 1");
+                .Returns(message);
 
             _ownedItems.Add(new DAL.Models.Item());
             _ownedItems.Add(new DAL.Models.Item());

@@ -21,8 +21,10 @@ namespace Sanakan.Game.Tests
                 .Setup(pr => pr.CurrentValue)
                 .Returns(new ImagingConfiguration
                 {
-                    CharacterImageWidth = 100,
-                    CharacterImageHeight = 100,
+                    CharacterImageWidth = 600,
+                    CharacterImageHeight = 600,
+                    StatsImageHeight = 100,
+                    StatsImageWidth = 100,
                 });
 
             var assembly = typeof(IImageProcessor).Assembly;

@@ -2011,6 +2011,16 @@
           "Sanakan.Game": "0.0.1"
         }
       },
+      "Sanakan.Tests.Shared": {
+        "type": "Project",
+        "dependencies": {
+          "Discord.Net": "2.4.0",
+          "MSTest.TestAdapter": "2.2.8",
+          "MSTest.TestFramework": "2.2.8",
+          "Microsoft.Extensions.DependencyInjection": "5.0.2",
+          "Moq": "4.16.1"
+        }
+      },
       "Shinden.NET": {
         "type": "Project",
         "dependencies": {

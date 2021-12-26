@@ -992,7 +992,6 @@ namespace Sanakan.Game.Services
 
             image.Mutate(x => x.DrawImage(defImg, new Point(28, 175), 1));
 
-
             using var atkImg = baseImage.Clone();
 
             atkImg.Mutate(x => x.DrawText(attackPoints, adFont, Colors.DarkBurgundy, new Point(1)));

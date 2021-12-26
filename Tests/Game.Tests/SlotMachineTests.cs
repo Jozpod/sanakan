@@ -24,16 +24,24 @@ namespace Sanakan.Game.Tests
         }
 
         [TestMethod]
-        public void Should_Draw_And_Return_Text()
+        [DataRow(SlotMachineSelectedRows.r1, 1)]
+        [DataRow(SlotMachineSelectedRows.r2, 1)]
+        [DataRow(SlotMachineSelectedRows.r3, 1)]
+        [DataRow(SlotMachineSelectedRows.r1, 0)]
+        [DataRow(SlotMachineSelectedRows.r2, 0)]
+        [DataRow(SlotMachineSelectedRows.r3, 0)]
+        public void Should_Draw_And_Return_Text(SlotMachineSelectedRows selectedRows, int psayMode)
         {
             var utcNow = DateTime.UtcNow;
             var user = new User(1ul, utcNow);
+            user.SMConfig = new SlotMachineConfig
+            {
+                Rows = selectedRows,
+                PsayMode = psayMode,
+            };
 
-            var expected = @"✖ 🐷🐷🐷🐷🐷
-✔ 🐷🐷🐷🐷🐷
-✖ 🐷🐷🐷🐷🐷".Replace("\r", "");
             var actual = _slotMachine.Draw(user);
-            actual.Should().Be(expected);
+            actual.Should().NotBeNullOrEmpty();
         }
 
         [TestMethod]
@@ -52,16 +60,28 @@ namespace Sanakan.Game.Tests
         }
 
         [TestMethod]
-        public void Should_Play_Slot_Machine()
+        [DataRow(SlotMachineSelectedRows.r1, 1, 80)]
+        [DataRow(SlotMachineSelectedRows.r2, 1, 160)]
+        [DataRow(SlotMachineSelectedRows.r3, 1, 240)]
+        [DataRow(SlotMachineSelectedRows.r1, 0, 40)]
+        [DataRow(SlotMachineSelectedRows.r2, 0, 80)]
+        [DataRow(SlotMachineSelectedRows.r3, 0, 120)]
+        public void Should_Play_Slot_Machine(SlotMachineSelectedRows selectedRows, int psayMode, int expected)
         {
             var utcNow = DateTime.UtcNow;
             var user = new User(1ul, utcNow);
+            user.SMConfig = new SlotMachineConfig
+            {
+                Beat = SlotMachineBeat.b1,
+                Multiplier = SlotMachineBeatMultiplier.x2,
+                Rows = selectedRows,
+                PsayMode = psayMode,
+            };
 
             _randomNumberGeneratorMock
                 .Setup(pr => pr.GetRandomValue(0, 1000))
                 .Returns(1);
 
-            var expected = 20;
             var actual = _slotMachine.Play(user);
             actual.Should().Be(expected);
         }

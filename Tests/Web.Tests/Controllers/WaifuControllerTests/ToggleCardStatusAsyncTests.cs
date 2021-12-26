@@ -44,10 +44,12 @@ namespace Sanakan.Web.Tests.Controllers.WaifuControllerTests
             var cardId = 1ul;
             var discordUserId = 1ul;
             var user = new User(discordUserId, DateTime.UtcNow);
+            var card = new Card(1ul, "title", "name", 100, 50, Rarity.B, Dere.Bodere, DateTime.UtcNow);
             var cards = new List<Card>
             {
-                new Card(1ul, "title", "name", 100, 50, Rarity.B, Dere.Bodere, DateTime.UtcNow),
+                card,
             };
+            user.GameDeck.Cards.Add(card);
 
             _userContextMock
                 .Setup(pr => pr.DiscordId)

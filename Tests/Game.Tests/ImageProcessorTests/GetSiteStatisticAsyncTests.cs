@@ -72,12 +72,8 @@ namespace Sanakan.Game.Tests
                 }
             };
 
-            //MockHttpGetImage("TestData/card-image.png");
-
             var siteStatistics = await _imageProcessor.GetSiteStatisticAsync(shindenInfo, color, lastRead, lastWatch);
             siteStatistics.Should().NotBeNull();
-
-            //await ShouldBeEqual("TestData/expected-site-statistics.png", siteStatistics);
         }
     }
 }

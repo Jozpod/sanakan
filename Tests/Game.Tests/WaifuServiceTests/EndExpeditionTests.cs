@@ -16,21 +16,23 @@ namespace Sanakan.Game.Tests.WaifuServiceTests
     [TestClass]
     public class EndExpeditionTests : Base
     {
-        [TestMethod]
-        [DataRow(ExpeditionCardType.None)]
-        [DataRow(ExpeditionCardType.NormalItemWithExp)]
-        [DataRow(ExpeditionCardType.ExtremeItemWithExp)]
-        [DataRow(ExpeditionCardType.DarkExp)]
-        [DataRow(ExpeditionCardType.DarkItems)]
-        [DataRow(ExpeditionCardType.DarkItemWithExp)]
-        [DataRow(ExpeditionCardType.LightExp)]
-        [DataRow(ExpeditionCardType.LightItems)]
-        [DataRow(ExpeditionCardType.LightItemWithExp)]
-        [DataRow(ExpeditionCardType.UltimateEasy)]
-        [DataRow(ExpeditionCardType.UltimateMedium)]
-        [DataRow(ExpeditionCardType.UltimateHard)]
-        [DataRow(ExpeditionCardType.UltimateHardcore)]
-        public void Should_Return_Expedition_Result(ExpeditionCardType expeditionCardType)
+        public static IEnumerable<object[]> EnumerateAllExpeditions
+        {
+            get
+            {
+                foreach (var expeditionCardType in Enum.GetValues<ExpeditionCardType>())
+                {
+                    foreach (var value in Enumerable.Range(0, 11).Select(pr => pr * 1000))
+                    {
+                        yield return new object[] { expeditionCardType, value };
+                    }
+                }
+            }
+        }
+
+        [DataTestMethod]
+        [DynamicData(nameof(EnumerateAllExpeditions))]
+        public void Should_Return_Expedition_Result(ExpeditionCardType expeditionCardType, int value)
         {
             var utcNow = DateTime.UtcNow;
             var user = new User(1ul, utcNow);
@@ -66,7 +68,7 @@ namespace Sanakan.Game.Tests.WaifuServiceTests
 
             _randomNumberGeneratorMock
                 .Setup(pr => pr.GetRandomValue(10000))
-                .Returns(5000);
+                .Returns(value);
 
             _randomNumberGeneratorMock
                 .Setup(pr => pr.GetRandomValue(100000))

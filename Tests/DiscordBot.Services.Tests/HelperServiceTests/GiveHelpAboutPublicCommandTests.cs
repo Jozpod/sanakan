@@ -1,6 +1,10 @@
+using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Sanakan.DiscordBot;
 using Sanakan.DiscordBot.Services.Abstractions;
+using Sanakan.Tests.Shared;
 using System;
+using System.Threading.Tasks;
 
 namespace DiscordBot.ServicesTests.HelperServiceTests
 {
@@ -21,5 +25,29 @@ namespace DiscordBot.ServicesTests.HelperServiceTests
                 _helperService.GiveHelpAboutPublicCommand(command, prefix);
             });
         }
+
+        [TestMethod]
+        [DataRow(false, false)]
+        [DataRow(false, true)]
+        [DataRow(true, false)]
+        public void Should_Return_Info(bool includePublicModule, bool isAdmin)
+        {
+            var commandName = "command";
+            
+            var moderationModuleInfo = DiscordInternalExtensions.CreateModuleWithCommand(PrivateModules.Moderation, "command");
+            var debugModuleInfo = DiscordInternalExtensions.CreateModuleWithCommand(PrivateModules.Debug, "command");
+
+            if (includePublicModule)
+            {
+                var moduleInfo = DiscordInternalExtensions.CreateModuleWithCommand("public-module", commandName);
+                _helperService.AddPublicModuleInfo(new[] { moduleInfo });
+            }
+            
+            _helperService.AddPrivateModuleInfo((PrivateModules.Moderation, moderationModuleInfo), (PrivateModules.Debug, debugModuleInfo));
+            var result = _helperService.GiveHelpAboutPublicCommand(commandName, string.Empty, isAdmin, true);
+            result.Should().NotBeNullOrEmpty();
+        }
+
+       
     }
 }

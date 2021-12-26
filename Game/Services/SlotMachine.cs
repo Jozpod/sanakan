@@ -160,32 +160,41 @@ namespace Sanakan.Game.Services
 
         public int Next(int min, int max)
         {
-            double sum = 0;
-            double rMax = 100;
-            double[] chance = new double[max];
+            var sum = 0d;
+            var rMax = 100d;
+            var chance = new double[max];
+
             for (int i = 0; i < (max + 1); i++) sum += i;
             for (int i = 0; i < max; i++) chance[i] = (max - i) * (rMax / sum);
 
-            int low = 0;
-            int high = 0;
-            int next = _randomNumberGenerator.GetRandomValue(min, (int)(rMax * 10));
-            for (int i = 0; i < max; i++)
+            var low = 0;
+            var high = 0;
+            var next = _randomNumberGenerator.GetRandomValue(min, (int)(rMax * 10));
+
+            for (var i = 0; i < max; i++)
             {
-                if (i > 0) low = (int)(chance[i - 1] * 10);
+                if (i > 0)
+                {
+                    low = (int)(chance[i - 1] * 10);
+                }
+
                 high += (int)(chance[i] * 10);
 
                 if (next >= low && next < high)
+                {
                     return i;
+                }
             }
             return 0;
         }
 
         private long CheckRow(User user, int index, long beat, ref List<SlotMachineWinSlots> list)
         {
-            int rt = 0;
-            bool broken = false;
-            SlotMachineSlot ft = Row[index, 0];
-            for (int i = 0; i < Slots; i++)
+            var rt = 0;
+            var broken = false;
+            var ft = Row[index, 0];
+
+            for (var i = 0; i < Slots; i++)
             {
                 if(ft == Row[index, i])
                 {

@@ -30,12 +30,14 @@ namespace DiscordBot.ModulesTests.FunModuleTests
         }
 
         [TestMethod]
-        public async Task Should_Set_Machine_And_Send_Confirm_Message()
+        [DataRow(SlotMachineSetting.Beat, "10")]
+        [DataRow(SlotMachineSetting.Info, "1")]
+        [DataRow(SlotMachineSetting.Multiplier, "3")]
+        [DataRow(SlotMachineSetting.Rows, "3")]
+        public async Task Should_Set_Machine_And_Send_Confirm_Message(SlotMachineSetting slotMachineSetting, string value)
         {
             var utcNow = DateTime.UtcNow;
             var user = new User(1ul, utcNow);
-            var setting = SlotMachineSetting.Beat;
-            var value = "10";
 
             _guildUserMock
                 .Setup(pr => pr.Id)
@@ -62,7 +64,7 @@ namespace DiscordBot.ModulesTests.FunModuleTests
                 embed.Description.Should().NotBeNull();
             });
 
-            await _module.SlotMachineSettingsAsync(setting, value);
+            await _module.SlotMachineSettingsAsync(slotMachineSetting, value);
         }
     }
 }

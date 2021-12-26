@@ -67,7 +67,7 @@ namespace Sanakan.DiscordBot.Session
                     return false;
                 }
 
-                if (OwnerIds.Any(pr => pr == context.UserId))
+                if (!OwnerIds.Any(pr => pr == context.UserId))
                 {
                     return false;
                 }

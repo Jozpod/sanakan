@@ -63,9 +63,9 @@ namespace Sanakan.DiscordBot.Session
 
             _iconConfiguration = _serviceProvider.GetRequiredService<IIconConfiguration>();
             await HandleMessageAsync(context);
-            await HandleReactionAsync(context);
+            var canComplete = await HandleReactionAsync(context);
             IsRunning = false;
-            return false;
+            return canComplete;
         }
 
         private async Task HandleMessageAsync(SessionContext context)
@@ -95,7 +95,7 @@ namespace Sanakan.DiscordBot.Session
             }
 
             var commandType = splitedCommand[0];
-            if (commandType == null)
+            if (string.IsNullOrEmpty(commandType))
             {
                 return;
             }
@@ -251,14 +251,12 @@ namespace Sanakan.DiscordBot.Session
                 return false;
             }
 
-            bool hasError = true;
-
             if (!_playerInfo.Accepted)
             {
                 return false;
             }
 
-            hasError = false;
+            var hasError = false;
 
             var user = await userRepository.GetUserOrCreateAsync(discordUserId);
             var totalCValue = _playerInfo.Items.Sum(x => x.Type.CValue() * x.Count);

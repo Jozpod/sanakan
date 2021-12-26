@@ -24,6 +24,17 @@ namespace Sanakan.Game.Tests.WaifuServiceTests
                 {
                     CardCount = 5,
                 },
+                new BoosterPack
+                {
+                    Name = "Boosterpack 1",
+                    CardCount = 5,
+                },
+                new BoosterPack
+                {
+                    Name = "Boosterpack 2",
+                    CardCount = 5,
+                },
+
             };
 
             userMock

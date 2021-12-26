@@ -1,7 +1,9 @@
 ﻿using Discord.Commands;
 using Discord.Commands.Builders;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace Sanakan.Tests.Shared
 {
@@ -27,6 +29,27 @@ namespace Sanakan.Tests.Shared
             var moduleBuilder = (ModuleBuilder)ctor.Invoke(parameters);
 
             return moduleBuilder;
+        }
+
+        public static ModuleInfo CreateModuleWithCommand(string moduleName, string commandName)
+        {
+            var serviceCollection = new ServiceCollection();
+            var serviceProvider = serviceCollection.BuildServiceProvider();
+            var commandService = new CommandService();
+            var moduleBuilder = CreateModuleBuilder(commandService, null);
+
+            moduleBuilder.WithName(moduleName);
+            moduleBuilder.AddAliases("test1");
+            moduleBuilder.AddCommand(commandName, (cc, objs, sp, ci) => Task.CompletedTask, cb =>
+            {
+                cb.AddParameter("param", typeof(string), (pb) =>
+                {
+                    pb.Summary = "Parameter";
+                });
+                cb.AddAliases("test command1");
+            });
+            var moduleInfo = CreateModuleInfo(moduleBuilder, commandService, serviceProvider);
+            return moduleInfo;
         }
 
         public static ModuleInfo CreateModuleInfo(

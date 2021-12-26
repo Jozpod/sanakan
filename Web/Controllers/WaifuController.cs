@@ -480,9 +480,9 @@ namespace Sanakan.Web.Controllers
         }
 
         /// <summary>
-        /// Pobiera liste kart z danym tagiem
+        /// Gets cards with given tags
         /// </summary>
-        /// <param name="tag">tag na karcie</param>
+        /// <param name="tag">Tag on the card.</param>
         [HttpGet("cards/tag/{tag}"), Authorize(Policy = AuthorizePolicies.Site)]
         [ProducesResponseType(typeof(IEnumerable<Card>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetCardsWithTagAsync(string tag)

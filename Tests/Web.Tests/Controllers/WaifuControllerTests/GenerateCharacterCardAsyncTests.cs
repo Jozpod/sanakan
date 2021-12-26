@@ -24,6 +24,7 @@ namespace Sanakan.Web.Tests.Controllers.WaifuControllerTests
             {
                 Value = new CharacterInfo
                 {
+                    PictureId = 1ul,
                 }
             };
 

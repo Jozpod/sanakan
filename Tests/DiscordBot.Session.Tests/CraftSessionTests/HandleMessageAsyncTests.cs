@@ -10,23 +10,6 @@ namespace Sanakan.DiscordBot.Session.Tests.CraftSessionTests
     [TestClass]
     public class HandleMessageAsyncTests : Base
     {
-
-        [TestMethod]
-        public async Task Should_Exit_When_No_PlayerInfo()
-        {
-            var context = new SessionContext
-            {
-                Message = _userMessageMock.Object,
-            };
-
-            _userMessageMock
-                .SetupSequence(pr => pr.Id)
-                .Returns(1ul)
-                .Returns(1ul);
-
-            await _session.ExecuteAsync(context, _serviceProvider);
-        }
-
         [TestMethod]
         public async Task Should_Exit_When_Same_Message()
         {
@@ -86,7 +69,11 @@ namespace Sanakan.DiscordBot.Session.Tests.CraftSessionTests
         }
 
         [TestMethod]
-        public async Task Should_Exit_When_Invalid_Message()
+        [DataRow(null)]
+        [DataRow("")]
+        [DataRow(" ")]
+        [DataRow("dodaj ")]
+        public async Task Should_React_And_Exit_When_Invalid_Message(string content)
         {
             var context = new SessionContext
             {
@@ -99,13 +86,12 @@ namespace Sanakan.DiscordBot.Session.Tests.CraftSessionTests
                 .Returns(2ul);
 
             _messageChannelMock
-                .SetupSequence(pr => pr.Id)
-                .Returns(1ul)
-                .Returns(2ul);
+                .Setup(pr => pr.Id)
+                .Returns(1ul);
 
             _userMessageMock
                 .Setup(pr => pr.Content)
-                .Returns(" ");
+                .Returns(content);
 
             await _session.ExecuteAsync(context, _serviceProvider);
         }

@@ -36,7 +36,27 @@ namespace Sanakan.Web.Tests.Controllers.UserControllerTests
         }
 
         [TestMethod]
-        public async Task Should_Return_Unauthorized()
+        public async Task Should_Return_Not_Found()
+        {
+            var shindenUserId = 1ul;
+            var payload = new UserRegistration
+            {
+                DiscordUserId = 1ul,
+                Username = "username",
+                ForumUserId = shindenUserId,
+            };
+
+            _discordClientMock
+                .Setup(pr => pr.GetUserAsync(payload.DiscordUserId, CacheMode.AllowDownload, null))
+                .ReturnsAsync(null as IUser);
+
+            var result = await _controller.RegisterUserAsync(payload);
+            var okObjectResult = result.Should().BeOfType<ObjectResult>().Subject;
+            okObjectResult.StatusCode.Should().Be(StatusCodes.Status404NotFound);
+        }
+
+        [TestMethod]
+        public async Task Should_Detect_MultiAccount_And_Return_Unauthorized()
         {
             var shindenUserId = 1ul;
             var userMock = new Mock<IUser>(MockBehavior.Strict);
@@ -74,6 +94,7 @@ namespace Sanakan.Web.Tests.Controllers.UserControllerTests
             {
                 GuildId = 1ul,
                 ChannelId = 2ul,
+                Type = RichMessageType.AdminNotify,
             };
 
             _configuration.RMConfig.Add(rmConfig);
@@ -176,7 +197,7 @@ namespace Sanakan.Web.Tests.Controllers.UserControllerTests
                 .ReturnsAsync(false);
 
             _blockingPriorityQueueMock
-                .Setup(pr => pr.TryEnqueue(It.IsAny<BaseMessage>()))
+                .Setup(pr => pr.TryEnqueue(It.IsAny<ConnectUserMessage>()))
                 .Returns(true);
 
             var result = await _controller.RegisterUserAsync(payload);
