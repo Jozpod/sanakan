@@ -100,12 +100,17 @@ namespace Sanakan.Daemon.HostedService
 
             var embeds = message.Embeds;
 
-            if(!embeds.Any())
+            if (!embeds.Any())
             {
                 return;
             }
 
             var embed = embeds.First();
+
+            if (string.IsNullOrEmpty(embed.Description))
+            {
+                return;
+            }
 
             if (!embed.Description.Contains("Wymiana"))
             {

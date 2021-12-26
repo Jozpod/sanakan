@@ -105,7 +105,7 @@ namespace Sanakan.DiscordBot.Integration.Tests.CommandBuilders
         public static string GetRandomUser(string prefix, uint duration) => $"{prefix}mod loteria {duration}";
 
         /// <summary>
-        /// <see cref="ModerationModule.BanUserAsync(IGuildUser, string, string)"/>.
+        /// <see cref="ModerationModule.BanUserAsync(IGuildUser, System.TimeSpan?, string)"/>.
         /// </summary>
         public static string BanUser(string prefix, string mention, string duration) => $"{prefix}mod ban {mention} {duration}";
     }

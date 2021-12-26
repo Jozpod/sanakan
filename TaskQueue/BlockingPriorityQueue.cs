@@ -29,11 +29,17 @@ namespace Sanakan.TaskQueue
                     return false;
                 }
 
-                _head++;
+                Interlocked.Increment(ref _head);
                 _items[_head] = message;
 
                 if (_head == 0)
                 {
+                    // TO-DO Improve
+                    if(_semaphoreSlim.CurrentCount == 1)
+                    {
+                        return true;
+                    }
+
                     _semaphoreSlim.Release();
                 }
             }
@@ -48,6 +54,12 @@ namespace Sanakan.TaskQueue
                 if (_head == -1)
                 {
                     await _semaphoreSlim.WaitAsync(token);
+
+                    // TO-DO Improve 
+                    if(_head == -1)
+                    {
+                        await _semaphoreSlim.WaitAsync(token);
+                    }
                 }
 
                 BaseMessage item;
@@ -55,7 +67,7 @@ namespace Sanakan.TaskQueue
                 {
                     item = _items[_head];
                     _items[_head] = null;
-                    _head--;
+                    Interlocked.Decrement(ref _head);
                 }
 
                 yield return item;

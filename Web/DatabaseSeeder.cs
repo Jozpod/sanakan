@@ -83,6 +83,16 @@ namespace Sanakan.Web
                     guildOption.GlobalEmotesRoleId = guild.GlobalEmotesRoleId.Value;
                 }
 
+                if (guild.GreetingChannelId.HasValue)
+                {
+                    guildOption.GreetingChannelId = guild.GreetingChannelId.Value;
+                }
+
+                if (guild.WelcomeMessage != null)
+                {
+                    guildOption.WelcomeMessage = guild.WelcomeMessage;
+                }
+
                 if (guild.CommandChannelId.HasValue)
                 {
                     guildOption.CommandChannels.Add(new CommandChannel { ChannelId = guild.CommandChannelId.Value }); ;

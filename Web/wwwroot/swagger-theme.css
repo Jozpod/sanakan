@@ -123,3 +123,12 @@
 .swagger-ui .opblock.opblock-post .opblock-summary-method {
     background: #8E50A8;
 }
+
+.swagger-ui .loading-container .loading:before {
+    border-top-color: white !important;
+    border: 5px solid rgba(85,85,85,.1) !important;
+}
+
+.swagger-ui .loading-container .loading:after {
+    color: #8E50A7 !important;
+}

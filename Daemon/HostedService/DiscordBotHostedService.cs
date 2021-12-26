@@ -396,12 +396,8 @@ namespace Sanakan.Daemon.HostedService
             var textChannel = (IMessageChannel)await user.Guild.GetChannelAsync(guildConfig.GreetingChannelId);
             await textChannel.SendMessageAsync(content);
 
-            if (guildConfig?.WelcomeMessagePM == null)
-            {
-                return;
-            }
-
-            if (guildConfig.WelcomeMessagePM == "off")
+            if (guildConfig?.WelcomeMessagePM == null
+                || guildConfig.WelcomeMessagePM == "off")
             {
                 return;
             }

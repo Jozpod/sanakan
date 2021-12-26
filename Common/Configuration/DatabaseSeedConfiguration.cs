@@ -58,6 +58,8 @@ namespace Sanakan.Common.Configuration
             public List<RolesPerLevelSeedConfiguration> RolesPerLevel { get; set; } = new();
 
             public List<UserSeedConfiguration> Users { get; set; } = new();
+
+            public string? WelcomeMessage { get; set; }
         }
 
         public class RolesPerLevelSeedConfiguration

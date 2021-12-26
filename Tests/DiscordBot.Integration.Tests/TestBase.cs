@@ -93,6 +93,7 @@ namespace Sanakan.DiscordBot.Integration.Tests
                 };
             });
             services.AddGameServices();
+            services.AddImageResolver();
             services.AddDiscordBot();
             services.AddDiscordIcons();
             services.AddDiscordBotServices();
@@ -181,7 +182,7 @@ namespace Sanakan.DiscordBot.Integration.Tests
 
         private static async Task<IUserMessage?> WaitForMessageAsync()
         {
-            await _semaphore.WaitAsync(TimeSpan.FromHours(1));
+            await _semaphore.WaitAsync(TimeSpan.FromSeconds(7));
             return LastMessage;
         }
 
