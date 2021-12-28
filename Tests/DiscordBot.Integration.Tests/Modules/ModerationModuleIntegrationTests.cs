@@ -135,19 +135,17 @@ namespace Sanakan.DiscordBot.Integration.Tests
             embed.Should().NotBeNull();
         }
 
-        [TestMethod]
-        public async Task TC520_Should_Ban_User()
-        {
-            //var commandMessage = ModerationCommandBuilder.BanUser(Prefix, FakeUser.Mention, "00:00:05");
-            //await Channel.SendMessageAsync(commandMessage);
+        // [TestMethod]
+        // public async Task TC520_Should_Ban_User()
+        // {
+        //     var commandMessage = ModerationCommandBuilder.BanUser(Prefix, FakeUser.Mention, "00:00:05");
+        //     await Channel.SendMessageAsync(commandMessage);
 
-            //var message = await WaitForMessageAsync();
-            //message.Should().NotBeNull();
-            //var embed = message.Embeds.FirstOrDefault();
-            //embed.Should().NotBeNull();
-
-            // https://discord.com/oauth2/authorize?client_id=911409545094512671&permissions=8&scope=applications.commands%20bot
-        }
+        //     var message = await WaitForMessageAsync();
+        //     message.Should().NotBeNull();
+        //     var embed = message.Embeds.FirstOrDefault();
+        //     embed.Should().NotBeNull();
+        // }
 
     }
 }

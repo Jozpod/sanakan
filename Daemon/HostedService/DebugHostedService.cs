@@ -41,7 +41,7 @@ namespace Sanakan.Daemon.HostedService
         public class Configuration
         {
             public string Prefix { get; set; } = ".";
-            
+
             public ulong MainGuildId { get; set; } = 910284207098560584;
 
             public ulong MainChannelId { get; set; } = 910284207534796800;
@@ -122,6 +122,7 @@ namespace Sanakan.Daemon.HostedService
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error occured while setting user roles");
             }
 
             _timer.Tick += OnTick;
