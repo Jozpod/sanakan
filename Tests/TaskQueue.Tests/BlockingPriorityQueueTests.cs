@@ -1,6 +1,7 @@
 ﻿using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Sanakan.TaskQueue.Messages;
+using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -25,6 +26,18 @@ namespace Sanakan.TaskQueue.Tests
                 _blockingPriorityQueue.TryEnqueue(message);
             }
             _blockingPriorityQueue.TryEnqueue(new GiveCardsMessage()).Should().BeFalse();
+        }
+
+        [TestMethod]
+        public async Task Should_Block_Queue()
+        {
+            var cancellationTokenSource = new CancellationTokenSource();
+            cancellationTokenSource.CancelAfter(TimeSpan.FromSeconds(1));
+            var enumerable = _blockingPriorityQueue.GetAsyncEnumerable(cancellationTokenSource.Token).GetAsyncEnumerator();
+
+            await Assert.ThrowsExceptionAsync<OperationCanceledException>(async () => {
+                await enumerable.MoveNextAsync();
+            });
         }
 
         [TestMethod]

@@ -25,6 +25,8 @@ namespace Sanakan.Game.Tests
                     CharacterImageHeight = 600,
                     StatsImageHeight = 100,
                     StatsImageWidth = 100,
+                    ProfileImageWidth = 300,
+                    ProfileImageHeight = 270,
                 });
 
             var assembly = typeof(IImageProcessor).Assembly;

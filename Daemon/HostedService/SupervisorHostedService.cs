@@ -223,10 +223,10 @@ namespace Sanakan.Daemon.HostedService
             var messageContent = GetMessageContent(userMessage);
             var adminRoleId = guildConfig.AdminRoleId;
             var userRoleId = guildConfig.UserRoleId;
-            var rolesId = user.RoleIds;
+            var roleIds = user.RoleIds;
 
             if (adminRoleId.HasValue
-                && rolesId.Contains(adminRoleId.Value))
+                && roleIds.Contains(adminRoleId.Value))
             {
                 return;
             }
@@ -240,7 +240,7 @@ namespace Sanakan.Daemon.HostedService
 
             var lessSeverePunishment = true;
 
-            var hasRole = rolesId.Any(x => x == userRoleId
+            var hasRole = roleIds.Any(x => x == userRoleId
                 || x == guildConfig.MuteRoleId)
                 || !userRoleId.HasValue;
 
@@ -269,7 +269,7 @@ namespace Sanakan.Daemon.HostedService
                         return;
                     }
 
-                    if (user.RoleIds.Contains(muteRole.Id))
+                    if (roleIds.Contains(muteRole.Id))
                     {
                         return;
                     }

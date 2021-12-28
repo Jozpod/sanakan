@@ -33,6 +33,7 @@ namespace Sanakan.Daemon.Tests.HostedServices.DiscordBotHostedServiceTests
         protected readonly Mock<ICommandHandler> _commandHandlerMock = new(MockBehavior.Strict);
         protected readonly Mock<ITaskManager> _taskManagerMock = new(MockBehavior.Strict);
         protected readonly Mock<IDatabaseFacade> _databaseFacadeMock = new(MockBehavior.Strict);
+        protected readonly Mock<IHostApplicationLifetime> _hostApplicationLifetimeMock = new(MockBehavior.Strict);
 
         protected readonly Mock<IGuildConfigRepository> _guildConfigRepositoryMock = new(MockBehavior.Strict);
         protected readonly Mock<IUserRepository> _userRepositoryMock = new(MockBehavior.Strict);
@@ -63,6 +64,10 @@ namespace Sanakan.Daemon.Tests.HostedServices.DiscordBotHostedServiceTests
                     RestartWhenDisconnected = true,
                 });
 
+            _hostApplicationLifetimeMock
+                .Setup(pr => pr.ApplicationStopping)
+                .Returns(new CancellationToken());
+
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddSingleton(_guildConfigRepositoryMock.Object);
             serviceCollection.AddSingleton(_timeStatusRepositoryMock.Object);
@@ -82,7 +87,8 @@ namespace Sanakan.Daemon.Tests.HostedServices.DiscordBotHostedServiceTests
                 _systemClockMock.Object,
                 _commandHandlerMock.Object,
                 _taskManagerMock.Object,
-                _databaseFacadeMock.Object);
+                _databaseFacadeMock.Object,
+                _hostApplicationLifetimeMock.Object);
         }
 
         public async Task StartAsync()

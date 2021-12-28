@@ -17,6 +17,7 @@ namespace Sanakan.Common.Builder
             services.Configure<DatabaseSeedConfiguration>(configuration.GetSection("Database:Seed"));
             services.Configure<IEnumerable<DatabaseSeedConfiguration.GuildSeedConfiguration>>(configuration.GetSection("Database:Seed:Guilds"));
             services.Configure<DaemonsConfiguration>(configuration.GetSection("Daemons"));
+            services.Configure<GameConfiguration>(configuration.GetSection("Game"));
             services.Configure<DatabaseConfiguration>(configuration.GetSection("Database"));
             services.Configure<LocaleConfiguration>(configuration.GetSection("Locale"));
             services.Configure<DiscordConfiguration>(configuration.GetSection("Discord"));

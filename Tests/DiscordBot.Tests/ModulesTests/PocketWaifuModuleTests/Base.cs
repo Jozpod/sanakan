@@ -19,7 +19,7 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
     public abstract class Base : TestBase
     {
         protected readonly PocketWaifuModule _module;
-        protected readonly Mock<IOptionsMonitor<DiscordConfiguration>> _discordConfigurationMock = new(MockBehavior.Strict);
+        protected readonly Mock<IOptions<GameConfiguration>> _gameConfigurationMock = new(MockBehavior.Strict);
         protected readonly Mock<IWaifuService> _waifuServiceMock = new(MockBehavior.Strict);
         protected readonly Mock<IShindenClient> _shindenClientMock = new(MockBehavior.Strict);
         protected readonly Mock<ISessionManager> _sessionManagerMock = new(MockBehavior.Strict);
@@ -42,8 +42,16 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
             var serviceProvider = serviceCollection.BuildServiceProvider();
             var serviceScopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
 
+            _gameConfigurationMock
+                .Setup(pr => pr.Value)
+                .Returns(new GameConfiguration
+                {
+
+                });
+
             _module = new(
                 new DefaultIconConfiguration(),
+                _gameConfigurationMock.Object,
                 _waifuServiceMock.Object,
                 _shindenClientMock.Object,
                 NullLogger<PocketWaifuModule>.Instance,

@@ -69,6 +69,7 @@ namespace Sanakan.DiscordBot.Services
                         Color = EMType.Info.Color(),
                         Description = stringBuilder.ToString(),
                     }.Build());
+                    stringBuilder.Clear();
                 }
 
                 stringBuilder.AppendFormat("{0}\n", user.Mention);

@@ -1,8 +1,10 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.Common;
 using Sanakan.Common.Cache;
+using Sanakan.Common.Configuration;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot.Abstractions.Configuration;
 using Sanakan.DiscordBot.Modules;
@@ -15,6 +17,7 @@ namespace DiscordBot.ModulesTests.ProfileModuleTests
     public abstract class Base : TestBase
     {
         protected readonly ProfileModule _module;
+        protected readonly Mock<IOptionsMonitor<ImagingConfiguration>> _imagingConfigurationMock = new(MockBehavior.Strict);
         protected readonly Mock<IProfileService> _profileServiceMock = new(MockBehavior.Strict);
         protected readonly Mock<ISessionManager> _sessionManagerMock = new(MockBehavior.Strict);
         protected readonly Mock<ICacheManager> _cacheManagerMock = new(MockBehavior.Strict);
@@ -32,8 +35,13 @@ namespace DiscordBot.ModulesTests.ProfileModuleTests
             var serviceProvider = serviceCollection.BuildServiceProvider();
             var serviceScopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
 
+            _imagingConfigurationMock
+                .Setup(pr => pr.CurrentValue)
+                .Returns(new ImagingConfiguration());
+
             _module = new(
                 new DefaultIconConfiguration(),
+                _imagingConfigurationMock.Object,
                 _profileServiceMock.Object,
                 _sessionManagerMock.Object,
                 _cacheManagerMock.Object,

@@ -15,6 +15,60 @@ namespace DiscordBot.ModulesTests.ModerationModuleTests
     public class SetModRoleAsyncTests : Base
     {
         [TestMethod]
+        public async Task Should_Send_Error_Message_No_Role()
+        {
+            _guildMock
+                .Setup(pr => pr.Id)
+                .Returns(1ul);
+
+            SetupSendMessage((message, embed) =>
+            {
+                embed.Description.Should().NotBeNull();
+            });
+
+            await _module.SetModRoleAsync(null);
+        }
+
+        [TestMethod]
+        public async Task Should_Remove_Role_And_Send_Confirm_Message()
+        {
+            var roleId = 1ul;
+            var guildConfig = new GuildOptions(1ul, 50);
+            guildConfig.ModeratorRoles.Add(new ModeratorRoles { RoleId = roleId });
+            var roleMock = new Mock<IRole>(MockBehavior.Strict);
+
+            roleMock
+                .Setup(pr => pr.Id)
+                .Returns(roleId);
+
+            _guildMock
+                .Setup(pr => pr.Id)
+                .Returns(guildConfig.Id);
+
+            _guildConfigRepositoryMock
+                .Setup(pr => pr.GetGuildConfigOrCreateAsync(guildConfig.Id))
+                .ReturnsAsync(guildConfig);
+
+            _guildConfigRepositoryMock
+                .Setup(pr => pr.SaveChangesAsync(default))
+                .Returns(Task.CompletedTask);
+
+            _cacheManagerMock
+                .Setup(pr => pr.ExpireTag(It.IsAny<string[]>()));
+
+            roleMock
+                .Setup(pr => pr.Mention)
+                .Returns("role mention");
+
+            SetupSendMessage((message, embed) =>
+            {
+                embed.Description.Should().NotBeNull();
+            });
+
+            await _module.SetModRoleAsync(roleMock.Object);
+        }
+
+        [TestMethod]
         public async Task Should_Set_Role_And_Send_Confirm_Message()
         {
             var guildConfig = new GuildOptions(1ul, 50);

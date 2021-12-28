@@ -33,6 +33,8 @@ namespace Sanakan.TaskQueue.Tests.MessageHandlersTests
                 DiscordUserId = 1ul,
             };
             var user = new User(message.DiscordUserId, DateTime.UtcNow);
+            var card = new Card(1ul, "title", "name", 100, 50, Rarity.E, Dere.Bodere, DateTime.UtcNow);
+            user.GameDeck.Cards.Add(card);
 
             _userRepositoryMock
                 .Setup(pr => pr.GetUserOrCreateAsync(message.DiscordUserId))

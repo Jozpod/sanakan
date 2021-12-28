@@ -12,10 +12,6 @@
 
         public const long ScCount = 100;
 
-        public const double MaxDeckPower = 800;
-
-        public const double MinDeckPower = 200;
-
-        public const ulong FakeUserId = 1ul;
+        public const ulong RootUserId = 1ul;
     }
 }

@@ -52,6 +52,37 @@ namespace Sanakan.TaskQueue.Tests.MessageHandlersTests
         }
 
         [TestMethod]
+        public async Task Should_Exit_No_Winner()
+        {
+            var userMock = new Mock<IUser>(MockBehavior.Strict);
+            var message = new LotteryMessage()
+            {
+                DiscordUserId = 1ul,
+                WinnerUserId = 2ul,
+                WinnerUser = userMock.Object,
+                UserMessage = _userMessageMock.Object,
+                CardCount = 1,
+            };
+            var user = new User(message.DiscordUserId, DateTime.UtcNow);
+            var card = new Card(1ul, "title", "name", 100, 50, Rarity.E, Dere.Bodere, DateTime.UtcNow);
+            user.GameDeck.Cards.Add(card);
+
+            _userRepositoryMock
+                .Setup(pr => pr.GetUserOrCreateAsync(message.DiscordUserId))
+                .ReturnsAsync(user);
+
+            _userRepositoryMock
+                .Setup(pr => pr.GetUserOrCreateAsync(message.WinnerUserId))
+                .ReturnsAsync(null as User);
+
+            _userMessageMock
+                .Setup(pr => pr.ModifyAsync(It.IsAny<Action<MessageProperties>>(), null))
+                .Returns(Task.CompletedTask);
+
+            await _messageHandler.HandleAsync(message);
+        }
+
+        [TestMethod]
         public async Task Should_Exit_No_Cards()
         {
             var message = new LotteryMessage()
@@ -78,6 +109,7 @@ namespace Sanakan.TaskQueue.Tests.MessageHandlersTests
         {
             var messageChannelMock = new Mock<ITextChannel>(MockBehavior.Strict);
             var userMock = new Mock<IUser>(MockBehavior.Strict);
+            var dmChannelMock = new Mock<IDMChannel>(MockBehavior.Strict);
             var message = new LotteryMessage()
             {
                 DiscordUserId = 1ul,
@@ -85,6 +117,7 @@ namespace Sanakan.TaskQueue.Tests.MessageHandlersTests
                 WinnerUser = userMock.Object,
                 UserMessage = _userMessageMock.Object,
                 Channel = messageChannelMock.Object,
+                CardCount = 1,
             };
             var user = new User(message.DiscordUserId, DateTime.UtcNow);
             var card = new Card(1ul, "title", "name", 100, 50, Rarity.E, Dere.Bodere, DateTime.UtcNow);
@@ -139,6 +172,20 @@ namespace Sanakan.TaskQueue.Tests.MessageHandlersTests
             messageChannelMock
                 .Setup(pr => pr.Id)
                 .Returns(1ul);
+
+            userMock
+                .Setup(pr => pr.GetOrCreateDMChannelAsync(null))
+                .ReturnsAsync(dmChannelMock.Object);
+
+            dmChannelMock
+                .Setup(pr => pr.SendMessageAsync(
+                    It.IsAny<string>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<Embed>(),
+                    It.IsAny<RequestOptions>(),
+                    It.IsAny<AllowedMentions>(),
+                    It.IsAny<MessageReference>()))
+                .ReturnsAsync(_userMessageMock.Object);
 
             _cacheManagerMock
                  .Setup(pr => pr.ExpireTag(It.IsAny<string[]>()));

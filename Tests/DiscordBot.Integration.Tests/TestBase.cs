@@ -204,7 +204,7 @@ namespace Sanakan.DiscordBot.Integration.Tests
         public static async Task<DiscordSocketClient> SetupFakeUserBot()
         {
             var client = new DiscordSocketClient();
-            client.GuildAvailable += GuildAvailable;
+            client.Ready += ReadyAsync;
             await client.LoginAsync(TokenType.Bot, _discordIntegrationTestOptions.FakeUserBotToken);
             await client.StartAsync();
 
@@ -213,7 +213,7 @@ namespace Sanakan.DiscordBot.Integration.Tests
             return client;
         }
 
-        private static Task GuildAvailable(IGuild guild)
+        private static Task ReadyAsync()
         {
             _guildAvailableSemaphore.Release();
             return Task.CompletedTask;

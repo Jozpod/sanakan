@@ -7,7 +7,7 @@ namespace Sanakan.DiscordBot.Services.Abstractions
 {
     public interface ILandManager
     {
-        UserLand? DetermineLand(IEnumerable<UserLand> lands, IEnumerable<ulong> roleIds, string? name);
+        UserLand? DetermineLand(IEnumerable<UserLand> lands, IEnumerable<ulong> roleIds, string? name = null);
 
         Task<IEnumerable<Embed>> GetMembersList(UserLand land, IGuild guild);
     }

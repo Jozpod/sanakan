@@ -445,6 +445,14 @@ All commands require developer permission.
 | **[`SupervisorDueTime`](#SupervisorDueTime)** | `{String\|TimeSpan}` | `00:05:00` | The inital amount of time to delay before supervisor subject reset. |
 | **[`SupervisorPeriod`](#SupervisorPeriod)** | `{String\|TimeSpan}` | `00:05:00` | The time interval between invocations of supervisor subject reset. |
 
+### Game
+|                   Name                    |         Type         |                 Default                 | Description                                                       |
+| :---------------------------------------: | :------------------: | :-------------------------------------: | :---------------------------------------------------------------- |
+|  **[`PVPRankMultiplier`](#PVPRankMultiplier)** | `{Number}` | `0.45` | The level multiplier for PVP fights. |
+| **[`MaxDeckPower`](#MaxDeckPower)** | `{Number}` | `800` | The maximum deck power which allows user to participate in duel. |
+|  **[`MinDeckPower`](#MinDeckPower)**  | `{Number}` | `200` | The minimum deck power which allows user to participate in duel. |
+| **[`MinPlayersForPVP`](#MinPlayersForPVP)** | `{Number}` | `10` | The minimum amount of players in server to start duel. |
+
 ### Discord
 |                   Name                    |         Type         |                 Default                 | Description                                                       |
 | :---------------------------------------: | :------------------: | :-------------------------------------: | :---------------------------------------------------------------- |
@@ -486,6 +494,8 @@ All commands require developer permission.
 | **[`CharacterImageHeight`](#CharacterImageHeight)** | `{Number}` | `667` | The height of the character picture. |
 | **[`StatsImageWidth`](#StatsImageHeight)** | `{Number}` | `120` | The width of the stats picture. |
 | **[`StatsImageHeight`](#StatsImageHeight)** | `{Number}` | `40` | The height of the stats picture. |
+| **[`ProfileImageWidth`](#ProfileImageWidth)** | `{Number}` | `325` | The width of the profile picture. |
+| **[`ProfileImageHeight`](#ProfileImageHeight)** | `{Number}` | `272` | The height of the profile picture. |
 
 ### Shinden API
 |                   Name                    |         Type         |                 Default                 | Description                                                       |

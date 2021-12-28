@@ -19,6 +19,8 @@ namespace DiscordBot.ModulesTests.ProfileModuleTests
         {
             var utcNow = DateTime.UtcNow;
             var databaseUser = new User(1ul, utcNow);
+            databaseUser.TimeStatuses.Add(new TimeStatus(StatusType.Color) { EndsOn = utcNow.AddHours(1) });
+            databaseUser.TimeStatuses.Add(new TimeStatus(StatusType.Globals) { EndsOn = utcNow.AddHours(1) });
 
             _guildUserMock
                 .Setup(pr => pr.Id)

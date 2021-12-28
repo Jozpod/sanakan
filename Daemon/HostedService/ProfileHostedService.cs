@@ -43,7 +43,7 @@ namespace Sanakan.Daemon.HostedService
             _serviceScopeFactory = serviceScopeFactory;
             _timer = timer;
             _taskManager = taskManager;
-            _discordClientAccessor.LoggedIn += LoggedIn;
+            _discordClientAccessor.Ready += ReadyAsync;
             _discordClientAccessor.LoggedOut += LoggedOut;
         }
 
@@ -53,7 +53,7 @@ namespace Sanakan.Daemon.HostedService
             return Task.CompletedTask;
         }
 
-        private Task LoggedIn()
+        private Task ReadyAsync()
         {
             _timer.Start(
                 _options.CurrentValue.ProfileDueTime,

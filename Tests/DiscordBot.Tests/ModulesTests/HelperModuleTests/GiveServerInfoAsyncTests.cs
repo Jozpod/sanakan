@@ -14,6 +14,21 @@ namespace DiscordBot.ModulesTests.HelperModuleTests
     public class GiveServerInfoAsyncTests : Base
     {
         [TestMethod]
+        public async Task Should_Return_Error_Message_No_Guild()
+        {
+            _commandContextMock
+                .Setup(pr => pr.Guild)
+                .Returns<IGuild>(null);
+
+            SetupSendMessage((message, embed) =>
+            {
+                embed.Should().NotBeNull();
+            });
+
+            await _module.GetServerInfoAsync();
+        }
+
+        [TestMethod]
         public async Task Should_Give_Server_Info()
         {
             var embed = new EmbedBuilder().Build();

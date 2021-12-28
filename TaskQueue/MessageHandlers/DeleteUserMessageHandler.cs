@@ -22,7 +22,7 @@ namespace Sanakan.TaskQueue.MessageHandlers
         public override async Task HandleAsync(DeleteUserMessage message)
         {
             var databaseUser = await _userRepository.GetUserOrCreateAsync(message.DiscordUserId);
-            var fakeUser = await _userRepository.GetUserOrCreateAsync(Constants.FakeUserId);
+            var fakeUser = await _userRepository.GetUserOrCreateAsync(Constants.RootUserId);
 
             foreach (var card in databaseUser.GameDeck.Cards)
             {

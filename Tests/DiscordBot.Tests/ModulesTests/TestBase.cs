@@ -3,6 +3,7 @@ using Discord.Commands;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.DiscordBot.Modules;
+using Sanakan.Tests.Shared;
 using System;
 using System.Reflection;
 
@@ -22,17 +23,9 @@ namespace DiscordBot.ModulesTests
         protected readonly Mock<IDiscordClient> _discordClientMock = new(MockBehavior.Strict);
         protected Mock<ITextChannel> _textChannelMock = new(MockBehavior.Strict);
 
-        protected void SetContext(SanakanModuleBase moduleBase)
-        {
-            var setContext = moduleBase.GetType().GetMethod(
-             "Discord.Commands.IModuleBase.SetContext",
-             BindingFlags.NonPublic | BindingFlags.Instance);
-            setContext.Invoke(moduleBase, new object[] { _commandContextMock.Object });
-        }
-
         protected void Initialize(SanakanModuleBase moduleBase)
         {
-            SetContext(moduleBase);
+            DiscordInternalExtensions.SetCommandContext(moduleBase, _commandContextMock.Object);
 
             _discordClientMock
                 .Setup(pr => pr.CurrentUser)

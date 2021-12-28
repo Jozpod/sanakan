@@ -31,6 +31,11 @@ namespace Sanakan.Common.Configuration
         public DiscordConfiguration Discord { get; set; } = null;
 
         /// <summary>
+        /// The pocket waifu game configuration.
+        /// </summary>
+        public GameConfiguration Game { get; set; } = null;
+
+        /// <summary>
         /// The experience configuration.
         /// </summary>
         public ExperienceConfiguration Experience { get; set; } = null;

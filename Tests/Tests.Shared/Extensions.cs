@@ -9,6 +9,14 @@ namespace Sanakan.Tests.Shared
 {
     public static class DiscordInternalExtensions
     {
+        public static void SetCommandContext(ModuleBase moduleBase, ICommandContext commandContext)
+        {
+            var setContext = moduleBase.GetType().GetMethod(
+             "Discord.Commands.IModuleBase.SetContext",
+             BindingFlags.NonPublic | BindingFlags.Instance);
+            setContext.Invoke(moduleBase, new object[] { commandContext });
+        }
+
         public static ModuleBuilder CreateModuleBuilder(CommandService commandService, ModuleBuilder parentModuleBuilder)
         {
             var bindingAttr = BindingFlags.NonPublic | BindingFlags.Instance;

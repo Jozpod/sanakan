@@ -22,7 +22,7 @@ namespace DiscordBot.ModulesTests.DebugModuleTests
             var user = new User(2ul, utcNow);
 
             _userRepositoryMock
-                .Setup(pr => pr.GetUserOrCreateAsync(Sanakan.DAL.Constants.FakeUserId))
+                .Setup(pr => pr.GetUserOrCreateAsync(Sanakan.DAL.Constants.RootUserId))
                 .ReturnsAsync(fakeUser);
 
             _userRepositoryMock

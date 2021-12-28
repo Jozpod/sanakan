@@ -18,6 +18,31 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
     public class ShowProfileAsyncTests : Base
     {
         [TestMethod]
+        public async Task Should_Send_Error_Message_No_User()
+        {
+            var userId = 1ul;
+
+            _userMock
+                .Setup(pr => pr.Id)
+                .Returns(userId);
+
+            _userMock
+                .Setup(pr => pr.Mention)
+                .Returns("mention");
+
+            _userRepositoryMock
+                .Setup(pr => pr.GetCachedFullUserAsync(userId))
+                .ReturnsAsync(null as User);
+
+            SetupSendMessage((message, embed) =>
+            {
+                embed.Description.Should().NotBeNull();
+            });
+
+            await _module.ShowProfileAsync();
+        }
+
+        [TestMethod]
         public async Task Should_Send_Message_Containing_Profile_Include_Favourite()
         {
             var user = new User(1ul, DateTime.UtcNow);

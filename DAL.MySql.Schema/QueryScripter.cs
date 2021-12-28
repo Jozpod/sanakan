@@ -93,7 +93,7 @@ namespace Sanakan.DAL.MySql.Schema
             await Utils.StubSelectAsync(connection);
             executed.Add($"{nameof(IGameDeckRepository)}_{nameof(IGameDeckRepository.GetByCardIdAndCharacterAsync)}");
 
-            await gameDeckRepository.GetCachedPlayersForPVP();
+            await gameDeckRepository.GetCachedPlayersForPVP(1, 200, 400);
             await Utils.StubSelectAsync(connection);
             executed.Add($"{nameof(IGameDeckRepository)}_{nameof(IGameDeckRepository.GetCachedPlayersForPVP)}");
 

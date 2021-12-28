@@ -75,11 +75,17 @@ namespace Sanakan.Common.Configuration
 
             public ulong? Level { get; set; }
 
+            public ulong? ShindenId { get; set; }
+
+            public double? Karma { get; set; }
+
             public double? ExperiencePercentage { get; set; }
 
             public int? NumberOfCards { get; set; }
 
             public int? ActiveCards { get; set; }
+
+            public double? DefaultAffection { get; set; }
 
             public int? WishListItems { get; set; }
 
@@ -92,8 +98,6 @@ namespace Sanakan.Common.Configuration
             public ulong? AcCount { get; set; }
 
             public ulong? PVPCoins { get; set; }
-
-            public double? Karma { get; set; }
 
             public ProfileType? ProfileType { get; set; }
 

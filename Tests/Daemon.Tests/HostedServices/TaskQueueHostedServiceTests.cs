@@ -18,13 +18,17 @@ namespace Sanakan.Daemon.Test.HostedServices
     [TestClass]
     public class TaskQueueHostedServiceTests
     {
-        protected readonly BackgroundService _service;
-        protected readonly Mock<ISystemClock> _systemClockMock = new(MockBehavior.Strict);
-        protected readonly Mock<IBlockingPriorityQueue> _blockingPriorityQueueMock = new(MockBehavior.Strict);
-        protected readonly Mock<IMessageHandler<SafariMessage>> _safariMessageHandlerMock = new(MockBehavior.Strict);
+        private readonly BackgroundService _service;
+        private readonly Mock<ISystemClock> _systemClockMock = new(MockBehavior.Strict);
+        private readonly Mock<IBlockingPriorityQueue> _blockingPriorityQueueMock = new(MockBehavior.Strict);
+        private readonly Mock<IMessageHandler<SafariMessage>> _safariMessageHandlerMock = new(MockBehavior.Strict);
+        private readonly Mock<IMessageHandler> _messageHandlerMock;
 
         public TaskQueueHostedServiceTests()
         {
+            _messageHandlerMock = _safariMessageHandlerMock
+                .As<IMessageHandler>();
+
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddSingleton(_safariMessageHandlerMock.Object);
             var serviceProvider = serviceCollection.BuildServiceProvider();
@@ -38,6 +42,31 @@ namespace Sanakan.Daemon.Test.HostedServices
         }
 
         [TestMethod]
+        public async Task Should_Handle_Message_Continue_On_Exception()
+        {
+            var messages = new[]
+           {
+                new SafariMessage(),
+            }.ToAsyncEnumerable();
+
+            _blockingPriorityQueueMock
+                .Setup(pr => pr.GetAsyncEnumerable(It.IsAny<CancellationToken>()))
+                .Returns(messages);
+
+            _safariMessageHandlerMock
+                .Setup(pr => pr.HandleAsync(It.IsAny<SafariMessage>()))
+                .Returns(Task.CompletedTask);
+
+            _messageHandlerMock
+                .Setup(pr => pr.HandleAsync(It.IsAny<SafariMessage>()))
+                .ThrowsAsync(new Exception());
+
+            var cancellationTokenSource = new CancellationTokenSource();
+            await _service.StartAsync(cancellationTokenSource.Token);
+            await Task.Delay(TimeSpan.FromSeconds(1));
+        }
+
+        [TestMethod]
         public async Task Should_Handle_Message()
         {
             var messages = new[]
@@ -47,19 +76,19 @@ namespace Sanakan.Daemon.Test.HostedServices
 
             _blockingPriorityQueueMock
                 .Setup(pr => pr.GetAsyncEnumerable(It.IsAny<CancellationToken>()))
-                .Returns(messages)
-                .Verifiable();
+                .Returns(messages);
 
             _safariMessageHandlerMock
+                .Setup(pr => pr.HandleAsync(It.IsAny<SafariMessage>()))
+                .Returns(Task.CompletedTask);
+
+            _messageHandlerMock
                 .Setup(pr => pr.HandleAsync(It.IsAny<SafariMessage>()))
                 .Returns(Task.CompletedTask);
 
             var cancellationTokenSource = new CancellationTokenSource();
             await _service.StartAsync(cancellationTokenSource.Token);
             await Task.Delay(TimeSpan.FromSeconds(1));
-
-            _blockingPriorityQueueMock.Verify();
-            _safariMessageHandlerMock.Verify();
         }
     }
 }

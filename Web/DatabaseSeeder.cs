@@ -174,7 +174,16 @@ namespace Sanakan.Web
                 {
                     var user = new User(userSeed.Id, DateTime.UtcNow);
                     _dbContext.Users.Add(user);
-                    await _dbContext.SaveChangesAsync();
+
+                    if (userSeed.Karma.HasValue)
+                    {
+                        user.GameDeck.Karma = userSeed.Karma.Value;
+                    }
+
+                    if (userSeed.ShindenId.HasValue)
+                    {
+                        user.ShindenId = userSeed.ShindenId.Value;
+                    }
 
                     if (userSeed.ScCount.HasValue)
                     {
@@ -201,6 +210,8 @@ namespace Sanakan.Web
                         user.CommandsCount = userSeed.CommandsCount.Value;
                     }
 
+                    await _dbContext.SaveChangesAsync();
+
                     if (userSeed.NumberOfCards.HasValue)
                     {
                         foreach (var _ in Enumerable.Range(1, userSeed.NumberOfCards.Value))
@@ -208,6 +219,12 @@ namespace Sanakan.Web
                             var character = await _waifuService.GetRandomCharacterAsync();
                             var card = _waifuService.GenerateNewCard(user.Id, character!);
                             card.Active = true;
+
+                            if (userSeed.DefaultAffection.HasValue)
+                            {
+                                card.Affection = userSeed.DefaultAffection.Value;
+                            }
+                            
                             user.GameDeck.Cards.Add(card);
                         }
 

@@ -15,17 +15,30 @@ namespace DiscordBot.ServicesTests.ProfileServiceTests
     public class RemoveUserColorAsyncTests : Base
     {
         [TestMethod]
-        public async Task Should_Remove_User_Color()
+        [DataRow(false)]
+        [DataRow(true)]
+        public async Task Should_Remove_User_Color_And_Remove_Role(bool manyUsers)
         {
             var guildUserMock = new Mock<IGuildUser>(MockBehavior.Strict);
             var guildMock = new Mock<IGuild>(MockBehavior.Strict);
             var roleMock = new Mock<IRole>(MockBehavior.Strict);
-            var roleIds = new List<ulong>();
-            var roles = new List<IRole>();
-            var users = new List<IGuildUser> { guildUserMock.Object };
             var color = FColor.AgainBlue;
-            var roleId = 1ul;
-            var roleName = "role name";
+            var roleId = (uint)color;
+            var roleIds = new List<ulong>() { roleId };
+            var roles = new List<IRole>() { roleMock.Object };
+            var users = new List<IGuildUser> { guildUserMock.Object };
+            var roleName = roleId.ToString();
+
+            if (manyUsers)
+            {
+                var anotherUserMock = new Mock<IGuildUser>(MockBehavior.Strict);
+
+                anotherUserMock
+                    .Setup(pr => pr.RoleIds)
+                    .Returns(roleIds);
+
+                users.Add(anotherUserMock.Object);
+            }
 
             roleMock
                 .Setup(pr => pr.Id)
@@ -59,7 +72,7 @@ namespace DiscordBot.ServicesTests.ProfileServiceTests
                 .Setup(pr => pr.RemoveRoleAsync(roleMock.Object, null))
                 .Returns(Task.CompletedTask);
 
-            await _profileService.RemoveUserColorAsync(guildUserMock.Object, color);
+            await _profileService.RemoveUserColorAsync(guildUserMock.Object);
         }
     }
 }

@@ -41,10 +41,10 @@ namespace Sanakan.Web.Tests.Controllers.WaifuControllerTests
         [TestMethod]
         public async Task Should_Enqueue_Task_And_Return_Ok()
         {
-            var cardId = 1ul;
             var discordUserId = 1ul;
             var user = new User(discordUserId, DateTime.UtcNow);
             var card = new Card(1ul, "title", "name", 100, 50, Rarity.B, Dere.Bodere, DateTime.UtcNow);
+            card.Id = 1ul;
             var cards = new List<Card>
             {
                 card,
@@ -63,7 +63,7 @@ namespace Sanakan.Web.Tests.Controllers.WaifuControllerTests
                 .Setup(pr => pr.TryEnqueue(It.IsAny<ToggleCardMessage>()))
                 .Returns(true);
 
-            var result = await _controller.ToggleCardStatusAsync(cardId);
+            var result = await _controller.ToggleCardStatusAsync(card.Id);
             var okObjectResult = result.Should().BeOfType<ObjectResult>().Subject;
             okObjectResult.Value.Should().NotBeNull();
         }

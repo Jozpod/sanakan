@@ -20,6 +20,128 @@ namespace Sanakan.Daemon.Tests.HostedServices.SupervisorHostedServiceTests
     public class HandleMessageAsyncTests : Base
     {
         [TestMethod]
+        public async Task Should_Quit_No_Guild()
+        {
+            var guildId = 1ul;
+            var userId = 1ul;
+            var content = "offensive message";
+            var userMessageMock = new Mock<IUserMessage>(MockBehavior.Strict);
+            var guildUserMock = new Mock<IGuildUser>(MockBehavior.Strict);
+            var guildMock = new Mock<IGuild>(MockBehavior.Strict);
+            var roleMock = new Mock<IRole>(MockBehavior.Strict);
+            var messageChannelMock = new Mock<IMessageChannel>(MockBehavior.Strict);
+            var notifyChannelMock = new Mock<ITextChannel>(MockBehavior.Strict);
+
+            userMessageMock
+                .Setup(pr => pr.Author)
+                .Returns(guildUserMock.Object);
+
+            userMessageMock
+                .Setup(pr => pr.Channel)
+                .Returns(messageChannelMock.Object);
+
+            userMessageMock
+                .Setup(pr => pr.Content)
+                .Returns(content);
+
+            guildUserMock
+               .Setup(pr => pr.Id)
+               .Returns(userId);
+
+            guildUserMock
+                .Setup(pr => pr.Mention)
+                .Returns("mention");
+
+            guildUserMock
+                .Setup(pr => pr.IsWebhook)
+                .Returns(false);
+
+            guildUserMock
+                .Setup(pr => pr.IsBot)
+                .Returns(false);
+
+            guildMock
+                .Setup(pr => pr.Id)
+                .Returns(guildId);
+
+            guildUserMock
+                .Setup(pr => pr.Guild)
+                .Returns(guildMock.Object);
+
+            _guildConfigRepositoryMock
+                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildId))
+                .ReturnsAsync(null as GuildOptions);
+
+            var cancellationTokenSource = new CancellationTokenSource();
+            await _service.StartAsync(cancellationTokenSource.Token);
+
+            _discordClientAccessorMock.Raise(pr => pr.LoggedIn += null);
+            _discordClientAccessorMock.Raise(pr => pr.MessageReceived += null, userMessageMock.Object);
+        }
+
+        [TestMethod]
+        public async Task Should_Quit_No_Supervision()
+        {
+            var guildId = 1ul;
+            var userId = 1ul;
+            var content = "offensive message";
+            var userMessageMock = new Mock<IUserMessage>(MockBehavior.Strict);
+            var guildUserMock = new Mock<IGuildUser>(MockBehavior.Strict);
+            var guildMock = new Mock<IGuild>(MockBehavior.Strict);
+            var roleMock = new Mock<IRole>(MockBehavior.Strict);
+            var messageChannelMock = new Mock<IMessageChannel>(MockBehavior.Strict);
+            var notifyChannelMock = new Mock<ITextChannel>(MockBehavior.Strict);
+            var guildOptions = new GuildOptions(guildId, 50ul);
+            guildOptions.SupervisionEnabled = false;
+
+            userMessageMock
+                .Setup(pr => pr.Author)
+                .Returns(guildUserMock.Object);
+
+            userMessageMock
+                .Setup(pr => pr.Channel)
+                .Returns(messageChannelMock.Object);
+
+            userMessageMock
+                .Setup(pr => pr.Content)
+                .Returns(content);
+
+            guildUserMock
+               .Setup(pr => pr.Id)
+               .Returns(userId);
+
+            guildUserMock
+                .Setup(pr => pr.Mention)
+                .Returns("mention");
+
+            guildUserMock
+                .Setup(pr => pr.IsWebhook)
+                .Returns(false);
+
+            guildUserMock
+                .Setup(pr => pr.IsBot)
+                .Returns(false);
+
+            guildMock
+                .Setup(pr => pr.Id)
+                .Returns(guildId);
+
+            guildUserMock
+                .Setup(pr => pr.Guild)
+                .Returns(guildMock.Object);
+
+            _guildConfigRepositoryMock
+                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildId))
+                .ReturnsAsync(guildOptions);
+
+            var cancellationTokenSource = new CancellationTokenSource();
+            await _service.StartAsync(cancellationTokenSource.Token);
+
+            _discordClientAccessorMock.Raise(pr => pr.LoggedIn += null);
+            _discordClientAccessorMock.Raise(pr => pr.MessageReceived += null, userMessageMock.Object);
+        }
+
+        [TestMethod]
         [DataRow(SupervisorAction.Ban)]
         [DataRow(SupervisorAction.Mute)]
         [DataRow(SupervisorAction.Warn)]
@@ -39,7 +161,6 @@ namespace Sanakan.Daemon.Tests.HostedServices.SupervisorHostedServiceTests
             guildOptions.SupervisionEnabled = true;
             var roleId = guildOptions.MuteRoleId = 1ul;
             var channelId = guildOptions.NotificationChannelId = 1ul;
-            var userIds = Enumerable.Empty<ulong>();
             var roleIds = new List<ulong>();
             var penaltyInfo = new PenaltyInfo();
 
@@ -144,9 +265,6 @@ namespace Sanakan.Daemon.Tests.HostedServices.SupervisorHostedServiceTests
 
             _discordClientAccessorMock.Raise(pr => pr.LoggedIn += null);
             _discordClientAccessorMock.Raise(pr => pr.MessageReceived += null, userMessageMock.Object);
-
-            guildMock.Verify();
-            _userMessageSupervisorMock.Verify();
         }
 
     }

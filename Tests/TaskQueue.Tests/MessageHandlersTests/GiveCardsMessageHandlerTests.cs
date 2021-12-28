@@ -31,6 +31,14 @@ namespace Sanakan.TaskQueue.Tests.MessageHandlersTests
             var message = new GiveCardsMessage()
             {
                 DiscordUserId = 1ul,
+                BoosterPacks = new[]
+                {
+                    new BoosterPack
+                    {
+                        CardCount = 2,
+                        TitleId = 2,
+                    }
+                }
             };
             var user = new User(message.DiscordUserId, DateTime.UtcNow);
 

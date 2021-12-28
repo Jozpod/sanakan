@@ -4,8 +4,10 @@ using Humanizer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Sanakan.Common;
 using Sanakan.Common.Cache;
+using Sanakan.Common.Configuration;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Repositories;
 using Sanakan.DAL.Repositories.Abstractions;
@@ -37,6 +39,7 @@ namespace Sanakan.DiscordBot.Modules
     public class PocketWaifuModule : SanakanModuleBase
     {
         private readonly IIconConfiguration _iconConfiguration;
+        private readonly GameConfiguration _gameConfiguration;
         private readonly IShindenClient _shindenClient;
         private readonly ISessionManager _sessionManager;
         private readonly ILogger _logger;
@@ -52,8 +55,10 @@ namespace Sanakan.DiscordBot.Modules
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly IServiceScope _serviceScope;
         private readonly IEnumerable<Rarity> rarityExcluded = new [] { Rarity.SS, Rarity.S, Rarity.A };
+
         public PocketWaifuModule(
             IIconConfiguration iconConfiguration,
+            IOptions<GameConfiguration> gameConfiguration,
             IWaifuService waifuService,
             IShindenClient shindenClient,
             ILogger<PocketWaifuModule> logger,
@@ -65,6 +70,7 @@ namespace Sanakan.DiscordBot.Modules
             IServiceScopeFactory serviceScopeFactory)
         {
             _iconConfiguration = iconConfiguration;
+            _gameConfiguration = gameConfiguration.Value;
             _waifuService = waifuService;
             _logger = logger;
             _shindenClient = shindenClient;
@@ -2698,7 +2704,8 @@ namespace Sanakan.DiscordBot.Modules
         [Alias("card limit")]
         [Summary("zwiększa limit kart, jakie można posiadać o 100, podanie 0 jako krotności wypisuje obecny limit")]
         [Remarks("10"), RequireWaifuCommandChannel]
-        public async Task IncCardLimitAsync([Summary("krotność użycia polecenia")] uint count = 0)
+        public async Task IncCardLimitAsync(
+            [Summary("krotność użycia polecenia")] uint count = 0)
         {
             var databaseUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
             var gameDeck = databaseUser.GameDeck;
@@ -3778,7 +3785,10 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            var canFight = gameDeck.CanFightPvP();
+            var minDeckPower = _gameConfiguration.MinDeckPower;
+            var maxDeckPower = _gameConfiguration.MaxDeckPower;
+
+            var canFight = gameDeck.CanFightPvP(minDeckPower, maxDeckPower);
             if (canFight != DeckPowerStatus.Ok)
             {
                 var err = (canFight == DeckPowerStatus.TooLow) ? "słabą" : "silną";
@@ -3820,16 +3830,18 @@ namespace Sanakan.DiscordBot.Modules
                 gameDeck.SeasonalPVPRank = 0;
             }
 
-#if DEBUG
-            var minPlayersCount = 1;
-#else
-            var minPlayersCount = 10;
-#endif
-            var allPvpPlayers = await _gameDeckRepository.GetCachedPlayersForPVP(databaseUser.Id);
+            var minPlayersCount = _gameConfiguration.MinPlayersForPVP;
+
+            var allPvpPlayers = await _gameDeckRepository.GetCachedPlayersForPVP(
+                databaseUser.Id,
+                minDeckPower,
+                maxDeckPower);
 
             if (allPvpPlayers.Count < minPlayersCount)
             {
-                await ReplyAsync(embed: $"{mention} zbyt mała liczba graczy ma utworzoną poprawną talię!".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync(embed: $"{mention} zbyt mała liczba graczy ma utworzoną poprawną talię!"
+                    .ToEmbedMessage(EMType.Error)
+                    .Build());
                 return;
             }
 
@@ -3845,12 +3857,22 @@ namespace Sanakan.DiscordBot.Modules
             var enemyUser = await _userRepository.GetUserOrCreateAsync(randomEnemyUserId);
             var discordClient = Context.Client;
             var discordEnemyUser = await discordClient.GetUserAsync(enemyUser.Id);
+            var maximumTries = 10;
 
-            while (discordEnemyUser == null)
+            while (discordEnemyUser == null || maximumTries > 0)
             {
                 randomEnemyUserId = _randomNumberGenerator.GetOneRandomFrom(pvpPlayersInRange).UserId;
                 enemyUser = await _userRepository.GetUserOrCreateAsync(randomEnemyUserId);
                 discordEnemyUser = await discordClient.GetUserAsync(enemyUser.Id);
+                maximumTries--;
+            }
+
+            if (discordEnemyUser == null)
+            {
+                await ReplyAsync(embed: $"{mention} brak przeciwnikow na serwerze"
+                    .ToEmbedMessage(EMType.Error)
+                    .Build());
+                return;
             }
 
             var players = new List<PlayerInfo>
@@ -3990,20 +4012,20 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            var thisCard = gameDeck.Cards.FirstOrDefault(x => x.Id == wid);
-            if (thisCard == null)
+            var card = gameDeck.Cards.FirstOrDefault(x => x.Id == wid);
+            if (card == null)
             {
                 await ReplyAsync(embed: $"{mention} nie odnaleziono karty.".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
-            if (thisCard.InCage)
+            if (card.InCage)
             {
                 await ReplyAsync(embed: $"{mention} ta karta znajduje się w klatce.".ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
-            if (!thisCard.CanGiveBloodOrUpgradeToSSS())
+            if (!card.CanGiveBloodOrUpgradeToSSS())
             {
                 await ReplyAsync(embed: $"{mention} ta karta ma zbyt niską relacje".ToEmbedMessage(EMType.Error).Build());
                 return;
@@ -4031,52 +4053,52 @@ namespace Sanakan.DiscordBot.Modules
                 gameDeck.Items.Remove(blood);
             }
 
+            var stats = databaseUser.Stats;
+
             if (gameDeck.CanCreateDemon())
             {
-                if (thisCard.Dere == Dere.Yami)
+                if (card.Dere == Dere.Yami)
                 {
                     await ReplyAsync(embed: $"{mention} ta karta została już przeistoczona wcześniej.".ToEmbedMessage(EMType.Error).Build());
                     return;
                 }
 
-                if (thisCard.Dere == Dere.Raito)
+                if (card.Dere == Dere.Raito)
                 {
-                    thisCard.Dere = Dere.Yato;
-                    databaseUser.Stats.YatoUpgrades += 1;
+                    card.Dere = Dere.Yato;
+                    stats.YatoUpgrades += 1;
                 }
                 else
                 {
-                    thisCard.Dere = Dere.Yami;
-                    databaseUser.Stats.YamiUpgrades += 1;
+                    card.Dere = Dere.Yami;
+                    stats.YamiUpgrades += 1;
                 }
             }
             else if (gameDeck.CanCreateAngel())
             {
-                if (thisCard.Dere == Dere.Raito)
+                if (card.Dere == Dere.Raito)
                 {
                     await ReplyAsync(embed: $"{mention} ta karta została już przeistoczona wcześniej.".ToEmbedMessage(EMType.Error).Build());
                     return;
                 }
 
-                if (thisCard.Dere == Dere.Yami)
+                if (card.Dere == Dere.Yami)
                 {
-                    thisCard.Dere = Dere.Yato;
-                    databaseUser.Stats.YatoUpgrades += 1;
+                    card.Dere = Dere.Yato;
+                    stats.YatoUpgrades += 1;
                 }
                 else
                 {
-                    thisCard.Dere = Dere.Raito;
-                    databaseUser.Stats.RaitoUpgrades += 1;
+                    card.Dere = Dere.Raito;
+                    stats.RaitoUpgrades += 1;
                 }
             }
 
             await _userRepository.SaveChangesAsync();
             _cacheManager.ExpireTag(CacheKeys.User(databaseUser.Id), CacheKeys.Users);
 
-            await ReplyAsync(embed: $"{mention} nowy charakter to {thisCard.Dere}".ToEmbedMessage(EMType.Success).Build());
+            await ReplyAsync(embed: $"{mention} nowy charakter to {card.Dere}".ToEmbedMessage(EMType.Success).Build());
         }
-
-        private const double PVPRankMultiplier = 0.45;
 
         [Command("karcianka", RunMode = RunMode.Async)]
         [Alias("cpf")]
@@ -4117,13 +4139,13 @@ namespace Sanakan.DiscordBot.Modules
             if (gameDeck.IsPVPSeasonalRankActive(_systemClock.UtcNow))
             {
                 experienceRank = gameDeck.SeasonalPVPRank;
-                experience = ExperienceUtils.CalculateLevel((ulong)experienceRank, PVPRankMultiplier) / 10;
+                experience = ExperienceUtils.CalculateLevel((ulong)experienceRank, _gameConfiguration.PVPRankMultiplier) / 10;
                 rankName = gameDeck.GetRankName(experience);
                 seasonString = $"{rankName} ({gameDeck.SeasonalPVPRank})";
             }
 
             experienceRank = gameDeck.GlobalPVPRank;
-            experience = ExperienceUtils.CalculateLevel((ulong)experienceRank, PVPRankMultiplier) / 10;
+            experience = ExperienceUtils.CalculateLevel((ulong)experienceRank, _gameConfiguration.PVPRankMultiplier) / 10;
             rankName = gameDeck.GetRankName(experience);
             var globalString = $"{rankName} ({gameDeck.GlobalPVPRank})";
 

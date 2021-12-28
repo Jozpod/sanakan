@@ -37,10 +37,10 @@ namespace Sanakan.Daemon.HostedService
             _randomNumberGenerator = randomNumberGenerator;
             _serviceScopeFactory = serviceScopeFactory;
             _taskManager = taskManager;
-            _discordClientAccessor.GuildAvailable += GuildAvailable;
+            _discordClientAccessor.Ready += ReadyAsync;
         }
 
-        private Task GuildAvailable(IGuild _)
+        private Task ReadyAsync()
         {
             _discordClientAccessor.MessageReceived += HandleMessageAsync;
             _discordClientAccessor.ReactionAdded += ReactionAddedAsync;

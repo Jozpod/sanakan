@@ -17,7 +17,41 @@ namespace DiscordBot.ModulesTests.ShindenModuleTests
     /// </summary>
     [TestClass]
     public class SearchCharacterAsyncTests : Base
-    {  
+    {
+        [TestMethod]
+        public async Task Should_Return_Error_Message_No_Character()
+        {
+            var userId = 1ul;
+            var characterName = "test";
+            var characterId = 1ul;
+            var utcNow = DateTime.UtcNow;
+            var searchCharacterResult = new ShindenResult<List<CharacterSearchResult>>();
+            searchCharacterResult.StatusCode = System.Net.HttpStatusCode.NotFound;
+
+            _sessionManagerMock
+                 .Setup(pr => pr.Exists<SearchSession>(userId))
+                 .Returns(false);
+
+            _userMock
+                .Setup(pr => pr.Id)
+                .Returns(userId);
+
+            _systemClockMock
+                .Setup(pr => pr.UtcNow)
+                .Returns(utcNow);
+
+            _shindenClientMock
+                .Setup(pr => pr.SearchCharacterAsync(characterName))
+                .ReturnsAsync(searchCharacterResult);
+
+            SetupSendMessage((message, embed) =>
+            {
+                embed.Should().NotBeNull();
+            });
+
+            await _module.SearchCharacterAsync(characterName);
+        }
+
         [TestMethod]
         public async Task Should_Return_Character_Info_First()
         {

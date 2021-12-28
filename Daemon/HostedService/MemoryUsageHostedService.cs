@@ -60,7 +60,7 @@ namespace Sanakan.Daemon.HostedService
                 _timer.Start(
                     _options.CurrentValue.CaptureMemoryUsageDueTime,
                     _options.CurrentValue.CaptureMemoryUsagePeriod);
-                
+
                 await _taskManager.Delay(Timeout.InfiniteTimeSpan, stoppingToken);
             } 
             catch (OperationCanceledException)

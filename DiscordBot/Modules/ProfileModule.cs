@@ -3,8 +3,10 @@ using Discord.Commands;
 using DiscordBot.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Sanakan.Common;
 using Sanakan.Common.Cache;
+using Sanakan.Common.Configuration;
 using Sanakan.Common.Models;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Repositories.Abstractions;
@@ -32,6 +34,7 @@ namespace Sanakan.DiscordBot.Modules
     public class ProfileModule : SanakanModuleBase
     {
         private readonly IIconConfiguration _iconConfiguration;
+        private readonly ImagingConfiguration _imagingConfiguration;
         private readonly IProfileService _profileService;
         private readonly ISessionManager _sessionManager;
         private readonly ICacheManager _cacheManager;
@@ -44,6 +47,7 @@ namespace Sanakan.DiscordBot.Modules
 
         public ProfileModule(
             IIconConfiguration iconConfiguration,
+            IOptionsMonitor<ImagingConfiguration> imagingConfiguration,
             IProfileService profileService,
             ISessionManager sessionManager,
             ICacheManager cacheManager,
@@ -51,6 +55,7 @@ namespace Sanakan.DiscordBot.Modules
             IServiceScopeFactory serviceScopeFactory)
         {
             _iconConfiguration = iconConfiguration;
+            _imagingConfiguration = imagingConfiguration.CurrentValue;
             _profileService = profileService;
             _sessionManager = sessionManager;
             _cacheManager = cacheManager;
@@ -521,7 +526,12 @@ namespace Sanakan.DiscordBot.Modules
             {
                 case ProfileType.Image:
                 case ProfileType.StatisticsWithImage:
-                    var saveResult = await _profileService.SaveProfileImageAsync(imageUrl!, $"{Paths.SavedData}/SR{databaseUser.Id}.png", 325, 272);
+                    var filePath = $"{Paths.SavedData}/SR{databaseUser.Id}.png";
+                    var saveResult = await _profileService.SaveProfileImageAsync(
+                        imageUrl!,
+                        filePath,
+                        _imagingConfiguration.ProfileImageWidth,
+                        _imagingConfiguration.ProfileImageHeight);
 
                     if (saveResult == SaveResult.Success)
                     {

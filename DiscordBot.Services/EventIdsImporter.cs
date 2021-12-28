@@ -38,7 +38,7 @@ namespace Sanakan.DiscordBot.Services
             {
                 return new EventIdsImporterResult
                 {
-                    Value = content.Split(";").Select(x => ulong.Parse(x)),
+                    Value = content.Split(";").Select(x => ulong.Parse(x)).ToList(),
                 };
             }
             catch (Exception ex)

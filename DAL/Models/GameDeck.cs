@@ -153,16 +153,16 @@ namespace Sanakan.DAL.Models
             => date.Month == PVPSeasonBeginDate.Month
                 && date.Year == PVPSeasonBeginDate.Year;
 
-        public DeckPowerStatus CanFightPvP()
+        public DeckPowerStatus CanFightPvP(double minDeckPower, double maxDeckPower)
         {
             DeckPower = CalculateDeckPower();
 
-            if (DeckPower > Constants.MaxDeckPower)
+            if (DeckPower > maxDeckPower)
             {
                 return DeckPowerStatus.TooHigh;
             }
 
-            if (DeckPower < Constants.MinDeckPower)
+            if (DeckPower < minDeckPower)
             {
                 return DeckPowerStatus.TooLow;
             }
@@ -217,7 +217,7 @@ namespace Sanakan.DAL.Models
             }
         }
 
-        public bool CanFightPvPs() => CanFightPvP() == DeckPowerStatus.Ok;
+        public bool CanFightPvPs(double minDeckPower, double maxDeckPower) => CanFightPvP(minDeckPower, maxDeckPower) == DeckPowerStatus.Ok;
 
         public double GetDeckPower() => DeckPower;
 

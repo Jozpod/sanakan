@@ -291,7 +291,8 @@ namespace Sanakan.Game.Services
 
         private Image<Rgba32> GetProfileInside(UserInfo? shindenUser, User databaseUser)
         {
-            var image = new Image<Rgba32>(325, 272);
+            var config = _options.CurrentValue;
+            var image = new Image<Rgba32>(config.ProfileImageWidth, config.ProfileImageHeight);
 
             if (!_fileSystem.Exists(databaseUser.StatsReplacementProfileUri!))
             {
@@ -354,7 +355,8 @@ namespace Sanakan.Game.Services
 
         private async Task<Image<Rgba32>> GetCardsProfileImage(User databaseUser)
         {
-            var profilePic = new Image<Rgba32>(325, 272);
+            var config = _options.CurrentValue;
+            var profilePic = new Image<Rgba32>(config.ProfileImageWidth, config.ProfileImageHeight);
             var gameDeck = databaseUser.GameDeck;
             var cards = gameDeck.Cards;
 

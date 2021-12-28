@@ -177,8 +177,11 @@ namespace Sanakan.DAL.Models
         /// The datetime when experience was measured.
         /// </summary>
         public DateTime MeasuredOn { get; set; }
+
         public ulong MessagesCountAtDate { get; set; }
+
         public ulong CharacterCountFromDate { get; set; }
+
         public bool ShowWaifuInProfile { get; set; }
 
         /// <summary>

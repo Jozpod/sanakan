@@ -27,10 +27,11 @@ namespace DiscordBot.ServicesTests.LandManagerTests
             var guildMock = new Mock<IGuild>(MockBehavior.Strict);
             var users = new List<IGuildUser>() { guildUserMock.Object };
             var roleIds = new List<ulong>() { land.UnderlingId };
+            var mention = new string(Enumerable.Repeat('a', 2000).ToArray());
 
             guildUserMock
                .Setup(pr => pr.Mention)
-               .Returns("user mention");
+               .Returns(mention);
 
             guildUserMock
                 .Setup(pr => pr.RoleIds)

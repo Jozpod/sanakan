@@ -33,20 +33,20 @@ namespace Sanakan.DiscordBot
 
         public ICommandContext GetCommandContext(IUserMessage message) => new CommandContext(_client, message);
 
-        public event Func<IGuild, Task> GuildAvailable
+        public event Func<Task> Ready
         {
             add
             {
                 lock (_syncRoot)
                 {
-                    _client.GuildAvailable += value;
+                    _client.Ready += value;
                 }
             }
             remove
             {
                 lock (_syncRoot)
                 {
-                    _client.GuildAvailable -= value;
+                    _client.Ready -= value;
                 }
             }
         }

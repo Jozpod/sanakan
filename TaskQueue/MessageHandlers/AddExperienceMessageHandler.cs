@@ -132,7 +132,7 @@ namespace Sanakan.TaskQueue.MessageHandlers
                     continue;
                 }
 
-                bool hasRole = roleIds.Any(roleId => roleId == role.Id);
+                var hasRole = roleIds.Any(roleId => roleId == role.Id);
 
                 if (level >= levelRole.Level)
                 {

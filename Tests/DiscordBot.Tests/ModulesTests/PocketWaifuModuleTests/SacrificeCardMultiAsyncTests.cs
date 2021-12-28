@@ -15,6 +15,38 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
     public class SacrificeCardMultiAsyncTests : Base
     {
         [TestMethod]
+        public async Task Should_Return_Error_Message_No_Cards()
+        {
+            var utcNow = DateTime.UtcNow;
+            var idToUpgrade = 1ul;
+            var idsToSacrifice = new[]
+            {
+                2ul,
+                3ul,
+            };
+            var user = new User(1ul, utcNow);
+
+            _userMock
+                .Setup(pr => pr.Id)
+                .Returns(user.Id);
+
+            _userMock
+                .Setup(pr => pr.Mention)
+                .Returns("user mention");
+
+            _userRepositoryMock
+               .Setup(pr => pr.GetUserOrCreateAsync(user.Id))
+               .ReturnsAsync(user);
+
+            SetupSendMessage((message, embed) =>
+            {
+                embed.Description.Should().NotBeNull();
+            });
+
+            await _module.SacrificeCardMultiAsync(idToUpgrade, idsToSacrifice);
+        }
+
+        [TestMethod]
         public async Task Should_Sacrifice_Cards_And_Upgrade_Card()
         {
             var utcNow = DateTime.UtcNow;

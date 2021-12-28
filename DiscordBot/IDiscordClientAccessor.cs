@@ -23,8 +23,8 @@ namespace Sanakan.DiscordBot
         /// <inheritdoc cref="IDiscordClient"/>
         IDiscordClient Client { get; }
 
-        /// <inheritdoc cref="DiscordSocketClient.GuildAvailable"/>
-        event Func<IGuild, Task> GuildAvailable;
+        /// <inheritdoc cref="DiscordSocketClient.Ready"/>
+        event Func<Task> Ready;
 
         /// <inheritdoc cref="DiscordSocketClient.Log"/>
         event Func<LogMessage, Task> Log;

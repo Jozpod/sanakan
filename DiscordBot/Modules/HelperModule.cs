@@ -234,7 +234,7 @@ namespace Sanakan.DiscordBot.Modules
 
             if (guildConfig == null)
             {
-                await ReplyAsync(embed: "Serwer nie jest jeszcze skonfigurowany.".ToEmbedMessage(EMType.Bot).Build());
+                await ReplyAsync(embed: Strings.ServerNotConfigured.ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
 

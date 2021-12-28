@@ -42,7 +42,7 @@ namespace Sanakan.Daemon.Tests.HostedServices.SupervisorHostedServiceTests
                 .ReturnsAsync(guildUserMock.Object);
 
             guildMock
-                .Setup(pr => pr.AddBanAsync(guildUserMock.Object, 0, It.IsAny<string>(), null))
+                .Setup(pr => pr.AddBanAsync(guildUserMock.Object, 1, It.IsAny<string>(), null))
                 .Returns(Task.CompletedTask);
 
             guildUserMock

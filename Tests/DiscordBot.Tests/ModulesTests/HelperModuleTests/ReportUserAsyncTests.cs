@@ -17,6 +17,26 @@ namespace DiscordBot.ModulesTests.HelperModuleTests
     public class ReportUserAsyncTests : Base
     {
         [TestMethod]
+        public async Task Should_Return_Error_Message_No_Guild()
+        {
+            var messageId = 1ul;
+            var reason = "reason";
+            var guildid = 1ul;
+
+            _guildMock
+                .Setup(pr => pr.Id)
+                .Returns(guildid);
+
+            _guildConfigRepositoryMock
+                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildid))
+                .ReturnsAsync(null as GuildOptions);
+
+            SetupSendMessage();
+
+            await _module.ReportUserAsync(messageId, reason);
+        }
+
+        [TestMethod]
         public async Task Should_Start_Session()
         {
             var messageId = 1ul;

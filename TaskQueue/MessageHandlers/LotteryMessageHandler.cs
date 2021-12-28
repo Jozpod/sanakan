@@ -55,7 +55,8 @@ namespace Sanakan.TaskQueue.MessageHandlers
 
             if (winnerUser == null)
             {
-                await userMessage.ModifyAsync(x => x.Embed = "Nie odnaleziono docelowego użytkownika!".ToEmbedMessage(EMType.Error).Build());
+                var embed = "Nie odnaleziono docelowego użytkownika!".ToEmbedMessage(EMType.Error).Build();
+                await userMessage.ModifyAsync(x => x.Embed = embed);
                 return;
             }
 

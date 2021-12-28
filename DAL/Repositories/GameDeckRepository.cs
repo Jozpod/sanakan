@@ -23,7 +23,10 @@ namespace Sanakan.DAL.Repositories
             _cacheManager = cacheManager;
         }
 
-        public async Task<List<GameDeck>> GetCachedPlayersForPVP(ulong ignore = 1)
+        public async Task<List<GameDeck>> GetCachedPlayersForPVP(
+            ulong discordUserId,
+            double minDeckPower,
+            double maxDeckPower)
         {
             var cacheResult = _cacheManager.Get<List<GameDeck>>(CacheKeys.GameDecks);
 
@@ -35,9 +38,10 @@ namespace Sanakan.DAL.Repositories
             var result = await _dbContext
                 .GameDecks
                 .AsQueryable()
-                .Where(x => x.DeckPower > Constants.MinDeckPower
-                    && x.DeckPower < Constants.MaxDeckPower
-                    && x.UserId != ignore)
+                .Where(x => x.DeckPower > minDeckPower
+                    && x.DeckPower < maxDeckPower
+                    && x.UserId != Constants.RootUserId
+                    && x.UserId != discordUserId)
                 .AsNoTracking()
                 .AsSplitQuery()
                 .ToListAsync();

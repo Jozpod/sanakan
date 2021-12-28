@@ -26,7 +26,7 @@ namespace Sanakan.Daemon.Test.HostedServices
         private readonly Mock<IOptionsMonitor<DaemonsConfiguration>> _optionsMock = new(MockBehavior.Strict);
         private readonly Mock<IOperatingSystem> _operatingSystemMock = new(MockBehavior.Strict);
         private readonly Mock<ISystemAnalyticsRepository> _systemAnalyticsRepositoryMock = new(MockBehavior.Strict);
-        private readonly FakeTimer _fakeTimer = new();
+        private readonly Mock<ITimer> _timerMock = new();
         private readonly Mock<ITaskManager> _taskManagerMock = new(MockBehavior.Strict);
         private readonly Mock<IDatabaseFacade> _databaseFacadeMock = new(MockBehavior.Strict);
         private readonly Process _process = Process.GetCurrentProcess();
@@ -49,7 +49,8 @@ namespace Sanakan.Daemon.Test.HostedServices
             _taskManagerMock
                 .Setup(pr => pr.Delay(
                     It.IsAny<TimeSpan>(),
-                    It.IsAny<CancellationToken>()));
+                    It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
 
             _service = new MemoryUsageHostedService(
                 NullLogger<MemoryUsageHostedService>.Instance,
@@ -58,7 +59,7 @@ namespace Sanakan.Daemon.Test.HostedServices
                 serviceScopeFactory,
                 _operatingSystemMock.Object,
                 _taskManagerMock.Object,
-                _fakeTimer,
+                _timerMock.Object,
                 _databaseFacadeMock.Object);
         }
 
@@ -71,13 +72,11 @@ namespace Sanakan.Daemon.Test.HostedServices
                 {
                     CaptureMemoryUsageDueTime = TimeSpan.FromMinutes(1),
                     CaptureMemoryUsagePeriod = TimeSpan.FromMinutes(1),
-                })
-                .Verifiable();
+                });
 
             var cancellationTokenSource = new CancellationTokenSource();
             cancellationTokenSource.Cancel();
             await _service.StartAsync(cancellationTokenSource.Token);
-            _fakeTimer.Stopped.Should().BeTrue();
         }
 
 
@@ -94,31 +93,22 @@ namespace Sanakan.Daemon.Test.HostedServices
                 .Verifiable();
 
             _operatingSystemMock
-                .Setup(pr => pr.Refresh(_process))
-                .Verifiable();
+                .Setup(pr => pr.Refresh(_process));
 
             _systemClockMock
                 .Setup(pr => pr.UtcNow)
-                .Returns(DateTime.UtcNow)
-                .Verifiable();
+                .Returns(DateTime.UtcNow);
 
             _systemAnalyticsRepositoryMock
-                .Setup(pr => pr.Add(It.IsAny<SystemAnalytics>()))
-                .Verifiable();
+                .Setup(pr => pr.Add(It.IsAny<SystemAnalytics>()));
 
             _systemAnalyticsRepositoryMock
                 .Setup(pr => pr.SaveChangesAsync(It.IsAny<CancellationToken>()))
-                .Returns(Task.CompletedTask)
-                .Verifiable();
+                .Returns(Task.CompletedTask);
 
             var startTask = _service.StartAsync(new CancellationToken());
             await Task.Delay(TimeSpan.FromSeconds(1));
-            _fakeTimer.RaiseTickEvent();
-
-            _operatingSystemMock.Verify();
-            _optionsMock.Verify();
-            _systemClockMock.Verify();
-            _systemAnalyticsRepositoryMock.Verify();
+            _timerMock.Raise(pr => pr.Tick += null, null, null);
         }
     }
 }

@@ -36,6 +36,7 @@ namespace Sanakan.Daemon.HostedService
         private readonly ISystemClock _systemClock;
         private readonly ITaskManager _taskManager;
         private readonly IDatabaseFacade _databaseFacade;
+        private readonly IHostApplicationLifetime _applicationLifetime;
         private const double experienceSaveThreshold = 5;
         private IDictionary<ulong, UserStat> _userStatsMap;
         private readonly TimeSpan _halfAnHour;
@@ -60,7 +61,8 @@ namespace Sanakan.Daemon.HostedService
             ISystemClock systemClock,
             ICommandHandler commandHandler,
             ITaskManager taskManager,
-            IDatabaseFacade databaseFacade)
+            IDatabaseFacade databaseFacade,
+            IHostApplicationLifetime applicationLifetime)
         {
             _fileSystem = fileSystem;
             _blockingPriorityQueue = blockingPriorityQueue;
@@ -73,6 +75,7 @@ namespace Sanakan.Daemon.HostedService
             _commandHandler = commandHandler;
             _taskManager = taskManager;
             _databaseFacade = databaseFacade;
+            _applicationLifetime = applicationLifetime;
             _halfAnHour = TimeSpan.FromMinutes(30);
             _userStatsMap = new Dictionary<ulong, UserStat>();
         }
@@ -81,6 +84,7 @@ namespace Sanakan.Daemon.HostedService
         {
             try
             {
+                _applicationLifetime.ApplicationStopping.Register(OnApplicationStop);
                 stoppingToken.ThrowIfCancellationRequested();
 
                 await _databaseFacade.EnsureCreatedAsync(stoppingToken);
@@ -126,6 +130,11 @@ namespace Sanakan.Daemon.HostedService
             }
         }
 
+        private async void OnApplicationStop()
+        {
+            await _discordSocketClientAccessor.LogoutAsync();
+        }
+
         private async Task HandleMessageAsync(IMessage message)
         {
             var user = message.Author;
@@ -159,10 +168,12 @@ namespace Sanakan.Daemon.HostedService
             var userRepository = serviceProvider.GetRequiredService<IUserRepository>();
 
             var config = await guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
+            var userRoleId = config.UserRoleId;
 
             if (config != null)
             {
-                var role = config.UserRoleId.HasValue ? guild.GetRole(config.UserRoleId.Value) : null;
+                var role = userRoleId.HasValue ? guild.GetRole(userRoleId.Value) : null;
+
                 if (role != null)
                 {
                     if (!guildUser.RoleIds.Contains(role.Id))

@@ -1,4 +1,5 @@
 using Discord;
+using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.DAL.Models;
@@ -21,7 +22,29 @@ namespace DiscordBot.ModulesTests.ShindenModuleTests
     public class ShowSiteStatisticAsyncTests : Base
     {
         [TestMethod]
-        public async Task Should_Return_Site_Statistics_Image_For_Current_user()
+        public async Task Should_Return_Error_Message_No_User()
+        {
+            var userId = 1ul;
+
+            _guildUserMock
+                .Setup(pr => pr.Id)
+                .Returns(userId);
+
+            _userRepositoryMock
+                .Setup(pr => pr.GetCachedFullUserAsync(userId))
+                .ReturnsAsync(null as User);
+
+            SetupSendMessage((message, embed) =>
+            {
+                embed.Should().NotBeNull();
+                embed.Description.Should().NotBeNull();
+            });
+
+            await _module.ShowSiteStatisticAsync();
+        }
+
+        [TestMethod]
+        public async Task Should_Return_Site_Statistics_Image_For_Current_User()
         {
             var roleIds = new List<ulong>();
             var roles = new List<IRole>();

@@ -734,7 +734,7 @@ namespace Sanakan.DiscordBot.Modules
             [Summary("id użytkownika")] ulong discordUserId,
             [Summary("czy usunąć karty?")] bool cards = false)
         {
-            var fakeUser = await _userRepository.GetUserOrCreateAsync(DAL.Constants.FakeUserId);
+            var fakeUser = await _userRepository.GetUserOrCreateAsync(DAL.Constants.RootUserId);
             var user = await _userRepository.GetUserOrCreateAsync(discordUserId);
 
             if (user == null)

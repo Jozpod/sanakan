@@ -152,6 +152,10 @@ namespace Sanakan.Web
             services.AddScoped<IDatabaseSeeder, DatabaseSeeder>();
             services.AddDatabaseSeedHostedService();
 
+#if DEBUG
+            services.AddDebugHostedService();
+#endif
+
             services.AddHttpContextAccessor();
             services.AddJwtBuilder();
             services.AddRequestBodyReader();

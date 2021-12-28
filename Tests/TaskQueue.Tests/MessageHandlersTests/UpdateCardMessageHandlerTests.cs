@@ -35,6 +35,9 @@ namespace Sanakan.TaskQueue.Tests.MessageHandlersTests
             var message = new UpdateCardMessage()
             {
                 CharacterId = 1ul,
+                ImageUrl = "https://test.com/image.png",
+                CharacterName = "Character 1",
+                CardSeriesTitle = "Title 1",
             };
             var card = new Card(1ul, "title", "name", 100, 50, Rarity.E, Dere.Bodere, DateTime.UtcNow);
             var cards = new List<Card>

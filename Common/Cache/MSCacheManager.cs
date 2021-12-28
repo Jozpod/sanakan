@@ -51,11 +51,16 @@ namespace Sanakan.Common
             }
         }
 
-        public void Add<T>(string key, T entity, MemoryCacheEntryOptions memoryCacheEntryOptions)
+        public void Add<T>(string key, T value, MemoryCacheEntryOptions memoryCacheEntryOptions)
         {
             lock (_syncRoot)
             {
-                _cache.Set(key, entity, memoryCacheEntryOptions);
+                var entry = new MemoryCacheEntry<T>
+                {
+                    Value = value,
+                };
+
+                _cache.Set(key, entry, memoryCacheEntryOptions);
             }
         }
 
