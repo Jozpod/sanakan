@@ -47,6 +47,44 @@ namespace DiscordBot.ModulesTests.ProfileModuleTests
         }
 
         [TestMethod]
+        public async Task Should_Return_Error_Message_Bad_Url()
+        {
+            var user = new User(1ul, DateTime.UtcNow);
+            user.ScCount = 3000;
+            user.TcCount = 1000;
+            var imageUrl = "test-url";
+
+            _userMock
+               .Setup(pr => pr.Id)
+               .Returns(user.Id);
+
+            _userMock
+                .Setup(pr => pr.Mention)
+                .Returns("user mention");
+
+            _userRepositoryMock
+                .Setup(pr => pr.GetUserOrCreateAsync(user.Id))
+                .ReturnsAsync(user);
+
+            _profileServiceMock
+                .Setup(pr => pr.SaveProfileImageAsync(
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<int>(),
+                    It.IsAny<int>(),
+                    It.IsAny<bool>()))
+                .ReturnsAsync(SaveResult.BadUrl);
+
+            SetupSendMessage((message, embed) =>
+            {
+                embed.Should().NotBeNull();
+                embed.Description.Should().NotBeNullOrEmpty();
+            });
+
+            await _module.ChangeStyleAsync(ProfileType.StatisticsWithImage, imageUrl);
+        }
+
+        [TestMethod]
         [DataRow(ProfileType.Cards)]
         [DataRow(ProfileType.Image)]
         [DataRow(ProfileType.Statistics)]

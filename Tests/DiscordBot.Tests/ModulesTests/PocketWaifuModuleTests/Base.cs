@@ -52,6 +52,16 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
                     MaxDeckPower = 800,
                 });
 
+#if DEBUG
+            _userMock
+                .Setup(pr => pr.IsBot)
+                .Returns(false);
+
+            _userMock
+                .Setup(pr => pr.IsWebhook)
+                .Returns(false);
+#endif
+
             _module = new(
                 new DefaultIconConfiguration(),
                 _gameConfigurationMock.Object,

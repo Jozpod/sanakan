@@ -18,6 +18,66 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
     public class ShowCardAsyncTests : Base
     {
         [TestMethod]
+        public async Task Should_Return_Error_Message_No_Card()
+        {
+            var utcNow = DateTime.UtcNow;
+            var user = new User(1ul, utcNow);
+            var cardId = 1ul;
+
+            _cardRepositoryMock
+                .Setup(pr => pr.GetByIdAsync(cardId, It.IsAny<CardQueryOptions>()))
+                .ReturnsAsync(null as Card);
+
+            _userMock
+                .Setup(pr => pr.Mention)
+                .Returns("mention");
+
+            SetupSendMessage((message, embed) =>
+            {
+                embed.Should().NotBeNull();
+            });
+
+            await _module.ShowCardAsync(cardId);
+        }
+
+        [TestMethod]
+        public async Task Should_Return_Error_Message_No_Configured_Channel()
+        {
+            var utcNow = DateTime.UtcNow;
+            var user = new User(1ul, utcNow);
+            var card = new Card(1ul, "title", "name", 100, 50, Rarity.A, Dere.Bodere, utcNow);
+            card.Expedition = ExpeditionCardType.DarkExp;
+            user.GameDeck.Cards.Add(card);
+            user.GameDeck.UserId = user.Id;
+            var guildUserMock = new Mock<IGuildUser>(MockBehavior.Strict);
+            var guildOptions = new GuildOptions(1ul, 50);
+            card.GameDeck = user.GameDeck;
+
+            _cardRepositoryMock
+                .Setup(pr => pr.GetByIdAsync(card.Id, It.IsAny<CardQueryOptions>()))
+                .ReturnsAsync(card);
+
+            _guildMock
+                .Setup(pr => pr.Id)
+                .Returns(guildOptions.Id);
+
+            _guildMock
+                .Setup(pr => pr.GetUserAsync(user.Id, CacheMode.AllowDownload, null))
+                .ReturnsAsync(guildUserMock.Object);
+
+            _guildConfigRepositoryMock
+                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildOptions.Id))
+                .ReturnsAsync(guildOptions);
+
+            SetupSendMessage((message, embed) =>
+            {
+                embed.Should().NotBeNull();
+            });
+
+            await _module.ShowCardAsync(card.Id);
+        }
+
+        [TestMethod]
         public async Task Should_Send_Message_Containing_Card_Details()
         {
             var utcNow = DateTime.UtcNow;

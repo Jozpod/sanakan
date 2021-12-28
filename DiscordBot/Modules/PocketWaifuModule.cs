@@ -326,12 +326,14 @@ namespace Sanakan.DiscordBot.Modules
                 IncludeGameDeck = true,
                 AsNoTracking = true,
             });
+            Embed embed;
 
             if (card == null)
             {
-                var content = $"{Context.User.Mention} taka karta nie istnieje."
-                    .ToEmbedMessage(EMType.Error).Build();
-                await ReplyAsync(embed: content);
+                embed = $"{Context.User.Mention} taka karta nie istnieje."
+                    .ToEmbedMessage(EMType.Error)
+                    .Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
@@ -345,8 +347,17 @@ namespace Sanakan.DiscordBot.Modules
             }
 
             var guildConfig = await _guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
-            var trashChannel = (ITextChannel)await guild.GetChannelAsync(guildConfig.WaifuConfig.TrashCommandsChannelId!.Value);
-            var embed = await _waifuService.BuildCardViewAsync(card, trashChannel, user);
+            var trashCommandsChannelId = guildConfig.WaifuConfig?.TrashCommandsChannelId;
+
+            if (!trashCommandsChannelId.HasValue)
+            {
+                embed = $"Nie skonfigurowany kanal smieciowych polecen.".ToEmbedMessage(EMType.Error).Build();
+                await ReplyAsync(embed: embed);
+                return;
+            }
+
+            var trashChannel = (ITextChannel)await guild.GetChannelAsync(trashCommandsChannelId.Value);
+            embed = await _waifuService.BuildCardViewAsync(card, trashChannel, user);
 
             await ReplyAsync(embed: embed);
         }
@@ -420,7 +431,7 @@ namespace Sanakan.DiscordBot.Modules
             var gameDeck = databaseUser.GameDeck;
             var itemList = gameDeck.Items.OrderBy(x => x.Type).ToList();
 
-            if (itemList.Count < 1)
+            if (!itemList.Any())
             {
                 embed = $"{mention} nie masz żadnych przedmiotów.".ToEmbedMessage(EMType.Error).Build();
                 await ReplyAsync(embed: embed);
@@ -2101,15 +2112,17 @@ namespace Sanakan.DiscordBot.Modules
             var databaseUser = await _userRepository.GetUserOrCreateAsync(user.Id);
             var gameDeck = databaseUser.GameDeck;
             var cardsInCage = gameDeck.Cards.Where(x => x.InCage);
-            var utcNow = _systemClock.UtcNow;
-
             var cardsCount = cardsInCage.Count();
+            Embed embed;
 
             if (cardsCount < 1)
             {
-                await ReplyAsync(embed: $"{user.Mention} nie posiadasz kart w klatce.".ToEmbedMessage(EMType.Info).Build());
+                embed = $"{user.Mention} nie posiadasz kart w klatce.".ToEmbedMessage(EMType.Info).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
+
+            var utcNow = _systemClock.UtcNow;
 
             if (!cardId.HasValue)
             {
@@ -2144,8 +2157,9 @@ namespace Sanakan.DiscordBot.Modules
                 var thisCard = cardsInCage.FirstOrDefault(x => x.Id == cardId.Value);
                 if (thisCard == null)
                 {
-                    await ReplyAsync(embed: $"{user.Mention} taka karta nie znajduje się w twojej klatce."
-                        .ToEmbedMessage(EMType.Error).Build());
+                    embed = $"{user.Mention} taka karta nie znajduje się w twojej klatce."
+                        .ToEmbedMessage(EMType.Error).Build();
+                    await ReplyAsync(embed: embed);
                     return;
                 }
 
@@ -2344,7 +2358,6 @@ namespace Sanakan.DiscordBot.Modules
             }
 
             var databaseUser = await _userRepository.GetCachedFullUserAsync(user.Id);
-            var gameDeck = databaseUser.GameDeck;
 
             if (databaseUser == null)
             {
@@ -2353,6 +2366,8 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
+            var gameDeck = databaseUser.GameDeck;
+
             if (invokingUser.Id != databaseUser.Id && gameDeck.WishlistIsPrivate)
             {
                 embed = Strings.UserWishlistPrivate.ToEmbedMessage(EMType.Error).Build();
@@ -2360,7 +2375,7 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            if (gameDeck.Wishes.Count < 1)
+            if (!gameDeck.Wishes.Any())
             {
                 await ReplyAsync(embed: "Ta osoba nie ma nic na liście życzeń.".ToEmbedMessage(EMType.Error).Build());
                 return;
@@ -2373,7 +2388,7 @@ namespace Sanakan.DiscordBot.Modules
 
             try
             {
-               var dmChannel = await TryCreateDMChannelAsync(invokingUser);
+                var dmChannel = await TryCreateDMChannelAsync(invokingUser);
                 var embeds = await _waifuService.GetContentOfWishlist(cardIds, characters, titles);
 
                 foreach (var embedIt in embeds)

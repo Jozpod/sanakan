@@ -21,6 +21,111 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
     public class UseItemAsyncTests : Base
     {
         [TestMethod]
+        public async Task Should_Return_Error_Message_Session_Exist()
+        {
+            var utcNow = DateTime.UtcNow;
+            var user = new User(1ul, utcNow);
+            var itemNumber = 1;
+
+            _userMock
+                .Setup(pr => pr.Id)
+                .Returns(user.Id);
+
+            _userMock
+                .Setup(pr => pr.Mention)
+                .Returns("user mention");
+
+            _systemClockMock
+                .Setup(pr => pr.UtcNow)
+                .Returns(utcNow);
+
+            _sessionManagerMock
+                .Setup(pr => pr.Exists<CraftSession>(user.Id))
+                .Returns(true);
+
+            SetupSendMessage((message, embed) =>
+            {
+                embed.Should().NotBeNull();
+                embed.Description.Should().NotBeNullOrEmpty();
+            });
+
+            await _module.UseItemAsync(itemNumber, 1);
+        }
+
+        [TestMethod]
+        public async Task Should_Return_Error_Message_No_Items()
+        {
+            var utcNow = DateTime.UtcNow;
+            var user = new User(1ul, utcNow);
+            var itemNumber = 1;
+
+            _userMock
+                .Setup(pr => pr.Id)
+                .Returns(user.Id);
+
+            _userMock
+                .Setup(pr => pr.Mention)
+                .Returns("user mention");
+
+            _systemClockMock
+                .Setup(pr => pr.UtcNow)
+                .Returns(utcNow);
+
+            _sessionManagerMock
+                .Setup(pr => pr.Exists<CraftSession>(user.Id))
+                .Returns(false);
+
+            _userRepositoryMock
+                .Setup(pr => pr.GetUserOrCreateAsync(user.Id))
+                .ReturnsAsync(user);
+
+            SetupSendMessage((message, embed) =>
+            {
+                embed.Should().NotBeNull();
+                embed.Description.Should().NotBeNullOrEmpty();
+            });
+
+            await _module.UseItemAsync(itemNumber, 1);
+        }
+
+        [TestMethod]
+        public async Task Should_Return_Error_Message_Invalid_Index()
+        {
+            var utcNow = DateTime.UtcNow;
+            var user = new User(1ul, utcNow);
+            user.GameDeck.Items.Add(new Item { Type = ItemType.AffectionRecoveryBig, Count = 3 });
+            var itemNumber = 2;
+
+            _userMock
+                .Setup(pr => pr.Id)
+                .Returns(user.Id);
+
+            _userMock
+                .Setup(pr => pr.Mention)
+                .Returns("user mention");
+
+            _systemClockMock
+                .Setup(pr => pr.UtcNow)
+                .Returns(utcNow);
+
+            _sessionManagerMock
+                .Setup(pr => pr.Exists<CraftSession>(user.Id))
+                .Returns(false);
+
+            _userRepositoryMock
+                .Setup(pr => pr.GetUserOrCreateAsync(user.Id))
+                .ReturnsAsync(user);
+
+            SetupSendMessage((message, embed) =>
+            {
+                embed.Should().NotBeNull();
+                embed.Description.Should().NotBeNullOrEmpty();
+            });
+
+            await _module.UseItemAsync(itemNumber, 1);
+        }
+
+        [TestMethod]
         [DataRow(ItemType.BetterIncreaseUpgradeCnt)]
         [DataRow(ItemType.AffectionRecoveryBig)]
         [DataRow(ItemType.AffectionRecoveryGreat)]
@@ -93,6 +198,10 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
                 .Setup(pr => pr.Mention)
                 .Returns("user mention");
 
+            _userRepositoryMock
+                .Setup(pr => pr.GetUserOrCreateAsync(user.Id))
+                .ReturnsAsync(user);
+
             _userMock
                 .Setup(pr => pr.GetAvatarUrl(ImageFormat.Auto, 128))
                 .Returns("https://test.com/avatar.png");
@@ -108,10 +217,6 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
             _sessionManagerMock
                 .Setup(pr => pr.Exists<CraftSession>(user.Id))
                 .Returns(false);
-
-            _userRepositoryMock
-                .Setup(pr => pr.GetUserOrCreateAsync(user.Id))
-                .ReturnsAsync(user);
 
             _userRepositoryMock
                 .Setup(pr => pr.SaveChangesAsync(It.IsAny<CancellationToken>()))

@@ -394,6 +394,7 @@ namespace Sanakan.DiscordBot.Modules
 
             if (user == null)
             {
+                await ReplyAsync(embed: Strings.UserNotFound.ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 

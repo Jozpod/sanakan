@@ -1,4 +1,5 @@
 using Discord;
+using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.DAL.Models;
@@ -16,6 +17,22 @@ namespace DiscordBot.ModulesTests.ProfileModuleTests
     [TestClass]
     public class ShowUserProfileAsyncTests : Base
     {
+        [TestMethod]
+        public async Task Should_Send_Error_Message_No_User()
+        {
+            _commandContextMock
+                .Setup(pr => pr.User)
+                .Returns<IUser>(null);
+
+            SetupSendMessage((message, embed) =>
+            {
+                embed.Should().NotBeNull();
+                embed.Description.Should().NotBeNullOrEmpty();
+            });
+
+            await _module.ShowUserProfileAsync(null);
+        }
+
         [TestMethod]
         public async Task Should_Send_Attachment_With_User_Profile_Image()
         {

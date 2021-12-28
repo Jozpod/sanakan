@@ -1,3 +1,4 @@
+using Discord;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -11,13 +12,58 @@ using System.Threading.Tasks;
 namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
 {
     /// <summary>
-    /// Defines tests for <see cref="PocketWaifuModule.OpenCageAsync(ulong)"/> method.
+    /// Defines tests for <see cref="PocketWaifuModule.OpenCageAsync(ulong?)"/> method.
     /// </summary>
     [TestClass]
     public class OpenCageAsyncTests : Base
     {
         [TestMethod]
-        public async Task Should_Open_Cages()
+        public async Task Should_Return_Error_Message_No_User()
+        {
+            _commandContextMock
+                .Setup(pr => pr.User)
+                .Returns<IUser>(null);
+
+            SetupSendMessage((message, embed) =>
+            {
+                embed.Description.Should().NotBeNull();
+            });
+
+            await _module.OpenCageAsync();
+        }
+
+        [TestMethod]
+        public async Task Should_Return_Error_Message_No_Cards()
+        {
+            var utcNow = DateTime.UtcNow;
+            var user = new User(1ul, utcNow);
+            var characterInfo = new CharacterInfo();
+            var card1 = new Card(1ul, "title", "name", 100, 50, Rarity.A, Dere.Bodere, utcNow);
+            card1.Id = 1ul;
+            card1.InCage = true;
+
+            _userMock
+                .Setup(pr => pr.Id)
+                .Returns(user.Id);
+
+            _userMock
+                .Setup(pr => pr.Mention)
+                .Returns("user mention");
+
+            _userRepositoryMock
+                .Setup(pr => pr.GetUserOrCreateAsync(user.Id))
+                .ReturnsAsync(user);
+
+            SetupSendMessage((message, embed) =>
+            {
+                embed.Description.Should().NotBeNull();
+            });
+
+            await _module.OpenCageAsync();
+        }
+
+        [TestMethod]
+        public async Task Should_Open_Cages_And_Return_Confirm_Message()
         {
             var utcNow = DateTime.UtcNow;
             var user = new User(1ul, utcNow);
@@ -87,7 +133,7 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
         }
 
         [TestMethod]
-        public async Task Should_Open_Specified_Cage()
+        public async Task Should_Open_Specified_Cage_And_Return_Confirm_Message()
         {
             var utcNow = DateTime.UtcNow;
             var user = new User(1ul, utcNow);

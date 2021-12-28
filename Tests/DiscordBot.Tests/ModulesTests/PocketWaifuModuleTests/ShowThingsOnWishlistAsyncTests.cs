@@ -17,6 +17,82 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
     public class ShowThingsOnWishlistAsyncTests : Base
     {
         [TestMethod]
+        public async Task Should_Return_Error_Message_No_Database_User()
+        {
+            var userId = 1ul;
+
+            _userMock
+                .Setup(pr => pr.Id)
+                .Returns(userId);
+
+            _userMock
+                .Setup(pr => pr.Mention)
+                .Returns("mention");
+
+            _userRepositoryMock
+                .Setup(pr => pr.GetCachedFullUserAsync(userId))
+                .ReturnsAsync(null as User);
+
+            SetupSendMessage((message, embed) =>
+            {
+                embed.Description.Should().NotBeNull();
+            });
+
+            await _module.ShowThingsOnWishlistAsync(null);
+        }
+
+        [TestMethod]
+        public async Task Should_Return_Error_Message_Empty_Wishlist()
+        {
+            var user = new User(1ul, DateTime.UtcNow);
+
+            _userMock
+                .Setup(pr => pr.Id)
+                .Returns(user.Id);
+
+            _userMock
+                .Setup(pr => pr.Mention)
+                .Returns("mention");
+
+            _userRepositoryMock
+                .Setup(pr => pr.GetCachedFullUserAsync(user.Id))
+                .ReturnsAsync(user);
+
+            SetupSendMessage((message, embed) =>
+            {
+                embed.Description.Should().NotBeNull();
+            });
+
+            await _module.ShowThingsOnWishlistAsync(null);
+        }
+
+        [TestMethod]
+        public async Task Should_Return_Error_Message_Private_Wishlist()
+        {
+            var user = new User(1ul, DateTime.UtcNow);
+            user.GameDeck.WishlistIsPrivate = true;
+
+            _userMock
+                .Setup(pr => pr.Id)
+                .Returns(user.Id);
+
+            _userMock
+                .Setup(pr => pr.Mention)
+                .Returns("mention");
+
+            _userRepositoryMock
+                .Setup(pr => pr.GetCachedFullUserAsync(user.Id))
+                .ReturnsAsync(user);
+
+            SetupSendMessage((message, embed) =>
+            {
+                embed.Description.Should().NotBeNull();
+            });
+
+            await _module.ShowThingsOnWishlistAsync(null);
+        }
+
+        [TestMethod]
         public async Task Should_Send_Message_Containing_Wishlist()
         {
             var user = new User(1ul, DateTime.UtcNow);

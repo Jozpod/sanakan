@@ -16,6 +16,33 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
     public class GoToMarketAsyncTests : Base
     {
         [TestMethod]
+        public async Task Should_Send_Error_Message_No_Card()
+        {
+            var utcNow = DateTime.UtcNow;
+            var user = new User(1ul, utcNow);
+            var cardId = 1ul;
+
+            _userMock
+                .Setup(pr => pr.Id)
+                .Returns(user.Id);
+
+            _userMock
+                .Setup(pr => pr.Mention)
+                .Returns("user mention");
+
+            _userRepositoryMock
+                .Setup(pr => pr.GetUserOrCreateAsync(user.Id))
+                .ReturnsAsync(user);
+
+            SetupSendMessage((message, embed) =>
+            {
+                embed.Description.Should().NotBeNull();
+            });
+
+            await _module.GoToMarketAsync(cardId);
+        }
+
+        [TestMethod]
         public async Task Should_Send_Error_Message_Too_Evil()
         {
             var utcNow = DateTime.UtcNow;
@@ -23,6 +50,40 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
             user.GameDeck.Karma = -401;
             var card = new Card(1ul, "title", "name", 100, 50, Rarity.E, Dere.Bodere, DateTime.UtcNow);
             card.Id = 1ul;
+            user.GameDeck.Cards.Add(card);
+
+            _userMock
+                .Setup(pr => pr.Id)
+                .Returns(user.Id);
+
+            _userMock
+                .Setup(pr => pr.Mention)
+                .Returns("user mention");
+
+            _userRepositoryMock
+                .Setup(pr => pr.GetUserOrCreateAsync(user.Id))
+                .ReturnsAsync(user);
+
+            _systemClockMock
+                .Setup(pr => pr.UtcNow)
+                .Returns(utcNow);
+
+            SetupSendMessage((message, embed) =>
+            {
+                embed.Description.Should().NotBeNull();
+            });
+
+            await _module.GoToMarketAsync(card.Id);
+        }
+
+        [TestMethod]
+        public async Task Should_Send_Error_Message_Card_From_Figure()
+        {
+            var utcNow = DateTime.UtcNow;
+            var user = new User(1ul, utcNow);
+            var card = new Card(1ul, "title", "name", 100, 50, Rarity.E, Dere.Bodere, DateTime.UtcNow);
+            card.Id = 1ul;
+            card.FromFigure = true;
             user.GameDeck.Cards.Add(card);
 
             _userMock
@@ -118,11 +179,16 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
         }
 
         [TestMethod]
-        public async Task Should_Access_Market()
+        [DataRow(-200d, 0)]
+        [DataRow(3000d, 10)]
+        [DataRow(3000d, 90)]
+        public async Task Should_Access_Market(double karma, double affection)
         {
             var utcNow = DateTime.UtcNow;
             var user = new User(1ul, utcNow);
+            user.GameDeck.Karma = karma;
             var card = new Card(1ul, "title", "name", 100, 50, Rarity.E, Dere.Bodere, DateTime.UtcNow);
+            card.Affection = affection;
             card.Id = 1ul;
             user.GameDeck.Cards.Add(card);
 

@@ -17,7 +17,32 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
     public class ShowCardStringAsyncTests : Base
     {
         [TestMethod]
-        public async Task Should_Send_Message_Describing_Card()
+        public async Task Should_Send_Error_Message_No_Card()
+        {
+            var utcNow = DateTime.UtcNow;
+            var user = new User(1ul, utcNow);
+            var cardId = 1ul;
+
+            _cardRepositoryMock
+                .Setup(pr => pr.GetByIdAsync(cardId, It.IsAny<CardQueryOptions>()))
+                .ReturnsAsync(null as Card);
+
+            _userMock
+                .Setup(pr => pr.Mention)
+                .Returns("mention");
+
+            SetupSendMessage((message, embed) =>
+            {
+                embed.Should().NotBeNull();
+            });
+
+            await _module.ShowCardStringAsync(cardId);
+        }
+
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
+        public async Task Should_Send_Message_Describing_Card(bool isUserInGuild)
         {
             var utcNow = DateTime.UtcNow;
             var user = new User(1ul, utcNow);
@@ -45,6 +70,10 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
                 .Returns("https://test.com/avatar.png");
 
             _guildMock
+                .Setup(pr => pr.GetUserAsync(user.Id, CacheMode.AllowDownload, null))
+                .ReturnsAsync(isUserInGuild ? guildUserMock.Object : null);
+
+            _discordClientMock
                 .Setup(pr => pr.GetUserAsync(user.Id, CacheMode.AllowDownload, null))
                 .ReturnsAsync(guildUserMock.Object);
 
