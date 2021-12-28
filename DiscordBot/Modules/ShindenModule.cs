@@ -73,39 +73,40 @@ namespace Sanakan.DiscordBot.Modules
         public async Task ShowNewEpisodesAsync()
         {
             var response = await _shindenClient.GetNewEpisodesAsync();
+            Embed embed;
 
             if (response.Value == null)
             {
-                await ReplyAsync(embed: "Nie udało się pobrać listy odcinków.".ToEmbedMessage(EMType.Error).Build());
+                embed = Strings.CouldNotGetEpsiodes.ToEmbedMessage(EMType.Error).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
             var episodes = response.Value;
             var user = Context.User;
 
-            if (episodes?.Count > 0)
+            if (episodes.Any())
             {
-                var message = await ReplyAsync(embed: "Lista poszła na PW!".ToEmbedMessage(EMType.Success).Build());
+                embed = string.Format(Strings.SentDM, user.Mention).ToEmbedMessage(EMType.Success).Build();
+                var message = await ReplyAsync(embed: embed);
 
                 try
                 {
-                    var dmChannel = await user.GetOrCreateDMChannelAsync();
+                    var dmChannel = await TryCreateDMChannelAsync(user);
                     foreach (var episode in episodes)
                     {
-                        var embed = episode.ToEmbed();
+                        embed = episode.ToEmbed();
                         await dmChannel.SendMessageAsync("", false, embed);
                         await _taskManager.Delay(TimeSpan.FromMilliseconds(500));
                     }
 
-                    await dmChannel.CloseAsync();
+                    await (dmChannel as IDMChannel)?.CloseAsync();
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
-                    await message.ModifyAsync(x => x.Embed = $"{user.Mention} nie udało się wyłać PW! ({ex.Message})"
-                        .ToEmbedMessage(EMType.Error).Build());
+                    embed = string.Format(Strings.CouldNotSendDM, user.Mention).ToEmbedMessage(EMType.Error).Build();
+                    await message.ModifyAsync(x => x.Embed = embed);
                 }
-
-                return;
             }
         }
 
@@ -153,7 +154,7 @@ namespace Sanakan.DiscordBot.Modules
             }
 
             var list = searchResult.Value;
-            var toSend = GetSearchResponse(list, "Wybierz postać, którą chcesz wyświetlić poprzez wpisanie numeru odpowiadającemu jej na liście.");
+            var toSend = GetSearchResponse(list, Strings.SelectCharacterPrompt);
 
             if (list.Count == 1)
             {
@@ -385,10 +386,10 @@ namespace Sanakan.DiscordBot.Modules
             switch (code)
             {
                 case HttpStatusCode.NotFound:
-                    return "Brak wyników!";
+                    return Strings.NoItems;
 
                 default:
-                    return $"Brak połączenia z Shindenem! ({code})";
+                    return string.Format(Strings.CouldNotConnectToShinden, code);
             }
         }
 

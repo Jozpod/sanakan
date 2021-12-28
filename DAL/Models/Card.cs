@@ -66,6 +66,9 @@ namespace Sanakan.DAL.Models
 
         public ulong Id { get; set; }
 
+        /// <summary>
+        /// Indicates whether the card can be used in duel.
+        /// </summary>
         public bool Active { get; set; }
 
         public bool InCage { get; set; }

@@ -14,7 +14,33 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
     /// </summary>
     [TestClass]
     public class RemoveCardTagAsyncTests : Base
-    {    
+    {
+        [TestMethod]
+        public async Task Should_Return_Error_Message_No_Card()
+        {
+            var tag = "test tag";
+            var user = new User(1ul, DateTime.UtcNow);
+
+            _userMock
+                .Setup(pr => pr.Id)
+                .Returns(user.Id);
+
+            _userMock
+                .Setup(pr => pr.Mention)
+                .Returns("user mention");
+
+            _userRepositoryMock
+                .Setup(pr => pr.GetUserOrCreateAsync(user.Id))
+                .ReturnsAsync(user);
+
+            SetupSendMessage((message, embed) =>
+            {
+                embed.Description.Should().NotBeNull();
+            });
+
+            await _module.RemoveCardTagAsync(tag, 1ul);
+        }
+
         [TestMethod]
         public async Task Should_Remove_Card_Tag()
         {

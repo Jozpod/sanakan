@@ -1,5 +1,7 @@
-﻿using Discord.Commands;
+﻿using Discord;
+using Discord.Commands;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 
 namespace Sanakan.DiscordBot.Modules
@@ -23,6 +25,22 @@ namespace Sanakan.DiscordBot.Modules
             catch
             {
             }
+        }
+
+        [ExcludeFromCodeCoverage]
+        public async Task<IMessageChannel> TryCreateDMChannelAsync(IUser user)
+        {
+            IMessageChannel channel;
+
+#if DEBUG
+            if(user.IsBot || user.IsWebhook)
+            {
+                channel = Context.Channel;
+                return channel;
+            }
+#endif
+            channel = await user.GetOrCreateDMChannelAsync();
+            return channel;
         }
     }
 }

@@ -46,7 +46,10 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
                 .Setup(pr => pr.Value)
                 .Returns(new GameConfiguration
                 {
-
+                    MinPlayersForPVP = 1,
+                    PVPRankMultiplier = 0.45,
+                    MinDeckPower = 200,
+                    MaxDeckPower = 800,
                 });
 
             _module = new(

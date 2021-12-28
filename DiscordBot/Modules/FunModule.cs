@@ -129,6 +129,7 @@ namespace Sanakan.DiscordBot.Modules
         {
             var user = Context.User as IGuildUser;
             var guild = Context.Guild;
+            Embed embed;
 
             if (user == null)
             {
@@ -149,20 +150,22 @@ namespace Sanakan.DiscordBot.Modules
 
             if (muteRole == null)
             {
-                await ReplyAsync(embed: "Rola wyciszająca nie jest ustawiona.".ToEmbedMessage(EMType.Bot).Build());
+                embed = Strings.MuteRoleNotSet.ToEmbedMessage(EMType.Bot).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
             if (user.RoleIds.Contains(muteRole.Id))
             {
-                await ReplyAsync(embed: $"{user.Mention} już jest wyciszony.".ToEmbedMessage(EMType.Error).Build());
+                embed = $"{user.Mention} już jest wyciszony.".ToEmbedMessage(EMType.Error).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
             _sessionManager.RemoveIfExists<AcceptSession>(user.Id);
 
-            var content = $"{user.Mention} na pewno chcesz muta?".ToEmbedMessage(EMType.Error).Build();
-            var replyMessage = await ReplyAsync(embed: content);
+            embed = $"{user.Mention} na pewno chcesz muta?".ToEmbedMessage(EMType.Error).Build();
+            var replyMessage = await ReplyAsync(embed: embed);
             await replyMessage.AddReactionsAsync(_iconConfiguration.AcceptDecline);
 
             var session = new AcceptSession(

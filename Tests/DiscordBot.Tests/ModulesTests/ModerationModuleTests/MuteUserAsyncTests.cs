@@ -18,6 +18,54 @@ namespace DiscordBot.ModulesTests.ModerationModuleTests
     public class MuteUserAsyncTests : Base
     {
         [TestMethod]
+        public async Task Should_Send_Error_Message_No_Guild()
+        {
+            var guildUserMock = new Mock<IGuildUser>(MockBehavior.Strict);
+            var guildId = 1ul;
+            var duration = TimeSpan.FromHours(1);
+            var penaltyInfo = new PenaltyInfo();
+
+            _guildConfigRepositoryMock
+                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildId))
+                .ReturnsAsync(null as GuildOptions);
+
+            _guildMock
+                .Setup(pr => pr.Id)
+                .Returns(guildId);
+
+            SetupSendMessage((message, embed) =>
+            {
+                embed.Description.Should().NotBeNull();
+            });
+
+            await _module.MuteUserAsync(guildUserMock.Object, duration);
+        }
+
+        [TestMethod]
+        public async Task Should_Send_Error_Message_No_User_Role()
+        {
+            var guildUserMock = new Mock<IGuildUser>(MockBehavior.Strict);
+            var guildConfig = new GuildOptions(1ul, 50);
+            var duration = TimeSpan.FromHours(1);
+            var penaltyInfo = new PenaltyInfo();
+
+            _guildConfigRepositoryMock
+                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildConfig.Id))
+                .ReturnsAsync(guildConfig);
+
+            _guildMock
+                .Setup(pr => pr.Id)
+                .Returns(guildConfig.Id);
+
+            SetupSendMessage((message, embed) =>
+            {
+                embed.Description.Should().NotBeNull();
+            });
+
+            await _module.MuteUserAsync(guildUserMock.Object, duration);
+        }
+
+        [TestMethod]
         public async Task Should_Mute_User_And_Send_Confirm_Message()
         {
             var guildUserMock = new Mock<IGuildUser>(MockBehavior.Strict);

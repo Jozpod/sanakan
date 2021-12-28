@@ -121,7 +121,7 @@ namespace Sanakan.DiscordBot.Modules
 
             if (cards.Count() < 1)
             {
-                var message = string.Format(Strings.ProvideTags, userMention);
+                var message = string.Format(Strings.UserNoCards, userMention);
                 await ReplyAsync(embed: message.ToEmbedMessage(EMType.Error).Build());
                 return;
             }
@@ -151,10 +151,12 @@ namespace Sanakan.DiscordBot.Modules
                 })
                 .ToList();
 
+            Embed embed;
+
             try
             {
-                var dmChannel = await user.GetOrCreateDMChannelAsync();
-                var embed = ListSessionUtils.BuildPage(embedBuilder, items);
+                var dmChannel = await TryCreateDMChannelAsync(user);
+                embed = ListSessionUtils.BuildPage(embedBuilder, items);
                 var message = await dmChannel.SendMessageAsync(embed: embed);
                 await message.AddReactionsAsync(_iconConfiguration.LeftRightArrows);
 
@@ -168,11 +170,13 @@ namespace Sanakan.DiscordBot.Modules
 
                 _sessionManager.Add(session);
 
-                await ReplyAsync(embed: $"{userMention} lista poszła na PW!".ToEmbedMessage(EMType.Success).Build());
+                embed = string.Format(Strings.SentDM, userMention).ToEmbedMessage(EMType.Success).Build();
+                await ReplyAsync(embed: embed);
             }
             catch (Exception)
             {
-                await ReplyAsync(embed: $"{userMention} nie można wysłać do Ciebie PW!".ToEmbedMessage(EMType.Error).Build());
+                embed = string.Format(Strings.CouldNotSendDM, userMention).ToEmbedMessage(EMType.Error).Build();
+                await ReplyAsync(embed: embed);
             }
         }
 
@@ -2311,9 +2315,12 @@ namespace Sanakan.DiscordBot.Modules
         {
             var invokingUser = Context.User;
             var user = (guildUser ?? invokingUser) as IGuildUser;
+            Embed embed;
 
             if (user == null)
             {
+                embed = Strings.UserNotFound.ToEmbedMessage(EMType.Error).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
@@ -2322,13 +2329,15 @@ namespace Sanakan.DiscordBot.Modules
 
             if (databaseUser == null)
             {
-                await ReplyAsync(embed: Strings.UserDoesNotExistInDatabase.ToEmbedMessage(EMType.Error).Build());
+                embed = Strings.UserDoesNotExistInDatabase.ToEmbedMessage(EMType.Error).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
             if (invokingUser.Id != databaseUser.Id && gameDeck.WishlistIsPrivate)
             {
-                await ReplyAsync(embed: "Lista życzeń tej osoby jest prywatna!".ToEmbedMessage(EMType.Error).Build());
+                embed = Strings.UserWishlistPrivate.ToEmbedMessage(EMType.Error).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
@@ -2345,20 +2354,24 @@ namespace Sanakan.DiscordBot.Modules
 
             try
             {
-                var dmChannel = await invokingUser.GetOrCreateDMChannelAsync();
+               var dmChannel = await TryCreateDMChannelAsync(invokingUser);
                 var embeds = await _waifuService.GetContentOfWishlist(cardIds, characters, titles);
 
-                foreach (var embed in embeds)
+                foreach (var embedIt in embeds)
                 {
-                    await dmChannel.SendMessageAsync(embed: embed);
+                    await dmChannel.SendMessageAsync(embed: embedIt);
                     await _taskManager.Delay(TimeSpan.FromSeconds(2));
                 }
 
-                await ReplyAsync(embed: $"{mention} lista poszła na PW!".ToEmbedMessage(EMType.Success).Build());
+                await (dmChannel as IDMChannel)?.CloseAsync();
+
+                embed = string.Format(Strings.SentDM, mention).ToEmbedMessage(EMType.Success).Build();
+                await ReplyAsync(embed: embed);
             }
             catch (Exception)
             {
-                await ReplyAsync(embed: $"{mention} nie można wysłać do Ciebie PW!".ToEmbedMessage(EMType.Error).Build());
+                embed = string.Format(Strings.CouldNotSendDM, mention).ToEmbedMessage(EMType.Error).Build();
+                await ReplyAsync(embed: embed);
             }
         }
 
@@ -2379,6 +2392,7 @@ namespace Sanakan.DiscordBot.Modules
             var invokingUser = Context.User;
             var user = (guildUser ?? invokingUser) as IGuildUser;
             var mention = invokingUser.Mention;
+            Embed embed;
 
             if (user == null)
             {
@@ -2390,19 +2404,22 @@ namespace Sanakan.DiscordBot.Modules
 
             if (databaseUser == null)
             {
-                await ReplyAsync(embed: Strings.UserDoesNotExistInDatabase.ToEmbedMessage(EMType.Error).Build());
+                embed = Strings.UserDoesNotExistInDatabase.ToEmbedMessage(EMType.Error).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
             if (invokingUser.Id != databaseUser.Id && gameDeck.WishlistIsPrivate)
             {
-                await ReplyAsync(embed: "Lista życzeń tej osoby jest prywatna!".ToEmbedMessage(EMType.Error).Build());
+                embed = Strings.UserWishlistPrivate.ToEmbedMessage(EMType.Error).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
             if (gameDeck.Wishes.Count < 1)
             {
-                await ReplyAsync(embed: "Ta osoba nie ma nic na liście życzeń.".ToEmbedMessage(EMType.Error).Build());
+                embed = Strings.EmptyWishList.ToEmbedMessage(EMType.Error).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
@@ -2428,28 +2445,33 @@ namespace Sanakan.DiscordBot.Modules
                 cards = cards.Where(x => x.IsTradable).ToList();
             }
 
-            if (cards.Count() < 1)
+            if (!cards.Any())
             {
-                await ReplyAsync(embed: $"Nie odnaleziono kart.".ToEmbedMessage(EMType.Error).Build());
+                embed = string.Format(Strings.CardsNotFound, user.Mention).ToEmbedMessage(EMType.Error).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
             try
             {
-                var dmChannel = await invokingUser.GetOrCreateDMChannelAsync();
+                var dmChannel = await TryCreateDMChannelAsync(invokingUser);
                 var listOfEmbed = await _waifuService.GetWaifuFromCharacterTitleSearchResult(cards, Context.Client, !showNames);
 
-                foreach (var embed in listOfEmbed)
+                foreach (var embedIt in listOfEmbed)
                 {
-                    await dmChannel.SendMessageAsync(embed: embed);
+                    await dmChannel.SendMessageAsync(embed: embedIt);
                     await _taskManager.Delay(TimeSpan.FromSeconds(2));
                 }
 
-                await ReplyAsync(embed: $"{mention} lista poszła na PW!".ToEmbedMessage(EMType.Success).Build());
+                await (dmChannel as IDMChannel)?.CloseAsync();
+
+                embed = string.Format(Strings.SentDM, mention).ToEmbedMessage(EMType.Success).Build();
+                await ReplyAsync(embed: embed);
             }
             catch (Exception)
             {
-                await ReplyAsync(embed: $"{mention} nie można wysłać do Ciebie PW!".ToEmbedMessage(EMType.Error).Build());
+                embed = string.Format(Strings.CouldNotSendDM, mention).ToEmbedMessage(EMType.Error).Build();
+                await ReplyAsync(embed: embed);
             }
         }
 
@@ -2469,6 +2491,7 @@ namespace Sanakan.DiscordBot.Modules
             var invokingUser = Context.User;
             var userf = (filterUser ?? invokingUser) as IGuildUser;
             var mention = invokingUser.Mention;
+            Embed embed;
 
             if (userf == null)
             {
@@ -2477,8 +2500,8 @@ namespace Sanakan.DiscordBot.Modules
 
             if (user.Id == userf.Id)
             {
-                await ReplyAsync(embed: $"{mention} podałeś dwa razy tego samego użytkownika."
-                    .ToEmbedMessage(EMType.Error).Build());
+                embed = string.Format(Strings.SameUser, mention).ToEmbedMessage(EMType.Error).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
@@ -2487,22 +2510,25 @@ namespace Sanakan.DiscordBot.Modules
 
             if (databaseUser == null)
             {
-                await ReplyAsync(embed: Strings.UserDoesNotExistInDatabase
-                    .ToEmbedMessage(EMType.Error).Build());
+                embed = Strings.UserDoesNotExistInDatabase
+                    .ToEmbedMessage(EMType.Error).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
             if (invokingUser.Id != databaseUser.Id && gameDeck.WishlistIsPrivate)
             {
-                await ReplyAsync(embed: "Lista życzeń tej osoby jest prywatna!"
-                    .ToEmbedMessage(EMType.Error).Build());
+                embed = Strings.UserWishlistPrivate
+                    .ToEmbedMessage(EMType.Error).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
             if (gameDeck.Wishes.Count < 1)
             {
-                await ReplyAsync(embed: "Ta osoba nie ma nic na liście życzeń."
-                    .ToEmbedMessage(EMType.Error).Build());
+                embed = Strings.EmptyWishList
+                    .ToEmbedMessage(EMType.Error).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
@@ -2528,26 +2554,33 @@ namespace Sanakan.DiscordBot.Modules
                 cards = cards.Where(x => x.IsTradable).ToList();
             }
 
-            if (cards.Count() < 1)
+            if (!cards.Any())
             {
-                await ReplyAsync(embed: $"Nie odnaleziono kart.".ToEmbedMessage(EMType.Error).Build());
+                embed = string.Format(Strings.CardsNotFound, mention).ToEmbedMessage(EMType.Error).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
             try
             {
-                var dmChannel = await invokingUser.GetOrCreateDMChannelAsync();
+                var dmChannel = await TryCreateDMChannelAsync(invokingUser);
                 var listOfEmbed = await _waifuService.GetWaifuFromCharacterTitleSearchResult(cards, Context.Client, !showNames);
-                foreach (var embed in listOfEmbed)
+
+                foreach (var embedIt in listOfEmbed)
                 {
-                    await dmChannel.SendMessageAsync(embed: embed);
+                    await dmChannel.SendMessageAsync(embed: embedIt);
                     await _taskManager.Delay(TimeSpan.FromSeconds(2));
                 }
-                await ReplyAsync(embed: $"{mention} lista poszła na PW!".ToEmbedMessage(EMType.Success).Build());
+
+                await (dmChannel as IDMChannel)?.CloseAsync();
+
+                embed = string.Format(Strings.SentDM, mention).ToEmbedMessage(EMType.Success).Build();
+                await ReplyAsync(embed: embed);
             }
             catch (Exception)
             {
-                await ReplyAsync(embed: $"{mention} nie można wysłać do Ciebie PW!".ToEmbedMessage(EMType.Error).Build());
+                embed = string.Format(Strings.CouldNotSendDM, mention).ToEmbedMessage(EMType.Error).Build();
+                await ReplyAsync(embed: embed);
             }
         }
 
@@ -3195,7 +3228,7 @@ namespace Sanakan.DiscordBot.Modules
         [Alias("deck", "aktywne")]
         [Summary("wyświetla aktywne karty/ustawia kartę jako aktywną")]
         [Remarks("1"), RequireWaifuCommandChannel]
-        public async Task ChangeDeckCardStatusAsync([Summary("WID(opcjonalne)")] ulong wid = 0)
+        public async Task ChangeDeckCardStatusAsync([Summary("WID(opcjonalne)")] ulong? wid = null)
         {
             var user = Context.User;
             var userId = user.Id;
@@ -3203,8 +3236,9 @@ namespace Sanakan.DiscordBot.Modules
             var gameDeck = databaseUser.GameDeck;
             var activeCards = gameDeck.Cards.Where(x => x.Active).ToList();
             var mention = user.Mention;
+            Embed embed;
 
-            if (wid == 0)
+            if (!wid.HasValue)
             {
                 if (activeCards.Count() < 1)
                 {
@@ -3214,9 +3248,10 @@ namespace Sanakan.DiscordBot.Modules
 
                 try
                 {
-                    var dm = await user.GetOrCreateDMChannelAsync();
-                    await dm.SendMessageAsync(embed: _waifuService.GetActiveList(activeCards));
-                    await dm.CloseAsync();
+                    var dmChannel = await TryCreateDMChannelAsync(user);
+                    embed = _waifuService.GetActiveList(activeCards);
+                    await dmChannel.SendMessageAsync(embed: embed);
+                    await (dmChannel as IDMChannel)?.CloseAsync();
 
                     await ReplyAsync(embed: $"{mention} lista poszła na PW!".ToEmbedMessage(EMType.Success).Build());
                 }
@@ -3264,7 +3299,7 @@ namespace Sanakan.DiscordBot.Modules
 
             var message = card.Active ? "aktywował: " : "dezaktywował: ";
             var power = $"**Moc talii**: {gameDeck.DeckPower.ToString("F")}";
-            var embed = $"{mention} {message}{card.GetString(false, false, true)}\n\n{power}".ToEmbedMessage(EMType.Success).Build();
+            embed = $"{mention} {message}{card.GetString(false, false, true)}\n\n{power}".ToEmbedMessage(EMType.Success).Build();
             await ReplyAsync(embed: embed);
         }
 
@@ -3279,10 +3314,12 @@ namespace Sanakan.DiscordBot.Modules
             var user = Context.User;
             var characterResult = await _shindenClient.GetCharacterInfoAsync(characterId);
             var mention = user.Mention;
+            Embed embed;
 
             if (characterResult.Value == null)
             {
-                await ReplyAsync(embed: $"Nie odnaleziono postaci na shindenie!".ToEmbedMessage(EMType.Error).Build());
+                embed = Strings.CharacterNotFound.ToEmbedMessage(EMType.Error).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
@@ -3318,14 +3355,17 @@ namespace Sanakan.DiscordBot.Modules
 
             try
             {
-                var dmChannel = await user.GetOrCreateDMChannelAsync();
-                foreach (var embed in listOfEmbed)
+                var dmChannel = await TryCreateDMChannelAsync(user);
+                foreach (var embedIt in listOfEmbed)
                 {
-                    await dmChannel.SendMessageAsync(embed: embed);
+                    await dmChannel.SendMessageAsync(embed: embedIt);
                     await _taskManager.Delay(TimeSpan.FromSeconds(2));
                 }
 
-                await ReplyAsync(embed: $"{mention} lista poszła na PW!".ToEmbedMessage(EMType.Success).Build());
+                await (dmChannel as IDMChannel)?.CloseAsync();
+
+                embed = string.Format(Strings.SentDM, mention).ToEmbedMessage(EMType.Success).Build();
+                await ReplyAsync(embed: embed);
             }
             catch (Exception)
             {
@@ -3343,10 +3383,12 @@ namespace Sanakan.DiscordBot.Modules
         {
             var user = Context.User;
             var databaseUser = await _userRepository.GetCachedFullUserAsync(user.Id);
+            Embed embed;
 
             if (databaseUser == null)
             {
-                await ReplyAsync(embed: Strings.UserDoesNotExistInDatabase.ToEmbedMessage(EMType.Error).Build());
+                embed = Strings.UserDoesNotExistInDatabase.ToEmbedMessage(EMType.Error).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
@@ -3354,7 +3396,8 @@ namespace Sanakan.DiscordBot.Modules
 
             if (!shindenId.HasValue)
             {
-                await ReplyAsync(embed: Strings.UserNotConnectedToShinden.ToEmbedMessage(EMType.Error).Build());
+                embed = Strings.UserNotConnectedToShinden.ToEmbedMessage(EMType.Error).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
@@ -3362,7 +3405,8 @@ namespace Sanakan.DiscordBot.Modules
 
             if (charactersResult.Value == null)
             {
-                await ReplyAsync(embed: $"Nie odnaleziono listy ulubionych postaci!".ToEmbedMessage(EMType.Error).Build());
+                embed = $"Nie odnaleziono listy ulubionych postaci!".ToEmbedMessage(EMType.Error).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
@@ -3377,23 +3421,28 @@ namespace Sanakan.DiscordBot.Modules
                 cards = cards.Where(x => !x.HasTag(Tags.Favourite)).ToList();
             }
 
-            if (cards.Count < 1)
+            if (!cards.Any())
             {
-                await ReplyAsync(embed: $"Nie odnaleziono kart.".ToEmbedMessage(EMType.Error).Build());
+                embed = string.Format(Strings.CardsNotFound, user.Mention).ToEmbedMessage(EMType.Error).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
             try
             {
-                var dmChannel = await user.GetOrCreateDMChannelAsync();
+                var dmChannel = await TryCreateDMChannelAsync(user);
                 var listOfEmbed = await _waifuService.GetWaifuFromCharacterTitleSearchResult(cards, Context.Client, !showNames);
 
-                foreach (var embed in listOfEmbed)
+                foreach (var embedIt in listOfEmbed)
                 {
-                    await dmChannel.SendMessageAsync(embed: embed);
+                    await dmChannel.SendMessageAsync(embed: embedIt);
                     await _taskManager.Delay(TimeSpan.FromSeconds(2));
                 }
-                await ReplyAsync(embed: $"{user.Mention} lista poszła na PW!".ToEmbedMessage(EMType.Success).Build());
+
+                await (dmChannel as IDMChannel)?.CloseAsync();
+
+                embed = string.Format(Strings.SentDM, user.Mention).ToEmbedMessage(EMType.Success).Build();
+                await ReplyAsync(embed: embed);
             }
             catch (Exception ex)
             {
@@ -3412,10 +3461,12 @@ namespace Sanakan.DiscordBot.Modules
         {
             var user = Context.User;
             var charactersResult = await _shindenClient.GetCharactersAsync(id);
+            Embed embed;
 
             if (charactersResult.Value == null)
             {
-                await ReplyAsync(embed: $"Nie odnaleziono postaci z serii na shindenie!".ToEmbedMessage(EMType.Error).Build());
+                embed = Strings.CharacterFromSeriesNotFound.ToEmbedMessage(EMType.Error).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
@@ -3426,35 +3477,42 @@ namespace Sanakan.DiscordBot.Modules
                 .Select(pr => pr!.Value)
                 .ToList();
 
-            if (characterIds.Count < 1)
+            if (!characterIds.Any())
             {
-                await ReplyAsync(embed: $"Nie odnaleziono postaci!".ToEmbedMessage(EMType.Error).Build());
+                embed = Strings.CharacterNotFound.ToEmbedMessage(EMType.Error).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
             var cards = await _cardRepository.GetByCharacterIdsAsync(characterIds);
 
-            if (cards.Count() < 1)
+            if (!cards.Any())
             {
-                await ReplyAsync(embed: $"Nie odnaleziono kart.".ToEmbedMessage(EMType.Error).Build());
+                embed = string.Format(Strings.CardsNotFound, user.Mention).ToEmbedMessage(EMType.Error).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
             try
             {
-                var dmChannel = await user.GetOrCreateDMChannelAsync();
+                var dmChannel = await TryCreateDMChannelAsync(user);
                 var listOfEmbed = await _waifuService.GetWaifuFromCharacterTitleSearchResult(cards, Context.Client, !showNames);
-                foreach (var embed in listOfEmbed)
+                foreach (var embedIt in listOfEmbed)
                 {
-                    await dmChannel.SendMessageAsync(embed: embed);
+                    await dmChannel.SendMessageAsync(embed: embedIt);
                     await _taskManager.Delay(TimeSpan.FromSeconds(2));
                 }
-                await ReplyAsync(embed: $"{user.Mention} lista poszła na PW!".ToEmbedMessage(EMType.Success).Build());
+
+                await (dmChannel as IDMChannel)?.CloseAsync();
+
+                embed = string.Format(Strings.SentDM, user.Mention).ToEmbedMessage(EMType.Success).Build();
+                await ReplyAsync(embed: embed);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error occured while creating DM channel");
-                await ReplyAsync(embed: $"{user.Mention} nie można wysłać do Ciebie PW!".ToEmbedMessage(EMType.Error).Build());
+                embed = string.Format(Strings.CouldNotSendDM, user.Mention).ToEmbedMessage(EMType.Error).Build();
+                await ReplyAsync(embed: embed);
             }
         }
 
@@ -3859,7 +3917,7 @@ namespace Sanakan.DiscordBot.Modules
             var discordEnemyUser = await discordClient.GetUserAsync(enemyUser.Id);
             var maximumTries = 10;
 
-            while (discordEnemyUser == null || maximumTries > 0)
+            while (discordEnemyUser == null && maximumTries > 0)
             {
                 randomEnemyUserId = _randomNumberGenerator.GetOneRandomFrom(pvpPlayersInRange).UserId;
                 enemyUser = await _userRepository.GetUserOrCreateAsync(randomEnemyUserId);

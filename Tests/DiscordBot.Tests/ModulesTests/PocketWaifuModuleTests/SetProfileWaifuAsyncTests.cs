@@ -15,6 +15,32 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
     public class SetProfileWaifuAsyncTests : Base
     {
         [TestMethod]
+        public async Task Should_Return_Error_Message_No_Card()
+        {
+            var utcNow = DateTime.UtcNow;
+            var user = new User(1ul, utcNow);
+
+            _userMock
+                .Setup(pr => pr.Id)
+                .Returns(user.Id);
+
+            _userMock
+                .Setup(pr => pr.Mention)
+                .Returns("mention");
+
+            _userRepositoryMock
+                .Setup(pr => pr.GetUserOrCreateAsync(user.Id))
+                .ReturnsAsync(user);
+
+            SetupSendMessage((message, embed) =>
+            {
+                embed.Description.Should().NotBeNull();
+            });
+
+            await _module.SetProfileWaifuAsync(1ul);
+        }
+
+        [TestMethod]
         public async Task Should_Reset_Profile_Image_And_Return_Confirm_Message()
         {
             var utcNow = DateTime.UtcNow;

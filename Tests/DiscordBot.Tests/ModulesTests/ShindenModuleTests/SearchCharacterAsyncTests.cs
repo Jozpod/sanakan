@@ -23,7 +23,6 @@ namespace DiscordBot.ModulesTests.ShindenModuleTests
         {
             var userId = 1ul;
             var characterName = "test";
-            var characterId = 1ul;
             var utcNow = DateTime.UtcNow;
             var searchCharacterResult = new ShindenResult<List<CharacterSearchResult>>();
             searchCharacterResult.StatusCode = System.Net.HttpStatusCode.NotFound;

@@ -18,6 +18,29 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
     public class SearchCharacterCardsFromFavListAsyncTests : Base
     {
         [TestMethod]
+        public async Task Should_Return_Error_Message_No_User()
+        {
+            _userMock
+                .Setup(pr => pr.Id)
+                .Returns(1ul);
+
+            _userMock
+                .Setup(pr => pr.Mention)
+                .Returns("user mention");
+
+            _userRepositoryMock
+                .Setup(pr => pr.GetCachedFullUserAsync(1ul))
+                .ReturnsAsync(null as User);
+
+            SetupSendMessage((message, embed) =>
+            {
+                embed.Description.Should().NotBeNull();
+            });
+
+            await _module.SearchCharacterCardsFromFavListAsync();
+        }
+
+        [TestMethod]
         public async Task Should_Search_Character_Cards_And_Return_Result_Message()
         {
             var user = new User(1ul, DateTime.UtcNow);

@@ -112,6 +112,64 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
         }
 
         [TestMethod]
+        public async Task Should_Send_Error_Message_No_Card()
+        {
+            var utcNow = DateTime.UtcNow;
+            var user = new User(1ul, utcNow);
+            user.GameDeck.Karma = -401;
+
+            _userMock
+                .Setup(pr => pr.Id)
+                .Returns(user.Id);
+
+            _userMock
+                .Setup(pr => pr.Mention)
+                .Returns("user mention");
+
+            _userRepositoryMock
+                .Setup(pr => pr.GetUserOrCreateAsync(user.Id))
+                .ReturnsAsync(user);
+
+            SetupSendMessage((message, embed) =>
+            {
+                embed.Description.Should().NotBeNull();
+            });
+
+            await _module.GoToBlackMarketAsync(1);
+        }
+
+        [TestMethod]
+        public async Task Should_Send_Error_Message_Card_From_Figure()
+        {
+            var utcNow = DateTime.UtcNow;
+            var user = new User(1ul, utcNow);
+            var card = new Card(1ul, "title", "name", 100, 50, Rarity.E, Dere.Bodere, DateTime.UtcNow);
+            card.Id = 1ul;
+            card.FromFigure = true;
+            user.GameDeck.Karma = -401;
+            user.GameDeck.Cards.Add(card);
+
+            _userMock
+                .Setup(pr => pr.Id)
+                .Returns(user.Id);
+
+            _userMock
+                .Setup(pr => pr.Mention)
+                .Returns("user mention");
+
+            _userRepositoryMock
+                .Setup(pr => pr.GetUserOrCreateAsync(user.Id))
+                .ReturnsAsync(user);
+
+            SetupSendMessage((message, embed) =>
+            {
+                embed.Description.Should().NotBeNull();
+            });
+
+            await _module.GoToBlackMarketAsync(card.Id);
+        }
+
+        [TestMethod]
         public async Task Should_Access_Black_Market()
         {
             var utcNow = DateTime.UtcNow;

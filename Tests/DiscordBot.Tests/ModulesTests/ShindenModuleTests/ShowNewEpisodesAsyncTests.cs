@@ -38,6 +38,10 @@ namespace DiscordBot.ModulesTests.ShindenModuleTests
                 .ReturnsAsync(epsiodesResult);
 
             _userMock
+                .Setup(pr => pr.Mention)
+                .Returns("mention");
+
+            _userMock
                 .Setup(pr => pr.GetOrCreateDMChannelAsync(null))
                 .ReturnsAsync(dmChannelMock.Object);
 

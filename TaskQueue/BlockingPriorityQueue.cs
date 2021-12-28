@@ -1,6 +1,7 @@
 ﻿using Sanakan.TaskQueue.Messages;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading;
 
@@ -34,13 +35,11 @@ namespace Sanakan.TaskQueue
 
                 if (_head == 0)
                 {
-                    // TO-DO Improve
-                    if(_semaphoreSlim.CurrentCount == 1)
+                    if (_semaphoreSlim.CurrentCount == 0)
                     {
+                        _semaphoreSlim.Release();
                         return true;
                     }
-
-                    _semaphoreSlim.Release();
                 }
             }
 
@@ -51,17 +50,11 @@ namespace Sanakan.TaskQueue
         {
             while (!token.IsCancellationRequested)
             {
-                if (_head == -1)
+                while (_head == -1)
                 {
                     await _semaphoreSlim.WaitAsync(token);
-
-                    // TO-DO Improve 
-                    if(_head == -1)
-                    {
-                        await _semaphoreSlim.WaitAsync(token);
-                    }
                 }
-
+ 
                 BaseMessage item;
                 lock (_syncRoot)
                 {

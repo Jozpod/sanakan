@@ -670,7 +670,7 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("generuje listę id kart, których właścicieli nie widzi bot na serwerach")]
         [Remarks("true")]
         public async Task GenerateMissingUsersCardListAsync(
-            [Summary("czy wypisać id'ki")] bool ids = false)
+            [Summary("czy wypisać id'ki")] bool displayIds = false)
         {
             var guilds = await Context.Client.GetGuildsAsync();
             var allUserIds = new List<ulong>(1000);
@@ -685,7 +685,7 @@ namespace Sanakan.DiscordBot.Modules
 
             await ReplyAsync(embed: $"Kart: {nonExistingIds.Count}".ToEmbedMessage(EMType.Bot).Build());
 
-            if (ids)
+            if (displayIds)
             {
                 await ReplyAsync(embed: string.Join("\n", nonExistingIds).ToEmbedMessage(EMType.Bot).Build());
             }
@@ -732,18 +732,18 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks("845155646123")]
         public async Task DeleteUserAsync(
             [Summary("id użytkownika")] ulong discordUserId,
-            [Summary("czy usunąć karty?")] bool cards = false)
+            [Summary("czy usunąć karty?")] bool deleteCards = false)
         {
             var fakeUser = await _userRepository.GetUserOrCreateAsync(DAL.Constants.RootUserId);
             var user = await _userRepository.GetUserOrCreateAsync(discordUserId);
 
             if (user == null)
             {
-                await ReplyAsync(embed: $"Użytkownik o id: `{discordUserId}` został wymazany.".ToEmbedMessage(EMType.Success).Build());
+                await ReplyAsync(embed: Strings.UserNotFound.ToEmbedMessage(EMType.Success).Build());
                 return;
             }
 
-            if (!cards)
+            if (deleteCards)
             {
                 foreach (var card in user.GameDeck.Cards)
                 {
@@ -1359,10 +1359,15 @@ namespace Sanakan.DiscordBot.Modules
         public async Task SimulateExpeditionAsync(
             [Summary("WID")] ulong wid,
             [Summary("typ wyprawy")] ExpeditionCardType expedition = ExpeditionCardType.None,
-            [Summary("czas w minutach")] int time = -1)
+            [Summary("czas w dd | hh:mm | hh:mm:ss ")] TimeSpan? duration = null)
         {
+            Embed embed;
+
             if (expedition == ExpeditionCardType.None)
             {
+                embed = $"Nie podano typu ekspedycji"
+                   .ToEmbedMessage(EMType.Error)
+                   .Build();
                 return;
             }
 
@@ -1371,23 +1376,26 @@ namespace Sanakan.DiscordBot.Modules
 
             if (card == null)
             {
+                embed = Strings.CardNotFound
+                    .ToEmbedMessage(EMType.Error)
+                    .Build();
                 return;
             }
 
-            if (time > 0)
+            if (duration.HasValue)
             {
-                card.ExpeditionDate = _systemClock.UtcNow.AddMinutes(-time);
+                card.ExpeditionDate = _systemClock.UtcNow - duration.Value;
             }
 
             card.Expedition = expedition;
             var message = _waifuService.EndExpedition(databaseUser, card, true);
             var cardSummary = card.GetString(false, false, true);
 
-            var content = $"Karta {cardSummary} wróciła z {expedition.GetName("ej")} wyprawy!\n\n{message}"
+            embed = $"Karta {cardSummary} wróciła z {expedition.GetName("ej")} wyprawy!\n\n{message}"
                 .ToEmbedMessage(EMType.Success)
                 .Build();
 
-            await ReplyAsync(embed: content);
+            await ReplyAsync(embed: embed);
         }
 
         [Command("kill", RunMode = RunMode.Async)]

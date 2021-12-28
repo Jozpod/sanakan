@@ -17,6 +17,28 @@ namespace DiscordBot.ModulesTests.ModerationModuleTests
     public class BanUserAsyncTests : Base
     {
         [TestMethod]
+        public async Task Should_Send_Error_Message_No_Guild()
+        {
+            var guildUserMock = new Mock<IGuildUser>(MockBehavior.Strict);
+            var duration = TimeSpan.FromHours(1);
+
+            _guildMock
+                .Setup(pr => pr.Id)
+                .Returns(1ul);
+
+            _guildConfigRepositoryMock
+                .Setup(pr => pr.GetCachedGuildFullConfigAsync(1ul))
+                .ReturnsAsync(null as GuildOptions);
+
+            SetupSendMessage((message, embed) =>
+            {
+                embed.Should().NotBeNull();
+            });
+
+            await _module.BanUserAsync(guildUserMock.Object, duration);
+        }
+
+        [TestMethod]
         public async Task Should_Send_Message_Invalid_Duration()
         {
             var guildUserMock = new Mock<IGuildUser>(MockBehavior.Strict);

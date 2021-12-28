@@ -15,7 +15,9 @@ namespace DiscordBot.ModulesTests.DebugModuleTests
     public class ToggleDeveloperRoleAsyncTests : Base
     {
         [TestMethod]
-        public async Task Should_Toggle_Role_And_Send_Confirm_Message()
+        [DataRow(false)]
+        [DataRow(true)]
+        public async Task Should_Toggle_Role_And_Send_Confirm_Message(bool hasRole)
         {
             var roleMock = new Mock<IRole>(MockBehavior.Strict);
             var roles = new List<IRole> { roleMock.Object };
@@ -42,9 +44,19 @@ namespace DiscordBot.ModulesTests.DebugModuleTests
                 .Setup(pr => pr.RoleIds)
                 .Returns(roleIds);
 
-            _guildUserMock
-                .Setup(pr => pr.AddRoleAsync(roleMock.Object, null))
-                .Returns(Task.CompletedTask);
+            if(hasRole)
+            {
+                roleIds.Add(roleId);
+                _guildUserMock
+                    .Setup(pr => pr.RemoveRoleAsync(roleMock.Object, null))
+                    .Returns(Task.CompletedTask);
+            }
+            else
+            {
+                _guildUserMock
+                    .Setup(pr => pr.AddRoleAsync(roleMock.Object, null))
+                    .Returns(Task.CompletedTask);
+            }
 
             SetupSendMessage((message, embed) =>
             {

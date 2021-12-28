@@ -134,6 +134,24 @@
   <data name="CardsUpdated" xml:space="preserve">
     <value>Zaktualizowano {0} kart.</value>
   </data>
+  <data name="CharacterFromSeriesNotFound" xml:space="preserve">
+    <value>Nie odnaleziono postaci z serii na shindenie!</value>
+  </data>
+  <data name="CharacterNotFound" xml:space="preserve">
+    <value>Nie odnaleziono postaci na shindenie!</value>
+  </data>
+  <data name="CouldNotConnectToShinden" xml:space="preserve">
+    <value>"Brak połączenia z Shindenem! ({0})"</value>
+  </data>
+  <data name="CouldNotGetEpsiodes" xml:space="preserve">
+    <value>Nie udało się pobrać listy odcinków.</value>
+  </data>
+  <data name="CouldNotSendDM" xml:space="preserve">
+    <value>{0} nie można wysłać do Ciebie PW!</value>
+  </data>
+  <data name="EmptyWishList" xml:space="preserve">
+    <value>Ta osoba nie ma nic na liście życzeń.</value>
+  </data>
   <data name="ErrorOccurred" xml:space="preserve">
     <value>Coś poszło nie tak: {0}</value>
   </data>
@@ -148,8 +166,17 @@
 
 3-5x{0} - tryb psaja (podwójne wygrane)</value>
   </data>
+  <data name="InvalidDuration" xml:space="preserve">
+    <value>Podano zla dlugosc</value>
+  </data>
   <data name="MatchedMultipleUsers" xml:space="preserve">
     <value>Dopasowano wielu użytkowników!</value>
+  </data>
+  <data name="MuteRoleNotSet" xml:space="preserve">
+    <value>Rola wyciszająca nie jest ustawiona.</value>
+  </data>
+  <data name="NoItems" xml:space="preserve">
+    <value>Brak wyników!</value>
   </data>
   <data name="NoSafariImage" xml:space="preserve">
     <value>Nie znaleziono obrazkow safari</value>
@@ -212,6 +239,9 @@ Traci siły po {3} min.</value>
   <data name="RejectedCommand" xml:space="preserve">
     <value>Odrzucono polecenie!</value>
   </data>
+  <data name="ReportId" xml:space="preserve">
+    <value>Id zgloszenia:</value>
+  </data>
   <data name="RequiredChannel" xml:space="preserve">
     <value>To polecenie działa na kanale {0}</value>
   </data>
@@ -226,6 +256,15 @@ Traci siły po {3} min.</value>
   </data>
   <data name="RoleNotFoundOnServer" xml:space="preserve">
     <value>Nie odnaleziono roli na serwerze.</value>
+  </data>
+  <data name="SameUser" xml:space="preserve">
+    <value>{0} podałeś dwa razy tego samego użytkownika.</value>
+  </data>
+  <data name="SelectCharacterPrompt" xml:space="preserve">
+    <value>Wybierz postać, którą chcesz wyświetlić poprzez wpisanie numeru odpowiadającemu jej na liście.</value>
+  </data>
+  <data name="SentDM" xml:space="preserve">
+    <value>{0} lista poszła na PW!</value>
   </data>
   <data name="ServerConfiguration" xml:space="preserve">
     <value>Description = **Prefix:** {0}
@@ -320,6 +359,12 @@ Rzędy / `1`, `2`, `3`</value>
   <data name="UserDoesNotExistInDatabase" xml:space="preserve">
     <value>Ta osoba nie ma profilu bota.</value>
   </data>
+  <data name="UserHasBeenBanned" xml:space="preserve">
+    <value>{0} został zbanowany.</value>
+  </data>
+  <data name="UserHasBeenMuted" xml:space="preserve">
+    <value>{0} został wyciszony.</value>
+  </data>
   <data name="UserNoCards" xml:space="preserve">
     <value>{0} nie masz żadnych kart.</value>
   </data>
@@ -342,6 +387,12 @@ Tygodniowe misje:**
 {1}
 
 Dzienne misje odświeżają się o północy, a tygodniowe co niedzielę.</value>
+  </data>
+  <data name="UserRoleNotSet" xml:space="preserve">
+    <value>Rola użytkownika nie jest ustawiona.</value>
+  </data>
+  <data name="UserWishlistPrivate" xml:space="preserve">
+    <value>Lista życzeń tej osoby jest prywatna!</value>
   </data>
   <data name="WalletInfo" xml:space="preserve">
     <value>**Portfel** {0}:

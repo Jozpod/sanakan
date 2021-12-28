@@ -15,6 +15,63 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
     public class ReplaceCardsTagAsyncTests : Base
     {
         [TestMethod]
+        public async Task Should_Return_Error_Message_No_Card()
+        {
+            var utcNow = DateTime.UtcNow;
+            var user = new User(1ul, utcNow);
+            var card = new Card(1ul, "title", "name", 100, 50, Rarity.A, Dere.Bodere, utcNow);
+
+            _userMock
+                .Setup(pr => pr.Id)
+                .Returns(user.Id);
+
+            _userMock
+                .Setup(pr => pr.Mention)
+                .Returns("user mention");
+
+            _userRepositoryMock
+                .Setup(pr => pr.GetUserOrCreateAsync(user.Id))
+                .ReturnsAsync(user);
+
+            SetupSendMessage((message, embed) =>
+            {
+                embed.Description.Should().NotBeNull();
+            });
+
+            await _module.ReplaceCardsTagAsync("oldtag", "newtag");
+        }
+
+        [TestMethod]
+        public async Task Should_Return_Error_Message_Invalid_Tag_Name()
+        {
+            var utcNow = DateTime.UtcNow;
+            var user = new User(1ul, utcNow);
+            var card = new Card(1ul, "title", "name", 100, 50, Rarity.A, Dere.Bodere, utcNow);
+            var tag = new CardTag { Name = "oldtag" };
+            card.Tags.Add(tag);
+            user.GameDeck.Cards.Add(card);
+
+            _userMock
+                .Setup(pr => pr.Id)
+                .Returns(user.Id);
+
+            _userMock
+                .Setup(pr => pr.Mention)
+                .Returns("user mention");
+
+            _userRepositoryMock
+                .Setup(pr => pr.GetUserOrCreateAsync(user.Id))
+                .ReturnsAsync(user);
+
+            SetupSendMessage((message, embed) =>
+            {
+                embed.Description.Should().NotBeNull();
+            });
+
+            await _module.ReplaceCardsTagAsync(tag.Name, "new tag");
+        }
+
+        [TestMethod]
         public async Task Should_Replace_Card_Tags()
         {
             var utcNow = DateTime.UtcNow;

@@ -20,6 +20,118 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
     public class SearchCharacterCardsAsyncTests : Base
     {
         [TestMethod]
+        public async Task Should_Return_Error_Message_No_Character()
+        {
+            var utcNow = DateTime.UtcNow;
+            var characterId = 1ul;
+            var dmChannelMock = new Mock<IDMChannel>(MockBehavior.Strict);
+            var card = new Card(1ul, "title", "name", 100, 50, Rarity.A, Dere.Bodere, utcNow);
+            var cards = new List<Card> { card };
+            var characterInfoResult = new ShindenResult<CharacterInfo>();
+
+            _userMock
+                .Setup(pr => pr.Mention)
+                .Returns("user mention");
+
+            _shindenClientMock
+                .Setup(pr => pr.GetCharacterInfoAsync(characterId))
+                 .ReturnsAsync(characterInfoResult);
+
+            SetupSendMessage((message, embed) =>
+            {
+                embed.Description.Should().NotBeNull();
+            });
+
+            await _module.SearchCharacterCardsAsync(characterId);
+        }
+
+        [TestMethod]
+        public async Task Should_Return_Error_Message_No_Cards()
+        {
+            var utcNow = DateTime.UtcNow;
+            var characterId = 1ul;
+            var cards = new List<Card>();
+            var characterInfoResult = new ShindenResult<CharacterInfo>
+            {
+                Value = new CharacterInfo
+                {
+                    CharacterId = characterId,
+                }
+            };
+
+            _userMock
+                .Setup(pr => pr.Mention)
+                .Returns("user mention");
+
+            _shindenClientMock
+                .Setup(pr => pr.GetCharacterInfoAsync(characterId))
+                 .ReturnsAsync(characterInfoResult);
+
+            _cardRepositoryMock
+                .Setup(pr => pr.GetByCharacterIdAsync(characterId, It.IsAny<CardQueryOptions>()))
+                .ReturnsAsync(cards);
+
+            SetupSendMessage((message, embed) =>
+            {
+                embed.Description.Should().NotBeNull();
+            });
+
+            await _module.SearchCharacterCardsAsync(characterId);
+        }
+
+        [TestMethod]
+        public async Task Should_Send_Message_Containing_Character()
+        {
+            var utcNow = DateTime.UtcNow;
+            var characterId = 1ul;
+            var dmChannelMock = new Mock<IDMChannel>(MockBehavior.Strict);
+            var card = new Card(1ul, "title", "name", 100, 50, Rarity.A, Dere.Bodere, utcNow);
+            var cards = new List<Card> { card };
+            var characterInfoResult = new ShindenResult<CharacterInfo>
+            {
+                Value = new CharacterInfo
+                {
+                    CharacterId = characterId,
+                }
+            };
+            var embeds = new List<Embed>
+            {
+                new EmbedBuilder().Build(),
+            };
+
+            _userMock
+                .Setup(pr => pr.Mention)
+                .Returns("user mention");
+
+            _shindenClientMock
+                .Setup(pr => pr.GetCharacterInfoAsync(characterId))
+                 .ReturnsAsync(characterInfoResult);
+
+            _cardRepositoryMock
+                .Setup(pr => pr.GetByCharacterIdAsync(characterId, It.IsAny<CardQueryOptions>()))
+                .ReturnsAsync(cards);
+
+            _waifuServiceMock
+                .Setup(pr => pr.GetWaifuFromCharacterSearchResult(
+                    It.IsAny<string>(),
+                    It.IsAny<IEnumerable<Card>>(),
+                    It.IsAny<IDiscordClient>(),
+                    It.IsAny<bool>()))
+                .ReturnsAsync(embeds);
+
+            _userMock
+                .Setup(pr => pr.GetOrCreateDMChannelAsync(null))
+                .ReturnsAsync(dmChannelMock.Object);
+
+            SetupSendMessage((message, embed) =>
+            {
+                embed.Should().NotBeNull();
+            });
+
+            await _module.SearchCharacterCardsAsync(characterId);
+        }
+
+        [TestMethod]
         public async Task Should_Send_Private_Message_Containing_Characters()
         {
             var utcNow = DateTime.UtcNow;

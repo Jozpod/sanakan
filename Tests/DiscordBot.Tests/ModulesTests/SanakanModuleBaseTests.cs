@@ -8,6 +8,7 @@ using Sanakan.Tests.Shared;
 using Discord;
 using System;
 using System.Reflection;
+using System.Threading;
 
 namespace Sanakan.DiscordBot.Tests.ModulesTests
 {
@@ -47,14 +48,21 @@ namespace Sanakan.DiscordBot.Tests.ModulesTests
         [TestMethod]
         public void Should_Set_Typing()
         {
+            var manualReset = new ManualResetEvent(false);
+
             _messageChannelMock
                 .Setup(pr => pr.EnterTypingState(null))
                 .Returns(_disposableMock.Object);
 
             _disposableMock
-                .Setup(pr => pr.Dispose());
+                .Setup(pr => pr.Dispose())
+                .Callback(() =>
+                {
+                    manualReset.Set();
+                });
 
             BeforeExecute();
+            manualReset.WaitOne();
         }
     }
 }

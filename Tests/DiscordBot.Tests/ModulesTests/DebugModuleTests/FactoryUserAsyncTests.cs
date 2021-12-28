@@ -15,10 +15,16 @@ namespace DiscordBot.ModulesTests.DebugModuleTests
     public class FactoryUserAsyncTests : Base
     {
         [TestMethod]
-        public async Task Should_Delete_User_And_Send_Confirm_Message()
+        [DataRow(0d)]
+        [DataRow(50d)]
+        public async Task Should_Delete_User_And_Send_Confirm_Message(double karma)
         {
             var utcNow = DateTime.UtcNow;
             var user = new User(2ul, utcNow);
+            user.GameDeck.Karma = karma;
+
+            var card = new Card(1ul, "title", "name", 100, 50, Rarity.C, Dere.Bodere, DateTime.UtcNow);
+            user.GameDeck.Cards.Add(card);
 
             _userRepositoryMock
                 .Setup(pr => pr.GetUserOrCreateAsync(user.Id))
@@ -40,7 +46,7 @@ namespace DiscordBot.ModulesTests.DebugModuleTests
                 embed.Description.Should().NotBeNullOrEmpty();
             });
 
-            await _module.FactoryUserAsync(user.Id, 50);
+            await _module.FactoryUserAsync(user.Id, 100);
         }
     }
 }

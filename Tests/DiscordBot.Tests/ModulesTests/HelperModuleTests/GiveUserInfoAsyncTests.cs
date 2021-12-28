@@ -14,6 +14,21 @@ namespace DiscordBot.ModulesTests.HelperModuleTests
     public class GiveUserInfoAsyncTests : Base
     {
         [TestMethod]
+        public async Task Should_Return_Error_Message_Only_Server()
+        {
+            _commandContextMock
+                .Setup(pr => pr.User)
+                .Returns<IUser?>(null);
+
+            SetupSendMessage((message, embed) =>
+            {
+                embed.Should().NotBeNull();
+            });
+
+            await _module.GiveUserInfoAsync(null);
+        }
+
+        [TestMethod]
         public async Task Should_Return_User_Info()
         {
             

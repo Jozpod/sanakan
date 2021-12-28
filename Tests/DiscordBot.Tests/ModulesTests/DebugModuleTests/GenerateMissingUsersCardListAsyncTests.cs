@@ -15,7 +15,9 @@ namespace DiscordBot.ModulesTests.DebugModuleTests
     public class GenerateMissingUsersCardListAsyncTests : Base
     {
         [TestMethod]
-        public async Task Should_Send_Messge_Containing_Missing_User_Cards()
+        [DataRow(false)]
+        [DataRow(true)]
+        public async Task Should_Send_Messge_Containing_Missing_User_Cards(bool displayIds)
         {
             var guilds = new List<IGuild> { _guildMock.Object };
             var guildUserMock = new Mock<IGuildUser>(MockBehavior.Strict);
@@ -45,7 +47,7 @@ namespace DiscordBot.ModulesTests.DebugModuleTests
                 embed.Description.Should().NotBeNullOrEmpty();
             });
 
-            await _module.GenerateMissingUsersCardListAsync();
+            await _module.GenerateMissingUsersCardListAsync(displayIds);
         }
     }
 }

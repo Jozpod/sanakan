@@ -48,6 +48,41 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
         }
 
         [TestMethod]
+        public async Task Should_Send_Error_Message_No_Space()
+        {
+            var utcNow = DateTime.UtcNow;
+            var user = new User(1ul, utcNow);
+            var characterInfo = new CharacterInfo();
+            var card = new Card(1ul, "title", "name", 100, 50, Rarity.A, Dere.Bodere, utcNow);
+            user.GameDeck.MaxNumberOfCards = 1;
+            user.GameDeck.Cards.Add(card);
+            var gameDecks = new List<GameDeck>();
+
+            _userMock
+                .Setup(pr => pr.Id)
+                .Returns(user.Id);
+
+            _userMock
+                .Setup(pr => pr.Mention)
+                .Returns("user mention");
+
+            _userRepositoryMock
+                .Setup(pr => pr.GetUserOrCreateAsync(user.Id))
+                .ReturnsAsync(user);
+
+            _systemClockMock
+                .Setup(pr => pr.UtcNow)
+                .Returns(utcNow);
+
+            SetupSendMessage((message, embed) =>
+            {
+                embed.Description.Should().NotBeNull();
+            });
+
+            await _module.GetFreeCardAsync();
+        }
+
+        [TestMethod]
         public async Task Should_Get_Free_Card_And_Send_Confirm_Message()
         {
             var utcNow = DateTime.UtcNow;

@@ -156,12 +156,13 @@ namespace Sanakan.DiscordBot.Modules
             [Summary("czas trwania hh:mm:ss")] TimeSpan? duration,
             [Summary("powód (opcjonalne)")][Remainder] string reason = Constants.NoReason)
         {
-            Embed content;
+            Embed embed;
             var guild = Context.Guild;
 
             if (!duration.HasValue)
             {
-                await ReplyAsync(embed: $"Podano zla dlugosc".ToEmbedMessage(EMType.Error).Build());
+                embed = Strings.InvalidDuration.ToEmbedMessage(EMType.Error).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
@@ -169,8 +170,8 @@ namespace Sanakan.DiscordBot.Modules
 
             if (config == null)
             {
-                content = Strings.ServerNotConfigured.ToEmbedMessage(EMType.Bot).Build();
-                await ReplyAsync(embed: content);
+                embed = Strings.ServerNotConfigured.ToEmbedMessage(EMType.Bot).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
@@ -185,8 +186,8 @@ namespace Sanakan.DiscordBot.Modules
                 info,
                 byWho);
 
-            content = $"{userToBan.Mention} został zbanowany.".ToEmbedMessage(EMType.Success).Build();
-            await ReplyAsync(embed: content);
+            embed = string.Format(Strings.UserHasBeenBanned, userToBan.Mention).ToEmbedMessage(EMType.Success).Build();
+            await ReplyAsync(embed: embed);
         }
 
         [Command("mute")]
@@ -197,34 +198,39 @@ namespace Sanakan.DiscordBot.Modules
             [Summary("czas trwania w d.hh:mm:ss | hh:mm:ss | hh:mm | dd")] TimeSpan duration,
             [Summary("powód (opcjonalne)")][Remainder] string reason = Constants.NoReason)
         {
-            var config = await _guildConfigRepository.GetCachedGuildFullConfigAsync(Context.Guild.Id);
+            var guild = Context.Guild;
+            var config = await _guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
+            Embed embed;
 
             if (config == null)
             {
-                await ReplyAsync(embed: Strings.ServerNotConfigured.ToEmbedMessage(EMType.Bot).Build());
+                embed = Strings.ServerNotConfigured.ToEmbedMessage(EMType.Bot).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
             if (!config.UserRoleId.HasValue)
             {
-                await ReplyAsync(embed: "Rola użytkownika nie jest ustawiona.".ToEmbedMessage(EMType.Bot).Build());
+                embed = Strings.UserRoleNotSet.ToEmbedMessage(EMType.Bot).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
-
-            var guild = Context.Guild;
+            
             var notificationChannel = (ITextChannel)await guild.GetChannelAsync(config.NotificationChannelId);
             var userRole = guild.GetRole(config.UserRoleId.Value);
             var muteRole = guild.GetRole(config.MuteRoleId);
 
             if (muteRole == null)
             {
-                await ReplyAsync(embed: "Rola wyciszająca nie jest ustawiona.".ToEmbedMessage(EMType.Bot).Build());
+                embed = Strings.MuteRoleNotSet.ToEmbedMessage(EMType.Bot).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
             if (user.RoleIds.Contains(muteRole.Id))
             {
-                await ReplyAsync(embed: $"{user.Mention} już jest wyciszony.".ToEmbedMessage(EMType.Error).Build());
+                embed = $"{user.Mention} już jest wyciszony.".ToEmbedMessage(EMType.Error).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
@@ -239,8 +245,8 @@ namespace Sanakan.DiscordBot.Modules
             var byWho = $"{invokingUser.Nickname ?? invokingUser.Username}";
             await _moderatorService.NotifyAboutPenaltyAsync(user, notificationChannel, info, byWho);
 
-            var content = $"{user.Mention} został wyciszony.".ToEmbedMessage(EMType.Success).Build();
-            await ReplyAsync(embed: content);
+            embed = string.Format(Strings.UserHasBeenMuted, user.Mention).ToEmbedMessage(EMType.Success).Build();
+            await ReplyAsync(embed: embed);
         }
 
         [Command("mute mod")]
@@ -1630,16 +1636,19 @@ namespace Sanakan.DiscordBot.Modules
             var guild = Context.Guild;
             var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(guild.Id);
             var raport = config.Raports.FirstOrDefault(x => x.MessageId == discordMessageId);
+            Embed embed;
 
             if (raport == null)
             {
-                await ReplyAsync(embed: $"Taki raport nie istnieje.".ToEmbedMessage(EMType.Error).Build());
+                embed = $"Taki raport nie istnieje.".ToEmbedMessage(EMType.Error).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
             if (!config.UserRoleId.HasValue)
             {
-                await ReplyAsync(embed: "Rola użytkownika nie jest ustawiona.".ToEmbedMessage(EMType.Bot).Build());
+                embed = Strings.UserRoleNotSet.ToEmbedMessage(EMType.Bot).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
@@ -1653,13 +1662,15 @@ namespace Sanakan.DiscordBot.Modules
 
             if (muteRole == null)
             {
-                await ReplyAsync(embed: "Rola wyciszająca nie jest ustawiona.".ToEmbedMessage(EMType.Bot).Build());
+                embed = Strings.MuteRoleNotSet.ToEmbedMessage(EMType.Bot).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
             if (user == null)
             {
-                await ReplyAsync(embed: $"Użytkownika nie ma serwerze.".ToEmbedMessage(EMType.Error).Build());
+                embed = Strings.UserNotFound.ToEmbedMessage(EMType.Error).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
@@ -1684,7 +1695,7 @@ namespace Sanakan.DiscordBot.Modules
                     var embedBuilder = reportMessage?.Embeds?.FirstOrDefault().ToEmbedBuilder();
 
                     embedBuilder.Color = EMType.Info.Color();
-                    embedBuilder.Fields.FirstOrDefault(x => x.Name == "Id zgloszenia:").Value = "Odrzucone!";
+                    embedBuilder.Fields.FirstOrDefault(x => x.Name == Strings.ReportId).Value = "Odrzucone!";
                     await ReplyAsync(embed: embedBuilder.Build());
                 }
                 catch (Exception) { }
@@ -1697,7 +1708,8 @@ namespace Sanakan.DiscordBot.Modules
 
             if (reportChannel == null)
             {
-                await ReplyAsync(embed: "Kanał raportów nie jest ustawiony.".ToEmbedMessage(EMType.Bot).Build());
+                embed = "Kanał raportów nie jest ustawiony.".ToEmbedMessage(EMType.Bot).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
@@ -1712,7 +1724,7 @@ namespace Sanakan.DiscordBot.Modules
                 }
 
                 embedBuilder.Color = warnUser ? EMType.Success.Color() : EMType.Bot.Color();
-                embedBuilder.Fields.FirstOrDefault(x => x.Name == "Id zgloszenia:").Value = "Rozpatrzone!";
+                embedBuilder.Fields.FirstOrDefault(x => x.Name == Strings.ReportId).Value = "Rozpatrzone!";
                 await ReplyAsync(embed: embedBuilder.Build());
                 await reportMessage.DeleteAsync();
 
@@ -1768,8 +1780,8 @@ namespace Sanakan.DiscordBot.Modules
                 reason);
 
             await _moderatorService.NotifyAboutPenaltyAsync(user, notifyChannel, info, byWho);
-            var content = $"{user.Mention} został wyciszony.".ToEmbedMessage(EMType.Success).Build();
-            await ReplyAsync(embed: content);
+            embed = string.Format(Strings.UserHasBeenMuted, user.Mention).ToEmbedMessage(EMType.Success).Build();
+            await ReplyAsync(embed: embed);
         }
 
         [Command("pomoc", RunMode = RunMode.Async)]

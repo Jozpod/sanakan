@@ -72,5 +72,32 @@ namespace Sanakan.TaskQueue.Tests
             actual = enumerable.Current;
             actual.Should().Be(secondExpected);
         }
+
+        [TestMethod]
+        public async Task Should_Throw_Canceled_Exception()
+        {
+            var cancellationTokenSource = new CancellationTokenSource();
+            cancellationTokenSource.CancelAfter(TimeSpan.FromSeconds(2));
+
+            var task = Task.Run(() =>
+            {
+                var message = new ConnectUserMessage();
+
+                while (true)
+                {
+                    _blockingPriorityQueue.TryEnqueue(message);
+                }
+            });
+
+            var assertTask = Assert.ThrowsExceptionAsync<OperationCanceledException>(async () =>
+            {
+                await foreach (var item in _blockingPriorityQueue.GetAsyncEnumerable(cancellationTokenSource.Token))
+                {
+                    item.Should().NotBeNull();
+                }
+            });
+
+            await Task.WhenAny(task, assertTask);
+        }
     }
 }

@@ -108,6 +108,60 @@ namespace Sanakan.DiscordBot.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Nie odnaleziono postaci z serii na shindenie!.
+        /// </summary>
+        internal static string CharacterFromSeriesNotFound {
+            get {
+                return ResourceManager.GetString("CharacterFromSeriesNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Nie odnaleziono postaci na shindenie!.
+        /// </summary>
+        internal static string CharacterNotFound {
+            get {
+                return ResourceManager.GetString("CharacterNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &quot;Brak połączenia z Shindenem! ({0})&quot;.
+        /// </summary>
+        internal static string CouldNotConnectToShinden {
+            get {
+                return ResourceManager.GetString("CouldNotConnectToShinden", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Nie udało się pobrać listy odcinków..
+        /// </summary>
+        internal static string CouldNotGetEpsiodes {
+            get {
+                return ResourceManager.GetString("CouldNotGetEpsiodes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} nie można wysłać do Ciebie PW!.
+        /// </summary>
+        internal static string CouldNotSendDM {
+            get {
+                return ResourceManager.GetString("CouldNotSendDM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Ta osoba nie ma nic na liście życzeń..
+        /// </summary>
+        internal static string EmptyWishList {
+            get {
+                return ResourceManager.GetString("EmptyWishList", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Coś poszło nie tak: {0}.
         /// </summary>
         internal static string ErrorOccurred {
@@ -134,11 +188,38 @@ namespace Sanakan.DiscordBot.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Podano zla dlugosc.
+        /// </summary>
+        internal static string InvalidDuration {
+            get {
+                return ResourceManager.GetString("InvalidDuration", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Dopasowano wielu użytkowników!.
         /// </summary>
         internal static string MatchedMultipleUsers {
             get {
                 return ResourceManager.GetString("MatchedMultipleUsers", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Rola wyciszająca nie jest ustawiona..
+        /// </summary>
+        internal static string MuteRoleNotSet {
+            get {
+                return ResourceManager.GetString("MuteRoleNotSet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Brak wyników!.
+        /// </summary>
+        internal static string NoItems {
+            get {
+                return ResourceManager.GetString("NoItems", resourceCulture);
             }
         }
         
@@ -240,6 +321,15 @@ namespace Sanakan.DiscordBot.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Id zgloszenia:.
+        /// </summary>
+        internal static string ReportId {
+            get {
+                return ResourceManager.GetString("ReportId", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to To polecenie działa na kanale {0}.
         /// </summary>
         internal static string RequiredChannel {
@@ -281,6 +371,33 @@ namespace Sanakan.DiscordBot.Resources {
         internal static string RoleNotFoundOnServer {
             get {
                 return ResourceManager.GetString("RoleNotFoundOnServer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} podałeś dwa razy tego samego użytkownika..
+        /// </summary>
+        internal static string SameUser {
+            get {
+                return ResourceManager.GetString("SameUser", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Wybierz postać, którą chcesz wyświetlić poprzez wpisanie numeru odpowiadającemu jej na liście..
+        /// </summary>
+        internal static string SelectCharacterPrompt {
+            get {
+                return ResourceManager.GetString("SelectCharacterPrompt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} lista poszła na PW!.
+        /// </summary>
+        internal static string SentDM {
+            get {
+                return ResourceManager.GetString("SentDM", resourceCulture);
             }
         }
         
@@ -394,6 +511,24 @@ namespace Sanakan.DiscordBot.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0} został zbanowany..
+        /// </summary>
+        internal static string UserHasBeenBanned {
+            get {
+                return ResourceManager.GetString("UserHasBeenBanned", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} został wyciszony..
+        /// </summary>
+        internal static string UserHasBeenMuted {
+            get {
+                return ResourceManager.GetString("UserHasBeenMuted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {0} nie masz żadnych kart..
         /// </summary>
         internal static string UserNoCards {
@@ -437,6 +572,24 @@ namespace Sanakan.DiscordBot.Resources {
         internal static string UserQuestsProgress {
             get {
                 return ResourceManager.GetString("UserQuestsProgress", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Rola użytkownika nie jest ustawiona..
+        /// </summary>
+        internal static string UserRoleNotSet {
+            get {
+                return ResourceManager.GetString("UserRoleNotSet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Lista życzeń tej osoby jest prywatna!.
+        /// </summary>
+        internal static string UserWishlistPrivate {
+            get {
+                return ResourceManager.GetString("UserWishlistPrivate", resourceCulture);
             }
         }
         

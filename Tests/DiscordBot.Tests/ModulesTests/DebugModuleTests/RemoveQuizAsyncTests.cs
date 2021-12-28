@@ -15,6 +15,22 @@ namespace DiscordBot.ModulesTests.DebugModuleTests
     public class RemoveQuizAsyncTests : Base
     {
         [TestMethod]
+        public async Task Should_Send_Error_Message_No_Quiz()
+        {
+            _questionRepositoryMock
+                .Setup(pr => pr.GetByIdAsync(1))
+                .ReturnsAsync(null as Question);
+
+            SetupSendMessage((message, embed) =>
+            {
+                embed.Should().NotBeNull();
+                embed.Description.Should().NotBeNullOrEmpty();
+            });
+
+            await _module.RemoveQuizAsync(1);
+        }
+
+        [TestMethod]
         public async Task Should_Remove_Quiz_And_Send_Confirm_Message()
         {
             var question = new Question();
