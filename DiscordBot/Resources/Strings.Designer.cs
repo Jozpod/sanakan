@@ -90,6 +90,15 @@ namespace Sanakan.DiscordBot.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Nikt nie chce tej karty..
+        /// </summary>
+        internal static string CardNotInAnyWishlist {
+            get {
+                return ResourceManager.GetString("CardNotInAnyWishlist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {0} nie odnaleziono kart..
         /// </summary>
         internal static string CardsNotFound {
@@ -197,6 +206,15 @@ namespace Sanakan.DiscordBot.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Nie wykryto obrazka! Upewnij się, że podałeś poprawny adres!.
+        /// </summary>
+        internal static string InvalidImageProvideCorrectUrl {
+            get {
+                return ResourceManager.GetString("InvalidImageProvideCorrectUrl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Dopasowano wielu użytkowników!.
         /// </summary>
         internal static string MatchedMultipleUsers {
@@ -211,6 +229,33 @@ namespace Sanakan.DiscordBot.Resources {
         internal static string MuteRoleNotSet {
             get {
                 return ResourceManager.GetString("MuteRoleNotSet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} nie masz wystarczającej liczby CT..
+        /// </summary>
+        internal static string NoEnoughCT {
+            get {
+                return ResourceManager.GetString("NoEnoughCT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} nie posiadasz wystarczającej liczby SC!.
+        /// </summary>
+        internal static string NoEnoughSC {
+            get {
+                return ResourceManager.GetString("NoEnoughSC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} nie posiadasz wystarczającej liczby TC!.
+        /// </summary>
+        internal static string NoEnoughTC {
+            get {
+                return ResourceManager.GetString("NoEnoughTC", resourceCulture);
             }
         }
         
@@ -498,6 +543,24 @@ namespace Sanakan.DiscordBot.Resources {
         internal static string SlotMachineResult {
             get {
                 return ResourceManager.GetString("SlotMachineResult", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Nie odnaleziono tytułu!.
+        /// </summary>
+        internal static string TitleNotFound {
+            get {
+                return ResourceManager.GetString("TitleNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Nikt nie ma tego tytułu wpisanego na listę życzeń..
+        /// </summary>
+        internal static string TitleNotInWishList {
+            get {
+                return ResourceManager.GetString("TitleNotInWishList", resourceCulture);
             }
         }
         

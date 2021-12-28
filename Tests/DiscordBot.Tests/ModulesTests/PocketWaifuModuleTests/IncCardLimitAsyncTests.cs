@@ -16,6 +16,86 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
     public class IncCardLimitAsyncTests : Base
     {
         [TestMethod]
+        public async Task Should_Send_Message_Current_Count()
+        {
+            var count = 0u;
+            var user = new User(1ul, DateTime.UtcNow);
+            user.TcCount = 1200;
+
+            _userMock
+               .Setup(pr => pr.Id)
+               .Returns(user.Id);
+
+            _userMock
+                .Setup(pr => pr.Mention)
+                .Returns("user mention");
+
+            _userRepositoryMock
+                .Setup(pr => pr.GetUserOrCreateAsync(user.Id))
+                .ReturnsAsync(user);
+
+            SetupSendMessage((message, embed) =>
+            {
+                embed.Description.Should().NotBeNull();
+            });
+
+            await _module.IncCardLimitAsync(count);
+        }
+
+        [TestMethod]
+        public async Task Should_Send_Error_Message_Exceeded_Limit()
+        {
+            var count = 30u;
+            var user = new User(1ul, DateTime.UtcNow);
+            user.TcCount = 1200;
+
+            _userMock
+               .Setup(pr => pr.Id)
+               .Returns(user.Id);
+
+            _userMock
+                .Setup(pr => pr.Mention)
+                .Returns("user mention");
+
+            _userRepositoryMock
+                .Setup(pr => pr.GetUserOrCreateAsync(user.Id))
+                .ReturnsAsync(user);
+
+            SetupSendMessage((message, embed) =>
+            {
+                embed.Description.Should().NotBeNull();
+            });
+
+            await _module.IncCardLimitAsync(count);
+        }
+
+        [TestMethod]
+        public async Task Should_Send_Error_Message_No_Coins()
+        {
+            var count = 10u;
+            var user = new User(1ul, DateTime.UtcNow);
+
+            _userMock
+               .Setup(pr => pr.Id)
+               .Returns(user.Id);
+
+            _userMock
+                .Setup(pr => pr.Mention)
+                .Returns("user mention");
+
+            _userRepositoryMock
+                .Setup(pr => pr.GetUserOrCreateAsync(user.Id))
+                .ReturnsAsync(user);
+
+            SetupSendMessage((message, embed) =>
+            {
+                embed.Description.Should().NotBeNull();
+            });
+
+            await _module.IncCardLimitAsync(count);
+        }
+
+        [TestMethod]
         public async Task Should_Increase_Card_Limit_And_Send_Confirm_Message()
         {
             var count = 10u;

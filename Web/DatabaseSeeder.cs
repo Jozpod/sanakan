@@ -120,6 +120,18 @@ namespace Sanakan.Web
                     guildOption.WaifuConfig.FightChannels.Add(new WaifuFightChannel { ChannelId = guild.FightWaifuChannelId.Value });
                 }
 
+                if (guild.SpawnChannelId.HasValue)
+                {
+                    guildOption.WaifuConfig ??= new WaifuConfiguration();
+                    guildOption.WaifuConfig.SpawnChannelId = guild.SpawnChannelId.Value;
+                }
+
+                if (guild.TrashSpawnChannelId.HasValue)
+                {
+                    guildOption.WaifuConfig ??= new WaifuConfiguration();
+                    guildOption.WaifuConfig.TrashSpawnChannelId = guild.TrashSpawnChannelId.Value;
+                }
+
                 if (guild.TodoChannelId.HasValue)
                 {
                     guildOption.ToDoChannelId = guild.TodoChannelId.Value;

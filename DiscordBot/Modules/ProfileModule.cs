@@ -510,15 +510,19 @@ namespace Sanakan.DiscordBot.Modules
             var user = Context.User;
             var mention = user.Mention;
             var databaseUser = await _userRepository.GetUserOrCreateAsync(user.Id);
+            Embed embed;
 
             if (databaseUser.ScCount < scCost && currency == SCurrency.Sc)
             {
-                await ReplyAsync(embed: $"{mention} nie posiadasz wystarczającej liczby SC!".ToEmbedMessage(EMType.Error).Build());
+                embed = $"{mention} nie posiadasz wystarczającej liczby SC!".ToEmbedMessage(EMType.Error)
+                    .Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
             if (databaseUser.TcCount < tcCost && currency == SCurrency.Tc)
             {
-                await ReplyAsync(embed: $"{mention} nie posiadasz wystarczającej liczby TC!".ToEmbedMessage(EMType.Error).Build());
+                embed = string.Format(Strings.NoEnoughTC, mention).ToEmbedMessage(EMType.Error).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
@@ -540,10 +544,14 @@ namespace Sanakan.DiscordBot.Modules
                     }
                     else if (saveResult == SaveResult.BadUrl)
                     {
-                        await ReplyAsync(embed: "Nie wykryto obrazka! Upewnij się, że podałeś poprawny adres!".ToEmbedMessage(EMType.Error).Build());
+                        embed = Strings.InvalidImageProvideCorrectUrl.ToEmbedMessage(EMType.Error).Build();
+                        await ReplyAsync(embed: embed);
                         return;
                     }
-                    await ReplyAsync(embed: "Coś poszło nie tak, prawdopodobnie nie mam uprawnień do zapisu!".ToEmbedMessage(EMType.Error).Build());
+
+                    embed = "Coś poszło nie tak, prawdopodobnie nie mam uprawnień do zapisu!"
+                        .ToEmbedMessage(EMType.Error).Build();
+                    await ReplyAsync(embed: embed);
                     return;
 
                 default:
@@ -564,8 +572,8 @@ namespace Sanakan.DiscordBot.Modules
 
             _cacheManager.ExpireTag(CacheKeys.User(databaseUser.Id), CacheKeys.Users);
 
-            var content = $"Zmieniono styl profilu użytkownika: {mention}!".ToEmbedMessage(EMType.Success).Build();
-            await ReplyAsync(embed: content);
+            embed = $"Zmieniono styl profilu użytkownika: {mention}!".ToEmbedMessage(EMType.Success).Build();
+            await ReplyAsync(embed: embed);
         }
 
         [Command("tło")]
@@ -580,16 +588,20 @@ namespace Sanakan.DiscordBot.Modules
             var scCost = 5000;
             var user = Context.User;
             var mention = user.Mention;
+            Embed embed;
 
             var databaseUser = await _userRepository.GetUserOrCreateAsync(user.Id);
+            
             if (databaseUser.ScCount < scCost && currency == SCurrency.Sc)
             {
-                await ReplyAsync(embed: $"{mention} nie posiadasz wystarczającej liczby SC!".ToEmbedMessage(EMType.Error).Build());
+                embed = $"{mention} nie posiadasz wystarczającej liczby SC!".ToEmbedMessage(EMType.Error).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
             if (databaseUser.TcCount < tcCost && currency == SCurrency.Tc)
             {
-                await ReplyAsync(embed: $"{mention} nie posiadasz wystarczającej liczby TC!".ToEmbedMessage(EMType.Error).Build());
+                embed = string.Format(Strings.NoEnoughTC, mention).ToEmbedMessage(EMType.Error).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
@@ -602,12 +614,14 @@ namespace Sanakan.DiscordBot.Modules
             }
             else if (saveResult == SaveResult.BadUrl)
             {
-                await ReplyAsync(embed: "Nie wykryto obrazka! Upewnij się, że podałeś poprawny adres!".ToEmbedMessage(EMType.Error).Build());
+                embed = Strings.InvalidImageProvideCorrectUrl.ToEmbedMessage(EMType.Error).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
             else
             {
-                await ReplyAsync(embed: "Coś poszło nie tak, prawdopodobnie nie mam uprawnień do zapisu!".ToEmbedMessage(EMType.Error).Build());
+                embed = "Coś poszło nie tak, prawdopodobnie nie mam uprawnień do zapisu!".ToEmbedMessage(EMType.Error).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
@@ -624,8 +638,8 @@ namespace Sanakan.DiscordBot.Modules
 
             _cacheManager.ExpireTag(CacheKeys.User(databaseUser.Id), CacheKeys.Users);
 
-            var content = $"Zmieniono tło profilu użytkownika: {mention}!".ToEmbedMessage(EMType.Success).Build();
-            await ReplyAsync(embed: content);
+            embed = $"Zmieniono tło profilu użytkownika: {mention}!".ToEmbedMessage(EMType.Success).Build();
+            await ReplyAsync(embed: embed);
         }
 
         [Command("globalki")]
@@ -636,6 +650,8 @@ namespace Sanakan.DiscordBot.Modules
         {
             var cost = 1000;
             var user = Context.User as IGuildUser;
+            var mention = user.Mention;
+            Embed embed;
 
             if (user == null)
             {
@@ -645,7 +661,8 @@ namespace Sanakan.DiscordBot.Modules
             var databaseUser = await _userRepository.GetUserOrCreateAsync(user.Id);
             if (databaseUser.TcCount < cost)
             {
-                await ReplyAsync(embed: $"{user.Mention} nie posiadasz wystarczającej liczby TC!".ToEmbedMessage(EMType.Error).Build());
+                embed = string.Format(Strings.NoEnoughTC, mention).ToEmbedMessage(EMType.Error).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
@@ -656,7 +673,8 @@ namespace Sanakan.DiscordBot.Modules
 
             if (globalRole == null)
             {
-                await ReplyAsync(embed: "Serwer nie ma ustawionej roli globalnych emotek.".ToEmbedMessage(EMType.Bot).Build());
+                embed = "Serwer nie ma ustawionej roli globalnych emotek.".ToEmbedMessage(EMType.Bot).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
@@ -683,7 +701,9 @@ namespace Sanakan.DiscordBot.Modules
 
             _cacheManager.ExpireTag(CacheKeys.User(databaseUser.Id));
 
-            await ReplyAsync(embed: $"{user.Mention} wykupił miesiąc globalnych emotek!".ToEmbedMessage(EMType.Success).Build());
+            embed = $"{mention} wykupił miesiąc globalnych emotek!".ToEmbedMessage(EMType.Success)
+                .Build();
+            await ReplyAsync(embed: embed);
         }
 
         [Command("kolor")]

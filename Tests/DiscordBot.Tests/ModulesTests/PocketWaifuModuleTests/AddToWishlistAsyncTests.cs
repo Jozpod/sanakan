@@ -19,10 +19,88 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
     public class AddToWishlistAsyncTests : Base
     {
         [TestMethod]
+        public async Task Should_Return_Error_Message_Item_Exists()
+        {
+            var objectId = 1ul;
+            var user = new User(1ul, DateTime.UtcNow);
+            var type = WishlistObjectType.Card;
+            user.GameDeck.Wishes.Add(new WishlistObject { Type = type, ObjectId = objectId });
+
+            _userMock
+                .Setup(pr => pr.Id)
+                .Returns(user.Id);
+
+            _userMock
+                .Setup(pr => pr.Mention)
+                .Returns("user mention");
+
+            _userRepositoryMock
+                .Setup(pr => pr.GetUserOrCreateAsync(user.Id))
+                .ReturnsAsync(user);
+
+            SetupSendMessage((message, embed) =>
+            {
+                embed.Description.Should().NotBeNull();
+            });
+
+            await _module.AddToWishlistAsync(type, objectId);
+        }
+
+        [TestMethod]
         [DataRow(WishlistObjectType.Character)]
         [DataRow(WishlistObjectType.Card)]
         [DataRow(WishlistObjectType.Title)]
-        public async Task Should_Add_To_Wish_List(WishlistObjectType wishlistObjectType)
+        public async Task Should_Return_Error_Message_Not_Found(WishlistObjectType wishlistObjectType)
+        {
+            var objectId = 1ul;
+            var user = new User(1ul, DateTime.UtcNow);
+            var animeMangaInfoResult = new ShindenResult<AnimeMangaInfo>();
+            var characterResult = new ShindenResult<CharacterInfo>();
+
+                _userMock
+                    .Setup(pr => pr.Id)
+                    .Returns(user.Id);
+
+                _userMock
+                    .Setup(pr => pr.Mention)
+                    .Returns("user mention");
+
+                _userRepositoryMock
+                    .Setup(pr => pr.GetUserOrCreateAsync(user.Id))
+                    .ReturnsAsync(user);
+
+                _cardRepositoryMock
+                    .Setup(pr => pr.GetByIdAsync(objectId))
+                    .ReturnsAsync(null as Card);
+
+                _shindenClientMock
+                    .Setup(pr => pr.GetAnimeMangaInfoAsync(objectId))
+                    .ReturnsAsync(animeMangaInfoResult);
+
+                _shindenClientMock
+                    .Setup(pr => pr.GetCharacterInfoAsync(objectId))
+                    .ReturnsAsync(characterResult);
+
+                _userRepositoryMock
+                   .Setup(pr => pr.SaveChangesAsync(default))
+                   .Returns(Task.CompletedTask);
+
+                _cacheManagerMock
+                    .Setup(pr => pr.ExpireTag(It.IsAny<string[]>()));
+
+                SetupSendMessage((message, embed) =>
+                {
+                    embed.Description.Should().NotBeNull();
+                });
+
+                await _module.AddToWishlistAsync(wishlistObjectType, objectId);
+            }
+
+        [TestMethod]
+        [DataRow(WishlistObjectType.Character)]
+        [DataRow(WishlistObjectType.Card)]
+        [DataRow(WishlistObjectType.Title)]
+        public async Task Should_Add_To_Wish_List_And_Return_Confirm_Message(WishlistObjectType wishlistObjectType)
         {
             var objectId = 1ul;
             var user = new User(1ul, DateTime.UtcNow);

@@ -899,7 +899,7 @@ namespace Sanakan.Game.Services
             return list;
         }
 
-        public Embed GetBoosterPackList(IUser user, List<BoosterPack> packs)
+        public Embed GetBoosterPackList(IUser user, IList<BoosterPack> packs)
         {
             var groupCount = 0;
             var startGroup = 1;
@@ -1344,7 +1344,7 @@ namespace Sanakan.Game.Services
             IEnumerable<ulong> cardsId,
             IEnumerable<ulong> charactersId,
             IEnumerable<ulong> titlesId,
-            List<Card> allCards,
+            ICollection<Card> allCards,
             IEnumerable<Card> userCards)
         {
             var characters = new List<ulong>();
@@ -1387,7 +1387,10 @@ namespace Sanakan.Game.Services
                 var cards = await cardRepository
                     .GetByCharacterIdsAsync(characters);
 
-                allCards.AddRange(cards);
+                foreach (var card in cards)
+                {
+                    allCards.Add(card);
+                }
             }
 
             return allCards.Distinct().ToList();

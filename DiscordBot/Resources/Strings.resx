@@ -128,6 +128,9 @@
   <data name="CardNotFound" xml:space="preserve">
     <value>Nie odnaleziono karty.</value>
   </data>
+  <data name="CardNotInAnyWishlist" xml:space="preserve">
+    <value>Nikt nie chce tej karty.</value>
+  </data>
   <data name="CardsNotFound" xml:space="preserve">
     <value>{0} nie odnaleziono kart.</value>
   </data>
@@ -169,11 +172,23 @@
   <data name="InvalidDuration" xml:space="preserve">
     <value>Podano zla dlugosc</value>
   </data>
+  <data name="InvalidImageProvideCorrectUrl" xml:space="preserve">
+    <value>Nie wykryto obrazka! Upewnij się, że podałeś poprawny adres!</value>
+  </data>
   <data name="MatchedMultipleUsers" xml:space="preserve">
     <value>Dopasowano wielu użytkowników!</value>
   </data>
   <data name="MuteRoleNotSet" xml:space="preserve">
     <value>Rola wyciszająca nie jest ustawiona.</value>
+  </data>
+  <data name="NoEnoughCT" xml:space="preserve">
+    <value>{0} nie masz wystarczającej liczby CT.</value>
+  </data>
+  <data name="NoEnoughSC" xml:space="preserve">
+    <value>{0} nie posiadasz wystarczającej liczby SC!</value>
+  </data>
+  <data name="NoEnoughTC" xml:space="preserve">
+    <value>{0} nie posiadasz wystarczającej liczby TC!</value>
   </data>
   <data name="NoItems" xml:space="preserve">
     <value>Brak wyników!</value>
@@ -355,6 +370,12 @@ Rzędy / `1`, `2`, `3`</value>
 **Mnożnik:** `x{4}`
 
 **Wygrana:** `{5} SC`</value>
+  </data>
+  <data name="TitleNotFound" xml:space="preserve">
+    <value>Nie odnaleziono tytułu!</value>
+  </data>
+  <data name="TitleNotInWishList" xml:space="preserve">
+    <value>Nikt nie ma tego tytułu wpisanego na listę życzeń.</value>
   </data>
   <data name="UserDoesNotExistInDatabase" xml:space="preserve">
     <value>Ta osoba nie ma profilu bota.</value>

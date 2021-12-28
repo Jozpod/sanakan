@@ -51,6 +51,9 @@ make run
 
 Invite bot to your server
 
+> ⚠️  Make sure `Server members intent` is enabled as bot is accessing guild members
+> ⚠️  The bot requires `manage roles` permission.
+
 Discord invite template.
 
 ```

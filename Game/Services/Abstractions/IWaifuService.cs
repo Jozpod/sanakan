@@ -16,7 +16,7 @@ namespace Sanakan.Game.Services.Abstractions
 
         Card GenerateNewCard(ulong? discordUserId, CharacterInfo character, IEnumerable<Rarity> rarityExcluded);
 
-        Embed GetBoosterPackList(IUser user, List<BoosterPack> packs);
+        Embed GetBoosterPackList(IUser user, IList<BoosterPack> packs);
 
         double GetExperienceToUpgrade(Card toUpgrade, Card toSacrifice);
 
@@ -88,7 +88,7 @@ namespace Sanakan.Game.Services.Abstractions
             IEnumerable<ulong> cardsId,
             IEnumerable<ulong> charactersId,
             IEnumerable<ulong> titlesId,
-            List<Card> allCards,
+            ICollection<Card> allCards,
             IEnumerable<Card> userCards);
     }
 }

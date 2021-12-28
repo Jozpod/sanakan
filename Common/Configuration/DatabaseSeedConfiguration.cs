@@ -41,6 +41,10 @@ namespace Sanakan.Common.Configuration
 
             public ulong? FightWaifuChannelId { get; set; }
 
+            public ulong? SpawnChannelId { get; set; }
+
+            public ulong? TrashSpawnChannelId { get; set; }
+
             public ulong? SafariWaifuChannelId { get; set; }
 
             public ulong? AdminRoleId { get; set; }

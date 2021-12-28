@@ -292,7 +292,7 @@ namespace Sanakan.Daemon.HostedService
             await message.AddReactionAsync(Emojis.RaisedHand);
         }
 
-        private void HandleUserAsync(IUserMessage message)
+        private void HandleUserAsync(IMessage message)
         {
             var charactersNeeded = _experienceConfiguration.CurrentValue.CharPerPacket;
             if (charactersNeeded <= 0)
