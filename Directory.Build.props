@@ -2,6 +2,7 @@
     <PropertyGroup>
         <TargetFramework>net5.0</TargetFramework>
         <LangVersion>9.0</LangVersion>
+        <RuntimeIdentifiers>win10-x64;linux-x64</RuntimeIdentifiers>  
         <Nullable>enable</Nullable>
         <Copyright>Jotpe</Copyright>
         <Product>Sanakan</Product>

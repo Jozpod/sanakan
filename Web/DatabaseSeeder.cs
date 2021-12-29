@@ -226,9 +226,18 @@ namespace Sanakan.Web
 
                     if (userSeed.NumberOfCards.HasValue)
                     {
+                        var couldNotFindCharacters = false;
+
                         foreach (var _ in Enumerable.Range(1, userSeed.NumberOfCards.Value))
                         {
                             var character = await _waifuService.GetRandomCharacterAsync();
+
+                            if(character == null)
+                            {
+                                couldNotFindCharacters = true;
+                                break;
+                            }
+
                             var card = _waifuService.GenerateNewCard(user.Id, character!);
                             card.Active = true;
 
@@ -242,10 +251,10 @@ namespace Sanakan.Web
 
                         var activeCards = new List<Card>();
                         var cards = user.GameDeck.Cards.ToList();
-                        var cardsToActivate = userSeed.ActiveCards.HasValue ? 
+                        var cardsToActivate = userSeed.ActiveCards.HasValue && !couldNotFindCharacters ? 
                             Enumerable.Range(1, userSeed.ActiveCards.Value)
                             : Enumerable.Empty<int>();
-                        var wishListItems = userSeed.WishListItems.HasValue ?
+                        var wishListItems = userSeed.WishListItems.HasValue && !couldNotFindCharacters ?
                             Enumerable.Range(1, userSeed.WishListItems.Value)
                             : Enumerable.Empty<int>();
 

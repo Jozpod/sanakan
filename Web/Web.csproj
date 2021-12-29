@@ -17,11 +17,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Remove="appsettings - Copy.template.json" />
     <Content Remove="appsettings.template.json" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Include="..\.editorconfig" Link=".editorconfig" />
     <None Include="appsettings.Development.template.json" />
     <None Include="appsettings.template.json" />

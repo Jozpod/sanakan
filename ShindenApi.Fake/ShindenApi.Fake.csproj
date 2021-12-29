@@ -1,11 +1,25 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-     <OutputType>Exe</OutputType> 
     <RootNamespace>Sanakan.ShindenApi.Fake</RootNamespace>
     <Configurations>Debug;Release;Test</Configurations>
     <AssemblyName>Sanakan.ShindenApi.Fake</AssemblyName>
   </PropertyGroup>
+  
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <OutputType>Exe</OutputType> 
+  </PropertyGroup>
+
+  <ItemGroup Condition=" '$(Configuration)' == 'Release' ">
+    <Content Remove="appsettings.json" />
+    <None Include="appsettings.json" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="HtmlAgilityPack" Version="1.11.39" />
@@ -19,12 +33,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ShindenApi\ShindenApi.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="appsettings.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 
 </Project>

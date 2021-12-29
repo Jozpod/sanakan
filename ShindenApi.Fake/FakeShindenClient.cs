@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Sanakan.ShindenApi.Models;
 using Sanakan.ShindenApi.Models.Enums;
 using Shinden.API;
@@ -15,18 +16,27 @@ namespace Sanakan.ShindenApi.Fake
     /// </summary>
     internal class FakeShindenClient : IShindenClient, IDisposable
     {
+        private readonly ILogger _logger;
         private readonly IServiceScope _serviceScope;
         private readonly WebScrapedDbContext _dbContext;
         private readonly ShindenWebScraper _shindenWebScraper;
 
         public FakeShindenClient(
+            ILogger<FakeShindenClient> logger,
             IServiceScopeFactory serviceScopeFactory,
             ShindenWebScraper shindenWebScraper)
         {
+            _logger = logger;
             _serviceScope = serviceScopeFactory.CreateScope();
             _dbContext = _serviceScope.ServiceProvider.GetRequiredService<WebScrapedDbContext>();
             _shindenWebScraper = shindenWebScraper;
-            
+
+            var created = _dbContext.Database.EnsureCreated();
+
+            if (created)
+            {
+                _logger.LogError("No database found. The api");
+            }
         }
 
         public void Dispose()

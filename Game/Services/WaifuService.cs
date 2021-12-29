@@ -783,6 +783,11 @@ namespace Sanakan.Game.Services
                 Ids = charactersResult.Value;
             }
 
+            if (!Ids.Any())
+            {
+                return null;
+            }
+
             var id = _randomNumberGenerator.GetOneRandomFrom(Ids);
             var response = await _shindenClient.GetCharacterInfoAsync(id);
 

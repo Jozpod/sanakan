@@ -152,11 +152,20 @@ Entries in `Guilds[].Users` will create users with specified parameters.
 
 #### Fake API ####
 
-When option in `ShindenApi:UseFake` is enabled. The bot will webscrape the shinden website for any information relating to anime/manga/character/user.
+When option in `ShindenApi:UseFake` is enabled. The bot will webscrape the shinden website for any information relating to anime/manga/character/user
+and export some of the data ( characters, anime series ) to the sqlite database `FakeShinden.db`
+
+To generate database first run 
+
+```console
+cd ShindenApi.Fake
+dotnet run --project ShindenApi.Fake.csproj
+```
 
 ## Deployment ##
 
 > ℹ️   [Specify runtime identifier which matches your machine before publishing app](https://docs.microsoft.com/en-us/dotnet/core/rid-catalog)
+> ℹ️   If you are using fake shinden api make sure `FakeShinden.db` is in the same folder as the executable.
 
 ### Linux ###
 
@@ -173,7 +182,7 @@ sh RunDebug.sh
 ### Windows ###
 
 ```console
-dotnet publish Web/Web.csproj --configuration Release --runtime win-x64 --output ./publish
+dotnet publish Web/Web.csproj --configuration Release --runtime win-x64 /p:PublishSingleFile=true /p:DebugType=None /p:DebugSymbols=false --output ./publish
 
 ```
 

@@ -11,9 +11,15 @@ namespace Sanakan.ShindenApi.Fake.Builder
     {
         public static IServiceCollection AddFakeShindenApi(this IServiceCollection services)
         {
-            var databasePath = Path.GetFullPath(Path.Combine(
-                AppDomain.CurrentDomain.BaseDirectory,
-                "../../../../", "FakeShinden.db"));
+            var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            var fileName = "FakeShinden.db";
+#if DEBUG
+            var databasePath = Path.Combine(baseDirectory, "../../../../", fileName);
+#else
+            var databasePath = Path.Combine(baseDirectory, fileName);
+#endif
+            databasePath = Path.GetFullPath(databasePath);
+
             services.AddDbContextPool<WebScrapedDbContext>((optionsBuilder) =>
             {
                 optionsBuilder.UseSqlite($"Data Source={databasePath};");
