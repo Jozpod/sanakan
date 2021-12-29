@@ -2,6 +2,10 @@ name: Build and Tests
 
 on:
   pull_request:
+    paths-ignore:
+      - LICENSE
+      - ".github/**"
+      - "*.md"
     branches: [master]
 
 jobs:

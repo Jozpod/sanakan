@@ -2,8 +2,11 @@ name: Build, Tests, Code Coverage
 
 on:
   push:
+    paths-ignore:
+      - LICENSE
+      - ".github/**"
+      - "*.md"
     branches: [master]
-
 jobs:
   build:
     runs-on: ubuntu-latest

@@ -394,6 +394,7 @@ Pictures/Poke
 nohup.out
 Web/appsettings.json
 appsettings.Development.json
+appsettings.Production.json
 sanakan_key
 sanakan_key.pub
 Sanakan_coverage.xml
