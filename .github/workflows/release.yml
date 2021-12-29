@@ -32,13 +32,13 @@ jobs:
           dotnet-version: 5.0.x
       - name: Restore dependencies
         run: dotnet restore
-      - name: Build
+      - name: Publish
         shell: bash
         run: |
           tag=$(git describe --tags --abbrev=0)
           release_name="Sanakan-$tag-${{ matrix.target }}"
 
-          dotnet publish Web/Web.csproj --configuration Release --runtime "${{ matrix.target }}" /p:PublishSingleFile=true /p:DebugType=None /p:DebugSymbols=false --output "$release_name"
+          dotnet publish Web/Web.csproj --configuration Release --runtime "${{ matrix.target }}" /p:DebugType=None /p:DebugSymbols=false --output "$release_name"
 
           if [ "${{ matrix.target }}" == "win-x64" ]; then
 
