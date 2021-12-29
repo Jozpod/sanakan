@@ -6,6 +6,7 @@ on:
       - LICENSE
       - ".github/**"
       - "*.md"
+      - ".gitignore"
     branches: [master]
 
 jobs:
