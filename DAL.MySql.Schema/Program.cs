@@ -6,17 +6,19 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 
-
 namespace Sanakan.DAL.MySql.Schema
 {
-    class Program
+    public class Program
     {
-        static async Task Main(string[] args)
+        public static async Task Main(string[] args)
         {
+            var environmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+
             var serviceCollection = new ServiceCollection();
             var builder = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .AddJsonFile($"appsettings-{environmentName}.json", optional: true, reloadOnChange: true);
 
             var configurationRoot = builder.Build();
 
@@ -51,7 +53,7 @@ namespace Sanakan.DAL.MySql.Schema
 
             var created = await databaseFacade.EnsureCreatedAsync();
             await tableScripter.RunAsync();
-            
+
             if (created)
             {
                 await testDataGenerator.RunAsync();

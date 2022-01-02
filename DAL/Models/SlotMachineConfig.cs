@@ -2,7 +2,6 @@
 
 namespace Sanakan.DAL.Models
 {
-
     public class SlotMachineConfig
     {
         public ulong Id { get; set; }

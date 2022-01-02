@@ -11,18 +11,18 @@ namespace Sanakan.DAL.Repositories
     public class CardsQueryFilter
     {
         /// <summary>
-        /// Order by criteria
+        /// Order by criteria.
         /// </summary>
         public OrderType OrderBy { get; set; }
 
         /// <summary>
-        /// Text to search
+        /// Text to search.
         /// </summary>
         [StringLength(50)]
         public string SearchText { get; set; } = null;
 
         /// <summary>
-        /// Tags to include in query
+        /// Tags to include in query.
         /// </summary>
         public List<string> IncludeTags { get; set; } = new();
 
@@ -57,9 +57,9 @@ namespace Sanakan.DAL.Repositories
                 case OrderType.DefenceDes:
                     return query.OrderByDescending(x => x.Defence + x.DefenceBonus + x.RestartCount);
                 case OrderType.Health:
-                    return query.OrderBy(x => x.Health + (x.Health * (x.Affection * 5d / 100d) + x.HealthBonus));
+                    return query.OrderBy(x => x.Health + ((x.Health * (x.Affection * 5d / 100d)) + x.HealthBonus));
                 case OrderType.HealthDes:
-                    return query.OrderByDescending(x => x.Health + (x.Health * (x.Affection * 5d / 100d) + x.HealthBonus));
+                    return query.OrderByDescending(x => x.Health + ((x.Health * (x.Affection * 5d / 100d)) + x.HealthBonus));
                 case OrderType.HealthBase:
                     return query.OrderBy(x => x.Health);
                 case OrderType.HealthBaseDes:

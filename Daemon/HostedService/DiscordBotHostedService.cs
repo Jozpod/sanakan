@@ -25,6 +25,7 @@ namespace Sanakan.Daemon.HostedService
 {
     internal class DiscordBotHostedService : BackgroundService
     {
+        private const double experienceSaveThreshold = 5;
         private readonly IBlockingPriorityQueue _blockingPriorityQueue;
         private readonly IDiscordClientAccessor _discordSocketClientAccessor;
         private readonly ICommandHandler _commandHandler;
@@ -37,18 +38,8 @@ namespace Sanakan.Daemon.HostedService
         private readonly ITaskManager _taskManager;
         private readonly IDatabaseFacade _databaseFacade;
         private readonly IHostApplicationLifetime _applicationLifetime;
-        private const double experienceSaveThreshold = 5;
-        private IDictionary<ulong, UserStat> _userStatsMap;
         private readonly TimeSpan _halfAnHour;
-
-        private class UserStat
-        {
-            public DateTime? SavedOn { get; set; }
-            public double Experience { get; set; }
-            public ulong CharacterCount { get; set; }
-            public ulong CommandsCount { get; set; }
-            public ulong MessagesCount { get; set; }
-        }
+        private readonly IDictionary<ulong, UserStat> _userStatsMap;
 
         public DiscordBotHostedService(
             IFileSystem fileSystem,
@@ -97,7 +88,7 @@ namespace Sanakan.Daemon.HostedService
                 _fileSystem.CreateDirectory(Paths.Profiles);
                 stoppingToken.ThrowIfCancellationRequested();
 
-                _discordSocketClientAccessor.Log += onLog;
+                _discordSocketClientAccessor.Log += OnLog;
                 _discordSocketClientAccessor.Disconnected += DisconnectedAsync;
                 _discordSocketClientAccessor.LeftGuild += BotLeftGuildAsync;
                 _discordSocketClientAccessor.UserJoined += UserJoinedAsync;
@@ -205,6 +196,7 @@ namespace Sanakan.Daemon.HostedService
                     userRepository.Add(databseUser);
                     await userRepository.SaveChangesAsync();
                 }
+
                 userExperienceStat = new UserStat();
                 _userStatsMap[userId] = userExperienceStat;
             }
@@ -530,7 +522,6 @@ namespace Sanakan.Daemon.HostedService
 
                 await LogMessageAsync(guild, message);
             }
-
         }
 
         private async Task LogMessageAsync(IGuild guild, IMessage oldMessage, IMessage? newMessage = null)
@@ -618,7 +609,7 @@ namespace Sanakan.Daemon.HostedService
         private string ReplaceTags(IGuildUser user, string message)
             => message.Replace("^nick", user.Nickname ?? user.Username).Replace("^mention", user.Mention);
 
-        private Task onLog(LogMessage log)
+        private Task OnLog(LogMessage log)
         {
             switch (log.Severity)
             {
@@ -640,6 +631,19 @@ namespace Sanakan.Daemon.HostedService
             }
 
             return Task.CompletedTask;
+        }
+
+        private class UserStat
+        {
+            public DateTime? SavedOn { get; set; }
+
+            public double Experience { get; set; }
+
+            public ulong CharacterCount { get; set; }
+
+            public ulong CommandsCount { get; set; }
+
+            public ulong MessagesCount { get; set; }
         }
     }
 }

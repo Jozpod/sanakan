@@ -10,32 +10,32 @@ namespace Sanakan.Game.Models
     public class CardBoosterPack
     {
         /// <summary>
-        /// Specifies whether the cards in a bundle can be exchanged
+        /// Specifies whether the cards in a bundle can be exchanged.
         /// </summary>
         public bool Tradable { get; set; }
 
         /// <summary>
-        /// Gwarantowana jakość jednej z kart, E - 100% losowanei
+        /// The card rarity which randomizer will prioritize.
         /// </summary>
         public Rarity Rarity { get; set; }
 
         /// <summary>
-        /// Wykluczone jakości z losowania, Gwarantowana ma wyższy priorytet
+        /// Excluded rarities from lottery.
         /// </summary>
         public List<Rarity> RarityExcluded { get; set; } = new();
 
         /// <summary>
-        /// Nazwa pakietu
+        /// The card bundle name.
         /// </summary>
         public string Name { get; set; } = string.Empty;
 
         /// <summary>
-        /// The amount of cards in bundle (min. 1)
+        /// The amount of cards in bundle (min. 1).
         /// </summary>
         public uint Count { get; set; }
 
         /// <summary>
-        /// Definuje jak będą losowane postacie do kart
+        /// Defines how cards will be randomized.
         /// </summary>
         public CardBoosterPackPool Pool { get; set; } = null;
 
@@ -52,14 +52,11 @@ namespace Sanakan.Game.Models
                 Name = Name
             };
 
-            if (RarityExcluded != null)
+            if (RarityExcluded.Any())
             {
-                if (RarityExcluded.Any())
+                foreach (var rarityExcluded in RarityExcluded)
                 {
-                    foreach (var rarityExcluded in RarityExcluded)
-                    {
-                        pack.RarityExcludedFromPack.Add(new RarityExcluded(rarityExcluded));
-                    }
+                    pack.RarityExcludedFromPack.Add(new RarityExcluded(rarityExcluded));
                 }
             }
 
@@ -75,6 +72,7 @@ namespace Sanakan.Game.Models
                     {
                         pack.Characters.Add(new BoosterPackCharacter(characterId));
                     }
+
                     break;
 
                 default:

@@ -9,7 +9,7 @@ namespace Sanakan.TaskQueue.MessageHandlers
     }
 
     public interface IMessageHandler<in T> : IMessageHandler
-        where T: BaseMessage
+        where T : BaseMessage
     {
         Task HandleAsync(T message);
     }

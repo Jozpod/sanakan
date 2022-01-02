@@ -16,6 +16,7 @@ namespace Sanakan.Daemon.HostedService
 {
     internal class MemoryUsageHostedService : BackgroundService
     {
+        private const int MB = 1048576;
         private readonly ILogger _logger;
         private readonly ISystemClock _systemClock;
         private readonly IOptionsMonitor<DaemonsConfiguration> _options;
@@ -25,7 +26,6 @@ namespace Sanakan.Daemon.HostedService
         private readonly ITaskManager _taskManager;
         private readonly ITimer _timer;
         private readonly IDatabaseFacade _databaseFacade;
-        private const int MB = 1048576;
         private bool _isRunning;
 
         public MemoryUsageHostedService(
@@ -52,7 +52,7 @@ namespace Sanakan.Daemon.HostedService
         protected override async Task ExecuteAsync(CancellationToken stoppingToken = default)
         {
             await _databaseFacade.EnsureCreatedAsync(stoppingToken);
-           
+
             try
             {
                 stoppingToken.ThrowIfCancellationRequested();
@@ -62,7 +62,7 @@ namespace Sanakan.Daemon.HostedService
                     _options.CurrentValue.CaptureMemoryUsagePeriod);
 
                 await _taskManager.Delay(Timeout.InfiniteTimeSpan, stoppingToken);
-            } 
+            }
             catch (OperationCanceledException)
             {
                 _timer.Stop();

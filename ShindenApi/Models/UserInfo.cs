@@ -89,5 +89,4 @@ namespace Sanakan.ShindenApi.Models
         [JsonPropertyName("watched_status")]
         public ReadWatchStatuses? WatchedStatus { get; set; }
     }
-
 }

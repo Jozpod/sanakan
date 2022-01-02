@@ -15,7 +15,8 @@ namespace Sanakan.DAL.Repositories
 
         public PenaltyInfoRepository(
             SanakanDbContext dbContext,
-            ICacheManager cacheManager) : base(dbContext)
+            ICacheManager cacheManager)
+            : base(dbContext)
         {
             _dbContext = dbContext;
             _cacheManager = cacheManager;
@@ -83,7 +84,6 @@ namespace Sanakan.DAL.Repositories
                 .FirstOrDefaultAsync(x => x.UserId == discordUserId
                     && x.Type == penaltyType
                     && x.GuildId == discordGuildId);
-
         }
 
         public async Task RemovePenaltyAsync(PenaltyInfo penalty)

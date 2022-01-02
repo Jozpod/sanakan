@@ -5,7 +5,9 @@ namespace Sanakan.DAL.MySql.Migrator.TableEnumerators
     public class UserStatsEnumerator : TableEnumerator<UserStats>
     {
         public UserStatsEnumerator(IDbConnection connection)
-            : base(connection) { }
+            : base(connection)
+        {
+        }
 
         public override UserStats Current => new()
         {

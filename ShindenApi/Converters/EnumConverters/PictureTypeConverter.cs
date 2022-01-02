@@ -10,6 +10,9 @@ namespace Sanakan.ShindenApi.Converters
             { "image_picture", PictureType.Image },
         };
 
-        public PictureTypeConverter() : base(_map, PictureType.NotSpecified) {}
+        public PictureTypeConverter()
+            : base(_map, PictureType.NotSpecified)
+        {
+        }
     }
 }

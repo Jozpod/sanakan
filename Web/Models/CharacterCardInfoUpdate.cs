@@ -1,7 +1,7 @@
 ﻿namespace Sanakan.Web.Models
 {
     /// <summary>
-    /// Describes the card
+    /// Describes the card.
     /// </summary>
     public class CharacterCardInfoUpdate
     {
@@ -11,13 +11,12 @@
         public string? ImageUrl { get; set; }
 
         /// <summary>
-        /// Imię i nazwisko na karcie
+        /// The full card name.
         /// </summary>
-
         public string CharacterName { get; set; } = string.Empty;
 
         /// <summary>
-        /// Nazwa serii z której pochodzi karta
+        /// The card series title.
         /// </summary>
         public string CardSeriesTitle { get; set; } = string.Empty;
     }

@@ -2,7 +2,6 @@
 
 namespace Sanakan.DAL.Models
 {
-
     public class CardPvPStats
     {
         public ulong Id { get; set; }

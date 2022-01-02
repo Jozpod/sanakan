@@ -10,6 +10,5 @@ namespace Sanakan.DiscordBot
         public static Emote IconFull = Emote.Parse("<:icon_full:829327738233421875>");
         public static Emote Psyduck = Emote.Parse("<:klasycznypsaj:482136878120828938>");
         public static Emote DeclineEmote = Emote.Parse("<:redcross:581152766655856660>");
-
     }
 }

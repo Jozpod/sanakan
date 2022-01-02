@@ -5,9 +5,9 @@ namespace Sanakan.ShindenApi.Fake
 {
     public class WebScrapedDbContext : DbContext
     {
-        public WebScrapedDbContext(DbContextOptions<WebScrapedDbContext> options) : base(options)
+        public WebScrapedDbContext(DbContextOptions<WebScrapedDbContext> options)
+            : base(options)
         {
-
         }
 
         public DbSet<Illustration> Illustrations { get; set; } = null!;

@@ -6,7 +6,9 @@ namespace Sanakan.DAL.MySql.Migrator.TableEnumerators
     public class PenaltiesEnumerator : TableEnumerator<PenaltyInfo>
     {
         public PenaltiesEnumerator(IDbConnection connection)
-            : base(connection) { }
+            : base(connection)
+        {
+        }
 
         public override PenaltyInfo Current => new()
         {

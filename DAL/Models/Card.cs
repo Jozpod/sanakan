@@ -105,7 +105,7 @@ namespace Sanakan.DAL.Models
         /// <summary>
         /// The Shinden character identifier.
         /// </summary>
-        /// <remarks>Link to character in Shinden: https://shinden.pl/character/CharacterId</remarks>
+        /// <remarks>Link to character in Shinden: https://shinden.pl/character/CharacterId.</remarks>
         public ulong CharacterId { get; set; }
 
         public DateTime CreatedOn { get; set; }
@@ -176,13 +176,15 @@ namespace Sanakan.DAL.Models
         [JsonIgnore]
         public virtual GameDeck GameDeck { get; set; } = null!;
 
-        public bool CanGiveRing() => Affection >= 5;
-
-        public bool CanGiveBloodOrUpgradeToSSS() => Affection >= 50;
-
         public bool IsBroken => Affection <= -50;
 
         public bool IsUnusable => Affection <= -5;
+
+        public static bool IsKarmaNeutral(double karma) => karma > -10 && karma < 10;
+
+        public bool CanGiveRing() => Affection >= 5;
+
+        public bool CanGiveBloodOrUpgradeToSSS() => Affection >= 50;
 
         public int GetValue()
         {
@@ -263,15 +265,13 @@ namespace Sanakan.DAL.Models
             }
         }
 
-        public static bool IsKarmaNeutral(double karma) => karma > -10 && karma < 10;
-
         public TimeSpan CalculateMaxTimeOnExpedition(double karma, ExpeditionCardType expedition = ExpeditionCardType.None)
         {
             expedition = (expedition == ExpeditionCardType.None) ? Expedition : expedition;
             var perMinute = GetCostOfExpeditionPerMinute(expedition);
-            double param = Affection;
-            double addOFK = karma / 200;
-            double affOffset = 6d;
+            var param = Affection;
+            var addOFK = karma / 200d;
+            var affOffset = 6d;
 
             if (IsKarmaNeutral(karma))
             {
@@ -292,6 +292,7 @@ namespace Sanakan.DAL.Models
                     {
                         addOFK = 5;
                     }
+
                     break;
 
                 case ExpeditionCardType.DarkItems:
@@ -302,6 +303,7 @@ namespace Sanakan.DAL.Models
                     {
                         addOFK = 10;
                     }
+
                     break;
 
                 default:
@@ -345,6 +347,7 @@ namespace Sanakan.DAL.Models
                     {
                         return 120 * (int)Quality;
                     }
+
                     return 1000;
                 case Rarity.SS:
                     return 100;
@@ -369,6 +372,7 @@ namespace Sanakan.DAL.Models
             return Tags
                 .Any(x => tags.Any(t => t.Equals(x.Name, StringComparison.CurrentCultureIgnoreCase)));
         }
+
         public int GetHealthMax()
         {
             return 300 - (Attack + Defence);
@@ -378,13 +382,19 @@ namespace Sanakan.DAL.Models
         {
             return GetMaxStarsPerType() * GetRestartCntPerStar() * GetCardStarType();
         }
+
         public int GetCardStarCount()
         {
             var max = GetMaxStarsPerType();
             var starCnt = (RestartCount - GetMaxCardsRestartsOnStarType()) / GetRestartCntPerStar();
-            if (starCnt > max) starCnt = max;
+            if (starCnt > max)
+            {
+                starCnt = max;
+            }
+
             return starCnt;
         }
+
         public int GetCardStarType()
         {
             var max = MaxStarType();
@@ -393,12 +403,20 @@ namespace Sanakan.DAL.Models
             if (type > 0)
             {
                 var ths = RestartCount - (maxRestartsPerType + ((type - 1) * maxRestartsPerType));
-                if (ths < GetRestartCntPerStar()) --type;
+                if (ths < GetRestartCntPerStar())
+                {
+                    --type;
+                }
             }
 
-            if (type > max) type = max;
+            if (type > max)
+            {
+                type = max;
+            }
+
             return type;
         }
+
         public double CalculateCardPower()
         {
             var cardPower = GetHealthWithPenalty() * 0.018;
@@ -436,45 +454,78 @@ namespace Sanakan.DAL.Models
             }
 
             if (cardPower < 1)
+            {
                 cardPower = 1;
+            }
 
             CardPower = cardPower;
 
             return cardPower;
         }
+
         public int MaxStarType() => 9;
+
         public int GetRestartCntPerStar() => 2;
+
         public int GetMaxStarsPerType() => 5;
+
         public int GetTotalCardStarCount()
         {
             var max = GetMaxStarsPerType() * MaxStarType();
             var stars = RestartCount / GetRestartCntPerStar();
-            if (stars > max) stars = max;
+            if (stars > max)
+            {
+                stars = max;
+            }
+
             return stars;
         }
 
         public string GetAffectionString()
         {
-            if (Affection <= -400) return "Pogarda (γ)";
-            if (Affection <= -200) return "Pogarda (β)";
-            if (Affection <= -100) return "Pogarda (α)";
-            if (Affection <= -50) return "Pogarda";
-            if (Affection <= -5) return "Nienawiść";
-            if (Affection <= -4) return "Zawiść";
-            if (Affection <= -3) return "Wrogość";
-            if (Affection <= -2) return "Złośliwość";
-            if (Affection <= -1) return "Chłodność";
-            if (Affection >= 400) return "Obsesyjna miłość (γ)";
-            if (Affection >= 200) return "Obsesyjna miłość (β)";
-            if (Affection >= 100) return "Obsesyjna miłość (α)";
-            if (Affection >= 50) return "Obsesyjna miłość";
-            if (Affection >= 5) return "Miłość";
-            if (Affection >= 4) return "Zauroczenie";
-            if (Affection >= 3) return "Przyjaźń";
-            if (Affection >= 2) return "Fascynacja";
-            if (Affection >= 1) return "Zaciekawienie";
-            return "Obojętność";
+            switch (Affection)
+            {
+                case var _ when Affection < -400:
+                    return "Pogarda (γ)";
+                case var _ when Affection <= -200:
+                    return "Pogarda (β)";
+                case var _ when Affection <= -100:
+                    return "Pogarda (α)";
+                case var _ when Affection <= -50:
+                    return "Pogarda";
+                case var _ when Affection <= -5:
+                    return "Nienawiść";
+                case var _ when Affection <= -4:
+                    return "Zawiść";
+                case var _ when Affection <= -3:
+                    return "Wrogość";
+                case var _ when Affection <= -2:
+                    return "Złośliwość";
+                case var _ when Affection <= -1:
+                    return "Chłodność";
+                case var _ when Affection >= 400:
+                    return "Obsesyjna miłość (γ)";
+                case var _ when Affection >= 200:
+                    return "Obsesyjna miłość (β)";
+                case var _ when Affection >= 100:
+                    return "Obsesyjna miłość (α)";
+                case var _ when Affection >= 50:
+                    return "Obsesyjna miłość";
+                case var _ when Affection >= 5:
+                    return "Miłość";
+                case var _ when Affection >= 4:
+                    return "Zauroczenie";
+                case var _ when Affection >= 3:
+                    return "Przyjaźń";
+                case var _ when Affection >= 2:
+                    return "Fascynacja";
+                case var _ when Affection >= 1:
+                    return "Zaciekawienie";
+                default:
+                    return "Obojętność";
+            }
         }
+
         public MarketValue GetThreeStateMarketValue()
         {
             if (MarketValue < 0.3)
@@ -514,7 +565,9 @@ namespace Sanakan.DAL.Models
             }
 
             if (newAttack > maxAttack)
+            {
                 newAttack = maxAttack;
+            }
 
             return newAttack;
         }
@@ -539,7 +592,9 @@ namespace Sanakan.DAL.Models
             }
 
             if (newDefence > maxDefence)
+            {
                 newDefence = maxDefence;
+            }
 
             return newDefence;
         }
@@ -564,7 +619,6 @@ namespace Sanakan.DAL.Models
 
             return string.Join(inNewLine ? "\n" : " ", param);
         }
-
 
         public int GetHealthWithPenalty(bool allowZero = false)
         {

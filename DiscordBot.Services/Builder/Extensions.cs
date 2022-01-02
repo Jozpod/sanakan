@@ -13,7 +13,8 @@ namespace Sanakan.DiscordBot.Services.Builder
         {
             services.AddSingleton<CommandService>();
 
-            services.AddSingleton(pr => {
+            services.AddSingleton(pr =>
+            {
                 return new DiscordSocketClient(new DiscordSocketConfig()
                 {
                     AlwaysDownloadUsers = true,

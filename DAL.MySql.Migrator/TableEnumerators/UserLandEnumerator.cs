@@ -5,7 +5,9 @@ namespace Sanakan.DAL.MySql.Migrator.TableEnumerators
     public class UserLandEnumerator : TableEnumerator<UserLand>
     {
         public UserLandEnumerator(IDbConnection connection)
-            : base(connection) { }
+            : base(connection)
+        {
+        }
 
         public override UserLand Current => new()
         {

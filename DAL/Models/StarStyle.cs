@@ -14,46 +14,18 @@ namespace Sanakan.DAL.Models
 
     public static class StarStyleExtensions
     {
-        public static StarStyle Parse(this StarStyle star, string str)
+        public static StarStyle Parse(string str)
         {
-            switch (str.ToLower())
+            return str.ToLower() switch
             {
-                case "waz":
-                case "waż":
-                case "wąz":
-                case "wąż":
-                case "snek":
-                case "snake":
-                    return StarStyle.Snek;
-
-                case "pig":
-                case "świnia":
-                case "swinia":
-                case "świnka":
-                case "swinka":
-                    return StarStyle.Pig;
-
-                case "biała":
-                case "biala":
-                case "white":
-                    return StarStyle.White;
-
-                case "full":
-                case "pełna":
-                case "pelna":
-                    return StarStyle.Full;
-
-                case "empty":
-                case "pusta":
-                    return StarStyle.Empty;
-
-                case "black":
-                case "czarna":
-                    return StarStyle.Black;
-
-                default:
-                    throw new Exception("Could't parse input!");
-            }
+                "waz" or "waż" or "wąz" or "wąż" or "snek" or "snake" => StarStyle.Snek,
+                "pig" or "świnia" or "swinia" or "świnka" or "swinka" => StarStyle.Pig,
+                "biała" or "biala" or "white" => StarStyle.White,
+                "full" or "pełna" or "pelna" => StarStyle.Full,
+                "empty" or "pusta" => StarStyle.Empty,
+                "black" or "czarna" => StarStyle.Black,
+                _ => throw new Exception("Could't parse input!"),
+            };
         }
     }
 }

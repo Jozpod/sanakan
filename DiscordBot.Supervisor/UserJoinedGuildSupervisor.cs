@@ -24,14 +24,6 @@ namespace Sanakan.DiscordBot.Supervisor
             _timeIntervalBetweenUserGuildJoins = _supervisorConfiguration.CurrentValue.TimeIntervalBetweenUserGuildJoins;
         }
 
-        internal class Entry
-        {
-            public bool IsRaid { get; set; }
-            public ISet<ulong> UserIds { get; set; } = new HashSet<ulong>();
-            public uint OccurenceCount { get; set; }
-            public DateTime ModifiedOn { get; set; }
-        }
-
         public IEnumerable<ulong> GetUsersToBanCauseRaid(ulong guildId, string username, ulong userId)
         {
             var key = $"{guildId}-{username}";
@@ -92,6 +84,17 @@ namespace Sanakan.DiscordBot.Supervisor
                     entry.IsRaid = false;
                 }
             }
+        }
+
+        internal class Entry
+        {
+            public bool IsRaid { get; set; }
+
+            public ISet<ulong> UserIds { get; set; } = new HashSet<ulong>();
+
+            public uint OccurenceCount { get; set; }
+
+            public DateTime ModifiedOn { get; set; }
         }
     }
 }

@@ -6,7 +6,6 @@ namespace Sanakan.Extensions
 {
     public static class ItemExtension
     {
-
         public static string ToItemList(this IEnumerable<Item> itemList)
         {
             var stringBuilder = new StringBuilder(200);

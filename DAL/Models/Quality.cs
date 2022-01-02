@@ -20,27 +20,50 @@
 
         public static Quality RandomizeItemQualityFromMarket(int number)
         {
-            if (number < 5) return Quality.Sigma;
-            if (number < 20) return Quality.Lambda;
-            if (number < 60) return Quality.Zeta;
-            if (number < 200) return Quality.Delta;
-            if (number < 500) return Quality.Gamma;
-            if (number < 1000) return Quality.Beta;
-            if (number < 2000) return Quality.Alpha;
-            return Quality.Broken;
+            switch (number)
+            {
+                case var _ when number < 5:
+                    return Quality.Sigma;
+                case var _ when number < 20:
+                    return Quality.Lambda;
+                case var _ when number < 60:
+                    return Quality.Zeta;
+                case var _ when number < 200:
+                    return Quality.Delta;
+                case var _ when number < 500:
+                    return Quality.Gamma;
+                case var _ when number < 1000:
+                    return Quality.Beta;
+                case var _ when number < 2000:
+                    return Quality.Alpha;
+                default:
+                    return Quality.Broken;
+            }
         }
 
         public static Quality RandomizeItemQualityFromExpedition(int number)
         {
-            if (number < 5) return Quality.Omega;
-            if (number < 50) return Quality.Sigma;
-            if (number < 200) return Quality.Lambda;
-            if (number < 600) return Quality.Zeta;
-            if (number < 2000) return Quality.Delta;
-            if (number < 5000) return Quality.Gamma;
-            if (number < 10000) return Quality.Beta;
-            if (number < 20000) return Quality.Alpha;
-            return Quality.Broken;
+            switch (number)
+            {
+                case var _ when number < 5:
+                    return Quality.Omega;
+                case var _ when number < 50:
+                    return Quality.Sigma;
+                case var _ when number < 200:
+                    return Quality.Lambda;
+                case var _ when number < 600:
+                    return Quality.Zeta;
+                case var _ when number < 2000:
+                    return Quality.Delta;
+                case var _ when number < 5000:
+                    return Quality.Gamma;
+                case var _ when number < 10000:
+                    return Quality.Beta;
+                case var _ when number < 20000:
+                    return Quality.Alpha;
+                default:
+                    return Quality.Broken;
+            }
         }
 
         public static string ToName(this Quality quality)

@@ -18,6 +18,9 @@ namespace Sanakan.ShindenApi.Converters
             { "manga", MangaType.Manga },
         };
 
-        public MangaTypeConverter() : base(_map, MangaType.NotSpecified) {}
+        public MangaTypeConverter()
+            : base(_map, MangaType.NotSpecified)
+        {
+        }
     }
 }

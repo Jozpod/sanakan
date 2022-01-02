@@ -12,9 +12,12 @@ namespace Sanakan.ShindenApi.Converters
             { "f", Gender.Female },
             { "male", Gender.Male },
             { "other", Gender.Other },
-            { "female", Gender.Female},
+            { "female", Gender.Female },
         };
 
-        public GenderConverter() : base(_map, Gender.NotSpecified){}
+        public GenderConverter()
+            : base(_map, Gender.NotSpecified)
+        {
+        }
     }
 }

@@ -38,7 +38,7 @@ jobs:
           tag=$(git describe --tags --abbrev=0)
           release_name="Sanakan-$tag-${{ matrix.target }}"
 
-          dotnet publish Web/Web.csproj --configuration Release --runtime "${{ matrix.target }}" /p:DebugType=None /p:DebugSymbols=false --output "$release_name"
+          dotnet publish Web/Web.csproj --configuration Release --runtime "${{ matrix.target }}" --output "$release_name"
 
           if [ "${{ matrix.target }}" == "win-x64" ]; then
 

@@ -90,7 +90,7 @@ namespace Sanakan.Web.Controllers
         /// <summary>
         /// Gets the list of cards which user has.
         /// </summary>
-        /// <param name="shindenUserId">The Shinden user identifier</param>
+        /// <param name="shindenUserId">The Shinden user identifier.</param>
         [HttpGet("user/{shindenUserId}/cards"), Authorize(Policy = AuthorizePolicies.Site)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(IEnumerable<Card>), StatusCodes.Status200OK)]
@@ -179,7 +179,6 @@ namespace Sanakan.Web.Controllers
         /// Gets the wishlist for given user.
         /// </summary>
         /// <param name="id">The shinden user identifier.</param>
-        /// <returns>lista życzeń</returns>
         [HttpGet("user/shinden/{id}/wishlist/raw")]
         [ProducesResponseType(typeof(IEnumerable<WishlistObject>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status404NotFound)]
@@ -220,7 +219,7 @@ namespace Sanakan.Web.Controllers
 
             if (user == null)
             {
-                return ShindenNotFound("User not found");
+                return ShindenNotFound(Strings.UserNotFound);
             }
 
             var gameDeck = user.GameDeck;
@@ -239,6 +238,7 @@ namespace Sanakan.Web.Controllers
                 {
                     cardCount[rarity] = 0;
                 }
+
                 cardCount[rarity]++;
             }
 
@@ -247,11 +247,11 @@ namespace Sanakan.Web.Controllers
 
             var wallet = new Dictionary<string, long>
                 {
-                    {"PC", gameDeck.PVPCoins},
-                    {"CT", gameDeck.CTCount},
-                    {"AC", user.AcCount},
-                    {"TC", user.TcCount},
-                    {"SC", user.ScCount},
+                    { "PC", gameDeck.PVPCoins },
+                    { "CT", gameDeck.CTCount },
+                    { "AC", user.AcCount },
+                    { "TC", user.TcCount },
+                    { "SC", user.ScCount },
                 };
 
             var waifuCard = cards
@@ -268,6 +268,8 @@ namespace Sanakan.Web.Controllers
                 .OrderBy(x => x.Rarity)
                 .ThenByDescending(x => x.Quality).ToView();
 
+            var expeditions = cards.Where(x => x.Expedition != ExpeditionCardType.None).ToExpeditionView(gameDeck.Karma);
+
             var result = new UserSiteProfile()
             {
                 Wallet = wallet,
@@ -281,7 +283,7 @@ namespace Sanakan.Web.Controllers
                 ExchangeConditions = gameDeck.ExchangeConditions!,
                 BackgroundImageUrl = gameDeck.BackgroundImageUrl?.ToString(),
                 ForegroundImageUrl = gameDeck.ForegroundImageUrl?.ToString(),
-                Expeditions = cards.Where(x => x.Expedition != ExpeditionCardType.None).ToExpeditionView(gameDeck.Karma),
+                Expeditions = expeditions,
                 Waifu = waifu!,
                 Gallery = gallery,
             };
@@ -331,7 +333,6 @@ namespace Sanakan.Web.Controllers
             ulong characterId,
             [FromBody] CharacterCardInfoUpdate model)
         {
-
             _blockingPriorityQueue.TryEnqueue(new UpdateCardMessage
             {
                 CharacterId = characterId,
@@ -379,9 +380,9 @@ namespace Sanakan.Web.Controllers
         }
 
         /// <summary>
-        /// Pobiera listę życzeń użytkownika
+        /// Gets the user wishlist.
         /// </summary>
-        /// <param name="id">id użytkownika discorda</param>
+        /// <param name="id">The discord user identifier.</param>
         [HttpGet("user/discord/{id}/wishlist"), Authorize(Policy = AuthorizePolicies.Site)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status200OK)]
@@ -480,7 +481,7 @@ namespace Sanakan.Web.Controllers
         }
 
         /// <summary>
-        /// Gets cards with given tags
+        /// Gets cards with given tags.
         /// </summary>
         /// <param name="tag">Tag on the card.</param>
         [HttpGet("cards/tag/{tag}"), Authorize(Policy = AuthorizePolicies.Site)]
@@ -580,8 +581,8 @@ namespace Sanakan.Web.Controllers
         /// </summary>
         /// <param name="shindenUserId">The user identifier in Shinden.</param>
         /// <param name="boosterPacks">The bundle of cards model.</param>
-        /// <response code="404">User not found</response>
-        /// <response code="500">Model is Invalid</response>
+        /// <response code="404">User not found.</response>
+        /// <response code="500">Model is Invalid.</response>
         [HttpPost("shinden/{shindenUserId}/boosterpack"), Authorize(Policy = AuthorizePolicies.Site)]
         [ProducesResponseType(typeof(UserWithToken), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status500InternalServerError)]
@@ -696,6 +697,7 @@ namespace Sanakan.Web.Controllers
             {
                 return ShindenNotFound(Strings.UserNotFound);
             }
+
             if (gameDeck.Cards.Count + packs.Sum(x => x.CardCount) > gameDeck.MaxNumberOfCards)
             {
                 return ShindenNotAcceptable(Strings.NoSpaceInDeck);

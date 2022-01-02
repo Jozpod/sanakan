@@ -100,51 +100,51 @@ namespace Sanakan.DAL.Models
 
         public string GetUserNameStatus()
         {
-            if (Karma >= 2000)
+            switch (Karma)
             {
-                return $"Papaj";
+                case var _ when Karma >= 2000:
+                    return "Papaj";
+                case var _ when Karma >= 1600:
+                    return "Miłościwy kumpel";
+                case var _ when Karma >= 1200:
+                    return "Oślepiony bugiem";
+                case var _ when Karma >= 800:
+                    return "Pan pokoiku";
+                case var _ when Karma >= 400:
+                    return "Błogosławiony rycerz";
+                case var _ when Karma >= 200:
+                    return "Pionek buga";
+                case var _ when Karma >= 100:
+                    return "Sługa buga";
+                case var _ when Karma >= 50:
+                    return "Biały koleś";
+                case var _ when Karma >= 10:
+                    return "Pantofel";
+                case var _ when Karma >= 5:
+                    return "Lizus";
+                case var _ when Karma <= -2000:
+                    return "Mroczny panocek";
+                case var _ when Karma <= -1600:
+                    return "Nienawistny koleżka";
+                case var _ when Karma <= -1200:
+                    return "Mściwy ślepiec";
+                case var _ when Karma <= -800:
+                    return "Pan wojenki";
+                case var _ when Karma <= -400:
+                    return "Przeklęty rycerz";
+                case var _ when Karma <= -200:
+                    return "Ciemny pionek";
+                case var _ when Karma <= -100:
+                    return "Sługa mroku";
+                case var _ when Karma <= -50:
+                    return "Murzynek";
+                case var _ when Karma <= -10:
+                    return "Rzezimieszek";
+                case var _ when Karma <= -5:
+                    return "Buntownik";
+                default:
+                    return "Wieśniak";
             }
-
-            if (Karma >= 1600)
-            {
-                return $"Miłościwy kumpel";
-            }
-
-            if (Karma >= 1200)
-            {
-                return $"Oślepiony bugiem";
-            }
-
-            if (Karma >= 800)
-            {
-                return $"Pan pokoiku";
-            }
-
-            if (Karma >= 400)
-            {
-                return $"Błogosławiony rycerz";
-            }
-
-            if (Karma >= 200)
-            {
-                return $"Pionek buga";
-            }
-
-            if (Karma >= 100) return $"Sługa buga";
-            if (Karma >= 50) return $"Biały koleś";
-            if (Karma >= 10) return $"Pantofel";
-            if (Karma >= 5) return $"Lizus";
-            if (Karma <= -2000) return $"Mroczny panocek";
-            if (Karma <= -1600) return $"Nienawistny koleżka";
-            if (Karma <= -1200) return $"Mściwy ślepiec";
-            if (Karma <= -800) return $"Pan wojenki";
-            if (Karma <= -400) return $"Przeklęty rycerz";
-            if (Karma <= -200) return $"Ciemny pionek";
-            if (Karma <= -100) return $"Sługa mroku";
-            if (Karma <= -50) return $"Murzynek";
-            if (Karma <= -10) return $"Rzezimieszek";
-            if (Karma <= -5) return $"Buntownik";
-            return "Wieśniak";
         }
 
         public bool ReachedDailyMaxPVPCount() => PVPDailyGamesPlayed >= 10;
@@ -188,12 +188,14 @@ namespace Sanakan.DAL.Models
 
         public bool RemoveCharacterFromWishList(ulong id)
         {
-            var en = Wishes.FirstOrDefault(x => x.Type == WishlistObjectType.Character && x.ObjectId == id);
-            if (en != null)
+            var wishlistObject = Wishes.FirstOrDefault(x => x.Type == WishlistObjectType.Character && x.ObjectId == id);
+
+            if (wishlistObject != null)
             {
-                Wishes.Remove(en);
+                Wishes.Remove(wishlistObject);
                 return true;
             }
+
             return false;
         }
 
@@ -245,8 +247,17 @@ namespace Sanakan.DAL.Models
         public double AffectionFromKarma()
         {
             var karmaDif = Karma / 150d;
-            if (karmaDif < -6) karmaDif = -6;
-            if (karmaDif > 6) karmaDif = 6;
+
+            switch (karmaDif)
+            {
+                case var _ when karmaDif < -6:
+                    karmaDif = -6;
+                    break;
+                case var _ when karmaDif > 6:
+                    karmaDif = 6;
+                    break;
+            }
+
             return karmaDif;
         }
 
@@ -285,7 +296,7 @@ namespace Sanakan.DAL.Models
         {
             switch (experience)
             {
-                case var n when (n >= 17):
+                case var n when n >= 17:
                     return "Konsul";
 
                 case 16: return "Praetor";

@@ -57,58 +57,6 @@ namespace Sanakan.Daemon.HostedService
             _discordSocketClientAccessor.Disconnected += DisconnectedAsync;
         }
 
-        private Task LoggedOut()
-        {
-            _timer.Stop();
-            return Task.CompletedTask;
-        }
-
-        private Task DisconnectedAsync(Exception ex)
-        {
-            _timer.Stop();
-            return Task.CompletedTask;
-        }
-
-        private Task LoggedIn()
-        {
-            _discordSocketClientAccessor.MessageReceived += HandleMessageAsync;
-            _timer.Start(
-                _daemonsConfiguration.CurrentValue.ChaosDueTime,
-                _daemonsConfiguration.CurrentValue.ChaosPeriod);
-            return Task.CompletedTask;
-        }
-
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-        {
-            try
-            {
-                stoppingToken.ThrowIfCancellationRequested();
-                _timer.Tick += OnTick;
-                await _taskManager.Delay(Timeout.InfiniteTimeSpan, stoppingToken);
-            }
-            catch (OperationCanceledException)
-            {
-
-            }
-        }
-
-        private void OnTick(object sender, TimerEventArgs eventArgs)
-        {
-            if (_isRunning)
-            {
-                return;
-            }
-
-            _isRunning = true;
-
-            lock (_syncRoot)
-            {
-                _usersWithSwappedNicknames.Clear();
-            }
-
-            _isRunning = false;
-        }
-
         internal async Task HandleMessageAsync(IMessage message)
         {
             var userMessage = message as IUserMessage;
@@ -190,6 +138,57 @@ namespace Sanakan.Daemon.HostedService
                 _usersWithSwappedNicknames.Add(sourceUser.Id);
                 _usersWithSwappedNicknames.Add(targetUser.Id);
             }
+        }
+
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        {
+            try
+            {
+                stoppingToken.ThrowIfCancellationRequested();
+                _timer.Tick += OnTick;
+                await _taskManager.Delay(Timeout.InfiniteTimeSpan, stoppingToken);
+            }
+            catch (OperationCanceledException)
+            {
+            }
+        }
+
+        private Task LoggedOut()
+        {
+            _timer.Stop();
+            return Task.CompletedTask;
+        }
+
+        private Task DisconnectedAsync(Exception ex)
+        {
+            _timer.Stop();
+            return Task.CompletedTask;
+        }
+
+        private Task LoggedIn()
+        {
+            _discordSocketClientAccessor.MessageReceived += HandleMessageAsync;
+            _timer.Start(
+                _daemonsConfiguration.CurrentValue.ChaosDueTime,
+                _daemonsConfiguration.CurrentValue.ChaosPeriod);
+            return Task.CompletedTask;
+        }
+
+        private void OnTick(object sender, TimerEventArgs eventArgs)
+        {
+            if (_isRunning)
+            {
+                return;
+            }
+
+            _isRunning = true;
+
+            lock (_syncRoot)
+            {
+                _usersWithSwappedNicknames.Clear();
+            }
+
+            _isRunning = false;
         }
     }
 }

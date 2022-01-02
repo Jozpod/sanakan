@@ -73,7 +73,6 @@ namespace Sanakan.Preconditions
             result.Message = $"To polecenie działa na kanale {channel?.Mention}, możesz użyć go tutaj po osiągnięciu {_level} poziomu.";
 
             return PreconditionResult.FromError(result.Serialize());
-
         }
     }
 }

@@ -171,7 +171,7 @@ namespace Sanakan.ShindenApi
                     return MangaStatus.Publishing;
                 case "not yet published":
                     return MangaStatus.NotYetPublished;
-                default: 
+                default:
                     return MangaStatus.NotSpecified;
             }
         }

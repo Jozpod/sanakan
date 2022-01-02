@@ -12,7 +12,6 @@ namespace Sanakan.Preconditions
 {
     public class RequireAdminRoleOrChannelPermission : PreconditionAttribute
     {
-        
         private readonly ChannelPermission _permission;
 
         public RequireAdminRoleOrChannelPermission(ChannelPermission permission) => _permission = permission;

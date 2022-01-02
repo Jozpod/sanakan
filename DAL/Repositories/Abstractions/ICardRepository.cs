@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Sanakan.DAL.Repositories.Abstractions
 {
-    public interface ICardRepository : 
+    public interface ICardRepository :
         ICreateRepository<Card>,
         IRemoveRepository<Card>,
         ISaveRepository
@@ -24,6 +24,7 @@ namespace Sanakan.DAL.Repositories.Abstractions
         Task<List<Card>> GetByCharacterIdAsync(ulong characterId);
 
         Task<List<Card>> GetByCharacterIdAsync(ulong characterId, CardQueryOptions cardQueryOptions);
+
         Task<Card?> GetByIdAsync(ulong id);
 
         Task<Card?> GetByIdAsync(ulong id, CardQueryOptions cardQueryOptions);

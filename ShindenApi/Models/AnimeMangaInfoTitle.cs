@@ -97,6 +97,7 @@ namespace Sanakan.ShindenApi.Models
             {
                 return string.Empty;
             }
+
             set
             {
                 AnimeStatus = AnimeStatus.Parse(value);
@@ -115,6 +116,7 @@ namespace Sanakan.ShindenApi.Models
             {
                 return string.Empty;
             }
+
             set
             {
                 if (value.ToLower().Equals("anime"))
@@ -136,13 +138,15 @@ namespace Sanakan.ShindenApi.Models
         public MangaType MangaType { get; set; }
 
         public string AnimeUrl => UrlHelpers.GetSeriesURL(TitleId);
+
         public string CoverUrl => UrlHelpers.GetBigImageURL(CoverId);
 
         public double? TotalRating => RatingTotalSum == 0 ? 0 : RatingTotalCount / RatingTotalSum;
 
         [JsonIgnore]
         public IEnumerable<AnimeMangaInfoEntity> Tags => TagCategories == null ? Enumerable.Empty<AnimeMangaInfoEntity>() :
-            new[] {
+            new[]
+            {
                 TagCategories.Entity,
                 TagCategories.Source,
                 TagCategories.Studio,

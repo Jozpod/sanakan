@@ -103,7 +103,7 @@ namespace Sanakan.Extensions
 
 **Relacja:** {card.GetAffectionString()}
 
-**Doświadczenie:** {card.ExperienceCount.ToString("F")}/{card.ExpToUpgrade().ToString("F")}
+**Doświadczenie:** {card.ExperienceCount:F}/{card.ExpToUpgrade():F}
 
 **Dostępne ulepszenia:** {card.UpgradesCount}
 
@@ -127,6 +127,7 @@ namespace Sanakan.Extensions
             
 ";
         }
+
         public static string GetDescSmall(this Card card)
         {
             var tags = string.Join(" ", card.Tags.Select(x => x.Name));
@@ -147,7 +148,7 @@ _{card.Title}_
 
 {card.GetAffectionString()}
 
-{card.ExperienceCount.ToString("F")}/{card.ExpToUpgrade().ToString("F")} exp
+{card.ExperienceCount:F}/{card.ExpToUpgrade():F} exp
 
 
 {tags}

@@ -7,12 +7,13 @@ namespace Sanakan.DiscordBot.Session.Abstractions
     internal class SessionManager : ISessionManager
     {
         private readonly ISet<IInteractionSession> _sessions;
-        public object SyncRoot { get; } = new object();
 
         public SessionManager()
         {
             _sessions = new SortedSet<IInteractionSession>();
         }
+
+        public object SyncRoot { get; } = new object();
 
         public bool Exists<T>(ulong discordUserId)
             where T : IInteractionSession
@@ -24,6 +25,7 @@ namespace Sanakan.DiscordBot.Session.Abstractions
                     .Any(pr => pr.OwnerIds.Contains(discordUserId)
                         && pr.Type == typeof(T));
             }
+
             return exists;
         }
 
@@ -59,11 +61,11 @@ namespace Sanakan.DiscordBot.Session.Abstractions
             }
         }
 
-        public IEnumerable<IInteractionSession> GetByOwnerId(ulong OwnerId, SessionExecuteCondition executeCondition)
+        public IEnumerable<IInteractionSession> GetByOwnerId(ulong ownerId, SessionExecuteCondition executeCondition)
         {
             lock (SyncRoot)
             {
-                var filtered = _sessions.Where(pr => pr.OwnerIds.Contains(OwnerId)
+                var filtered = _sessions.Where(pr => pr.OwnerIds.Contains(ownerId)
                     && pr.SessionExecuteCondition.HasFlag(executeCondition))
                     .ToList();
 

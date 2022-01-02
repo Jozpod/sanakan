@@ -13,7 +13,7 @@ namespace Sanakan.TaskQueue.Builder
             services.AddSingleton<IJwtBuilder, JwtBuilder>();
             return services;
         }
-        
+
         public static IServiceCollection AddRequestBodyReader(this IServiceCollection services)
         {
             services.AddTransient<IRequestBodyReader, RequestBodyReader>();

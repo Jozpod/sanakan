@@ -8,7 +8,7 @@ namespace Sanakan.ShindenApi.Converters
 {
     public class HtmlDecodeAndRemoveBBCodeConverter : JsonConverter<string>
     {
-        private readonly static Regex _removeBBCodeRegex = new(@"\[(.*?)\]", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly Regex _removeBBCodeRegex = new(@"\[(.*?)\]", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         public override string? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {

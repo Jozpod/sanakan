@@ -40,7 +40,9 @@ namespace Sanakan.TaskQueue.MessageHandlers
                     _waifuService.DeleteCardImageIfExist(card);
                     await _waifuService.GenerateAndSaveCardAsync(card);
                 }
-                catch (Exception) { }
+                catch (Exception)
+                {
+                }
 
                 userRelease.Add(CacheKeys.User(card.GameDeckId));
             }

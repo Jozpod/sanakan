@@ -24,7 +24,7 @@ namespace Sanakan.Game.Services
         {
             var response = await _httpClient.GetAsync(url);
 
-            if(response.IsSuccessStatusCode)
+            if (response.IsSuccessStatusCode)
             {
                 var stream = await response.Content.ReadAsStreamAsync();
                 return stream;

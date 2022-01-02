@@ -55,32 +55,6 @@ namespace Sanakan.Daemon.HostedService
             _discordClientAccessor.LoggedIn += LoggedIn;
         }
 
-        private Task LoggedIn()
-        {
-            _discordClientAccessor.MessageReceived += HandleMessageAsync;
-            _discordClientAccessor.ReactionAdded += HandleReactionAddedAsync;
-            _discordClientAccessor.ReactionRemoved += HandleReactionRemovedAsync;
-            return Task.CompletedTask;
-        }
-
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-        {
-            try
-            {
-                stoppingToken.ThrowIfCancellationRequested();
-                _timer.Tick += OnTick;
-                _timer.Start(
-                    _options.CurrentValue.SessionDueTime,
-                    _options.CurrentValue.SessionPeriod);
-
-                await _taskManager.Delay(Timeout.InfiniteTimeSpan, stoppingToken);
-            }
-            catch (OperationCanceledException)
-            {
-                _timer.Stop();
-            }
-        }
-
         internal async void OnTick(object sender, TimerEventArgs e)
         {
             if (_isRunning)
@@ -117,60 +91,6 @@ namespace Sanakan.Daemon.HostedService
             _isRunning = false;
         }
 
-        private async Task RunSessions(IEnumerable<IInteractionSession> sessions, SessionContext sessionContext)
-        {
-            var utcNow = _systemClock.UtcNow;
-            using var serviceScope = _serviceScopeFactory.CreateScope();
-            var serviceProvider = serviceScope.ServiceProvider;
-
-            foreach (var session in sessions)
-            {
-                if (session.HasExpired(utcNow))
-                {
-                    if (session.IsRunning)
-                    {
-                        _logger.LogWarning("Expired session is running");
-                        continue;
-                    }
-
-                    session.ServiceProvider = serviceProvider;
-                    await session.DisposeAsync();
-                    _sessionManager.Remove(session);
-                    continue;
-                }
-
-                try
-                {
-                    switch (session.RunMode)
-                    {
-                        case RunMode.Async:
-                            var hasCompleted = await session.ExecuteAsync(sessionContext, serviceProvider);
-
-                            if (hasCompleted)
-                            {
-                                _sessionManager.Remove(session);
-                                await session.DisposeAsync();
-                            }
-                            break;
-
-                        default:
-                        case RunMode.Sync:
-
-                            _blockingPriorityQueue.TryEnqueue(new SessionMessage
-                            {
-                                Session = session,
-                                Context = sessionContext
-                            });;
-                            break;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error occurred while handling session {0} {1}", session, session.OwnerIds.First());
-                }              
-            }
-        }
-
         internal async Task HandleMessageAsync(IMessage message)
         {
             var userMessage = message as IUserMessage;
@@ -181,7 +101,7 @@ namespace Sanakan.Daemon.HostedService
             }
 
             var user = userMessage.Author;
-            
+
             if (user.IsBotOrWebhook())
             {
                 return;
@@ -245,7 +165,7 @@ namespace Sanakan.Daemon.HostedService
             }
 
             var uuserMessage = message as IUserMessage;
-            
+
             if (uuserMessage == null)
             {
                 return;
@@ -321,6 +241,87 @@ namespace Sanakan.Daemon.HostedService
             };
 
             await RunSessions(userSessions, sessionPayload).ConfigureAwait(false);
+        }
+
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        {
+            try
+            {
+                stoppingToken.ThrowIfCancellationRequested();
+                _timer.Tick += OnTick;
+                _timer.Start(
+                    _options.CurrentValue.SessionDueTime,
+                    _options.CurrentValue.SessionPeriod);
+
+                await _taskManager.Delay(Timeout.InfiniteTimeSpan, stoppingToken);
+            }
+            catch (OperationCanceledException)
+            {
+                _timer.Stop();
+            }
+        }
+
+        private Task LoggedIn()
+        {
+            _discordClientAccessor.MessageReceived += HandleMessageAsync;
+            _discordClientAccessor.ReactionAdded += HandleReactionAddedAsync;
+            _discordClientAccessor.ReactionRemoved += HandleReactionRemovedAsync;
+            return Task.CompletedTask;
+        }
+
+        private async Task RunSessions(IEnumerable<IInteractionSession> sessions, SessionContext sessionContext)
+        {
+            var utcNow = _systemClock.UtcNow;
+            using var serviceScope = _serviceScopeFactory.CreateScope();
+            var serviceProvider = serviceScope.ServiceProvider;
+
+            foreach (var session in sessions)
+            {
+                if (session.HasExpired(utcNow))
+                {
+                    if (session.IsRunning)
+                    {
+                        _logger.LogWarning("Expired session is running");
+                        continue;
+                    }
+
+                    session.ServiceProvider = serviceProvider;
+                    await session.DisposeAsync();
+                    _sessionManager.Remove(session);
+                    continue;
+                }
+
+                try
+                {
+                    switch (session.RunMode)
+                    {
+                        case RunMode.Async:
+                            var hasCompleted = await session.ExecuteAsync(sessionContext, serviceProvider);
+
+                            if (hasCompleted)
+                            {
+                                _sessionManager.Remove(session);
+                                await session.DisposeAsync();
+                            }
+
+                            break;
+
+                        default:
+                        case RunMode.Sync:
+
+                            _blockingPriorityQueue.TryEnqueue(new SessionMessage
+                            {
+                                Session = session,
+                                Context = sessionContext
+                            });
+                            break;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error occurred while handling session {0} {1}", session, session.OwnerIds.First());
+                }
+            }
         }
     }
 }

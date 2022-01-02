@@ -12,21 +12,6 @@ namespace Sanakan.DiscordBot.Modules
 
         public abstract void Dispose();
 
-        protected override async void BeforeExecute(CommandInfo command)
-        {
-            _typingState = Context.Channel.EnterTypingState();
-
-            try
-            {
-                await Task.Delay(TimeSpan.FromSeconds(3)).ConfigureAwait(false);
-                _typingState?.Dispose();
-                _typingState = null;
-            }
-            catch
-            {
-            }
-        }
-
         [ExcludeFromCodeCoverage]
         public async Task<IMessageChannel> TryCreateDMChannelAsync(IUser user)
         {
@@ -41,6 +26,21 @@ namespace Sanakan.DiscordBot.Modules
 #endif
             channel = await user.GetOrCreateDMChannelAsync();
             return channel;
+        }
+
+        protected override async void BeforeExecute(CommandInfo command)
+        {
+            _typingState = Context.Channel.EnterTypingState();
+
+            try
+            {
+                await Task.Delay(TimeSpan.FromSeconds(3)).ConfigureAwait(false);
+                _typingState?.Dispose();
+                _typingState = null;
+            }
+            catch
+            {
+            }
         }
     }
 }

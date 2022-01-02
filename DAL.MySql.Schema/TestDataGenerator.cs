@@ -21,16 +21,10 @@ namespace Sanakan.DAL.MySql.Schema
             var user2 = new User(2, DateTime.UtcNow);
             user2.ShindenId = 1ul;
             var guildConfig = new GuildOptions(1, 50);
-            var card1 = new Card(
-            1, "test card 1", "test card 1",
-            10, 20, Rarity.A,
-            Dere.Bodere, DateTime.UtcNow);
+            var card1 = new Card(1, "test card 1", "test card 1", 10, 20, Rarity.A, Dere.Bodere, DateTime.UtcNow);
 
             var user3 = new User(3, DateTime.UtcNow);
-            var card2 = new Card(
-               2, "test card 2", "test card 2",
-               10, 20, Rarity.B,
-               Dere.Bodere, DateTime.UtcNow);
+            var card2 = new Card(2, "test card 2", "test card 2", 10, 20, Rarity.B, Dere.Bodere, DateTime.UtcNow);
 
             var penalty = new PenaltyInfo
             {

@@ -5,7 +5,9 @@ namespace Sanakan.DAL.MySql.Migrator.TableEnumerators
     public class ModeratorRolesEnumerator : TableEnumerator<ModeratorRoles>
     {
         public ModeratorRolesEnumerator(IDbConnection connection)
-         : base(connection) { }
+         : base(connection)
+        {
+        }
 
         public override ModeratorRoles Current => new()
         {

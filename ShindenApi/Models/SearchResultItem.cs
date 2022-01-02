@@ -188,5 +188,4 @@ namespace Sanakan.ShindenApi.Models
         [JsonPropertyName("rating_lines_cnt")]
         public long? RatingLinesCnt { get; set; }
     }
-
 }

@@ -52,7 +52,6 @@ namespace Sanakan.ShindenApi.Fake
 
                 foreach (var animeDetail in animeDetails)
                 {
-
                     if (await _dbContext.Illustrations.AnyAsync(pr => pr.Id == animeDetail.Id))
                     {
                         _logger.LogWarning($"Skipping {animeDetail.Name}");
@@ -108,7 +107,5 @@ namespace Sanakan.ShindenApi.Fake
 
             _logger.LogInformation($"Finished importing....");
         }
-
-    
     }
 }

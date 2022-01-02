@@ -4,7 +4,7 @@ using Sanakan.DAL.Models;
 
 namespace Sanakan.DAL.Configuration
 {
-    public class QuestionConfiguration : 
+    public class QuestionConfiguration :
         IEntityTypeConfiguration<Question>,
         IEntityTypeConfiguration<Answer>
     {

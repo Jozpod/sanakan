@@ -7,6 +7,8 @@ namespace Sanakan.Common
     {
         private Timer? _timer;
 
+        public event TimerEventHandler? Tick;
+
         public void Start(TimeSpan dueTime, TimeSpan period, object state)
         {
             if (_timer != null)
@@ -38,11 +40,6 @@ namespace Sanakan.Common
             }
         }
 
-        private void TimerCallback(object? state)
-        {
-            Tick?.Invoke(this, new TimerEventArgs(state));
-        }
-
         public void Stop()
         {
             if(_timer == null)
@@ -53,6 +50,9 @@ namespace Sanakan.Common
             _timer.Change(Timeout.Infinite, Timeout.Infinite);
         }
 
-        public event TimerEventHandler? Tick;
+        private void TimerCallback(object? state)
+        {
+            Tick?.Invoke(this, new TimerEventArgs(state));
+        }
     }
 }

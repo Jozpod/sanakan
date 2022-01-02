@@ -17,7 +17,7 @@ run:
 	dotnet run --project Web/Web.csproj --configuration Release --verbosity quiet
 
 build:
-	dotnet build --configuration Release
+	dotnet build --configuration Release --no-restore /p:DebugType=Portable /p:DebugSymbols=true
 
 test:
 	dotnet test Tests/Common.Tests/Common.Tests.csproj  --no-build --verbosity minimal --configuration Release

@@ -25,28 +25,6 @@ namespace Sanakan.Daemon.HostedService
     [ExcludeFromCodeCoverage]
     internal class DebugHostedService : BackgroundService
     {
-        public enum Action
-        {
-            SendMessage = 0,
-            GetFreeCard = 1,
-            GetDailyCoins = 2,
-            GoToMarket = 3,
-            BuyItem = 4,
-            Duel = 5,
-            StartExpedition = 6,
-            EndExpedition = 7,
-            Lottery = 8
-        }
-
-        public class Configuration
-        {
-            public string Prefix { get; set; } = ".";
-
-            public ulong MainGuildId { get; set; } = 910284207098560584;
-
-            public ulong MainChannelId { get; set; } = 910284207534796800;
-        }
-
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly ITaskManager _taskManager;
         private readonly ILogger _logger;
@@ -54,7 +32,6 @@ namespace Sanakan.Daemon.HostedService
         private readonly ISystemClock _systemClock;
         private readonly IRandomNumberGenerator _randomNumberGenerator;
         private readonly IDiscordClientAccessor _discordClientAccessor;
-        private bool _isRunning = false;
         private readonly IEnumerable<Action> _actions = Enum.GetValues<Action>();
         private readonly List<Action> _availableActions = Enum.GetValues<Action>().ToList();
         private readonly string _text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit.Nunc semper, sem in hendrerit bibendum, lectus nunc aliquet lorem, at accumsan sem purus a neque.Sed in nisi vel eros viverra commodo.Curabitur ullamcorper sed dui eget efficitur. Pellentesque quam neque, pharetra eu malesuada eget, rhoncus ac justo.Vivamus in dignissim ex";
@@ -64,6 +41,7 @@ namespace Sanakan.Daemon.HostedService
         private DateTime? _retrievedCardOn = null;
         private DateTime? _retrievedDailyCoinsOn = null;
         private DateTime? _invokedLotteryOn = null;
+        private bool _isRunning = false;
 
         public DebugHostedService(
             IServiceScopeFactory serviceScopeFactory,
@@ -83,6 +61,24 @@ namespace Sanakan.Daemon.HostedService
             _randomNumberGenerator = randomNumberGenerator;
             _discordClientAccessor.Ready += ReadyAsync;
             _configuration = new Configuration();
+        }
+
+        private enum Action
+        {
+            SendMessage = 0,
+            GetFreeCard = 1,
+            GetDailyCoins = 2,
+            GoToMarket = 3,
+            BuyItem = 4,
+            Duel = 5,
+            StartExpedition = 6,
+            EndExpedition = 7,
+            Lottery = 8
+        }
+
+        protected override Task ExecuteAsync(CancellationToken stoppingToken)
+        {
+            return Task.CompletedTask;
         }
 
         private async Task ReadyAsync()
@@ -129,12 +125,7 @@ namespace Sanakan.Daemon.HostedService
             _timer.Start(TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
         }
 
-        protected override Task ExecuteAsync(CancellationToken stoppingToken)
-        {
-            return Task.CompletedTask;
-        }
-
-        private async void OnTick(object sender, TimerEventArgs _)
+        private async void OnTick(object sender, TimerEventArgs eventArgs)
         {
             if (_isRunning)
             {
@@ -214,6 +205,7 @@ namespace Sanakan.Daemon.HostedService
                             await channel.SendMessageAsync($"{prefix}expedition {card.Id} normalna");
                             _expeditionStartedOn = utcNow;
                         }
+
                         break;
                     case Action.EndExpedition:
                         if (_expeditionStartedOn.HasValue
@@ -273,6 +265,15 @@ namespace Sanakan.Daemon.HostedService
             }
 
             _isRunning = false;
+        }
+
+        private class Configuration
+        {
+            public string Prefix { get; set; } = ".";
+
+            public ulong MainGuildId { get; set; } = 910284207098560584;
+
+            public ulong MainChannelId { get; set; } = 910284207534796800;
         }
     }
 }

@@ -85,7 +85,8 @@ namespace Sanakan.ShindenApi.Models
 
         [JsonIgnore]
         public IEnumerable<AnimeMangaInfoEntity> Tags => TagCategories == null ? Enumerable.Empty<AnimeMangaInfoEntity>() :
-            new[] {
+            new[]
+            {
                 TagCategories.Entity,
                 TagCategories.Source,
                 TagCategories.Studio,

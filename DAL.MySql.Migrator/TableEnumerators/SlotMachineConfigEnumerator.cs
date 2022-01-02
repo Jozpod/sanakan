@@ -5,7 +5,9 @@ namespace Sanakan.DAL.MySql.Migrator.TableEnumerators
     public class SlotMachineConfigEnumerator : TableEnumerator<SlotMachineConfig>
     {
         public SlotMachineConfigEnumerator(IDbConnection connection)
-            : base(connection) { }
+            : base(connection)
+        {
+        }
 
         public override SlotMachineConfig Current => new SlotMachineConfig
         {

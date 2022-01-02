@@ -16,7 +16,6 @@ namespace Sanakan.ShindenApi.Converters
             var value = reader.GetInt32();
 
             return TimeSpan.FromMinutes(value);
-            //return null;
         }
 
         public override void Write(Utf8JsonWriter writer, TimeSpan? value, JsonSerializerOptions options)

@@ -6,7 +6,7 @@ namespace Sanakan.DiscordBot.Abstractions.Extensions
     {
         public static bool IsBotOrWebhook(this IUser user)
         {
-#if RELEASE 
+#if RELEASE
             return user.IsBot || user.IsWebhook;
 #elif TEST
             return user.IsBot || user.IsWebhook;

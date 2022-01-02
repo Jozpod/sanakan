@@ -18,7 +18,8 @@ namespace Sanakan.Extensions
         private static IImageEncoder _jpgEncoder = new JpegEncoder() { Quality = 85 };
         private static IImageEncoder _pngEncoder = new PngEncoder();
 
-        public static Stream ToJpgStream<T>(this Image<T> img) where T : struct, IPixel<T>
+        public static Stream ToJpgStream<T>(this Image<T> img)
+            where T : struct, IPixel<T>
         {
             var stream = new MemoryStream();
             img.Save(stream, _jpgEncoder);
@@ -26,7 +27,8 @@ namespace Sanakan.Extensions
             return stream;
         }
 
-        public static Stream ToPngStream<T>(this Image<T> image) where T : struct, IPixel<T>
+        public static Stream ToPngStream<T>(this Image<T> image)
+            where T : struct, IPixel<T>
         {
             var stream = new MemoryStream();
             image.Save(stream, _pngEncoder);
@@ -57,7 +59,8 @@ namespace Sanakan.Extensions
             return path;
         }
 
-        public static Image<T> ResizeAsNew<T>(this Image<T> img, int width, int height = 0) where T : struct, IPixel<T>
+        public static Image<T> ResizeAsNew<T>(this Image<T> img, int width, int height = 0)
+            where T : struct, IPixel<T>
         {
             var nImg = img.Clone();
             nImg.Mutate(x => x.Resize(new Size(width, height)));

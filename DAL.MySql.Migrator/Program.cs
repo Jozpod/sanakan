@@ -9,12 +9,11 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 
-
 namespace Sanakan.DAL.MySql.Migrator
 {
-    class Program
+    public class Program
     {
-        static async Task Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var serviceCollection = new ServiceCollection();
 

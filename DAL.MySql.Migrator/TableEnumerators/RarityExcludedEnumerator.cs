@@ -5,7 +5,9 @@ namespace Sanakan.DAL.MySql.Migrator.TableEnumerators
     public class RarityExcludedEnumerator : TableEnumerator<RarityExcluded>
     {
         public RarityExcludedEnumerator(IDbConnection connection)
-            : base(connection) { }
+            : base(connection)
+        {
+        }
 
         public override RarityExcluded Current => new()
         {

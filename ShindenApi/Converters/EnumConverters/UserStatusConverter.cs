@@ -10,6 +10,9 @@ namespace Sanakan.ShindenApi.Converters
             { "active", UserStatus.Active },
         };
 
-        public UserStatusConverter() : base(_map, UserStatus.NotSpecified){}
+        public UserStatusConverter()
+            : base(_map, UserStatus.NotSpecified)
+        {
+        }
     }
 }

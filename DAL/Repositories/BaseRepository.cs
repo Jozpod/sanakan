@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Sanakan.DAL.Repositories
 {
-    public class BaseRepository<T> : 
+    public class BaseRepository<T> :
         ICreateRepository<T>, IRemoveRepository<T>, ISaveRepository
         where T : class
     {

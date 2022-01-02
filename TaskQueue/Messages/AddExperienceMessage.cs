@@ -4,7 +4,10 @@ namespace Sanakan.TaskQueue.Messages
 {
     public class AddExperienceMessage : BaseMessage
     {
-        public AddExperienceMessage() : base(Priority.High) { }
+        public AddExperienceMessage()
+            : base(Priority.High)
+        {
+        }
 
         public ulong DiscordUserId { get; set; }
 
@@ -23,6 +26,7 @@ namespace Sanakan.TaskQueue.Messages
         public ulong GuildId { get; set; }
 
         public IGuildUser User { get; set; } = null;
+
         public IMessageChannel Channel { get; set; } = null;
     }
 }

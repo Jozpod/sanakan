@@ -3,10 +3,11 @@ using System.Text.Json.Serialization;
 
 namespace Sanakan.DAL.Models
 {
-
     public class TimeStatus
     {
-        public TimeStatus() { }
+        public TimeStatus()
+        {
+        }
 
         public TimeStatus(StatusType statusType, ulong? guildId = null)
         {
@@ -65,7 +66,6 @@ namespace Sanakan.DAL.Models
             {
                 IntegerValue += times;
             }
-
             else if (!IsActive(currentDate))
             {
                 IntegerValue = times;

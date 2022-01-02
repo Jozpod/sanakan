@@ -6,7 +6,10 @@ namespace Sanakan.TaskQueue.Messages
 {
     public class SafariMessage : BaseMessage
     {
-        public SafariMessage() : base(Priority.Low) { }
+        public SafariMessage()
+            : base(Priority.Low)
+        {
+        }
 
         public EmbedBuilder Embed { get; set; } = null;
 

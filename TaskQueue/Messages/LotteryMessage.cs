@@ -4,7 +4,10 @@ namespace Sanakan.TaskQueue.Messages
 {
     public class LotteryMessage : BaseMessage
     {
-        public LotteryMessage() : base(Priority.High) { }
+        public LotteryMessage()
+            : base(Priority.High)
+        {
+        }
 
         public ulong DiscordUserId { get; set; }
 

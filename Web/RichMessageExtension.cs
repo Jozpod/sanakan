@@ -52,7 +52,10 @@ namespace Sanakan.Web
                 int index = 0;
                 foreach (var field in message.Fields)
                 {
-                    if (++index >= EmbedBuilder.MaxFieldCount) break;
+                    if (++index >= EmbedBuilder.MaxFieldCount)
+                    {
+                        break;
+                    }
 
                     embed.AddField(new EmbedFieldBuilder
                     {

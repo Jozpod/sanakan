@@ -176,6 +176,7 @@ namespace Sanakan.Extensions
                     }
                 }
             }
+
             if(entry.Type == IllustrationType.Manga)
             {
                 typeHumanized = entry.MangaType.ToName();

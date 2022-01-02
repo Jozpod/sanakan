@@ -117,7 +117,7 @@ namespace Sanakan.ShindenApi.Fake
                 var imageId = imageLink.GetIdFromLink();
                 results.Add(new CharacterDetail(id!.Value, characterName, null, imageId));
             }
-            
+
             return results;
         }
 
@@ -140,7 +140,7 @@ namespace Sanakan.ShindenApi.Fake
 
             foreach (var characterNode in characterNodes)
             {
-                var character = ParseCharacter(characterNode); ;
+                var character = ParseCharacter(characterNode);
                 characters.Add(character);
             }
 

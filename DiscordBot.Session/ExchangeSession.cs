@@ -21,12 +21,12 @@ namespace Sanakan.DiscordBot.Session
 {
     public class ExchangeSession : InteractionSession
     {
-        private ICacheManager _cacheManager = null;
-        private IIconConfiguration _iconConfiguration = null;
-        private IServiceProvider _serviceProvider = null;
         private readonly IUserMessage _userMessage;
         private readonly PlayerInfo _sourcePlayer;
         private readonly PlayerInfo _destinationPlayer;
+        private ICacheManager _cacheManager = null;
+        private IIconConfiguration _iconConfiguration = null;
+        private IServiceProvider _serviceProvider = null;
         private string _name;
         private string _tips;
         private ExchangeStatus _state;
@@ -114,6 +114,37 @@ namespace Sanakan.DiscordBot.Session
             }.Build();
         }
 
+        public double GetAverageValue(IEnumerable<Card> cards)
+        {
+            if (!cards.Any())
+            {
+                return 0.01;
+            }
+
+            return cards.Average(x => x.MarketValue);
+        }
+
+        public double GetAverageRarity(IEnumerable<Card> cards)
+        {
+            if (!cards.Any())
+            {
+                return (int)Rarity.E;
+            }
+
+            return cards.Average(x => (int)x.Rarity);
+        }
+
+        public override async ValueTask DisposeAsync()
+        {
+            try
+            {
+                await _userMessage.RemoveAllReactionsAsync();
+            }
+            catch (Exception)
+            {
+            }
+        }
+
         private async Task HandleMessageAsync(SessionContext context)
         {
             if (_state != ExchangeStatus.Add)
@@ -169,28 +200,29 @@ namespace Sanakan.DiscordBot.Session
 
             if (commandType.Contains("usuń") || commandType.Contains("usun"))
             {
-                var WIDStr = splitedCommand?[1];
-                if (string.IsNullOrEmpty(WIDStr))
+                var cardIdStr = splitedCommand?[1];
+                if (string.IsNullOrEmpty(cardIdStr))
                 {
                     await userMessage.AddReactionAsync(_iconConfiguration.CrossMark);
                     return;
                 }
 
-                if (ulong.TryParse(WIDStr, out var WID))
+                if (ulong.TryParse(cardIdStr, out var cardId))
                 {
-                    await HandleDeleteAsync(thisPlayer, WID!);
+                    await HandleDeleteAsync(thisPlayer, cardId!);
                 }
+
                 ResetExpiry();
             }
             else if (commandType.Contains("dodaj"))
             {
                 var ids = new List<ulong>();
 
-                foreach (var WIDStr in splitedCommand)
+                foreach (var cardIdStr in splitedCommand)
                 {
-                    if (ulong.TryParse(WIDStr, out var WID))
+                    if (ulong.TryParse(cardIdStr, out var cardId))
                     {
-                        ids.Add(WID);
+                        ids.Add(cardId);
                     }
                 }
 
@@ -317,7 +349,7 @@ namespace Sanakan.DiscordBot.Session
             await _userMessage.ModifyAsync(x => x.Embed = BuildEmbed());
         }
 
-        public string BuildProposition(PlayerInfo player)
+        private string BuildProposition(PlayerInfo player)
         {
             var mention = player.Mention;
             if (player.Cards.Count > 12)
@@ -341,7 +373,6 @@ namespace Sanakan.DiscordBot.Session
                     await HandleReactionInAdd(reaction);
                     return false;
             }
-
         }
 
         private async Task HandleReactionInAdd(IReaction reaction)
@@ -369,26 +400,6 @@ namespace Sanakan.DiscordBot.Session
                 await _userMessage.ModifyAsync(x => x.Embed = BuildEmbed());
                 await _userMessage.AddReactionsAsync(_iconConfiguration.AcceptDecline);
             }
-        }
-
-        public double GetAverageValue(IEnumerable<Card> cards)
-        {
-            if (!cards.Any())
-            {
-                return 0.01;
-            }
-
-            return cards.Average(x => x.MarketValue);
-        }
-
-        public double GetAverageRarity(IEnumerable<Card> cards)
-        {
-            if (!cards.Any())
-            {
-                return (int)Rarity.E;
-            }
-
-            return cards.Average(x => (int)x.Rarity);
         }
 
         private async Task<bool> HandleUserReactionInAccept(IReaction reaction, PlayerInfo player)
@@ -453,11 +464,25 @@ namespace Sanakan.DiscordBot.Session
                     var exchangeRateP1 = divP2 / ((destinationCards.Count == 0) ? (divP2 * 0.5) : divP1);
                     var exchangeRateP2 = divP1 / ((destinationCards.Count == 0) ? (divP1 * 0.5) : divP2);
 
-                    if (exchangeRateP1 > 1) exchangeRateP1 = 10;
-                    if (exchangeRateP1 < 0.0001) exchangeRateP1 = 0.001;
+                    if (exchangeRateP1 > 1)
+                    {
+                        exchangeRateP1 = 10;
+                    }
 
-                    if (exchangeRateP2 > 1) exchangeRateP2 = 10;
-                    if (exchangeRateP2 < 0.0001) exchangeRateP2 = 0.001;
+                    if (exchangeRateP1 < 0.0001)
+                    {
+                        exchangeRateP1 = 0.001;
+                    }
+
+                    if (exchangeRateP2 > 1)
+                    {
+                        exchangeRateP2 = 10;
+                    }
+
+                    if (exchangeRateP2 < 0.0001)
+                    {
+                        exchangeRateP2 = 0.001;
+                    }
 
                     foreach (var sourceCard in sourceCards)
                     {
@@ -478,9 +503,18 @@ namespace Sanakan.DiscordBot.Session
                         }
 
                         var valueDiff = exchangeRateP1 - card.MarketValue;
-                        var changed = card.MarketValue + valueDiff * 0.8;
-                        if (changed < 0.0001) changed = 0.0001;
-                        if (changed > 1) changed = 1;
+                        var changed = card.MarketValue + (valueDiff * 0.8);
+
+                        if (changed < 0.0001)
+                        {
+                            changed = 0.0001;
+                        }
+
+                        if (changed > 1)
+                        {
+                            changed = 1;
+                        }
+
                         card.MarketValue = changed;
 
                         if (!card.FirstOwnerId.HasValue)
@@ -515,7 +549,7 @@ namespace Sanakan.DiscordBot.Session
                         }
 
                         var valueDiff = exchangeRateP2 - card.MarketValue;
-                        var changed = card.MarketValue + valueDiff * 0.8;
+                        var changed = card.MarketValue + (valueDiff * 0.8);
                         if (changed < 0.0001)
                         {
                             changed = 0.0001;
@@ -525,6 +559,7 @@ namespace Sanakan.DiscordBot.Session
                         {
                             changed = 1;
                         }
+
                         card.MarketValue = changed;
 
                         if (!card.FirstOwnerId.HasValue)
@@ -565,15 +600,6 @@ namespace Sanakan.DiscordBot.Session
             }
 
             return canComplete;
-        }
-
-        public override async ValueTask DisposeAsync()
-        {
-            try
-            {
-                await _userMessage.RemoveAllReactionsAsync();
-            }
-            catch (Exception) { }
         }
     }
 }

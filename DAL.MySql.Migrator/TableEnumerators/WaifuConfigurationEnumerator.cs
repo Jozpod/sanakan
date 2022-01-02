@@ -5,7 +5,9 @@ namespace Sanakan.DAL.MySql.Migrator.TableEnumerators
     public class WaifuConfigurationEnumerator : TableEnumerator<WaifuConfiguration>
     {
         public WaifuConfigurationEnumerator(IDbConnection connection)
-            : base(connection) { }
+            : base(connection)
+        {
+        }
 
         public override WaifuConfiguration Current
         {

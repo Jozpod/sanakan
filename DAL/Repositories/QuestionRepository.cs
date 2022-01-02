@@ -14,7 +14,8 @@ namespace Sanakan.DAL.Repositories
 
         public QuestionRepository(
             SanakanDbContext dbContext,
-            ICacheManager cacheManager) : base(dbContext)
+            ICacheManager cacheManager)
+            : base(dbContext)
         {
             _dbContext = dbContext;
             _cacheManager = cacheManager;
@@ -49,6 +50,7 @@ namespace Sanakan.DAL.Repositories
 
             return result;
         }
+
         public async Task<List<Question>> GetCachedAllQuestionsAsync()
         {
             var cacheResult = _cacheManager.Get<List<Question>>(CacheKeys.Quizes);

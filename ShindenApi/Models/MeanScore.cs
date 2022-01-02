@@ -1,5 +1,4 @@
-﻿
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
 namespace Sanakan.ShindenApi.Models
 {
@@ -7,7 +6,6 @@ namespace Sanakan.ShindenApi.Models
     {
         [JsonPropertyName("mean_score")]
         public double Rating { get; set; }
-        // Replace('.', ',')
 
         [JsonPropertyName("scores_cnt")]
         public ulong? ScoreCount { get; set; }

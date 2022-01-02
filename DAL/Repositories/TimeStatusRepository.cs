@@ -15,7 +15,8 @@ namespace Sanakan.DAL.Repositories
 
         public TimeStatusRepository(
             SanakanDbContext dbContext,
-            ICacheManager cacheManager) : base(dbContext)
+            ICacheManager cacheManager)
+            : base(dbContext)
         {
             _dbContext = dbContext;
             _cacheManager = cacheManager;

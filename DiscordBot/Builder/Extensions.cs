@@ -21,8 +21,8 @@ namespace Sanakan.DiscordBot.Builder
         {
             services.AddSingleton<ICommandService, CommandService>();
 
-            services.AddSingleton((sp) => {
-
+            services.AddSingleton((sp) =>
+            {
                 var discordConfiguration = sp.GetRequiredService<IOptionsMonitor<DiscordConfiguration>>().CurrentValue;
 
                 return new DiscordSocketClient(new DiscordSocketConfig()
@@ -39,8 +39,8 @@ namespace Sanakan.DiscordBot.Builder
 
         public static IServiceCollection AddDiscordIcons(this IServiceCollection services)
         {
-            services.AddSingleton((sp) => {
-
+            services.AddSingleton((sp) =>
+            {
                 var discordConfiguration = sp.GetRequiredService<IOptionsMonitor<DiscordConfiguration>>().CurrentValue;
                 IIconConfiguration iconConfiguration;
 

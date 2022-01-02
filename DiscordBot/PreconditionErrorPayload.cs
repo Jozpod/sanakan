@@ -9,15 +9,15 @@ namespace Sanakan.DiscordBot
 
         public string? Message { get; set; }
 
-        public string Serialize()
-        {
-            return JsonSerializer.Serialize(this);
-        }
-
         public static PreconditionErrorPayload Deserialize(string json)
         {
             return JsonSerializer.Deserialize<PreconditionErrorPayload>(json)
                 ?? throw new Exception("Invalid json");
+        }
+
+        public string Serialize()
+        {
+            return JsonSerializer.Serialize(this);
         }
     }
 }

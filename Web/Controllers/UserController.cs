@@ -79,7 +79,7 @@ namespace Sanakan.Web.Controllers
         /// <summary>
         /// Finds the user in Shinden.
         /// </summary>
-        /// <param name="name">The name of the user</param>
+        /// <param name="name">The name of the user.</param>
         [HttpPost("find")]
         [ProducesResponseType(typeof(IEnumerable<UserSearchResult>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status404NotFound)]
@@ -189,8 +189,8 @@ namespace Sanakan.Web.Controllers
         /// Updates the nickname for given user.
         /// </summary>
         /// <param name="shindenUserId">The Shinden user identifier.</param>
-        /// <param name="nickname">The user nickname</param>
-        /// <response code="404">User not found</response>
+        /// <param name="nickname">The user nickname.</param>
+        /// <response code="404">User not found.</response>
         [HttpPost("shinden/{shindenUserId}/nickname"), Authorize(Policy = AuthorizePolicies.Site)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(UserWithToken), StatusCodes.Status200OK)]
@@ -234,6 +234,7 @@ namespace Sanakan.Web.Controllers
         /// <summary>
         /// Connects the shinden user with the discord user.
         /// </summary>
+        /// <param name="model">The registration model.</param>
         [HttpPut("register"), Authorize(Policy = AuthorizePolicies.Site)]
         [ProducesResponseType(typeof(UserWithToken), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status500InternalServerError)]
@@ -366,7 +367,7 @@ namespace Sanakan.Web.Controllers
         /// Changes the amount of TC points for given discord user.
         /// </summary>
         /// <param name="discordUserId">The user identifier in Discord.</param>
-        /// <param name="amount">The number of TC</param>
+        /// <param name="amount">The number of TC.</param>
         [HttpPut("discord/{discordUserId}/tc"), Authorize(Policy = AuthorizePolicies.Site)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status404NotFound)]
@@ -398,7 +399,7 @@ namespace Sanakan.Web.Controllers
         /// Changes TC points for given Shinden user.
         /// </summary>
         /// <param name="shindenUserId">The user identifier in Shinden.</param>
-        /// <param name="amount">liczba TC</param>
+        /// <param name="amount">The amount of TC.</param>
         [HttpPut("shinden/{shindenUserId}/tc"), Authorize(Policy = AuthorizePolicies.Site)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status200OK)]

@@ -5,7 +5,9 @@ namespace Sanakan.DAL.MySql.Migrator.TableEnumerators
     public class GuildOptionsEnumerator : TableEnumerator<GuildOptions>
     {
         public GuildOptionsEnumerator(IDbConnection connection)
-           : base(connection) { }
+           : base(connection)
+        {
+        }
 
         public override GuildOptions Current => new()
         {

@@ -47,18 +47,38 @@ namespace Sanakan.Daemon.HostedService
             _discordClientAccessor.LoggedOut += LoggedOut;
         }
 
-        private Task LoggedOut()
+        public async Task RemoveUserColorAsync(IGuildUser user, IGuild guild)
         {
-            _timer.Stop();
-            return Task.CompletedTask;
-        }
+            if (user == null)
+            {
+                return;
+            }
 
-        private Task ReadyAsync()
-        {
-            _timer.Start(
-                _options.CurrentValue.ProfileDueTime,
-                _options.CurrentValue.ProfilePeriod);
-            return Task.CompletedTask;
+            var colors = FColorExtensions.FColors;
+
+            foreach (uint color in colors)
+            {
+                var role = guild.Roles
+                   .Join(user.RoleIds, pr => pr.Id, pr => pr, (src, dst) => src)
+                   .FirstOrDefault(x => x.Name == color.ToString());
+
+                if (role == null)
+                {
+                    continue;
+                }
+
+                var users = await guild.GetUsersAsync();
+                var members = users
+                    .Where(x => x.RoleIds.Any(id => id == role.Id));
+
+                if (members.Count() == 1)
+                {
+                    await role.DeleteAsync();
+                    return;
+                }
+
+                await user.RemoveRoleAsync(role);
+            }
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -75,7 +95,7 @@ namespace Sanakan.Daemon.HostedService
             }
         }
 
-        internal async void OnTick(object sender, TimerEventArgs e)
+        private async void OnTick(object sender, TimerEventArgs e)
         {
             if (_isRunning)
             {
@@ -143,40 +163,6 @@ namespace Sanakan.Daemon.HostedService
             }
         }
 
-        public async Task RemoveUserColorAsync(IGuildUser user, IGuild guild)
-        {
-            if (user == null)
-            {
-                return;
-            }
-
-            var colors = FColorExtensions.FColors;
-
-            foreach (uint color in colors)
-            {
-                var role = guild.Roles
-                   .Join(user.RoleIds, pr => pr.Id, pr => pr, (src, dst) => src)
-                   .FirstOrDefault(x => x.Name == color.ToString());
-
-                if (role == null)
-                {
-                    continue;
-                }
-
-                var users = await guild.GetUsersAsync();
-                var members = users
-                    .Where(x => x.RoleIds.Any(id => id == role.Id));
-
-                if (members.Count() == 1)
-                {
-                    await role.DeleteAsync();
-                    return;
-                }
-
-                await user.RemoveRoleAsync(role);
-            }
-        }
-
         private async Task RemoveRoleAsync(IGuild guild, ulong roleId, ulong userId)
         {
             var role = guild.GetRole(roleId);
@@ -194,6 +180,20 @@ namespace Sanakan.Daemon.HostedService
             }
 
             await user.RemoveRoleAsync(role);
+        }
+
+        private Task LoggedOut()
+        {
+            _timer.Stop();
+            return Task.CompletedTask;
+        }
+
+        private Task ReadyAsync()
+        {
+            _timer.Start(
+                _options.CurrentValue.ProfileDueTime,
+                _options.CurrentValue.ProfilePeriod);
+            return Task.CompletedTask;
         }
     }
 }

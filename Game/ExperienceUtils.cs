@@ -5,6 +5,7 @@ namespace Sanakan.Game
     public static class ExperienceUtils
     {
         private const double DefaultLevelMultiplier = 0.35;
+
         public static ulong CalculateLevel(
             ulong experience,
             double levelMultiplier = DefaultLevelMultiplier)

@@ -5,7 +5,9 @@ namespace Sanakan.DAL.MySql.Migrator.TableEnumerators
     public class OwnedRolesEnumerator : TableEnumerator<OwnedRole>
     {
         public OwnedRolesEnumerator(IDbConnection connection)
-         : base(connection) { }
+         : base(connection)
+        {
+        }
 
         public override OwnedRole Current => new()
         {

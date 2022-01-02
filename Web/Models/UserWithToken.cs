@@ -9,17 +9,17 @@ namespace Sanakan.Web.Models
     public class UserWithToken
     {
         /// <summary>
-        /// The json web token
+        /// The json web token.
         /// </summary>
         public string? Token { get; set; }
 
         /// <summary>
-        /// The expire date
+        /// The expire date.
         /// </summary>
         public DateTime? Expire { get; set; }
 
         /// <summary>
-        /// The user
+        /// The user.
         /// </summary>
         public User User { get; set; } = null;
     }

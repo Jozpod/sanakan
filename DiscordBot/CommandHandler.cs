@@ -163,7 +163,9 @@ namespace Sanakan.DiscordBot
                     var textBigger = content.Length > paramStart;
                     param = textBigger ? content.Substring(paramStart) : null;
                 }
-                catch (Exception) { }
+                catch (Exception)
+                {
+                }
 
                 var record = new CommandsAnalytics
                 {

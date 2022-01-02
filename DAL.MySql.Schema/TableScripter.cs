@@ -27,7 +27,7 @@ namespace Sanakan.DAL.MySql.Schema
 
             var baseConnection = _databaseFacade.GetDbConnection();
             var connection = new DbConnection(baseConnection.ConnectionString);
-            
+
             await connection.OpenAsync();
             var tableNames = await Utils.GetTableNamesAsync(connection);
 

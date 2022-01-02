@@ -7,8 +7,6 @@ namespace Sanakan.DAL.MySql
     {
         private readonly MySqlConnection _dbConnection;
 
-        public System.Data.ConnectionState State => _dbConnection.State;
-
         public DbConnection(string connectionString)
         {
             _dbConnection = new MySqlConnection(connectionString);
@@ -18,6 +16,8 @@ namespace Sanakan.DAL.MySql
         {
             _dbConnection = dbConnection;
         }
+
+        public System.Data.ConnectionState State => _dbConnection.State;
 
         public void Dispose() => _dbConnection.Dispose();
 

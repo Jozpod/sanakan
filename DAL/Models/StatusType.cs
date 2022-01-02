@@ -12,7 +12,7 @@ namespace Sanakan.DAL.Models
         Card = 5,
 
         /// <summary>
-        /// Related to card bundles/packets. 
+        /// Related to card bundles/packets.
         /// </summary>
         Packet = 6,
         Pvp = 7,
@@ -39,7 +39,7 @@ namespace Sanakan.DAL.Models
             StatusType.DPvp,
         };
 
-        public static List<StatusType> WeeklyQuestTypes = new List<StatusType>()
+        public static List<StatusType> WeeklyQuestTypes = new()
         {
             StatusType.WCardPlus,
             StatusType.WDaily,

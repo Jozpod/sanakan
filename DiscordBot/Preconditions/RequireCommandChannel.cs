@@ -49,7 +49,6 @@ namespace Sanakan.Preconditions
             result.Message = string.Format(Strings.RequiredChannel, channel?.Mention);
 
             return PreconditionResult.FromError(result.Serialize());
-
         }
     }
 }

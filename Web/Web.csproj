@@ -6,6 +6,10 @@
     <Configurations>Debug;Release;Test</Configurations>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DocumentationFile>bin\Debug\net5.0\Sanakan.xml</DocumentationFile>
     <DefineConstants>DEBUG;TRACE</DefineConstants>

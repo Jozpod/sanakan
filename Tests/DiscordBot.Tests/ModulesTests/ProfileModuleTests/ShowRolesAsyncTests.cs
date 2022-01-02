@@ -15,6 +15,27 @@ namespace DiscordBot.ModulesTests.ProfileModuleTests
     public class ShowRolesAsyncTests : Base
     {
         [TestMethod]
+        public async Task Should_Send_Message_No_Roles()
+        {
+            var guildOptions = new GuildOptions(1ul, 50ul);
+
+            _guildMock
+               .Setup(pr => pr.Id)
+               .Returns(guildOptions.Id);
+
+            _guildConfigRepositoryMock
+                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildOptions.Id))
+                .ReturnsAsync(guildOptions);
+
+            SetupSendMessage((message, embed) =>
+            {
+                embed.Should().NotBeNull();
+            });
+
+            await _module.ShowRolesAsync();
+        }
+
+        [TestMethod]
         public async Task Should_Send_Message_Containing_Roles()
         {
             var guildOptions = new GuildOptions(1ul, 50ul);

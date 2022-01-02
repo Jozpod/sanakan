@@ -5,7 +5,9 @@ namespace Sanakan.DAL.MySql.Migrator.TableEnumerators
     public class WishlistObjectEnumerator : TableEnumerator<WishlistObject>
     {
         public WishlistObjectEnumerator(IDbConnection connection)
-            : base(connection) { }
+            : base(connection)
+        {
+        }
 
         public override WishlistObject Current => new WishlistObject
         {

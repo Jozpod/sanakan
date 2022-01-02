@@ -357,11 +357,13 @@ namespace Sanakan.DiscordBot.Modules
                     for (var index = 3; index < 6; index++)
                     {
                         var val = $"x{slotMachineSlot.WinValue(index)}".PadRight(5, ' ');
-                        stringBuilder.AppendFormat("{0}x{1} - {2} ",
+                        stringBuilder.AppendFormat(
+                            "{0}x{1} - {2} ",
                             index,
                             slotMachineSlot.Icon(),
                             val);
                     }
+
                     stringBuilder.AppendLine();
                 }
             }

@@ -6,7 +6,6 @@ namespace Sanakan.DAL.Models
     {
         public RarityExcluded()
         {
-
         }
 
         public RarityExcluded(Rarity rarity)

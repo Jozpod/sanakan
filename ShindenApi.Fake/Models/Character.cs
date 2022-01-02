@@ -2,7 +2,6 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 
-
 namespace Sanakan.ShindenApi.Fake.Models
 {
     public class Character

@@ -2,6 +2,7 @@
 
 namespace Sanakan.Game.Models
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "Resolved.")]
     public enum SlotMachineWinSlots : int
     {
         Nothing = 0,
@@ -33,7 +34,9 @@ namespace Sanakan.Game.Models
         public static string ToIcon(this SlotMachineWinSlots wins)
         {
             if (wins == SlotMachineWinSlots.Nothing)
+            {
                 return "✖";
+            }
 
             var winString = wins.ToString();
             var winChars = winString.ToCharArray();

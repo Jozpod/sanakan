@@ -66,7 +66,6 @@
             return exp;
         }
 
-
         public static int GetMaxExpTransferToCard(this ExperienceContainerLevel level)
         {
             switch (level)

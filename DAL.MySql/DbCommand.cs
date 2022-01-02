@@ -10,7 +10,6 @@ namespace Sanakan.DAL.MySql
         public DbCommand(MySqlCommand dbCommand)
         {
             _dbCommand = dbCommand;
-           
         }
 
         public string CommandText
@@ -19,6 +18,7 @@ namespace Sanakan.DAL.MySql
             {
                 return _dbCommand.CommandText;
             }
+
             set
             {
                 _dbCommand.CommandText = value;

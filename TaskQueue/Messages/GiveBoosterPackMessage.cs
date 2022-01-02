@@ -6,7 +6,10 @@ namespace Sanakan.TaskQueue.Messages
 {
     public class GiveBoosterPackMessage : BaseMessage
     {
-        public GiveBoosterPackMessage() : base(Priority.Low) { }
+        public GiveBoosterPackMessage()
+            : base(Priority.Low)
+        {
+        }
 
         public ulong DiscordUserId { get; set; }
 

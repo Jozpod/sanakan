@@ -4,6 +4,7 @@
         <LangVersion>9.0</LangVersion>
         <Nullable>enable</Nullable>
     </PropertyGroup>
+
     <PropertyGroup>
         <CollectCoverage>true</CollectCoverage>
         <CoverletOutputFormat>opencover</CoverletOutputFormat>
@@ -11,5 +12,10 @@
         <Exclude>[*]Sanakan.TaskQueue.Messages*%2c[*]Sanakan.Game.Models*%2c[*]Sanakan.ShindenApi.Models*%2c[*]Sanakan.ShindenApi.Converters*%2c[*]Sanakan.DiscordBot.Services.Models*%2c[*]Sanakan.Web.Models*</Exclude>
         <ExcludeByFile>**/Strings.Designer.cs</ExcludeByFile>
         <IsPublishable>false</IsPublishable>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+        <DebugType>Portable</DebugType>
+        <DebugSymbols>true</DebugSymbols>
     </PropertyGroup>
 </Project>

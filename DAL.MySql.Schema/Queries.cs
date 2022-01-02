@@ -1,13 +1,15 @@
 ﻿namespace Sanakan.DAL.MySql.Schema
 {
     public static class Queries
-	{
-		public const string TableDefinition = "SHOW CREATE TABLE {0}";
-		public const string TablesInDatabase = @"SELECT
+    {
+        public const string TableDefinition = "SHOW CREATE TABLE {0}";
+
+        public const string TablesInDatabase = @"SELECT
 	table_name
 FROM INFORMATION_SCHEMA.TABLES
 WHERE TABLE_SCHEMA = DATABASE()";
-		public const string IndexesForTable = @"SELECT
+
+        public const string IndexesForTable = @"SELECT
 	CONCAT('ALTER TABLE ' , TABLE_NAME, ' ', 'ADD ',
 	IF(NON_UNIQUE = 1,
 	CASE UPPER(INDEX_TYPE)
@@ -29,5 +31,5 @@ WHERE TABLE_NAME = '{0}'
 	AND INDEX_NAME != 'PRIMARY'
 GROUP BY TABLE_NAME, INDEX_NAME
 ORDER BY TABLE_NAME ASC, INDEX_NAME ASC;";
-	}
+    }
 }

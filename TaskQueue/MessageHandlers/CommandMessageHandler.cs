@@ -9,7 +9,7 @@ namespace Sanakan.TaskQueue.MessageHandlers
     {
         private readonly ILogger<CommandMessageHandler> _logger;
         private readonly IServiceProvider _serviceProvider;
-        
+
         public CommandMessageHandler(
             ILogger<CommandMessageHandler> logger,
             IServiceProvider serviceProvider)
@@ -23,12 +23,11 @@ namespace Sanakan.TaskQueue.MessageHandlers
             var result = await message.Match
                 .ExecuteAsync(message.Context, message.ParseResult, _serviceProvider)
                 .ConfigureAwait(false);
-            
+
             if (result.IsSuccess)
             {
                 return;
             }
-
 
             _logger.LogError(result.ErrorReason);
         }

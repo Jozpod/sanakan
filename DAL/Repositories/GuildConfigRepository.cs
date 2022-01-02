@@ -13,7 +13,8 @@ namespace Sanakan.DAL.Repositories
 
         public GuildConfigRepository(
             SanakanDbContext dbContext,
-            ICacheManager cacheManager) : base(dbContext)
+            ICacheManager cacheManager)
+            : base(dbContext)
         {
             _dbContext = dbContext;
             _cacheManager = cacheManager;

@@ -36,10 +36,12 @@ namespace Sanakan.TaskQueue.MessageHandlers
         {
             var userMessage = message.UserMessage;
             var user = await _userRepository.GetUserOrCreateAsync(message.DiscordUserId);
+            Embed embed;
 
             if (user == null)
             {
-                await userMessage.ModifyAsync(x => x.Embed = "Nie odnaleziono kart do rozdania!".ToEmbedMessage(EMType.Error).Build());
+                embed = "Nie odnaleziono kart do rozdania!".ToEmbedMessage(EMType.Error).Build();
+                await userMessage.ModifyAsync(x => x.Embed = embed);
                 return;
             }
 
@@ -47,7 +49,8 @@ namespace Sanakan.TaskQueue.MessageHandlers
 
             if (!loteryCards.Any())
             {
-                await userMessage.ModifyAsync(x => x.Embed = "Nie odnaleziono kart do rozdania!".ToEmbedMessage(EMType.Error).Build());
+                embed = "Nie odnaleziono kart do rozdania!".ToEmbedMessage(EMType.Error).Build();
+                await userMessage.ModifyAsync(x => x.Embed = embed);
                 return;
             }
 
@@ -55,7 +58,7 @@ namespace Sanakan.TaskQueue.MessageHandlers
 
             if (winnerUser == null)
             {
-                var embed = "Nie odnaleziono docelowego użytkownika!".ToEmbedMessage(EMType.Error).Build();
+                embed = "Nie odnaleziono docelowego użytkownika!".ToEmbedMessage(EMType.Error).Build();
                 await userMessage.ModifyAsync(x => x.Embed = embed);
                 return;
             }
@@ -93,11 +96,11 @@ namespace Sanakan.TaskQueue.MessageHandlers
 
             _cacheManager.ExpireTag(CacheKeys.User(message.DiscordUserId), CacheKeys.Users, CacheKeys.User(message.InvokingUserId));
 
-            var content = $"Loterie wygrywa {message.WinnerUser.Mention}.\nOtrzymuje: {string.Join("\n", cardsIds)}"
+            embed = $"Loterie wygrywa {message.WinnerUser.Mention}.\nOtrzymuje: {string.Join("\n", cardsIds)}"
                 .ElipseTrimToLength(2000)
                 .ToEmbedMessage(EMType.Success).Build();
 
-            userMessage = await message.Channel.SendMessageAsync(embed: content);
+            userMessage = await message.Channel.SendMessageAsync(embed: embed);
 
             var jumpUrl = userMessage.GetJumpUrl();
 
@@ -116,7 +119,9 @@ namespace Sanakan.TaskQueue.MessageHandlers
                     await dmChannel.SendMessageAsync(embed: privateEmbed.Build());
                 }
             }
-            catch (Exception) { }
+            catch (Exception)
+            {
+            }
         }
     }
 }

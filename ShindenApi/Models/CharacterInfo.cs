@@ -81,6 +81,7 @@ namespace Sanakan.ShindenApi.Models
         public List<ImagePicture> Pictures { get; set; } = new();
 
         public string CharacterUrl => UrlHelpers.GetCharacterURL(CharacterId);
+
         public string PictureUrl => UrlHelpers.GetPersonPictureURL(PictureId);
 
         public override string ToString() => $"{FirstName} {LastName}";

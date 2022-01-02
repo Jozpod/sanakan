@@ -20,7 +20,7 @@ namespace Sanakan.DiscordBot.Abstractions.Configuration
         public IEmote Decline { get; }
 
         /// <summary>
-        /// Used 
+        /// Used in moderation module for sending message.
         /// </summary>
         public IEmote HandSign { get; }
 
@@ -50,12 +50,12 @@ namespace Sanakan.DiscordBot.Abstractions.Configuration
         public IEmote TwoEmote { get; }
 
         /// <summary>
-        /// Used for interaction with bot which involves paging
+        /// Used for interaction with bot which involves paging.
         /// </summary>
         public IEmote LeftwardsArrow { get; }
 
         /// <summary>
-        /// Used for interaction with bot which involves paging
+        /// Used for interaction with bot which involves paging.
         /// </summary>
         public IEmote RightwardsArrow { get; }
 
@@ -70,7 +70,7 @@ namespace Sanakan.DiscordBot.Abstractions.Configuration
         public IEmote[] AcceptDecline { get; }
 
         /// <summary>
-        /// Used for interaction with bot which involves paging
+        /// Used for interaction with bot which involves paging.
         /// </summary>
         public IEmote[] LeftRightArrows { get; }
     }

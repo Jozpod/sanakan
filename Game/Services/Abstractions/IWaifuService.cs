@@ -10,6 +10,8 @@ namespace Sanakan.Game.Services.Abstractions
 {
     public interface IWaifuService
     {
+        bool EventState { get; set; }
+
         Card GenerateNewCard(ulong? discordUserId, CharacterInfo character, Rarity rarity);
 
         Card GenerateNewCard(ulong? discordUserId, CharacterInfo character);
@@ -27,8 +29,6 @@ namespace Sanakan.Game.Services.Abstractions
         int GetDefenceAfterLevelUp(Rarity oldRarity, int oldDefence);
 
         int GetAttackAfterLevelUp(Rarity oldRarity, int oldAttack);
-
-        bool EventState { get; set; }
 
         void SetEventIds(IEnumerable<ulong> ids);
 

@@ -10,7 +10,8 @@ namespace Sanakan.Common
     {
         public static void AddWritableOption<T>(
             this IServiceCollection services,
-            string file = "appsettings.json") where T : class, new()
+            string file = "appsettings.json")
+            where T : class, new()
         {
             services.AddTransient<IWritableOptions<T>>(serviceProvider =>
             {

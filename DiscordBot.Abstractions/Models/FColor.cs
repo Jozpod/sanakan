@@ -82,10 +82,14 @@ namespace DiscordBot.Services
         public static int Price(this FColor color, SCurrency currency)
         {
             if (color == FColor.CleanColor)
+            {
                 return 0;
+            }
 
             if (currency == SCurrency.Sc)
+            {
                 return 39999;
+            }
 
             switch (color)
             {

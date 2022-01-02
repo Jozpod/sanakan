@@ -1,4 +1,3 @@
-
 using Sanakan.ShindenApi.Converters;
 using System;
 using System.Text.Json.Serialization;

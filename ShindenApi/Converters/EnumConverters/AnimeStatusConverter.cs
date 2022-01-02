@@ -13,6 +13,9 @@ namespace Sanakan.ShindenApi.Converters
             { "proposal", AnimeStatus.Proposal },
         };
 
-        public AnimeStatusConverter() : base(_map, AnimeStatus.NotSpecified) {}
+        public AnimeStatusConverter()
+            : base(_map, AnimeStatus.NotSpecified)
+        {
+        }
     }
 }

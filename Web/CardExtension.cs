@@ -15,6 +15,7 @@ namespace Sanakan.Web.Extensions
             {
                 list.Add(new ExpeditionCard(card, karma));
             }
+
             return list;
         }
 
@@ -25,6 +26,7 @@ namespace Sanakan.Web.Extensions
             {
                 list.Add(new CardFinalView(card));
             }
+
             return list;
         }
     }

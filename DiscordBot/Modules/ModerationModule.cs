@@ -215,7 +215,7 @@ namespace Sanakan.DiscordBot.Modules
                 await ReplyAsync(embed: embed);
                 return;
             }
-            
+
             var notificationChannel = (ITextChannel)await guild.GetChannelAsync(config.NotificationChannelId);
             var userRole = guild.GetRole(config.UserRoleId.Value);
             var muteRole = guild.GetRole(config.MuteRoleId);
@@ -386,15 +386,19 @@ namespace Sanakan.DiscordBot.Modules
         {
             var guildId = Context.Guild.Id;
             var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(guildId);
+            Embed embed;
+
             if (messsage == null)
             {
-                await ReplyAsync(embed: $"**Wiadomość powitalna:**\n\n{config?.WelcomeMessage ?? "off"}".ToEmbedMessage(EMType.Bot).Build());
+                embed = $"**Wiadomość powitalna:**\n\n{config?.WelcomeMessage ?? "off"}".ToEmbedMessage(EMType.Bot).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
             if (messsage.Length > _config.CurrentValue.MaxMessageLength)
             {
-                await ReplyAsync(embed: $"**Wiadomość jest za długa!".ToEmbedMessage(EMType.Error).Build());
+                embed = Strings.MessageTooLong.ToEmbedMessage(EMType.Error).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
@@ -403,7 +407,8 @@ namespace Sanakan.DiscordBot.Modules
 
             _cacheManager.ExpireTag(CacheKeys.GuildConfig(guildId));
 
-            await ReplyAsync(embed: $"Ustawiono `{messsage}` jako wiadomość powitalną.".ToEmbedMessage(EMType.Success).Build());
+            embed = $"Ustawiono `{messsage}` jako wiadomość powitalną.".ToEmbedMessage(EMType.Success).Build();
+            await ReplyAsync(embed: embed);
         }
 
         [Command("przywitaniepw")]
@@ -426,7 +431,7 @@ namespace Sanakan.DiscordBot.Modules
 
             if (messsage.Length > _config.CurrentValue.MaxMessageLength)
             {
-                await ReplyAsync(embed: $"**Wiadomość jest za długa!".ToEmbedMessage(EMType.Error).Build());
+                await ReplyAsync(embed: Strings.MessageTooLong.ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
@@ -447,16 +452,19 @@ namespace Sanakan.DiscordBot.Modules
         {
             var guildId = Context.Guild.Id;
             var config = await _guildConfigRepository.GetGuildConfigOrCreateAsync(guildId);
+            Embed embed;
 
             if (messsage == null)
             {
-                await ReplyAsync(embed: $"**Wiadomość pożegnalna:**\n\n{config?.GoodbyeMessage ?? "off"}".ToEmbedMessage(EMType.Bot).Build());
+                embed = $"**Wiadomość pożegnalna:**\n\n{config?.GoodbyeMessage ?? "off"}".ToEmbedMessage(EMType.Bot).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
             if (messsage.Length > _config.CurrentValue.MaxMessageLength)
             {
-                await ReplyAsync(embed: $"**Wiadomość jest za długa!".ToEmbedMessage(EMType.Error).Build());
+                embed = Strings.MessageTooLong.ToEmbedMessage(EMType.Error).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
@@ -465,7 +473,8 @@ namespace Sanakan.DiscordBot.Modules
 
             _cacheManager.ExpireTag(CacheKeys.GuildConfig(guildId));
 
-            await ReplyAsync(embed: $"Ustawiono `{messsage}` jako wiadomość pożegnalną.".ToEmbedMessage(EMType.Success).Build());
+            embed = $"Ustawiono `{messsage}` jako wiadomość pożegnalną.".ToEmbedMessage(EMType.Success).Build();
+            await ReplyAsync(embed: embed);
         }
 
         [Command("role", RunMode = RunMode.Async)]
@@ -530,24 +539,28 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("ustawia role administratora")]
         [Remarks("34125343243432"), RequireAdminRole]
         public Task SetAdminRoleAsync([Summary("id roli")] IRole role)
-            => SetRoleAsync(role, (go, roleId) =>
-            {
-                if (go.AdminRoleId == roleId)
+            => SetRoleAsync(
+                role,
+                (go, roleId) =>
                 {
-                    return false;
-                }
+                    if (go.AdminRoleId == roleId)
+                    {
+                        return false;
+                    }
 
-                go.AdminRoleId = roleId;
-                return true;
-            },
-            $"Rola {role.Mention} już jest ustawiona jako rola administratora.",
-            $"Ustawiono {role.Mention} jako role administratora.");
+                    go.AdminRoleId = roleId;
+                    return true;
+                },
+                $"Rola {role.Mention} już jest ustawiona jako rola administratora.",
+                $"Ustawiono {role.Mention} jako role administratora.");
 
         [Command("userr")]
         [Summary("ustawia role użytkownika")]
         [Remarks("34125343243432"), RequireAdminRole]
         public Task SetUserRoleAsync([Summary("id roli")] IRole role)
-            => SetRoleAsync(role, (go, roleId) =>
+            => SetRoleAsync(
+                role,
+                (go, roleId) =>
                 {
                     if (go.UserRoleId == roleId)
                     {
@@ -557,31 +570,35 @@ namespace Sanakan.DiscordBot.Modules
                     go.UserRoleId = roleId;
                     return true;
                 },
-            $"Rola {role.Mention} już jest ustawiona jako rola użytkownika.",
-            $"Ustawiono {role.Mention} jako role użytkownika.");
+                $"Rola {role.Mention} już jest ustawiona jako rola użytkownika.",
+                $"Ustawiono {role.Mention} jako role użytkownika.");
 
         [Command("muter")]
         [Summary("ustawia role wyciszająca użytkownika")]
         [Remarks("34125343243432"), RequireAdminRole]
         public Task SetMuteRoleAsync([Summary("id roli")] IRole role)
-              => SetRoleAsync(role, (go, roleId) =>
-              {
-                  if (go.MuteRoleId == roleId)
-                  {
-                      return false;
-                  }
+              => SetRoleAsync(
+                role,
+                (go, roleId) =>
+                {
+                    if (go.MuteRoleId == roleId)
+                    {
+                        return false;
+                    }
 
-                  go.MuteRoleId = roleId;
-                  return true;
-              },
-            $"Rola {role.Mention} już jest ustawiona jako rola wyciszająca użytkownika.",
-            $"Ustawiono {role.Mention} jako role wyciszającą użytkownika.");
+                    go.MuteRoleId = roleId;
+                    return true;
+                },
+                $"Rola {role.Mention} już jest ustawiona jako rola wyciszająca użytkownika.",
+                $"Ustawiono {role.Mention} jako role wyciszającą użytkownika.");
 
         [Command("mutemodr")]
         [Summary("ustawia role wyciszająca moderatora")]
         [Remarks("34125343243432"), RequireAdminRole]
         public Task SetMuteModRoleAsync([Summary("id roli")] IRole role)
-            => SetRoleAsync(role, (go, roleId) =>
+            => SetRoleAsync(
+                role,
+                (go, roleId) =>
                 {
                     if (go.ModMuteRoleId == roleId)
                     {
@@ -591,26 +608,28 @@ namespace Sanakan.DiscordBot.Modules
                     go.ModMuteRoleId = roleId;
                     return true;
                 },
-            $"Rola {role.Mention} już jest ustawiona jako rola wyciszająca moderatora.",
-            $"Ustawiono {role.Mention} jako role wyciszającą moderatora.");
+                $"Rola {role.Mention} już jest ustawiona jako rola wyciszająca moderatora.",
+                $"Ustawiono {role.Mention} jako role wyciszającą moderatora.");
 
         [Command("globalr")]
         [Summary("ustawia role globalnych emotek")]
         [Remarks("34125343243432"), RequireAdminRole]
         public Task SetGlobalRoleAsync(
             [Summary("id roli")] IRole role)
-              => SetRoleAsync(role, (go, roleId) =>
-              {
-                  if (go.GlobalEmotesRoleId == roleId)
-                  {
-                      return false;
-                  }
+            => SetRoleAsync(
+                role,
+                (go, roleId) =>
+                {
+                    if (go.GlobalEmotesRoleId == roleId)
+                    {
+                        return false;
+                    }
 
-                  go.GlobalEmotesRoleId = roleId;
-                  return true;
-              },
-            $"Rola {role.Mention} już jest ustawiona jako rola globalnych emotek.",
-            $"Ustawiono {role.Mention} jako role globalnych emotek.");
+                    go.GlobalEmotesRoleId = roleId;
+                    return true;
+                },
+                $"Rola {role.Mention} już jest ustawiona jako rola globalnych emotek.",
+                $"Ustawiono {role.Mention} jako role globalnych emotek.");
 
         [Command("waifur")]
         [Summary("ustawia role waifu")]
@@ -948,7 +967,7 @@ namespace Sanakan.DiscordBot.Modules
             },
             "Kanał `{0}` już jest ustawiony jako kanał nsfw.",
             "Ustawiono `{0}` jako kanał nsfw.");
- 
+
         [Command("tfightch")]
         [Summary("ustawia śmieciowy kanał walk waifu")]
         [Remarks(""), RequireAdminRole]
@@ -1036,7 +1055,7 @@ namespace Sanakan.DiscordBot.Modules
             },
             "Kanał `{0}` już jest ustawiony jako kanał rynku waifu.",
             "Ustawiono `{0}` jako kanał rynku waifu.");
-    
+
         [Command("duelch")]
         [Summary("ustawia kanał pojedynków waifu")]
         [Remarks(""), RequireAdminRole]
@@ -1306,10 +1325,12 @@ namespace Sanakan.DiscordBot.Modules
         [Command("todo", RunMode = RunMode.Async)]
         [Summary("dodaje wiadomość do todo")]
         [Remarks("2342123444212"), RequireAdminOrModRole]
-        public async Task MarkAsTodoAsync([Summary("id wiadomości")] ulong messageId,
+        public async Task MarkAsTodoAsync(
+            [Summary("id wiadomości")] ulong messageId,
             [Summary("nazwa serwera (opcjonalne)")] string serverName = null)
         {
             var guild = Context.Guild;
+            Embed embed;
 
             if (serverName != null)
             {
@@ -1318,7 +1339,8 @@ namespace Sanakan.DiscordBot.Modules
 
                 if (customGuild == null)
                 {
-                    await ReplyAsync(embed: "Nie odnaleziono serwera.".ToEmbedMessage(EMType.Bot).Build());
+                    embed = "Nie odnaleziono serwera.".ToEmbedMessage(EMType.Bot).Build();
+                    await ReplyAsync(embed: embed);
                     return;
                 }
 
@@ -1327,13 +1349,15 @@ namespace Sanakan.DiscordBot.Modules
 
                 if (invokingUser == null)
                 {
-                    await ReplyAsync(embed: "Nie znajdujesz się na docelowym serwerze.".ToEmbedMessage(EMType.Bot).Build());
+                    embed = "Nie znajdujesz się na docelowym serwerze.".ToEmbedMessage(EMType.Bot).Build();
+                    await ReplyAsync(embed: embed);
                     return;
                 }
 
                 if (!invokingUser.GuildPermissions.Administrator)
                 {
-                    await ReplyAsync(embed: "Nie posiadasz wystarczających uprawnień na docelowym serwerze.".ToEmbedMessage(EMType.Bot).Build());
+                    embed = "Nie posiadasz wystarczających uprawnień na docelowym serwerze.".ToEmbedMessage(EMType.Bot).Build();
+                    await ReplyAsync(embed: embed);
                     return;
                 }
 
@@ -1344,27 +1368,31 @@ namespace Sanakan.DiscordBot.Modules
 
             if (config == null)
             {
-                await ReplyAsync(embed: Strings.ServerNotConfigured.ToEmbedMessage(EMType.Bot).Build());
+                embed = Strings.ServerNotConfigured.ToEmbedMessage(EMType.Bot).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
             var todoChannel = await guild.GetChannelAsync(config.ToDoChannelId) as IMessageChannel;
             if (todoChannel == null)
             {
-                await ReplyAsync(embed: "Kanał todo nie jest ustawiony.".ToEmbedMessage(EMType.Bot).Build());
+                embed = "Kanał todo nie jest ustawiony.".ToEmbedMessage(EMType.Bot).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
             var message = await Context.Channel.GetMessageAsync(messageId);
             if (message == null)
             {
-                await ReplyAsync(embed: "Wiadomość nie istnieje!\nPamiętaj, że polecenie musi zostać użyte w tym samym kanale, gdzie znajduje się wiadomość!".ToEmbedMessage(EMType.Bot).Build());
+                embed = Strings.MessageDoesNotExist.ToEmbedMessage(EMType.Bot).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
+            var user = (IGuildUser)Context.User;
             await Context.Message.AddReactionAsync(_iconConfiguration.HandSign);
-            var content = _moderatorService.BuildTodo(message, (IGuildUser)Context.User);
-            await todoChannel.SendMessageAsync(message.GetJumpUrl(), embed: content);
+            embed = _moderatorService.BuildTodo(message, user);
+            await todoChannel.SendMessageAsync(message.GetJumpUrl(), embed: embed);
         }
 
         [Command("quote", RunMode = RunMode.Async)]
@@ -1376,24 +1404,27 @@ namespace Sanakan.DiscordBot.Modules
         {
             var channelToSend = await Context.Guild.GetChannelAsync(channelId) as IMessageChannel;
             var invokingUser = Context.User as IGuildUser;
+            Embed embed;
 
             if (channelToSend == null)
             {
-                await ReplyAsync(embed: "Nie odnaleziono kanału.\nPamiętaj, że kanał musi znajdować się na tym samym serwerze."
-                    .ToEmbedMessage(EMType.Bot).Build());
+                embed = "Nie odnaleziono kanału.\nPamiętaj, że kanał musi znajdować się na tym samym serwerze."
+                    .ToEmbedMessage(EMType.Bot).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
             var message = await Context.Channel.GetMessageAsync(messageId);
             if (message == null)
             {
-                await ReplyAsync(embed: "Wiadomość nie istnieje!\nPamiętaj, że polecenie musi zostać użyte w tym samym kanale, gdzie znajduje się wiadomość!".ToEmbedMessage(EMType.Bot).Build());
+                embed = Strings.MessageDoesNotExist.ToEmbedMessage(EMType.Bot).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
-            var todo = _moderatorService.BuildTodo(message, invokingUser!);
+            embed = _moderatorService.BuildTodo(message, invokingUser!);
             await Context.Message.AddReactionAsync(_iconConfiguration.HandSign);
-            await channelToSend.SendMessageAsync(message.GetJumpUrl(), embed: todo);
+            await channelToSend.SendMessageAsync(message.GetJumpUrl(), embed: embed);
         }
 
         [Command("tchaos")]
@@ -1698,7 +1729,10 @@ namespace Sanakan.DiscordBot.Modules
                     embedBuilder.Fields.FirstOrDefault(x => x.Name == Strings.ReportId).Value = "Odrzucone!";
                     await ReplyAsync(embed: embedBuilder.Build());
                 }
-                catch (Exception) { }
+                catch (Exception)
+                {
+                }
+
                 await reportMessage.DeleteAsync();
 
                 config.Raports.Remove(raport);
@@ -1731,7 +1765,9 @@ namespace Sanakan.DiscordBot.Modules
                 config.Raports.Remove(raport);
                 await _userRepository.SaveChangesAsync();
             }
-            catch (Exception) { }
+            catch (Exception)
+            {
+            }
 
             if (warnUser)
             {
@@ -1846,6 +1882,7 @@ namespace Sanakan.DiscordBot.Modules
                 await ReplyAsync(embed: roleSetAlreadyMessage.ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
+
             await _guildConfigRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(CacheKeys.GuildConfig(guildId));

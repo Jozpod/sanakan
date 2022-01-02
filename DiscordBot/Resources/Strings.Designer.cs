@@ -19,7 +19,7 @@ namespace Sanakan.DiscordBot.Resources {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Strings {
@@ -197,6 +197,15 @@ namespace Sanakan.DiscordBot.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Wykryto próbę podszycia się. Nieładnie!.
+        /// </summary>
+        internal static string ImpersonationAttempt {
+            get {
+                return ResourceManager.GetString("ImpersonationAttempt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Podano zla dlugosc.
         /// </summary>
         internal static string InvalidDuration {
@@ -220,6 +229,24 @@ namespace Sanakan.DiscordBot.Resources {
         internal static string MatchedMultipleUsers {
             get {
                 return ResourceManager.GetString("MatchedMultipleUsers", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Wiadomość nie istnieje!\nPamiętaj, że polecenie musi zostać użyte w tym samym kanale, gdzie znajduje się wiadomość!.
+        /// </summary>
+        internal static string MessageDoesNotExist {
+            get {
+                return ResourceManager.GetString("MessageDoesNotExist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Wiadomość jest za długa!.
+        /// </summary>
+        internal static string MessageTooLong {
+            get {
+                return ResourceManager.GetString("MessageTooLong", resourceCulture);
             }
         }
         
@@ -561,6 +588,24 @@ namespace Sanakan.DiscordBot.Resources {
         internal static string TitleNotInWishList {
             get {
                 return ResourceManager.GetString("TitleNotInWishList", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Wygląda na to, że ktoś już połączył się z tym kontem..
+        /// </summary>
+        internal static string UserAlreadyConnected {
+            get {
+                return ResourceManager.GetString("UserAlreadyConnected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Konta zostały połączone..
+        /// </summary>
+        internal static string UserConnected {
+            get {
+                return ResourceManager.GetString("UserConnected", resourceCulture);
             }
         }
         

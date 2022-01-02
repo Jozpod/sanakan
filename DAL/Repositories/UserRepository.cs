@@ -20,7 +20,8 @@ namespace Sanakan.DAL.Repositories
         public UserRepository(
             SanakanDbContext dbContext,
             ISystemClock systemClock,
-            ICacheManager cacheManager) : base(dbContext)
+            ICacheManager cacheManager)
+            : base(dbContext)
         {
             _dbContext = dbContext;
             _systemClock = systemClock;
@@ -385,7 +386,6 @@ namespace Sanakan.DAL.Repositories
                 .Where(x => !discordUserIds.Any(id => id == x.Id))
                 .Select(x => x.Id)
                 .ToListAsync();
-
         }
     }
 }

@@ -3,8 +3,6 @@ using System.Text.Json.Serialization;
 
 namespace Sanakan.DAL.Models
 {
-
-
     public class Item
     {
         public ulong Id { get; set; }

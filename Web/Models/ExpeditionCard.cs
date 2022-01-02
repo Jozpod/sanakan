@@ -25,7 +25,7 @@ namespace Sanakan.Web.Models
         /// The type of expedition.
         /// </summary>
         public string ExpeditionType { get; set; }
-        
+
         /// <summary>
         /// The amount of time in minutes after which card won't get any bonus points.
         /// </summary>

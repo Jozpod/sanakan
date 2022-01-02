@@ -66,6 +66,7 @@ namespace Sanakan.Game.Extensions
                 {
                     def2 = 99;
                 }
+
                 realAtk1 = atk1 * (100 - def2) / 100;
             }
 

@@ -71,14 +71,14 @@ namespace Sanakan.DiscordBot.Session
 
     public class ListSession : InteractionSession
     {
-        private IIconConfiguration _iconConfiguration = null;
-        private bool _isEnumerable;
         private readonly int _itemsPerPage;
-        private IEnumerable<string> _items;
         private readonly EmbedBuilder _embedBuilder;
-        private int _currentPage;
         private readonly IUser _bot;
         private readonly IUserMessage _userMessage;
+        private IEnumerable<string> _items;
+        private int _currentPage;
+        private IIconConfiguration _iconConfiguration = null;
+        private bool _isEnumerable;
 
         public ListSession(
             ulong ownerId,
@@ -89,12 +89,13 @@ namespace Sanakan.DiscordBot.Session
             EmbedBuilder embedBuilder,
             int itemsPerPage = 10,
             bool isEnumerable = false,
-            SessionExecuteCondition executeCondition = SessionExecuteCondition.AllReactions) : base(
-            ownerId,
-            createdOn,
-            TimeSpan.FromMinutes(1),
-            Discord.Commands.RunMode.Sync,
-            executeCondition)
+            SessionExecuteCondition executeCondition = SessionExecuteCondition.AllReactions)
+            : base(
+                ownerId,
+                createdOn,
+                TimeSpan.FromMinutes(1),
+                Discord.Commands.RunMode.Sync,
+                executeCondition)
         {
             _items = items;
             _bot = bot;
@@ -104,8 +105,6 @@ namespace Sanakan.DiscordBot.Session
             _userMessage = userMessage;
             _embedBuilder = embedBuilder;
         }
-
-        private int MaxPageReal() => ListSessionUtils.MaxPage(_items, _itemsPerPage) - 1;
 
         public override async Task<bool> ExecuteAsync(
             SessionContext context,
@@ -167,5 +166,7 @@ namespace Sanakan.DiscordBot.Session
             _iconConfiguration = null;
             _items = null;
         }
+
+        private int MaxPageReal() => ListSessionUtils.MaxPage(_items, _itemsPerPage) - 1;
     }
 }

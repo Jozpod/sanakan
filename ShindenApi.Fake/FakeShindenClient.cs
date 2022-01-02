@@ -59,10 +59,7 @@ namespace Sanakan.ShindenApi.Fake
         {
             return Task.FromResult(new ShindenResult<TitleStatusAfterChange>
             {
-                Value = new TitleStatusAfterChange
-                {
-                    
-                }
+                Value = new TitleStatusAfterChange(),
             });
         }
 
@@ -156,17 +153,9 @@ namespace Sanakan.ShindenApi.Fake
                         Title = title,
                         CoverId = imageId ?? 0,
                         Type = type,
-                        Manga = new MangaInfo
-                        {
-
-                        },
-                        Anime = new AnimeInfo
-                        {
-
-                        },
-                        Description = new AnimeMangaInfoDescription
-                        {
-                        }
+                        Manga = new MangaInfo(),
+                        Anime = new AnimeInfo(),
+                        Description = new AnimeMangaInfoDescription(),
                     }
                 },
             };
@@ -197,7 +186,7 @@ namespace Sanakan.ShindenApi.Fake
                 .Where(pr => pr.Illustrations.Any(npr => npr.Id == titleId))
                 .Select(pr => pr.Id)
                 .ToListAsync();
-            
+
             var titleCharacters = new TitleCharacters();
 
             titleCharacters.Relations = characterIds.Select(pr => new StaffInfoRelation
@@ -343,10 +332,7 @@ namespace Sanakan.ShindenApi.Fake
         {
             return Task.FromResult(new ShindenResult<LogInResult>
             {
-                Value = new LogInResult
-                {
-
-                }
+                Value = new LogInResult()
             });
         }
 
@@ -393,10 +379,7 @@ namespace Sanakan.ShindenApi.Fake
         {
             return Task.FromResult(new ShindenResult<Status>
             {
-                Value = new Status
-                {
-
-                }
+                Value = new Status(),
             });
         }
 
@@ -404,10 +387,7 @@ namespace Sanakan.ShindenApi.Fake
         {
             return Task.FromResult(new ShindenResult<Status>
             {
-                Value = new Status
-                {
-
-                }
+                Value = new Status(),
             });
         }
 
@@ -415,10 +395,7 @@ namespace Sanakan.ShindenApi.Fake
         {
             return Task.FromResult(new ShindenResult<Modification>
             {
-                Value = new Modification
-                {
-
-                }
+                Value = new Modification(),
             });
         }
 
@@ -426,10 +403,7 @@ namespace Sanakan.ShindenApi.Fake
         {
             return Task.FromResult(new ShindenResult<TitleStatusAfterChange>
             {
-                Value = new TitleStatusAfterChange
-                {
-
-                }
+                Value = new TitleStatusAfterChange(),
             });
         }
 

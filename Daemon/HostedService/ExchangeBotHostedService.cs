@@ -40,6 +40,17 @@ namespace Sanakan.Daemon.HostedService
             _discordClientAccessor.Ready += ReadyAsync;
         }
 
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        {
+            try
+            {
+                await _taskManager.Delay(Timeout.InfiniteTimeSpan, stoppingToken);
+            }
+            catch (OperationCanceledException)
+            {
+            }
+        }
+
         private Task ReadyAsync()
         {
             _discordClientAccessor.MessageReceived += HandleMessageAsync;
@@ -130,18 +141,6 @@ namespace Sanakan.Daemon.HostedService
             await _taskManager.Delay(TimeSpan.FromSeconds(2));
 
             await message.AddReactionAsync(_iconConfiguration.TwoEmote);
-        }
-
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-        {
-            try
-            {
-                await _taskManager.Delay(Timeout.InfiniteTimeSpan, stoppingToken);
-            }
-            catch (OperationCanceledException)
-            {
-                
-            }
         }
     }
 }

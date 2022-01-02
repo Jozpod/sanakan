@@ -156,27 +156,30 @@ namespace Sanakan.DiscordBot.Modules
 
             if (user == null)
             {
+                await ReplyAsync(embed: Strings.UserNotFound.ToEmbedMessage(EMType.Error).Build());
                 return;
             }
 
             var guild = Context.Guild;
             var config = await _guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
             var selfRole = config.SelfRoles.FirstOrDefault(x => x.Name == name);
-            var gRole = guild.GetRole(selfRole?.RoleId ?? 0);
+            var guildRole = selfRole?.RoleId == null ? null : guild.GetRole(selfRole.RoleId);
+            Embed embed;
 
-            if (gRole == null)
+            if (guildRole == null)
             {
-                await ReplyAsync(embed: $"Nie odnaleziono roli `{name}`".ToEmbedMessage(EMType.Error).Build());
+                embed = string.Format(Strings.RoleNotFound, name).ToEmbedMessage(EMType.Error).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
-            if (!user.RoleIds.Contains(gRole.Id))
+            if (!user.RoleIds.Contains(guildRole.Id))
             {
-                await user.AddRoleAsync(gRole);
+                await user.AddRoleAsync(guildRole);
             }
 
-            var content = $"{user.Mention} przyznano role: `{name}`".ToEmbedMessage(EMType.Success).Build();
-            await ReplyAsync(embed: content);
+            embed = $"{user.Mention} przyznano role: `{name}`".ToEmbedMessage(EMType.Success).Build();
+            await ReplyAsync(embed: embed);
         }
 
         [Command("zdejmij role", RunMode = RunMode.Async)]
@@ -192,13 +195,16 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            var config = await _guildConfigRepository.GetCachedGuildFullConfigAsync(Context.Guild.Id);
+            var guild = Context.Guild;
+            var config = await _guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
             var selfRole = config.SelfRoles.FirstOrDefault(x => x.Name == name);
-            var guildRole = Context.Guild.GetRole(selfRole?.RoleId ?? 0);
+            var guildRole = selfRole?.RoleId == null ? null : guild.GetRole(selfRole.RoleId);
+            Embed embed;
 
             if (guildRole == null)
             {
-                await ReplyAsync(embed: $"Nie odnaleziono roli `{name}`".ToEmbedMessage(EMType.Error).Build());
+                embed = string.Format(Strings.RoleNotFound, name).ToEmbedMessage(EMType.Error).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
@@ -207,8 +213,8 @@ namespace Sanakan.DiscordBot.Modules
                 await user.RemoveRoleAsync(guildRole);
             }
 
-            var content = $"{user.Mention} zdjęto role: `{name}`".ToEmbedMessage(EMType.Success).Build();
-            await ReplyAsync(embed: content);
+            embed = $"{user.Mention} zdjęto role: `{name}`".ToEmbedMessage(EMType.Success).Build();
+            await ReplyAsync(embed: embed);
         }
 
         [Command("wypisz role", RunMode = RunMode.Async)]
@@ -331,7 +337,7 @@ namespace Sanakan.DiscordBot.Modules
         {
             var utcNow = _systemClock.UtcNow;
             var discordUserId = Context.User.Id;
-            
+
             _sessionManager.RemoveIfExists<ListSession>(discordUserId);
 
             var building = await ReplyAsync(embed: $"🔨 Trwa budowanie topki...".ToEmbedMessage(EMType.Bot).Build());
@@ -438,7 +444,7 @@ namespace Sanakan.DiscordBot.Modules
             if (claimGifts)
             {
                 var rewards = new List<string>();
-                var allClaimedBefore = dailyQuests.Count(x => x.IsClaimed(utcNow)) == dailyQuests.Count;
+                var allClaimedBefore = dailyQuests.Count(x => x.IsClaimed(utcNow)) == dailyQuests.Count();
                 foreach (var dailyQuest in dailyQuests)
                 {
                     if (dailyQuest.CanClaim(utcNow))
@@ -448,7 +454,7 @@ namespace Sanakan.DiscordBot.Modules
                     }
                 }
 
-                if (!allClaimedBefore && dailyQuests.Count(x => x.IsClaimed(utcNow)) == dailyQuests.Count)
+                if (!allClaimedBefore && dailyQuests.Count(x => x.IsClaimed(utcNow)) == dailyQuests.Count())
                 {
                     databaseUser.AcCount += 10;
                     rewards.Add("10 AC");
@@ -520,6 +526,7 @@ namespace Sanakan.DiscordBot.Modules
                 await ReplyAsync(embed: embed);
                 return;
             }
+
             if (databaseUser.TcCount < tcCost && currency == SCurrency.Tc)
             {
                 embed = string.Format(Strings.NoEnoughTC, mention).ToEmbedMessage(EMType.Error).Build();
@@ -567,6 +574,7 @@ namespace Sanakan.DiscordBot.Modules
             {
                 databaseUser.TcCount -= tcCost;
             }
+
             databaseUser.ProfileType = profileType;
 
             await _userRepository.SaveChangesAsync();
@@ -592,13 +600,14 @@ namespace Sanakan.DiscordBot.Modules
             Embed embed;
 
             var databaseUser = await _userRepository.GetUserOrCreateAsync(user.Id);
-            
+
             if (databaseUser.ScCount < scCost && currency == SCurrency.Sc)
             {
                 embed = $"{mention} nie posiadasz wystarczającej liczby SC!".ToEmbedMessage(EMType.Error).Build();
                 await ReplyAsync(embed: embed);
                 return;
             }
+
             if (databaseUser.TcCount < tcCost && currency == SCurrency.Tc)
             {
                 embed = string.Format(Strings.NoEnoughTC, mention).ToEmbedMessage(EMType.Error).Build();
@@ -685,8 +694,10 @@ namespace Sanakan.DiscordBot.Modules
 
             if (global == null)
             {
-                global = new TimeStatus(StatusType.Globals, guildid);
-                global.EndsOn = _systemClock.UtcNow;
+                global = new TimeStatus(StatusType.Globals, guildid)
+                {
+                    EndsOn = _systemClock.UtcNow
+                };
                 databaseUser.TimeStatuses.Add(global);
             }
 

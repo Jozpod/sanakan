@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace Sanakan.Game
 {
     [ExcludeFromCodeCoverage]
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1401:Fields should be private", Justification = "Resolved.")]
     public static class Colors
     {
         public static Rgba32 SmokeyGrey = Rgba32.FromHex("#727272");
@@ -54,13 +55,14 @@ namespace Sanakan.Game
         public static Rgba32 RedBrown = Rgba32.FromHex("#a12f31");
         public static Rgba32 GreyNickel = Rgba32.FromHex("#C3C3C3");
 
-        public static IList<Rgba32> StatusBarColors => new[] {
+        public static IList<Rgba32> StatusBarColors => new[]
+        {
             MediumGreen,
             Cobalt,
             CrocusPurple,
             LightMustard,
             RedBrown,
-            GreyNickel
+            GreyNickel,
         };
     }
 }

@@ -5,7 +5,7 @@ namespace Sanakan.Game.Models
     public enum SafariImageType : byte
     {
         Mystery = 0,
-        Truth = 1
+        Truth = 1,
     }
 
     public static class SafariImageTypeExtensions

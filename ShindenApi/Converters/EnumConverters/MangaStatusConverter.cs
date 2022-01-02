@@ -12,6 +12,9 @@ namespace Sanakan.ShindenApi.Converters
             { "publishing", MangaStatus.Publishing },
         };
 
-        public MangaStatusConverter() : base(_map, MangaStatus.NotSpecified) {}
+        public MangaStatusConverter()
+            : base(_map, MangaStatus.NotSpecified)
+        {
+        }
     }
 }

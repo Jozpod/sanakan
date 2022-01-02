@@ -23,12 +23,13 @@ namespace Sanakan.DiscordBot.Session
             DateTime createdOn,
             IEnumerable<IMessage> messages,
             List<QuickSearchResult> animeMangaList = null,
-            List<CharacterSearchResult> characterList = null) : base(
-            ownerId,
-            createdOn,
-            TimeSpan.FromMinutes(2),
-            Discord.Commands.RunMode.Async,
-            SessionExecuteCondition.AllEvents)
+            List<CharacterSearchResult> characterList = null)
+            : base(
+                ownerId,
+                createdOn,
+                TimeSpan.FromMinutes(2),
+                Discord.Commands.RunMode.Async,
+                SessionExecuteCondition.AllEvents)
         {
             _messages = messages;
             _animeMangaList = animeMangaList ?? new();

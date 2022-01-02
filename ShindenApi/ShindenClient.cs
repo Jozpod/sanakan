@@ -30,13 +30,6 @@ namespace Sanakan.ShindenApi
         private Credentials? _credentials;
         private DateTime _expiresOn;
 
-        private class Credentials
-        {
-            public string Username { get; set; } = string.Empty;
-
-            public string Password { get; set; } = string.Empty;
-        }
-
         public ShindenClient(
             HttpClient httpClient,
             CookieContainer cookieContainer,
@@ -71,42 +64,10 @@ namespace Sanakan.ShindenApi
             _jsonSerializerOptions.Converters.Add(new IllustrationConverter());
         }
 
-        private async Task TryRenewSessionAsync()
-        {
-            if (_expiresOn < _systemClock.UtcNow)
-            {
-                if (_credentials == null)
-                {
-                    return;
-                }
-
-                var _ = await LoginAsync(_credentials.Username, _credentials.Password);
-            }
-        }
-
-        private void SetSession(LogInResultSession session)
-        {
-            _expiresOn = _systemClock.UtcNow + _options.CurrentValue.SessionExiry;
-            var baseAddress = _httpClient.BaseAddress!;
-
-            _cookieContainer.Add(baseAddress, new Cookie()
-            {
-                Name = "name",
-                Value = session.Name,
-                Expires = _expiresOn,
-            });
-            _cookieContainer.Add(baseAddress, new Cookie()
-            {
-                Name = "id",
-                Value = session.Id,
-                Expires = _expiresOn,
-            });
-        }
-
         public async Task<ShindenResult<T>> SendAsync<T>(string requestUri, HttpMethod? httpMethod = null, HttpContent? httpContent = null)
         {
             await TryRenewSessionAsync();
-            httpMethod ??= HttpMethod.Get; 
+            httpMethod ??= HttpMethod.Get;
 
             var request = new HttpRequestMessage(httpMethod, requestUri);
             request.Content = httpContent ?? request.Content;
@@ -364,32 +325,6 @@ namespace Sanakan.ShindenApi
             }
         }
 
-        private Task<ShindenResult<List<QuickSearchResult>>> QuickSearchAnimeAsync(string title)
-        {
-            var queryData = new Dictionary<string, string>()
-            {
-                { "accepted_types", "Anime" },
-                { "decode", 1.ToString() },
-                { "query", title },
-            };
-
-            var query = QueryHelpers.AddQueryString($"title/search", queryData);
-            return SendAsync<List<QuickSearchResult>>(query);
-        }
-
-        private Task<ShindenResult<List<QuickSearchResult>>> QuickSearchMangaAsync(string title)
-        {
-            var queryData = new Dictionary<string, string>()
-            {
-                { "accepted_types", "Manga;Manhua;Novel;Doujin;Manhwa;OEL;One+Shot" },
-                { "decode", 1.ToString() },
-                { "query", title },
-            };
-
-            var query = QueryHelpers.AddQueryString($"title/search", queryData);
-
-            return SendAsync<List<QuickSearchResult>>(query);
-        }
         #endregion
         #region Experimental
         public Task<ShindenResult<IEnumerable<ulong>>> GetAllCharactersFromAnimeAsync()
@@ -479,6 +414,7 @@ namespace Sanakan.ShindenApi
 
             return SendAsync<List<LastWatchedRead>>(query);
         }
+
         #endregion
         #region LoggedIn
         public async Task<ShindenResult<LogInResult>> LoginAsync(string username, string password)
@@ -490,8 +426,10 @@ namespace Sanakan.ShindenApi
             };
 
             var content = new FormUrlEncodedContent(formData!);
-            content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
-            content.Headers.ContentType.CharSet = "UTF-8";
+            content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded")
+            {
+                CharSet = "UTF-8"
+            };
 
             var queryData = new Dictionary<string, string>()
             {
@@ -517,6 +455,7 @@ namespace Sanakan.ShindenApi
 
             return logInResult;
         }
+
         public Task<ShindenResult<TitleStatusAfterChange>> ChangeTitleStatusAsync(
             ulong userId,
             ListType status,
@@ -528,8 +467,10 @@ namespace Sanakan.ShindenApi
             };
 
             var content = new FormUrlEncodedContent(formData!);
-            content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
-            content.Headers.ContentType.CharSet = "UTF-8";
+            content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded")
+            {
+                CharSet = "UTF-8"
+            };
 
             var queryData = new Dictionary<string, string>()
             {
@@ -574,8 +515,10 @@ namespace Sanakan.ShindenApi
             };
 
             var content = new FormUrlEncodedContent(formData!);
-            content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
-            content.Headers.ContentType.CharSet = "UTF-8";
+            content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded")
+            {
+                CharSet = "UTF-8"
+            };
             var query = $"anime/{titleId}/rate";
 
             return SendAsync<Status>(query, HttpMethod.Post, content);
@@ -590,8 +533,10 @@ namespace Sanakan.ShindenApi
             };
 
             var content = new FormUrlEncodedContent(formData!);
-            content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
-            content.Headers.ContentType.CharSet = "UTF-8";
+            content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded")
+            {
+                CharSet = "UTF-8"
+            };
 
             var queryData = new Dictionary<string, string>()
             {
@@ -611,8 +556,10 @@ namespace Sanakan.ShindenApi
             };
 
             var content = new FormUrlEncodedContent(formData!);
-            content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
-            content.Headers.ContentType.CharSet = "UTF-8";
+            content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded")
+            {
+                CharSet = "UTF-8"
+            };
 
             var queryData = new Dictionary<string, string>()
             {
@@ -641,15 +588,74 @@ namespace Sanakan.ShindenApi
 
             var query = QueryHelpers.AddQueryString($"userlist/{userId}/fav", queryData);
 
-            //var response = await _httpClient.SendAsync(new HttpRequestMessage
-            //{
-            //    RequestUri = new Uri(query, UriKind.Relative),
-            //    Method = HttpMethod.Delete,
-            //    Content = content,
-            //});
-
             return SendAsync<Modification>(query, HttpMethod.Delete, content);
         }
         #endregion
+
+        private Task<ShindenResult<List<QuickSearchResult>>> QuickSearchAnimeAsync(string title)
+        {
+            var queryData = new Dictionary<string, string>()
+            {
+                { "accepted_types", "Anime" },
+                { "decode", 1.ToString() },
+                { "query", title },
+            };
+
+            var query = QueryHelpers.AddQueryString($"title/search", queryData);
+            return SendAsync<List<QuickSearchResult>>(query);
+        }
+
+        private Task<ShindenResult<List<QuickSearchResult>>> QuickSearchMangaAsync(string title)
+        {
+            var queryData = new Dictionary<string, string>()
+            {
+                { "accepted_types", "Manga;Manhua;Novel;Doujin;Manhwa;OEL;One+Shot" },
+                { "decode", 1.ToString() },
+                { "query", title },
+            };
+
+            var query = QueryHelpers.AddQueryString($"title/search", queryData);
+
+            return SendAsync<List<QuickSearchResult>>(query);
+        }
+
+        private async Task TryRenewSessionAsync()
+        {
+            if (_expiresOn < _systemClock.UtcNow)
+            {
+                if (_credentials == null)
+                {
+                    return;
+                }
+
+                await LoginAsync(_credentials.Username, _credentials.Password);
+            }
+        }
+
+        private void SetSession(LogInResultSession session)
+        {
+            _expiresOn = _systemClock.UtcNow + _options.CurrentValue.SessionExiry;
+            var baseAddress = _httpClient.BaseAddress!;
+
+            _cookieContainer.Add(baseAddress, new Cookie()
+            {
+                Name = "name",
+                Value = session.Name,
+                Expires = _expiresOn,
+            });
+            _cookieContainer.Add(baseAddress, new Cookie()
+            {
+                Name = "id",
+                Value = session.Id,
+                Expires = _expiresOn,
+            });
+        }
+
+        private class Credentials
+        {
+            public string Username { get; set; } = string.Empty;
+
+            public string Password { get; set; } = string.Empty;
+        }
     }
 }

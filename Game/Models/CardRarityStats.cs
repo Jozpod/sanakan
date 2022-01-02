@@ -1,6 +1,4 @@
-﻿
-
-namespace Sanakan.Game.Models
+﻿namespace Sanakan.Game.Models
 {
     public class CardRarityStats
     {

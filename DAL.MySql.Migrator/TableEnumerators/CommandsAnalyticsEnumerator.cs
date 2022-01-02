@@ -5,7 +5,9 @@ namespace Sanakan.DAL.MySql.Migrator.TableEnumerators
     public class CommandsAnalyticsEnumerator : TableEnumerator<CommandsAnalytics>
     {
         public CommandsAnalyticsEnumerator(IDbConnection connection)
-          : base(connection) { }
+          : base(connection)
+        {
+        }
 
         public override CommandsAnalytics Current => new()
         {

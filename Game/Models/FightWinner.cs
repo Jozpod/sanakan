@@ -7,20 +7,20 @@ namespace Sanakan.Game.Models
     {
         Card1 = 0,
         Card2 = 1,
-        Draw = 2
+        Draw = 2,
     }
 
     public static class FightWinnerExtensions
     {
         public static FightWinner GetFightWinner(Card card1, Card card2)
         {
-            var FAcard1 = CardExtensions.GetFA(card1, card2);
-            var FAcard2 = CardExtensions.GetFA(card2, card1);
+            var faCard1 = CardExtensions.GetFA(card1, card2);
+            var faCard2 = CardExtensions.GetFA(card2, card1);
 
             var c1Health = card1.GetHealthWithPenalty();
             var c2Health = card2.GetHealthWithPenalty();
-            var atkTk1 = c1Health / FAcard2;
-            var atkTk2 = c2Health / FAcard1;
+            var atkTk1 = c1Health / faCard2;
+            var atkTk2 = c2Health / faCard1;
 
             var winner = FightWinner.Draw;
             if (atkTk1 > atkTk2 + 0.3)

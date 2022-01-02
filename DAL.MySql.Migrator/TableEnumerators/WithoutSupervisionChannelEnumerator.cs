@@ -5,7 +5,9 @@ namespace Sanakan.DAL.MySql.Migrator.TableEnumerators
     public class WithoutSupervisionChannelEnumerator : TableEnumerator<WithoutSupervisionChannel>
     {
         public WithoutSupervisionChannelEnumerator(IDbConnection connection)
-          : base(connection) { }
+          : base(connection)
+        {
+        }
 
         public override WithoutSupervisionChannel Current => new()
         {

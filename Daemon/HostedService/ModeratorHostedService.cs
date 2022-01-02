@@ -51,20 +51,6 @@ namespace Sanakan.Daemon.HostedService
             _discordClientAccessor.LoggedOut += LoggedOut;
         }
 
-        private Task LoggedOut()
-        {
-            _timer.Stop();
-            return Task.CompletedTask;
-        }
-
-        private Task ReadyAsync()
-        {
-            _timer.Start(
-                   _options.CurrentValue.ModeratorDueTime,
-                   _options.CurrentValue.ModeratorPeriod);
-            return Task.CompletedTask;
-        }
-
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             try
@@ -78,6 +64,20 @@ namespace Sanakan.Daemon.HostedService
             {
                 _timer.Stop();
             }
+        }
+
+        private Task LoggedOut()
+        {
+            _timer.Stop();
+            return Task.CompletedTask;
+        }
+
+        private Task ReadyAsync()
+        {
+            _timer.Start(
+                   _options.CurrentValue.ModeratorDueTime,
+                   _options.CurrentValue.ModeratorPeriod);
+            return Task.CompletedTask;
         }
 
         private async void OnTick(object sender, TimerEventArgs e)

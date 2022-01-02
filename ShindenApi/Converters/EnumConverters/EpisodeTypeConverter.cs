@@ -12,6 +12,9 @@ namespace Sanakan.ShindenApi.Converters
             { "standard", EpisodeType.Standard },
         };
 
-        public EpisodeTypeConverter() : base(_map, EpisodeType.NotSpecified) {}
+        public EpisodeTypeConverter()
+            : base(_map, EpisodeType.NotSpecified)
+        {
+        }
     }
 }

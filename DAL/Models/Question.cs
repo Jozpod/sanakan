@@ -63,6 +63,5 @@ namespace Sanakan.DAL.Models
             AnswerNumber = numbersColeration.First(x => x.Item2 == AnswerNumber).Item1;
             Answers = Answers.OrderBy(x => x.Number).ToList();
         }
-
     }
 }

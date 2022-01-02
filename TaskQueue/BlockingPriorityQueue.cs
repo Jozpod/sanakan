@@ -54,7 +54,7 @@ namespace Sanakan.TaskQueue
                 {
                     await _semaphoreSlim.WaitAsync(token);
                 }
- 
+
                 BaseMessage item;
                 lock (_syncRoot)
                 {

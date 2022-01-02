@@ -14,7 +14,7 @@ namespace Sanakan.Common
     /// <summary>
     /// Implements options which can be saved to underlying file system.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">The type parameter.</typeparam>
     internal class WritableOptions<T> : IWritableOptions<T>
         where T : class, new()
     {
@@ -52,6 +52,7 @@ namespace Sanakan.Common
         }
 
         public T Value => _options.CurrentValue;
+
         public T Get(string name) => _options.Get(name);
 
         public async Task<bool> UpdateAsync(Action<T> applyChanges, bool saveChanges)
@@ -62,7 +63,6 @@ namespace Sanakan.Common
 
             try
             {
-                
                 applyChanges(_options.CurrentValue);
 
                 if (saveChanges)

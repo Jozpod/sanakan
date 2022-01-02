@@ -7,6 +7,8 @@ namespace Sanakan.Common
     {
         private readonly System.IO.FileSystemWatcher _fileSystemWatcher;
 
+        private bool _disposed = false;
+
         public FileSystemWatcher(FileSystemWatcherOptions options)
         {
             _fileSystemWatcher = new System.IO.FileSystemWatcher(options.Path, options.Filter);
@@ -16,16 +18,35 @@ namespace Sanakan.Common
             _fileSystemWatcher.Renamed += Renamed;
         }
 
+        ~FileSystemWatcher()
+        {
+            Dispose(false);
+        }
+
         public event FileSystemEventHandler? Changed;
+
         public event FileSystemEventHandler? Created;
+
         public event FileSystemEventHandler? Deleted;
+
         public event RenamedEventHandler? Renamed;
 
         public void Dispose()
         {
-            if (_fileSystemWatcher != null)
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
             {
-                _fileSystemWatcher.Dispose();
+                if (disposing)
+                {
+                    _fileSystemWatcher.Dispose();
+                }
+
+                _disposed = true;
             }
         }
     }

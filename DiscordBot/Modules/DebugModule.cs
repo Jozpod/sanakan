@@ -392,7 +392,7 @@ namespace Sanakan.DiscordBot.Modules
                 mutedRole = guild.GetRole(config.MuteRoleId);
             }
 
-            var embed = $"Loteria kart. Zareaguj {emote}, aby wziąć udział.\n\nKoniec `{time.ToShortTimeString()}:{time.Second.ToString("00")}`"
+            var embed = $"Loteria kart. Zareaguj {emote}, aby wziąć udział.\n\nKoniec `{time.ToShortTimeString()}:{time.Second:00}`"
                 .ToEmbedMessage(EMType.Bot).Build();
             var userMessage = await ReplyAsync(mention, embed: embed);
             await userMessage.AddReactionAsync(emote);
@@ -445,11 +445,11 @@ namespace Sanakan.DiscordBot.Modules
 
                         users.Remove(selected);
                     }
-                }, cancellationToken);
+                },
+                cancellationToken);
             }
             catch (OperationCanceledException)
             {
-
             }
             catch (Exception ex)
             {
@@ -604,7 +604,9 @@ namespace Sanakan.DiscordBot.Modules
                     await user.KickAsync("Multi kick - łamanie regulaminu");
                     ++count;
                 }
-                catch (Exception) { }
+                catch (Exception)
+                {
+                }
             }
 
             await ReplyAsync(embed: $"Wyrzucono {count} użytkowników.".ToEmbedMessage(EMType.Success).Build());
@@ -625,7 +627,9 @@ namespace Sanakan.DiscordBot.Modules
                     await Context.Guild.AddBanAsync(user, 0, "Multi ban - łamanie regulaminu");
                     ++count;
                 }
-                catch (Exception) { }
+                catch (Exception)
+                {
+                }
             }
 
             await ReplyAsync(embed: $"Zbanowano {count} użytkowników.".ToEmbedMessage(EMType.Success).Build());
@@ -909,10 +913,12 @@ namespace Sanakan.DiscordBot.Modules
             [Summary("liczba znaków")] ulong count,
             [Summary("true/false - czy zapisać")] bool save = false)
         {
-            await _config.UpdateAsync(opt =>
+            await _config.UpdateAsync(
+            opt =>
             {
                 opt.Experience.CharPerPacket = count;
-            }, save);
+            },
+            save);
 
             var content = $"Ustawiono próg `{count}` znaków na pakiet. `Zapisano: {save.GetYesNo()}`"
                 .ToEmbedMessage(EMType.Success).Build();
@@ -926,10 +932,12 @@ namespace Sanakan.DiscordBot.Modules
             [Summary("liczba znaków")] long count,
             [Summary("true/false - czy zapisać")] bool save = false)
         {
-            await _config.UpdateAsync(opt =>
+            await _config.UpdateAsync(
+            opt =>
             {
                 opt.Experience.CharPerPoint = count;
-            }, save);
+            },
+            save);
 
             await ReplyAsync(embed: $"Ustawiono próg `{count}` znaków na punkt doświadczenia. `Zapisano: {save.GetYesNo()}`"
                 .ToEmbedMessage(EMType.Success).Build());
@@ -965,10 +973,12 @@ namespace Sanakan.DiscordBot.Modules
         public async Task ToggleSafariAsync(
             [Summary("true/false - czy zapisać")] bool save = false)
         {
-            await _config.UpdateAsync(opt =>
+            await _config.UpdateAsync(
+            opt =>
             {
                 opt.Discord.SafariEnabled = !opt.Discord.SafariEnabled;
-            }, save);
+            },
+            save);
 
             var embed = $"Safari: `{_config.Value.Discord.SafariEnabled.GetYesNo()}` `Zapisano: {save.GetYesNo()}`"
                 .ToEmbedMessage(EMType.Success)
@@ -1421,7 +1431,7 @@ namespace Sanakan.DiscordBot.Modules
 
             await _discordClientAccessor.LogoutAsync();
 
-            using var _ = _fileSystem.Create(Placeholders.UpdateNow);
+            using var it = _fileSystem.Create(Placeholders.UpdateNow);
             await _taskManager.Delay(TimeSpan.FromMilliseconds(1500));
             _applicationLifetime.StopApplication();
         }
@@ -1442,6 +1452,7 @@ namespace Sanakan.DiscordBot.Modules
                 await ReplyAsync(embed: $"**RMC:**\n{string.Join("\n\n", serverConfig)}".ElipseTrimToLength(1900).ToEmbedMessage(EMType.Bot).Build());
                 return;
             }
+
             await ReplyAsync(embed: $"**RMC:**\n\nBrak.".ToEmbedMessage(EMType.Bot).Build());
         }
 
@@ -1502,7 +1513,6 @@ namespace Sanakan.DiscordBot.Modules
                 {
                     opt.Discord.BlacklistedGuilds.Remove(guildId);
                 });
-
             }
             else
             {

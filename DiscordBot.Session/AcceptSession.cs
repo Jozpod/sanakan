@@ -33,12 +33,13 @@ namespace Sanakan.DiscordBot.Session
             IMessageChannel messageChannel,
             IMessageChannel notifyChannel,
             IRole userRole,
-            IRole muteRole) : base(
-            ownerId,
-            createdOn,
-            TimeSpan.FromMinutes(2),
-            Discord.Commands.RunMode.Sync,
-            SessionExecuteCondition.AllEvents)
+            IRole muteRole)
+            : base(
+                ownerId,
+                createdOn,
+                TimeSpan.FromMinutes(2),
+                Discord.Commands.RunMode.Sync,
+                SessionExecuteCondition.AllEvents)
         {
             _bot = bot;
             _user = user;

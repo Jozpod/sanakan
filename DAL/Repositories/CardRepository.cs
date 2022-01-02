@@ -16,7 +16,8 @@ namespace Sanakan.DAL.Repositories
 
         public CardRepository(
             SanakanDbContext dbContext,
-            ICacheManager cacheManager) : base(dbContext)
+            ICacheManager cacheManager)
+            : base(dbContext)
         {
             _dbContext = dbContext;
             _cacheManager = cacheManager;
@@ -34,6 +35,7 @@ namespace Sanakan.DAL.Repositories
 
             return result;
         }
+
         public async Task<List<Card>> GetCardsWithTagAsync(string tag)
         {
             var result = await _dbContext
@@ -94,7 +96,6 @@ namespace Sanakan.DAL.Repositories
                 .Include(x => x.ArenaStats)
                 .Include(x => x.Tags)
                 .AsNoTracking();
-
 
             if (!string.IsNullOrEmpty(filter.SearchText))
             {

@@ -7,12 +7,11 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 
-
 namespace Sanakan.ShindenApi.Fake
 {
-    class Program
+    public class Program
     {
-        static async Task Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var serviceCollection = new ServiceCollection();
             var builder = new ConfigurationBuilder()
@@ -31,7 +30,7 @@ namespace Sanakan.ShindenApi.Fake
             serviceCollection.AddFakeShindenApi();
             serviceCollection.AddLogging(config => config.AddConsole());
 
-             IServiceProvider serviceProvider = serviceCollection.BuildServiceProvider();
+            IServiceProvider serviceProvider = serviceCollection.BuildServiceProvider();
             var serviceScopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
 
             using var serviceScope = serviceScopeFactory.CreateScope();

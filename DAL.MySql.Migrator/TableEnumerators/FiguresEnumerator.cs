@@ -5,7 +5,9 @@ namespace Sanakan.DAL.MySql.Migrator.TableEnumerators
     public class FiguresEnumerator : TableEnumerator<Figure>
     {
         public FiguresEnumerator(IDbConnection connection)
-            : base(connection) { }
+            : base(connection)
+        {
+        }
 
         public override Figure Current => new()
         {

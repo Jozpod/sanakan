@@ -2,7 +2,10 @@
 {
     public class UpdateCardMessage : BaseMessage
     {
-        public UpdateCardMessage() : base(Priority.Low) { }
+        public UpdateCardMessage()
+            : base(Priority.Low)
+        {
+        }
 
         public ulong CharacterId { get; set; }
 

@@ -1,22 +1,22 @@
 ﻿namespace Sanakan.Web.Models
 {
     /// <summary>
-    /// Dodatkowe pole wiadomości
+    /// Describes the rich message field.
     /// </summary>
     public partial class RichMessageField
     {
         /// <summary>
-        /// Nagłówek dodatkowego pola
+        /// The rich field header.
         /// </summary>
         public string Name { get; set; } = null;
 
         /// <summary>
-        /// Tekst dodatkowego pola
+        /// The rich field text.
         /// </summary>
         public string Value { get; set; } = null;
 
         /// <summary>
-        /// Czy pole może zostać wyświetlne w jednej lini z innymi
+        /// Specifies whether the field can be inlined.
         /// </summary>
         public bool IsInline { get; set; }
     }

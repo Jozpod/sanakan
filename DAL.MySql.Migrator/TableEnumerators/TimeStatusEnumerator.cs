@@ -5,7 +5,9 @@ namespace Sanakan.DAL.MySql.Migrator.TableEnumerators
     public class TimeStatusEnumerator : TableEnumerator<TimeStatus>
     {
         public TimeStatusEnumerator(IDbConnection connection)
-            : base(connection) { }
+            : base(connection)
+        {
+        }
 
         public override TimeStatus Current => new()
         {

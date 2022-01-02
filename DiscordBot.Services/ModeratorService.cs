@@ -40,6 +40,366 @@ namespace Sanakan.DiscordBot.Services
             _serviceScopeFactory = serviceScopeFactory;
         }
 
+        public async Task<EmbedBuilder> GetConfigurationAsync(
+            GuildOptions config,
+            IGuild guild,
+            ConfigType type)
+        {
+            switch (type)
+            {
+                case ConfigType.NonExpChannels:
+                    return await GetNonExpChannelsConfig(config, guild);
+
+                case ConfigType.IgnoredChannels:
+                    return await GetIgnoredChannelsConfig(config, guild);
+
+                case ConfigType.NonSupChannels:
+                    return await GetNonSupChannelsConfig(config, guild);
+
+                case ConfigType.WaifuCmdChannels:
+                    return await GetWaifuCmdChannelsConfig(config, guild);
+
+                case ConfigType.WaifuFightChannels:
+                    return await GetWaifuFightChannelsConfig(config, guild);
+
+                case ConfigType.CommandChannels:
+                    return await GetCmdChannelsConfig(config, guild);
+
+                case ConfigType.LevelRoles:
+                    return GetLevelRolesConfig(config, guild);
+
+                case ConfigType.Lands:
+                    return GetLandsConfig(config, guild);
+
+                case ConfigType.ModeratorRoles:
+                    return GetModRolesConfig(config, guild);
+
+                case ConfigType.SelfRoles:
+                    return GetSelfRolesConfig(config, guild);
+
+                default:
+                case ConfigType.Global:
+                    return await GetFullConfigurationAsync(config, guild);
+            }
+        }
+
+        public async Task NotifyUserAsync(IUser user, string reason)
+        {
+            try
+            {
+                var dmChannel = await user.GetOrCreateDMChannelAsync();
+                if (dmChannel != null)
+                {
+                    await dmChannel.SendMessageAsync($"Elo! Otrzymałeś ostrzeżenie o treści:\n {reason}\n\nPozdrawiam serdecznie!"
+                        .ElipseTrimToLength(2000));
+                    await dmChannel.CloseAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error occurred when sending warning notification", ex);
+            }
+        }
+
+        public async Task NotifyAboutPenaltyAsync(
+            IGuildUser user,
+            IMessageChannel channel,
+            PenaltyInfo penaltyInfo,
+            string byWho = Constants.Automatic)
+        {
+            var durationFriendly = penaltyInfo.Duration.Humanize(4);
+            var color = (penaltyInfo.Type == PenaltyType.Mute) ? EMType.Warning.Color() : EMType.Error.Color();
+
+            var embed = new EmbedBuilder
+            {
+                Color = color,
+                Footer = new EmbedFooterBuilder().WithText($"Przez: {byWho}"),
+                Description = $"Powód: {penaltyInfo.Reason}".ElipseTrimToLength(1800),
+                Author = new EmbedAuthorBuilder().WithUser(user),
+                Fields = new List<EmbedFieldBuilder>
+                {
+                    new EmbedFieldBuilder
+                    {
+                        IsInline = true,
+                        Name = "UserId:",
+                        Value = $"{user.Id}",
+                    },
+                    new EmbedFieldBuilder
+                    {
+                        IsInline = true,
+                        Name = "Typ:",
+                        Value = penaltyInfo.Type,
+                    },
+                    new EmbedFieldBuilder
+                    {
+                        IsInline = true,
+                        Name = "Kiedy:",
+                        Value = $"{penaltyInfo.StartedOn.ToShortDateString()} {penaltyInfo.StartedOn.ToShortTimeString()}"
+                    },
+                    new EmbedFieldBuilder
+                    {
+                        IsInline = true,
+                        Name = "Na ile:",
+                        Value = durationFriendly,
+                    }
+                }
+            };
+
+            if (channel != null)
+            {
+                await channel.SendMessageAsync(embed: embed.Build());
+            }
+
+            try
+            {
+                var directMessageChannel = await user.GetOrCreateDMChannelAsync();
+                if (directMessageChannel != null)
+                {
+                    var content = $"Elo! Zostałeś ukarany mutem na {durationFriendly}.\n\nPodany powód: {penaltyInfo.Reason}\n\nPozdrawiam serdecznie!"
+                        .ElipseTrimToLength(2000);
+                    await directMessageChannel.SendMessageAsync(content);
+                    await directMessageChannel.CloseAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogInformation($"in mute: {ex}");
+            }
+        }
+
+        public async Task<Embed> GetMutedListAsync(IGuild guild)
+        {
+            var stringBuilder = new StringBuilder("Brak", 100);
+            using var serviceScope = _serviceScopeFactory.CreateScope();
+            var serviceProvider = serviceScope.ServiceProvider;
+            var penaltyInfoRepository = serviceProvider.GetRequiredService<IPenaltyInfoRepository>();
+
+            var penaltyList = await penaltyInfoRepository.GetMutedPenaltiesAsync(guild.Id);
+
+            if (penaltyList.Any())
+            {
+                stringBuilder.Clear();
+                foreach (var penalty in penaltyList)
+                {
+                    var endDate = penalty.StartedOn + penalty.Duration;
+                    var name = (await guild.GetUserAsync(penalty.UserId))?.Mention;
+
+                    if (name is null)
+                    {
+                        continue;
+                    }
+
+                    stringBuilder.AppendFormat(
+                        "{0} [DO: {1} {2}] - {3}\n",
+                        name,
+                        endDate.ToShortDateString(),
+                        endDate.ToShortTimeString(),
+                        penalty.Reason);
+                }
+            }
+
+            var result = stringBuilder.ToString().ElipseTrimToLength(1900);
+
+            return new EmbedBuilder
+            {
+                Description = $"**Wyciszeni**:\n\n{result}",
+                Color = EMType.Bot.Color(),
+            }.Build();
+        }
+
+        public Embed BuildTodo(IMessage message, IGuildUser who)
+        {
+            var image = string.Empty;
+
+            if (message.Attachments.Any())
+            {
+                var first = message.Attachments.First();
+
+                if (first.Url.IsURLToImage())
+                {
+                    image = first.Url;
+                }
+            }
+
+            return new EmbedBuilder
+            {
+                Author = new EmbedAuthorBuilder().WithUser(message.Author),
+                Description = message.Content.ElipseTrimToLength(1800),
+                Color = EMType.Bot.Color(),
+                ImageUrl = image,
+                Footer = new EmbedFooterBuilder
+                {
+                    IconUrl = who.GetUserOrDefaultAvatarUrl(),
+                    Text = $"Przez: {who.Nickname ?? who.Username}",
+                },
+            }.Build();
+        }
+
+        public async Task UnmuteUserAsync(
+            IGuildUser user,
+            IRole muteRole,
+            IRole muteModRole)
+        {
+            using var serviceScope = _serviceScopeFactory.CreateScope();
+            var serviceProvider = serviceScope.ServiceProvider;
+            var penaltyInfoRepository = serviceProvider.GetRequiredService<IPenaltyInfoRepository>();
+
+            var penalty = await penaltyInfoRepository.GetPenaltyAsync(
+                user.Id,
+                user.Guild.Id,
+                PenaltyType.Mute);
+
+            await UnmuteUserGuildAsync(user, muteRole, muteModRole, penalty?.Roles ?? Enumerable.Empty<OwnedRole>());
+            await RemovePenaltyFromDb(penalty);
+        }
+
+        public async Task<PenaltyInfo> BanUserAysnc(
+            IGuildUser user,
+            TimeSpan duration,
+            string reason = Constants.NoReason)
+        {
+            using var serviceScope = _serviceScopeFactory.CreateScope();
+            var serviceProvider = serviceScope.ServiceProvider;
+            var penaltyInfoRepository = serviceProvider.GetRequiredService<IPenaltyInfoRepository>();
+            var guild = user.Guild;
+
+            var penalty = new PenaltyInfo
+            {
+                UserId = user.Id,
+                Reason = reason,
+                GuildId = guild.Id,
+                Type = PenaltyType.Ban,
+                StartedOn = _systemClock.UtcNow,
+                Duration = duration,
+            };
+
+            penaltyInfoRepository.Add(penalty);
+            await penaltyInfoRepository.SaveChangesAsync();
+
+            _cacheManager.ExpireTag(CacheKeys.Muted);
+
+            await guild.AddBanAsync(user, 0, reason);
+
+            return penalty;
+        }
+
+        public async Task<PenaltyInfo> MuteUserAsync(
+            IGuildUser user,
+            IRole? muteRole,
+            IRole? muteModRole,
+            IRole? userRole,
+            TimeSpan duration,
+            string reason = Constants.NoReason,
+            IEnumerable<ModeratorRoles>? modRoles = null)
+        {
+            var penaltyInfo = new PenaltyInfo
+            {
+                UserId = user.Id,
+                Reason = reason,
+                GuildId = user.Guild.Id,
+                Type = PenaltyType.Mute,
+                StartedOn = _systemClock.UtcNow,
+                Duration = duration,
+            };
+            var roleIds = user.RoleIds;
+
+            if (userRole != null)
+            {
+                if (roleIds.Contains(userRole.Id))
+                {
+                    await user.RemoveRoleAsync(userRole);
+                    penaltyInfo.Roles.Add(new OwnedRole
+                    {
+                        RoleId = userRole.Id
+                    });
+                }
+            }
+
+            if (modRoles != null)
+            {
+                foreach (var modRole in modRoles)
+                {
+                    var roleId = roleIds
+                        .Select(pr => (ulong?)pr)
+                        .FirstOrDefault(id => id == modRole.RoleId);
+
+                    if (!roleId.HasValue)
+                    {
+                        continue;
+                    }
+
+                    await user.RemoveRoleAsync(roleId.Value);
+                    penaltyInfo.Roles.Add(new OwnedRole
+                    {
+                        RoleId = roleId.Value
+                    });
+                }
+            }
+
+            if (muteRole != null && !roleIds.Contains(muteRole.Id))
+            {
+                await user.AddRoleAsync(muteRole);
+            }
+
+            if (muteModRole != null)
+            {
+                if (!roleIds.Contains(muteModRole.Id))
+                {
+                    await user.AddRoleAsync(muteModRole);
+                }
+            }
+
+            using var serviceScope = _serviceScopeFactory.CreateScope();
+            var serviceProvider = serviceScope.ServiceProvider;
+            var penaltyInfoRepository = serviceProvider.GetRequiredService<IPenaltyInfoRepository>();
+
+            penaltyInfoRepository.Add(penaltyInfo);
+            await penaltyInfoRepository.SaveChangesAsync();
+
+            _cacheManager.ExpireTag(CacheKeys.Muted);
+
+            return penaltyInfo;
+        }
+
+        private async Task UnmuteUserGuildAsync(
+          IGuildUser user,
+          IRole muteRole,
+          IRole muteModRole,
+          IEnumerable<OwnedRole> roles)
+        {
+            var roleIds = user.RoleIds;
+            var guild = user.Guild;
+
+            if (muteRole != null)
+            {
+                if (roleIds.Contains(muteRole.Id))
+                {
+                    await user.RemoveRoleAsync(muteRole);
+                }
+            }
+
+            if (muteModRole != null)
+            {
+                if (roleIds.Contains(muteModRole.Id))
+                {
+                    await user.RemoveRoleAsync(muteModRole);
+                }
+            }
+
+            if (roles != null)
+            {
+                foreach (var role in roles)
+                {
+                    var discordRole = guild.GetRole(role.RoleId);
+
+                    if (discordRole != null && !roleIds.Contains(discordRole.Id))
+                    {
+                        await user.AddRoleAsync(discordRole.Id);
+                    }
+                }
+            }
+        }
+
         private async Task<EmbedBuilder> GetFullConfigurationAsync(GuildOptions config, IGuild guild)
         {
             var modsRolesCnt = config.ModeratorRoles?.Count;
@@ -346,219 +706,6 @@ namespace Sanakan.DiscordBot.Services
             return new EmbedBuilder().WithColor(EMType.Bot.Color()).WithDescription(description);
         }
 
-        public async Task<EmbedBuilder> GetConfigurationAsync(
-            GuildOptions config,
-            IGuild guild,
-            ConfigType type)
-        {
-            switch (type)
-            {
-                case ConfigType.NonExpChannels:
-                    return await GetNonExpChannelsConfig(config, guild);
-
-                case ConfigType.IgnoredChannels:
-                    return await GetIgnoredChannelsConfig(config, guild);
-
-                case ConfigType.NonSupChannels:
-                    return await GetNonSupChannelsConfig(config, guild);
-
-                case ConfigType.WaifuCmdChannels:
-                    return await GetWaifuCmdChannelsConfig(config, guild);
-
-                case ConfigType.WaifuFightChannels:
-                    return await GetWaifuFightChannelsConfig(config, guild);
-
-                case ConfigType.CommandChannels:
-                    return await GetCmdChannelsConfig(config, guild);
-
-                case ConfigType.LevelRoles:
-                    return GetLevelRolesConfig(config, guild);
-
-                case ConfigType.Lands:
-                    return GetLandsConfig(config, guild);
-
-                case ConfigType.ModeratorRoles:
-                    return GetModRolesConfig(config, guild);
-
-                case ConfigType.SelfRoles:
-                    return GetSelfRolesConfig(config, guild);
-
-                default:
-                case ConfigType.Global:
-                    return await GetFullConfigurationAsync(config, guild);
-            }
-        }
-
-        public async Task NotifyUserAsync(IUser user, string reason)
-        {
-            try
-            {
-                var dmChannel = await user.GetOrCreateDMChannelAsync();
-                if (dmChannel != null)
-                {
-                    await dmChannel.SendMessageAsync($"Elo! Otrzymałeś ostrzeżenie o treści:\n {reason}\n\nPozdrawiam serdecznie!"
-                        .ElipseTrimToLength(2000));
-                    await dmChannel.CloseAsync();
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Error occurred when sending warning notification", ex);
-            }
-        }
-
-        public async Task NotifyAboutPenaltyAsync(
-            IGuildUser user,
-            IMessageChannel channel,
-            PenaltyInfo penaltyInfo,
-            string byWho = Constants.Automatic)
-        {
-            var durationFriendly = penaltyInfo.Duration.Humanize(4);
-            var color = (penaltyInfo.Type == PenaltyType.Mute) ? EMType.Warning.Color() : EMType.Error.Color();
-
-            var embed = new EmbedBuilder
-            {
-                Color = color,
-                Footer = new EmbedFooterBuilder().WithText($"Przez: {byWho}"),
-                Description = $"Powód: {penaltyInfo.Reason}".ElipseTrimToLength(1800),
-                Author = new EmbedAuthorBuilder().WithUser(user),
-                Fields = new List<EmbedFieldBuilder>
-                {
-                    new EmbedFieldBuilder
-                    {
-                        IsInline = true,
-                        Name = "UserId:",
-                        Value = $"{user.Id}",
-                    },
-                    new EmbedFieldBuilder
-                    {
-                        IsInline = true,
-                        Name = "Typ:",
-                        Value = penaltyInfo.Type,
-                    },
-                    new EmbedFieldBuilder
-                    {
-                        IsInline = true,
-                        Name = "Kiedy:",
-                        Value = $"{penaltyInfo.StartedOn.ToShortDateString()} {penaltyInfo.StartedOn.ToShortTimeString()}"
-                    },
-                    new EmbedFieldBuilder
-                    {
-                        IsInline = true,
-                        Name = "Na ile:",
-                        Value = durationFriendly,
-                    }
-                }
-            };
-
-            if (channel != null)
-            {
-                await channel.SendMessageAsync(embed: embed.Build());
-            }
-
-            try
-            {
-                var directMessageChannel = await user.GetOrCreateDMChannelAsync();
-                if (directMessageChannel != null)
-                {
-                    var content = $"Elo! Zostałeś ukarany mutem na {durationFriendly}.\n\nPodany powód: {penaltyInfo.Reason}\n\nPozdrawiam serdecznie!"
-                        .ElipseTrimToLength(2000);
-                    await directMessageChannel.SendMessageAsync(content);
-                    await directMessageChannel.CloseAsync();
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogInformation($"in mute: {ex}");
-            }
-        }
-
-        public async Task<Embed> GetMutedListAsync(IGuild guild)
-        {
-            var stringBuilder = new StringBuilder("Brak", 100);
-            using var serviceScope = _serviceScopeFactory.CreateScope();
-            var serviceProvider = serviceScope.ServiceProvider;
-            var penaltyInfoRepository = serviceProvider.GetRequiredService<IPenaltyInfoRepository>();
-
-            var penaltyList = await penaltyInfoRepository.GetMutedPenaltiesAsync(guild.Id);
-
-            if (penaltyList.Any())
-            {
-                stringBuilder.Clear();
-                foreach (var penalty in penaltyList)
-                {
-                    var endDate = penalty.StartedOn + penalty.Duration;
-                    var name = (await guild.GetUserAsync(penalty.UserId))?.Mention;
-
-                    if (name is null)
-                    {
-                        continue;
-                    }
-
-                    stringBuilder.AppendFormat(
-                        "{0} [DO: {1} {2}] - {3}\n",
-                        name,
-                        endDate.ToShortDateString(),
-                        endDate.ToShortTimeString(),
-                        penalty.Reason);
-                }
-            }
-
-            var result = stringBuilder.ToString().ElipseTrimToLength(1900);
-
-            return new EmbedBuilder
-            {
-                Description = $"**Wyciszeni**:\n\n{result}",
-                Color = EMType.Bot.Color(),
-            }.Build();
-        }
-
-        public Embed BuildTodo(IMessage message, IGuildUser who)
-        {
-            var image = string.Empty;
-            
-            if (message.Attachments.Any())
-            {
-                var first = message.Attachments.First();
-
-                if (first.Url.IsURLToImage())
-                {
-                    image = first.Url;
-                }
-            }
-
-            return new EmbedBuilder
-            {
-                Author = new EmbedAuthorBuilder().WithUser(message.Author),
-                Description = message.Content.ElipseTrimToLength(1800),
-                Color = EMType.Bot.Color(),
-                ImageUrl = image,
-                Footer = new EmbedFooterBuilder
-                {
-                    IconUrl = who.GetUserOrDefaultAvatarUrl(),
-                    Text = $"Przez: {who.Nickname ?? who.Username}",
-                },
-            }.Build();
-        }
-
-        public async Task UnmuteUserAsync(
-            IGuildUser user,
-            IRole muteRole,
-            IRole muteModRole)
-        {
-            using var serviceScope = _serviceScopeFactory.CreateScope();
-            var serviceProvider = serviceScope.ServiceProvider;
-            var penaltyInfoRepository = serviceProvider.GetRequiredService<IPenaltyInfoRepository>();
-
-            var penalty = await penaltyInfoRepository.GetPenaltyAsync(
-                user.Id,
-                user.Guild.Id,
-                PenaltyType.Mute);
-
-            await UnmuteUserGuildAsync(user, muteRole, muteModRole, penalty?.Roles ?? Enumerable.Empty<OwnedRole>());
-            await RemovePenaltyFromDb(penalty);
-        }
-
         private async Task RemovePenaltyFromDb(PenaltyInfo? penalty)
         {
             if (penalty == null)
@@ -574,153 +721,6 @@ namespace Sanakan.DiscordBot.Services
             await penaltyInfoRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(CacheKeys.Muted);
-        }
-
-        private async Task UnmuteUserGuildAsync(
-            IGuildUser user,
-            IRole muteRole,
-            IRole muteModRole,
-            IEnumerable<OwnedRole> roles)
-        {
-            var roleIds = user.RoleIds;
-            var guild = user.Guild;
-
-            if (muteRole != null)
-            {
-                if (roleIds.Contains(muteRole.Id))
-                {
-                    await user.RemoveRoleAsync(muteRole);
-                }
-            }
-
-            if (muteModRole != null)
-            {
-                if (roleIds.Contains(muteModRole.Id))
-                {
-                    await user.RemoveRoleAsync(muteModRole);
-                }
-            }
-
-            if (roles != null)
-            {
-                foreach (var role in roles)
-                {
-                    var discordRole = guild.GetRole(role.RoleId);
-
-                    if (discordRole != null && !roleIds.Contains(discordRole.Id))
-                    {
-                        await user.AddRoleAsync(discordRole.Id);
-                    }
-                }
-            }
-        }
-
-        public async Task<PenaltyInfo> BanUserAysnc(
-            IGuildUser user,
-            TimeSpan duration,
-            string reason = Constants.NoReason)
-        {
-            using var serviceScope = _serviceScopeFactory.CreateScope();
-            var serviceProvider = serviceScope.ServiceProvider;
-            var penaltyInfoRepository = serviceProvider.GetRequiredService<IPenaltyInfoRepository>();
-            var guild = user.Guild;
-
-            var penalty = new PenaltyInfo
-            {
-                UserId = user.Id,
-                Reason = reason,
-                GuildId = guild.Id,
-                Type = PenaltyType.Ban,
-                StartedOn = _systemClock.UtcNow,
-                Duration = duration,
-            };
-
-            penaltyInfoRepository.Add(penalty);
-            await penaltyInfoRepository.SaveChangesAsync();
-
-            _cacheManager.ExpireTag(CacheKeys.Muted);
-
-            await guild.AddBanAsync(user, 0, reason);
-
-            return penalty;
-        }
-
-        public async Task<PenaltyInfo> MuteUserAsync(
-            IGuildUser user,
-            IRole? muteRole,
-            IRole? muteModRole,
-            IRole? userRole,
-            TimeSpan duration,
-            string reason = Constants.NoReason,
-            IEnumerable<ModeratorRoles>? modRoles = null)
-        {
-            var penaltyInfo = new PenaltyInfo
-            {
-                UserId = user.Id,
-                Reason = reason,
-                GuildId = user.Guild.Id,
-                Type = PenaltyType.Mute,
-                StartedOn = _systemClock.UtcNow,
-                Duration = duration,
-            };
-            var roleIds = user.RoleIds;
-
-            if (userRole != null)
-            {
-                if (roleIds.Contains(userRole.Id))
-                {
-                    await user.RemoveRoleAsync(userRole);
-                    penaltyInfo.Roles.Add(new OwnedRole
-                    {
-                        RoleId = userRole.Id
-                    });
-                }
-            }
-
-            if (modRoles != null)
-            {
-                foreach (var modRole in modRoles)
-                {
-                    var roleId = roleIds
-                        .Select(pr => (ulong?)pr)
-                        .FirstOrDefault(id => id == modRole.RoleId);
-
-                    if (!roleId.HasValue)
-                    {
-                        continue;
-                    }
-
-                    await user.RemoveRoleAsync(roleId.Value);
-                    penaltyInfo.Roles.Add(new OwnedRole
-                    {
-                        RoleId = roleId.Value
-                    });
-                }
-            }
-
-            if (muteRole != null && !roleIds.Contains(muteRole.Id))
-            {
-                await user.AddRoleAsync(muteRole);
-            }
-
-            if (muteModRole != null)
-            {
-                if (!roleIds.Contains(muteModRole.Id))
-                {
-                    await user.AddRoleAsync(muteModRole);
-                }
-            }
-
-            using var serviceScope = _serviceScopeFactory.CreateScope();
-            var serviceProvider = serviceScope.ServiceProvider;
-            var penaltyInfoRepository = serviceProvider.GetRequiredService<IPenaltyInfoRepository>();
-
-            penaltyInfoRepository.Add(penaltyInfo);
-            await penaltyInfoRepository.SaveChangesAsync();
-
-            _cacheManager.ExpireTag(CacheKeys.Muted);
-
-            return penaltyInfo;
         }
     }
 }

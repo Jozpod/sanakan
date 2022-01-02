@@ -6,12 +6,12 @@
     public class CommandAttribute
     {
         /// <summary>
-        /// The name of attribute
+        /// The name of attribute.
         /// </summary>
         public string Name { get; set; } = string.Empty;
 
         /// <summary>
-        /// The description
+        /// The description.
         /// </summary>
         public string Description { get; set; } = string.Empty;
     }

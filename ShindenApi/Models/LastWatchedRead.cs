@@ -163,11 +163,15 @@ namespace Sanakan.ShindenApi.Models
         public long ChaptersCount { get; set; }
 
         public string AnimeUrl => UrlHelpers.GetSeriesURL(TitleId);
+
         public string AnimeCoverUrl => UrlHelpers.GetBigImageURL(TitleCoverId);
+
         public string EpisodeUrl => UrlHelpers.GetEpisodeURL(TitleId, EpisodeId);
 
         public string MangaUrl => UrlHelpers.GetSeriesURL(TitleId);
+
         public string MangaCoverUrl => UrlHelpers.GetBigImageURL(TitleCoverId);
+
         public string ChapterUrl => UrlHelpers.GetChapterURL(TitleId, ChapterId);
     }
 }

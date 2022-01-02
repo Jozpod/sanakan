@@ -6,11 +6,11 @@
 
         public const int BackgroundPosition = 35;
 
-        public static long MaxNumberOfCards = 1000;
-
         public const long SafariLimit = 50;
 
         public const long ScCount = 100;
+
+        public const long MaxNumberOfCards = 1000;
 
         public const ulong RootUserId = 1ul;
     }

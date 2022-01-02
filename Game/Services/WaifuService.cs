@@ -44,9 +44,6 @@ namespace Sanakan.Game.Services
         private readonly TimeSpan _day = TimeSpan.FromDays(1);
         private DateTime _charactersUpdatedOn = DateTime.MinValue;
         private IEnumerable<ulong> _ids = Enumerable.Empty<ulong>();
-        public IEnumerable<ulong> EventIds { get; set; } = Enumerable.Empty<ulong>();
-        public bool EventState { get; set; } = false;
-        public bool EventEnabled { get; set; }
 
         public WaifuService(
             IOptionsMonitor<DiscordConfiguration> discordConfiguration,
@@ -74,7 +71,11 @@ namespace Sanakan.Game.Services
             _serviceScopeFactory = serviceScopeFactory;
         }
 
-        public void SetEventIds(IEnumerable<ulong> ids) => Ids = ids;
+        public IEnumerable<ulong> EventIds { get; set; } = Enumerable.Empty<ulong>();
+
+        public bool EventState { get; set; } = false;
+
+        public bool EventEnabled { get; set; }
 
         public IEnumerable<ulong> Ids
         {
@@ -87,11 +88,58 @@ namespace Sanakan.Game.Services
 
                 return _ids;
             }
+
             set
             {
                 _ids = value;
             }
         }
+
+        public static int RandomizeAttack(IRandomNumberGenerator randomNumberGenerator, Rarity rarity)
+            => randomNumberGenerator.GetRandomValue(rarity.GetAttackMin(), rarity.GetAttackMax() + 1);
+
+        public static int RandomizeDefence(IRandomNumberGenerator randomNumberGenerator, Rarity rarity)
+            => randomNumberGenerator.GetRandomValue(rarity.GetDefenceMin(), rarity.GetDefenceMax() + 1);
+
+        public static int RandomizeHealth(IRandomNumberGenerator randomNumberGenerator, Card card)
+            => randomNumberGenerator.GetRandomValue(card.Rarity.GetHealthMin(), card.GetHealthMax() + 1);
+
+        public static Rarity RandomizeRarity(
+            IRandomNumberGenerator randomNumberGenerator,
+            IEnumerable<Rarity> rarityExcluded)
+        {
+            int value;
+            if (!rarityExcluded.Any())
+            {
+                value = randomNumberGenerator.GetRandomValue(1000);
+                return RarityExtensions.Random(value);
+            }
+
+            var rarityChances = Constants.RarityChances.ToList();
+
+            var excludedList = Constants.RarityChances
+                .Where(x => rarityExcluded.Any(c => c == x.Rarity))
+                .ToList();
+
+            foreach (var excluded in excludedList)
+            {
+                rarityChances.Remove(excluded);
+            }
+
+            value = randomNumberGenerator.GetRandomValue(1000);
+
+            foreach (var rarityChance in rarityChances)
+            {
+                if (value < rarityChance.Chance)
+                {
+                    return rarityChance.Rarity;
+                }
+            }
+
+            return rarityChances.Last().Rarity;
+        }
+
+        public void SetEventIds(IEnumerable<ulong> ids) => Ids = ids;
 
         public List<Card> GetListInRightOrder(IEnumerable<Card> list, HaremType type, string tag)
         {
@@ -128,24 +176,30 @@ namespace Sanakan.Game.Services
                         foreach (var t in tagList)
                         {
                             if (t.Length < 1)
+                            {
                                 continue;
+                            }
 
                             nList = list.Where(x => x.Tags.Any(c => c.Name.Equals(t, StringComparison.CurrentCultureIgnoreCase))).ToList();
                         }
+
                         return nList;
                     }
 
                 case HaremType.NoTag:
                     {
                         var nList = new List<Card>();
-                        var tagList = tag.Split(" ").ToList();
-                        foreach (var t in tagList)
+                        var tags = tag.Split(" ").ToList();
+                        foreach (var tagIt in tags)
                         {
-                            if (t.Length < 1)
+                            if (tagIt.Length < 1)
+                            {
                                 continue;
+                            }
 
-                            nList = list.Where(x => !x.Tags.Any(c => c.Name.Equals(t, StringComparison.CurrentCultureIgnoreCase))).ToList();
+                            nList = list.Where(x => !x.Tags.Any(c => c.Name.Equals(tagIt, StringComparison.CurrentCultureIgnoreCase))).ToList();
                         }
+
                         return nList;
                     }
 
@@ -162,41 +216,6 @@ namespace Sanakan.Game.Services
                 case HaremType.Rarity:
                     return list.OrderBy(x => x.Rarity).ToList();
             }
-        }
-
-        public static Rarity RandomizeRarity(
-            IRandomNumberGenerator randomNumberGenerator,
-            IEnumerable<Rarity> rarityExcluded)
-        {
-            int value;
-            if (!rarityExcluded.Any())
-            {
-                value = randomNumberGenerator.GetRandomValue(1000);
-                return RarityExtensions.Random(value);
-            }
-
-            var rarityChances = Constants.RarityChances.ToList();
-
-            var excludedList = Constants.RarityChances
-                .Where(x => rarityExcluded.Any(c => c == x.Rarity))
-                .ToList();
-
-            foreach (var excluded in excludedList)
-            {
-                rarityChances.Remove(excluded);
-            }
-
-            value = randomNumberGenerator.GetRandomValue(1000);
-
-            foreach (var rarityChance in rarityChances)
-            {
-                if (value < rarityChance.Chance)
-                {
-                    return rarityChance.Rarity;
-                }
-            }
-
-            return rarityChances.Last().Rarity;
         }
 
         public void IncreaseMoneySpentOnCookies(ShopType type, User user, int cost)
@@ -311,7 +330,7 @@ namespace Sanakan.Game.Services
             }
 
             var boosterPackTitleId = 0ul;
-            var boosterPackTitleName = "";
+            var boosterPackTitleName = string.Empty;
             var itemType = thisItem.Item.Type;
 
             switch (itemType)
@@ -377,11 +396,12 @@ namespace Sanakan.Game.Services
                     {
                         itemCount = 1;
                     }
+
                     break;
             }
 
             var realCost = itemCount * thisItem.Cost;
-            var count = (itemCount > 1) ? $" x{itemCount}" : "";
+            var count = (itemCount > 1) ? $" x{itemCount}" : string.Empty;
 
             using var serviceScope = _serviceScopeFactory.CreateScope();
             var serviceProvider = serviceScope.ServiceProvider;
@@ -405,6 +425,7 @@ namespace Sanakan.Game.Services
                         booster.TitleId = boosterPackTitleId;
                         booster.Name += boosterPackTitleName;
                     }
+
                     if (booster != null)
                     {
                         booster.CardSourceFromPack = shopType.GetBoosterpackSource();
@@ -494,15 +515,6 @@ namespace Sanakan.Game.Services
             return rExp;
         }
 
-        public static int RandomizeAttack(IRandomNumberGenerator randomNumberGenerator, Rarity rarity)
-            => randomNumberGenerator.GetRandomValue(rarity.GetAttackMin(), rarity.GetAttackMax() + 1);
-
-        public static int RandomizeDefence(IRandomNumberGenerator randomNumberGenerator, Rarity rarity)
-            => randomNumberGenerator.GetRandomValue(rarity.GetDefenceMin(), rarity.GetDefenceMax() + 1);
-
-        public static int RandomizeHealth(IRandomNumberGenerator randomNumberGenerator, Card card)
-            => randomNumberGenerator.GetRandomValue(card.Rarity.GetHealthMin(), card.GetHealthMax() + 1);
-
         public Card GenerateNewCard(ulong? discordUserId, CharacterInfo character, Rarity rarity)
         {
             var date = _systemClock.UtcNow;
@@ -530,7 +542,7 @@ namespace Sanakan.Game.Services
                 card.FirstOwnerId = discordUserId.Value;
             }
 
-            var pictureUrl = character.PictureId.HasValue ? 
+            var pictureUrl = character.PictureId.HasValue ?
                 UrlHelpers.GetPersonPictureURL(character.PictureId.Value)
                 : UrlHelpers.GetPlaceholderImageURL();
             var hasImage = pictureUrl != UrlHelpers.GetPlaceholderImageURL();
@@ -552,14 +564,6 @@ namespace Sanakan.Game.Services
 
         public Card GenerateNewCard(ulong? discordUserId, CharacterInfo character, IEnumerable<Rarity> rarityExcluded)
             => GenerateNewCard(discordUserId, character, RandomizeRarity(_randomNumberGenerator, rarityExcluded));
-
-        private int ScaleNumber(int oMin, int oMax, int nMin, int nMax, int value)
-        {
-            var m = (nMax - nMin) / (double)(oMax - oMin);
-            var c = (oMin * m) - nMin;
-
-            return (int)((m * value) - c);
-        }
 
         public int GetAttackAfterLevelUp(Rarity oldRarity, int oldAtk)
         {
@@ -637,6 +641,7 @@ namespace Sanakan.Game.Services
 
                         stringBuilder.AppendFormat("❌ {0}\n", thisCard.GetString(true, false, true, true));
                     }
+
                     stringBuilder.Append('\n');
                 }
             }
@@ -694,16 +699,19 @@ namespace Sanakan.Game.Services
                             round.Cards.Add(new HpSnapshot
                             {
                                 CardId = target.Card.Id,
-                                Hp = target.Health
+                                Hp = target.Health,
                             });
                         }
-                        else hpSnap.Hp = target.Health;
+                        else
+                        {
+                            hpSnap.Hp = target.Health;
+                        }
 
                         round.Fights.Add(new AttackInfo
                         {
                             Dmg = damage,
                             AtkCardId = card.Card.Id,
-                            DefCardId = target.Card.Id
+                            DefCardId = target.Card.Id,
                         });
                     }
                 }
@@ -744,7 +752,7 @@ namespace Sanakan.Game.Services
 
         public Embed GetActiveList(IEnumerable<Card> list)
         {
-            var footer = $"MOC {list.Sum(x => x.CalculateCardPower()).ToString("F")}";
+            var footer = $"MOC {list.Sum(x => x.CalculateCardPower()):F}";
             var stringBuilder = new StringBuilder("**Twoje aktywne karty to**:\n\n", 50);
             var embed = new EmbedBuilder()
             {
@@ -829,7 +837,7 @@ namespace Sanakan.Game.Services
                 var tempContentString = $"";
                 var gameDeckUser = await client.GetUserAsync(card.GameDeck.UserId);
 
-                var userName = (mention ? (gameDeckUser?.Mention) : (gameDeckUser?.Username)) ?? Placeholders.Undefined;
+                var userName = (mention ? gameDeckUser?.Mention : gameDeckUser?.Username) ?? Placeholders.Undefined;
                 tempContentString += $"{userName} **[{card.Id}]** **{card.GetCardRealRarity()}** {card.GetStatusIcons()}\n";
 
                 if ((contentString.Length + tempContentString.Length) <= 2000)
@@ -846,7 +854,8 @@ namespace Sanakan.Game.Services
 
                     contentString = tempContentString;
                 }
-                tempContentString = "";
+
+                tempContentString = string.Empty;
             }
 
             list.Add(new EmbedBuilder()
@@ -866,14 +875,14 @@ namespace Sanakan.Game.Services
             var list = new List<Embed>();
             var characters = cards.GroupBy(x => x.CharacterId);
 
-            var contentString = "";
+            var contentString = string.Empty;
             foreach (var cardsG in characters)
             {
                 string tempContentString = $"\n**{cardsG.First().GetNameWithUrl()}**\n";
                 foreach (var card in cardsG)
                 {
                     var user = await client.GetUserAsync(card.GameDeckId);
-                    var usrName = (mention ? (user?.Mention) : (user?.Username)) ?? Placeholders.Undefined;
+                    var usrName = (mention ? user?.Mention : user?.Username) ?? Placeholders.Undefined;
 
                     tempContentString += $"{usrName}: **[{card.Id}]** **{card.GetCardRealRarity()}** {card.GetStatusIcons()}\n";
                 }
@@ -887,18 +896,19 @@ namespace Sanakan.Game.Services
                     list.Add(new EmbedBuilder()
                     {
                         Color = EMType.Info.Color(),
-                        Description = contentString.ElipseTrimToLength(2000)
+                        Description = contentString.ElipseTrimToLength(2000),
                     }.Build());
 
                     contentString = tempContentString;
                 }
-                tempContentString = "";
+
+                tempContentString = string.Empty;
             }
 
             list.Add(new EmbedBuilder()
             {
                 Color = EMType.Info.Color(),
-                Description = contentString.ElipseTrimToLength(2000)
+                Description = contentString.ElipseTrimToLength(2000),
             }.Build());
 
             return list;
@@ -938,7 +948,7 @@ namespace Sanakan.Game.Services
             return new EmbedBuilder
             {
                 Color = EMType.Info.Color(),
-                Description = $"{user.Mention} twoje pakiety:\n\n{packString.ElipseTrimToLength(1900)}"
+                Description = $"{user.Mention} twoje pakiety:\n\n{packString.ElipseTrimToLength(1900)}",
             }.Build();
         }
 
@@ -1074,36 +1084,9 @@ namespace Sanakan.Game.Services
                     }
                 }
             }
-            catch (Exception) { }
-        }
-
-        private async Task<string> GetCardUrlIfExistAsync(Card card, bool defaultStr = false, bool force = false)
-        {
-            var imageUrl = null as string;
-            var imageLocation = $"{Paths.Cards}/{card.Id}.png";
-            var sImageLocation = $"{Paths.CardsMiniatures}/{card.Id}.png";
-
-            if (!_fileSystem.Exists(imageLocation) || !_fileSystem.Exists(sImageLocation) || force)
+            catch (Exception)
             {
-                if (card.Id != 0)
-                {
-                    imageUrl = await GenerateAndSaveCardAsync(card);
-                }
             }
-            else
-            {
-                imageUrl = imageLocation;
-                var fileTime = _systemClock.UtcNow - _fileSystem.GetCreationTime(imageLocation);
-
-                if (fileTime > TimeSpan.FromHours(4))
-                {
-                    imageUrl = await GenerateAndSaveCardAsync(card);
-                }
-            }
-
-            var cardUrl = defaultStr ? (imageUrl ?? imageLocation) : imageUrl;
-
-            return cardUrl!;
         }
 
         public async Task<SafariImage?> GetRandomSarafiImage()
@@ -1121,22 +1104,11 @@ namespace Sanakan.Game.Services
                 var randomImage = _randomNumberGenerator.GetOneRandomFrom(images);
                 return randomImage;
             }
-            catch (Exception) { }
+            catch (Exception)
+            {
+            }
 
             return null;
-        }
-
-        private string ThisUri(SafariImage safariImage, SafariImageType type)
-        {
-            switch (type)
-            {
-                case SafariImageType.Mystery:
-                    return string.Format(Paths.PokePicture, safariImage.Index);
-
-                default:
-                case SafariImageType.Truth:
-                    return string.Format(Paths.PokePicture, safariImage.Index + "a");
-            }
         }
 
         public async Task<string> GetSafariViewAsync(SafariImage safariImage, Card card, IMessageChannel trashChannel)
@@ -1149,16 +1121,16 @@ namespace Sanakan.Game.Services
                 imagePath = safariImageType.DefaultUri();
             }
 
-            var DefaultX = 884;
-            var DefaultY = 198;
+            var defaultX = 884;
+            var defaultY = 198;
 
-            var GetX = _fileSystem.Exists(ThisUri(safariImage, safariImageType)) ? safariImage.X : DefaultX;
-            var GetY = _fileSystem.Exists(ThisUri(safariImage, safariImageType)) ? safariImage.Y : DefaultY;
+            var getX = _fileSystem.Exists(ThisUri(safariImage, safariImageType)) ? safariImage.X : defaultX;
+            var getY = _fileSystem.Exists(ThisUri(safariImage, safariImageType)) ? safariImage.Y : defaultY;
 
             using var cardImage = await _imageProcessor.GetWaifuCardImageAsync(card);
-            var xPosition = safariImage != null ? GetX : SafariImage.DefaultX();
-            int yPosition = safariImage != null ? GetY : SafariImage.DefaultY();
-            using var pokeImage = _imageProcessor.GetCatchThatWaifuImage( cardImage, imagePath, xPosition, yPosition);
+            var xPosition = safariImage != null ? getX : SafariImage.DefaultX();
+            int yPosition = safariImage != null ? getY : SafariImage.DefaultY();
+            using var pokeImage = _imageProcessor.GetCatchThatWaifuImage(cardImage, imagePath, xPosition, yPosition);
             using var stream = pokeImage.ToJpgStream();
 
             var message = await trashChannel.SendFileAsync(stream, $"poke.jpg");
@@ -1213,7 +1185,7 @@ namespace Sanakan.Game.Services
                 Description = card.GetString(false, false, true, false, false),
                 Footer = new EmbedFooterBuilder
                 {
-                    Text = $"Należy do: {ownerString}"
+                    Text = $"Należy do: {ownerString}",
                 },
             }.Build();
         }
@@ -1237,7 +1209,7 @@ namespace Sanakan.Game.Services
                 Color = EMType.Info.Color(),
                 Footer = new EmbedFooterBuilder
                 {
-                    Text = $"Należy do: {ownerString}"
+                    Text = $"Należy do: {ownerString}",
                 },
                 Description = decription,
             }.Build();
@@ -1255,7 +1227,7 @@ namespace Sanakan.Game.Services
             return new EmbedBuilder
             {
                 Color = EMType.Info.Color(),
-                Description = embedString.ToString().ElipseTrimToLength(2000)
+                Description = embedString.ToString().ElipseTrimToLength(2000),
             }.Build();
         }
 
@@ -1317,7 +1289,7 @@ namespace Sanakan.Game.Services
                 }
             }
 
-            string temp = "";
+            var temp = string.Empty;
             var content = new List<Embed>();
             for (var i = 0; i < contentTable.Count; i++)
             {
@@ -1326,7 +1298,7 @@ namespace Sanakan.Game.Services
                     content.Add(new EmbedBuilder()
                     {
                         Color = EMType.Info.Color(),
-                        Description = temp
+                        Description = temp,
                     }.Build());
                     temp = contentTable[i];
                 }
@@ -1339,7 +1311,7 @@ namespace Sanakan.Game.Services
             content.Add(new EmbedBuilder()
             {
                 Color = EMType.Info.Color(),
-                Description = temp
+                Description = temp,
             }.Build());
 
             return content;
@@ -1417,26 +1389,25 @@ namespace Sanakan.Game.Services
 
         public double GetBaseItemsPerMinuteFromExpedition(ExpeditionCardType expedition, Rarity rarity)
         {
-            var cnt = 0d;
-
+            double count;
             switch (expedition)
             {
                 case ExpeditionCardType.NormalItemWithExp:
-                    cnt = 1.9;
+                    count = 1.9;
                     break;
 
                 case ExpeditionCardType.ExtremeItemWithExp:
-                    cnt = 10.1;
+                    count = 10.1;
                     break;
 
                 case ExpeditionCardType.LightItemWithExp:
                 case ExpeditionCardType.DarkItemWithExp:
-                    cnt = 4.2;
+                    count = 4.2;
                     break;
 
                 case ExpeditionCardType.DarkItems:
                 case ExpeditionCardType.LightItems:
-                    cnt = 7.2;
+                    count = 7.2;
                     break;
 
                 case ExpeditionCardType.LightExp:
@@ -1451,9 +1422,9 @@ namespace Sanakan.Game.Services
                     return 0;
             }
 
-            cnt *= rarity.ValueModifier();
+            count *= rarity.ValueModifier();
 
-            return cnt / 60d;
+            return count / 60d;
         }
 
         public double GetBaseExpPerMinuteFromExpedition(ExpeditionCardType expedition, Rarity rarity)
@@ -1516,7 +1487,7 @@ namespace Sanakan.Game.Services
                 totalExp /= 5;
             }
 
-            var reward = "";
+            var reward = string.Empty;
             var allowItems = true;
             if (duration.Item2 < _halfAnHour)
             {
@@ -1567,7 +1538,7 @@ namespace Sanakan.Game.Services
             card.Affection -= affectionCost;
 
             var minAff = 0d;
-            reward += $"Zdobywa:\n+{totalExp.ToString("F")} exp ({card.ExperienceCount.ToString("F")})\n";
+            reward += $"Zdobywa:\n+{totalExp:F} exp ({card.ExperienceCount:F})\n";
             for (var i = 0; i < totalItemsCount && allowItems; i++)
             {
                 if (CheckChanceForItemInExpedition(i, totalItemsCount, card.Expedition))
@@ -1604,7 +1575,7 @@ namespace Sanakan.Game.Services
 
             if (showStats)
             {
-                reward += $"\n\nRT: {duration.Item1.ToString("F")} E: {totalExp.ToString("F")} AI: {minAff.ToString("F")} A: {affectionCost.ToString("F")} K: {karmaCost.ToString("F")} MI: {totalItemsCount}";
+                reward += $"\n\nRT: {duration.Item1:F} E: {totalExp:F} AI: {minAff:F} A: {affectionCost:F} K: {karmaCost:F} MI: {totalItemsCount}";
             }
 
             card.Expedition = ExpeditionCardType.None;
@@ -1613,42 +1584,12 @@ namespace Sanakan.Game.Services
             return reward;
         }
 
-        private bool CheckEventInExpedition(ExpeditionCardType expedition, (double, double) duration)
-        {
-            switch (expedition)
-            {
-                case ExpeditionCardType.NormalItemWithExp:
-                    return _randomNumberGenerator.TakeATry(10);
-
-                case ExpeditionCardType.ExtremeItemWithExp:
-                    if (duration.Item1 > 60 || duration.Item2 > 600)
-                    {
-                        return true;
-                    }
-                    return !_randomNumberGenerator.TakeATry(5);
-
-                case ExpeditionCardType.LightItemWithExp:
-                case ExpeditionCardType.DarkItemWithExp:
-                    return _randomNumberGenerator.TakeATry(10);
-
-                case ExpeditionCardType.DarkItems:
-                case ExpeditionCardType.LightItems:
-                case ExpeditionCardType.LightExp:
-                case ExpeditionCardType.DarkExp:
-                    return _randomNumberGenerator.TakeATry(5);
-
-                default:
-                case ExpeditionCardType.UltimateEasy:
-                case ExpeditionCardType.UltimateMedium:
-                case ExpeditionCardType.UltimateHard:
-                case ExpeditionCardType.UltimateHardcore:
-                    return false;
-            }
-        }
-
         public double GetProgressiveValueFromExpedition(double baseValue, double duration, double div)
         {
-            if (duration < div) return baseValue * 0.4 * duration;
+            if (duration < div)
+            {
+                return baseValue * 0.4 * duration;
+            }
 
             var value = 0d;
             var vB = (int)(duration / div);
@@ -1662,6 +1603,7 @@ namespace Sanakan.Game.Services
                     duration -= rest * div;
                     break;
                 }
+
                 value += sBase * div;
                 duration -= div;
             }
@@ -1682,44 +1624,44 @@ namespace Sanakan.Game.Services
 
             switch (_randomNumberGenerator.GetRandomValue(10000))
             {
-                case int n when (n < chanceOfItems[ItemType.AffectionRecoverySmall].Item2
-                                && n >= chanceOfItems[ItemType.AffectionRecoverySmall].Item1):
+                case int n when n < chanceOfItems[ItemType.AffectionRecoverySmall].Item2
+                                && n >= chanceOfItems[ItemType.AffectionRecoverySmall].Item1:
                     return ItemType.AffectionRecoverySmall.ToItem(1, quality);
 
-                case int n when (n < chanceOfItems[ItemType.AffectionRecoveryNormal].Item2
-                                && n >= chanceOfItems[ItemType.AffectionRecoveryNormal].Item1):
+                case int n when n < chanceOfItems[ItemType.AffectionRecoveryNormal].Item2
+                                && n >= chanceOfItems[ItemType.AffectionRecoveryNormal].Item1:
                     return ItemType.AffectionRecoveryNormal.ToItem(1, quality);
 
-                case int n when (n < chanceOfItems[ItemType.DereReRoll].Item2
-                                && n >= chanceOfItems[ItemType.DereReRoll].Item1):
+                case int n when n < chanceOfItems[ItemType.DereReRoll].Item2
+                                && n >= chanceOfItems[ItemType.DereReRoll].Item1:
                     return ItemType.DereReRoll.ToItem(1, quality);
 
-                case int n when (n < chanceOfItems[ItemType.CardParamsReRoll].Item2
-                                && n >= chanceOfItems[ItemType.CardParamsReRoll].Item1):
+                case int n when n < chanceOfItems[ItemType.CardParamsReRoll].Item2
+                                && n >= chanceOfItems[ItemType.CardParamsReRoll].Item1:
                     return ItemType.CardParamsReRoll.ToItem(1, quality);
 
-                case int n when (n < chanceOfItems[ItemType.AffectionRecoveryBig].Item2
-                                && n >= chanceOfItems[ItemType.AffectionRecoveryBig].Item1):
+                case int n when n < chanceOfItems[ItemType.AffectionRecoveryBig].Item2
+                                && n >= chanceOfItems[ItemType.AffectionRecoveryBig].Item1:
                     return ItemType.AffectionRecoveryBig.ToItem(1, quality);
 
-                case int n when (n < chanceOfItems[ItemType.AffectionRecoveryGreat].Item2
-                                && n >= chanceOfItems[ItemType.AffectionRecoveryGreat].Item1):
+                case int n when n < chanceOfItems[ItemType.AffectionRecoveryGreat].Item2
+                                && n >= chanceOfItems[ItemType.AffectionRecoveryGreat].Item1:
                     return ItemType.AffectionRecoveryGreat.ToItem(1, quality);
 
-                case int n when (n < chanceOfItems[ItemType.IncreaseUpgradeCount].Item2
-                                && n >= chanceOfItems[ItemType.IncreaseUpgradeCount].Item1):
+                case int n when n < chanceOfItems[ItemType.IncreaseUpgradeCount].Item2
+                                && n >= chanceOfItems[ItemType.IncreaseUpgradeCount].Item1:
                     return ItemType.IncreaseUpgradeCount.ToItem(1, quality);
 
-                case int n when (n < chanceOfItems[ItemType.IncreaseExpSmall].Item2
-                                && n >= chanceOfItems[ItemType.IncreaseExpSmall].Item1):
+                case int n when n < chanceOfItems[ItemType.IncreaseExpSmall].Item2
+                                && n >= chanceOfItems[ItemType.IncreaseExpSmall].Item1:
                     return ItemType.IncreaseExpSmall.ToItem(1, quality);
 
-                case int n when (n < chanceOfItems[ItemType.IncreaseExpBig].Item2
-                                && n >= chanceOfItems[ItemType.IncreaseExpBig].Item1):
+                case int n when n < chanceOfItems[ItemType.IncreaseExpBig].Item2
+                                && n >= chanceOfItems[ItemType.IncreaseExpBig].Item1:
                     return ItemType.IncreaseExpBig.ToItem(1, quality);
 
-                case int n when (n < chanceOfItems[ItemType.BetterIncreaseUpgradeCnt].Item2
-                                && n >= chanceOfItems[ItemType.BetterIncreaseUpgradeCnt].Item1):
+                case int n when n < chanceOfItems[ItemType.BetterIncreaseUpgradeCnt].Item2
+                                && n >= chanceOfItems[ItemType.BetterIncreaseUpgradeCnt].Item1:
                     return ItemType.BetterIncreaseUpgradeCnt.ToItem(1, quality);
 
                 default:
@@ -1753,6 +1695,90 @@ namespace Sanakan.Game.Services
                 case ExpeditionCardType.UltimateHard:
                 case ExpeditionCardType.UltimateHardcore:
                     return false;
+            }
+        }
+
+        private bool CheckEventInExpedition(ExpeditionCardType expedition, (double, double) duration)
+        {
+            switch (expedition)
+            {
+                case ExpeditionCardType.NormalItemWithExp:
+                    return _randomNumberGenerator.TakeATry(10);
+
+                case ExpeditionCardType.ExtremeItemWithExp:
+                    if (duration.Item1 > 60 || duration.Item2 > 600)
+                    {
+                        return true;
+                    }
+
+                    return !_randomNumberGenerator.TakeATry(5);
+
+                case ExpeditionCardType.LightItemWithExp:
+                case ExpeditionCardType.DarkItemWithExp:
+                    return _randomNumberGenerator.TakeATry(10);
+
+                case ExpeditionCardType.DarkItems:
+                case ExpeditionCardType.LightItems:
+                case ExpeditionCardType.LightExp:
+                case ExpeditionCardType.DarkExp:
+                    return _randomNumberGenerator.TakeATry(5);
+
+                default:
+                case ExpeditionCardType.UltimateEasy:
+                case ExpeditionCardType.UltimateMedium:
+                case ExpeditionCardType.UltimateHard:
+                case ExpeditionCardType.UltimateHardcore:
+                    return false;
+            }
+        }
+
+        private async Task<string> GetCardUrlIfExistAsync(Card card, bool defaultStr = false, bool force = false)
+        {
+            var imageUrl = null as string;
+            var imageLocation = $"{Paths.Cards}/{card.Id}.png";
+            var sImageLocation = $"{Paths.CardsMiniatures}/{card.Id}.png";
+
+            if (!_fileSystem.Exists(imageLocation) || !_fileSystem.Exists(sImageLocation) || force)
+            {
+                if (card.Id != 0)
+                {
+                    imageUrl = await GenerateAndSaveCardAsync(card);
+                }
+            }
+            else
+            {
+                imageUrl = imageLocation;
+                var fileTime = _systemClock.UtcNow - _fileSystem.GetCreationTime(imageLocation);
+
+                if (fileTime > TimeSpan.FromHours(4))
+                {
+                    imageUrl = await GenerateAndSaveCardAsync(card);
+                }
+            }
+
+            var cardUrl = defaultStr ? (imageUrl ?? imageLocation) : imageUrl;
+
+            return cardUrl!;
+        }
+
+        private int ScaleNumber(int oMin, int oMax, int nMin, int nMax, int value)
+        {
+            var m = (nMax - nMin) / (double)(oMax - oMin);
+            var c = (oMin * m) - nMin;
+
+            return (int)((m * value) - c);
+        }
+
+        private string ThisUri(SafariImage safariImage, SafariImageType type)
+        {
+            switch (type)
+            {
+                case SafariImageType.Mystery:
+                    return string.Format(Paths.PokePicture, safariImage.Index);
+
+                default:
+                case SafariImageType.Truth:
+                    return string.Format(Paths.PokePicture, safariImage.Index + "a");
             }
         }
     }

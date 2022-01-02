@@ -23,11 +23,11 @@ namespace Sanakan.DiscordBot.Supervisor
         private readonly IFileSystem _fileSystem;
         private readonly IDictionary<string, UserEntry> _entries;
         private readonly IFileSystemWatcher _fileSystemWatcher;
-        private Task<string[]> _disallowedUrls;
         private readonly TimeSpan _messageExpiry;
         private readonly TimeSpan _timeIntervalBetweenMessages;
         private readonly Regex _urlsRegex;
         private readonly SemaphoreSlim _semaphore = new(1, 1);
+        private Task<string[]> _disallowedUrls;
 
         public UserMessageSupervisor(
             ILogger<UserMessageSupervisor> logger,
@@ -58,35 +58,6 @@ namespace Sanakan.DiscordBot.Supervisor
             _disallowedUrls = _fileSystem.ReadAllLinesAsync(fileName);
             _messageExpiry = supervisorConfiguration.CurrentValue.MessageExpiry;
             _timeIntervalBetweenMessages = supervisorConfiguration.CurrentValue.TimeIntervalBetweenMessages;
-        }
-
-        private async void UrlsChanged(object sender, FileSystemEventArgs eventArgs)
-        {
-            try
-            {
-                await _semaphore.WaitAsync();
-                _disallowedUrls = _fileSystem.ReadAllLinesAsync(eventArgs.Name!);
-                _semaphore.Release();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError("Error occurred while updating urls", ex);
-            }
-        }
-
-        internal class MessageEntry
-        {
-            public bool IsCommand { get; set; }
-            public bool HasDisallowedUrl { get; set; }
-            public uint OccurenceCount { get; set; }
-            public DateTime ReceivedOn { get; set; }
-        }
-
-        public class UserEntry
-        {
-            public uint ShortDelayBetweenMessagesOccurenceCount { get; set; }
-            public IDictionary<int, MessageEntry> Messages { get; set; } = null;
-            public DateTime ModifiedOn { get; set; }
         }
 
         public async Task<SupervisorAction> MakeDecisionAsync(ulong guildId, ulong userId, string content, bool lessSeverePunishment)
@@ -196,6 +167,7 @@ namespace Sanakan.DiscordBot.Supervisor
                 {
                     return SupervisorAction.Mute;
                 }
+
                 return SupervisorAction.Ban;
             }
 
@@ -223,6 +195,40 @@ namespace Sanakan.DiscordBot.Supervisor
                     entry.ShortDelayBetweenMessagesOccurenceCount = 0;
                 }
             }
+        }
+
+        private async void UrlsChanged(object sender, FileSystemEventArgs eventArgs)
+        {
+            try
+            {
+                await _semaphore.WaitAsync();
+                _disallowedUrls = _fileSystem.ReadAllLinesAsync(eventArgs.Name!);
+                _semaphore.Release();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Error occurred while updating urls", ex);
+            }
+        }
+
+        public class UserEntry
+        {
+            public uint ShortDelayBetweenMessagesOccurenceCount { get; set; }
+
+            public IDictionary<int, MessageEntry> Messages { get; set; } = null;
+
+            public DateTime ModifiedOn { get; set; }
+        }
+
+        internal class MessageEntry
+        {
+            public bool IsCommand { get; set; }
+
+            public bool HasDisallowedUrl { get; set; }
+
+            public uint OccurenceCount { get; set; }
+
+            public DateTime ReceivedOn { get; set; }
         }
     }
 }

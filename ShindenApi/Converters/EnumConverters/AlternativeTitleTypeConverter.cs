@@ -12,6 +12,9 @@ namespace Sanakan.ShindenApi.Converters
             { "alternative", AlternativeTitleType.Alternative },
         };
 
-        public AlternativeTitleTypeConverter() : base(_map, AlternativeTitleType.NotSpecified) {}
+        public AlternativeTitleTypeConverter()
+            : base(_map, AlternativeTitleType.NotSpecified)
+        {
+        }
     }
 }

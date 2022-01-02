@@ -37,8 +37,9 @@ namespace Sanakan.Web.Controllers
         }
 
         /// <summary>
-        /// Deletes rich message
+        /// Deletes rich message.
         /// </summary>
+        /// <param name="messageId">The Discord message identifier.</param>
         [HttpDelete("{messageId}")]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status200OK)]
         public async Task<IActionResult> DeleteRichMessageAsync(ulong messageId)
@@ -90,7 +91,7 @@ namespace Sanakan.Web.Controllers
         /// The title of message must be provided for URL field to work properly.
         /// </remarks>
         /// <param name="messageId">The message identifier.</param>
-        /// <param name="richMessage">The message</param>
+        /// <param name="richMessage">The message.</param>
         [HttpPut("{messageId}")]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status200OK)]
         public async Task<IActionResult> ModifyRichMessageAsync(

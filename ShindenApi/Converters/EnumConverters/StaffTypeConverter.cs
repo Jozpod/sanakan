@@ -12,6 +12,9 @@ namespace Sanakan.ShindenApi.Converters
             { "person", StaffType.Person },
         };
 
-        public StaffTypeConverter() : base(_map, StaffType.NotSpecified) {}
+        public StaffTypeConverter()
+            : base(_map, StaffType.NotSpecified)
+        {
+        }
     }
 }

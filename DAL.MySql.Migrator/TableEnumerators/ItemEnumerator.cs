@@ -5,7 +5,9 @@ namespace Sanakan.DAL.MySql.Migrator.TableEnumerators
     public class ItemEnumerator : TableEnumerator<Item>
     {
         public ItemEnumerator(IDbConnection connection)
-             : base(connection) { }
+             : base(connection)
+        {
+        }
 
         public override Item Current => new()
         {

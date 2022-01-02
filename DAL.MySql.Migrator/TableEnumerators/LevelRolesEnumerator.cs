@@ -5,7 +5,9 @@ namespace Sanakan.DAL.MySql.Migrator.TableEnumerators
     public class LevelRolesEnumerator : TableEnumerator<LevelRole>
     {
         public LevelRolesEnumerator(IDbConnection connection)
-         : base(connection) { }
+         : base(connection)
+        {
+        }
 
         public override LevelRole Current => new()
         {

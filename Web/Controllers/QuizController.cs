@@ -69,14 +69,14 @@ namespace Sanakan.Web.Controllers
         /// <summary>
         /// Deletes the question.
         /// </summary>
-        /// <param name="id">The question identifier</param>
+        /// <param name="id">The question identifier.</param>
         [HttpDelete("question/{id}")]
         [ProducesResponseType(typeof(Question), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status200OK)]
         public async Task<IActionResult> RemoveQuestionAsync(ulong id)
         {
             var question = await _questionRepository.GetByIdAsync(id);
-            
+
             if (question != null)
             {
                 _questionRepository.Remove(question);

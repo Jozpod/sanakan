@@ -13,7 +13,9 @@ namespace Sanakan.Web.Models
     /// </summary>
     public class CardFinalView
     {
-        public CardFinalView() { }
+        public CardFinalView()
+        {
+        }
 
         public CardFinalView(Card card)
         {
@@ -112,7 +114,7 @@ namespace Sanakan.Web.Models
         public double CardPower { get; set; }
 
         /// <summary>
-        /// The affection level
+        /// The card affection level.
         /// </summary>
         public string Affection { get; set; } = string.Empty;
 
@@ -122,7 +124,7 @@ namespace Sanakan.Web.Models
         public int UpgradesCount { get; set; }
 
         /// <summary>
-        /// Specifies how many times card has been restarted
+        /// Specifies how many times card has been restarted.
         /// </summary>
         public int RestartCount { get; set; }
 
@@ -152,7 +154,7 @@ namespace Sanakan.Web.Models
         public int BaseHealth { get; set; }
 
         /// <summary>
-        /// Punkty życia karty zmienione o relacje
+        /// The card health points decreased by relation.
         /// </summary>
         public int FinalHealth { get; set; }
 
@@ -162,42 +164,42 @@ namespace Sanakan.Web.Models
         public string Name { get; set; } = null;
 
         /// <summary>
-        /// Link do postaci
+        /// The character url.
         /// </summary>
         public string CharacterUrl { get; set; } = null;
 
         /// <summary>
-        /// Źródło karty
+        /// The card source.
         /// </summary>
         public string Source { get; set; } = null;
 
         /// <summary>
-        /// Z jakiego tytułu jest postać
+        /// The anime title.
         /// </summary>
         public string AnimeTitle { get; set; } = null;
 
         /// <summary>
-        /// Link do obrazka karty
+        /// The card image url.
         /// </summary>
         public string ImageUrl { get; set; } = null;
 
         /// <summary>
-        /// Link do obrazka karty w pomniejszonym rozmiarze
+        /// The small image link.
         /// </summary>
         public string SmallImageUrl { get; set; } = null;
 
         /// <summary>
-        /// Link do obrazka karty który będzie się wyświetlał gdy ustawi się go na waifu
+        /// The card image url which will be shown when set in profile.
         /// </summary>
         public string ProfileImageUrl { get; set; } = null;
 
         /// <summary>
-        /// The market value
+        /// The market value.
         /// </summary>
         public MarketValue Value { get; set; }
 
         /// <summary>
-        /// The ultimate quality level
+        /// The ultimate quality level.
         /// </summary>
         public Quality UltimateQuality { get; set; }
 

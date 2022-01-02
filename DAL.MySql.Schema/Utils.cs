@@ -8,13 +8,6 @@ namespace Sanakan.DAL.MySql.Schema
     {
         public const string Placeholder = "SELECT 12345679";
 
-        private static Task ExecuteNonQueryAsync(IDbConnection connection, string commandText)
-        {
-            var command = connection.CreateCommand();
-            command.CommandText = commandText;
-            return command.ExecuteNonQueryAsync();
-        }
-
         public static Task StubSelectAsync(IDbConnection connection)
             => ExecuteNonQueryAsync(connection, Placeholder);
 
@@ -110,6 +103,13 @@ namespace Sanakan.DAL.MySql.Schema
             }
 
             return list;
+        }
+
+        private static Task ExecuteNonQueryAsync(IDbConnection connection, string commandText)
+        {
+            var command = connection.CreateCommand();
+            command.CommandText = commandText;
+            return command.ExecuteNonQueryAsync();
         }
     }
 }

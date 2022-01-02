@@ -5,6 +5,8 @@ namespace Sanakan.Game.Extensions
 {
     public static class GameDeckExtensions
     {
+        private const double PVPRankMultiplier = 0.45;
+
         public static long CalculatePriceOfIncMaxCardCount(this GameDeck gameDeck, long count)
         {
             long price = 0;
@@ -20,7 +22,10 @@ namespace Sanakan.Game.Extensions
                 oldPriceCnt = maxOldPriceCnt;
                 count -= maxOldPriceCnt;
             }
-            else count = 0;
+            else
+            {
+                count = 0;
+            }
 
             price = (long)((oldPriceCnt * basePrice) * ((b + bExp) * b));
             var rmCnt = count / 10;
@@ -48,7 +53,6 @@ namespace Sanakan.Game.Extensions
             return d1MMR >= mDown && d1MMR <= mUp;
         }
 
-        private const double PVPRankMultiplier = 0.45;
         public static string CalculatePVPParams(this GameDeck d1, GameDeck d2, FightResult res)
         {
             ++d1.PVPDailyGamesPlayed;
@@ -75,8 +79,15 @@ namespace Sanakan.Game.Extensions
                     ++d1.PVPWinStreak;
 
                     var wsb = 20 * (1 + (d1.PVPWinStreak / 10));
-                    if (wsb < 20) wsb = 20;
-                    if (wsb > 40) wsb = 40;
+                    if (wsb < 20)
+                    {
+                        wsb = 20;
+                    }
+
+                    if (wsb > 40)
+                    {
+                        wsb = 40;
+                    }
 
                     sRank = (long)(80 * (1 - sChan)) + wsb;
                     gRank = (long)(40 * (1 - gChan)) + wsb;
@@ -110,19 +121,24 @@ namespace Sanakan.Game.Extensions
             d1.SeasonalPVPRank += sRank;
 
             if (d1.GlobalPVPRank < 0)
+            {
                 d1.GlobalPVPRank = 0;
+            }
 
             if (d1.SeasonalPVPRank < 0)
+            {
                 d1.SeasonalPVPRank = 0;
+            }
 
             var coins = d1.GetPVPCoinsFromDuel(res);
             d1.PVPCoins += (long)coins;
 
-            return $"**{coins.ToString("+0;-#")}** PC **{gRank.ToString("+0;-#")}** GR  **{sRank.ToString("+0;-#")}** SR";
+            return $"**{coins:+0;-#}** PC **{gRank:+0;-#}** GR  **{sRank:+0;-#}** SR";
         }
+
         public static ulong GetPVPCoinsFromDuel(this GameDeck deck, FightResult fightResult)
         {
-            var step = (ExperienceUtils.CalculateLevel((ulong)deck.SeasonalPVPRank, PVPRankMultiplier) / 10);
+            var step = ExperienceUtils.CalculateLevel((ulong)deck.SeasonalPVPRank, PVPRankMultiplier) / 10;
 
             if (step > 5)
             {

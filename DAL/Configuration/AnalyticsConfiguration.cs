@@ -4,7 +4,7 @@ using Sanakan.DAL.Models.Analytics;
 
 namespace Sanakan.DAL.Configuration
 {
-    public class AnalyticsConfiguration : 
+    public class AnalyticsConfiguration :
         IEntityTypeConfiguration<UserAnalytics>,
         IEntityTypeConfiguration<SystemAnalytics>,
         IEntityTypeConfiguration<TransferAnalytics>,

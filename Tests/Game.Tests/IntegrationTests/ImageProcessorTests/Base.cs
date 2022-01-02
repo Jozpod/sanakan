@@ -88,9 +88,9 @@ namespace Sanakan.Game.Tests.IntegrationTests.ImageProcessorTests
             Utils.CompareByteArrays(actualHash, expectedHash).Should().BeTrue();
         }
 
-        protected void SaveImage(Image<Rgba32> image)
+        protected void SaveImage(Image<Rgba32> image, string fileName = "test.png")
         {
-            var fileStream = File.OpenWrite("../../../TestData/test.png");
+            var fileStream = File.OpenWrite($"../../../TestData/{fileName}");
             image.SaveAsPng(fileStream);
         }
     }

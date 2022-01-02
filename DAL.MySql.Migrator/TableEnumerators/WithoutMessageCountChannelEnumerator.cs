@@ -5,7 +5,9 @@ namespace Sanakan.DAL.MySql.Migrator.TableEnumerators
     public class WithoutMessageCountChannelEnumerator : TableEnumerator<WithoutMessageCountChannel>
     {
         public WithoutMessageCountChannelEnumerator(IDbConnection connection)
-            : base(connection) { }
+            : base(connection)
+        {
+        }
 
         public override WithoutMessageCountChannel Current => new()
         {

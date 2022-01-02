@@ -12,10 +12,13 @@ namespace Sanakan.ShindenApi.Converters
             { "pg", MpaaRating.PG },
             { "rx", MpaaRating.Rx },
             { "ry", MpaaRating.Ry },
-            { "r+", MpaaRating.RPLUS},
-            { "pg-13", MpaaRating.PGThirteen},
+            { "r+", MpaaRating.RPLUS },
+            { "pg-13", MpaaRating.PGThirteen },
         };
 
-        public MpaaRatingConverter() : base(_map, MpaaRating.NotSpecified) {}
+        public MpaaRatingConverter()
+            : base(_map, MpaaRating.NotSpecified)
+        {
+        }
     }
 }

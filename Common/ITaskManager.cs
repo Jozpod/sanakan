@@ -7,6 +7,7 @@ namespace Sanakan.Common
     public interface ITaskManager
     {
         Task Delay(TimeSpan delay);
+
         Task Delay(TimeSpan delay, CancellationToken cancellationToken);
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace Sanakan.Web.Models
 {
@@ -18,19 +19,19 @@ namespace Sanakan.Web.Models
         public IDictionary<string, long> Wallet { get; set; } = null;
 
         /// <summary>
-        /// Waifu
+        /// The favourite card.
         /// </summary>
         public CardFinalView Waifu { get; set; } = null;
 
         /// <summary>
-        /// Galeria
+        /// The list of cards which have gallery tag.
         /// </summary>
-        public List<CardFinalView> Gallery { get; set; } = null;
+        public IEnumerable<CardFinalView> Gallery { get; set; } = Enumerable.Empty<CardFinalView>();
 
         /// <summary>
-        /// The list of expeditions
+        /// The list of expeditions.
         /// </summary>
-        public List<ExpeditionCard> Expeditions { get; set; } = null;
+        public IEnumerable<ExpeditionCard> Expeditions { get; set; } = Enumerable.Empty<ExpeditionCard>();
 
         /// <summary>
         /// The list of tags which user has in cards.

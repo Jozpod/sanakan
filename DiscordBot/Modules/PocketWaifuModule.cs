@@ -54,7 +54,7 @@ namespace Sanakan.DiscordBot.Modules
         private readonly ITaskManager _taskManager;
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly IServiceScope _serviceScope;
-        private readonly IEnumerable<Rarity> rarityExcluded = new [] { Rarity.SS, Rarity.S, Rarity.A };
+        private readonly IEnumerable<Rarity> rarityExcluded = new[] { Rarity.SS, Rarity.S, Rarity.A };
 
         public PocketWaifuModule(
             IIconConfiguration iconConfiguration,
@@ -138,7 +138,7 @@ namespace Sanakan.DiscordBot.Modules
                 .Select(card =>
                 {
                     var marks = new[]
-                   {
+                    {
                         card.InCage ? "[C]" : "",
                         card.Active ? "[A]" : "",
                         card.IsUnique ? (card.FromFigure ? "[F]" : "[U]") : "",
@@ -445,10 +445,10 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            var dis = int.TryParse(itemsCountOrImageLinkOrStarType, out itemCount);
+            var isNumber = int.TryParse(itemsCountOrImageLinkOrStarType, out itemCount);
             if (itemCount < 1)
             {
-                dis = false;
+                isNumber = false;
                 itemCount = 1;
             }
 
@@ -468,7 +468,7 @@ namespace Sanakan.DiscordBot.Modules
                     break;
 
                 case ItemType.ChangeCardImage:
-                    if (dis)
+                    if (isNumber)
                     {
                         imageCount = itemCount;
                     }
@@ -477,6 +477,7 @@ namespace Sanakan.DiscordBot.Modules
                     {
                         imageCount = 0;
                     }
+
                     itemCount = 1;
                     break;
 
@@ -487,6 +488,7 @@ namespace Sanakan.DiscordBot.Modules
                             .ToEmbedMessage(EMType.Error).Build());
                         return;
                     }
+
                     break;
             }
 
@@ -598,13 +600,14 @@ namespace Sanakan.DiscordBot.Modules
                 case ItemType.ChangeStarType:
                     try
                     {
-                        card.StarStyle = new StarStyle().Parse(itemsCountOrImageLinkOrStarType);
+                        card.StarStyle = StarStyleExtensions.Parse(itemsCountOrImageLinkOrStarType);
                     }
                     catch (Exception)
                     {
                         await ReplyAsync(embed: "Nie rozpoznano typu gwiazdki!".ToEmbedMessage(EMType.Error).Build());
                         return;
                     }
+
                     karmaChange += 0.001 * itemCount;
                     embedBuilder.Description += "Zmieniono typ gwiazdki!";
                     _waifuService.DeleteCardImageIfExist(card);
@@ -625,7 +628,7 @@ namespace Sanakan.DiscordBot.Modules
                         .Where(pr => !pr.Is18Plus)
                         .ToList();
 
-                    if (imageCount == 0 || !dis)
+                    if (imageCount == 0 || !isNumber)
                     {
                         int tidx = 0;
                         var ls = "Obrazki: \n" + string.Join("\n", characterInfo.Relations.Select(x => $"{++tidx}: {x}"));
@@ -641,7 +644,7 @@ namespace Sanakan.DiscordBot.Modules
                         }
 
                         var turl = urls[imageCount - 1];
-                        string? getPersonPictureURL = UrlHelpers.GetPersonPictureURL(turl.ArtifactId);
+                        var getPersonPictureURL = UrlHelpers.GetPersonPictureURL(turl.ArtifactId);
 
                         if (card.GetImage() == getPersonPictureURL)
                         {
@@ -651,6 +654,7 @@ namespace Sanakan.DiscordBot.Modules
 
                         card.CustomImageUrl = null;
                     }
+
                     karmaChange += 0.001 * itemCount;
                     embedBuilder.Description += "Ustawiono nowy obrazek.";
                     _waifuService.DeleteCardImageIfExist(card);
@@ -663,6 +667,7 @@ namespace Sanakan.DiscordBot.Modules
                         await ReplyAsync(embed: embed);
                         return;
                     }
+
                     if (card.ImageUrl == null)
                     {
                         embed = "Aby ustawić własny obrazek, karta musi posiadać wcześniej ustawiony główny (na stronie)!"
@@ -671,6 +676,7 @@ namespace Sanakan.DiscordBot.Modules
                         await ReplyAsync(embed: embed);
                         return;
                     }
+
                     card.CustomImageUrl = new Uri(itemsCountOrImageLinkOrStarType);
                     consumeItem = !card.FromFigure;
                     karmaChange += 0.001 * itemCount;
@@ -685,11 +691,13 @@ namespace Sanakan.DiscordBot.Modules
                         await ReplyAsync(embed: embed);
                         return;
                     }
+
                     if (card.ImageUrl == null)
                     {
                         await ReplyAsync(embed: "Aby ustawić ramkę, karta musi posiadać wcześniej ustawiony obrazek na stronie!".ToEmbedMessage(EMType.Error).Build());
                         return;
                     }
+
                     card.CustomBorderUrl = new Uri(itemsCountOrImageLinkOrStarType);
                     karmaChange += 0.001 * itemCount;
                     embedBuilder.Description += "Ustawiono nowy obrazek jako ramkę. Pamiętaj jednak, że dodanie nieodpowiedniego obrazka może skutkować skasowaniem karty!";
@@ -702,11 +710,13 @@ namespace Sanakan.DiscordBot.Modules
                         await ReplyAsync(embed: $"{mention} na tej karcie ciąży klątwa!".ToEmbedMessage(EMType.Error).Build());
                         return;
                     }
+
                     if (card.Rarity == Rarity.SSS)
                     {
                         await ReplyAsync(embed: $"{mention} karty **SSS** nie można już ulepszyć!".ToEmbedMessage(EMType.Error).Build());
                         return;
                     }
+
                     if (!card.CanGiveBloodOrUpgradeToSSS())
                     {
                         if (card.HasNoNegativeEffectAfterBloodUsage())
@@ -740,6 +750,7 @@ namespace Sanakan.DiscordBot.Modules
                         card.UpgradesCount += 2;
                         embedBuilder.Description += $"Zwiększono liczbę ulepszeń do {card.UpgradesCount}!";
                     }
+
                     break;
 
                 case ItemType.IncreaseUpgradeCount:
@@ -748,16 +759,19 @@ namespace Sanakan.DiscordBot.Modules
                         await ReplyAsync(embed: $"{mention} karta musi mieć min. poziom relacji: *Miłość*.".ToEmbedMessage(EMType.Error).Build());
                         return;
                     }
+
                     if (card.Rarity == Rarity.SSS)
                     {
                         await ReplyAsync(embed: $"{mention} karty **SSS** nie można już ulepszyć!".ToEmbedMessage(EMType.Error).Build());
                         return;
                     }
+
                     if (card.UpgradesCount + itemCount > 5)
                     {
                         await ReplyAsync(embed: $"{mention} nie można mieć więcej jak pięć ulepszeń dostępnych na karcie.".ToEmbedMessage(EMType.Error).Build());
                         return;
                     }
+
                     karmaChange += itemCount;
                     card.UpgradesCount += itemCount;
                     embedBuilder.Description += $"Zwiększono liczbę ulepszeń do {card.UpgradesCount}!";
@@ -776,6 +790,7 @@ namespace Sanakan.DiscordBot.Modules
                         await ReplyAsync(embed: $"{mention} na tej karcie ciąży klątwa!".ToEmbedMessage(EMType.Error).Build());
                         return;
                     }
+
                     karmaChange += 0.02 * itemCount;
                     var randomDere = _randomNumberGenerator.GetOneRandomFrom(DereExtensions.ListOfDeres);
                     card.Dere = randomDere;
@@ -793,7 +808,7 @@ namespace Sanakan.DiscordBot.Modules
 
                 case ItemType.CheckAffection:
                     karmaChange -= 0.01;
-                    embedBuilder.Description += $"Relacja wynosi: `{card.Affection.ToString("F")}`";
+                    embedBuilder.Description += $"Relacja wynosi: `{card.Affection:F}`";
                     break;
 
                 case ItemType.FigureSkeleton:
@@ -802,6 +817,7 @@ namespace Sanakan.DiscordBot.Modules
                         await ReplyAsync(embed: $"{mention} karta musi być rangi **SSS**.".ToEmbedMessage(EMType.Error).Build());
                         return;
                     }
+
                     karmaChange -= 1;
                     var figure = item.ToFigure(card, utcNow);
                     if (figure != null)
@@ -809,6 +825,7 @@ namespace Sanakan.DiscordBot.Modules
                         gameDeck.Figures.Add(figure);
                         gameDeck.Cards.Remove(card);
                     }
+
                     embedBuilder.Description += $"Rozpoczęto tworzenie figurki.";
                     _waifuService.DeleteCardImageIfExist(card);
                     break;
@@ -826,16 +843,19 @@ namespace Sanakan.DiscordBot.Modules
                         await ReplyAsync(embed: $"{mention} część, którą próbujesz dodać ma zbyt niską jakość.".ToEmbedMessage(EMType.Error).Build());
                         return;
                     }
+
                     if (!activeFigure.HasEnoughPointsToAddPart(item))
                     {
                         await ReplyAsync(embed: $"{mention} aktywowana część ma zbyt małą ilość punktów konstrukcji, wymagana to {activeFigure.ConstructionPointsToInstall(item)}.".ToEmbedMessage(EMType.Error).Build());
                         return;
                     }
+
                     if (!activeFigure.AddPart(item))
                     {
                         await ReplyAsync(embed: $"{mention} coś poszło nie tak.".ToEmbedMessage(EMType.Error).Build());
                         return;
                     }
+
                     embedBuilder.Description += $"Dodano część do figurki.";
                     break;
 
@@ -920,11 +940,13 @@ namespace Sanakan.DiscordBot.Modules
                 gameDeck.Items.Remove(item);
             }
 
+            embed = embedBuilder.Build();
+
             await _userRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(CacheKeys.User(databaseUser.Id), CacheKeys.Users);
 
-            await ReplyAsync(embed: embedBuilder.Build());
+            await ReplyAsync(embed: embed);
         }
 
         [Command("pakiet")]
@@ -1297,7 +1319,7 @@ namespace Sanakan.DiscordBot.Modules
 
             card.Defence = _waifuService.GetDefenceAfterLevelUp(card.Rarity, card.Defence);
             card.Attack = _waifuService.GetAttackAfterLevelUp(card.Rarity, card.Attack);
-            card.UpgradesCount -= (card.Rarity == Rarity.SS ? 5 : 1);
+            card.UpgradesCount -= card.Rarity == Rarity.SS ? 5 : 1;
             card.Rarity = --card.Rarity;
             card.Affection += 1;
             card.ExperienceCount = 0;
@@ -1680,6 +1702,7 @@ namespace Sanakan.DiscordBot.Modules
                 mission = new TimeStatus(statusType);
                 databaseUser.TimeStatuses.Add(mission);
             }
+
             mission.Count(utcNow);
 
             freeCard.EndsOn = utcNow.AddHours(22);
@@ -1780,6 +1803,7 @@ namespace Sanakan.DiscordBot.Modules
                 mission = new TimeStatus(StatusType.DMarket);
                 timeStatuses.Add(mission);
             }
+
             mission.Count(utcNow);
 
             int nextMarket = 20 - (int)(gameDeck.Karma / 100);
@@ -1787,6 +1811,7 @@ namespace Sanakan.DiscordBot.Modules
             {
                 nextMarket = 22;
             }
+
             if (nextMarket < 4)
             {
                 nextMarket = 4;
@@ -1937,11 +1962,19 @@ namespace Sanakan.DiscordBot.Modules
                 mission = new TimeStatus(StatusType.DMarket);
                 timeStatuses.Add(mission);
             }
+
             mission.Count(utcNow);
 
             int nextMarket = 20 + (int)(gameDeck.Karma / 100);
-            if (nextMarket > 22) nextMarket = 22;
-            if (nextMarket < 4) nextMarket = 4;
+            if (nextMarket > 22)
+            {
+                nextMarket = 22;
+            }
+
+            if (nextMarket < 4)
+            {
+                nextMarket = 4;
+            }
 
             if (gameDeck.Karma <= -3000)
             {
@@ -1949,13 +1982,23 @@ namespace Sanakan.DiscordBot.Modules
                 nextMarket += tK;
 
                 if (nextMarket < 1)
+                {
                     nextMarket = 1;
+                }
             }
 
             int itemCount = 1 + (int)(card.Affection / 15);
             itemCount -= (int)(gameDeck.Karma / 180);
-            if (itemCount > 10) itemCount = 10;
-            if (itemCount < 1) itemCount = 1;
+
+            if (itemCount > 10)
+            {
+                itemCount = 10;
+            }
+
+            if (itemCount < 1)
+            {
+                itemCount = 1;
+            }
 
             if (card.CanGiveBloodOrUpgradeToSSS())
             {
@@ -2914,7 +2957,7 @@ namespace Sanakan.DiscordBot.Modules
             [Summary("bezpośredni adres do obrazka")] string imageUrl)
         {
             var tcCost = 2000;
-            
+
             var user = Context.User;
             var databaseUser = await _userRepository.GetUserOrCreateAsync(user.Id);
             var mention = user.Mention;
@@ -2978,7 +3021,7 @@ namespace Sanakan.DiscordBot.Modules
         {
             var user = Context.User;
             var databaseUser = await _userRepository.GetUserOrCreateAsync(user.Id);
-            
+
             if (position > 100)
             {
                 await ReplyAsync(embed: $"{user.Mention} podano niepoprawną wartość!".ToEmbedMessage(EMType.Error).Build());
@@ -3788,7 +3831,6 @@ namespace Sanakan.DiscordBot.Modules
             var expStrs = cardsOnExpedition
                 .Select(card =>
                 {
-
                     var parameters = new object[]
                     {
                         card.GetShortString(true),
@@ -3999,7 +4041,7 @@ namespace Sanakan.DiscordBot.Modules
 
             var toLong = 1d;
             var pvpPlayersInRange = allPvpPlayers.Where(x => x.IsNearMatchMakingRatio(gameDeck)).ToList();
-            for (var mmratio = 0.5d; pvpPlayersInRange.Count < minPlayersCount; mmratio += (0.5 * toLong))
+            for (var mmratio = 0.5d; pvpPlayersInRange.Count < minPlayersCount; mmratio += 0.5 * toLong)
             {
                 pvpPlayersInRange = allPvpPlayers.Where(x => x.IsNearMatchMakingRatio(gameDeck, mmratio)).ToList();
                 toLong += 0.5;
@@ -4070,6 +4112,7 @@ namespace Sanakan.DiscordBot.Modules
                 mission = new TimeStatus(StatusType.DPvp);
                 timeStatuses.Add(mission);
             }
+
             mission.Count(utcNow);
 
             var info = gameDeck.CalculatePVPParams(enemyUser.GameDeck, fightResult);

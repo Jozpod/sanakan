@@ -18,21 +18,6 @@ namespace Sanakan.DiscordBot
             _client = client;
         }
 
-        public IDiscordClient Client => _client;
-
-        public int Latency => _client.Latency;
-
-        public Task LogoutAsync() => _client.LogoutAsync();
-
-        public Task SetGameAsync(string name,
-            string? streamUrl = null,
-            ActivityType type = ActivityType.Playing) => _client.SetGameAsync(name, streamUrl, type);
-
-        public Task LoginAsync(TokenType tokenType, string token, bool validateToken = true)
-            => _client.LoginAsync(tokenType, token, validateToken);
-
-        public ICommandContext GetCommandContext(IUserMessage message) => new CommandContext(_client, message);
-
         public event Func<Task> Ready
         {
             add
@@ -42,6 +27,7 @@ namespace Sanakan.DiscordBot
                     _client.Ready += value;
                 }
             }
+
             remove
             {
                 lock (_syncRoot)
@@ -60,6 +46,7 @@ namespace Sanakan.DiscordBot
                     _client.UserJoined += value;
                 }
             }
+
             remove
             {
                 lock (_syncRoot)
@@ -78,6 +65,7 @@ namespace Sanakan.DiscordBot
                     _client.ReactionAdded += value;
                 }
             }
+
             remove
             {
                 lock (_syncRoot)
@@ -86,6 +74,7 @@ namespace Sanakan.DiscordBot
                 }
             }
         }
+
         public event Func<Cacheable<IUserMessage, ulong>, ISocketMessageChannel, IReaction, Task> ReactionRemoved
         {
             add
@@ -95,6 +84,7 @@ namespace Sanakan.DiscordBot
                     _client.ReactionRemoved += value;
                 }
             }
+
             remove
             {
                 lock (_syncRoot)
@@ -103,6 +93,7 @@ namespace Sanakan.DiscordBot
                 }
             }
         }
+
         public event Func<IMessage, Task> MessageReceived
         {
             add
@@ -112,6 +103,7 @@ namespace Sanakan.DiscordBot
                     _client.MessageReceived += value;
                 }
             }
+
             remove
             {
                 lock (_syncRoot)
@@ -120,6 +112,7 @@ namespace Sanakan.DiscordBot
                 }
             }
         }
+
         public event Func<LogMessage, Task> Log
         {
             add
@@ -129,6 +122,7 @@ namespace Sanakan.DiscordBot
                     _client.Log += value;
                 }
             }
+
             remove
             {
                 lock (_syncRoot)
@@ -137,6 +131,7 @@ namespace Sanakan.DiscordBot
                 }
             }
         }
+
         public event Func<IGuild, Task> LeftGuild
         {
             add
@@ -146,6 +141,7 @@ namespace Sanakan.DiscordBot
                     _client.LeftGuild += value;
                 }
             }
+
             remove
             {
                 lock (_syncRoot)
@@ -154,6 +150,7 @@ namespace Sanakan.DiscordBot
                 }
             }
         }
+
         public event Func<IGuildUser, Task> UserLeft
         {
             add
@@ -163,6 +160,7 @@ namespace Sanakan.DiscordBot
                     _client.UserLeft += value;
                 }
             }
+
             remove
             {
                 lock (_syncRoot)
@@ -171,6 +169,7 @@ namespace Sanakan.DiscordBot
                 }
             }
         }
+
         public event Func<Cacheable<IMessage, ulong>, ISocketMessageChannel, Task> MessageDeleted
         {
             add
@@ -180,6 +179,7 @@ namespace Sanakan.DiscordBot
                     _client.MessageDeleted += value;
                 }
             }
+
             remove
             {
                 lock (_syncRoot)
@@ -188,6 +188,7 @@ namespace Sanakan.DiscordBot
                 }
             }
         }
+
         public event Func<Cacheable<IMessage, ulong>, IMessage, ISocketMessageChannel, Task> MessageUpdated
         {
             add
@@ -197,6 +198,7 @@ namespace Sanakan.DiscordBot
                     _client.MessageUpdated += value;
                 }
             }
+
             remove
             {
                 lock (_syncRoot)
@@ -205,6 +207,7 @@ namespace Sanakan.DiscordBot
                 }
             }
         }
+
         public event Func<Exception, Task> Disconnected
         {
             add
@@ -214,6 +217,7 @@ namespace Sanakan.DiscordBot
                     _client.Disconnected += value;
                 }
             }
+
             remove
             {
                 lock (_syncRoot)
@@ -222,6 +226,7 @@ namespace Sanakan.DiscordBot
                 }
             }
         }
+
         public event Func<Task> LoggedIn
         {
             add
@@ -231,6 +236,7 @@ namespace Sanakan.DiscordBot
                     _client.LoggedIn += value;
                 }
             }
+
             remove
             {
                 lock (_syncRoot)
@@ -239,6 +245,7 @@ namespace Sanakan.DiscordBot
                 }
             }
         }
+
         public event Func<Task> LoggedOut
         {
             add
@@ -248,6 +255,7 @@ namespace Sanakan.DiscordBot
                     _client.LoggedOut += value;
                 }
             }
+
             remove
             {
                 lock (_syncRoot)
@@ -256,5 +264,21 @@ namespace Sanakan.DiscordBot
                 }
             }
         }
+
+        public IDiscordClient Client => _client;
+
+        public int Latency => _client.Latency;
+
+        public Task LogoutAsync() => _client.LogoutAsync();
+
+        public Task SetGameAsync(
+            string name,
+            string? streamUrl = null,
+            ActivityType type = ActivityType.Playing) => _client.SetGameAsync(name, streamUrl, type);
+
+        public Task LoginAsync(TokenType tokenType, string token, bool validateToken = true)
+            => _client.LoginAsync(tokenType, token, validateToken);
+
+        public ICommandContext GetCommandContext(IUserMessage message) => new CommandContext(_client, message);
     }
 }

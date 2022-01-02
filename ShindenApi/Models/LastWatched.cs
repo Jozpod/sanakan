@@ -111,7 +111,9 @@ namespace Sanakan.ShindenApi.Models
         public long Volumes { get; set; }
 
         public string AnimeUrl => UrlHelpers.GetSeriesURL(TitleId);
+
         public string AnimeCoverUrl => UrlHelpers.GetBigImageURL(TitleCoverId);
+
         public string EpisodeUrl => UrlHelpers.GetEpisodeURL(TitleId, EpisodeId);
     }
 }

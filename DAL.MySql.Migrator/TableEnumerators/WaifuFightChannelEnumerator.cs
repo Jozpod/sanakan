@@ -5,7 +5,9 @@ namespace Sanakan.DAL.MySql.Migrator.TableEnumerators
     public class WaifuFightChannelEnumerator : TableEnumerator<WaifuFightChannel>
     {
         public WaifuFightChannelEnumerator(IDbConnection connection)
-            : base(connection) { }
+            : base(connection)
+        {
+        }
 
         public override WaifuFightChannel Current => new WaifuFightChannel
         {

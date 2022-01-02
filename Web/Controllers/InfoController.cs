@@ -126,10 +126,13 @@ namespace Sanakan.Web.Controllers
                             commandSummary.Aliases.Add(parsedAlias);
                         }
                     }
+
                     subMInfo.Commands.Add(commandSummary);
                 }
+
                 summaryModuleInfo.SubModules.Add(subMInfo);
             }
+
             return listOfModules;
         }
 

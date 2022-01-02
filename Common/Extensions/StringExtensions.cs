@@ -8,12 +8,11 @@ namespace Sanakan.Extensions
 {
     public static class StringExtension
     {
-        private static Regex _hexRegex = new ("^#(?:[0-9a-fA-F]{3}){1,2}$", RegexOptions.Compiled);
-        private static Regex? _commandRegex;
-        private static Regex _linkRegex = new ("(http|ftp|https)://[\\w-]+(\\.[\\w-]+)+([\\w.,@?^=%&:/~+#-]*[\\w@?^=%&/~+#-])?", RegexOptions.Compiled);
-        private static Regex _quotedTextLengthRegex = new(@"(^>[ ][^\n]*\n)|(\n>[ ][^\n]*\n)|(\n>[ ][^\n]*$)", RegexOptions.Compiled);
-        private static Regex _isEmotikunEmoteRegex = new(@"\B-\w+", RegexOptions.Compiled);
-        private static Regex _replaceUrlRegex = new (@"\[url=['""]?([^\['""]+)['""]?\]([^\[]+)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly Regex _hexRegex = new ("^#(?:[0-9a-fA-F]{3}){1,2}$", RegexOptions.Compiled);
+        private static readonly Regex _linkRegex = new ("(http|ftp|https)://[\\w-]+(\\.[\\w-]+)+([\\w.,@?^=%&:/~+#-]*[\\w@?^=%&/~+#-])?", RegexOptions.Compiled);
+        private static readonly Regex _quotedTextLengthRegex = new(@"(^>[ ][^\n]*\n)|(\n>[ ][^\n]*\n)|(\n>[ ][^\n]*$)", RegexOptions.Compiled);
+        private static readonly Regex _isEmotikunEmoteRegex = new(@"\B-\w+", RegexOptions.Compiled);
+        private static readonly Regex _replaceUrlRegex = new (@"\[url=['""]?([^\['""]+)['""]?\]([^\[]+)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         private static readonly string[] _bbCodes =
         {
@@ -23,6 +22,7 @@ namespace Sanakan.Extensions
             "u", "color", "size"
         };
 
+        private static Regex? _commandRegex;
         private static Regex _replaceBBCodesRegex = new($@"\[/?({string.Join('|', _bbCodes)})(=[^\]]*)?\]", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         public static string ElipseTrimToLength(this string str, int length)
@@ -31,6 +31,7 @@ namespace Sanakan.Extensions
             {
                 return string.Empty;
             }
+
             if (str.Length <= length)
             {
                 return str;
@@ -41,7 +42,7 @@ namespace Sanakan.Extensions
             {
                 charAr[length - i] = '.';
             }
-            
+
             charAr[length] = '\0';
 
             return new (charAr, 0, Array.IndexOf(charAr, '\0'));
@@ -77,7 +78,7 @@ namespace Sanakan.Extensions
 
             bool hasRightExt = false;
             var ext = s.Split('.').LastOrDefault();
-            var extensions = new string[] { "png", "jpg", "jpeg", "gif"};
+            var extensions = new string[] { "png", "jpg", "jpeg", "gif" };
             if (ext != null)
             {
                 ext = ext.ToLower();

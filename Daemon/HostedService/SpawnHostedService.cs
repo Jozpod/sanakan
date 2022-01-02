@@ -36,7 +36,7 @@ namespace Sanakan.Daemon.HostedService
         private readonly ITaskManager _taskManager;
         private readonly IWaifuService _waifuService;
         private readonly ITimer _timer;
-        private readonly object _syncRoot = new object();
+        private readonly object _syncRoot = new();
         private readonly IDictionary<ulong, Entry> _serverCounter;
         private readonly IDictionary<ulong, ulong> _userCounter;
         private bool _isRunning;
@@ -71,32 +71,6 @@ namespace Sanakan.Daemon.HostedService
             _userCounter = new Dictionary<ulong, ulong>();
         }
 
-        private class Entry
-        {
-            public ulong EventCount { get; set; }
-            public DateTime ResetOn { get; set; }
-        }
-
-        private Task LoggedIn()
-        {
-            _discordSocketClientAccessor.MessageReceived += HandleMessageAsync;
-            return Task.CompletedTask;
-        }
-
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-        {
-            try
-            {
-                _timer.Tick += OnResetCounter;
-                _timer.Start(TimeSpan.Zero, TimeSpan.FromHours(1));
-                await _taskManager.Delay(Timeout.InfiniteTimeSpan, stoppingToken);
-            }
-            catch (OperationCanceledException)
-            {
-
-            }
-        }
-
         internal void OnResetCounter(object sender, TimerEventArgs e)
         {
             if (_isRunning)
@@ -124,53 +98,102 @@ namespace Sanakan.Daemon.HostedService
             _isRunning = false;
         }
 
-        private async Task HandleGuildAsync(
-            ulong guildId,
-            ITextChannel spawnChannel,
-            ITextChannel trashChannel,
-            ulong dailyLimit,
-            string mention,
-            bool noExperience,
-            IRole muteRole)
+        internal async Task HandleMessageAsync(IMessage message)
         {
-            if (!_discordConfiguration.CurrentValue.SafariEnabled)
+            var userMessage = message as IUserMessage;
+
+            if (userMessage == null)
             {
                 return;
             }
 
-            var effectiveLimit = 0ul;
+            var author = userMessage.Author;
 
-            lock (_syncRoot)
+            if (author.IsBotOrWebhook())
             {
-                if (_serverCounter.TryGetValue(guildId, out var limit))
-                {
-                    effectiveLimit = limit.EventCount;
-                }
-                else
-                {
-                    _serverCounter[guildId] = new Entry
-                    {
-                        ResetOn = _systemClock.UtcNow,
-                        EventCount = 0,
-                    };
-                }
-
-                var chance = noExperience ? 285 : 85;
-
-                if (effectiveLimit > 0 && effectiveLimit >= dailyLimit)
-                {
-                    return;
-                }
-
-                if (!_randomNumberGenerator.TakeATry(chance))
-                {
-                    return;
-                }
-
-                _serverCounter[guildId].EventCount = effectiveLimit + 1;
+                return;
             }
 
-            await SpawnCardAsync(spawnChannel, trashChannel, mention, muteRole);
+            var user = userMessage.Author as IGuildUser;
+
+            if (user == null)
+            {
+                return;
+            }
+
+            var guildId = user.Guild.Id;
+            var guild = user.Guild;
+
+            if (_discordConfiguration.CurrentValue.BlacklistedGuilds.Any(x => x == guildId))
+            {
+                return;
+            }
+
+            using var serviceScope = _serviceScopeFactory.CreateScope();
+            var serviceProvider = serviceScope.ServiceProvider;
+            var guildConfigRepository = serviceProvider.GetRequiredService<IGuildConfigRepository>();
+            var guildConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(guildId);
+
+            if (guildConfig == null)
+            {
+                return;
+            }
+
+            var noExperience = guildConfig.ChannelsWithoutExperience.Any(x => x.ChannelId == userMessage.Channel.Id);
+
+            if (!noExperience)
+            {
+                HandleUserAsync(userMessage);
+            }
+
+            if (guildConfig.WaifuConfig == null)
+            {
+                return;
+            }
+
+            var spawnChannelId = guildConfig.WaifuConfig.SpawnChannelId;
+            var trashSpawnChannelId = guildConfig.WaifuConfig.TrashSpawnChannelId;
+
+            if (!spawnChannelId.HasValue || !trashSpawnChannelId.HasValue)
+            {
+                return;
+            }
+
+            var spawnChannel = await guild.GetTextChannelAsync(spawnChannelId.Value);
+            var trashSpawnChannel = await guild.GetTextChannelAsync(trashSpawnChannelId.Value);
+
+            var mention = "";
+            var waifuRoleId = guildConfig.WaifuRoleId;
+
+            if (waifuRoleId.HasValue)
+            {
+                var waifuRole = guild.GetRole(waifuRoleId.Value);
+                mention = waifuRole.Mention;
+            }
+
+            var muteRole = guild.GetRole(guildConfig.MuteRoleId);
+
+            await HandleGuildAsync(
+                guildId,
+                spawnChannel,
+                trashSpawnChannel,
+                guildConfig.SafariLimit,
+                mention,
+                noExperience,
+                muteRole);
+        }
+
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        {
+            try
+            {
+                _timer.Tick += OnResetCounter;
+                _timer.Start(TimeSpan.Zero, TimeSpan.FromHours(1));
+                await _taskManager.Delay(Timeout.InfiniteTimeSpan, stoppingToken);
+            }
+            catch (OperationCanceledException)
+            {
+            }
         }
 
         private async Task SpawnCardAsync(
@@ -194,7 +217,7 @@ namespace Sanakan.Daemon.HostedService
 
             var pokeImage = await _waifuService.GetRandomSarafiImage();
             var time = _systemClock.UtcNow.AddMinutes(5);
-            var description = $"**Polowanie zakończy się o**: `{time.ToShortTimeString()}:{time.Second.ToString("00")}`";
+            var description = $"**Polowanie zakończy się o**: `{time.ToShortTimeString()}:{time.Second:00}`";
             var imageUrl = await _waifuService.SendAndGetSafariImageUrlAsync(pokeImage!, trashChannel);
 
             var embed = new EmbedBuilder
@@ -221,48 +244,49 @@ namespace Sanakan.Daemon.HostedService
 
                 await Task.Run(
                     async () =>
-                {
-                    using var serviceScope = _serviceScopeFactory.CreateScope();
-                    var serviceProvider = serviceScope.ServiceProvider;
-                    var userRepository = serviceProvider.GetRequiredService<IUserRepository>();
-
-                    while (winner == null)
                     {
-                        cancellationToken.ThrowIfCancellationRequested();
+                        using var serviceScope = _serviceScopeFactory.CreateScope();
+                        var serviceProvider = serviceScope.ServiceProvider;
+                        var userRepository = serviceProvider.GetRequiredService<IUserRepository>();
 
-                        if (!users.Any())
+                        while (winner == null)
                         {
-                            embed.Description = $"Na polowanie nie stawił się żaden łowca!";
-                            await message.ModifyAsync(x => x.Embed = embed.Build());
-                            return;
-                        }
+                            cancellationToken.ThrowIfCancellationRequested();
 
-                        var isUserMuted = false;
-                        var selected = _randomNumberGenerator.GetOneRandomFrom(users);
-
-                        if (muteRole != null && selected is IGuildUser guildUser)
-                        {
-                            if (guildUser.RoleIds.Any(id => id == muteRole.Id))
+                            if (!users.Any())
                             {
-                                isUserMuted = true;
+                                embed.Description = $"Na polowanie nie stawił się żaden łowca!";
+                                await message.ModifyAsync(x => x.Embed = embed.Build());
+                                return;
                             }
-                        }
 
-                        var databaseUser = await userRepository.GetCachedFullUserAsync(selected.Id);
-                        var gameDeck = databaseUser.GameDeck;
+                            var isUserMuted = false;
+                            var selected = _randomNumberGenerator.GetOneRandomFrom(users);
 
-                        if (databaseUser != null && !isUserMuted)
-                        {
-                            if (!databaseUser.IsBlacklisted
-                                && gameDeck.MaxNumberOfCards > gameDeck.Cards.Count)
+                            if (muteRole != null && selected is IGuildUser guildUser)
                             {
-                                winner = selected;
+                                if (guildUser.RoleIds.Any(id => id == muteRole.Id))
+                                {
+                                    isUserMuted = true;
+                                }
                             }
-                        }
 
-                        users.Remove(selected);
-                    }
-                }, cancellationToken);
+                            var databaseUser = await userRepository.GetCachedFullUserAsync(selected.Id);
+                            var gameDeck = databaseUser.GameDeck;
+
+                            if (databaseUser != null && !isUserMuted)
+                            {
+                                if (!databaseUser.IsBlacklisted
+                                    && gameDeck.MaxNumberOfCards > gameDeck.Cards.Count)
+                                {
+                                    winner = selected;
+                                }
+                            }
+
+                            users.Remove(selected);
+                        }
+                    },
+                    cancellationToken);
 
                 await message.RemoveAllReactionsAsync();
 
@@ -353,89 +377,66 @@ namespace Sanakan.Daemon.HostedService
             return charsThatMatters < 1ul ? 1ul : charsThatMatters;
         }
 
-        internal async Task HandleMessageAsync(IMessage message)
+        private async Task HandleGuildAsync(
+            ulong guildId,
+            ITextChannel spawnChannel,
+            ITextChannel trashChannel,
+            ulong dailyLimit,
+            string mention,
+            bool noExperience,
+            IRole muteRole)
         {
-            var userMessage = message as IUserMessage;
-
-            if (userMessage == null)
+            if (!_discordConfiguration.CurrentValue.SafariEnabled)
             {
                 return;
             }
 
-            var author = userMessage.Author;
+            var effectiveLimit = 0ul;
 
-            if (author.IsBotOrWebhook())
+            lock (_syncRoot)
             {
-                return;
-            };
+                if (_serverCounter.TryGetValue(guildId, out var limit))
+                {
+                    effectiveLimit = limit.EventCount;
+                }
+                else
+                {
+                    _serverCounter[guildId] = new Entry
+                    {
+                        ResetOn = _systemClock.UtcNow,
+                        EventCount = 0,
+                    };
+                }
 
-            var user = userMessage.Author as IGuildUser;
+                var chance = noExperience ? 285 : 85;
 
-            if (user == null)
-            {
-                return;
-            };
+                if (effectiveLimit > 0 && effectiveLimit >= dailyLimit)
+                {
+                    return;
+                }
 
-            var guildId = user.Guild.Id;
-            var guild = user.Guild;
+                if (!_randomNumberGenerator.TakeATry(chance))
+                {
+                    return;
+                }
 
-            if (_discordConfiguration.CurrentValue.BlacklistedGuilds.Any(x => x == guildId))
-            {
-                return;
+                _serverCounter[guildId].EventCount = effectiveLimit + 1;
             }
 
-            using var serviceScope = _serviceScopeFactory.CreateScope();
-            var serviceProvider = serviceScope.ServiceProvider;
-            var guildConfigRepository = serviceProvider.GetRequiredService<IGuildConfigRepository>();
-            var guildConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(guildId);
+            await SpawnCardAsync(spawnChannel, trashChannel, mention, muteRole);
+        }
 
-            if (guildConfig == null)
-            {
-                return;
-            }
+        private Task LoggedIn()
+        {
+            _discordSocketClientAccessor.MessageReceived += HandleMessageAsync;
+            return Task.CompletedTask;
+        }
 
-            var noExperience = guildConfig.ChannelsWithoutExperience.Any(x => x.ChannelId == userMessage.Channel.Id);
+        private class Entry
+        {
+            public ulong EventCount { get; set; }
 
-            if (!noExperience)
-            {
-                HandleUserAsync(userMessage);
-            }
-
-            if (guildConfig.WaifuConfig == null)
-            {
-                return;
-            }
-
-            var spawnChannelId = guildConfig.WaifuConfig.SpawnChannelId;
-            var trashSpawnChannelId = guildConfig.WaifuConfig.TrashSpawnChannelId;
-
-            if (!spawnChannelId.HasValue || !trashSpawnChannelId.HasValue)
-            {
-                return;
-            }
-
-            var spawnChannel = await guild.GetTextChannelAsync(spawnChannelId.Value);
-            var trashSpawnChannel = await guild.GetTextChannelAsync(trashSpawnChannelId.Value);
-
-            var mention = "";
-            var waifuRoleId = guildConfig.WaifuRoleId;
-
-            if (waifuRoleId.HasValue)
-            {
-                var waifuRole = guild.GetRole(waifuRoleId.Value);
-                mention = waifuRole.Mention;
-            }
-
-            var muteRole = guild.GetRole(guildConfig.MuteRoleId);
-
-            await HandleGuildAsync(
-                guildId,
-                spawnChannel,
-                trashSpawnChannel,
-                guildConfig.SafariLimit,
-                mention,
-                noExperience,
-                muteRole);
+            public DateTime ResetOn { get; set; }
         }
     }
 }

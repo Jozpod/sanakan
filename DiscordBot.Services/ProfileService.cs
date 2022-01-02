@@ -131,74 +131,8 @@ namespace Sanakan.DiscordBot.Services
             return true;
         }
 
-
-
         public IEnumerable<User> GetTopUsers(IEnumerable<User> list, TopType type, DateTime date)
             => GetRangeMax(OrderUsersByTop(list, type, date), 50);
-
-        private List<T> GetRangeMax<T>(List<T> list, int range)
-            => list.GetRange(0, list.Count > range ? range : list.Count);
-
-        private List<User> OrderUsersByTop(IEnumerable<User> list, TopType type, DateTime date)
-        {
-            switch (type)
-            {
-                default:
-                case TopType.Level:
-                    return list.OrderByDescending(x => x.ExperienceCount).ToList();
-
-                case TopType.ScCount:
-                    return list.OrderByDescending(x => x.ScCount).ToList();
-
-                case TopType.TcCount:
-                    return list.OrderByDescending(x => x.TcCount).ToList();
-
-                case TopType.AcCount:
-                    return list.OrderByDescending(x => x.AcCount).ToList();
-
-                case TopType.PcCount:
-                    return list.OrderByDescending(x => x.GameDeck.PVPCoins).ToList();
-
-                case TopType.Posts:
-                    return list.OrderByDescending(x => x.MessagesCount).ToList();
-
-                case TopType.PostsMonthly:
-                    return list.Where(x => x.IsCharCounterActive(date))
-                        .OrderByDescending(x => x.MessagesCount - x.MessagesCountAtDate).ToList();
-
-                case TopType.PostsMonthlyCharacter:
-                    return list
-                        .Where(x => x.IsCharCounterActive(date) && x.HasSentAnyMessagesInMonth())
-                        .OrderByDescending(x => x.CharacterCountFromDate / (x.MessagesCount - x.MessagesCountAtDate)).ToList();
-
-                case TopType.Commands:
-                    return list.OrderByDescending(x => x.CommandsCount).ToList();
-
-                case TopType.Card:
-                    return list.OrderByDescending(x => x.GameDeck.GetStrongestCardPower()).ToList();
-
-                case TopType.Cards:
-                    return list.OrderByDescending(x => x.GameDeck.Cards.Count).ToList();
-
-                case TopType.CardsPower:
-                    return list.OrderByDescending(x => x.GameDeck.Cards.Sum(c => c.CardPower)).ToList();
-
-                case TopType.Karma:
-                    return list.OrderByDescending(x => x.GameDeck.Karma).ToList();
-
-                case TopType.KarmaNegative:
-                    return list.OrderBy(x => x.GameDeck.Karma).ToList();
-
-                case TopType.Pvp:
-                    return list.Where(x => x.GameDeck.GlobalPVPRank > 0)
-                        .OrderByDescending(x => x.GameDeck.GlobalPVPRank).ToList();
-
-                case TopType.PvpSeason:
-                    return list.Where(x => x.IsPVPSeasonalRankActive(date)
-                        && x.GameDeck.SeasonalPVPRank > 0)
-                        .OrderByDescending(x => x.GameDeck.SeasonalPVPRank).ToList();
-            }
-        }
 
         public async Task<List<string>> BuildListViewAsync(IEnumerable<User> userList, TopType type, IGuild guild)
         {
@@ -288,5 +222,69 @@ namespace Sanakan.DiscordBot.Services
 
             return SaveResult.Success;
         }
+
+        private List<User> OrderUsersByTop(IEnumerable<User> list, TopType type, DateTime date)
+        {
+            switch (type)
+            {
+                default:
+                case TopType.Level:
+                    return list.OrderByDescending(x => x.ExperienceCount).ToList();
+
+                case TopType.ScCount:
+                    return list.OrderByDescending(x => x.ScCount).ToList();
+
+                case TopType.TcCount:
+                    return list.OrderByDescending(x => x.TcCount).ToList();
+
+                case TopType.AcCount:
+                    return list.OrderByDescending(x => x.AcCount).ToList();
+
+                case TopType.PcCount:
+                    return list.OrderByDescending(x => x.GameDeck.PVPCoins).ToList();
+
+                case TopType.Posts:
+                    return list.OrderByDescending(x => x.MessagesCount).ToList();
+
+                case TopType.PostsMonthly:
+                    return list.Where(x => x.IsCharCounterActive(date))
+                        .OrderByDescending(x => x.MessagesCount - x.MessagesCountAtDate).ToList();
+
+                case TopType.PostsMonthlyCharacter:
+                    return list
+                        .Where(x => x.IsCharCounterActive(date) && x.HasSentAnyMessagesInMonth())
+                        .OrderByDescending(x => x.CharacterCountFromDate / (x.MessagesCount - x.MessagesCountAtDate)).ToList();
+
+                case TopType.Commands:
+                    return list.OrderByDescending(x => x.CommandsCount).ToList();
+
+                case TopType.Card:
+                    return list.OrderByDescending(x => x.GameDeck.GetStrongestCardPower()).ToList();
+
+                case TopType.Cards:
+                    return list.OrderByDescending(x => x.GameDeck.Cards.Count).ToList();
+
+                case TopType.CardsPower:
+                    return list.OrderByDescending(x => x.GameDeck.Cards.Sum(c => c.CardPower)).ToList();
+
+                case TopType.Karma:
+                    return list.OrderByDescending(x => x.GameDeck.Karma).ToList();
+
+                case TopType.KarmaNegative:
+                    return list.OrderBy(x => x.GameDeck.Karma).ToList();
+
+                case TopType.Pvp:
+                    return list.Where(x => x.GameDeck.GlobalPVPRank > 0)
+                        .OrderByDescending(x => x.GameDeck.GlobalPVPRank).ToList();
+
+                case TopType.PvpSeason:
+                    return list.Where(x => x.IsPVPSeasonalRankActive(date)
+                        && x.GameDeck.SeasonalPVPRank > 0)
+                        .OrderByDescending(x => x.GameDeck.SeasonalPVPRank).ToList();
+            }
+        }
+
+        private List<T> GetRangeMax<T>(List<T> list, int range)
+            => list.GetRange(0, list.Count > range ? range : list.Count);
     }
 }

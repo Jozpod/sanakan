@@ -15,6 +15,9 @@ namespace Sanakan.ShindenApi.Converters
             { "special", AnimeType.Special },
         };
 
-        public AnimeTypeConverter() : base(_map, AnimeType.NotSpecified) {}
+        public AnimeTypeConverter()
+            : base(_map, AnimeType.NotSpecified)
+        {
+        }
     }
 }

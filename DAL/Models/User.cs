@@ -208,14 +208,17 @@ namespace Sanakan.DAL.Models
                 {
                     experience = Math.Floor(diff);
                 }
+
                 if (experience < 0)
                 {
                     experience = 0;
                 }
             }
+
             GameDeck.ExperienceContainer.ExperienceCount += experience;
         }
-        public List<TimeStatus> CreateOrGetAllWeeklyQuests()
+
+        public IEnumerable<TimeStatus> CreateOrGetAllWeeklyQuests()
         {
             var quests = new List<TimeStatus>();
             foreach (var type in StatusTypeExtensions.WeeklyQuestTypes)
@@ -226,12 +229,14 @@ namespace Sanakan.DAL.Models
                     mission = new TimeStatus(type);
                     TimeStatuses.Add(mission);
                 }
+
                 quests.Add(mission);
             }
+
             return quests;
         }
 
-        public List<TimeStatus> CreateOrGetAllDailyQuests()
+        public IEnumerable<TimeStatus> CreateOrGetAllDailyQuests()
         {
             var quests = new List<TimeStatus>();
             foreach (var type in StatusTypeExtensions.DailyQuestTypes)
@@ -242,8 +247,10 @@ namespace Sanakan.DAL.Models
                     mission = new TimeStatus(type);
                     TimeStatuses.Add(mission);
                 }
+
                 quests.Add(mission);
             }
+
             return quests;
         }
 
@@ -268,6 +275,5 @@ namespace Sanakan.DAL.Models
 
             return experienceLeft;
         }
-
     }
 }

@@ -5,7 +5,9 @@ namespace Sanakan.DAL.MySql.Migrator.TableEnumerators
     public class CommandChannelEnumerator : TableEnumerator<CommandChannel>
     {
         public CommandChannelEnumerator(IDbConnection connection)
-          : base(connection) { }
+          : base(connection)
+        {
+        }
 
         public override CommandChannel Current => new()
         {

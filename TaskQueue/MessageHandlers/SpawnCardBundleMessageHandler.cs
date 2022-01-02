@@ -12,10 +12,10 @@ namespace Sanakan.TaskQueue.MessageHandlers
 {
     internal class SpawnCardBundleMessageHandler : BaseMessageHandler<SpawnCardBundleMessage>
     {
+        private const int _dailyCardBundleLimit = 3;
         private readonly IUserRepository _userRepository;
         private readonly IUserAnalyticsRepository _userAnalyticsRepository;
         private readonly ISystemClock _systemClock;
-        private const int _dailyCardBundleLimit = 3;
 
         public SpawnCardBundleMessageHandler(
             IUserRepository userRepository,

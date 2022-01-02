@@ -5,7 +5,9 @@ namespace Sanakan.DAL.MySql.Migrator.TableEnumerators
     public class ExperienceContainerEnumerator : TableEnumerator<ExperienceContainer>
     {
         public ExperienceContainerEnumerator(IDbConnection connection)
-            : base(connection) { }
+            : base(connection)
+        {
+        }
 
         public override ExperienceContainer Current => new ExperienceContainer
         {

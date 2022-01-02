@@ -47,9 +47,9 @@ namespace Sanakan.Web
             CurrentEnvironment = webHostEnvironment;
         }
 
-        private IWebHostEnvironment CurrentEnvironment { get; set; }
-
         public IConfiguration Configuration { get; }
+
+        private IWebHostEnvironment CurrentEnvironment { get; set; }
 
         public void ConfigureServices(IServiceCollection services)
         {
@@ -187,7 +187,7 @@ namespace Sanakan.Web
                 services.AddShindenApi();
                 services.AddImageResolver();
             }
-            
+
             services.AddGameServices();
             services.AddTimer();
             services.AddSupervisorServices();

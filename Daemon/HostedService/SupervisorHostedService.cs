@@ -29,7 +29,7 @@ namespace Sanakan.Daemon.HostedService
         private readonly ITimer _timer;
         private readonly IUserMessageSupervisor _userMessageSupervisor;
         private readonly IUserJoinedGuildSupervisor _userJoinedGuildSupervisor;
-        private readonly object _syncRoot = new object();
+        private readonly object _syncRoot = new();
         private bool _isRunning;
 
         public SupervisorHostedService(
@@ -54,31 +54,6 @@ namespace Sanakan.Daemon.HostedService
             _discordSocketClientAccessor.LoggedIn += LoggedIn;
             _userMessageSupervisor = userMessageSupervisor;
             _userJoinedGuildSupervisor = userJoinedGuildSupervisor;
-        }
-
-        private Task LoggedIn()
-        {
-            _discordSocketClientAccessor.MessageReceived += HandleMessageAsync;
-            _discordSocketClientAccessor.UserJoined += UserJoinedAsync;
-            return Task.CompletedTask;
-        }
-
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-        {
-            try
-            {
-                stoppingToken.ThrowIfCancellationRequested();
-                _timer.Tick += OnTick;
-                _timer.Start(
-                    _daemonsConfiguration.CurrentValue.SupervisorDueTime,
-                    _daemonsConfiguration.CurrentValue.SupervisorPeriod);
-
-                await _taskManager.Delay(Timeout.InfiniteTimeSpan, stoppingToken);
-            }
-            catch (OperationCanceledException)
-            {
-                _timer.Stop();
-            }
         }
 
         internal void OnTick(object sender, TimerEventArgs e)
@@ -108,6 +83,24 @@ namespace Sanakan.Daemon.HostedService
             }
         }
 
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        {
+            try
+            {
+                stoppingToken.ThrowIfCancellationRequested();
+                _timer.Tick += OnTick;
+                _timer.Start(
+                    _daemonsConfiguration.CurrentValue.SupervisorDueTime,
+                    _daemonsConfiguration.CurrentValue.SupervisorPeriod);
+
+                await _taskManager.Delay(Timeout.InfiniteTimeSpan, stoppingToken);
+            }
+            catch (OperationCanceledException)
+            {
+                _timer.Stop();
+            }
+        }
+
         private string GetMessageContent(IUserMessage message)
         {
             var content = message.Content;
@@ -119,7 +112,7 @@ namespace Sanakan.Daemon.HostedService
             return content;
         }
 
-        internal async Task UserJoinedAsync(IGuildUser user)
+        private async Task UserJoinedAsync(IGuildUser user)
         {
             if (!_discordConfiguration.CurrentValue.FloodSpamSupervisionEnabled)
             {
@@ -166,10 +159,9 @@ namespace Sanakan.Daemon.HostedService
             {
                 await guild.AddBanAsync(user, 1, $"Supervisor(ban) raid/scam [{user.Nickname}]");
             }
-
         }
 
-        internal async Task HandleMessageAsync(IMessage message)
+        private async Task HandleMessageAsync(IMessage message)
         {
             if (!_discordConfiguration.CurrentValue.FloodSpamSupervisionEnabled)
             {
@@ -251,7 +243,6 @@ namespace Sanakan.Daemon.HostedService
             var notifyChannel = (ITextChannel)await guild.GetChannelAsync(guildConfig.NotificationChannelId);
             var decision = SupervisorAction.None;
 
-            // TO-DO Lock
             decision = await _userMessageSupervisor.MakeDecisionAsync(guild.Id, user.Id, messageContent, lessSeverePunishment);
 
             var moderatorService = serviceProvider.GetRequiredService<IModeratorService>();
@@ -259,8 +250,8 @@ namespace Sanakan.Daemon.HostedService
             switch (decision)
             {
                 case SupervisorAction.Warn:
-                    await channel.SendMessageAsync("",
-                        embed: $"{user.Mention} zaraz przekroczysz granicę!".ToEmbedMessage(EMType.Bot).Build());
+                    var embed = $"{user.Mention} zaraz przekroczysz granicę!".ToEmbedMessage(EMType.Bot).Build();
+                    await channel.SendMessageAsync(embed: embed);
                     break;
 
                 case SupervisorAction.Mute:
@@ -292,6 +283,13 @@ namespace Sanakan.Daemon.HostedService
                 case SupervisorAction.None:
                     break;
             }
+        }
+
+        private Task LoggedIn()
+        {
+            _discordSocketClientAccessor.MessageReceived += HandleMessageAsync;
+            _discordSocketClientAccessor.UserJoined += UserJoinedAsync;
+            return Task.CompletedTask;
         }
     }
 }

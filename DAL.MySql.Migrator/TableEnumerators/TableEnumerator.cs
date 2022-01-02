@@ -7,8 +7,8 @@ namespace Sanakan.DAL.MySql.Migrator.TableEnumerators
 {
     public abstract class TableEnumerator<T> : IAsyncEnumerable<T>, IAsyncEnumerator<T>, IDisposable
     {
-        private readonly IDbConnection _connection = null!;
         protected IDbDataReader _reader = null!;
+        private readonly IDbConnection _connection = null!;
         private IDbCommand _command = null!;
         private bool _disposed = false;
 
@@ -25,16 +25,6 @@ namespace Sanakan.DAL.MySql.Migrator.TableEnumerators
         {
             Dispose(true);
             GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (_disposed)
-            {
-                return;
-            }
-
-            _disposed = true;
         }
 
         public Task OpenAsync() => _connection.OpenAsync();
@@ -83,6 +73,16 @@ namespace Sanakan.DAL.MySql.Migrator.TableEnumerators
             _reader.Dispose();
             _reader = null;
             return canRead;
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _disposed = true;
         }
     }
 }

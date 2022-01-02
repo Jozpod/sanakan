@@ -5,7 +5,9 @@ namespace Sanakan.DAL.MySql.Migrator.TableEnumerators
     public class CardArenaStatsEnumerator : TableEnumerator<CardArenaStats>
     {
         public CardArenaStatsEnumerator(IDbConnection connection)
-            : base(connection) { }
+            : base(connection)
+        {
+        }
 
         public override CardArenaStats Current => new()
         {

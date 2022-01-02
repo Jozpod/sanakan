@@ -3,6 +3,7 @@
 namespace Sanakan.ShindenApi.Fake.Models.WebScraper
 {
     public record BasicAnimeDetail(ulong Id, string Name, ulong? ImageId = null);
+
     public record AnimeDetail(
         ulong Id,
         string Name,

@@ -45,7 +45,9 @@ namespace Sanakan.ShindenApi.Models
         public DateTime? AddDate { get; set; }
 
         public string AnimeUrl => UrlHelpers.GetSeriesURL(TitleId);
+
         public string EpisodeUrl => UrlHelpers.GetEpisodeURL(TitleId, EpisodeId);
+
         public string AnimeCoverUrl => UrlHelpers.GetBigImageURL(CoverId);
     }
 }

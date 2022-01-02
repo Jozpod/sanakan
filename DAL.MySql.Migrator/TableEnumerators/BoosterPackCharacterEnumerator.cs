@@ -5,7 +5,9 @@ namespace Sanakan.DAL.MySql.Migrator.TableEnumerators
     public class BoosterPackCharacterEnumerator : TableEnumerator<BoosterPackCharacter>
     {
         public BoosterPackCharacterEnumerator(IDbConnection connection)
-            : base(connection) { }
+            : base(connection)
+        {
+        }
 
         public override BoosterPackCharacter Current => new()
         {

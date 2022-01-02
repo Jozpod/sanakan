@@ -24,7 +24,7 @@ namespace Sanakan.Web.Models
         public ulong DiscordUserId { get; set; }
 
         /// <summary>
-        /// The username
+        /// The username.
         /// </summary>
         public string Username { get; set; } = string.Empty;
 

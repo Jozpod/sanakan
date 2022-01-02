@@ -5,7 +5,9 @@ namespace Sanakan.DAL.MySql.Migrator.TableEnumerators
     public class ReportsEnumerator : TableEnumerator<Report>
     {
         public ReportsEnumerator(IDbConnection connection)
-             : base(connection) { }
+             : base(connection)
+        {
+        }
 
         public override Report Current => new()
         {

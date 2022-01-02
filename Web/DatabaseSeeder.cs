@@ -100,7 +100,7 @@ namespace Sanakan.Web
 
                 if (guild.CommandChannelId.HasValue)
                 {
-                    guildOption.CommandChannels.Add(new CommandChannel { ChannelId = guild.CommandChannelId.Value }); ;
+                    guildOption.CommandChannels.Add(new CommandChannel { ChannelId = guild.CommandChannelId.Value });
                 }
 
                 if (guild.CommandWaifuChannelId.HasValue)
@@ -228,7 +228,7 @@ namespace Sanakan.Web
                     {
                         var couldNotFindCharacters = false;
 
-                        foreach (var _ in Enumerable.Range(1, userSeed.NumberOfCards.Value))
+                        foreach (var it in Enumerable.Range(1, userSeed.NumberOfCards.Value))
                         {
                             var character = await _waifuService.GetRandomCharacterAsync();
 
@@ -245,29 +245,30 @@ namespace Sanakan.Web
                             {
                                 card.Affection = userSeed.DefaultAffection.Value;
                             }
-                            
+
                             user.GameDeck.Cards.Add(card);
                         }
 
                         var activeCards = new List<Card>();
                         var cards = user.GameDeck.Cards.ToList();
-                        var cardsToActivate = userSeed.ActiveCards.HasValue && !couldNotFindCharacters ? 
+                        var cardsToActivate = userSeed.ActiveCards.HasValue && !couldNotFindCharacters ?
                             Enumerable.Range(1, userSeed.ActiveCards.Value)
                             : Enumerable.Empty<int>();
                         var wishListItems = userSeed.WishListItems.HasValue && !couldNotFindCharacters ?
                             Enumerable.Range(1, userSeed.WishListItems.Value)
                             : Enumerable.Empty<int>();
 
-                        foreach (var _ in cardsToActivate)
+                        foreach (var it in cardsToActivate)
                         {
                             var card = _randomNumberGenerator.GetOneRandomFrom(cards);
                             card.Active = true;
                             activeCards.Add(card);
                             cards.Remove(card);
                         }
+
                         user.GameDeck.DeckPower = activeCards.Sum(x => x.CalculateCardPower());
 
-                        foreach (var _ in wishListItems)
+                        foreach (var it in wishListItems)
                         {
                             var character = await _waifuService.GetRandomCharacterAsync();
 
@@ -288,6 +289,7 @@ namespace Sanakan.Web
                         {
                             user.GameDeck.Items.Add(item.ToItem(10, Quality.Alpha));
                         }
+
                         await _dbContext.SaveChangesAsync();
                     }
 

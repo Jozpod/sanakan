@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Sanakan.DAL.Repositories.Abstractions
 {
-    public interface IUserRepository : 
+    public interface IUserRepository :
         ICreateRepository<User>, IRemoveRepository<User>, ISaveRepository
     {
         Task<List<ulong>> GetUserShindenIdsByHavingCharacterAsync(ulong id);

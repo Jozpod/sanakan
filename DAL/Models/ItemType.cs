@@ -54,29 +54,50 @@ namespace Sanakan.DAL.Models
 
     public static class ItemTypeExtensions
     {
-
         public static ItemType RandomizeItemFromMarket(int number)
         {
-            if (number < 2) return ItemType.IncreaseExpSmall;
-            if (number < 15) return ItemType.IncreaseUpgradeCount;
-            if (number < 80) return ItemType.AffectionRecoveryBig;
-            if (number < 145) return ItemType.CardParamsReRoll;
-            if (number < 230) return ItemType.DereReRoll;
-            if (number < 480) return ItemType.AffectionRecoveryNormal;
-            return ItemType.AffectionRecoverySmall;
+            switch (number)
+            {
+                case var _ when number < 2:
+                    return ItemType.IncreaseExpSmall;
+                case var _ when number < 15:
+                    return ItemType.IncreaseUpgradeCount;
+                case var _ when number < 80:
+                    return ItemType.AffectionRecoveryBig;
+                case var _ when number < 145:
+                    return ItemType.CardParamsReRoll;
+                case var _ when number < 230:
+                    return ItemType.DereReRoll;
+                case var _ when number < 480:
+                    return ItemType.AffectionRecoveryNormal;
+                default:
+                    return ItemType.AffectionRecoverySmall;
+            }
         }
 
         public static ItemType RandomizeItemFromBlackMarket(int number)
         {
-            if (number < 2) return ItemType.IncreaseExpSmall;
-            if (number < 12) return ItemType.BetterIncreaseUpgradeCnt;
-            if (number < 25) return ItemType.IncreaseUpgradeCount;
-            if (number < 70) return ItemType.AffectionRecoveryGreat;
-            if (number < 120) return ItemType.AffectionRecoveryBig;
-            if (number < 180) return ItemType.CardParamsReRoll;
-            if (number < 250) return ItemType.DereReRoll;
-            if (number < 780) return ItemType.AffectionRecoveryNormal;
-            return ItemType.AffectionRecoverySmall;
+            switch (number)
+            {
+                case var _ when number < 2:
+                    return ItemType.IncreaseExpSmall;
+                case var _ when number < 12:
+                    return ItemType.BetterIncreaseUpgradeCnt;
+                case var _ when number < 25:
+                    return ItemType.IncreaseUpgradeCount;
+                case var _ when number < 70:
+                    return ItemType.AffectionRecoveryGreat;
+                case var _ when number < 120:
+                    return ItemType.AffectionRecoveryBig;
+                case var _ when number < 180:
+                    return ItemType.CardParamsReRoll;
+                case var _ when number < 250:
+                    return ItemType.DereReRoll;
+                case var _ when number < 780:
+                    return ItemType.AffectionRecoveryNormal;
+                default:
+                    return ItemType.AffectionRecoverySmall;
+            }
         }
 
         public static Figure? ToPAFigure(this ItemType type, DateTime date)
@@ -406,7 +427,9 @@ namespace Sanakan.DAL.Models
         public static string ToString(this ItemType type, string quality = "")
         {
             if (!string.IsNullOrEmpty(quality))
+            {
                 quality = $" {quality}";
+            }
 
             switch (type)
             {
@@ -545,7 +568,9 @@ namespace Sanakan.DAL.Models
         public static Item ToItem(this ItemType type, long count = 1, Quality quality = Quality.Broken)
         {
             if (!type.HasDifferentQualities() && quality != Quality.Broken)
+            {
                 quality = Quality.Broken;
+            }
 
             return new Item
             {

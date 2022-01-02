@@ -4,12 +4,12 @@ namespace Sanakan.TaskQueue.Messages
 {
     public abstract class BaseMessage : IComparable<BaseMessage>
     {
-        public Priority Priority { get; }
-
         public BaseMessage(Priority priority)
         {
             Priority = priority;
         }
+
+        public Priority Priority { get; }
 
         public int CompareTo(BaseMessage? other) => other switch
         {

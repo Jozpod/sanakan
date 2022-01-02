@@ -66,6 +66,7 @@ namespace Sanakan.DiscordBot.Services
 
                 commands += $"\r\n**{item.Name}:**" + string.Join("\n", sSubInfo);
             }
+
             commands += $"\r\n\r\nUżyj `{_config.CurrentValue.Prefix}pomoc [polecenie]`, aby uzyskać informacje dotyczące danego polecenia.";
             return commands;
         }
@@ -194,89 +195,6 @@ namespace Sanakan.DiscordBot.Services
             throw new Exception(Strings.CommandDoesNotExist);
         }
 
-        private List<SanakanModuleInfo> GetInfoAboutModules(IEnumerable<ModuleInfo> modules)
-        {
-            var moduleInfos = new List<SanakanModuleInfo>();
-            foreach (var item in modules)
-            {
-                var moduleInfo = new SanakanModuleInfo()
-                {
-                    Name = item.Name,
-                    Modules = new List<SanakanSubModuleInfo>()
-                };
-
-                if (moduleInfos.Any(x => x.Name.Equals(item.Name)))
-                {
-                    moduleInfo = moduleInfos.First(x => x.Name.Equals(item.Name));
-                }
-                else
-                {
-                    moduleInfos.Add(moduleInfo);
-                }
-
-                var moduleCommands = new HashSet<string>();
-                var sanakanSubModuleInfo = new SanakanSubModuleInfo()
-                {
-                    Prefix = GetModGroupPrefix(item, false),
-                    Commands = moduleCommands,
-                };
-
-                foreach (var command in item.Commands)
-                {
-                    if (string.IsNullOrEmpty(command.Name))
-                    {
-                        continue;
-                    }
-
-                    var name = $"`{command.Name}`";
-                    moduleCommands.Add(name);
-                }
-
-                moduleInfo.Modules.Add(sanakanSubModuleInfo);
-            }
-
-            return moduleInfos;
-        }
-
-        private SanakanSubModuleInfo GetInfoAboutModule(ModuleInfo module)
-        {
-            var moduleCommands = new HashSet<string>();
-            var sanakanSubModuleInfo = new SanakanSubModuleInfo()
-            {
-                Prefix = module.Name,
-                Commands = moduleCommands,
-            };
-
-            foreach (var commands in module.Commands)
-            {
-                if (string.IsNullOrEmpty(commands.Name))
-                {
-                    continue;
-                }
-
-                var name = $"`{commands.Name}`";
-                moduleCommands.Add(name);
-            }
-
-            return sanakanSubModuleInfo;
-        }
-
-        private string GetModGroupPrefix(ModuleInfo mod, bool space = true)
-        {
-            string prefix = "";
-            var att = mod.Aliases.FirstOrDefault();
-            if (!string.IsNullOrEmpty(att))
-            {
-                if (space)
-                {
-                    att += " ";
-                }
-                prefix = att;
-            }
-
-            return prefix;
-        }
-
         public IEmbed GetInfoAboutUser(IGuildUser user)
         {
             return new EmbedBuilder
@@ -286,79 +204,6 @@ namespace Sanakan.DiscordBot.Services
                 Fields = GetInfoUserFields(user),
                 Color = EMType.Info.Color(),
             }.Build();
-        }
-
-        private List<EmbedFieldBuilder> GetInfoUserFields(IGuildUser user)
-        {
-            var rolesSummary = new StringBuilder("Brak", 200);
-            var roleIds = user.RoleIds;
-
-            if (roleIds.Any())
-            {
-                var guild = user.Guild;
-                var guildRoles = guild.Roles;
-                var userRoles = guildRoles
-                    .Join(roleIds, pr => pr.Id, pr => pr, (src, dst) => src)
-                    .OrderByDescending(x => x.Position);
-
-                foreach (var item in userRoles)
-                {
-                    var isEveryone = item.Id == guild.Id;
-
-                    if (isEveryone)
-                    {
-                        continue;
-                    }
-
-                    rolesSummary.AppendFormat("{0}\n", item.Mention);
-                }
-            }
-
-            return new List<EmbedFieldBuilder>
-            {
-                new EmbedFieldBuilder
-                {
-                    Name = "Id",
-                    Value = user.Id,
-                    IsInline = true
-                },
-                new EmbedFieldBuilder
-                {
-                    Name = "Pseudo",
-                    Value = user.Nickname ?? "Brak",
-                    IsInline = true
-                },
-                new EmbedFieldBuilder
-                {
-                    Name = "Status",
-                    Value = user.Status.ToString(),
-                    IsInline = true
-                },
-                new EmbedFieldBuilder
-                {
-                    Name = "Bot",
-                    Value = user.IsBot ? "Tak" : "Nie",
-                    IsInline = true
-                },
-                new EmbedFieldBuilder
-                {
-                    Name = "Utworzono",
-                    Value = user.CreatedAt.DateTime.ToString(),
-                    IsInline = false
-                },
-                new EmbedFieldBuilder
-                {
-                    Name = "Dołączono",
-                    Value = user.JoinedAt.ToString().Split('+')[0],
-                    IsInline = false
-                },
-                new EmbedFieldBuilder
-                {
-                    Name = $"Role[{roleIds.Count - 1}]",
-                    Value = rolesSummary.ToString(),
-                    IsInline = false
-                }
-            };
         }
 
         public async Task<IEmbed> GetInfoAboutServerAsync(IGuild guild)
@@ -386,78 +231,6 @@ namespace Sanakan.DiscordBot.Services
             }
 
             return embed.Build();
-        }
-
-        private async Task<List<EmbedFieldBuilder>> GetInfoGuildFieldsAsync(IGuild guild)
-        {
-            var cacheMode = CacheMode.CacheOnly;
-#if RELEASE
-            cacheMode = CacheMode.AllowDownload;
-#endif
-
-            var guildId = guild.Id;
-            var stringBuilder = new StringBuilder(100);
-            var owner = await guild.GetOwnerAsync();
-            var users = await guild.GetUsersAsync(cacheMode);
-            var channels = await guild.GetChannelsAsync();
-            var textChannelsCount = channels.OfType<ITextChannel>().Count();
-            var voiceChannelsCount = channels.OfType<IVoiceChannel>().Count();
-            var roles = guild.Roles;
-
-            foreach (var item in roles.OrderByDescending(x => x.Position))
-            {
-                var isEveryone = item.Id == guildId;
-                if (isEveryone && !ulong.TryParse(item.Name, out var id))
-                {
-                    stringBuilder.AppendFormat("{0} ", item.Mention);
-                }
-            }
-
-            return new List<EmbedFieldBuilder>
-            {
-                new EmbedFieldBuilder
-                {
-                    Name = "Id",
-                    Value = guildId,
-                    IsInline = true
-                },
-                new EmbedFieldBuilder
-                {
-                    Name = "Właściciel",
-                    Value = owner?.Mention ?? "Unknown",
-                    IsInline = true
-                },
-                new EmbedFieldBuilder
-                {
-                    Name = "Utworzono",
-                    Value = guild.CreatedAt.DateTime.ToString(),
-                    IsInline = true
-                },
-                new EmbedFieldBuilder
-                {
-                    Name = "Liczba użytkowników",
-                    Value = users.Count,
-                    IsInline = true
-                },
-                new EmbedFieldBuilder
-                {
-                    Name = "Kanały tekstowe",
-                    Value = textChannelsCount,
-                    IsInline = true
-                },
-                new EmbedFieldBuilder
-                {
-                    Name = "Kanały głosowe",
-                    Value = voiceChannelsCount,
-                    IsInline = true
-                },
-                new EmbedFieldBuilder
-                {
-                    Name = $"Role[{roles.Count}]",
-                    Value = stringBuilder.ToString().ElipseTrimToLength(EmbedFieldBuilder.MaxFieldValueLength),
-                    IsInline = false
-                }
-            };
         }
 
         public async Task<IMessage?> FindMessageInGuildAsync(IGuild guild, ulong id)
@@ -536,5 +309,229 @@ namespace Sanakan.DiscordBot.Services
         }
 
         public Version GetVersion() => typeof(HelperService).Assembly.GetName().Version!;
+
+        private string GetModGroupPrefix(ModuleInfo mod, bool space = true)
+        {
+            string prefix = "";
+            var att = mod.Aliases.FirstOrDefault();
+            if (!string.IsNullOrEmpty(att))
+            {
+                if (space)
+                {
+                    att += " ";
+                }
+
+                prefix = att;
+            }
+
+            return prefix;
+        }
+
+        private async Task<List<EmbedFieldBuilder>> GetInfoGuildFieldsAsync(IGuild guild)
+        {
+            var guildId = guild.Id;
+            var stringBuilder = new StringBuilder(100);
+            var owner = await guild.GetOwnerAsync();
+            var users = await guild.GetUsersAsync();
+            var channels = await guild.GetChannelsAsync();
+            var textChannelsCount = channels.OfType<ITextChannel>().Count();
+            var voiceChannelsCount = channels.OfType<IVoiceChannel>().Count();
+            var roles = guild.Roles;
+
+            foreach (var item in roles.OrderByDescending(x => x.Position))
+            {
+                var isEveryone = item.Id == guildId;
+                if (isEveryone && !ulong.TryParse(item.Name, out var id))
+                {
+                    stringBuilder.AppendFormat("{0} ", item.Mention);
+                }
+            }
+
+            return new List<EmbedFieldBuilder>
+            {
+                new EmbedFieldBuilder
+                {
+                    Name = "Id",
+                    Value = guildId,
+                    IsInline = true
+                },
+                new EmbedFieldBuilder
+                {
+                    Name = "Właściciel",
+                    Value = owner?.Mention ?? "Unknown",
+                    IsInline = true
+                },
+                new EmbedFieldBuilder
+                {
+                    Name = "Utworzono",
+                    Value = guild.CreatedAt.DateTime.ToString(),
+                    IsInline = true
+                },
+                new EmbedFieldBuilder
+                {
+                    Name = "Liczba użytkowników",
+                    Value = users.Count,
+                    IsInline = true
+                },
+                new EmbedFieldBuilder
+                {
+                    Name = "Kanały tekstowe",
+                    Value = textChannelsCount,
+                    IsInline = true
+                },
+                new EmbedFieldBuilder
+                {
+                    Name = "Kanały głosowe",
+                    Value = voiceChannelsCount,
+                    IsInline = true
+                },
+                new EmbedFieldBuilder
+                {
+                    Name = $"Role[{roles.Count}]",
+                    Value = stringBuilder.ToString().ElipseTrimToLength(EmbedFieldBuilder.MaxFieldValueLength),
+                    IsInline = false
+                }
+            };
+        }
+
+        private List<EmbedFieldBuilder> GetInfoUserFields(IGuildUser user)
+        {
+            var rolesSummary = new StringBuilder("Brak", 200);
+            var roleIds = user.RoleIds;
+
+            if (roleIds.Any())
+            {
+                var guild = user.Guild;
+                var guildRoles = guild.Roles;
+                var userRoles = guildRoles
+                    .Join(roleIds, pr => pr.Id, pr => pr, (src, dst) => src)
+                    .OrderByDescending(x => x.Position);
+
+                foreach (var item in userRoles)
+                {
+                    var isEveryone = item.Id == guild.Id;
+
+                    if (isEveryone)
+                    {
+                        continue;
+                    }
+
+                    rolesSummary.AppendFormat("{0}\n", item.Mention);
+                }
+            }
+
+            return new List<EmbedFieldBuilder>
+            {
+                new EmbedFieldBuilder
+                {
+                    Name = "Id",
+                    Value = user.Id,
+                    IsInline = true
+                },
+                new EmbedFieldBuilder
+                {
+                    Name = "Pseudo",
+                    Value = user.Nickname ?? "Brak",
+                    IsInline = true
+                },
+                new EmbedFieldBuilder
+                {
+                    Name = "Status",
+                    Value = user.Status.ToString(),
+                    IsInline = true
+                },
+                new EmbedFieldBuilder
+                {
+                    Name = "Bot",
+                    Value = user.IsBot ? "Tak" : "Nie",
+                    IsInline = true
+                },
+                new EmbedFieldBuilder
+                {
+                    Name = "Utworzono",
+                    Value = user.CreatedAt.DateTime.ToString(),
+                    IsInline = false
+                },
+                new EmbedFieldBuilder
+                {
+                    Name = "Dołączono",
+                    Value = user.JoinedAt.ToString().Split('+')[0],
+                    IsInline = false
+                },
+                new EmbedFieldBuilder
+                {
+                    Name = $"Role[{roleIds.Count - 1}]",
+                    Value = rolesSummary.ToString(),
+                    IsInline = false
+                }
+            };
+        }
+
+        private List<SanakanModuleInfo> GetInfoAboutModules(IEnumerable<ModuleInfo> modules)
+        {
+            var moduleInfos = new List<SanakanModuleInfo>();
+            foreach (var item in modules)
+            {
+                var moduleInfo = new SanakanModuleInfo()
+                {
+                    Name = item.Name,
+                    Modules = new List<SanakanSubModuleInfo>()
+                };
+
+                if (moduleInfos.Any(x => x.Name.Equals(item.Name)))
+                {
+                    moduleInfo = moduleInfos.First(x => x.Name.Equals(item.Name));
+                }
+                else
+                {
+                    moduleInfos.Add(moduleInfo);
+                }
+
+                var moduleCommands = new HashSet<string>();
+                var sanakanSubModuleInfo = new SanakanSubModuleInfo()
+                {
+                    Prefix = GetModGroupPrefix(item, false),
+                    Commands = moduleCommands,
+                };
+
+                foreach (var command in item.Commands)
+                {
+                    if (string.IsNullOrEmpty(command.Name))
+                    {
+                        continue;
+                    }
+
+                    var name = $"`{command.Name}`";
+                    moduleCommands.Add(name);
+                }
+
+                moduleInfo.Modules.Add(sanakanSubModuleInfo);
+            }
+
+            return moduleInfos;
+        }
+
+        private SanakanSubModuleInfo GetInfoAboutModule(ModuleInfo module)
+        {
+            var moduleCommands = new HashSet<string>();
+            var sanakanSubModuleInfo = new SanakanSubModuleInfo()
+            {
+                Prefix = module.Name,
+                Commands = moduleCommands,
+            };
+
+            foreach (var commands in module.Commands)
+            {
+                if (string.IsNullOrEmpty(commands.Name))
+                {
+                    continue;
+                }
+
+                var name = $"`{commands.Name}`";
+                moduleCommands.Add(name);
+            }
+
+            return sanakanSubModuleInfo;
+        }
     }
 }

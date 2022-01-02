@@ -21,26 +21,6 @@ namespace Sanakan.Game.Services
             _systemClock = systemClock;
         }
 
-        private EventType CheckChanceBasedOnTime(ExpeditionCardType expedition, (double, double) duration)
-        {
-            switch (expedition)
-            {
-                case ExpeditionCardType.ExtremeItemWithExp:
-                    if (duration.Item1 > TimeSpan.FromMinutes(45).TotalMinutes 
-                        || duration.Item2 > TimeSpan.FromHours(4).TotalMinutes)
-                    {
-                        if (_randomNumberGenerator.TakeATry(2))
-                        {
-                            return EventType.LoseCard;
-                        }
-                    }
-                    return EventType.None;
-
-                default:
-                    return EventType.None;
-            }
-        }
-
         public EventType RandomizeEvent(ExpeditionCardType expedition, (double, double) duration)
         {
             var timeBased = CheckChanceBasedOnTime(expedition, duration);
@@ -54,52 +34,52 @@ namespace Sanakan.Game.Services
 
             switch (_randomNumberGenerator.GetRandomValue(10000))
             {
-                case int n when (n < chance[EventType.MoreItems].Item2
-                                && n >= chance[EventType.MoreItems].Item1):
+                case int n when n < chance[EventType.MoreItems].Item2
+                                && n >= chance[EventType.MoreItems].Item1:
                     return EventType.MoreItems;
 
-                case int n when (n < chance[EventType.MoreExperience].Item2
-                                && n >= chance[EventType.MoreExperience].Item1):
+                case int n when n < chance[EventType.MoreExperience].Item2
+                                && n >= chance[EventType.MoreExperience].Item1:
                     return EventType.MoreExperience;
 
-                case int n when (n < chance[EventType.IncreaseAttack].Item2
-                                && n >= chance[EventType.IncreaseAttack].Item1):
+                case int n when n < chance[EventType.IncreaseAttack].Item2
+                                && n >= chance[EventType.IncreaseAttack].Item1:
                     return EventType.IncreaseAttack;
 
-                case int n when (n < chance[EventType.IncreaseDefence].Item2
-                                && n >= chance[EventType.IncreaseDefence].Item1):
+                case int n when n < chance[EventType.IncreaseDefence].Item2
+                                && n >= chance[EventType.IncreaseDefence].Item1:
                     return EventType.IncreaseDefence;
 
-                case int n when (n < chance[EventType.AddReset].Item2
-                                && n >= chance[EventType.AddReset].Item1):
+                case int n when n < chance[EventType.AddReset].Item2
+                                && n >= chance[EventType.AddReset].Item1:
                     return EventType.AddReset;
 
-                case int n when (n < chance[EventType.NewCard].Item2
-                                && n >= chance[EventType.NewCard].Item1):
+                case int n when n < chance[EventType.NewCard].Item2
+                                && n >= chance[EventType.NewCard].Item1:
                     return EventType.NewCard;
 
-                case int n when (n < chance[EventType.ChangeDere].Item2
-                                && n >= chance[EventType.ChangeDere].Item1):
+                case int n when n < chance[EventType.ChangeDere].Item2
+                                && n >= chance[EventType.ChangeDere].Item1:
                     return EventType.ChangeDere;
 
-                case int n when (n < chance[EventType.DecreaseAttack].Item2
-                                && n >= chance[EventType.DecreaseAttack].Item1):
+                case int n when n < chance[EventType.DecreaseAttack].Item2
+                                && n >= chance[EventType.DecreaseAttack].Item1:
                     return EventType.DecreaseAttack;
 
-                case int n when (n < chance[EventType.DecreaseDefence].Item2
-                                && n >= chance[EventType.DecreaseDefence].Item1):
+                case int n when n < chance[EventType.DecreaseDefence].Item2
+                                && n >= chance[EventType.DecreaseDefence].Item1:
                     return EventType.DecreaseDefence;
 
-                case int n when (n < chance[EventType.DecreaseAffection].Item2
-                                && n >= chance[EventType.DecreaseAffection].Item1):
+                case int n when n < chance[EventType.DecreaseAffection].Item2
+                                && n >= chance[EventType.DecreaseAffection].Item1:
                     return EventType.DecreaseAffection;
 
-                case int n when (n < chance[EventType.LoseCard].Item2
-                                && n >= chance[EventType.LoseCard].Item1):
+                case int n when n < chance[EventType.LoseCard].Item2
+                                && n >= chance[EventType.LoseCard].Item1:
                     return EventType.LoseCard;
 
-                case int n when (n < chance[EventType.Fight].Item2
-                                && n >= chance[EventType.Fight].Item1):
+                case int n when n < chance[EventType.Fight].Item2
+                                && n >= chance[EventType.Fight].Item1:
                     return EventType.Fight;
 
                 default: return EventType.None;
@@ -124,12 +104,13 @@ namespace Sanakan.Game.Services
                         Name = BoosterPackTypes.Adventure,
                         IsCardFromPackTradable = true,
                         MinRarity = Rarity.E,
-                        CardCount = 1
+                        CardCount = 1,
                     };
 
                     user.GameDeck.BoosterPacks.Add(boosterPack);
                     stringBuilder.AppendLine("Wydarzenie: Pakiet z kartą.");
                 }
+
                 break;
 
                 case EventType.IncreaseAttack:
@@ -144,6 +125,7 @@ namespace Sanakan.Game.Services
 
                     stringBuilder.AppendFormat("Wydarzenie: Zwiększenie ataku do {0}.\n", card.Attack);
                 }
+
                 break;
 
                 case EventType.IncreaseDefence:
@@ -158,6 +140,7 @@ namespace Sanakan.Game.Services
 
                     stringBuilder.AppendFormat("Wydarzenie: Zwiększenie obrony do {0}.\n", card.Defence);
                 }
+
                 break;
 
                 case EventType.MoreExperience:
@@ -167,12 +150,14 @@ namespace Sanakan.Game.Services
 
                     stringBuilder.AppendFormat("Wydarzenie: Dodatkowe punkty doświadczenia. (+{0} exp)", addExp);
                 }
+
                 break;
 
                 case EventType.MoreItems:
                 {
                     stringBuilder.Append("Wydarzenie: Dodatkowe przedmioty.\n");
                 }
+
                 break;
 
                 case EventType.AddReset:
@@ -180,12 +165,14 @@ namespace Sanakan.Game.Services
                     ++card.RestartCount;
                     stringBuilder.Append("Wydarzenie: Zwiększenie ilości restartów karty.\n");
                 }
+
                 break;
 
                 case EventType.ChangeDere:
                 {
                     stringBuilder.Append("Wydarzenie: Zmiana dere na ");
                 }
+
                 break;
 
                 case EventType.DecreaseAffection:
@@ -193,6 +180,7 @@ namespace Sanakan.Game.Services
                     card.Affection -= randomValue;
                     stringBuilder.Append("Wydarzenie: Zmniejszenie relacji.\n");
                 }
+
                 break;
 
                 case EventType.DecreaseAttack:
@@ -207,6 +195,7 @@ namespace Sanakan.Game.Services
 
                     stringBuilder.AppendFormat("Wydarzenie: Zmniejszenie ataku do {0}.\n", card.Attack);
                 }
+
                 break;
 
                 case EventType.DecreaseDefence:
@@ -221,6 +210,7 @@ namespace Sanakan.Game.Services
 
                     stringBuilder.AppendFormat("Wydarzenie: Zmniejszenie obrony do {0}.\n", card.Defence);
                 }
+
                 break;
 
                 case EventType.Fight:
@@ -229,9 +219,9 @@ namespace Sanakan.Game.Services
                     var rarity = RarityExtensions.Random(randomNumber);
                     var name = "Miecu";
                     var title = "Bajeczka";
-                        
+
                     var date = _systemClock.UtcNow;
-                    var defence = _randomNumberGenerator.GetRandomValue(rarity.GetDefenceMin(), rarity.GetDefenceMax() + 1); ;
+                    var defence = _randomNumberGenerator.GetRandomValue(rarity.GetDefenceMin(), rarity.GetDefenceMax() + 1);
                     var attack = _randomNumberGenerator.GetRandomValue(rarity.GetAttackMin(), rarity.GetAttackMax() + 1);
                     var dere = _randomNumberGenerator.GetOneRandomFrom(DereExtensions.ListOfDeres);
                     var characterId = 1ul;
@@ -245,7 +235,7 @@ namespace Sanakan.Game.Services
                         rarity,
                         dere,
                         date);
-                        
+
                     card.CalculateCardPower();
 
                     var result = FightWinnerExtensions.GetFightWinner(card, enemyCard);
@@ -282,6 +272,27 @@ namespace Sanakan.Game.Services
 
                 default:
                     return 0;
+            }
+        }
+
+        private EventType CheckChanceBasedOnTime(ExpeditionCardType expedition, (double, double) duration)
+        {
+            switch (expedition)
+            {
+                case ExpeditionCardType.ExtremeItemWithExp:
+                    if (duration.Item1 > TimeSpan.FromMinutes(45).TotalMinutes
+                        || duration.Item2 > TimeSpan.FromHours(4).TotalMinutes)
+                    {
+                        if (_randomNumberGenerator.TakeATry(2))
+                        {
+                            return EventType.LoseCard;
+                        }
+                    }
+
+                    return EventType.None;
+
+                default:
+                    return EventType.None;
             }
         }
     }

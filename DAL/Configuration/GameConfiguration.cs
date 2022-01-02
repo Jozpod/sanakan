@@ -25,7 +25,6 @@ namespace Sanakan.DAL.Configuration
 
             builder.HasOne(e => e.User)
                 .WithOne(u => u.SMConfig);
-
         }
 
         public void Configure(EntityTypeBuilder<ExperienceContainer> builder)

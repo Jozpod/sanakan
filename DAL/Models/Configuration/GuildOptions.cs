@@ -140,7 +140,6 @@ namespace Sanakan.DAL.Models.Configuration
         /// <summary>
         /// The pocket waifu discord configuration.
         /// </summary>
-
         public virtual WaifuConfiguration? WaifuConfig { get; set; }
 
         /// <summary>
@@ -152,7 +151,7 @@ namespace Sanakan.DAL.Models.Configuration
         /// The list of Discord channels which are not moderated.
         /// </summary>
         public virtual ICollection<WithoutMessageCountChannel> IgnoredChannels { get; set; }
-        
+
         /// <summary>
         /// The list of Discord channels which does not support experience gathering.
         /// </summary>

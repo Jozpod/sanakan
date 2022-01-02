@@ -2,7 +2,7 @@
 
 namespace Sanakan.DAL.Repositories.Abstractions
 {
-    public interface IUserAnalyticsRepository : 
+    public interface IUserAnalyticsRepository :
         ICreateRepository<UserAnalytics>, ISaveRepository
     {
     }

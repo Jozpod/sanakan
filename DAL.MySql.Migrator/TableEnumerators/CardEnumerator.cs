@@ -6,7 +6,9 @@ namespace Sanakan.DAL.MySql.Migrator.TableEnumerators
     public class CardEnumerator : TableEnumerator<Card>
     {
         public CardEnumerator(IDbConnection connection)
-           : base(connection) { }
+           : base(connection)
+        {
+        }
 
         public override Card Current
         {

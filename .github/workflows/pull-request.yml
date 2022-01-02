@@ -29,7 +29,7 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore
       - name: Build
-        run: dotnet build --configuration Release --no-restore
+        run: dotnet build --configuration Release --no-restore /p:DebugType=Portable /p:DebugSymbols=true
       - name: Run Tests
         continue-on-error: true
         # Parallel build produces invalid code coverage

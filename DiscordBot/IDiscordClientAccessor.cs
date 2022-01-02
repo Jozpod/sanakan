@@ -8,21 +8,6 @@ namespace Sanakan.DiscordBot
 {
     public interface IDiscordClientAccessor
     {
-        /// <inheritdoc cref="DiscordSocketClient.Latency"/>
-        int Latency { get; }
-
-        /// <inheritdoc cref="DiscordSocketClient.LoginAsync"/>
-        Task LoginAsync(TokenType tokenType, string token, bool validateToken = true);
-
-        /// <inheritdoc cref="DiscordSocketClient.SetGameAsync"/>
-        Task SetGameAsync(string name, string? streamUrl = null, ActivityType type = ActivityType.Playing);
-
-        /// <inheritdoc cref="BaseDiscordClient.LogoutAsync"/>
-        Task LogoutAsync();
-
-        /// <inheritdoc cref="IDiscordClient"/>
-        IDiscordClient Client { get; }
-
         /// <inheritdoc cref="DiscordSocketClient.Ready"/>
         event Func<Task> Ready;
 
@@ -62,7 +47,22 @@ namespace Sanakan.DiscordBot
         /// <inheritdoc cref="DiscordSocketClient.Disconnected"/>
         event Func<Exception, Task> Disconnected;
 
-        ///<inheritdoc cref="CommandContext"/>
+        /// <inheritdoc cref="DiscordSocketClient.Latency"/>
+        int Latency { get; }
+
+        /// <inheritdoc cref="IDiscordClient"/>
+        IDiscordClient Client { get; }
+
+        /// <inheritdoc cref="CommandContext"/>
         ICommandContext GetCommandContext(IUserMessage message);
+
+        /// <inheritdoc cref="DiscordSocketClient.LoginAsync"/>
+        Task LoginAsync(TokenType tokenType, string token, bool validateToken = true);
+
+        /// <inheritdoc cref="DiscordSocketClient.SetGameAsync"/>
+        Task SetGameAsync(string name, string? streamUrl = null, ActivityType type = ActivityType.Playing);
+
+        /// <inheritdoc cref="BaseDiscordClient.LogoutAsync"/>
+        Task LogoutAsync();
     }
 }

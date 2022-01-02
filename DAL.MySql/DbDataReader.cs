@@ -12,12 +12,11 @@ namespace Sanakan.DAL.MySql
         public DbDataReader(MySqlDataReader dbDataReader)
         {
             _dbDataReader = dbDataReader;
-            
         }
 
         public TextReader GetTextReader(int ordinal) => _dbDataReader.GetTextReader(ordinal);
 
-        public long GetBytes(int i, long fieldOffset, byte[] buffer, int bufferoffset, int length) => 
+        public long GetBytes(int i, long fieldOffset, byte[] buffer, int bufferoffset, int length) =>
             _dbDataReader.GetBytes(i, fieldOffset, buffer, bufferoffset, length);
 
         public int GetValues(object[] values) => _dbDataReader.GetValues(values);

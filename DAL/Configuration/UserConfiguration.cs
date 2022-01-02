@@ -4,7 +4,7 @@ using Sanakan.DAL.Models;
 
 namespace Sanakan.DAL.Configuration
 {
-    public class UserConfiguration : 
+    public class UserConfiguration :
         IEntityTypeConfiguration<User>,
         IEntityTypeConfiguration<UserStats>
     {

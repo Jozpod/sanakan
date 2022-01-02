@@ -34,6 +34,7 @@ namespace Sanakan.Game.Services
         private readonly Point _origin = new(0, 0);
         private readonly IFileSystem _fileSystem;
         private readonly IImageResolver _imageResolver;
+        private readonly IEnumerable<string> _extensions = new[] { "png", "jpeg", "gif", "jpg" };
 
         public ImageProcessor(
             IOptionsMonitor<ImagingConfiguration> options,
@@ -53,93 +54,122 @@ namespace Sanakan.Game.Services
             _latoRegular = LoadFontFromStream(Resources.LatoRegularfont);
         }
 
-        private FontFamily LoadFontFromStream(string resourceName)
-        {
-            var fontStream = _resourceManager.GetResourceStream(resourceName);
-            return _fontCollection.Install(fontStream);
-        }
-
-        private IEnumerable<string> _extensions = new[] { "png", "jpeg", "gif", "jpg" };
-
-        private async Task<Stream?> GetImageFromUrlAsync(string url, bool fixedExtension = false)
-        {
-            try
-            {
-                var stream = await _imageResolver.GetAsync(url);
-
-                if (stream != null)
-                {
-                    return stream;
-                }
-
-                if (!fixedExtension)
-                {
-                    return null;
-                }
-
-                var splited = url.Split(".");
-
-                foreach (var extension in _extensions)
-                {
-                    splited[splited.Length - 1] = extension;
-                    stream = await _imageResolver.GetAsync(url);
-
-                    return stream;
-                }
-            }
-            catch (Exception)
-            {
-                return null;
-            }
-
-            return null;
-        }
-
-        private Font GetFontSize(FontFamily fontFamily, float size, string text, float maxWidth)
-        {
-            var font = new Font(fontFamily, size);
-            var measured = TextMeasurer.Measure(text, new RendererOptions(font));
-
-            while (measured.Width > maxWidth)
-            {
-                if (--size < 1) break;
-                font = new Font(fontFamily, size);
-                measured = TextMeasurer.Measure(text, new RendererOptions(font));
-            }
-
-            return font;
-        }
-
-        private void CheckProfileImageSize(Image<Rgba32> image, Size size, bool stretch)
-        {
-            if (image.Width > size.Width || image.Height > size.Height)
-            {
-                image.Mutate(x => x.Resize(new ResizeOptions
-                {
-                    Mode = ResizeMode.Max,
-                    Size = size
-                }));
-
-                return;
-            }
-
-            if (!stretch)
-            {
-                return;
-            }
-
-            if (image.Width < size.Width || image.Height < size.Height)
-            {
-                image.Mutate(x => x.Resize(new ResizeOptions
-                {
-                    Mode = ResizeMode.Stretch,
-                    Size = size
-                }));
-            }
-        }
-
         public async Task SaveImageFromUrlAsync(string url, string path)
             => await SaveImageFromUrlAsync(url, path, Size.Empty);
+
+        public async Task<Image<Rgba32>> GetWaifuInProfileCardAsync(Card card)
+        {
+            var image = new Image<Rgba32>(_options.CurrentValue.CharacterImageWidth, _options.CurrentValue.CharacterImageHeight);
+
+            ApplyBorderBack(image, card);
+
+            var imageUrl = card.GetImage()!;
+            using var characterImage = await GetCharacterPictureAsync(imageUrl, card.FromFigure);
+            var mov = card.FromFigure ? 0 : 13;
+            image.Mutate(x => x.DrawImage(characterImage, new Point(mov, mov), 1));
+
+            using var borderImage = await LoadCustomBorderAsync(card);
+            image.Mutate(x => x.DrawImage(borderImage, _origin, 1));
+
+            if (AllowStatsOnNoStatsImage(card))
+            {
+                ApplyUltimateStats(image, card);
+            }
+
+            return image;
+        }
+
+        public Image<Rgba32> GetDuelCardImage(
+            DuelInfo duelInfo,
+            DuelImage? duelImage,
+            Image<Rgba32> winImage,
+            Image<Rgba32> lossImage)
+        {
+            var xiw = 76;
+            var yt = 780;
+            var yi = 131;
+            var xil = 876;
+
+            if (duelInfo.Side == WinnerSide.Right)
+            {
+                xiw = 876;
+                xil = 76;
+            }
+
+            Image<Rgba32> image;
+
+            if (duelImage == null)
+            {
+                image = LoadImage(DuelImage.DefaultUri((int)duelInfo.Side));
+            }
+            else
+            {
+                var imagePath = string.Format(Paths.DuelPicture, duelImage.Name, duelInfo.Side);
+                if (_fileSystem.Exists(imagePath))
+                {
+                    image = LoadImage(imagePath);
+                }
+                else
+                {
+                    imagePath = DuelImage.DefaultUri((int)duelInfo.Side);
+                    image = LoadImage(imagePath);
+                }
+            }
+
+            var nameFont = new Font(_latoBold, 34);
+
+            winImage.Mutate(x => x.Resize(new ResizeOptions
+            {
+                Mode = ResizeMode.Max,
+                Size = new Size(450, 0),
+            }));
+
+            lossImage.Mutate(x => x.Resize(new ResizeOptions
+            {
+                Mode = ResizeMode.Max,
+                Size = new Size(450, 0),
+            }));
+
+            if (duelInfo.Side != WinnerSide.Draw)
+            {
+                lossImage.Mutate(x => x.Grayscale());
+            }
+
+            image.Mutate(x => x.DrawImage(winImage, new Point(xiw, yi), 1));
+            image.Mutate(x => x.DrawImage(lossImage, new Point(xil, yi), 1));
+
+            var winnerColor = Rgba32.FromHex(duelImage != null ? duelImage.Color : DuelImage.DefaultColor());
+            var loserColor = Rgba32.FromHex(duelImage != null ? duelImage.Color : DuelImage.DefaultColor());
+
+            var options = new TextGraphicsOptions() { HorizontalAlignment = HorizontalAlignment.Center, WrapTextWidth = winImage.Width };
+            image.Mutate(x => x.DrawText(options, duelInfo.Winner.Name, nameFont, winnerColor, new Point(xiw, yt)));
+            image.Mutate(x => x.DrawText(options, duelInfo.Loser.Name, nameFont, loserColor, new Point(xil, yt)));
+
+            return image;
+        }
+
+        public Image<Rgba32> GetCatchThatWaifuImage(Image<Rgba32> card, string pokeImg, int xPos, int yPos)
+        {
+            var image = LoadImage(pokeImg);
+            image.Mutate(x => x.DrawImage(card, new Point(xPos, yPos), 1));
+            return image;
+        }
+
+        public async Task<Image<Rgba32>> GetWaifuCardImageAsync(Card card)
+        {
+            var image = await GetWaifuCardNoStatsAsync(card);
+
+            if (card.FromFigure)
+            {
+                ApplyUltimateStats(image, card);
+            }
+            else
+            {
+                ApplyStats(image, card, !card.HasImage());
+            }
+
+            return image;
+        }
 
         public async Task SaveImageFromUrlAsync(string imageUrl, string filePath, Size size, bool stretch = false)
         {
@@ -167,7 +197,7 @@ namespace Sanakan.Game.Services
                 color = Discord.Color.DarkerGrey;
             }
 
-            string rangName = shindenUser?.Rank ?? "";
+            string rangName = shindenUser?.Rank ?? string.Empty;
             string colorRank = color.RawValue.ToString("X6");
 
             var nickFont = GetFontSize(_latoBold, 28, nickname, 290);
@@ -251,7 +281,7 @@ namespace Sanakan.Game.Services
                     cardImage.Mutate(x => x.Resize(new ResizeOptions
                     {
                         Mode = ResizeMode.Max,
-                        Size = new Size(105, 0)
+                        Size = new Size(105, 0),
                     }));
                     profilePic.Mutate(x => x.DrawImage(cardImage, new Point(10, 350), 1));
                 }
@@ -266,6 +296,7 @@ namespace Sanakan.Game.Services
             {
                 expOnLvl = 0;
             }
+
             if (lvlExp < 0)
             {
                 lvlExp = expOnLvl + 1;
@@ -289,6 +320,177 @@ namespace Sanakan.Game.Services
             return profilePic;
         }
 
+        public async Task<Image<Rgba32>> GetSiteStatisticAsync(
+        UserInfo shindenInfo,
+        Discord.Color color,
+        List<LastWatchedRead>? lastRead = null,
+        List<LastWatchedRead>? lastWatch = null)
+        {
+            if (color == Discord.Color.Default)
+            {
+                color = Discord.Color.DarkerGrey;
+            }
+
+            var baseImg = new Image<Rgba32>(500, 320);
+            baseImg.Mutate(x => x.BackgroundColor(Colors.Onyx));
+
+            using var template = Image.Load(Paths.SiteStatisticsPicture);
+            baseImg.Mutate(x => x.DrawImage(template, _origin, 1));
+
+            var avatarUrl = UrlHelpers.GetUserAvatarURL(shindenInfo.AvatarId, shindenInfo.Id!.Value);
+            var hexColor = color.RawValue.ToString("X6");
+
+            using var avatar = await GetSiteStatisticUserBadge(
+                avatarUrl,
+                shindenInfo.Name,
+                hexColor);
+            baseImg.Mutate(x => x.DrawImage(avatar, _origin, 1));
+
+            using var image = new Image<Rgba32>(325, 248);
+            if (shindenInfo?.MeanAnimeScore != null)
+            {
+                using var stats = GetRWStats(
+                    shindenInfo,
+                    Paths.StatsAnimePicture,
+                    false);
+
+                image.Mutate(x => x.DrawImage(stats, _origin, 1));
+            }
+
+            if (shindenInfo?.MeanMangaScore != null)
+            {
+                using var stats = GetRWStats(
+                    shindenInfo,
+                    Paths.StatsMangaPicture,
+                    true);
+
+                image.Mutate(x => x.DrawImage(stats, new Point(0, 128), 1));
+            }
+
+            baseImg.Mutate(x => x.DrawImage(image, new Point(5, 71), 1));
+            using var rwListImage = await GetLastRWList(lastRead, lastWatch);
+            baseImg.Mutate(x => x.DrawImage(rwListImage, new Point(330, 69), 1));
+
+            return baseImg;
+        }
+
+        public async Task<Image<Rgba32>> GetLevelUpBadgeAsync(
+            string name,
+            ulong userLevel,
+            string avatarUrl,
+            Discord.Color color)
+        {
+            if (color == Discord.Color.Default)
+            {
+                color = Discord.Color.DarkerGrey;
+            }
+
+            var msgText1 = "POZIOM";
+            var msgText2 = "Awansuje na:";
+
+            var textFont = new Font(_latoRegular, 16);
+            var nickNameFont = new Font(_latoBold, 22);
+            var lvlFont = new Font(_latoBold, 36);
+
+            var msgText1Length = TextMeasurer.Measure(msgText1, new RendererOptions(textFont));
+            var msgText2Length = TextMeasurer.Measure(msgText2, new RendererOptions(textFont));
+            var nameLength = TextMeasurer.Measure(name, new RendererOptions(nickNameFont));
+            var lvlLength = TextMeasurer.Measure($"{userLevel}", new RendererOptions(lvlFont));
+
+            var textLength = lvlLength.Width + msgText1Length.Width > nameLength.Width ? lvlLength.Width + msgText1Length.Width : nameLength.Width;
+            var estimatedLength = 106 + (int)(textLength > msgText2Length.Width ? textLength : msgText2Length.Width);
+
+            var nickNameColor = Rgba32.FromHex(color.RawValue.ToString("X6"));
+            var baseImg = new Image<Rgba32>((int)estimatedLength, 100);
+
+            baseImg.Mutate(x => x.BackgroundColor(Colors.Onyx));
+            baseImg.Mutate(x => x.DrawText(msgText1, textFont, Rgba32.Gray, new Point(98 + (int)lvlLength.Width, 75)));
+            baseImg.Mutate(x => x.DrawText(name, nickNameFont, nickNameColor, new Point(98, 10)));
+            baseImg.Mutate(x => x.DrawText(msgText2, textFont, Rgba32.Gray, new Point(98, 33)));
+            baseImg.Mutate(x => x.DrawText($"{userLevel}", lvlFont, Rgba32.Gray, new Point(96, 61)));
+
+            using var colorRec = new Image<Rgba32>(82, 82);
+
+            colorRec.Mutate(x => x.BackgroundColor(nickNameColor));
+            baseImg.Mutate(x => x.DrawImage(colorRec, new Point(9, 9), 1));
+
+            using var stream = await GetImageFromUrlAsync(avatarUrl);
+
+            if (stream == null)
+            {
+                return baseImg;
+            }
+
+            using var avatar = Image.Load(stream);
+
+            avatar.Mutate(x => x.Resize(new ResizeOptions
+            {
+                Mode = ResizeMode.Crop,
+                Size = new Size(80, 80),
+            }));
+            baseImg.Mutate(x => x.DrawImage(avatar, new Point(10, 10), 1));
+
+            return baseImg;
+        }
+
+        public Image<Rgba32> GetFColorsView(IEnumerable<(string, uint)> colours)
+        {
+            var message = new Font(_latoRegular, 16);
+            var firstColumnMaxLength = TextMeasurer.Measure("A", new RendererOptions(message));
+            var secondColumnMaxLength = TextMeasurer.Measure("A", new RendererOptions(message));
+
+            var inFirstColumn = (colours.Count() + 1) / 2;
+
+            var index = 1;
+            foreach (var colour in colours)
+            {
+                var nLen = TextMeasurer.Measure(colour.Item1, new RendererOptions(message));
+
+                if (index < inFirstColumn + 1)
+                {
+                    if (firstColumnMaxLength.Width < nLen.Width)
+                    {
+                        firstColumnMaxLength = nLen;
+                    }
+                }
+                else
+                {
+                    if (secondColumnMaxLength.Width < nLen.Width)
+                    {
+                        secondColumnMaxLength = nLen;
+                    }
+                }
+
+                index++;
+            }
+
+            var posY = 5;
+            var posX = 0;
+            var realWidth = (int)(firstColumnMaxLength.Width + secondColumnMaxLength.Width + 20);
+            var realHeight = (int)(firstColumnMaxLength.Height + 2) * (inFirstColumn + 1);
+
+            var imgBase = new Image<Rgba32>(realWidth, realHeight);
+            imgBase.Mutate(x => x.BackgroundColor(Colors.Onyx));
+            imgBase.Mutate(x => x.DrawText("Lista:", message, Colors.Black, _origin));
+
+            index = 1;
+            foreach (var colour in colours)
+            {
+                if (inFirstColumn + 1 == index)
+                {
+                    posY = 5;
+                    posX = (int)firstColumnMaxLength.Width + 10;
+                }
+
+                posY += (int)firstColumnMaxLength.Height + 2;
+                var structColour = Rgba32.FromHex(colour.Item2.ToString("X6"));
+                imgBase.Mutate(x => x.DrawText(colour.Item1, message, structColour, new Point(posX, posY)));
+                index++;
+            }
+
+            return imgBase;
+        }
+
         private Image<Rgba32> GetProfileInside(UserInfo? shindenUser, User databaseUser)
         {
             var config = _options.CurrentValue;
@@ -296,8 +498,8 @@ namespace Sanakan.Game.Services
 
             if (!_fileSystem.Exists(databaseUser.StatsReplacementProfileUri!))
             {
-                if ((databaseUser.ProfileType == ProfileType.Image
-                    || databaseUser.ProfileType == ProfileType.StatisticsWithImage))
+                if (databaseUser.ProfileType == ProfileType.Image
+                    || databaseUser.ProfileType == ProfileType.StatisticsWithImage)
                 {
                     databaseUser.ProfileType = ProfileType.Statistics;
                 }
@@ -309,7 +511,6 @@ namespace Sanakan.Game.Services
                 case ProfileType.StatisticsWithImage:
                     if (shindenUser != null)
                     {
-
                         if (shindenUser.WatchedStatus != null)
                         {
                             using var stats = GetRWStats(
@@ -318,6 +519,7 @@ namespace Sanakan.Game.Services
                                 false);
                             image.Mutate(x => x.DrawImage(stats, new Point(0, 2), 1));
                         }
+
                         if (shindenUser.ReadedStatus != null)
                         {
                             using var stats = GetRWStats(
@@ -332,6 +534,7 @@ namespace Sanakan.Game.Services
                             goto case ProfileType.Image;
                         }
                     }
+
                     break;
 
                 case ProfileType.Cards:
@@ -339,6 +542,7 @@ namespace Sanakan.Game.Services
                         using var cardsBg = GetCardsProfileImage(databaseUser).Result;
                         image.Mutate(x => x.DrawImage(cardsBg, _origin, 1));
                     }
+
                     break;
 
                 case ProfileType.Image:
@@ -347,6 +551,7 @@ namespace Sanakan.Game.Services
                         using var userBackground = Image.Load(stream);
                         image.Mutate(x => x.DrawImage(userBackground, _origin, 1));
                     }
+
                     break;
             }
 
@@ -373,7 +578,7 @@ namespace Sanakan.Game.Services
                     cardImage.Mutate(x => x.Resize(new ResizeOptions
                     {
                         Mode = ResizeMode.Max,
-                        Size = new Size(0, 260)
+                        Size = new Size(0, 260),
                     }));
                     profilePic.Mutate(x => x.DrawImage(cardImage, new Point(10, 6), 1));
                 }
@@ -439,7 +644,7 @@ namespace Sanakan.Game.Services
             avatar.Mutate(x => x.Resize(new ResizeOptions
             {
                 Mode = ResizeMode.Crop,
-                Size = new Size(57, 57)
+                Size = new Size(57, 57),
             }));
             badge.Mutate(x => x.DrawImage(avatar, new Point(6, 5), 1));
 
@@ -478,13 +683,14 @@ namespace Sanakan.Game.Services
             int xSecondRow = startPointX + 200;
             var fontColor = Colors.SmokeyGrey;
 
-            ulong?[] rowArr = {
+            var rowArr = new[]
+            {
                 status?.InProgress,
                 status?.Completed,
                 status?.Skip,
                 status?.Hold,
                 status?.Dropped,
-                status?.Plan
+                status?.Plan,
             };
 
             for (var i = 0; i < rowArr.Length; i++)
@@ -515,18 +721,22 @@ namespace Sanakan.Game.Services
                 {
                     listTime.Add($"{time.Years} lat");
                 }
+
                 if (time.Months != 0)
                 {
                     listTime.Add($"{time.Months} mies.");
                 }
+
                 if (time.Days != 0)
                 {
                     listTime.Add($"{time.Days} dni");
                 }
+
                 if (time.Hours != 0)
                 {
                     listTime.Add($"{time.Hours} h");
                 }
+
                 if (time.Minutes != 0)
                 {
                     listTime.Add($"{time.Minutes} m");
@@ -605,7 +815,7 @@ namespace Sanakan.Game.Services
             cover.Mutate(x => x.Resize(new ResizeOptions
             {
                 Mode = ResizeMode.Max,
-                Size = new Size(20, 50)
+                Size = new Size(20, 50),
             }));
 
             return cover;
@@ -663,172 +873,6 @@ namespace Sanakan.Game.Services
             return image;
         }
 
-        public async Task<Image<Rgba32>> GetSiteStatisticAsync(
-            UserInfo shindenInfo,
-            Discord.Color color,
-            List<LastWatchedRead>? lastRead = null,
-            List<LastWatchedRead>? lastWatch = null)
-        {
-            if (color == Discord.Color.Default)
-            {
-                color = Discord.Color.DarkerGrey;
-            }
-
-            var baseImg = new Image<Rgba32>(500, 320);
-            baseImg.Mutate(x => x.BackgroundColor(Colors.Onyx));
-
-            using var template = Image.Load(Paths.SiteStatisticsPicture);
-            baseImg.Mutate(x => x.DrawImage(template, _origin, 1));
-
-            var avatarUrl = UrlHelpers.GetUserAvatarURL(shindenInfo.AvatarId, shindenInfo.Id!.Value);
-            var hexColor = color.RawValue.ToString("X6");
-
-            using var avatar = await GetSiteStatisticUserBadge(
-                avatarUrl,
-                shindenInfo.Name,
-                hexColor);
-            baseImg.Mutate(x => x.DrawImage(avatar, _origin, 1));
-
-            using var image = new Image<Rgba32>(325, 248);
-            if (shindenInfo?.MeanAnimeScore != null)
-            {
-                using var stats = GetRWStats(
-                    shindenInfo,
-                    Paths.StatsAnimePicture,
-                    false);
-
-                image.Mutate(x => x.DrawImage(stats, _origin, 1));
-            }
-            if (shindenInfo?.MeanMangaScore != null)
-            {
-                using var stats = GetRWStats(
-                    shindenInfo,
-                    Paths.StatsMangaPicture,
-                    true);
-
-                image.Mutate(x => x.DrawImage(stats, new Point(0, 128), 1));
-
-            }
-
-            baseImg.Mutate(x => x.DrawImage(image, new Point(5, 71), 1));
-            using var rwListImage = await GetLastRWList(lastRead, lastWatch);
-            baseImg.Mutate(x => x.DrawImage(rwListImage, new Point(330, 69), 1));
-
-            return baseImg;
-        }
-
-        public async Task<Image<Rgba32>> GetLevelUpBadgeAsync(
-            string name,
-            ulong userLevel,
-            string avatarUrl,
-            Discord.Color color)
-        {
-            if (color == Discord.Color.Default)
-            {
-                color = Discord.Color.DarkerGrey;
-            }
-
-            var msgText1 = "POZIOM";
-            var msgText2 = "Awansuje na:";
-
-            var textFont = new Font(_latoRegular, 16);
-            var nickNameFont = new Font(_latoBold, 22);
-            var lvlFont = new Font(_latoBold, 36);
-
-            var msgText1Length = TextMeasurer.Measure(msgText1, new RendererOptions(textFont));
-            var msgText2Length = TextMeasurer.Measure(msgText2, new RendererOptions(textFont));
-            var nameLength = TextMeasurer.Measure(name, new RendererOptions(nickNameFont));
-            var lvlLength = TextMeasurer.Measure($"{userLevel}", new RendererOptions(lvlFont));
-
-            var textLength = lvlLength.Width + msgText1Length.Width > nameLength.Width ? lvlLength.Width + msgText1Length.Width : nameLength.Width;
-            var estimatedLength = 106 + (int)(textLength > msgText2Length.Width ? textLength : msgText2Length.Width);
-
-            var nickNameColor = Rgba32.FromHex(color.RawValue.ToString("X6"));
-            var baseImg = new Image<Rgba32>((int)estimatedLength, 100);
-
-            baseImg.Mutate(x => x.BackgroundColor(Colors.Onyx));
-            baseImg.Mutate(x => x.DrawText(msgText1, textFont, Rgba32.Gray, new Point(98 + (int)lvlLength.Width, 75)));
-            baseImg.Mutate(x => x.DrawText(name, nickNameFont, nickNameColor, new Point(98, 10)));
-            baseImg.Mutate(x => x.DrawText(msgText2, textFont, Rgba32.Gray, new Point(98, 33)));
-            baseImg.Mutate(x => x.DrawText($"{userLevel}", lvlFont, Rgba32.Gray, new Point(96, 61)));
-
-            using var colorRec = new Image<Rgba32>(82, 82);
-
-            colorRec.Mutate(x => x.BackgroundColor(nickNameColor));
-            baseImg.Mutate(x => x.DrawImage(colorRec, new Point(9, 9), 1));
-
-            using var stream = await GetImageFromUrlAsync(avatarUrl);
-
-            if (stream == null)
-            {
-                return baseImg;
-            }
-
-            using var avatar = Image.Load(stream);
-
-            avatar.Mutate(x => x.Resize(new ResizeOptions
-            {
-                Mode = ResizeMode.Crop,
-                Size = new Size(80, 80)
-            }));
-            baseImg.Mutate(x => x.DrawImage(avatar, new Point(10, 10), 1));
-
-            return baseImg;
-        }
-
-        public Image<Rgba32> GetFColorsView(IEnumerable<(string, uint)> colours)
-        {
-            var message = new Font(_latoRegular, 16);
-            var firstColumnMaxLength = TextMeasurer.Measure("A", new RendererOptions(message));
-            var secondColumnMaxLength = TextMeasurer.Measure("A", new RendererOptions(message));
-
-            var inFirstColumn = (colours.Count() + 1) / 2;
-
-            var index = 1;
-            foreach (var colour in colours)
-            {
-                var nLen = TextMeasurer.Measure(colour.Item1, new RendererOptions(message));
-
-                if (index < inFirstColumn + 1)
-                {
-                    if (firstColumnMaxLength.Width < nLen.Width)
-                        firstColumnMaxLength = nLen;
-                }
-                else
-                {
-                    if (secondColumnMaxLength.Width < nLen.Width)
-                        secondColumnMaxLength = nLen;
-                }
-                index++;
-            }
-
-            int posY = 5;
-            int posX = 0;
-            int realWidth = (int)(firstColumnMaxLength.Width + secondColumnMaxLength.Width + 20);
-            int realHeight = (int)(firstColumnMaxLength.Height + 2) * (inFirstColumn + 1);
-
-            var imgBase = new Image<Rgba32>(realWidth, realHeight);
-            imgBase.Mutate(x => x.BackgroundColor(Colors.Onyx));
-            imgBase.Mutate(x => x.DrawText("Lista:", message, Colors.Black, _origin));
-
-            index = 1;
-            foreach (var colour in colours)
-            {
-                if (inFirstColumn + 1 == index)
-                {
-                    posY = 5;
-                    posX = (int)firstColumnMaxLength.Width + 10;
-                }
-
-                posY += (int)firstColumnMaxLength.Height + 2;
-                var structColour = Rgba32.FromHex(colour.Item2.ToString("X6"));
-                imgBase.Mutate(x => x.DrawText(colour.Item1, message, structColour, new Point(posX, posY)));
-                index++;
-            }
-
-            return imgBase;
-        }
-
         private async Task<Image<Rgba32>> GetCharacterPictureAsync(string characterUrl, bool ultimate)
         {
             var characterImg = LoadImage(Paths.PWEmptyPicture);
@@ -850,7 +894,7 @@ namespace Sanakan.Game.Services
             image.Mutate(x => x.Resize(new ResizeOptions
             {
                 Mode = ResizeMode.Max,
-                Size = new Size(characterImg.Width, 0)
+                Size = new Size(characterImg.Width, 0),
             }));
 
             int startY = 0;
@@ -899,6 +943,7 @@ namespace Sanakan.Game.Services
 
                         border = "Border_0.png";
                     }
+
                     break;
             }
 
@@ -962,7 +1007,6 @@ namespace Sanakan.Game.Services
             hpImg.Mutate(x => x.Rotate(-18));
             image.Mutate(x => x.DrawImage(hpImg, new Point(320, 528), 1));
 
-
             image.Mutate(x => x.DrawText(attackPoints, adFont, Colors.PlumPurple, new Point(43, 603)));
             image.Mutate(x => x.DrawText(defencePoints, adFont, Colors.DeepSeaBlue, new Point(337, 603)));
         }
@@ -986,7 +1030,6 @@ namespace Sanakan.Game.Services
 
             image.Mutate(x => x.DrawImage(hpImg, new Point(342, 338), 1));
 
-
             using var defImg = baseImage.Clone();
 
             defImg.Mutate(x => x.DrawText(defencePoints, adFont, Colors.ToryBlue, new Point(1)));
@@ -1000,7 +1043,6 @@ namespace Sanakan.Game.Services
             atkImg.Mutate(x => x.Rotate(-16));
 
             image.Mutate(x => x.DrawImage(atkImg, new Point(50, 502), 1));
-
         }
 
         private void ApplyGammaStats(Image<Rgba32> image, Card card)
@@ -1081,12 +1123,10 @@ namespace Sanakan.Game.Services
             hpImg.Mutate(x => x.Rotate(-19));
             image.Mutate(x => x.DrawImage(hpImg, new Point(57, 555), 1));
 
-
             using var atkImg = new Image<Rgba32>(options.StatsImageWidth, options.StatsImageHeight);
             atkImg.Mutate(x => x.DrawText(attackPoints, aphFont, Colors.BlossomPink, new Point(1)));
             atkImg.Mutate(x => x.Rotate(34));
             image.Mutate(x => x.DrawImage(atkImg, new Point(80, 485), 1));
-
 
             image.Mutate(x => x.DrawText(defencePoints, aphFont, Colors.BlueDiamond, new Point(326, 576)));
         }
@@ -1138,6 +1178,7 @@ namespace Sanakan.Game.Services
                     {
                         return false;
                     }
+
                     return true;
 
                 default:
@@ -1175,16 +1216,37 @@ namespace Sanakan.Game.Services
             }
 
             int startXDef = 390;
-            if (defence < 10) startXDef += 15;
-            if (defence > 99) startXDef -= 15;
+            if (defence < 10)
+            {
+                startXDef += 15;
+            }
+
+            if (defence > 99)
+            {
+                startXDef -= 15;
+            }
 
             int startXAtk = 390;
-            if (attack < 10) startXAtk += 15;
-            if (attack > 99) startXAtk -= 15;
+            if (attack < 10)
+            {
+                startXAtk += 15;
+            }
+
+            if (attack > 99)
+            {
+                startXAtk -= 15;
+            }
 
             int startXHp = 380;
-            if (health < 10) startXHp += 15;
-            if (health > 99) startXHp -= 15;
+            if (health < 10)
+            {
+                startXHp += 15;
+            }
+
+            if (health > 99)
+            {
+                startXHp -= 15;
+            }
 
             var numFont = new Font(_latoBold, 54);
             image.Mutate(x => x.DrawText($"{health}", numFont, Colors.Black, new Point(startXHp, 190)));
@@ -1223,7 +1285,6 @@ namespace Sanakan.Game.Services
             using var bord = GenerateBorder(card);
             image.Mutate(x => x.DrawImage(bord, _origin, 1));
 
-
             if (AllowStatsOnNoStatsImage(card))
             {
                 ApplyUltimateStats(image, card);
@@ -1232,118 +1293,91 @@ namespace Sanakan.Game.Services
             return image;
         }
 
-        public async Task<Image<Rgba32>> GetWaifuInProfileCardAsync(Card card)
+        private FontFamily LoadFontFromStream(string resourceName)
         {
-            var image = new Image<Rgba32>(_options.CurrentValue.CharacterImageWidth, _options.CurrentValue.CharacterImageHeight);
-
-            ApplyBorderBack(image, card);
-            
-            var imageUrl = card.GetImage()!;
-            using var characterImage = await GetCharacterPictureAsync(imageUrl, card.FromFigure);
-            var mov = card.FromFigure ? 0 : 13;
-            image.Mutate(x => x.DrawImage(characterImage, new Point(mov, mov), 1));
-
-            using var borderImage = await LoadCustomBorderAsync(card);
-            image.Mutate(x => x.DrawImage(borderImage, _origin, 1));
-
-            if (AllowStatsOnNoStatsImage(card))
-            {
-                ApplyUltimateStats(image, card);
-            }
-
-            return image;
+            var fontStream = _resourceManager.GetResourceStream(resourceName);
+            return _fontCollection.Install(fontStream);
         }
 
-        public Image<Rgba32> GetDuelCardImage(
-            DuelInfo duelInfo,
-            DuelImage? duelImage,
-            Image<Rgba32> winImage,
-            Image<Rgba32> lossImage)
+        private async Task<Stream?> GetImageFromUrlAsync(string url, bool fixedExtension = false)
         {
-            int Xiw = 76;
-            int Yt = 780;
-            int Yi = 131;
-            int Xil = 876;
-
-            if (duelInfo.Side == WinnerSide.Right)
+            try
             {
-                Xiw = 876;
-                Xil = 76;
-            }
+                var stream = await _imageResolver.GetAsync(url);
 
-            Image<Rgba32> image;
-
-            if (duelImage == null)
-            {
-                image = LoadImage(DuelImage.DefaultUri((int)duelInfo.Side));
-            }
-            else
-            {
-                var imagePath = string.Format(Paths.DuelPicture, duelImage.Name, duelInfo.Side);
-                if (_fileSystem.Exists(imagePath))
+                if (stream != null)
                 {
-                    image = LoadImage(imagePath);
+                    return stream;
                 }
-                else
+
+                if (!fixedExtension)
                 {
-                    imagePath = DuelImage.DefaultUri((int)duelInfo.Side);
-                    image = LoadImage(imagePath);
+                    return null;
+                }
+
+                var splited = url.Split(".");
+
+                foreach (var extension in _extensions)
+                {
+                    splited[splited.Length - 1] = extension;
+                    stream = await _imageResolver.GetAsync(url);
+
+                    return stream;
                 }
             }
-
-            var nameFont = new Font(_latoBold, 34);
-
-            winImage.Mutate(x => x.Resize(new ResizeOptions
+            catch (Exception)
             {
-                Mode = ResizeMode.Max,
-                Size = new Size(450, 0)
-            }));
-
-            lossImage.Mutate(x => x.Resize(new ResizeOptions
-            {
-                Mode = ResizeMode.Max,
-                Size = new Size(450, 0)
-            }));
-
-            if (duelInfo.Side != WinnerSide.Draw)
-            {
-                lossImage.Mutate(x => x.Grayscale());
+                return null;
             }
 
-            image.Mutate(x => x.DrawImage(winImage, new Point(Xiw, Yi), 1));
-            image.Mutate(x => x.DrawImage(lossImage, new Point(Xil, Yi), 1));
-
-            var winnerColor = Rgba32.FromHex(duelImage != null ? duelImage.Color : DuelImage.DefaultColor());
-            var loserColor = Rgba32.FromHex(duelImage != null ? duelImage.Color : DuelImage.DefaultColor());
-
-            var options = new TextGraphicsOptions() { HorizontalAlignment = HorizontalAlignment.Center, WrapTextWidth = winImage.Width };
-            image.Mutate(x => x.DrawText(options, duelInfo.Winner.Name, nameFont, winnerColor, new Point(Xiw, Yt)));
-            image.Mutate(x => x.DrawText(options, duelInfo.Loser.Name, nameFont, loserColor, new Point(Xil, Yt)));
-
-            return image;
+            return null;
         }
 
-        public Image<Rgba32> GetCatchThatWaifuImage(Image<Rgba32> card, string pokeImg, int xPos, int yPos)
+        private Font GetFontSize(FontFamily fontFamily, float size, string text, float maxWidth)
         {
-            var image = LoadImage(pokeImg);
-            image.Mutate(x => x.DrawImage(card, new Point(xPos, yPos), 1));
-            return image;
+            var font = new Font(fontFamily, size);
+            var measured = TextMeasurer.Measure(text, new RendererOptions(font));
+
+            while (measured.Width > maxWidth)
+            {
+                if (--size < 1)
+                {
+                    break;
+                }
+
+                font = new Font(fontFamily, size);
+                measured = TextMeasurer.Measure(text, new RendererOptions(font));
+            }
+
+            return font;
         }
 
-        public async Task<Image<Rgba32>> GetWaifuCardImageAsync(Card card)
+        private void CheckProfileImageSize(Image<Rgba32> image, Size size, bool stretch)
         {
-            var image = await GetWaifuCardNoStatsAsync(card);
-
-            if (card.FromFigure)
+            if (image.Width > size.Width || image.Height > size.Height)
             {
-                ApplyUltimateStats(image, card);
-            }
-            else
-            {
-                ApplyStats(image, card, !card.HasImage());
+                image.Mutate(x => x.Resize(new ResizeOptions
+                {
+                    Mode = ResizeMode.Max,
+                    Size = size,
+                }));
+
+                return;
             }
 
-            return image;
+            if (!stretch)
+            {
+                return;
+            }
+
+            if (image.Width < size.Width || image.Height < size.Height)
+            {
+                image.Mutate(x => x.Resize(new ResizeOptions
+                {
+                    Mode = ResizeMode.Stretch,
+                    Size = size,
+                }));
+            }
         }
 
         private Image<Rgba32> LoadImage(string path)

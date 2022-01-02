@@ -6,7 +6,10 @@ namespace Sanakan.TaskQueue.Messages
 {
     public class GiveCardsMessage : BaseMessage
     {
-        public GiveCardsMessage() : base(Priority.Low) { }
+        public GiveCardsMessage()
+            : base(Priority.Low)
+        {
+        }
 
         public ulong DiscordUserId { get; set; }
 

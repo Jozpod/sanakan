@@ -3,12 +3,12 @@
 namespace Sanakan.DAL.Models
 {
     /// <summary>
-    ///  Describes character personality archetypes
+    ///  Describes character personality archetypes.
     /// </summary>
     public enum Dere : byte
     {
         /// <summary>
-        /// The type of character who in the beginning acts rudely towards their love interest. But once the timing is perfect they reveal their gentle side
+        /// The type of character who in the beginning acts rudely towards their love interest. But once the timing is perfect they reveal their gentle side.
         /// </summary>
         Tsundere = 0,
 
@@ -43,22 +43,22 @@ namespace Sanakan.DAL.Models
         Mayadere = 6,
 
         /// <summary>
-        /// The type of character who is really shy and uses violence as a way to handle it. 
+        /// The type of character who is really shy and uses violence as a way to handle it.
         /// </summary>
         Bodere = 7,
 
         /// <summary>
-        /// The type of character which is mixture of Kuudere and Dandere,
+        /// The type of character which is mixture of Kuudere and Dandere.
         /// </summary>
         Yami = 8,
 
         /// <summary>
-        /// The type of character which behaves like Raito from Kyoukai Resident anime???
+        /// The type of character which behaves like Raito from Kyoukai Resident anime???.
         /// </summary>
         Raito = 9,
 
         /// <summary>
-        /// The type of character which behaves like Yato from Noragami anime???
+        /// The type of character which behaves like Yato from Noragami anime???.
         /// </summary>
         Yato = 10
     }

@@ -40,7 +40,7 @@ namespace Sanakan.Web.Controllers
         }
 
         /// <summary>
-        /// Updates bot
+        /// Updates bot.
         /// </summary>
         [HttpPost("update"), Authorize(Policy = AuthorizePolicies.Site)]
         [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]

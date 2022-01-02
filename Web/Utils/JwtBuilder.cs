@@ -19,8 +19,6 @@ namespace Sanakan.Api
         private readonly SigningCredentials _signingCredentials;
         private readonly SecurityTokenHandler _securityTokenHandler;
 
-        public static SecurityKey ToSecurityKey(string key) => new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
-
         public JwtBuilder(
             IOptionsMonitor<JwtConfiguration> options,
             Encoding encoding,
@@ -34,13 +32,16 @@ namespace Sanakan.Api
             _securityTokenHandler = new JwtSecurityTokenHandler();
         }
 
+        public static SecurityKey ToSecurityKey(string key) => new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
+
         public TokenData Build(TimeSpan expiresOn, params Claim[] claims)
         {
             var options = _options.CurrentValue;
             var allClaims = claims.Append(
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()));
 
-            var token = new JwtSecurityToken(options.Issuer,
+            var token = new JwtSecurityToken(
+                options.Issuer,
                 options.Issuer,
                 allClaims,
                 expires: _systemClock.UtcNow + expiresOn,

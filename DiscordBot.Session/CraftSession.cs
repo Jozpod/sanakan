@@ -23,13 +23,13 @@ namespace Sanakan.DiscordBot.Session
 {
     public class CraftSession : InteractionSession
     {
-        private IIconConfiguration _iconConfiguration = null;
-        private IServiceProvider _serviceProvider = null;
         private readonly IUserMessage _userMessage;
         private readonly IList<Item> _items;
         private readonly PlayerInfo _playerInfo;
         private readonly string _name;
         private readonly string _tips;
+        private IIconConfiguration _iconConfiguration = null;
+        private IServiceProvider _serviceProvider = null;
 
         public CraftSession(
             ulong ownerId,
@@ -66,6 +66,19 @@ namespace Sanakan.DiscordBot.Session
             var canComplete = await HandleReactionAsync(context);
             IsRunning = false;
             return canComplete;
+        }
+
+        public override async ValueTask DisposeAsync()
+        {
+            try
+            {
+                await _userMessage.RemoveAllReactionsAsync();
+            }
+            catch (Exception)
+            {
+            }
+
+            _serviceProvider = null;
         }
 
         private async Task HandleMessageAsync(SessionContext context)
@@ -194,7 +207,10 @@ namespace Sanakan.DiscordBot.Session
                 count = firstItem.Count;
                 playerItems.Remove(firstItem);
             }
-            else firstItem.Count -= count;
+            else
+            {
+                firstItem.Count -= count;
+            }
 
             var secondItem = items.FirstOrDefault(x => x.Type == firstItem.Type
                 && x.Quality == firstItem.Quality);
@@ -289,6 +305,7 @@ namespace Sanakan.DiscordBot.Session
                     hasError = true;
                     break;
                 }
+
                 thisItem.Count -= item.Count;
                 if (thisItem.Count < 1)
                 {
@@ -320,7 +337,7 @@ namespace Sanakan.DiscordBot.Session
             return true;
         }
 
-        public Embed BuildEmbed()
+        private Embed BuildEmbed()
         {
             var owned = _items.ToItemList();
             var usedItems = _playerInfo.Items;
@@ -346,17 +363,6 @@ namespace Sanakan.DiscordBot.Session
                 Color = EMType.Bot.Color(),
                 Description = $"{_name}\n\n{craftingView}\n\n{_tips}"
             }.Build();
-        }
-
-        public override async ValueTask DisposeAsync()
-        {
-            try
-            {
-                await _userMessage.RemoveAllReactionsAsync();
-            }
-            catch (Exception) { }
-
-            _serviceProvider = null;
         }
     }
 }

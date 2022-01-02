@@ -8,10 +8,10 @@
         IncreaseDefence = 3,
         AddReset = 4,
         NewCard = 5,     // +
-        
+
         None = 6,
         ChangeDere = 7,
-        DecreaseAttack = 8, 
+        DecreaseAttack = 8,
         DecreaseDefence = 9,
         DecreaseAffection = 10,
         LoseCard = 11,

@@ -169,6 +169,9 @@
 
 3-5x{0} - tryb psaja (podwójne wygrane)</value>
   </data>
+  <data name="ImpersonationAttempt" xml:space="preserve">
+    <value>Wykryto próbę podszycia się. Nieładnie!</value>
+  </data>
   <data name="InvalidDuration" xml:space="preserve">
     <value>Podano zla dlugosc</value>
   </data>
@@ -177,6 +180,12 @@
   </data>
   <data name="MatchedMultipleUsers" xml:space="preserve">
     <value>Dopasowano wielu użytkowników!</value>
+  </data>
+  <data name="MessageDoesNotExist" xml:space="preserve">
+    <value>Wiadomość nie istnieje!\nPamiętaj, że polecenie musi zostać użyte w tym samym kanale, gdzie znajduje się wiadomość!</value>
+  </data>
+  <data name="MessageTooLong" xml:space="preserve">
+    <value>Wiadomość jest za długa!</value>
   </data>
   <data name="MuteRoleNotSet" xml:space="preserve">
     <value>Rola wyciszająca nie jest ustawiona.</value>
@@ -376,6 +385,12 @@ Rzędy / `1`, `2`, `3`</value>
   </data>
   <data name="TitleNotInWishList" xml:space="preserve">
     <value>Nikt nie ma tego tytułu wpisanego na listę życzeń.</value>
+  </data>
+  <data name="UserAlreadyConnected" xml:space="preserve">
+    <value>Wygląda na to, że ktoś już połączył się z tym kontem.</value>
+  </data>
+  <data name="UserConnected" xml:space="preserve">
+    <value>Konta zostały połączone.</value>
   </data>
   <data name="UserDoesNotExistInDatabase" xml:space="preserve">
     <value>Ta osoba nie ma profilu bota.</value>

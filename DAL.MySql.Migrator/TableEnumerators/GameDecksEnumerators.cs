@@ -6,7 +6,9 @@ namespace Sanakan.DAL.MySql.Migrator.TableEnumerators
     public class GameDecksEnumerators : TableEnumerator<GameDeck>
     {
         public GameDecksEnumerators(IDbConnection connection)
-           : base(connection) { }
+           : base(connection)
+        {
+        }
 
         public override GameDeck Current
         {

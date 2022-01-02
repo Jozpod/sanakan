@@ -5,7 +5,9 @@ namespace Sanakan.DAL.MySql.Migrator.TableEnumerators
     public class TransferAnalyticsEnumerator : TableEnumerator<TransferAnalytics>
     {
         public TransferAnalyticsEnumerator(IDbConnection connection)
-            : base(connection) { }
+            : base(connection)
+        {
+        }
 
         public override TransferAnalytics Current => new()
         {

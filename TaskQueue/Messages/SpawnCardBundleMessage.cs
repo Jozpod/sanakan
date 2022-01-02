@@ -4,7 +4,10 @@ namespace Sanakan.TaskQueue.Messages
 {
     public class SpawnCardBundleMessage : BaseMessage
     {
-        public SpawnCardBundleMessage() : base(Priority.Low) { }
+        public SpawnCardBundleMessage()
+            : base(Priority.Low)
+        {
+        }
 
         public ulong DiscordUserId { get; set; }
 

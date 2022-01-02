@@ -8,7 +8,8 @@ namespace Sanakan.DAL.Repositories
         private readonly SanakanDbContext _dbContext;
 
         public SystemAnalyticsRepository(
-            SanakanDbContext dbContext) : base(dbContext)
+            SanakanDbContext dbContext)
+            : base(dbContext)
         {
             _dbContext = dbContext;
         }

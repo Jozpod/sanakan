@@ -1,22 +1,22 @@
 ﻿namespace Sanakan.Configuration
 {
     /// <summary>
-    /// Autor wiadomości - pierwsza linia
+    /// Describes message author.
     /// </summary>
     public partial class RichMessageAuthor
     {
         /// <summary>
-        /// Tekst pierwszej lini
+        /// The first line text.
         /// </summary>
         public string Name { get; set; } = null;
 
         /// <summary>
-        /// Obrazek przy pierwszej lini
+        /// The image URL.
         /// </summary>
         public string ImageUrl { get; set; } = null;
 
         /// <summary>
-        /// Adres do którego prowadzi imię autora
+        /// The author link URL.
         /// </summary>
         public string NameUrl { get; set; } = null;
     }

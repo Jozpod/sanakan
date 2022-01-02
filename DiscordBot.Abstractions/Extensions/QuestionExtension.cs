@@ -6,6 +6,22 @@ namespace Sanakan.Extensions
 {
     public static class QuestionExtension
     {
+        public static Discord.IEmote[] GetEmotes(this Question question)
+        {
+            var count = question.Answers.Count;
+            var emotes = new Discord.IEmote[count];
+            var answers = question.Answers;
+
+            for (var index = 0; index < count; index++)
+            {
+                emotes[index] = GetEmote(answers[index].Number);
+            }
+
+            return emotes.ToArray();
+        }
+
+        public static Discord.IEmote GetRightEmote(this Question question) => GetEmote(question.AnswerNumber);
+
         private static Discord.IEmote GetEmote(int index)
         {
             switch (index)
@@ -30,23 +46,7 @@ namespace Sanakan.Extensions
                     return Emojis.Eight;
                 default:
                     return Emojis.Nine;
-            };
-        }
-
-        public static Discord.IEmote[] GetEmotes(this Question question)
-        {
-            var count = question.Answers.Count;
-            var emotes = new Discord.IEmote[count];
-            var answers = question.Answers;
-
-            for (var index = 0; index < count; index++)
-            {
-                emotes[index] = GetEmote(answers[index].Number);
             }
-
-            return emotes.ToArray();
         }
-
-        public static Discord.IEmote GetRightEmote(this Question question) => GetEmote(question.AnswerNumber);
     }
 }

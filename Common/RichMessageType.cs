@@ -6,22 +6,22 @@
     public enum RichMessageType : byte
     {
         /// <summary>
-        /// Describes missing type
+        /// Describes missing type.
         /// </summary>
         None = 0,
 
         /// <summary>
-        /// News channel
+        /// News channel.
         /// </summary>
         News = 1,
 
         /// <summary>
-        /// Review channel
+        /// Review channel.
         /// </summary>
         Review = 2,
 
         /// <summary>
-        /// New epsiode channel
+        /// New epsiode channel.
         /// </summary>
         NewEpisode = 3,
 
@@ -31,7 +31,7 @@
         UserNotify = 4,
 
         /// <summary>
-        /// New epsiode channel
+        /// New epsiode channel.
         /// </summary>
         NewEpisodePL = 5,
 
@@ -41,19 +41,18 @@
         Recommendation = 6,
 
         /// <summary>
-        /// Wiadomość do kanału moderatorów
+        /// The message targeted at moderator channel.
         /// </summary>
         ModNotify = 7,
 
         /// <summary>
-        /// Wiadomość do kanału sezonów
+        /// The message targeted at season channel.
         /// </summary>
         NewSesonalEpisode = 8,
 
         /// <summary>
-        /// Wiadomość do kanału raportów
+        /// The message targeted at report channel.
         /// </summary>
         AdminNotify = 9,
     }
-
 }

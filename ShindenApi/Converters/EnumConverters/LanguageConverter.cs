@@ -12,9 +12,12 @@ namespace Sanakan.ShindenApi.Converters
             { "ko", Language.Korean },
             { "cn", Language.Chinese },
             { "en", Language.English },
-            { "jp", Language.Japanese},
+            { "jp", Language.Japanese },
         };
 
-        public LanguageConverter() : base(_map, Language.NotSpecified) {}
+        public LanguageConverter()
+            : base(_map, Language.NotSpecified)
+        {
+        }
     }
 }
