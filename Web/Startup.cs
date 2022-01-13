@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Versioning;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
@@ -33,6 +34,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Text;
+using System.Threading;
 
 namespace Sanakan.Web
 {
@@ -176,6 +178,7 @@ namespace Sanakan.Web
             services.AddRepositories();
             services.AddDatabaseFacade();
             services.AddTaskQueue();
+            services.AddCustomLogging();
 
             if (shindenApiConfiguration.UseFake)
             {

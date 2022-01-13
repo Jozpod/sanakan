@@ -3,7 +3,6 @@ using Sanakan.Game.Models;
 using Sanakan.ShindenApi.Models;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.Primitives;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -39,9 +38,9 @@ namespace Sanakan.Game.Services.Abstractions
 
         Task<Image<Rgba32>> GetWaifuInProfileCardAsync(Card card);
 
-        Image<Rgba32> GetDuelCardImage(DuelInfo info, DuelImage image, Image<Rgba32> win, Image<Rgba32> los);
+        Task<Image> GetDuelCardImageAsync(DuelInfo info, DuelImage image, Image<Rgba32> win, Image<Rgba32> los);
 
-        Image<Rgba32> GetCatchThatWaifuImage(Image<Rgba32> card, string imageUrl, int xPos, int yPos);
+        Task<Image> GetCatchThatWaifuImageAsync(Image<Rgba32> card, string imageUrl, int xPos, int yPos);
 
         Task<Image<Rgba32>> GetWaifuCardImageAsync(Card card);
     }

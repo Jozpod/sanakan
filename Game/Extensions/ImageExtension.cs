@@ -1,11 +1,11 @@
 ﻿using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Drawing;
+using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.Formats;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
-using SixLabors.Primitives;
-using SixLabors.Shapes;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
@@ -18,17 +18,15 @@ namespace Sanakan.Extensions
         private static IImageEncoder _jpgEncoder = new JpegEncoder() { Quality = 85 };
         private static IImageEncoder _pngEncoder = new PngEncoder();
 
-        public static Stream ToJpgStream<T>(this Image<T> img)
-            where T : struct, IPixel<T>
+        public static Stream ToJpgStream(this Image image)
         {
             var stream = new MemoryStream();
-            img.Save(stream, _jpgEncoder);
+            image.Save(stream, _jpgEncoder);
             stream.Seek(0, SeekOrigin.Begin);
             return stream;
         }
 
-        public static Stream ToPngStream<T>(this Image<T> image)
-            where T : struct, IPixel<T>
+        public static Stream ToPngStream(this Image image)
         {
             var stream = new MemoryStream();
             image.Save(stream, _pngEncoder);
@@ -36,8 +34,7 @@ namespace Sanakan.Extensions
             return stream;
         }
 
-        public static string SaveToPath<T>(this Image<T> image, string path, Common.IFileSystem fileSystem)
-            where T : struct, IPixel<T>
+        public static string SaveToPath(this Image image, string path, Common.IFileSystem fileSystem)
         {
             var extension = path.Split(".").Last().ToLower();
             var encoder = (extension == "png") ? _pngEncoder : _jpgEncoder;
@@ -47,8 +44,7 @@ namespace Sanakan.Extensions
             return path;
         }
 
-        public static string SaveToPath<T>(this Image<T> image, string path, int width, Common.IFileSystem fileSystem, int height = 0)
-            where T : struct, IPixel<T>
+        public static string SaveToPath(this Image image, string path, int width, Common.IFileSystem fileSystem, int height = 0)
         {
             var extension = path.Split(".").Last().ToLower();
             var encoder = (extension == "png") ? _pngEncoder : _jpgEncoder;
@@ -60,18 +56,25 @@ namespace Sanakan.Extensions
         }
 
         public static Image<T> ResizeAsNew<T>(this Image<T> img, int width, int height = 0)
-            where T : struct, IPixel<T>
+            where T : unmanaged, IPixel<T>
         {
             var nImg = img.Clone();
             nImg.Mutate(x => x.Resize(new Size(width, height)));
             return nImg;
         }
 
-        public static void Round(this IImageProcessingContext<Rgba32> img, float radius)
+        public static void Round(this IImageProcessingContext imageProcessingContext, float radius)
         {
-            var size = img.GetCurrentSize();
-            var gOptions = new GraphicsOptions(true) { AlphaCompositionMode = PixelAlphaCompositionMode.DestOut };
-            img.Fill(gOptions, Rgba32.Black, BuildCorners(size.Width, size.Height, radius));
+            var size = imageProcessingContext.GetCurrentSize();
+
+            var gOptions = new GraphicsOptions()
+            {
+                AlphaCompositionMode = PixelAlphaCompositionMode.DestOut
+            };
+
+            imageProcessingContext.Fill(gOptions, Rgba32.ParseHex("#000"));
+
+            //imageProcessingContext.Fill(gOptions, Rgba32.ParseHex("#000"), BuildCorners(size.Width, size.Height, radius));
         }
 
         private static IPathCollection BuildCorners(int imageWidth, int imageHeight, float cornerRadius)

@@ -3,7 +3,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.DiscordBot.Services;
 using Sanakan.DiscordBot.Services.Abstractions;
-using SixLabors.Primitives;
+using SixLabors.ImageSharp;
 using System.Threading.Tasks;
 
 namespace DiscordBot.ServicesTests.ProfileServiceTests

@@ -1,4 +1,5 @@
 ﻿using Sanakan.Common;
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net.Http;
@@ -20,7 +21,7 @@ namespace Sanakan.Game.Services
             _fileSystem = fileSystem;
         }
 
-        public async Task<Stream?> GetAsync(string url)
+        public async Task<Stream?> GetAsync(Uri url)
         {
             var response = await _httpClient.GetAsync(url);
 

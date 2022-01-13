@@ -87,7 +87,7 @@ namespace Sanakan.Daemon.Tests.HostedServices.ModeratorHostedServiceTests
 
             var cancellationTokenSource = new CancellationTokenSource();
             await _service.StartAsync(cancellationTokenSource.Token);
-            _timerMock.Raise(pr => pr.Tick += null, null, new TimerEventArgs(null)); ;
+            _timerMock.Raise(pr => pr.Tick += null, null, new TimerEventArgs(null));
         }
 
         [TestMethod]

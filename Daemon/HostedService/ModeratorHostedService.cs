@@ -155,7 +155,7 @@ namespace Sanakan.Daemon.HostedService
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error occurred in moderator background service", ex);
+                _logger.LogError(ex, "Error occurred in moderator background service");
             }
             finally
             {

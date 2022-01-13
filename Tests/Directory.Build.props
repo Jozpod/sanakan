@@ -1,8 +1,9 @@
 <Project>
     <PropertyGroup>
-        <TargetFramework>net5.0</TargetFramework>
-        <LangVersion>9.0</LangVersion>
+        <TargetFramework>net6.0</TargetFramework>
+        <LangVersion>10.0</LangVersion>
         <Nullable>enable</Nullable>
+        <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -18,4 +19,13 @@
         <DebugType>Portable</DebugType>
         <DebugSymbols>true</DebugSymbols>
     </PropertyGroup>
+
+    <PropertyGroup>
+        <GenerateDocumentationFromFile>true</GenerateDocumentationFromFile>
+        <CodeAnalysisRuleSet>$(MSBuildThisFileDirectory)../stylecop.ruleset</CodeAnalysisRuleSet>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <AdditionalFiles Include="$(MSBuildThisFileDirectory)../stylecop.json" Link="stylecop.json" />
+    </ItemGroup>
 </Project>

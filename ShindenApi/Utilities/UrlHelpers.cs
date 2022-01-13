@@ -65,7 +65,7 @@ namespace Sanakan.ShindenApi.Utilities
             return $"{Constants.ShindenCdnUrl}cdn1/images/225x350/{imageID}.jpg";
         }
 
-        public static string GetUserAvatarURL(ulong? imageID, ulong userID)
+        public static Uri GetUserAvatarURL(ulong? imageID, ulong userID)
         {
             if (!imageID.HasValue)
             {
@@ -76,7 +76,9 @@ namespace Sanakan.ShindenApi.Utilities
                 return GetPlaceholderUserImageURL();
             }
 
-            return $"{Constants.ShindenCdnUrl}cdn1/avatars/225x350/{userID}.jpg?v{imageID}";
+            var uri = new Uri($"{Constants.ShindenCdnUrl}cdn1/avatars/225x350/{userID}.jpg?v{imageID}");
+
+            return uri;
         }
 
         public static string GetPersonPictureURL(ulong? imageID) => GetBigImageURL(imageID);
@@ -86,9 +88,9 @@ namespace Sanakan.ShindenApi.Utilities
             return $"{Constants.ShindenCdnUrl}cdn1/other/placeholders/title/225x350.jpg";
         }
 
-        public static string GetPlaceholderUserImageURL()
+        public static Uri GetPlaceholderUserImageURL()
         {
-            return $"{Constants.ShindenCdnUrl}cdn1/other/placeholders/user/100x100.jpg";
+            return new Uri($"{Constants.ShindenCdnUrl}cdn1/other/placeholders/user/100x100.jpg");
         }
 
         public static string GetSeriesURL(ulong seriesID)

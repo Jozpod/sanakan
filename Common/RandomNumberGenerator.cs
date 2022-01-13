@@ -11,7 +11,7 @@ namespace Sanakan.Common
 
         public RandomNumberGenerator()
         {
-            _randomNumberGenerator = new RNGCryptoServiceProvider();
+            _randomNumberGenerator = System.Security.Cryptography.RandomNumberGenerator.Create();
         }
 
         public IEnumerable<T> Shuffle<T>(IEnumerable<T> list)

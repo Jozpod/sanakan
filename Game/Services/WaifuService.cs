@@ -1130,7 +1130,7 @@ namespace Sanakan.Game.Services
             using var cardImage = await _imageProcessor.GetWaifuCardImageAsync(card);
             var xPosition = safariImage != null ? getX : SafariImage.DefaultX();
             int yPosition = safariImage != null ? getY : SafariImage.DefaultY();
-            using var pokeImage = _imageProcessor.GetCatchThatWaifuImage(cardImage, imagePath, xPosition, yPosition);
+            using var pokeImage = await _imageProcessor.GetCatchThatWaifuImageAsync(cardImage, imagePath, xPosition, yPosition);
             using var stream = pokeImage.ToJpgStream();
 
             var message = await trashChannel.SendFileAsync(stream, $"poke.jpg");

@@ -11,12 +11,13 @@ using Sanakan.Game.Extensions;
 using Sanakan.Game.Models;
 using Sanakan.Game.Services.Abstractions;
 using Sanakan.ShindenApi;
-using SixLabors.Primitives;
+using SixLabors.ImageSharp;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Color = Discord.Color;
 
 namespace Sanakan.DiscordBot.Services
 {
