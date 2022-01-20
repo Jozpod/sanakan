@@ -11,7 +11,7 @@ namespace Sanakan.Extensions
     {
         public static string GetShortString(this Card card, bool nameAsUrl = false)
         {
-            string name = nameAsUrl ? card.GetNameWithUrl() : card.Name;
+            var name = nameAsUrl ? card.GetNameWithUrl() : card.Name;
             return $"**[{card.Id}]** {name} **{card.GetCardRealRarity()}**";
         }
 
@@ -86,7 +86,7 @@ namespace Sanakan.Extensions
 
         public static string GetNameWithUrl(this Card card) => $"[{card.Name}]({card.GetCharacterUrl()})";
 
-        public static string GetDesc(this Card card)
+        public static string GetDescription(this Card card)
         {
             var tags = string.Join(" ", card.Tags.Select(x => x.Name));
             if (card.Tags.Count < 1)
@@ -128,7 +128,7 @@ namespace Sanakan.Extensions
 ";
         }
 
-        public static string GetDescSmall(this Card card)
+        public static string GetBasicDescription(this Card card)
         {
             var tags = string.Join(" ", card.Tags.Select(x => x.Name));
             var cardSummary = card.GetString(true, true, true, false, true);

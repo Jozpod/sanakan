@@ -71,7 +71,7 @@ namespace Sanakan.DiscordBot.Modules
         [Command("pomoc", RunMode = RunMode.Async)]
         [Alias("h", "help")]
         [Summary("wyświetla listę poleceń")]
-        [Remarks("odcinki"), RequireAnyCommandChannel]
+        [Remarks("odcinki"), RequireAnyCommandChannel, RequireGuildUser]
         public async Task GiveHelpAsync(
             [Summary("nazwa polecenia (opcjonalne)")][Remainder] string? command = null)
         {

@@ -1,4 +1,5 @@
 using Discord;
+using Sanakan.Tests.Shared;
 using Discord.Commands;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
@@ -7,7 +8,6 @@ using Moq;
 using Sanakan.DAL.Models.Analytics;
 using Sanakan.DAL.Models.Configuration;
 using Sanakan.TaskQueue.Messages;
-using Sanakan.Tests.Shared;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -291,15 +291,7 @@ namespace Sanakan.DiscordBot.Tests.CommandHandlerTests
                 .Setup(pr => pr.Content)
                 .Returns(".test");
 
-            _messageChannelMock
-                .Setup(pr => pr.SendMessageAsync(
-                    It.IsAny<string>(),
-                    It.IsAny<bool>(),
-                    It.IsAny<Embed>(),
-                    It.IsAny<RequestOptions>(),
-                    It.IsAny<AllowedMentions>(),
-                    It.IsAny<MessageReference>()))
-                .ReturnsAsync(_userMessageMock.Object);
+            _messageChannelMock.SetupSendMessageAsync(_userMessageMock.Object);
 
             _discordClientAccessorMock
                 .Raise(pr => pr.MessageReceived += null, _userMessageMock.Object);
@@ -311,7 +303,7 @@ namespace Sanakan.DiscordBot.Tests.CommandHandlerTests
             var searchResult = Discord.Commands.SearchResult.FromError(CommandError.BadArgCount, "bad arg count");
             var commands = new List<CommandMatch>
             {
-                new CommandMatch(null as CommandInfo, "command"),
+                new CommandMatch(null, "command"),
             };
             var commandSearchResult = Discord.Commands.SearchResult.FromSuccess("commands", commands);
             SetupGuildAndUser();
@@ -327,15 +319,7 @@ namespace Sanakan.DiscordBot.Tests.CommandHandlerTests
                 .Setup(pr => pr.Search(_commandContextMock.Object, 1))
                 .Returns(commandSearchResult);
 
-            _messageChannelMock
-                .Setup(pr => pr.SendMessageAsync(
-                    It.IsAny<string>(),
-                    It.IsAny<bool>(),
-                    It.IsAny<Embed>(),
-                    It.IsAny<RequestOptions>(),
-                    It.IsAny<AllowedMentions>(),
-                    It.IsAny<MessageReference>()))
-                .ReturnsAsync(_userMessageMock.Object);
+            _messageChannelMock.SetupSendMessageAsync(_userMessageMock.Object);
 
             _helperServiceMock
                 .Setup(pr => pr.GetCommandInfo(It.IsAny<CommandInfo>(), It.IsAny<string?>()))
@@ -360,15 +344,7 @@ namespace Sanakan.DiscordBot.Tests.CommandHandlerTests
                 .Setup(pr => pr.Content)
                 .Returns(".test");
 
-            _messageChannelMock
-                .Setup(pr => pr.SendMessageAsync(
-                    It.IsAny<string>(),
-                    It.IsAny<bool>(),
-                    It.IsAny<Embed>(),
-                    It.IsAny<RequestOptions>(),
-                    It.IsAny<AllowedMentions>(),
-                    It.IsAny<MessageReference>()))
-                .ReturnsAsync(_userMessageMock.Object);
+            _messageChannelMock.SetupSendMessageAsync(_userMessageMock.Object);
 
             _discordClientAccessorMock
                 .Raise(pr => pr.MessageReceived += null, _userMessageMock.Object);
@@ -390,7 +366,7 @@ namespace Sanakan.DiscordBot.Tests.CommandHandlerTests
                 .Returns(".test");
 
             _messageChannelMock
-               .Setup(pr => pr.SendFileAsync(
+                .Setup(pr => pr.SendFileAsync(
                     It.IsAny<Stream>(),
                     It.IsAny<string>(),
                     It.IsAny<string>(),
@@ -399,7 +375,10 @@ namespace Sanakan.DiscordBot.Tests.CommandHandlerTests
                     It.IsAny<RequestOptions>(),
                     It.IsAny<bool>(),
                     It.IsAny<AllowedMentions>(),
-                    It.IsAny<MessageReference>()))
+                    It.IsAny<MessageReference>(),
+                    It.IsAny<MessageComponent>(),
+                    It.IsAny<ISticker[]>(),
+                    It.IsAny<Embed[]>()))
                 .Callback<Stream, string, string, bool, Embed, RequestOptions, bool, AllowedMentions, MessageReference>(VerifyMessage)
                 .ReturnsAsync(_userMessageMock.Object);
 

@@ -129,7 +129,7 @@ namespace Sanakan.Daemon.HostedService
 
         internal async Task HandleReactionAddedAsync(
             Cacheable<IUserMessage, ulong> userMessage,
-            IMessageChannel channel,
+            Cacheable<IMessageChannel, ulong> channel,
             IReaction reaction)
         {
             var userId = reaction.GetUserId();
@@ -139,7 +139,7 @@ namespace Sanakan.Daemon.HostedService
                 return;
             }
 
-            var reactionUser = await channel.GetUserAsync(userId.Value);
+            var reactionUser = await channel.Value.GetUserAsync(userId.Value);
 
             if (reactionUser == null)
             {
@@ -158,7 +158,7 @@ namespace Sanakan.Daemon.HostedService
                 return;
             }
 
-            var message = await channel.GetMessageAsync(userMessage.Id);
+            var message = await channel.Value.GetMessageAsync(userMessage.Id);
             if (message == null)
             {
                 return;
@@ -187,7 +187,7 @@ namespace Sanakan.Daemon.HostedService
 
         internal async Task HandleReactionRemovedAsync(
             Cacheable<IUserMessage, ulong> userMessage,
-            IMessageChannel channel,
+            Cacheable<IMessageChannel, ulong> channel,
             IReaction reaction)
         {
             var userId = reaction.GetUserId();
@@ -197,7 +197,7 @@ namespace Sanakan.Daemon.HostedService
                 return;
             }
 
-            var reactionUser = await channel.GetUserAsync(userId.Value);
+            var reactionUser = await channel.Value.GetUserAsync(userId.Value);
 
             if (reactionUser == null)
             {
@@ -218,7 +218,7 @@ namespace Sanakan.Daemon.HostedService
 
             var client = _discordClientAccessor.Client;
 
-            var message = await channel.GetMessageAsync(userMessage.Id);
+            var message = await channel.Value.GetMessageAsync(userMessage.Id);
             if (message == null)
             {
                 return;

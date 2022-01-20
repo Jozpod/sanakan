@@ -120,15 +120,7 @@ namespace Sanakan.Daemon.Tests.HostedServices.DiscordBotHostedServiceTests
 
             SetupJumpUrl(textChannelMock, newMessageMock);
 
-            messageChannelMock
-                .Setup(pr => pr.SendMessageAsync(
-                    It.IsAny<string>(),
-                    It.IsAny<bool>(),
-                    It.IsAny<Embed>(),
-                    It.IsAny<RequestOptions>(),
-                    It.IsAny<AllowedMentions>(),
-                    It.IsAny<MessageReference>()))
-                .ReturnsAsync(null as IUserMessage);
+            messageChannelMock.SetupSendMessageAsync(null);
 
             _discordSocketClientAccessorMock.Raise(pr => pr.LoggedIn += null);
             _discordSocketClientAccessorMock.Raise(pr => pr.MessageUpdated += null,

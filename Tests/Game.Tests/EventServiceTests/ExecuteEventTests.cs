@@ -7,6 +7,7 @@ using Sanakan.Game.Services.Abstractions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace Sanakan.Game.Tests.EventServiceTests
 {
@@ -34,7 +35,8 @@ namespace Sanakan.Game.Tests.EventServiceTests
         {
             var user = new User(1ul, DateTime.UtcNow);
             var card = new Card(1ul, "title", "name", 100, 50, Rarity.B, Dere.Bodere, DateTime.UtcNow);
-            var message = "test message";
+            var message = new StringBuilder("test message");
+            var experience = 100;
 
             _randomNumberGeneratorMock
                 .Setup(pr => pr.GetRandomValue(It.IsAny<int>(), It.IsAny<int>()))
@@ -56,21 +58,8 @@ namespace Sanakan.Game.Tests.EventServiceTests
                 .Setup(pr => pr.UtcNow)
                 .Returns(DateTime.UtcNow);
 
-            var result = _eventsService.ExecuteEvent(eventType, user, card, message);
-            result.Item1.Should().Be(boolValue);
-
-            switch (eventType)
-            {
-                case EventType.Fight:
-                    result.Item2.Should().Be($"{message}Wydarzenie: Walka, wynik: zwycięstwo!\n");
-                    break;
-                case EventType.LoseCard:
-                    result.Item2.Should().Be($"{message}Wydarzenie: Utrata karty.\n");
-                    break;
-                default:
-                    result.Item2.Should().Be(message);
-                    break;
-            }
+            var result = _eventsService.ExecuteEvent(eventType, user, card, message, experience);
+            result.Should().Be(boolValue);
         }
     }
 }

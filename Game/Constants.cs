@@ -15,47 +15,47 @@ namespace Sanakan.Game
         public const int DERE_TAB_SIZE = ((int)Dere.Yato) + 1;
 #pragma warning restore SA1310
 
-        public static ItemWithCost[] ItemsWithCost = new[]
+        public static ItemWithCost[] ItemsWithCost = new ItemWithCost[]
         {
-            new ItemWithCost(1, 3,     ItemType.AffectionRecoverySmall.ToItem()),
-            new ItemWithCost(2, 14,    ItemType.AffectionRecoveryNormal.ToItem()),
-            new ItemWithCost(3, 109,   ItemType.AffectionRecoveryBig.ToItem()),
-            new ItemWithCost(4, 29,    ItemType.DereReRoll.ToItem()),
-            new ItemWithCost(5, 79,    ItemType.CardParamsReRoll.ToItem()),
-            new ItemWithCost(6, 1099,  ItemType.IncreaseUpgradeCount.ToItem()),
-            new ItemWithCost(7, 69,    ItemType.ChangeCardImage.ToItem()),
-            new ItemWithCost(8, 999,   ItemType.SetCustomImage.ToItem()),
-            new ItemWithCost(9, 659,   ItemType.SetCustomBorder.ToItem()),
-            new ItemWithCost(10, 149,   ItemType.ChangeStarType.ToItem()),
-            new ItemWithCost(11, 99,    ItemType.RandomBoosterPackSingleE.ToItem()),
-            new ItemWithCost(12, 999,   ItemType.BigRandomBoosterPackE.ToItem()),
-            new ItemWithCost(13, 1199,  ItemType.RandomTitleBoosterPackSingleE.ToItem()),
-            new ItemWithCost(14, 199,   ItemType.RandomNormalBoosterPackB.ToItem()),
-            new ItemWithCost(15, 499,   ItemType.RandomNormalBoosterPackA.ToItem()),
-            new ItemWithCost(16, 899,   ItemType.RandomNormalBoosterPackS.ToItem()),
-            new ItemWithCost(17, 1299,  ItemType.RandomNormalBoosterPackSS.ToItem()),
-            new ItemWithCost(18, 569,   ItemType.ResetCardValue.ToItem()),
+            new (1, 3,     ItemType.AffectionRecoverySmall.ToItem()),
+            new (2, 14,    ItemType.AffectionRecoveryNormal.ToItem()),
+            new (3, 109,   ItemType.AffectionRecoveryBig.ToItem()),
+            new (4, 29,    ItemType.DereReRoll.ToItem()),
+            new (5, 79,    ItemType.CardParamsReRoll.ToItem()),
+            new (6, 1099,  ItemType.IncreaseUpgradeCount.ToItem()),
+            new (7, 69,    ItemType.ChangeCardImage.ToItem()),
+            new (8, 999,   ItemType.SetCustomImage.ToItem()),
+            new (9, 659,   ItemType.SetCustomBorder.ToItem()),
+            new (10, 149,   ItemType.ChangeStarType.ToItem()),
+            new (11, 99,    ItemType.RandomBoosterPackSingleE.ToItem()),
+            new (12, 999,   ItemType.BigRandomBoosterPackE.ToItem()),
+            new (13, 1199,  ItemType.RandomTitleBoosterPackSingleE.ToItem()),
+            new (14, 199,   ItemType.RandomNormalBoosterPackB.ToItem()),
+            new (15, 499,   ItemType.RandomNormalBoosterPackA.ToItem()),
+            new (16, 899,   ItemType.RandomNormalBoosterPackS.ToItem()),
+            new (17, 1299,  ItemType.RandomNormalBoosterPackSS.ToItem()),
+            new (18, 569,   ItemType.ResetCardValue.ToItem()),
         };
 
-        public static ItemWithCost[] ItemsWithCostForPVP = new[]
+        public static ItemWithCost[] ItemsWithCostForPVP = new ItemWithCost[]
         {
-            new ItemWithCost(1, 169,    ItemType.AffectionRecoveryNormal.ToItem()),
-            new ItemWithCost(2, 1699,   ItemType.IncreaseExpBig.ToItem()),
-            new ItemWithCost(3, 1699,   ItemType.CheckAffection.ToItem()),
-            new ItemWithCost(4, 16999,  ItemType.IncreaseUpgradeCount.ToItem()),
-            new ItemWithCost(5, 46999,  ItemType.BetterIncreaseUpgradeCnt.ToItem()),
-            new ItemWithCost(6, 4699,   ItemType.ChangeCardImage.ToItem()),
-            new ItemWithCost(7, 269999, ItemType.SetCustomImage.ToItem()),
+            new (1, 169,    ItemType.AffectionRecoveryNormal.ToItem()),
+            new (2, 1699,   ItemType.IncreaseExpBig.ToItem()),
+            new (3, 1699,   ItemType.CheckAffection.ToItem()),
+            new (4, 16999,  ItemType.IncreaseUpgradeCount.ToItem()),
+            new (5, 46999,  ItemType.BetterIncreaseUpgradeCnt.ToItem()),
+            new (6, 4699,   ItemType.ChangeCardImage.ToItem()),
+            new (7, 269999, ItemType.SetCustomImage.ToItem()),
         };
 
-        public static ItemWithCost[] ItemsWithCostForActivityShop = new[]
+        public static ItemWithCost[] ItemsWithCostForActivityShop = new ItemWithCost[]
         {
-            new ItemWithCost(1, 6,     ItemType.AffectionRecoveryBig.ToItem()),
-            new ItemWithCost(2, 65,    ItemType.IncreaseExpBig.ToItem()),
-            new ItemWithCost(3, 500,   ItemType.IncreaseUpgradeCount.ToItem()),
-            new ItemWithCost(4, 1800,  ItemType.SetCustomImage.ToItem()),
-            new ItemWithCost(5, 150,   ItemType.RandomBoosterPackSingleE.ToItem()),
-            new ItemWithCost(6, 1500,  ItemType.BigRandomBoosterPackE.ToItem()),
+            new (1, 6,     ItemType.AffectionRecoveryBig.ToItem()),
+            new (2, 65,    ItemType.IncreaseExpBig.ToItem()),
+            new (3, 500,   ItemType.IncreaseUpgradeCount.ToItem()),
+            new (4, 1800,  ItemType.SetCustomImage.ToItem()),
+            new (5, 150,   ItemType.RandomBoosterPackSingleE.ToItem()),
+            new (6, 1500,  ItemType.BigRandomBoosterPackE.ToItem()),
         };
 
         /// <summary>
@@ -111,6 +111,19 @@ namespace Sanakan.Game
             { 1,        1,        1,        1,       1,       1,       1,        1,      0.5,  3,     2 }, //Yami
             { 0.5,      0.5,      0.5,      0.5,     0.5,     0.5,     0.5,      0.5,    3,    0.5,   1 }, //Raito
             { 0.5,      0.5,      0.5,      0.5,     0.5,     0.5,     0.5,      0.5,    1,    0.5,   1 }, //Yato
+        };
+
+        public static IEnumerable<ItemType> UltimateExpeditionItems = new ItemType[]
+        {
+            ItemType.FigureBodyPart,
+            ItemType.FigureClothesPart,
+            ItemType.FigureHeadPart,
+            ItemType.FigureLeftArmPart,
+            ItemType.FigureLeftLegPart,
+            ItemType.FigureRightArmPart,
+            ItemType.FigureRightLegPart,
+            ItemType.FigureUniversalPart,
+            ItemType.FigureSkeleton
         };
 
         public static IDictionary<ExpeditionCardType, Dictionary<ItemType, (int, int)>> ChanceOfItemsInExpedition =
@@ -333,6 +346,54 @@ namespace Sanakan.Game
                     { EventType.NewCard,             (-9,   -10) },
                 }
             },
+             { ExpeditionCardType.UltimateMedium, new Dictionary<EventType, (int, int)>
+                {
+                    { EventType.MoreItems,  (-1,   -2)},
+                    { EventType.MoreExperience,    (-3,   -4)},
+                    { EventType.IncreaseAttack,     (0,    2499)},
+                    { EventType.IncreaseDefence,     (2500, 4999)},
+                    { EventType.IncreaseDefence,   (-5,   -6)},
+                    { EventType.Fight,      (-7,   -8)},
+                    { EventType.ChangeDere, (-9,   -10)},
+                    { EventType.DecreaseAttack,     (5000, 7499)},
+                    { EventType.DecreaseDefence,     (7500, 10000)},
+                    { EventType.DecreaseAffection,     (-11,  -12)},
+                    { EventType.LoseCard,   (-13,  -14)},
+                    { EventType.NewCard,    (-15,  -16)},
+                }
+            },
+            { ExpeditionCardType.UltimateHard, new Dictionary<EventType, (int, int)>
+                {
+                    { EventType.MoreItems,  (-1,   -2)},
+                    { EventType.MoreExperience,    (-3,   -4)},
+                    { EventType.IncreaseAttack,     (-5,   -6)},
+                    { EventType.IncreaseDefence,     (-7,   -8)},
+                    { EventType.AddReset,   (-9,   -10)},
+                    { EventType.Fight,      (-11,  -12)},
+                    { EventType.ChangeDere, (-13,  -14)},
+                    { EventType.DecreaseAttack,     (0,    4999)},
+                    { EventType.DecreaseDefence,     (5000, 10000)},
+                    { EventType.DecreaseAffection,     (-15,  -16)},
+                    { EventType.LoseCard,   (-17,  -18)},
+                    { EventType.NewCard,    (-19,  -20)},
+                }
+            },
+            { ExpeditionCardType.UltimateHardcore, new Dictionary<EventType, (int, int)>
+                {
+                    { EventType.MoreItems,  (-1,   -2)},
+                    { EventType.MoreExperience,    (-3,   -4)},
+                    { EventType.IncreaseAttack,     (-5,   -6)},
+                    { EventType.IncreaseDefence,     (-7,   -8)},
+                    { EventType.AddReset,   (-9,   -10)},
+                    { EventType.Fight,      (-11,  -12)},
+                    { EventType.ChangeDere, (-13,  -14)},
+                    { EventType.DecreaseAttack,     (0,    1999)},
+                    { EventType.DecreaseDefence,     (2000, 3999)},
+                    { EventType.DecreaseAffection,     (4000, 8999)},
+                    { EventType.LoseCard,   (9000, 10000)},
+                    { EventType.NewCard,    (-15,  -16)},
+                }
+            }
        };
     }
 }

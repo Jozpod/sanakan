@@ -11,6 +11,7 @@ using SixLabors.ImageSharp.PixelFormats;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Color = Discord.Color;
 
 namespace DiscordBot.ServicesTests.ProfileServiceTests
 {

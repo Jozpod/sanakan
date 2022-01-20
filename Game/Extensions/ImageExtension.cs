@@ -1,4 +1,5 @@
-﻿using SixLabors.ImageSharp;
+﻿using Sanakan.Game;
+using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Drawing;
 using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.Formats;
@@ -67,28 +68,30 @@ namespace Sanakan.Extensions
         {
             var size = imageProcessingContext.GetCurrentSize();
 
-            var gOptions = new GraphicsOptions()
+            var drawingOptions = new DrawingOptions
             {
-                AlphaCompositionMode = PixelAlphaCompositionMode.DestOut
+                GraphicsOptions = new GraphicsOptions
+                {
+                    AlphaCompositionMode = PixelAlphaCompositionMode.DestOut
+                }
             };
+            var corners = BuildCorners(size.Width, size.Height, radius);
 
-            imageProcessingContext.Fill(gOptions, Rgba32.ParseHex("#000"));
-
-            //imageProcessingContext.Fill(gOptions, Rgba32.ParseHex("#000"), BuildCorners(size.Width, size.Height, radius));
+            imageProcessingContext.Fill(drawingOptions, Colors.Black, corners);
         }
 
         private static IPathCollection BuildCorners(int imageWidth, int imageHeight, float cornerRadius)
         {
             var rect = new RectangularPolygon(-0.5f, -0.5f, cornerRadius, cornerRadius);
 
-            IPath cornerToptLeft = rect.Clip(new EllipsePolygon(cornerRadius - 0.5f, cornerRadius - 0.5f, cornerRadius));
+            var cornerToptLeft = rect.Clip(new EllipsePolygon(cornerRadius - 0.5f, cornerRadius - 0.5f, cornerRadius));
 
-            float rightPos = imageWidth - cornerToptLeft.Bounds.Width + 1;
-            float bottomPos = imageHeight - cornerToptLeft.Bounds.Height + 1;
+            var rightPos = imageWidth - cornerToptLeft.Bounds.Width + 1;
+            var bottomPos = imageHeight - cornerToptLeft.Bounds.Height + 1;
 
-            IPath cornerTopRight = cornerToptLeft.RotateDegree(90).Translate(rightPos, 0);
-            IPath cornerBottomLeft = cornerToptLeft.RotateDegree(-90).Translate(0, bottomPos);
-            IPath cornerBottomRight = cornerToptLeft.RotateDegree(180).Translate(rightPos, bottomPos);
+            var cornerTopRight = cornerToptLeft.RotateDegree(90).Translate(rightPos, 0);
+            var cornerBottomLeft = cornerToptLeft.RotateDegree(-90).Translate(0, bottomPos);
+            var cornerBottomRight = cornerToptLeft.RotateDegree(180).Translate(rightPos, bottomPos);
 
             return new PathCollection(cornerToptLeft, cornerBottomLeft, cornerTopRight, cornerBottomRight);
         }

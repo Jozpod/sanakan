@@ -11,7 +11,7 @@
 
     public static class ExpContainerLevelExtensions
     {
-        public static double GetMaxExpToChest(this Card card, ExperienceContainerLevel lvl)
+        public static double GetMaximumExperienceToChest(this Card card, ExperienceContainerLevel lvl)
         {
             double exp = 0;
 

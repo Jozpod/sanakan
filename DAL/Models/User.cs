@@ -197,13 +197,14 @@ namespace Sanakan.DAL.Models
 
         public virtual ICollection<TimeStatus> TimeStatuses { get; set; }
 
-        public void StoreExpIfPossible(double experience)
+        public void StoreExperience(double experience)
         {
-            var maxToTransfer = GameDeck.ExperienceContainer.Level.GetMaxExpTransferToChest();
+            var experienceContainer = GameDeck.ExperienceContainer;
+            var maxToTransfer = experienceContainer.Level.GetMaxExpTransferToChest();
             if (maxToTransfer != -1)
             {
                 experience = Math.Floor(experience);
-                var diff = maxToTransfer - GameDeck.ExperienceContainer.ExperienceCount;
+                var diff = maxToTransfer - experienceContainer.ExperienceCount;
                 if (diff <= experience)
                 {
                     experience = Math.Floor(diff);
@@ -215,7 +216,7 @@ namespace Sanakan.DAL.Models
                 }
             }
 
-            GameDeck.ExperienceContainer.ExperienceCount += experience;
+            experienceContainer.ExperienceCount += experience;
         }
 
         public IEnumerable<TimeStatus> CreateOrGetAllWeeklyQuests()

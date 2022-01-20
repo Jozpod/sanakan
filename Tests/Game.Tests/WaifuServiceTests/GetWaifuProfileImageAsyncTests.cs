@@ -4,6 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.DAL.Models;
 using Sanakan.Game.Services.Abstractions;
+using Sanakan.Tests.Shared;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System;
@@ -45,18 +46,7 @@ namespace Sanakan.Game.Tests.WaifuServiceTests
                 .Setup(pr => pr.OpenWrite(It.IsAny<string>()))
                 .Returns(() => new MemoryStream());
 
-            messageChannelMock
-                .Setup(pr => pr.SendFileAsync(
-                    It.IsAny<string>(),
-                    It.IsAny<string>(),
-                    It.IsAny<bool>(),
-                    It.IsAny<Embed>(),
-                    It.IsAny<RequestOptions>(),
-                    It.IsAny<bool>(),
-                    It.IsAny<AllowedMentions>(),
-                    It.IsAny<MessageReference>()))
-                .ReturnsAsync(userMessageMock.Object)
-                .Verifiable();
+            messageChannelMock.SetupSendFileAsync(userMessageMock.Object);
 
             userMessageMock
                 .Setup(pr => pr.Attachments)
@@ -68,8 +58,6 @@ namespace Sanakan.Game.Tests.WaifuServiceTests
 
             var iamgeUrl = await _waifuService.GetWaifuProfileImageUrlAsync(card, messageChannelMock.Object);
             iamgeUrl.Should().NotBeNull();
-
-            messageChannelMock.Verify();
         }
     }
 }

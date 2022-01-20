@@ -9,6 +9,7 @@
         Delta = 4,
         Epsilon = 5,
         Zeta = 6,
+        Theta = 8,
         Lambda = 11,
         Sigma = 18,
         Omega = 24
@@ -76,6 +77,7 @@
                 case Quality.Delta: return "Δ";
                 case Quality.Epsilon: return "ε";
                 case Quality.Zeta: return "ζ";
+                case Quality.Theta: return "Θ";
                 case Quality.Lambda: return "λ";
                 case Quality.Sigma: return "Σ";
                 case Quality.Omega: return "Ω";

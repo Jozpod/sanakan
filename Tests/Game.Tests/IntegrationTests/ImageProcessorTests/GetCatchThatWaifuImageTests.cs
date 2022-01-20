@@ -22,7 +22,7 @@ namespace Sanakan.Game.Tests.IntegrationTests.ImageProcessorTests
             var xPos = 0;
             var yPos = 0;
 
-            using var image = _imageProcessor.GetCatchThatWaifuImage(card, imageUrl, xPos, yPos);
+            using var image = _imageProcessor.GetCatchThatWaifuImageAsync(card, imageUrl, xPos, yPos);
             image.Should().NotBeNull();
         }
     }

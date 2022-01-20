@@ -128,7 +128,7 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
                 .ReturnsAsync(cards);
 
             _userMock
-                .Setup(pr => pr.GetOrCreateDMChannelAsync(null))
+                .Setup(pr => pr.CreateDMChannelAsync(null))
                 .ReturnsAsync(dmChannelMock.Object);
 
             _waifuServiceMock

@@ -5,6 +5,7 @@ using Moq;
 using Sanakan.DAL.Models;
 using Sanakan.DiscordBot.Modules;
 using Sanakan.Game.Models;
+using Sanakan.Tests.Shared;
 using System;
 using System.Threading.Tasks;
 
@@ -55,17 +56,7 @@ namespace DiscordBot.ModulesTests.FunModuleTests
                 embed.Description.Should().NotBeNullOrEmpty();
             });
 
-            _messageChannelMock
-                .Setup(pr => pr.SendFileAsync(
-                    It.IsAny<string>(),
-                    It.IsAny<string>(),
-                    It.IsAny<bool>(),
-                    It.IsAny<Embed>(),
-                    It.IsAny<RequestOptions>(),
-                    It.IsAny<bool>(),
-                    It.IsAny<AllowedMentions>(),
-                    It.IsAny<MessageReference>()))
-                .ReturnsAsync(null as IUserMessage);
+            _messageChannelMock.SetupSendFileAsync(null);
 
             await _module.TossCoinAsync(coinSide, amount);
         }

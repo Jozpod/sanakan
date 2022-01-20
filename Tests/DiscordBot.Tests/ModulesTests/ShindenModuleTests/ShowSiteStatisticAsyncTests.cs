@@ -6,12 +6,14 @@ using Sanakan.DAL.Models;
 using Sanakan.DiscordBot.Modules;
 using Sanakan.ShindenApi;
 using Sanakan.ShindenApi.Models;
+using Sanakan.Tests.Shared;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Color = Discord.Color;
 
 namespace DiscordBot.ModulesTests.ShindenModuleTests
 {
@@ -107,18 +109,7 @@ namespace DiscordBot.ModulesTests.ShindenModuleTests
                     lastReadResult.Value))
                 .ReturnsAsync(new Image<Rgba32>(300, 300));
 
-            _messageChannelMock
-                .Setup(pr => pr.SendFileAsync(
-                    It.IsAny<Stream>(),
-                    It.IsAny<string>(),
-                    It.IsAny<string>(),
-                    It.IsAny<bool>(),
-                    It.IsAny<Embed>(),
-                    It.IsAny<RequestOptions>(),
-                    It.IsAny<bool>(),
-                    It.IsAny<AllowedMentions>(),
-                    It.IsAny<MessageReference>()))
-                .ReturnsAsync(null as IUserMessage);
+            _messageChannelMock.SetupSendFileAsync(null);
 
             await _module.ShowSiteStatisticAsync();
         }

@@ -3,6 +3,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.DAL.Models.Configuration;
 using Sanakan.TaskQueue.Messages;
+using Sanakan.Tests.Shared;
 using System.Threading.Tasks;
 
 namespace Sanakan.Daemon.Tests.HostedServices.DiscordBotHostedServiceTests
@@ -59,29 +60,13 @@ namespace Sanakan.Daemon.Tests.HostedServices.DiscordBotHostedServiceTests
                 .Setup(pr => pr.GetChannelAsync(guildOptions.GreetingChannelId, CacheMode.AllowDownload, null))
                 .ReturnsAsync(guildChannelMock.Object);
 
-            messageChannelMock
-                .Setup(pr => pr.SendMessageAsync(
-                    It.IsAny<string>(),
-                    It.IsAny<bool>(),
-                    It.IsAny<Embed>(),
-                    It.IsAny<RequestOptions>(),
-                    It.IsAny<AllowedMentions>(),
-                    It.IsAny<MessageReference>()))
-                .ReturnsAsync(null as IUserMessage);
+            messageChannelMock.SetupSendMessageAsync(null);
 
             guildUserMock
-                .Setup(pr => pr.GetOrCreateDMChannelAsync(null))
+                .Setup(pr => pr.CreateDMChannelAsync(null))
                 .ReturnsAsync(dmChannelMock.Object);
 
-            dmChannelMock
-                .Setup(pr => pr.SendMessageAsync(
-                    It.IsAny<string>(),
-                    It.IsAny<bool>(),
-                    It.IsAny<Embed>(),
-                    It.IsAny<RequestOptions>(),
-                    It.IsAny<AllowedMentions>(),
-                    It.IsAny<MessageReference>()))
-                .ReturnsAsync(null as IUserMessage);
+            dmChannelMock.SetupSendMessageAsync(null);
 
             dmChannelMock
                 .Setup(pr => pr.CloseAsync(null))

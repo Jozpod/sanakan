@@ -34,6 +34,7 @@ namespace Sanakan.Game.Services
         private readonly Point _origin = new(0, 0);
         private readonly IFileSystem _fileSystem;
         private readonly IImageResolver _imageResolver;
+        private readonly IDictionary<int, Font> _fontCache;
         private readonly IEnumerable<string> _extensions = new[] { "png", "jpeg", "gif", "jpg" };
 
         public ImageProcessor(
@@ -52,6 +53,19 @@ namespace Sanakan.Game.Services
             _latoBold = LoadFontFromStream(Resources.LatoBoldFont);
             _latoLight = LoadFontFromStream(Resources.LatoLightfont);
             _latoRegular = LoadFontFromStream(Resources.LatoRegularfont);
+            _fontCache = new Dictionary<int, Font>(10);
+        }
+
+        public Font GetOrCreateFont(FontFamily fontFamily, float size)
+        {
+            var key = fontFamily.GetHashCode() + (int)size;
+            if(!_fontCache.TryGetValue(key, out var font))
+            {
+                font = new Font(fontFamily, size);
+                _fontCache[key] = font;
+            }
+
+            return font;
         }
 
         public async Task SaveImageFromUrlAsync(string url, string path)
@@ -73,7 +87,7 @@ namespace Sanakan.Game.Services
 
             if (AllowStatsOnNoStatsImage(card))
             {
-                await ApplyUltimateStats(image, card);
+                await ApplyUltimateStatsAsync(image, card);
             }
 
             return image;
@@ -143,10 +157,10 @@ namespace Sanakan.Game.Services
 
             var drawingOptions = new DrawingOptions
             {
-                TextOptions = new TextOptions
+                TextOptions = new TextOptions()
                 {
                     HorizontalAlignment = HorizontalAlignment.Center,
-                    WrapTextWidth = winImage.Width
+                    WrapTextWidth = winImage.Width,
                 },
             };
             image.Mutate(x => x.DrawText(drawingOptions, duelInfo.Winner.Name, nameFont, winnerColor, new Point(xiw, yt)));
@@ -155,7 +169,7 @@ namespace Sanakan.Game.Services
             return image;
         }
 
-        public async Task<Image> GetCatchThatWaifuImageAsync(Image<Rgba32> card, string pokeImg, int xPos, int yPos)
+        public async Task<Image> GetCatchThatWaifuImageAsync(Image card, string pokeImg, int xPos, int yPos)
         {
             var image = await LoadImageAsync(pokeImg);
             image.Mutate(x => x.DrawImage(card, new Point(xPos, yPos), 1));
@@ -168,11 +182,11 @@ namespace Sanakan.Game.Services
 
             if (card.FromFigure)
             {
-                await ApplyUltimateStats(image, card);
+                await ApplyUltimateStatsAsync(image, card);
             }
             else
             {
-                await ApplyStats(image, card, !card.HasImage());
+                await ApplyStatsAsync(image, card, !card.HasImage());
             }
 
             return image;
@@ -185,7 +199,7 @@ namespace Sanakan.Game.Services
             bool stretch = false)
         {
             using var stream = await GetImageFromUrlAsync(new Uri(imageUrl), true);
-            using var image = Image.Load(stream);
+            using var image = await Image.LoadAsync(stream);
 
             if (size.Height > 0 || size.Width > 0)
             {
@@ -208,8 +222,8 @@ namespace Sanakan.Game.Services
                 color = Discord.Color.DarkerGrey;
             }
 
-            string rangName = shindenUser?.Rank ?? string.Empty;
-            string colorRank = color.RawValue.ToString("X6");
+            var rangName = shindenUser?.Rank ?? string.Empty;
+            var colorRank = color.RawValue.ToString("X6");
 
             var nickFont = GetFontSize(_latoBold, 28, nickname, 290);
             var rangFont = new Font(_latoRegular, 16);
@@ -230,7 +244,8 @@ namespace Sanakan.Game.Services
             template.Dispose();
 
             var imageStream = await GetImageFromUrlAsync(new Uri(avatarUrl));
-            using var avatar = Image.Load(imageStream);
+            using var avatar = await Image.LoadAsync(imageStream);
+
             imageStream.Close();
             using var avBack = new Image<Rgba32>(82, 82);
             avBack.Mutate(x => x.BackgroundColor(Rgba32.ParseHex(colorRank)));
@@ -345,7 +360,7 @@ namespace Sanakan.Game.Services
             var baseImg = new Image<Rgba32>(500, 320);
             baseImg.Mutate(x => x.BackgroundColor(Colors.Onyx));
 
-            using var template = Image.Load(Paths.SiteStatisticsPicture);
+            using var template = await LoadImageAsync(Paths.SiteStatisticsPicture);
             baseImg.Mutate(x => x.DrawImage(template, _origin, 1));
 
             var avatarUrl = UrlHelpers.GetUserAvatarURL(shindenInfo.AvatarId, shindenInfo.Id!.Value);
@@ -432,7 +447,7 @@ namespace Sanakan.Game.Services
                 return baseImg;
             }
 
-            using var avatar = Image.Load(stream);
+            using var avatar = await Image.LoadAsync(stream);
 
             avatar.Mutate(x => x.Resize(new ResizeOptions
             {
@@ -558,8 +573,7 @@ namespace Sanakan.Game.Services
 
                 case ProfileType.Image:
                     {
-                        using var stream = _fileSystem.OpenRead(databaseUser.StatsReplacementProfileUri!);
-                        using var userBackground = Image.Load(stream);
+                        using var userBackground = await LoadImageAsync(databaseUser.StatsReplacementProfileUri!);
                         image.Mutate(x => x.DrawImage(userBackground, _origin, 1));
                     }
 
@@ -650,7 +664,7 @@ namespace Sanakan.Game.Services
                 return badge;
             }
 
-            using var avatar = Image.Load(stream);
+            using var avatar = await Image.LoadAsync(stream);
 
             avatar.Mutate(x => x.Resize(new ResizeOptions
             {
@@ -822,14 +836,14 @@ namespace Sanakan.Game.Services
             return bar;
         }
 
-        private Image? GetLastRWListCover(Stream imageStream)
+        private async Task<Image?> GetLastRWListCoverAsync(Stream imageStream)
         {
             if (imageStream == null)
             {
                 return null;
             }
 
-            var cover = Image.Load(imageStream);
+            var cover = await Image.LoadAsync(imageStream);
             cover.Mutate(x => x.Resize(new ResizeOptions
             {
                 Mode = ResizeMode.Max,
@@ -858,14 +872,20 @@ namespace Sanakan.Game.Services
             foreach (var last in lastWatch.Take(4))
             {
                 using var stream = await GetImageFromUrlAsync(last.AnimeCoverUrl, true);
-                using var cover = GetLastRWListCover(stream!);
+                using var cover = await GetLastRWListCoverAsync(stream!);
                 if (cover != null)
                 {
                     image.Mutate(x => x.DrawImage(cover, new Point(0, startY + (35 * yOffset)), 1));
                 }
 
-                image.Mutate(x => x.DrawText($"{last.Title.ElipseTrimToLength(29)}", titleFont, fColor, new Point(25, startY + (35 * yOffset))));
-                image.Mutate(x => x.DrawText($"{last.EpisodeNo} / {last.EpisodesCount}", titleFont, fColor, new Point(25, startY + 11 + (35 * yOffset))));
+                var title = last.Title.ElipseTrimToLength(29);
+                var epsiodes = $"{last.EpisodeNo} / {last.EpisodesCount}";
+                var point = new Point(25, startY + (35 * yOffset));
+
+                image.Mutate(x => x.DrawText(title, titleFont, fColor, point));
+
+                point.Y += 11;
+                image.Mutate(x => x.DrawText(epsiodes, titleFont, fColor, point));
                 yOffset++;
             }
 
@@ -876,15 +896,21 @@ namespace Sanakan.Game.Services
             foreach (var last in lastRead.Take(4))
             {
                 using var stream = await GetImageFromUrlAsync(last.MangaCoverUrl, true);
-                using var cover = GetLastRWListCover(stream!);
+                using var cover = await GetLastRWListCoverAsync(stream!);
 
                 if (cover != null)
                 {
                     image.Mutate(x => x.DrawImage(cover, new Point(0, startY + (35 * yOffset)), 1));
                 }
 
-                image.Mutate(x => x.DrawText($"{last.Title.ElipseTrimToLength(29)}", titleFont, fColor, new Point(25, startY + (35 * yOffset))));
-                image.Mutate(x => x.DrawText($"{last.ChapterNo} / {last.ChaptersCount}", titleFont, fColor, new Point(25, startY + 11 + (35 * yOffset))));
+                var title = last.Title.ElipseTrimToLength(29);
+                var chapters = $"{last.ChapterNo} / {last.ChaptersCount}";
+                var point = new Point(25, startY + (35 * yOffset));
+
+                image.Mutate(x => x.DrawText(title, titleFont, fColor, point));
+
+                point.Y += 11;
+                image.Mutate(x => x.DrawText(chapters, titleFont, fColor, point));
                 yOffset++;
             }
 
@@ -908,7 +934,7 @@ namespace Sanakan.Game.Services
                 return characterImg;
             }
 
-            using var image = Image.Load(stream);
+            using var image = await Image.LoadAsync(stream);
 
             image.Mutate(x => x.Resize(new ResizeOptions
             {
@@ -966,7 +992,7 @@ namespace Sanakan.Game.Services
                     break;
             }
 
-            return string.Format(Paths.PWCGBorderPicture, card.Quality, border);
+            return string.Format(Paths.PWCGFolderFile, card.Quality, border);
         }
 
         private async Task<Image> GenerateBorder(Card card)
@@ -1160,9 +1186,62 @@ namespace Sanakan.Game.Services
             image.Mutate(x => x.DrawText(defencePoints, aphFont, Colors.BlueDiamond, new Point(326, 576)));
         }
 
-        private async Task ApplyUltimateStats(Image<Rgba32> image, Card card)
+        private Rgba32 GetThetaStatColorString(Card card)
         {
-            var path = string.Format(Paths.PWCGStatsPicture, card.Quality);
+            return Rgba32.ParseHex(card.Dere switch
+            {
+                Dere.Bodere => "#ff2700",
+                Dere.Dandere => "#00fd8b",
+                Dere.Deredere => "#003bff",
+                Dere.Kamidere => "#f6f901",
+                Dere.Kuudere => "#008fff",
+                Dere.Mayadere => "#ff00df",
+                Dere.Raito => "#ffffff",
+                Dere.Tsundere => "#ff0072",
+                Dere.Yami => "#565656",
+                Dere.Yandere => "#ffa100",
+                Dere.Yato => "#ffffff",
+                _ => "#ffffff",
+            });
+        }
+
+        private void ApplyThetaStats(Image<Rgba32> image, Card card)
+        {
+            var aphFont = new Font(_digital, 28);
+
+            var healthPoints = card.GetHealthWithPenalty().ToString();
+            var defencePoints = card.GetDefenceWithBonus().ToString();
+            var attackPoints = card.GetAttackWithBonus().ToString();
+
+            var thetaColor = GetThetaStatColorString(card);
+
+            var drawingOptions = new DrawingOptions
+            {
+                TextOptions = new TextOptions()
+                {
+                    ApplyKerning = true,
+                    DpiX = 80,
+                    HorizontalAlignment = HorizontalAlignment.Right
+                },
+            };
+
+            image.Mutate(x => x.DrawText(drawingOptions, attackPoints, aphFont, thetaColor, new Point(410, 517)));
+            image.Mutate(x => x.DrawText(drawingOptions, defencePoints, aphFont, thetaColor, new Point(410, 554)));
+            image.Mutate(x => x.DrawText(drawingOptions, healthPoints, aphFont, thetaColor, new Point(410, 591)));
+        }
+
+        private string GetStatsString(Card card)
+        {
+            return card.Quality switch
+            {
+                Quality.Theta => string.Format(Paths.PWCGFolderFile, card.Quality, card.Dere),
+                _ => string.Format(Paths.PWCGFolderFile, card.Quality, "Stats"),
+            };
+        }
+
+        private async Task ApplyUltimateStatsAsync(Image<Rgba32> image, Card card)
+        {
+            var path = GetStatsString(card);
             if (_fileSystem.Exists(path))
             {
                 using var stats = await LoadImageAsync(path);
@@ -1192,7 +1271,9 @@ namespace Sanakan.Game.Services
                 case Quality.Lambda:
                     ApplyLambdaStats(image, card);
                     break;
-
+                case Quality.Theta:
+                    ApplyThetaStats(image, card);
+                    break;
                 default:
                     break;
             }
@@ -1215,11 +1296,11 @@ namespace Sanakan.Game.Services
             }
         }
 
-        private async Task ApplyStats(Image<Rgba32> image, Card card, bool applyNegativeStats = false)
+        private async Task ApplyStatsAsync(Image<Rgba32> image, Card card, bool applyNegativeStats = false)
         {
-            int health = card.GetHealthWithPenalty();
-            int defence = card.GetDefenceWithBonus();
-            int attack = card.GetAttackWithBonus();
+            var health = card.GetHealthWithPenalty();
+            var defence = card.GetDefenceWithBonus();
+            var attack = card.GetAttackWithBonus();
             var position = _origin;
             var opacity = 1;
 
@@ -1277,10 +1358,14 @@ namespace Sanakan.Game.Services
                 startXHp -= 15;
             }
 
+            var healthStr = health.ToString();
+            var defenceStr = defence.ToString();
+            var attackStr = attack.ToString();
+
             var numFont = new Font(_latoBold, 54);
-            image.Mutate(x => x.DrawText($"{health}", numFont, Colors.Black, new Point(startXHp, 190)));
-            image.Mutate(x => x.DrawText($"{attack}", numFont, Colors.Black, new Point(startXAtk, 320)));
-            image.Mutate(x => x.DrawText($"{defence}", numFont, Colors.Black, new Point(startXDef, 440)));
+            image.Mutate(x => x.DrawText(healthStr, numFont, Colors.Black, new Point(startXHp, 190)));
+            image.Mutate(x => x.DrawText(attackStr, numFont, Colors.Black, new Point(startXAtk, 320)));
+            image.Mutate(x => x.DrawText(defenceStr, numFont, Colors.Black, new Point(startXDef, 440)));
 
             if (applyNegativeStats)
             {
@@ -1316,7 +1401,7 @@ namespace Sanakan.Game.Services
 
             if (AllowStatsOnNoStatsImage(card))
             {
-                await ApplyUltimateStats(image, card);
+                await ApplyUltimateStatsAsync(image, card);
             }
 
             return image;
@@ -1364,8 +1449,9 @@ namespace Sanakan.Game.Services
 
         private Font GetFontSize(FontFamily fontFamily, float size, string text, float maxWidth)
         {
-            var font = new Font(fontFamily, size);
-            var measured = TextMeasurer.Measure(text, new RendererOptions(font));
+            var font = GetOrCreateFont(fontFamily, size);
+            var rendererOptions = new RendererOptions(font);
+            var measured = TextMeasurer.Measure(text, rendererOptions);
 
             while (measured.Width > maxWidth)
             {
@@ -1375,7 +1461,7 @@ namespace Sanakan.Game.Services
                 }
 
                 font = new Font(fontFamily, size);
-                measured = TextMeasurer.Measure(text, new RendererOptions(font));
+                measured = TextMeasurer.Measure(text, rendererOptions);
             }
 
             return font;

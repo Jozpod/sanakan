@@ -7,6 +7,7 @@ using Sanakan.Game.Services.Abstractions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace Sanakan.Game.Tests.WaifuServiceTests
 {
@@ -59,8 +60,9 @@ namespace Sanakan.Game.Tests.WaifuServiceTests
                     It.IsAny<EventType>(),
                     It.IsAny<User>(),
                     It.IsAny<Card>(),
-                    It.IsAny<string>()))
-                .Returns((true, "test"));
+                    It.IsAny<StringBuilder>(),
+                    It.IsAny<double>()))
+                .Returns(true);
 
             _eventsServiceMock
                 .Setup(pr => pr.GetMoreItems(It.IsAny<EventType>()))

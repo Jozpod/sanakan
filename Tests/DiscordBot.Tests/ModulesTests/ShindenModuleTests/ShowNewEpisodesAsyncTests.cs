@@ -5,6 +5,7 @@ using Moq;
 using Sanakan.DiscordBot.Modules;
 using Sanakan.ShindenApi;
 using Sanakan.ShindenApi.Models;
+using Sanakan.Tests.Shared;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -42,18 +43,10 @@ namespace DiscordBot.ModulesTests.ShindenModuleTests
                 .Returns("mention");
 
             _userMock
-                .Setup(pr => pr.GetOrCreateDMChannelAsync(null))
+                .Setup(pr => pr.CreateDMChannelAsync(null))
                 .ReturnsAsync(dmChannelMock.Object);
 
-            dmChannelMock
-                .Setup(pr => pr.SendMessageAsync(
-                    It.IsAny<string>(),
-                    It.IsAny<bool>(),
-                    It.IsAny<Embed>(),
-                    It.IsAny<RequestOptions>(),
-                    It.IsAny<AllowedMentions>(),
-                    It.IsAny<MessageReference>()))
-                .ReturnsAsync(_userMessageMock.Object);
+            dmChannelMock.SetupSendMessageAsync(_userMessageMock.Object);
 
             _taskManagerMock
                 .Setup(pr => pr.Delay(It.IsAny<TimeSpan>()))

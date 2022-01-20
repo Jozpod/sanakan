@@ -4,6 +4,7 @@ using Moq;
 using Sanakan.DAL.Models.Configuration;
 using Sanakan.DiscordBot.Modules;
 using Sanakan.DiscordBot.Session;
+using Sanakan.Tests.Shared;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -120,15 +121,7 @@ namespace DiscordBot.ModulesTests.HelperModuleTests
                 .Setup(pr => pr.Username)
                 .Returns("username");
 
-            textChannelMock
-                .Setup(pr => pr.SendMessageAsync(
-                    It.IsAny<string>(),
-                    It.IsAny<bool>(),
-                    It.IsAny<Embed>(),
-                    It.IsAny<RequestOptions>(),
-                    It.IsAny<AllowedMentions>(),
-                    It.IsAny<MessageReference>()))
-                .ReturnsAsync(userMessageMock.Object);
+            textChannelMock.SetupSendMessageAsync(userMessageMock.Object);
 
             _guildMock
                 .Setup(pr => pr.GetChannelAsync(guildOption.NotificationChannelId, CacheMode.AllowDownload, null))
@@ -262,15 +255,7 @@ namespace DiscordBot.ModulesTests.HelperModuleTests
                 .Setup(pr => pr.Username)
                 .Returns("username");
 
-            textChannelMock
-                .Setup(pr => pr.SendMessageAsync(
-                    It.IsAny<string>(),
-                    It.IsAny<bool>(),
-                    It.IsAny<Embed>(),
-                    It.IsAny<RequestOptions>(),
-                    It.IsAny<AllowedMentions>(),
-                    It.IsAny<MessageReference>()))
-                .ReturnsAsync(userMessageMock.Object);
+            textChannelMock.SetupSendMessageAsync(userMessageMock.Object);
 
             _helperServiceMock
                 .Setup(pr => pr.BuildRaportInfo(

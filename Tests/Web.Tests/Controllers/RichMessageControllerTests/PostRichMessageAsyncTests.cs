@@ -5,6 +5,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.Configuration;
 using Sanakan.DiscordBot.Models;
+using Sanakan.Tests.Shared;
 using Sanakan.Web.Controllers;
 using System.Threading.Tasks;
 
@@ -53,15 +54,7 @@ namespace Sanakan.Web.Tests.Controllers.RichMessageControllerTests
                 .Setup(pr => pr.Mention)
                 .Returns("role mention");
 
-            textChannelMock
-                .Setup(pr => pr.SendMessageAsync(
-                    It.IsAny<string>(),
-                    It.IsAny<bool>(),
-                    It.IsAny<Embed>(),
-                    It.IsAny<RequestOptions>(),
-                    It.IsAny<AllowedMentions>(),
-                    It.IsAny<MessageReference>()))
-                .ReturnsAsync(userMessageMock.Object);
+            textChannelMock.SetupSendMessageAsync(userMessageMock.Object);
 
             userMessageMock
                 .Setup(pr => pr.Id)

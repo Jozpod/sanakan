@@ -33,7 +33,7 @@ namespace Sanakan.Game.Tests.IntegrationTests.ImageProcessorTests
             var win = new Image<Rgba32>(400, 400);
             var los = new Image<Rgba32>(400, 400);
 
-            var duelCardImage = _imageProcessor.GetDuelCardImage(duelInfo, duelImage, win, los);
+            var duelCardImage = await _imageProcessor.GetDuelCardImageAsync(duelInfo, duelImage, win, los);
             duelCardImage.Should().NotBeNull();
 
             await ShouldBeEqual("expected-duel-card.png", duelCardImage);

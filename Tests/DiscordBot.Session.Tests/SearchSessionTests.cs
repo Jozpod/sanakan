@@ -6,6 +6,7 @@ using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot.Session.Abstractions;
 using Sanakan.ShindenApi;
 using Sanakan.ShindenApi.Models;
+using Sanakan.Tests.Shared;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -94,15 +95,7 @@ namespace Sanakan.DiscordBot.Session
                 .Setup(pr => pr.GetAnimeMangaInfoAsync(result.TitleId))
                 .ReturnsAsync(animeMangaInfoResult);
 
-            _messageChannelMock
-                .Setup(pr => pr.SendMessageAsync(
-                    It.IsAny<string>(),
-                    It.IsAny<bool>(),
-                    It.IsAny<Embed>(),
-                    It.IsAny<RequestOptions>(),
-                    It.IsAny<AllowedMentions>(),
-                    It.IsAny<MessageReference>()))
-                .ReturnsAsync(null as IUserMessage);
+            _messageChannelMock.SetupSendMessageAsync(null);
 
             messageMock
                 .Setup(pr => pr.DeleteAsync(null))
@@ -143,15 +136,7 @@ namespace Sanakan.DiscordBot.Session
                 .Setup(pr => pr.GetCharacterInfoAsync(result.Id))
                 .ReturnsAsync(animeMangaInfoResult);
 
-            _messageChannelMock
-                .Setup(pr => pr.SendMessageAsync(
-                    It.IsAny<string>(),
-                    It.IsAny<bool>(),
-                    It.IsAny<Embed>(),
-                    It.IsAny<RequestOptions>(),
-                    It.IsAny<AllowedMentions>(),
-                    It.IsAny<MessageReference>()))
-                .ReturnsAsync(null as IUserMessage);
+            _messageChannelMock.SetupSendMessageAsync(null);
 
             messageMock
                 .Setup(pr => pr.DeleteAsync(null))

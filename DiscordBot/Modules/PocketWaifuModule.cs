@@ -305,7 +305,7 @@ namespace Sanakan.DiscordBot.Modules
                 user = await Context.Client.GetUserAsync(userId);
             }
 
-            embed = card.GetDescSmall().ElipseTrimToLength(2000)
+            embed = card.GetBasicDescription().ElipseTrimToLength(2000)
                 .ToEmbedMessage(EMType.Info)
                 .WithAuthor(new EmbedAuthorBuilder().WithUser(user))
                 .Build();
@@ -1375,7 +1375,7 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            var chLvl = gameDeck.ExperienceContainer.Level;
+            var chestLevel = gameDeck.ExperienceContainer.Level;
 
             var broken = new List<Card>();
             foreach (var card in cardsToSacrifice)
@@ -1388,9 +1388,13 @@ namespace Sanakan.DiscordBot.Modules
                     continue;
                 }
 
-                databaseUser.StoreExpIfPossible(((card.ExperienceCount / 2) > card.GetMaxExpToChest(chLvl))
-                    ? card.GetMaxExpToChest(chLvl)
-                    : (card.ExperienceCount / 2));
+                var halfExperience = card.ExperienceCount / 2;
+                var maximumExperience = card.GetMaximumExperienceToChest(chestLevel);
+                var experience = halfExperience > maximumExperience
+                    ? maximumExperience
+                    : halfExperience;
+
+                databaseUser.StoreExperience(experience);
 
                 var incKarma = 1 * card.MarketValue;
                 if (incKarma > 0.001 && incKarma < 1.5)
@@ -1436,21 +1440,21 @@ namespace Sanakan.DiscordBot.Modules
             var databaseUser = await _userRepository.GetUserOrCreateAsync(user.Id);
             var gameDeck = databaseUser.GameDeck;
             var mention = user.Mention;
-            var cardsToSac = gameDeck.Cards.Where(x => ids.Any(c => c == x.Id)).ToList();
+            var cardsToSacrifice = gameDeck.Cards.Where(x => ids.Any(c => c == x.Id)).ToList();
 
             Embed embed;
 
-            if (cardsToSac.Count < 1)
+            if (cardsToSacrifice.Count < 1)
             {
                 embed = $"{mention} nie posiadasz takich kart.".ToEmbedMessage(EMType.Error).Build();
                 await ReplyAsync(embed: embed);
                 return;
             }
 
-            var chLvl = gameDeck.ExperienceContainer.Level;
+            var chestLevel = gameDeck.ExperienceContainer.Level;
 
             var broken = new List<Card>();
-            foreach (var card in cardsToSac)
+            foreach (var card in cardsToSacrifice)
             {
                 if (card.InCage || card.HasTag(Tags.Favourite)
                     || card.FromFigure
@@ -1460,9 +1464,12 @@ namespace Sanakan.DiscordBot.Modules
                     continue;
                 }
 
-                databaseUser.StoreExpIfPossible((card.ExperienceCount > card.GetMaxExpToChest(chLvl))
-                    ? card.GetMaxExpToChest(chLvl)
-                    : card.ExperienceCount);
+                var maximumExperience = card.GetMaximumExperienceToChest(chestLevel);
+                var experience = card.ExperienceCount > maximumExperience
+                    ? maximumExperience
+                    : card.ExperienceCount;
+
+                databaseUser.StoreExperience(experience);
 
                 var incKarma = 1 * card.MarketValue;
                 if (incKarma > 0.001 && incKarma < 1.5)
@@ -1482,17 +1489,17 @@ namespace Sanakan.DiscordBot.Modules
                 _waifuService.DeleteCardImageIfExist(card);
             }
 
-            var response = $"kartę: {cardsToSac.First().GetString(false, false, true)}";
-            if (cardsToSac.Count > 1)
+            var response = $"kartę: {cardsToSacrifice.First().GetString(false, false, true)}";
+            if (cardsToSacrifice.Count > 1)
             {
-                response = $" {cardsToSac.Count} kart";
+                response = $" {cardsToSacrifice.Count} kart";
             }
 
             await _userRepository.SaveChangesAsync();
 
             _cacheManager.ExpireTag(CacheKeys.User(databaseUser.Id), CacheKeys.Users);
 
-            if (broken.Count != cardsToSac.Count)
+            if (broken.Count != cardsToSacrifice.Count)
             {
                 embed = $"{mention} zniszczył {response}".ToEmbedMessage(EMType.Success).Build();
                 await ReplyAsync(embed: embed);

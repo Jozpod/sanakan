@@ -39,11 +39,17 @@
                 case ExpeditionCardType.LightItemWithExp:
                     return 0.07;
 
-                default:
                 case ExpeditionCardType.UltimateEasy:
                 case ExpeditionCardType.UltimateMedium:
+                    return 1;
+
                 case ExpeditionCardType.UltimateHard:
+                    return 2;
+
                 case ExpeditionCardType.UltimateHardcore:
+                    return 0.5;
+
+                default:
                     return 0;
             }
         }
@@ -98,10 +104,13 @@
                     return $"heroiczn{end}";
 
                 case ExpeditionCardType.UltimateEasy:
+                    return $"niezwykł{end} (E)";
                 case ExpeditionCardType.UltimateMedium:
+                    return $"niezwykł{end} (M)";
                 case ExpeditionCardType.UltimateHard:
+                    return $"niezwykł{end} (H)";
                 case ExpeditionCardType.UltimateHardcore:
-                    return $"niezwykł{end}";
+                    return $"niezwykł{end} (HH)";
 
                 default:
                 case ExpeditionCardType.None:

@@ -244,8 +244,10 @@ namespace Sanakan.DAL.Models
                 case ExpeditionCardType.UltimateEasy:
                 case ExpeditionCardType.UltimateHard:
                 case ExpeditionCardType.UltimateMedium:
+                    return Rarity == Rarity.SSS;
+
                 case ExpeditionCardType.UltimateHardcore:
-                    return FromFigure;
+                    return Rarity == Rarity.SSS && !HasTag(Common.Tags.Favourite);
 
                 case ExpeditionCardType.LightExp:
                 case ExpeditionCardType.LightItems:
@@ -311,7 +313,10 @@ namespace Sanakan.DAL.Models
                 case ExpeditionCardType.UltimateMedium:
                 case ExpeditionCardType.UltimateHard:
                 case ExpeditionCardType.UltimateHardcore:
-                    return TimeSpan.Zero;
+                    param *= (int)Quality + 2;
+                    affOffset = 0;
+                    addOFK = 0;
+                    break;
             }
 
             if (!HasImage())
@@ -336,6 +341,78 @@ namespace Sanakan.DAL.Models
         {
             return (expeditionCardType == ExpeditionCardType.None ? Expedition : expeditionCardType)
                 .GetCostOfExpeditionPerMinuteRaw() * Rarity.ValueModifierReverse() * Dere.ValueModifierReverse();
+        }
+
+        public void IncreaseAttack(int value)
+        {
+            if (FromFigure)
+            {
+                AttackBonus += value;
+            }
+            else
+            {
+                var max = Rarity.GetAttackMax();
+                Attack += value;
+
+                if (Attack > max)
+                {
+                    Attack = max;
+                }
+            }
+        }
+
+        public void DecreaseAttack(int value)
+        {
+            if (FromFigure)
+            {
+                AttackBonus -= value;
+            }
+            else
+            {
+                var min = Rarity.GetAttackMin();
+                Attack -= value;
+
+                if (Attack < min)
+                {
+                    Attack = min;
+                }
+            }
+        }
+
+        public void IncreaseDefence(int value)
+        {
+            if (FromFigure)
+            {
+                DefenceBonus += value;
+            }
+            else
+            {
+                var max = Rarity.GetDefenceMax();
+                Defence += value;
+
+                if (Defence > max)
+                {
+                    Defence = max;
+                }
+            }
+        }
+
+        public void DecreaseDefence(int value)
+        {
+            if (FromFigure)
+            {
+                DefenceBonus -= value;
+            }
+            else
+            {
+                var min = Rarity.GetDefenceMin();
+                Defence -= value;
+
+                if (Defence < min)
+                {
+                    Defence = min;
+                }
+            }
         }
 
         public double ExpToUpgrade()
@@ -481,49 +558,57 @@ namespace Sanakan.DAL.Models
             return stars;
         }
 
+        public void DecreaseAffectionOnExpedition(double value)
+        {
+            Affection -= value;
+
+            switch (Expedition)
+            {
+                case ExpeditionCardType.UltimateEasy:
+                    if (Affection < 0)
+                    {
+                        Affection = 0;
+                    }
+
+                    break;
+
+                case ExpeditionCardType.UltimateMedium:
+                    if (Affection < -100)
+                    {
+                        Affection = -100;
+                    }
+
+                    break;
+
+                default:
+                    break;
+            }
+        }
+
         public string GetAffectionString()
         {
-            switch (Affection)
+            return Affection switch
             {
-                case var _ when Affection < -400:
-                    return "Pogarda (γ)";
-                case var _ when Affection <= -200:
-                    return "Pogarda (β)";
-                case var _ when Affection <= -100:
-                    return "Pogarda (α)";
-                case var _ when Affection <= -50:
-                    return "Pogarda";
-                case var _ when Affection <= -5:
-                    return "Nienawiść";
-                case var _ when Affection <= -4:
-                    return "Zawiść";
-                case var _ when Affection <= -3:
-                    return "Wrogość";
-                case var _ when Affection <= -2:
-                    return "Złośliwość";
-                case var _ when Affection <= -1:
-                    return "Chłodność";
-                case var _ when Affection >= 400:
-                    return "Obsesyjna miłość (γ)";
-                case var _ when Affection >= 200:
-                    return "Obsesyjna miłość (β)";
-                case var _ when Affection >= 100:
-                    return "Obsesyjna miłość (α)";
-                case var _ when Affection >= 50:
-                    return "Obsesyjna miłość";
-                case var _ when Affection >= 5:
-                    return "Miłość";
-                case var _ when Affection >= 4:
-                    return "Zauroczenie";
-                case var _ when Affection >= 3:
-                    return "Przyjaźń";
-                case var _ when Affection >= 2:
-                    return "Fascynacja";
-                case var _ when Affection >= 1:
-                    return "Zaciekawienie";
-                default:
-                    return "Obojętność";
-            }
+                var _ when Affection < -400 => "Pogarda (γ)",
+                var _ when Affection <= -200 => "Pogarda (β)",
+                var _ when Affection <= -100 => "Pogarda (α)",
+                var _ when Affection <= -50 => "Pogarda",
+                var _ when Affection <= -5 => "Nienawiść",
+                var _ when Affection <= -4 => "Zawiść",
+                var _ when Affection <= -3 => "Wrogość",
+                var _ when Affection <= -2 => "Złośliwość",
+                var _ when Affection <= -1 => "Chłodność",
+                var _ when Affection >= 400 => "Obsesyjna miłość (γ)",
+                var _ when Affection >= 200 => "Obsesyjna miłość (β)",
+                var _ when Affection >= 100 => "Obsesyjna miłość (α)",
+                var _ when Affection >= 50 => "Obsesyjna miłość",
+                var _ when Affection >= 5 => "Miłość",
+                var _ when Affection >= 4 => "Zauroczenie",
+                var _ when Affection >= 3 => "Przyjaźń",
+                var _ when Affection >= 2 => "Fascynacja",
+                var _ when Affection >= 1 => "Zaciekawienie",
+                _ => "Obojętność",
+            };
         }
 
         public MarketValue GetThreeStateMarketValue()

@@ -56,7 +56,7 @@ namespace Sanakan.DiscordBot
             }
         }
 
-        public event Func<Cacheable<IUserMessage, ulong>, ISocketMessageChannel, IReaction, Task> ReactionAdded
+        public event Func<Cacheable<IUserMessage, ulong>, Cacheable<IMessageChannel, ulong>, IReaction, Task> ReactionAdded
         {
             add
             {
@@ -75,7 +75,7 @@ namespace Sanakan.DiscordBot
             }
         }
 
-        public event Func<Cacheable<IUserMessage, ulong>, ISocketMessageChannel, IReaction, Task> ReactionRemoved
+        public event Func<Cacheable<IUserMessage, ulong>, Cacheable<IMessageChannel, ulong>, IReaction, Task> ReactionRemoved
         {
             add
             {
@@ -151,7 +151,7 @@ namespace Sanakan.DiscordBot
             }
         }
 
-        public event Func<IGuildUser, Task> UserLeft
+        public event Func<IGuild, IUser, Task> UserLeft
         {
             add
             {
@@ -170,7 +170,7 @@ namespace Sanakan.DiscordBot
             }
         }
 
-        public event Func<Cacheable<IMessage, ulong>, ISocketMessageChannel, Task> MessageDeleted
+        public event Func<Cacheable<IMessage, ulong>, Cacheable<IMessageChannel, ulong>, Task> MessageDeleted
         {
             add
             {

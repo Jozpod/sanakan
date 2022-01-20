@@ -40,7 +40,7 @@ namespace Sanakan.Game.Services.Abstractions
 
         Task<Image> GetDuelCardImageAsync(DuelInfo info, DuelImage image, Image<Rgba32> win, Image<Rgba32> los);
 
-        Task<Image> GetCatchThatWaifuImageAsync(Image<Rgba32> card, string imageUrl, int xPos, int yPos);
+        Task<Image> GetCatchThatWaifuImageAsync(Image card, string imageUrl, int xPos, int yPos);
 
         Task<Image<Rgba32>> GetWaifuCardImageAsync(Card card);
     }

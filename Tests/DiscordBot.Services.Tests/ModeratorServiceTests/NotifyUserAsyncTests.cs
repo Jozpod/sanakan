@@ -2,6 +2,7 @@ using Discord;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.DiscordBot.Services.Abstractions;
+using Sanakan.Tests.Shared;
 using System;
 using System.Threading.Tasks;
 
@@ -22,18 +23,10 @@ namespace DiscordBot.Services.Tests.ModeratorServiceTests
             var reason = "reason";
 
             userMock
-                .Setup(pr => pr.GetOrCreateDMChannelAsync(null))
+                .Setup(pr => pr.CreateDMChannelAsync(null))
                 .ReturnsAsync(dmChannelMock.Object);
 
-            dmChannelMock
-                .Setup(pr => pr.SendMessageAsync(
-                    It.IsAny<string>(),
-                    It.IsAny<bool>(),
-                    It.IsAny<Embed>(),
-                    It.IsAny<RequestOptions>(),
-                    It.IsAny<AllowedMentions>(),
-                    It.IsAny<MessageReference>()))
-                .ReturnsAsync(null as IUserMessage);
+            dmChannelMock.SetupSendMessageAsync(null);
 
             dmChannelMock
                  .Setup(pr => pr.CloseAsync(null))

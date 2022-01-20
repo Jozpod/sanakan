@@ -5,6 +5,7 @@ using Sanakan.DAL.Models;
 using Sanakan.DiscordBot.Modules;
 using Sanakan.DiscordBot.Session;
 using Sanakan.Game.Models;
+using Sanakan.Tests.Shared;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -55,15 +56,7 @@ namespace DiscordBot.ModulesTests.ProfileModuleTests
                     It.IsAny<IGuild>()))
                 .ReturnsAsync(strList);
 
-            _messageChannelMock
-               .Setup(pr => pr.SendMessageAsync(
-                   It.IsAny<string>(),
-                   It.IsAny<bool>(),
-                   It.IsAny<Embed>(),
-                   It.IsAny<RequestOptions>(),
-                   It.IsAny<AllowedMentions>(),
-                   It.IsAny<MessageReference>()))
-               .ReturnsAsync(userMessageMock.Object);
+            _messageChannelMock.SetupSendMessageAsync(userMessageMock.Object);
 
             userMessageMock
                 .Setup(pr => pr.DeleteAsync(null))

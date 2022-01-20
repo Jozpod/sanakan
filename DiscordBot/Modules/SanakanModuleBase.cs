@@ -24,7 +24,7 @@ namespace Sanakan.DiscordBot.Modules
                 return channel;
             }
 #endif
-            channel = await user.GetOrCreateDMChannelAsync();
+            channel = await user.CreateDMChannelAsync();
             return channel;
         }
 

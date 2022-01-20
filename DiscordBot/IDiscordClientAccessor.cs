@@ -24,16 +24,16 @@ namespace Sanakan.DiscordBot
         event Func<IGuildUser, Task> UserJoined;
 
         /// <inheritdoc cref="BaseDiscordClient.UserLeft"/>
-        event Func<IGuildUser, Task> UserLeft;
+        event Func<IGuild, IUser, Task> UserLeft;
 
         /// <inheritdoc cref="BaseDiscordClient.ReactionAdded"/>
-        event Func<Cacheable<IUserMessage, ulong>, ISocketMessageChannel, IReaction, Task> ReactionAdded;
+        event Func<Cacheable<IUserMessage, ulong>, Cacheable<IMessageChannel, ulong>, IReaction, Task> ReactionAdded;
 
         /// <inheritdoc cref="DiscordSocketClient.ReactionRemoved"/>
-        event Func<Cacheable<IUserMessage, ulong>, ISocketMessageChannel, IReaction, Task> ReactionRemoved;
+        event Func<Cacheable<IUserMessage, ulong>, Cacheable<IMessageChannel, ulong>, IReaction, Task> ReactionRemoved;
 
         /// <inheritdoc cref="DiscordSocketClient.MessageDeleted"/>
-        event Func<Cacheable<IMessage, ulong>, ISocketMessageChannel, Task> MessageDeleted;
+        event Func<Cacheable<IMessage, ulong>, Cacheable<IMessageChannel, ulong>, Task> MessageDeleted;
 
         /// <inheritdoc cref="DiscordSocketClient.MessageUpdated"/>
         event Func<Cacheable<IMessage, ulong>, IMessage, ISocketMessageChannel, Task> MessageUpdated;

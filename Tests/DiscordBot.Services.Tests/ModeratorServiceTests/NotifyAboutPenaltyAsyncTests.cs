@@ -3,6 +3,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.DAL.Models.Management;
 using Sanakan.DiscordBot.Services.Abstractions;
+using Sanakan.Tests.Shared;
 using System;
 using System.Threading.Tasks;
 
@@ -39,15 +40,7 @@ namespace DiscordBot.Services.Tests.ModeratorServiceTests
                 .Setup(pr => pr.GetAvatarUrl(ImageFormat.Auto, 128))
                 .Returns(avatarUrl);
 
-            messageChannelMock
-                .Setup(pr => pr.SendMessageAsync(
-                    It.IsAny<string>(),
-                    It.IsAny<bool>(),
-                    It.IsAny<Embed>(),
-                    It.IsAny<RequestOptions>(),
-                    It.IsAny<AllowedMentions>(),
-                    It.IsAny<MessageReference>()))
-                .ReturnsAsync(null as IUserMessage);
+            messageChannelMock.SetupSendMessageAsync(null);
 
             await _moderatorService.NotifyAboutPenaltyAsync(
                 guildUserMock.Object,

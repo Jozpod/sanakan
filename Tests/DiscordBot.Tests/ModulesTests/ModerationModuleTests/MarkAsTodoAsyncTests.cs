@@ -4,6 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.DAL.Models.Configuration;
 using Sanakan.DiscordBot.Modules;
+using Sanakan.Tests.Shared;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -75,15 +76,7 @@ namespace DiscordBot.ModulesTests.ModerationModuleTests
                 .Setup(pr => pr.Channel)
                 .Returns(textChannelMock.Object);
 
-            textChannelMock
-                .Setup(pr => pr.SendMessageAsync(
-                    It.IsAny<string>(),
-                    It.IsAny<bool>(),
-                    It.IsAny<Embed>(),
-                    It.IsAny<RequestOptions>(),
-                    It.IsAny<AllowedMentions>(),
-                    It.IsAny<MessageReference>()))
-                .ReturnsAsync(_userMessageMock.Object);
+            textChannelMock.SetupSendMessageAsync(_userMessageMock.Object);
 
             textChannelMock
                 .Setup(pr => pr.GuildId)

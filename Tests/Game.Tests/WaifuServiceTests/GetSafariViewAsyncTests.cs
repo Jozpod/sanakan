@@ -5,12 +5,14 @@ using Moq;
 using Sanakan.DAL.Models;
 using Sanakan.Game.Models;
 using Sanakan.Game.Services.Abstractions;
+using Sanakan.Tests.Shared;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Image = SixLabors.ImageSharp.Image;
 
 namespace Sanakan.Game.Tests.WaifuServiceTests
 {
@@ -45,25 +47,14 @@ namespace Sanakan.Game.Tests.WaifuServiceTests
                 .ReturnsAsync(image);
 
             _imageProcessorMock
-                .Setup(pr => pr.GetCatchThatWaifuImage(
-                    It.IsAny<Image<Rgba32>>(),
+                .Setup(pr => pr.GetCatchThatWaifuImageAsync(
+                    It.IsAny<Image>(),
                     It.IsAny<string>(),
                     It.IsAny<int>(),
                     It.IsAny<int>()))
-                .Returns(image);
+                .ReturnsAsync(image);
 
-            messageChannelMock
-                .Setup(pr => pr.SendFileAsync(
-                    It.IsAny<Stream>(),
-                    It.IsAny<string>(),
-                    It.IsAny<string>(),
-                    It.IsAny<bool>(),
-                    It.IsAny<Embed>(),
-                    It.IsAny<RequestOptions>(),
-                    It.IsAny<bool>(),
-                    It.IsAny<AllowedMentions>(),
-                    It.IsAny<MessageReference>()))
-                .ReturnsAsync(userMessageMock.Object);
+            messageChannelMock.SetupSendFileAsync(userMessageMock.Object);
 
             userMessageMock
                .Setup(pr => pr.Attachments)

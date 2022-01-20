@@ -7,6 +7,7 @@ using Sanakan.DAL.Models.Configuration;
 using Sanakan.DiscordBot.Abstractions;
 using Sanakan.Game.Models;
 using Sanakan.TaskQueue.Messages;
+using Sanakan.Tests.Shared;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -146,21 +147,11 @@ namespace Sanakan.Daemon.Tests.HostedServices.SpawnHostedServiceTests
                 .Setup(pr => pr.SendAndGetSafariImageUrlAsync(safariImage, messageChannelMock.Object))
                 .ReturnsAsync("https://test.com");
 
-            messageChannelMock
-               .Setup(pr => pr.SendMessageAsync(
-                   It.IsAny<string>(),
-                   It.IsAny<bool>(),
-                   It.IsAny<Embed>(),
-                   It.IsAny<RequestOptions>(),
-                   It.IsAny<AllowedMentions>(),
-                   It.IsAny<MessageReference>()))
-               .ReturnsAsync(userMessageMock.Object)
-               .Verifiable();
+            messageChannelMock.SetupSendMessageAsync(userMessageMock.Object);
 
             textChannelMock
                .Setup(pr => pr.Guild)
-               .Returns(guildMock.Object)
-               .Verifiable();
+               .Returns(guildMock.Object);
 
             userMessageMock
                 .Setup(pr => pr.GetReactionUsersAsync(Emojis.RaisedHand, 300, null))

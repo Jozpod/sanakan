@@ -316,4 +316,10 @@ Dzienne misje odświeżają się o północy, a tygodniowe co niedzielę.</value
 {4} **CT**
 {5} **PC**</value>
   </data>
+  <data name="WarningTemplate" xml:space="preserve">
+    <value>Elo! Otrzymałeś ostrzeżenie o treści:
+ {0}
+
+Pozdrawiam serdecznie!</value>
+  </data>
 </root>

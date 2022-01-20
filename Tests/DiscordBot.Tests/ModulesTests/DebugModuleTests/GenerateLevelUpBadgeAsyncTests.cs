@@ -2,11 +2,13 @@ using Discord;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.DiscordBot.Modules;
+using Sanakan.Tests.Shared;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Color = Discord.Color;
 
 namespace DiscordBot.ModulesTests.DebugModuleTests
 {
@@ -67,18 +69,7 @@ namespace DiscordBot.ModulesTests.DebugModuleTests
                     It.IsAny<Color>()))
                 .ReturnsAsync(new Image<Rgba32>(300, 300));
 
-            _messageChannelMock
-                .Setup(pr => pr.SendFileAsync(
-                    It.IsAny<Stream>(),
-                    It.IsAny<string>(),
-                    It.IsAny<string>(),
-                    It.IsAny<bool>(),
-                    It.IsAny<Embed>(),
-                    It.IsAny<RequestOptions>(),
-                    It.IsAny<bool>(),
-                    It.IsAny<AllowedMentions>(),
-                    It.IsAny<MessageReference>()))
-                .ReturnsAsync(_userMessageMock.Object);
+            _messageChannelMock.SetupSendFileAsync(_userMessageMock.Object);
 
             await _module.GenerateLevelUpBadgeAsync();
         }

@@ -1,42 +1,29 @@
 <Project>
   <ItemGroup>
+    <PackageVersion Include="Appveyor.TestLogger" Version="2.0.0" />
     <PackageVersion Include="coverlet.msbuild" Version="3.1.0" />
+    <PackageVersion Include="coverlet.collector" Version="3.1.0" />
+    <PackageVersion Include="Discord.Net" Version="3.1.0" />
+    <PackageVersion Include="FluentAssertions" Version="6.3.0" />
+    <PackageVersion Include="HtmlAgilityPack" Version="1.11.39" />
+    <PackageVersion Include="Humanizer.Core.pl" Version="2.11.10" />
+    <PackageVersion Include="NReco.Logging.File" Version="1.1.2" />
     <PackageVersion Include="MSTest.TestAdapter" Version="2.2.8" />
     <PackageVersion Include="MSTest.TestFramework" Version="2.2.8" />
-    <PackageVersion Include="coverlet.collector" Version="3.1.0" />
-    <PackageVersion Include="StyleCop.Analyzers" Version="1.2.0-beta.354" />
+    <PackageVersion Include="Moq" Version="4.16.1" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Versioning" Version="4.2.0" />
     <PackageVersion Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="3.1.4" />
     <PackageVersion Include="Microsoft.AspNetCore.Identity" Version="2.2.0" />
     <PackageVersion Include="Microsoft.IdentityModel.Tokens" Version="6.8.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.11" />
-    <PackageVersion Include="NReco.Logging.File" Version="1.1.2" />
-    <PackageVersion Include="Swashbuckle.AspNetCore.SwaggerUI" Version="6.2.3" />
-    <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="6.8.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="3.1.18" />
-    <PackageVersion Include="Swashbuckle.AspNetCore.SwaggerGen" Version="6.2.3" />
-    <PackageVersion Include="Z.EntityFramework.Plus.EFCore" Version="5.1.15" />
     <PackageVersion Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.2.0" />
-    <PackageVersion Include="System.Collections.Concurrent" Version="4.3.0" />
-    <PackageVersion Include="System.Text.Json" Version="6.0.0" />
-    <PackageVersion Include="HtmlAgilityPack" Version="1.11.39" />
-    <PackageVersion Include="Microsoft.AspNetCore.WebUtilities" Version="2.2.0" />
-    <PackageVersion Include="Microsoft.Extensions.Http" Version="6.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.0" />
-    <PackageVersion Include="System.Net.Http.Json" Version="6.0.0" />
-    <PackageVersion Include="Selenium.WebDriver" Version="4.1.0" />
-    <PackageVersion Include="Selenium.WebDriver.ChromeDriver" Version="96.0.4664.4500" />
-    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="5.0.12" />
-    <PackageVersion Include="Selenium.WebDriver" Version="4.1.0" />
-    <PackageVersion Include="Selenium.WebDriver.ChromeDriver" Version="96.0.4664.4500" />
-    <PackageVersion Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta13" />
-    <PackageVersion Include="SixLabors.ImageSharp" Version="1.0.4" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="6.0.1" />
-    <PackageVersion Include="Pomelo.EntityFrameworkCore.MySql" Version="6.0.0" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="16.9.4" />
+    <PackageVersion Include="MySql.Data" Version="8.0.27" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="6.0.1" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="6.0.1" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.1" />
-    <PackageVersion Include="Discord.Net" Version="2.4.0" />
     <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="6.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="6.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="6.0.0" />
@@ -49,12 +36,23 @@
     <PackageVersion Include="Microsoft.Extensions.Configuration.FileExtensions" Version="6.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.UserSecrets" Version="6.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Http" Version="6.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.0" />
+    <PackageVersion Include="Microsoft.AspNetCore.WebUtilities" Version="2.2.0" />
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="5.0.12" />
+    <PackageVersion Include="Pomelo.EntityFrameworkCore.MySql" Version="6.0.0" />
     <PackageVersion Include="RichardSzalay.MockHttp" Version="6.0.0" />
-    <PackageVersion Include="Humanizer.Core.pl" Version="2.11.10" />
-    <PackageVersion Include="Moq" Version="4.16.1" />
-    <PackageVersion Include="FluentAssertions" Version="6.3.0" />
-    <PackageVersion Include="Appveyor.TestLogger" Version="2.0.0" />
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="16.9.4" />
-    <PackageVersion Include="MySql.Data" Version="8.0.27" />
+    <PackageVersion Include="Selenium.WebDriver" Version="4.1.0" />
+    <PackageVersion Include="Selenium.WebDriver.ChromeDriver" Version="96.0.4664.4500" />
+    <PackageVersion Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta13" />
+    <PackageVersion Include="SixLabors.ImageSharp" Version="2.0.0-alpha.0.156" />
+    <PackageVersion Include="StyleCop.Analyzers" Version="1.2.0-beta.354" />
+    <PackageVersion Include="System.Text.Json" Version="6.0.0" />    
+    <PackageVersion Include="System.Net.Http.Json" Version="6.0.0" />
+    <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="6.8.0" />
+    <PackageVersion Include="System.Collections.Concurrent" Version="4.3.0" />
+    <PackageVersion Include="Swashbuckle.AspNetCore.SwaggerUI" Version="6.2.3" />
+    <PackageVersion Include="Swashbuckle.AspNetCore.SwaggerGen" Version="6.2.3" />
+    <PackageVersion Include="Z.EntityFramework.Plus.EFCore" Version="5.1.15" />
   </ItemGroup>
 </Project>

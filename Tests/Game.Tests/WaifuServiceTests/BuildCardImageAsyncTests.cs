@@ -4,6 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.DAL.Models;
 using Sanakan.Game.Services.Abstractions;
+using Sanakan.Tests.Shared;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -46,18 +47,7 @@ namespace Sanakan.Game.Tests.WaifuServiceTests
                 .Setup(pr => pr.OpenRead(It.IsAny<string>()))
                 .Returns(new MemoryStream());
 
-            channelMock
-                .Setup(pr => pr.SendFileAsync(
-                    It.IsAny<Stream>(),
-                    It.IsAny<string>(),
-                    It.IsAny<string>(),
-                    It.IsAny<bool>(),
-                    It.IsAny<Embed>(),
-                    It.IsAny<RequestOptions>(),
-                    It.IsAny<bool>(),
-                    It.IsAny<AllowedMentions>(),
-                    It.IsAny<MessageReference>()))
-                .ReturnsAsync(userMessageMock.Object);
+            channelMock.SetupSendFileAsync(userMessageMock.Object);
 
             userMessageMock
                 .Setup(pr => pr.Attachments)

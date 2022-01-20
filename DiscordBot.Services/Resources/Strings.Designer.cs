@@ -19,7 +19,7 @@ namespace Sanakan.DiscordBot.Services.Resources {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Strings {
@@ -338,6 +338,18 @@ namespace Sanakan.DiscordBot.Services.Resources {
         internal static string WalletInfo {
             get {
                 return ResourceManager.GetString("WalletInfo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Elo! Otrzymałeś ostrzeżenie o treści:
+        /// {0}
+        ///
+        ///Pozdrawiam serdecznie!.
+        /// </summary>
+        internal static string WarningTemplate {
+            get {
+                return ResourceManager.GetString("WarningTemplate", resourceCulture);
             }
         }
     }

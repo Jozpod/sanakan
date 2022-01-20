@@ -73,7 +73,10 @@ namespace DiscordBot.ModulesTests
                     It.IsAny<Embed>(),
                     It.IsAny<RequestOptions>(),
                     It.IsAny<AllowedMentions>(),
-                    It.IsAny<MessageReference>()))
+                    It.IsAny<MessageReference>(),
+                    It.IsAny<MessageComponent>(),
+                    It.IsAny<ISticker[]>(),
+                    It.IsAny<Embed[]>()))
                 .Callback(defaultAction)
                 .ReturnsAsync(_userMessageMock.Object);
         }

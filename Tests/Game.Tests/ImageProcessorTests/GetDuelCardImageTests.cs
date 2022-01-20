@@ -39,7 +39,7 @@ namespace Sanakan.Game.Tests.ImageProcessorTests
                 .Setup(pr => pr.OpenRead(It.IsAny<string>()))
                 .Returns(Utils.CreateFakeImage);
 
-            var duelCardImage = _imageProcessor.GetDuelCardImage(duelInfo, duelImage, win, los);
+            var duelCardImage = _imageProcessor.GetDuelCardImageAsync(duelInfo, duelImage, win, los);
             duelCardImage.Should().NotBeNull();
         }
     }

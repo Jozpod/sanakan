@@ -12,9 +12,5 @@ namespace Sanakan.Game.Models
 
         [JsonPropertyName("y")]
         public int Y { get; set; }
-
-        public static int DefaultX() => 884;
-
-        public static int DefaultY() => 198;
     }
 }

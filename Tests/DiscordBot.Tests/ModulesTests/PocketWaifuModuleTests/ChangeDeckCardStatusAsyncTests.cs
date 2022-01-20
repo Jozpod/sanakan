@@ -4,6 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.DAL.Models;
 using Sanakan.DiscordBot.Modules;
+using Sanakan.Tests.Shared;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -133,22 +134,14 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
                 .ReturnsAsync(user);
 
             _userMock
-                .Setup(pr => pr.GetOrCreateDMChannelAsync(null))
+                .Setup(pr => pr.CreateDMChannelAsync(null))
                 .ReturnsAsync(dmChannelMock.Object);
 
             _waifuServiceMock
                 .Setup(pr => pr.GetActiveList(It.IsAny<IEnumerable<Card>>()))
                 .Returns(new EmbedBuilder().Build());
 
-            dmChannelMock
-                .Setup(pr => pr.SendMessageAsync(
-                    It.IsAny<string>(),
-                    It.IsAny<bool>(),
-                    It.IsAny<Embed>(),
-                    It.IsAny<RequestOptions>(),
-                    It.IsAny<AllowedMentions>(),
-                    It.IsAny<MessageReference>()))
-                .ReturnsAsync(_userMessageMock.Object);
+            dmChannelMock.SetupSendMessageAsync(_userMessageMock.Object);
 
             dmChannelMock
                 .Setup(pr => pr.CloseAsync(null))

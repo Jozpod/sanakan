@@ -114,7 +114,7 @@ namespace Sanakan.Game.Tests.ImageProcessorTests
                 .Returns(Utils.CreateFakeImage);
 
             _imageResolverMock
-                .Setup(pr => pr.GetAsync(It.IsAny<string>()))
+                .Setup(pr => pr.GetAsync(It.IsAny<Uri>()))
                 .ReturnsAsync(Utils.CreateFakeImage);
 
             var userProfileImage = await _imageProcessor.GetUserProfileAsync(

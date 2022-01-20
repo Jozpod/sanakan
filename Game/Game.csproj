@@ -23,7 +23,7 @@
   <ItemGroup>
     <PackageReference Include="Discord.Net" />
     <PackageReference Include="Microsoft.Extensions.Options" />
-	<PackageReference Include="SixLabors.ImageSharp" />
+	  <PackageReference Include="SixLabors.ImageSharp" />
     <PackageReference Include="SixLabors.ImageSharp.Drawing" />
   </ItemGroup>
 

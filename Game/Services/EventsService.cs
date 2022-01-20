@@ -86,15 +86,20 @@ namespace Sanakan.Game.Services
             }
         }
 
-        public (bool, string) ExecuteEvent(EventType eventType, User user, Card card, string message)
+        public bool ExecuteEvent(
+            EventType eventType,
+            User user,
+            Card card,
+            StringBuilder stringBuilder,
+            double totalExperience)
         {
-            var stringBuilder = new StringBuilder(message, 100);
             var randomValue = _randomNumberGenerator.GetRandomValue(1, 4);
+            int defencePoints;
+            int attackPoints;
 
             switch (eventType)
             {
                 case EventType.NewCard:
-                {
                     var boosterPack = new BoosterPack
                     {
                         RarityExcludedFromPack = new List<RarityExcluded>(),
@@ -109,120 +114,67 @@ namespace Sanakan.Game.Services
 
                     user.GameDeck.BoosterPacks.Add(boosterPack);
                     stringBuilder.AppendLine("Wydarzenie: Pakiet z kartą.");
-                }
-
-                break;
+                    break;
 
                 case EventType.IncreaseAttack:
-                {
-                    var max = card.Rarity.GetAttackMax();
-                    card.Attack += randomValue;
-
-                    if (card.Attack > max)
-                    {
-                        card.Attack = max;
-                    }
-
-                    stringBuilder.AppendFormat("Wydarzenie: Zwiększenie ataku do {0}.\n", card.Attack);
-                }
-
-                break;
+                    card.IncreaseAttack(randomValue);
+                    var attack = card.GetAttackWithBonus();
+                    stringBuilder.AppendFormat("Wydarzenie: Zwiększenie ataku do {0}.\n", attack);
+                    break;
 
                 case EventType.IncreaseDefence:
-                {
-                    var max = card.Rarity.GetDefenceMax();
-                    card.Defence += randomValue;
-
-                    if (card.Defence > max)
-                    {
-                        card.Defence = max;
-                    }
-
-                    stringBuilder.AppendFormat("Wydarzenie: Zwiększenie obrony do {0}.\n", card.Defence);
-                }
-
-                break;
+                    card.IncreaseDefence(randomValue);
+                    defencePoints = card.GetDefenceWithBonus();
+                    stringBuilder.AppendFormat("Wydarzenie: Zwiększenie obrony do {0}.\n", defencePoints);
+                    break;
 
                 case EventType.MoreExperience:
-                {
-                    var addExp = _randomNumberGenerator.GetRandomValue(1, 5);
-                    card.ExperienceCount += addExp;
-
-                    stringBuilder.AppendFormat("Wydarzenie: Dodatkowe punkty doświadczenia. (+{0} exp)", addExp);
-                }
-
-                break;
+                    var experienceToAdd = _randomNumberGenerator.GetRandomValue(1, 5);
+                    card.ExperienceCount += experienceToAdd;
+                    stringBuilder.AppendFormat("Wydarzenie: Dodatkowe punkty doświadczenia. (+{0} exp)", experienceToAdd);
+                    break;
 
                 case EventType.MoreItems:
-                {
                     stringBuilder.Append("Wydarzenie: Dodatkowe przedmioty.\n");
-                }
-
-                break;
+                    break;
 
                 case EventType.AddReset:
-                {
                     ++card.RestartCount;
                     stringBuilder.Append("Wydarzenie: Zwiększenie ilości restartów karty.\n");
-                }
-
-                break;
+                    break;
 
                 case EventType.ChangeDere:
-                {
                     stringBuilder.Append("Wydarzenie: Zmiana dere na ");
-                }
-
-                break;
+                    card.Dere = _randomNumberGenerator.GetOneRandomFrom(DereExtensions.ListOfDeres);
+                    stringBuilder.AppendFormat("{0}\n", card.Dere);
+                    break;
 
                 case EventType.DecreaseAffection:
-                {
                     card.Affection -= randomValue;
                     stringBuilder.Append("Wydarzenie: Zmniejszenie relacji.\n");
-                }
-
-                break;
+                    break;
 
                 case EventType.DecreaseAttack:
-                {
-                    var min = card.Rarity.GetAttackMin();
-                    card.Attack -= randomValue;
-
-                    if (card.Attack < min)
-                    {
-                        card.Attack = min;
-                    }
-
-                    stringBuilder.AppendFormat("Wydarzenie: Zmniejszenie ataku do {0}.\n", card.Attack);
-                }
-
-                break;
+                    card.DecreaseAttack(randomValue);
+                    attackPoints = card.GetAttackWithBonus();
+                    stringBuilder.AppendFormat("Wydarzenie: Zmniejszenie ataku do {0}.\n", attackPoints);
+                    break;
 
                 case EventType.DecreaseDefence:
-                {
-                    var min = card.Rarity.GetDefenceMin();
-                    card.Defence -= randomValue;
-
-                    if (card.Defence < min)
-                    {
-                        card.Defence = min;
-                    }
-
-                    stringBuilder.AppendFormat("Wydarzenie: Zmniejszenie obrony do {0}.\n", card.Defence);
-                }
-
-                break;
+                    card.DecreaseDefence(randomValue);
+                    defencePoints = card.GetDefenceWithBonus();
+                    stringBuilder.AppendFormat("Wydarzenie: Zmniejszenie obrony do {0}.\n", defencePoints);
+                    break;
 
                 case EventType.Fight:
-                {
                     var randomNumber = _randomNumberGenerator.GetRandomValue(1000);
                     var rarity = RarityExtensions.Random(randomNumber);
                     var name = "Miecu";
                     var title = "Bajeczka";
 
                     var date = _systemClock.UtcNow;
-                    var defence = _randomNumberGenerator.GetRandomValue(rarity.GetDefenceMin(), rarity.GetDefenceMax() + 1);
-                    var attack = _randomNumberGenerator.GetRandomValue(rarity.GetAttackMin(), rarity.GetAttackMax() + 1);
+                    defencePoints = _randomNumberGenerator.GetRandomValue(rarity.GetDefenceMin(), rarity.GetDefenceMax() + 1);
+                    attackPoints = _randomNumberGenerator.GetRandomValue(rarity.GetAttackMin(), rarity.GetAttackMax() + 1);
                     var dere = _randomNumberGenerator.GetOneRandomFrom(DereExtensions.ListOfDeres);
                     var characterId = 1ul;
 
@@ -230,50 +182,36 @@ namespace Sanakan.Game.Services
                         characterId,
                         title,
                         name,
-                        attack,
-                        defence,
+                        attackPoints,
+                        defencePoints,
                         rarity,
                         dere,
                         date);
 
                     card.CalculateCardPower();
-
-                    var result = FightWinnerExtensions.GetFightWinner(card, enemyCard);
-
-                    var resStr = result == FightWinner.Card1 ? "zwycięstwo!" : "przegrana!";
+                    var fightResult = FightWinnerExtensions.GetFightWinner(card, enemyCard);
+                    var resStr = fightResult == FightWinner.Card1 ? "zwycięstwo!" : "przegrana!";
                     stringBuilder.AppendFormat("Wydarzenie: Walka, wynik: {0}\n", resStr);
-                    message = stringBuilder.ToString();
-                    var eventResult = result == FightWinner.Card1;
-                    return (eventResult, message);
-                }
+                    var eventResult = fightResult == FightWinner.Card1;
+                    return eventResult;
 
                 case EventType.LoseCard:
-                {
-                        user.GameDeck.Cards.Remove(card);
-                        stringBuilder.Append("Wydarzenie: Utrata karty.\n");
-                        message = stringBuilder.ToString();
-                    }
-
-                return (false, message);
-
+                    user.GameDeck.Cards.Remove(card);
+                    stringBuilder.Append("Wydarzenie: Utrata karty.\n");
+                    user.StoreExperience(totalExperience);
+                    return false;
                 default:
-                return (true, message);
+                    return true;
             }
 
-            return (true, message);
+            return true;
         }
 
-        public int GetMoreItems(EventType eventType)
+        public int GetMoreItems(EventType eventType) => eventType switch
         {
-            switch (eventType)
-            {
-                case EventType.MoreItems:
-                    return _randomNumberGenerator.GetRandomValue(2, 8);
-
-                default:
-                    return 0;
-            }
-        }
+            EventType.MoreItems => _randomNumberGenerator.GetRandomValue(2, 8),
+            _ => 0,
+        };
 
         private EventType CheckChanceBasedOnTime(ExpeditionCardType expedition, (double, double) duration)
         {

@@ -4,6 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.DAL.Models;
 using Sanakan.Game.Services.Abstractions;
+using Sanakan.Tests.Shared;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -41,17 +42,7 @@ namespace Sanakan.Game.Tests.WaifuServiceTests
                  .Setup(pr => pr.Exists(It.IsAny<string>()))
                  .Returns(true);
 
-            textChannelMock
-                .Setup(pr => pr.SendFileAsync(
-                    It.IsAny<string>(),
-                    It.IsAny<string>(),
-                    It.IsAny<bool>(),
-                    It.IsAny<Embed>(),
-                    It.IsAny<RequestOptions>(),
-                    It.IsAny<bool>(),
-                    It.IsAny<AllowedMentions>(),
-                    It.IsAny<MessageReference>()))
-                .ReturnsAsync(userMessageMock.Object);
+            textChannelMock.SetupSendFileAsync(userMessageMock.Object);
 
             userMessageMock
                 .Setup(pr => pr.Attachments)

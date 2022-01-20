@@ -4,6 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.DAL.Models;
 using Sanakan.DiscordBot.Modules;
+using Sanakan.Tests.Shared;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -65,18 +66,7 @@ namespace DiscordBot.ModulesTests.ProfileModuleTests
                 .Setup(pr => pr.GetProfileImageAsync(_guildUserMock.Object, user, users.Count))
                 .ReturnsAsync(memoryStream);
 
-            _messageChannelMock
-                .Setup(pr => pr.SendFileAsync(
-                    memoryStream,
-                    It.IsAny<string>(),
-                    It.IsAny<string>(),
-                    It.IsAny<bool>(),
-                    It.IsAny<Embed>(),
-                    It.IsAny<RequestOptions>(),
-                    It.IsAny<bool>(),
-                    It.IsAny<AllowedMentions>(),
-                    It.IsAny<MessageReference>()))
-                .ReturnsAsync(null as IUserMessage);
+            _messageChannelMock.SetupSendFileAsync(null);
 
             await _module.ShowUserProfileAsync(_guildUserMock.Object);
         }

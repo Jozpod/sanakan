@@ -81,7 +81,7 @@ namespace Sanakan.TaskQueue.MessageHandlers
                 Description = $"Na [polowaniu]({message.GetJumpUrl()}) zdobyłeś: {cardDescription}"
             };
 
-            var dmChannel = await winner.GetOrCreateDMChannelAsync();
+            var dmChannel = await winner.CreateDMChannelAsync();
             if (dmChannel != null)
             {
                 await dmChannel.SendMessageAsync("", false, privateEmbed.Build());

@@ -9,6 +9,7 @@ using Sanakan.DAL.Models;
 using Sanakan.ShindenApi;
 using Sanakan.ShindenApi.Models;
 using Sanakan.TaskQueue.Messages;
+using Sanakan.Tests.Shared;
 using Sanakan.Web.Controllers;
 using Sanakan.Web.Models;
 using System;
@@ -132,15 +133,7 @@ namespace Sanakan.Web.Tests.Controllers.UserControllerTests
                 .Setup(pr => pr.GetTextChannelAsync(rmConfig.ChannelId, CacheMode.AllowDownload, null))
                 .ReturnsAsync(textChannelMock.Object);
 
-            textChannelMock
-                .Setup(pr => pr.SendMessageAsync(
-                    It.IsAny<string>(),
-                    It.IsAny<bool>(),
-                    It.IsAny<Embed>(),
-                    It.IsAny<RequestOptions>(),
-                    It.IsAny<AllowedMentions>(),
-                    It.IsAny<MessageReference>()))
-                .ReturnsAsync(null as IUserMessage);
+            textChannelMock.SetupSendMessageAsync(null);
 
             var result = await _controller.RegisterUserAsync(payload);
             var okObjectResult = result.Should().BeOfType<ObjectResult>().Subject;

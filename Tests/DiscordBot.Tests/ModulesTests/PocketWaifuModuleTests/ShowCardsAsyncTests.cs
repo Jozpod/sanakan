@@ -6,6 +6,7 @@ using Sanakan.DAL.Models;
 using Sanakan.DiscordBot.Modules;
 using Sanakan.DiscordBot.Session;
 using Sanakan.Game.Models;
+using Sanakan.Tests.Shared;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -133,18 +134,10 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
                 .Returns(cards);
 
             _guildUserMock
-                .Setup(pr => pr.GetOrCreateDMChannelAsync(null))
+                .Setup(pr => pr.CreateDMChannelAsync(null))
                 .ReturnsAsync(dmChannelMock.Object);
 
-            dmChannelMock
-                .Setup(pr => pr.SendMessageAsync(
-                    It.IsAny<string>(),
-                    It.IsAny<bool>(),
-                    It.IsAny<Embed>(),
-                    It.IsAny<RequestOptions>(),
-                    It.IsAny<AllowedMentions>(),
-                    It.IsAny<MessageReference>()))
-                .ReturnsAsync(userMessageMock.Object);
+            dmChannelMock.SetupSendMessageAsync(userMessageMock.Object);
 
             userMessageMock
                 .Setup(pr => pr.AddReactionAsync(It.IsAny<IEmote>(), null))

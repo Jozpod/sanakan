@@ -1128,12 +1128,12 @@ namespace Sanakan.Game.Services
             var getY = _fileSystem.Exists(ThisUri(safariImage, safariImageType)) ? safariImage.Y : defaultY;
 
             using var cardImage = await _imageProcessor.GetWaifuCardImageAsync(card);
-            var xPosition = safariImage != null ? getX : SafariImage.DefaultX();
-            int yPosition = safariImage != null ? getY : SafariImage.DefaultY();
+            var xPosition = safariImage != null ? getX : defaultX;
+            var yPosition = safariImage != null ? getY : defaultY;
             using var pokeImage = await _imageProcessor.GetCatchThatWaifuImageAsync(cardImage, imagePath, xPosition, yPosition);
             using var stream = pokeImage.ToJpgStream();
 
-            var message = await trashChannel.SendFileAsync(stream, $"poke.jpg");
+            var message = await trashChannel.SendFileAsync(stream, "poke.jpg");
             return message.Attachments.First().Url;
         }
 
@@ -1200,7 +1200,7 @@ namespace Sanakan.Game.Services
                 imageUrl = message.Attachments.First().Url;
             }
 
-            var decription = $"{card.GetDesc()}[_obrazek_]({imageUrl})\n[_możesz zmienić obrazek tutaj_]({card.GetCharacterUrl()}/edit_crossroad)".ElipseTrimToLength(1800);
+            var decription = $"{card.GetDescription()}[_obrazek_]({imageUrl})\n[_możesz zmienić obrazek tutaj_]({card.GetCharacterUrl()}/edit_crossroad)".ElipseTrimToLength(1800);
             var ownerString = ((owner as IGuildUser)?.Nickname ?? owner?.Username) ?? Placeholders.Undefined;
 
             return new EmbedBuilder
@@ -1410,15 +1410,19 @@ namespace Sanakan.Game.Services
                     count = 7.2;
                     break;
 
-                case ExpeditionCardType.LightExp:
-                case ExpeditionCardType.DarkExp:
-                    return 0;
-
-                default:
                 case ExpeditionCardType.UltimateEasy:
                 case ExpeditionCardType.UltimateMedium:
+                    return 1.4;
+
                 case ExpeditionCardType.UltimateHard:
+                    return 2.5;
+
                 case ExpeditionCardType.UltimateHardcore:
+                    return 1.1;
+
+                default:
+                case ExpeditionCardType.LightExp:
+                case ExpeditionCardType.DarkExp:
                     return 0;
             }
 
@@ -1476,7 +1480,7 @@ namespace Sanakan.Game.Services
             var baseItemsCnt = GetBaseItemsPerMinuteFromExpedition(card.Expedition, card.Rarity);
             var multiplier = (duration.Item2 < _hour) ? ((duration.Item2 < _halfAnHour) ? 5d : 3d) : 1d;
 
-            var totalExp = GetProgressiveValueFromExpedition(baseExp, duration.Item1.TotalMinutes, 15d);
+            var totalExperience = GetProgressiveValueFromExpedition(baseExp, duration.Item1.TotalMinutes, 15d);
             var totalItemsCount = (int)GetProgressiveValueFromExpedition(baseItemsCnt, duration.Item1.TotalMinutes, 25d);
 
             var karmaCost = card.GetKarmaCostInExpeditionPerMinute() * duration.Item1.TotalMinutes;
@@ -1484,44 +1488,39 @@ namespace Sanakan.Game.Services
 
             if (card.Curse == CardCurse.LoweredExperience)
             {
-                totalExp /= 5;
+                totalExperience /= 5;
             }
 
-            var reward = string.Empty;
+            var expeditionSummary = new StringBuilder();
             var allowItems = true;
             if (duration.Item2 < _halfAnHour)
             {
-                reward = "Wyprawa? Chyba po bułki do sklepu.\n\n";
+                expeditionSummary.Append("Wyprawa? Chyba po bułki do sklepu.\n\n");
                 affectionCost += 3.3;
             }
 
             if (CheckEventInExpedition(card.Expedition, (duration.Item1.TotalMinutes, duration.Item2.TotalMinutes)))
             {
                 var @event = _eventsService.RandomizeEvent(card.Expedition, (duration.Item1.TotalMinutes, duration.Item2.TotalMinutes));
-                (allowItems, reward) = _eventsService.ExecuteEvent(@event, user, card, reward);
+                allowItems = _eventsService.ExecuteEvent(
+                    @event,
+                    user,
+                    card,
+                    expeditionSummary,
+                    totalExperience);
 
                 totalItemsCount += _eventsService.GetMoreItems(@event);
-                if (@event == EventType.ChangeDere)
-                {
-                    card.Dere = _randomNumberGenerator.GetOneRandomFrom(DereExtensions.ListOfDeres);
-                    reward += $"{card.Dere}\n";
-                }
-
-                if (@event == EventType.LoseCard)
-                {
-                    user.StoreExpIfPossible(totalExp);
-                }
 
                 if (@event == EventType.Fight && !allowItems)
                 {
-                    totalExp /= 6;
+                    totalExperience /= 6;
                 }
             }
 
             if (duration.Item1 <= TimeSpan.FromMinutes(3))
             {
                 totalItemsCount = 0;
-                totalExp /= 2;
+                totalExperience /= 2;
             }
 
             if (duration.Item1 <= TimeSpan.FromMinutes(1) || gameDeck.CanCreateDemon())
@@ -1534,11 +1533,12 @@ namespace Sanakan.Game.Services
                 karmaCost *= 2.5;
             }
 
-            card.ExperienceCount += totalExp;
-            card.Affection -= affectionCost;
+            card.ExperienceCount += totalExperience;
+            card.DecreaseAffectionOnExpedition(affectionCost);
 
             var minAff = 0d;
-            reward += $"Zdobywa:\n+{totalExp:F} exp ({card.ExperienceCount:F})\n";
+            expeditionSummary.AppendFormat("Zdobywa:\n+{0:F} exp ({1:F})\n", totalExperience, card.ExperienceCount);
+
             for (var i = 0; i < totalItemsCount && allowItems; i++)
             {
                 if (CheckChanceForItemInExpedition(i, totalItemsCount, card.Expedition))
@@ -1571,17 +1571,27 @@ namespace Sanakan.Game.Services
                 }
             }
 
-            reward += string.Join("\n", items.Select(x => $"+{x.Key} x{x.Value}"));
+            foreach (var item in items)
+            {
+                expeditionSummary.AppendFormat("+{0} x{1}\n", item.Key, item.Value);
+            }
 
             if (showStats)
             {
-                reward += $"\n\nRT: {duration.Item1:F} E: {totalExp:F} AI: {minAff:F} A: {affectionCost:F} K: {karmaCost:F} MI: {totalItemsCount}";
+                expeditionSummary.AppendFormat(
+                    "\n\nRT: {0:F} E: {1:F} AI: {2:F} A: {3:F} K: {4:F} MI: {5}",
+                    duration.Item1,
+                    totalExperience,
+                    minAff,
+                    affectionCost,
+                    karmaCost,
+                    totalItemsCount);
             }
 
             card.Expedition = ExpeditionCardType.None;
             gameDeck.Karma -= karmaCost;
 
-            return reward;
+            return expeditionSummary.ToString();
         }
 
         public double GetProgressiveValueFromExpedition(double baseValue, double duration, double div)
@@ -1611,6 +1621,56 @@ namespace Sanakan.Game.Services
             return value + (duration * baseValue);
         }
 
+        public Quality RandomizeItemQualityFromExpedition(ExpeditionCardType type)
+        {
+            var num = _randomNumberGenerator.GetRandomValue(100000);
+            switch (type)
+            {
+                case ExpeditionCardType.UltimateEasy:
+                    if (num < 3000) return Quality.Delta;
+                    if (num < 25000) return Quality.Gamma;
+                    if (num < 45000) return Quality.Beta;
+                    return Quality.Alpha;
+
+                case ExpeditionCardType.UltimateMedium:
+                    if (num < 1000) return Quality.Zeta;
+                    if (num < 2000) return Quality.Epsilon;
+                    if (num < 5000) return Quality.Delta;
+                    if (num < 35000) return Quality.Gamma;
+                    if (num < 55000) return Quality.Beta;
+                    return Quality.Alpha;
+
+                case ExpeditionCardType.UltimateHard:
+                    if (num < 50) return Quality.Sigma;
+                    if (num < 200) return Quality.Lambda;
+                    if (num < 600) return Quality.Theta;
+                    if (num < 1500) return Quality.Zeta;
+                    if (num < 5000) return Quality.Epsilon;
+                    if (num < 12000) return Quality.Delta;
+                    if (num < 25000) return Quality.Gamma;
+                    if (num < 45000) return Quality.Beta;
+                    return Quality.Alpha;
+
+                case ExpeditionCardType.UltimateHardcore:
+                    if (num < 50) return Quality.Omega;
+                    if (num < 150) return Quality.Sigma;
+                    if (num < 2000) return Quality.Lambda;
+                    if (num < 5000) return Quality.Theta;
+                    if (num < 10000) return Quality.Zeta;
+                    if (num < 20000) return Quality.Epsilon;
+                    if (num < 30000) return Quality.Delta;
+                    if (num < 50000) return Quality.Gamma;
+                    if (num < 80000) return Quality.Beta;
+                    return Quality.Alpha;
+
+                default:
+                    if (num < 5) return Quality.Omega;
+                    if (num < 50) return Quality.Sigma;
+                    if (num < 200) return Quality.Lambda;
+                    return Quality.Broken;
+            }
+        }
+
         private Item? RandomizeItemForExpedition(ExpeditionCardType expedition)
         {
             var chanceOfItems = Game.Constants.ChanceOfItemsInExpedition[expedition];
@@ -1619,8 +1679,24 @@ namespace Sanakan.Game.Services
             if (expedition.HasDifferentQualitiesOnExpedition())
             {
                 var number = _randomNumberGenerator.GetRandomValue(100000);
-                quality = QualityExtensions.RandomizeItemQualityFromExpedition(number);
+                quality = RandomizeItemQualityFromExpedition(expedition);
             }
+
+            switch (expedition)
+            {
+                case ExpeditionCardType.UltimateEasy:
+                case ExpeditionCardType.UltimateMedium:
+                case ExpeditionCardType.UltimateHard:
+                case ExpeditionCardType.UltimateHardcore:
+                    var item = _randomNumberGenerator
+                        .GetOneRandomFrom(Constants.UltimateExpeditionItems)
+                        .ToItem(1, quality);
+                    return item;
+
+                default:
+                    break;
+            }
+
 
             switch (_randomNumberGenerator.GetRandomValue(10000))
             {
@@ -1685,15 +1761,19 @@ namespace Sanakan.Game.Services
                 case ExpeditionCardType.ExtremeItemWithExp:
                     return true;
 
-                case ExpeditionCardType.LightExp:
-                case ExpeditionCardType.DarkExp:
-                    return false;
-
-                default:
                 case ExpeditionCardType.UltimateEasy:
+                    return !_randomNumberGenerator.TakeATry(15);
+
                 case ExpeditionCardType.UltimateMedium:
+                    return !_randomNumberGenerator.TakeATry(20);
+
                 case ExpeditionCardType.UltimateHard:
                 case ExpeditionCardType.UltimateHardcore:
+                    return true;
+
+                default:
+                case ExpeditionCardType.LightExp:
+                case ExpeditionCardType.DarkExp:
                     return false;
             }
         }
@@ -1723,11 +1803,17 @@ namespace Sanakan.Game.Services
                 case ExpeditionCardType.DarkExp:
                     return _randomNumberGenerator.TakeATry(5);
 
+                case ExpeditionCardType.UltimateMedium:
+                    return _randomNumberGenerator.TakeATry(6);
+
+                case ExpeditionCardType.UltimateHard:
+                    return _randomNumberGenerator.TakeATry(2);
+
+                case ExpeditionCardType.UltimateHardcore:
+                    return _randomNumberGenerator.TakeATry(4);
+
                 default:
                 case ExpeditionCardType.UltimateEasy:
-                case ExpeditionCardType.UltimateMedium:
-                case ExpeditionCardType.UltimateHard:
-                case ExpeditionCardType.UltimateHardcore:
                     return false;
             }
         }

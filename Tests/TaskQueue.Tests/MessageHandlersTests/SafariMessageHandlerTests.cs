@@ -10,6 +10,7 @@ using Sanakan.Game.Models;
 using Sanakan.Game.Services.Abstractions;
 using Sanakan.TaskQueue.MessageHandlers;
 using Sanakan.TaskQueue.Messages;
+using Sanakan.Tests.Shared;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -109,18 +110,10 @@ namespace Sanakan.TaskQueue.Tests.MessageHandlersTests
                 .Returns(user.Id);
 
             userMock
-                .Setup(pr => pr.GetOrCreateDMChannelAsync(null))
+                .Setup(pr => pr.CreateDMChannelAsync(null))
                 .ReturnsAsync(dmChannelMock.Object);
 
-            dmChannelMock
-               .Setup(pr => pr.SendMessageAsync(
-                   It.IsAny<string>(),
-                   It.IsAny<bool>(),
-                   It.IsAny<Embed>(),
-                   It.IsAny<RequestOptions>(),
-                   It.IsAny<AllowedMentions>(),
-                   It.IsAny<MessageReference>()))
-                .ReturnsAsync(null as IUserMessage);
+            dmChannelMock.SetupSendMessageAsync(null);
 
             _cacheManagerMock
                 .Setup(pr => pr.ExpireTag(It.IsAny<string[]>()));

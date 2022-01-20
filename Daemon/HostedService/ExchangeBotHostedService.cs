@@ -60,7 +60,10 @@ namespace Sanakan.Daemon.HostedService
             return Task.CompletedTask;
         }
 
-        private async Task ReactionAddedAsync(Cacheable<IUserMessage, ulong> cachedMessage, ISocketMessageChannel messageChannel, IReaction reaction)
+        private async Task ReactionAddedAsync(
+            Cacheable<IUserMessage, ulong> cachedMessage,
+            Cacheable<IMessageChannel, ulong> messageChannel,
+            IReaction reaction)
         {
             var message = cachedMessage.Value;
 

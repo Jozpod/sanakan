@@ -10,72 +10,87 @@ namespace Sanakan.TypeReaders
     {
         public override Task<TypeReaderResult> ReadAsync(ICommandContext context, string input, IServiceProvider services)
         {
+            TypeReaderResult result;
+
             switch (input.ToLower())
             {
                 case "-":
-                    return Task.FromResult(TypeReaderResult.FromSuccess(ExpeditionCardType.None));
-
+                    result = TypeReaderResult.FromSuccess(ExpeditionCardType.None);
+                    break;
                 case "normalna":
                 case "normal":
                 case "n":
-                    return Task.FromResult(TypeReaderResult.FromSuccess(ExpeditionCardType.NormalItemWithExp));
-
+                    result = TypeReaderResult.FromSuccess(ExpeditionCardType.NormalItemWithExp);
+                    break;
                 case "trudna":
                 case "hard":
                 case "h":
-                    return Task.FromResult(TypeReaderResult.FromSuccess(ExpeditionCardType.ExtremeItemWithExp));
-
+                    result = TypeReaderResult.FromSuccess(ExpeditionCardType.ExtremeItemWithExp);
+                    break;
                 case "mrok":
                 case "dark":
                 case "d":
-                    return Task.FromResult(TypeReaderResult.FromSuccess(ExpeditionCardType.DarkItemWithExp));
-
+                    result = TypeReaderResult.FromSuccess(ExpeditionCardType.DarkItemWithExp);
+                    break;
                 case "mrok 1":
                 case "dark 1":
                 case "d1":
-                    return Task.FromResult(TypeReaderResult.FromSuccess(ExpeditionCardType.DarkExp));
-
+                    result = TypeReaderResult.FromSuccess(ExpeditionCardType.DarkExp);
+                    break;
                 case "mrok 2":
                 case "dark 2":
                 case "d2":
-                    return Task.FromResult(TypeReaderResult.FromSuccess(ExpeditionCardType.DarkItems));
-
+                    result = TypeReaderResult.FromSuccess(ExpeditionCardType.DarkItems);
+                    break;
                 case "światło":
                 case "światlo":
                 case "swiatło":
                 case "swiatlo":
                 case "light":
                 case "l":
-                    return Task.FromResult(TypeReaderResult.FromSuccess(ExpeditionCardType.LightItemWithExp));
-
+                    result = TypeReaderResult.FromSuccess(ExpeditionCardType.LightItemWithExp);
+                    break;
                 case "światło 1":
                 case "światlo 1":
                 case "swiatło 1":
                 case "swiatlo 1":
                 case "light 1":
                 case "l1":
-                    return Task.FromResult(TypeReaderResult.FromSuccess(ExpeditionCardType.LightExp));
-
+                    result = TypeReaderResult.FromSuccess(ExpeditionCardType.LightExp);
+                    break;
                 case "światło 2":
                 case "światlo 2":
                 case "swiatło 2":
                 case "swiatlo 2":
                 case "light 2":
                 case "l2":
-                    return Task.FromResult(TypeReaderResult.FromSuccess(ExpeditionCardType.LightItems));
-
+                    result = TypeReaderResult.FromSuccess(ExpeditionCardType.LightItems);
+                    break;
                 case "ue":
-                    return Task.FromResult(TypeReaderResult.FromSuccess(ExpeditionCardType.UltimateEasy));
+                case "sandbox":
+                case "piaskownica":
+                    result = TypeReaderResult.FromSuccess(ExpeditionCardType.UltimateEasy);
+                    break;
                 case "um":
-                    return Task.FromResult(TypeReaderResult.FromSuccess(ExpeditionCardType.UltimateMedium));
+                case "spacer":
+                case "stroll":
+                    result = TypeReaderResult.FromSuccess(ExpeditionCardType.UltimateMedium);
+                    break;
                 case "uh":
-                    return Task.FromResult(TypeReaderResult.FromSuccess(ExpeditionCardType.UltimateHard));
+                case "sprint":
+                    result = TypeReaderResult.FromSuccess(ExpeditionCardType.UltimateHard);
+                    break;
                 case "uhh":
-                    return Task.FromResult(TypeReaderResult.FromSuccess(ExpeditionCardType.UltimateHardcore));
-
+                case "maraton":
+                case "marathon":
+                    result = TypeReaderResult.FromSuccess(ExpeditionCardType.UltimateHardcore);
+                    break;
                 default:
-                    return Task.FromResult(TypeReaderResult.FromError(CommandError.ParseFailed, "Nie rozpoznano typu wyprawy!"));
+                    result = TypeReaderResult.FromError(CommandError.ParseFailed, "Nie rozpoznano typu wyprawy!");
+                    break;
             }
+
+            return Task.FromResult(result);
         }
     }
 }

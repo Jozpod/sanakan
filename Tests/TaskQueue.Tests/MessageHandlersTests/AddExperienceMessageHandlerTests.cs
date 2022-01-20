@@ -9,6 +9,7 @@ using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.Game.Services.Abstractions;
 using Sanakan.TaskQueue.MessageHandlers;
 using Sanakan.TaskQueue.Messages;
+using Sanakan.Tests.Shared;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System;
@@ -16,6 +17,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Color = Discord.Color;
 
 namespace Sanakan.TaskQueue.Tests.MessageHandlersTests
 {
@@ -153,18 +155,7 @@ namespace Sanakan.TaskQueue.Tests.MessageHandlersTests
                     It.IsAny<Discord.Color>()))
                 .ReturnsAsync(new Image<Rgba32>(300, 300));
 
-            _messageChannelMock
-                .Setup(pr => pr.SendFileAsync(
-                    It.IsAny<Stream>(),
-                    It.IsAny<string>(),
-                    It.IsAny<string>(),
-                    It.IsAny<bool>(),
-                    It.IsAny<Embed>(),
-                    It.IsAny<RequestOptions>(),
-                    It.IsAny<bool>(),
-                    It.IsAny<AllowedMentions>(),
-                    It.IsAny<MessageReference>()))
-                .ReturnsAsync(null as IUserMessage);
+            _messageChannelMock.SetupSendFileAsync(null);
 
             _guildConfigRepositoryMock
                 .Setup(pr => pr.GetCachedGuildFullConfigAsync(message.GuildId))

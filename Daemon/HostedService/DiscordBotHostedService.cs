@@ -407,7 +407,7 @@ namespace Sanakan.Daemon.HostedService
 
             try
             {
-                var dmChannel = await user.GetOrCreateDMChannelAsync();
+                var dmChannel = await user.CreateDMChannelAsync();
                 await dmChannel.SendMessageAsync(ReplaceTags(user, guildConfig.WelcomeMessagePM));
                 await dmChannel.CloseAsync();
             }
@@ -417,7 +417,7 @@ namespace Sanakan.Daemon.HostedService
             }
         }
 
-        private async Task UserLeftAsync(IGuildUser user)
+        private async Task UserLeftAsync(IGuild guild, IUser user)
         {
             if (user.IsBotOrWebhook())
             {
@@ -425,8 +425,7 @@ namespace Sanakan.Daemon.HostedService
             }
 
             var config = _discordConfiguration.CurrentValue;
-            var guildId = user.Guild.Id;
-            var guild = user.Guild;
+            var guildId = guild.Id;
 
             using var serviceScope = _serviceScopeFactory.CreateScope();
             var guildConfigRepository = serviceScope.ServiceProvider.GetRequiredService<IGuildConfigRepository>();
@@ -444,7 +443,7 @@ namespace Sanakan.Daemon.HostedService
                     return;
                 }
 
-                var content = ReplaceTags(user, guildConfig.GoodbyeMessage);
+                var content = ReplaceTags(user as IGuildUser, guildConfig.GoodbyeMessage);
                 var textChannel = (IMessageChannel)await guild.GetChannelAsync(guildConfig.GreetingChannelId);
                 await textChannel.SendMessageAsync(content);
             }
@@ -492,7 +491,7 @@ namespace Sanakan.Daemon.HostedService
             }
         }
 
-        private async Task HandleDeletedMessageAsync(Cacheable<IMessage, ulong> cachedMessage, IChannel channel)
+        private async Task HandleDeletedMessageAsync(Cacheable<IMessage, ulong> cachedMessage, Cacheable<IMessageChannel, ulong> channel)
         {
             if (!cachedMessage.HasValue)
             {
@@ -606,8 +605,8 @@ namespace Sanakan.Daemon.HostedService
             return fields;
         }
 
-        private string ReplaceTags(IGuildUser user, string message)
-            => message.Replace("^nick", user.Nickname ?? user.Username).Replace("^mention", user.Mention);
+        private string ReplaceTags(IGuildUser? user, string message)
+            => message.Replace("^nick", user?.Nickname ?? user?.Username).Replace("^mention", user.Mention);
 
         private Task OnLog(LogMessage log)
         {

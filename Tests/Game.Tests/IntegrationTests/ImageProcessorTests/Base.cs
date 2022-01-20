@@ -76,7 +76,7 @@ namespace Sanakan.Game.Tests.IntegrationTests.ImageProcessorTests
                });
         }
 
-        protected async Task ShouldBeEqual(string expectedImageFilePath, Image<Rgba32> actualImage)
+        protected async Task ShouldBeEqual(string expectedImageFilePath, Image actualImage)
         {
             var expectedBytes = await File.ReadAllBytesAsync(Path.Combine("TestData", expectedImageFilePath));
             var expectedHash = _sha256Hash.ComputeHash(expectedBytes);

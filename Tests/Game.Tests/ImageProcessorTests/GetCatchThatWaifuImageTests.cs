@@ -6,17 +6,18 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace Sanakan.Game.Tests.ImageProcessorTests
 {
     /// <summary>
-    /// Defines tests for <see cref="IImageProcessor.GetCatchThatWaifuImage(Image{Rgba32}, string, int, int)"/> method.
+    /// Defines tests for <see cref="IImageProcessor.GetCatchThatWaifuImageAsync(Image{Rgba32}, string, int, int)"/> method.
     /// </summary>
     [TestClass]
     public class GetCatchThatWaifuImageTests : Base
     {
         [TestMethod]
-        public void Should_Return_Waifu_Image()
+        public async Task Should_Return_Waifu_Image()
         {
             var cardImage = new Image<Rgba32>(100, 100);
             var imageUrl = "TestData/card-image.png";
@@ -30,7 +31,7 @@ namespace Sanakan.Game.Tests.ImageProcessorTests
                 .Setup(pr => pr.OpenRead(It.IsAny<string>()))
                 .Returns(stream);
 
-            using var image = _imageProcessor.GetCatchThatWaifuImage(cardImage, imageUrl, xPos, yPos);
+            using var image = await _imageProcessor.GetCatchThatWaifuImageAsync(cardImage, imageUrl, xPos, yPos);
             image.Should().NotBeNull();
         }
     }

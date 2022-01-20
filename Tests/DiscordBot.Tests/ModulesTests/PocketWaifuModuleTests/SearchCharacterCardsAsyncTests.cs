@@ -7,6 +7,7 @@ using Sanakan.DAL.Repositories;
 using Sanakan.DiscordBot.Modules;
 using Sanakan.ShindenApi;
 using Sanakan.ShindenApi.Models;
+using Sanakan.Tests.Shared;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -120,7 +121,7 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
                 .ReturnsAsync(embeds);
 
             _userMock
-                .Setup(pr => pr.GetOrCreateDMChannelAsync(null))
+                .Setup(pr => pr.CreateDMChannelAsync(null))
                 .ReturnsAsync(dmChannelMock.Object);
 
             SetupSendMessage((message, embed) =>
@@ -173,18 +174,10 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
                 .ReturnsAsync(embeds);
 
             _userMock
-                .Setup(pr => pr.GetOrCreateDMChannelAsync(null))
+                .Setup(pr => pr.CreateDMChannelAsync(null))
                 .ReturnsAsync(dmChannelMock.Object);
 
-            dmChannelMock
-                .Setup(pr => pr.SendMessageAsync(
-                    It.IsAny<string>(),
-                    It.IsAny<bool>(),
-                    It.IsAny<Embed>(),
-                    It.IsAny<RequestOptions>(),
-                    It.IsAny<AllowedMentions>(),
-                    It.IsAny<MessageReference>()))
-                .ReturnsAsync(null as IUserMessage);
+            dmChannelMock.SetupSendMessageAsync(null);
 
             _taskManagerMock
                 .Setup(pr => pr.Delay(It.IsAny<TimeSpan>()))

@@ -7,6 +7,7 @@ using Sanakan.DAL.Models;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.TaskQueue.MessageHandlers;
 using Sanakan.TaskQueue.Messages;
+using Sanakan.Tests.Shared;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -151,15 +152,7 @@ namespace Sanakan.TaskQueue.Tests.MessageHandlersTests
                .Setup(pr => pr.DeleteAsync(null))
                .Returns(Task.CompletedTask);
 
-            messageChannelMock
-                .Setup(pr => pr.SendMessageAsync(
-                   It.IsAny<string>(),
-                   It.IsAny<bool>(),
-                   It.IsAny<Embed>(),
-                   It.IsAny<RequestOptions>(),
-                   It.IsAny<AllowedMentions>(),
-                   It.IsAny<MessageReference>()))
-                .ReturnsAsync(_userMessageMock.Object);
+            messageChannelMock.SetupSendMessageAsync(_userMessageMock.Object);
 
             _userMessageMock
                 .Setup(pr => pr.Id)
@@ -174,18 +167,10 @@ namespace Sanakan.TaskQueue.Tests.MessageHandlersTests
                 .Returns(1ul);
 
             userMock
-                .Setup(pr => pr.GetOrCreateDMChannelAsync(null))
+                .Setup(pr => pr.CreateDMChannelAsync(null))
                 .ReturnsAsync(dmChannelMock.Object);
 
-            dmChannelMock
-                .Setup(pr => pr.SendMessageAsync(
-                    It.IsAny<string>(),
-                    It.IsAny<bool>(),
-                    It.IsAny<Embed>(),
-                    It.IsAny<RequestOptions>(),
-                    It.IsAny<AllowedMentions>(),
-                    It.IsAny<MessageReference>()))
-                .ReturnsAsync(_userMessageMock.Object);
+            dmChannelMock.SetupSendMessageAsync(_userMessageMock.Object);
 
             _cacheManagerMock
                  .Setup(pr => pr.ExpireTag(It.IsAny<string[]>()));

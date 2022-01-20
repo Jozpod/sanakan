@@ -87,11 +87,11 @@ namespace Sanakan.DiscordBot.Services
         {
             try
             {
-                var dmChannel = await user.GetOrCreateDMChannelAsync();
+                var dmChannel = await user.CreateDMChannelAsync();
                 if (dmChannel != null)
                 {
-                    await dmChannel.SendMessageAsync($"Elo! Otrzymałeś ostrzeżenie o treści:\n {reason}\n\nPozdrawiam serdecznie!"
-                        .ElipseTrimToLength(2000));
+                    reason = reason.ElipseTrimToLength(1960);
+                    await dmChannel.SendMessageAsync(string.Format(Strings.WarningTemplate, reason));
                     await dmChannel.CloseAsync();
                 }
             }
@@ -152,7 +152,7 @@ namespace Sanakan.DiscordBot.Services
 
             try
             {
-                var directMessageChannel = await user.GetOrCreateDMChannelAsync();
+                var directMessageChannel = await user.CreateDMChannelAsync();
                 if (directMessageChannel != null)
                 {
                     var content = $"Elo! Zostałeś ukarany mutem na {durationFriendly}.\n\nPodany powód: {penaltyInfo.Reason}\n\nPozdrawiam serdecznie!"

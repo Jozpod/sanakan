@@ -112,7 +112,7 @@ namespace Sanakan.TaskQueue.MessageHandlers
                     Description = $"Na [loterii]({jumpUrl}) zdobyłeś {cardsIds.Count} kart."
                 };
 
-                var dmChannel = await message.WinnerUser.GetOrCreateDMChannelAsync();
+                var dmChannel = await message.WinnerUser.CreateDMChannelAsync();
 
                 if (dmChannel != null)
                 {

@@ -8,6 +8,7 @@ using Sanakan.DiscordBot.Abstractions;
 using Sanakan.DiscordBot.Abstractions.Configuration;
 using Sanakan.DiscordBot.Services.Abstractions;
 using Sanakan.DiscordBot.Session.Abstractions;
+using Sanakan.Tests.Shared;
 using System;
 using System.Threading.Tasks;
 
@@ -147,15 +148,7 @@ namespace Sanakan.DiscordBot.Session.Tests
                 .Setup(pr => pr.GetRandomValue(365))
                 .Returns(1);
 
-            _messageChannelMock
-                .Setup(pr => pr.SendMessageAsync(
-                    It.IsAny<string>(),
-                    It.IsAny<bool>(),
-                    It.IsAny<Embed>(),
-                    It.IsAny<RequestOptions>(),
-                    It.IsAny<AllowedMentions>(),
-                    It.IsAny<MessageReference>()))
-                .ReturnsAsync(_userMessageMock.Object);
+            _messageChannelMock.SetupSendMessageAsync(_userMessageMock.Object);
 
             _moderatorServiceMock
                 .Setup(pr => pr.MuteUserAsync(

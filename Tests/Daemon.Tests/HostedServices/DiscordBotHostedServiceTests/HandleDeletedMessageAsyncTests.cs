@@ -37,102 +37,71 @@ namespace Sanakan.Daemon.Tests.HostedServices.DiscordBotHostedServiceTests
 
             messageMock
                 .Setup(pr => pr.Author)
-                .Returns(userMock.Object)
-                .Verifiable();
+                .Returns(userMock.Object);
 
             messageMock
                 .Setup(pr => pr.CreatedAt)
-                .Returns(DateTimeOffset.UtcNow)
-                .Verifiable();
+                .Returns(DateTimeOffset.UtcNow);
 
             messageMock
               .Setup(pr => pr.Attachments)
-              .Returns(attachments)
-              .Verifiable();
+              .Returns(attachments);
 
             userMock
                 .Setup(pr => pr.Id)
-                .Returns(userId)
-                .Verifiable();
+                .Returns(userId);
 
             userMock
                 .Setup(pr => pr.GetAvatarUrl(ImageFormat.Auto, 128))
-                .Returns("avatarUrl")
-                .Verifiable();
+                .Returns("avatarUrl");
 
             userMock
                .Setup(pr => pr.Username)
-               .Returns(username)
-               .Verifiable();
+               .Returns(username);
 
             userMock
                 .Setup(pr => pr.IsBot)
-                .Returns(false)
-                .Verifiable();
+                .Returns(false);
 
             userMock
                 .Setup(pr => pr.IsWebhook)
-                .Returns(false)
-                .Verifiable();
+                .Returns(false);
 
             var guildChannelMock = socketMessageChannelMock.As<IGuildChannel>();
 
             messageMock
                 .Setup(pr => pr.Channel)
-                .Returns(socketMessageChannelMock.Object)
-                .Verifiable();
+                .Returns(socketMessageChannelMock.Object);
 
             socketMessageChannelMock
                 .Setup(pr => pr.Name)
-                .Returns("test channel")
-                .Verifiable();
+                .Returns("test channel");
 
             guildChannelMock
                 .Setup(pr => pr.Guild)
-                .Returns(guildMock.Object)
-                .Verifiable();
+                .Returns(guildMock.Object);
 
             guildMock
               .Setup(pr => pr.Id)
-              .Returns(guildId)
-              .Verifiable();
+              .Returns(guildId);
 
             var messageChannelMock = socketMessageChannelMock.As<IMessageChannel>();
 
             guildMock
                .Setup(pr => pr.GetChannelAsync(0, CacheMode.AllowDownload, null))
-               .ReturnsAsync(guildChannelMock.Object)
-               .Verifiable();
+               .ReturnsAsync(guildChannelMock.Object);
 
             messageMock
                .Setup(pr => pr.Content)
-               .Returns("test message")
-               .Verifiable();
+               .Returns("test message");
 
             _guildConfigRepositoryMock
                 .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildId))
-                .ReturnsAsync(guildConfig)
-                .Verifiable();
+                .ReturnsAsync(guildConfig);
 
-            messageChannelMock
-                .Setup(pr => pr.SendMessageAsync(
-                    It.IsAny<string>(),
-                    It.IsAny<bool>(),
-                    It.IsAny<Embed>(),
-                    It.IsAny<RequestOptions>(),
-                    It.IsAny<AllowedMentions>(),
-                    It.IsAny<MessageReference>()))
-                .ReturnsAsync(userMessageMock.Object)
-                .Verifiable();
+            messageChannelMock.SetupSendMessageAsync(userMessageMock.Object);
 
             _discordSocketClientAccessorMock.Raise(pr => pr.MessageDeleted += null, message, socketMessageChannelMock.Object);
-
-            guildChannelMock.Verify();
-            guildMock.Verify();
-            _guildConfigRepositoryMock.Verify();
-            messageChannelMock.Verify();
-            _taskManagerMock.Verify();
-            _discordClientMock.Verify();
         }
 
     }

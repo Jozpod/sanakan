@@ -3,6 +3,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.DAL.Models;
 using Sanakan.DiscordBot.Modules;
+using Sanakan.Tests.Shared;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -68,15 +69,7 @@ namespace DiscordBot.ModulesTests.FunModuleTests
                 .Setup(pr => pr.Delay(It.IsAny<TimeSpan>()))
                 .Returns(Task.CompletedTask);
 
-            _messageChannelMock
-                .Setup(pr => pr.SendMessageAsync(
-                    It.IsAny<string>(),
-                    It.IsAny<bool>(),
-                    It.IsAny<Embed>(),
-                    It.IsAny<RequestOptions>(),
-                    It.IsAny<AllowedMentions>(),
-                    It.IsAny<MessageReference>()))
-                .ReturnsAsync(_userMessageMock.Object);
+            _messageChannelMock.SetupSendMessageAsync(_userMessageMock.Object);
 
             _userMessageMock
                 .Setup(pr => pr.AddReactionAsync(It.IsAny<IEmote>(), null))

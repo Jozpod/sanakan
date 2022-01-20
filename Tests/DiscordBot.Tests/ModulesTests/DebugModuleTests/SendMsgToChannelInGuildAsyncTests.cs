@@ -3,6 +3,7 @@ using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.DiscordBot.Modules;
+using Sanakan.Tests.Shared;
 using System.Threading.Tasks;
 
 namespace DiscordBot.ModulesTests.DebugModuleTests
@@ -30,15 +31,7 @@ namespace DiscordBot.ModulesTests.DebugModuleTests
                 .Setup(pr => pr.GetChannelAsync(channelId, CacheMode.AllowDownload, null))
                 .ReturnsAsync(guildChannelMock.Object);
 
-            messageChannelMock
-                .Setup(pr => pr.SendMessageAsync(
-                   It.IsAny<string>(),
-                   It.IsAny<bool>(),
-                   It.IsAny<Embed>(),
-                   It.IsAny<RequestOptions>(),
-                   It.IsAny<AllowedMentions>(),
-                   It.IsAny<MessageReference>()))
-               .ReturnsAsync(_userMessageMock.Object);
+            messageChannelMock.SetupSendMessageAsync(_userMessageMock.Object);
 
             _userMessageMock
                 .Setup(pr => pr.Channel)

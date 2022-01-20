@@ -5,6 +5,7 @@ using Sanakan.Daemon.HostedService;
 using Sanakan.DAL.Models.Configuration;
 using Sanakan.DAL.Models.Management;
 using Sanakan.DiscordBot.Supervisor;
+using Sanakan.Tests.Shared;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -231,15 +232,7 @@ namespace Sanakan.Daemon.Tests.HostedServices.SupervisorHostedServiceTests
                .Returns(Task.CompletedTask);
 
 
-            messageChannelMock
-                .Setup(pr => pr.SendMessageAsync(
-                    It.IsAny<string>(),
-                    It.IsAny<bool>(),
-                    It.IsAny<Embed>(),
-                    It.IsAny<RequestOptions>(),
-                    It.IsAny<AllowedMentions>(),
-                    It.IsAny<MessageReference>()))
-                .ReturnsAsync(null as IUserMessage);
+            messageChannelMock.SetupSendMessageAsync(null);
 
             _moderatorServiceMock
                 .Setup(pr => pr.MuteUserAsync(

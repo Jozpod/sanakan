@@ -19,7 +19,7 @@ namespace Sanakan.Game
 
         public static Rgba32 Black = Rgba32.ParseHex("#000000");
         public static Rgba32 Onyx = Rgba32.ParseHex("#36393E");
-        public static Rgba32 Gray = Rgba32.ParseHex("#dddddddddddddd");
+        public static Rgba32 Gray = Rgba32.ParseHex("#A0A0A0");
         public static Rgba32 Dawn = Rgba32.ParseHex("#A4A4A4");
 
         public static Rgba32 GreyChateau = Rgba32.ParseHex("#a7a7a7");
