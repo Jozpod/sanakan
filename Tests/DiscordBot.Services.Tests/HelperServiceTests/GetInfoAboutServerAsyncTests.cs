@@ -20,7 +20,7 @@ namespace DiscordBot.ServicesTests.HelperServiceTests
         {
             var guildId = 1ul;
             var guildName = "test";
-            var guildIconUrl = "test";
+            var guildIconUrl = "https://test.com/image.png";
             var roleId = 1ul;
             var createdAt = DateTimeOffset.UtcNow;
             var guildMock = new Mock<IGuild>(MockBehavior.Strict);

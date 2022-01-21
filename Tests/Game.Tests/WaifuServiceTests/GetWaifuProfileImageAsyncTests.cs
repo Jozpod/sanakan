@@ -46,7 +46,20 @@ namespace Sanakan.Game.Tests.WaifuServiceTests
                 .Setup(pr => pr.OpenWrite(It.IsAny<string>()))
                 .Returns(() => new MemoryStream());
 
-            messageChannelMock.SetupSendFileAsync(userMessageMock.Object);
+            messageChannelMock
+               .Setup(pr => pr.SendFileAsync(
+                   It.IsAny<string>(),
+                   It.IsAny<string>(),
+                   It.IsAny<bool>(),
+                   It.IsAny<Embed>(),
+                   It.IsAny<RequestOptions>(),
+                   It.IsAny<bool>(),
+                   It.IsAny<AllowedMentions>(),
+                   It.IsAny<MessageReference>(),
+                   It.IsAny<MessageComponent>(),
+                   It.IsAny<ISticker[]>(),
+                   It.IsAny<Embed[]>()))
+               .ReturnsAsync(userMessageMock.Object);
 
             userMessageMock
                 .Setup(pr => pr.Attachments)

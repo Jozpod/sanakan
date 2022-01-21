@@ -32,27 +32,15 @@ namespace Sanakan.DiscordBot.Abstractions.Models
                 return "";
             }
 
-            switch (type)
+            return type switch
             {
-                case EMType.Bot:
-                    return "🐙";
-
-                case EMType.Info:
-                    return "ℹ";
-
-                case EMType.Error:
-                    return "🚫";
-
-                case EMType.Success:
-                    return "✅";
-
-                case EMType.Warning:
-                    return "⚠";
-
-                default:
-                case EMType.Neutral:
-                    return "";
-            }
+                EMType.Bot => "🐙",
+                EMType.Info => "ℹ",
+                EMType.Error => "🚫",
+                EMType.Success => "✅",
+                EMType.Warning => "⚠",
+                _ => "",
+            };
         }
 
         public static Color Color(this EMType type) => EMTypeColorMap[type];

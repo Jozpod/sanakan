@@ -14,66 +14,42 @@ namespace Sanakan.Game.Models
     {
         public static CardSource GetBoosterpackSource(this ShopType shopType)
         {
-            switch (shopType)
+            return shopType switch
             {
-                case ShopType.Activity:
-                    return CardSource.ActivityShop;
-
-                case ShopType.Pvp:
-                    return CardSource.PvpShop;
-
-                default:
-                case ShopType.Normal:
-                    return CardSource.Shop;
-            }
+                ShopType.Activity => CardSource.ActivityShop,
+                ShopType.Pvp => CardSource.PvpShop,
+                _ => CardSource.Shop,
+            };
         }
 
         public static IList<ItemWithCost> GetItemsWithCostForShop(this ShopType shopType)
         {
-            switch (shopType)
+            return shopType switch
             {
-                case ShopType.Activity:
-                    return Constants.ItemsWithCostForActivityShop;
-
-                case ShopType.Pvp:
-                    return Constants.ItemsWithCostForPVP;
-
-                case ShopType.Normal:
-                default:
-                    return Constants.ItemsWithCost;
-            }
+                ShopType.Activity => Constants.ItemsWithCostForActivityShop,
+                ShopType.Pvp => Constants.ItemsWithCostForPVP,
+                _ => Constants.ItemsWithCost,
+            };
         }
 
         public static string GetShopName(this ShopType shopType)
         {
-            switch (shopType)
+            return shopType switch
             {
-                case ShopType.Activity:
-                    return "Kiosk";
-
-                case ShopType.Pvp:
-                    return "Koszary";
-
-                case ShopType.Normal:
-                default:
-                    return "Sklepik";
-            }
+                ShopType.Activity => "Kiosk",
+                ShopType.Pvp => "Koszary",
+                _ => "Sklepik",
+            };
         }
 
         public static string GetShopCurrencyName(this ShopType shopType)
         {
-            switch (shopType)
+            return shopType switch
             {
-                case ShopType.Activity:
-                    return "AC";
-
-                case ShopType.Pvp:
-                    return "PC";
-
-                case ShopType.Normal:
-                default:
-                    return "TC";
-            }
+                ShopType.Activity => "AC",
+                ShopType.Pvp => "PC",
+                _ => "TC",
+            };
         }
     }
 }

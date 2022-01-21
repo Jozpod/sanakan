@@ -19,73 +19,44 @@
     {
         public static double GetQualityModifier(this Quality quality) => 0.1 * (int)quality;
 
-        public static Quality RandomizeItemQualityFromMarket(int number)
+        public static Quality RandomizeItemQualityFromMarket(int number) => number switch
         {
-            switch (number)
-            {
-                case var _ when number < 5:
-                    return Quality.Sigma;
-                case var _ when number < 20:
-                    return Quality.Lambda;
-                case var _ when number < 60:
-                    return Quality.Zeta;
-                case var _ when number < 200:
-                    return Quality.Delta;
-                case var _ when number < 500:
-                    return Quality.Gamma;
-                case var _ when number < 1000:
-                    return Quality.Beta;
-                case var _ when number < 2000:
-                    return Quality.Alpha;
-                default:
-                    return Quality.Broken;
-            }
-        }
+            var _ when number < 5 => Quality.Sigma,
+            var _ when number < 20 => Quality.Lambda,
+            var _ when number < 60 => Quality.Zeta,
+            var _ when number < 200 => Quality.Delta,
+            var _ when number < 500 => Quality.Gamma,
+            var _ when number < 1000 => Quality.Beta,
+            var _ when number < 2000 => Quality.Alpha,
+            _ => Quality.Broken,
+        };
 
-        public static Quality RandomizeItemQualityFromExpedition(int number)
+        public static Quality RandomizeItemQualityFromExpedition(int number) => number switch
         {
-            switch (number)
-            {
-                case var _ when number < 5:
-                    return Quality.Omega;
-                case var _ when number < 50:
-                    return Quality.Sigma;
-                case var _ when number < 200:
-                    return Quality.Lambda;
-                case var _ when number < 600:
-                    return Quality.Zeta;
-                case var _ when number < 2000:
-                    return Quality.Delta;
-                case var _ when number < 5000:
-                    return Quality.Gamma;
-                case var _ when number < 10000:
-                    return Quality.Beta;
-                case var _ when number < 20000:
-                    return Quality.Alpha;
-                default:
-                    return Quality.Broken;
-            }
-        }
+            var _ when number < 5 => Quality.Omega,
+            var _ when number < 50 => Quality.Sigma,
+            var _ when number < 200 => Quality.Lambda,
+            var _ when number < 600 => Quality.Zeta,
+            var _ when number < 2000 => Quality.Delta,
+            var _ when number < 5000 => Quality.Gamma,
+            var _ when number < 10000 => Quality.Beta,
+            var _ when number < 20000 => Quality.Alpha,
+            _ => Quality.Broken,
+        };
 
-        public static string ToName(this Quality quality)
+        public static string ToName(this Quality quality) => quality switch
         {
-            switch (quality)
-            {
-                case Quality.Alpha: return "α";
-                case Quality.Beta: return "β";
-                case Quality.Gamma: return "γ";
-                case Quality.Delta: return "Δ";
-                case Quality.Epsilon: return "ε";
-                case Quality.Zeta: return "ζ";
-                case Quality.Theta: return "Θ";
-                case Quality.Lambda: return "λ";
-                case Quality.Sigma: return "Σ";
-                case Quality.Omega: return "Ω";
-
-                default:
-                case Quality.Broken:
-                    return "";
-            }
-        }
+            Quality.Alpha => "α",
+            Quality.Beta => "β",
+            Quality.Gamma => "γ",
+            Quality.Delta => "Δ",
+            Quality.Epsilon => "ε",
+            Quality.Zeta => "ζ",
+            Quality.Theta => "Θ",
+            Quality.Lambda => "λ",
+            Quality.Sigma => "Σ",
+            Quality.Omega => "Ω",
+            _ => "",
+        };
     }
 }

@@ -58,13 +58,24 @@ namespace DiscordBot.ModulesTests
 
         protected void SetupSendMessage(Action<string, Embed> action = null)
         {
-            Action<string, bool, Embed, RequestOptions, AllowedMentions, MessageReference> defaultAction = (
+            Action<string,
+                bool,
+                Embed,
+                RequestOptions,
+                AllowedMentions,
+                MessageReference,
+                MessageComponent,
+                ISticker[],
+                Embed[]> defaultAction = (
                 text,
                 isTTS,
                 embed,
                 options,
                 allowedMentions,
-                messageReference) => action?.Invoke(text, embed);
+                messageReference,
+                messageComponent,
+                stickers,
+                embeds) => action?.Invoke(text, embed);
 
             _messageChannelMock
                 .Setup(pr => pr.SendMessageAsync(

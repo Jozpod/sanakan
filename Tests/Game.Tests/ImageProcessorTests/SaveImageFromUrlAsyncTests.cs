@@ -17,7 +17,7 @@ namespace Sanakan.Game.Tests.ImageProcessorTests
         [TestMethod]
         public async Task Should_Stretch_And_Save_Image()
         {
-            var imageUrl = "TestData/card-image.png";
+            var imageUrl = "https://test.com/image.png";
             var filePath = "TestData/card-image.png";
 
             _imageResolverMock
@@ -34,7 +34,7 @@ namespace Sanakan.Game.Tests.ImageProcessorTests
         [TestMethod]
         public async Task Should_Save_Image()
         {
-            var imageUrl = "TestData/card-image.png";
+            var imageUrl = "https://test.com/image.png";
             var filePath = "TestData/card-image.png";
 
             _imageResolverMock

@@ -55,14 +55,18 @@ namespace Sanakan.Game.Tests.WaifuServiceTests
 
             attachmentMock
                 .Setup(pr => pr.Url)
-                .Returns("url");
+                .Returns("https://test.com/image.png");
 
             guildUserMock
                 .Setup(pr => pr.Nickname)
                 .Returns("nickname");
 
             var embed = await _waifuService.BuildCardImageAsync(
-                card, channelMock.Object, guildUserMock.Object, true);
+                card,
+                channelMock.Object,
+                guildUserMock.Object,
+                true);
+
             embed.Should().NotBeNull();
             embed.Description.Should().NotBeNullOrEmpty();
         }

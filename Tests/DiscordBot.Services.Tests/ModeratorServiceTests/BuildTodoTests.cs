@@ -36,7 +36,7 @@ namespace DiscordBot.Services.Tests.ModeratorServiceTests
 
             guildUserMock
                 .Setup(pr => pr.GetAvatarUrl(ImageFormat.Auto, 128))
-                .Returns("nickname");
+                .Returns("https://test.com/image.png");
 
             guildUserMock
                 .Setup(pr => pr.Nickname)

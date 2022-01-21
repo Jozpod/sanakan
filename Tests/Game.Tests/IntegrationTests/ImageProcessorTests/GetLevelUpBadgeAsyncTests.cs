@@ -26,6 +26,7 @@ namespace Sanakan.Game.Tests.IntegrationTests.ImageProcessorTests
             var badgeImage = await _imageProcessor.GetLevelUpBadgeAsync(name, level, avatarUrl, color);
             badgeImage.Should().NotBeNull();
 
+            await SaveImageAsync(badgeImage, "actual-badge.png");
             await ShouldBeEqual("expected-badge.png", badgeImage);
         }
     }

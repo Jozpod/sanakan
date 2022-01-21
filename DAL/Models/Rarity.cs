@@ -18,136 +18,88 @@ namespace Sanakan.DAL.Models
     {
         public static Rarity[] Rarities = (Rarity[])Enum.GetValues(typeof(Rarity));
 
-        public static double ValueModifierReverse(this Rarity rarity)
+        public static double ValueModifierReverse(this Rarity rarity) => 2d - rarity.ValueModifier();
+
+        public static Rarity GetRarityFromValue(long value) => value switch
         {
-            return 2d - rarity.ValueModifier();
-        }
+            var _ when value > 100000 => Rarity.SS,
+            var _ when value > 10000 => Rarity.S,
+            var _ when value > 8000 => Rarity.A,
+            var _ when value > 6000 => Rarity.B,
+            var _ when value > 4000 => Rarity.C,
+            var _ when value > 2000 => Rarity.D,
+            _ => Rarity.E,
+        };
 
-        public static Rarity GetRarityFromValue(long value)
+        public static Rarity Random(int value) => value switch
         {
-            switch (value)
-            {
-                case var _ when value > 100000:
-                    return Rarity.SS;
-                case var _ when value > 10000:
-                    return Rarity.S;
-                case var _ when value > 8000:
-                    return Rarity.A;
-                case var _ when value > 6000:
-                    return Rarity.B;
-                case var _ when value > 4000:
-                    return Rarity.C;
-                case var _ when value > 2000:
-                    return Rarity.D;
-                default:
-                    return Rarity.E;
-            }
-        }
+            var _ when value < 5 => Rarity.SS,
+            var _ when value < 25 => Rarity.S,
+            var _ when value < 75 => Rarity.A,
+            var _ when value < 175 => Rarity.B,
+            var _ when value < 370 => Rarity.C,
+            var _ when value < 620 => Rarity.D,
+            _ => Rarity.E,
+        };
 
-        public static Rarity Random(int value)
+        public static int GetAttackMin(this Rarity rarity) => rarity switch
         {
-            switch (value)
-            {
-                case var _ when value < 5:
-                    return Rarity.SS;
-                case var _ when value < 25:
-                    return Rarity.S;
-                case var _ when value < 75:
-                    return Rarity.A;
-                case var _ when value < 175:
-                    return Rarity.B;
-                case var _ when value < 370:
-                    return Rarity.C;
-                case var _ when value < 620:
-                    return Rarity.D;
-                default:
-                    return Rarity.E;
-            }
-        }
+            Rarity.SSS => 100,
+            Rarity.SS => 90,
+            Rarity.S => 80,
+            Rarity.A => 65,
+            Rarity.B => 50,
+            Rarity.C => 32,
+            Rarity.D => 20,
+            _ => 1,
+        };
 
-        public static int GetAttackMin(this Rarity rarity)
+        public static int GetDefenceMin(this Rarity rarity) => rarity switch
         {
-            switch (rarity)
-            {
-                case Rarity.SSS: return 100;
-                case Rarity.SS: return 90;
-                case Rarity.S: return 80;
-                case Rarity.A: return 65;
-                case Rarity.B: return 50;
-                case Rarity.C: return 32;
-                case Rarity.D: return 20;
+            Rarity.SSS => 88,
+            Rarity.SS => 77,
+            Rarity.S => 68,
+            Rarity.A => 60,
+            Rarity.B => 50,
+            Rarity.C => 32,
+            Rarity.D => 15,
+            _ => 1,
+        };
 
-                case Rarity.E:
-                default: return 1;
-            }
-        }
-
-        public static int GetDefenceMin(this Rarity rarity)
+        public static int GetHealthMin(this Rarity rarity) => rarity switch
         {
-            switch (rarity)
-            {
-                case Rarity.SSS: return 88;
-                case Rarity.SS: return 77;
-                case Rarity.S: return 68;
-                case Rarity.A: return 60;
-                case Rarity.B: return 50;
-                case Rarity.C: return 32;
-                case Rarity.D: return 15;
+            Rarity.SSS => 100,
+            Rarity.SS => 90,
+            Rarity.S => 80,
+            Rarity.A => 70,
+            Rarity.B => 60,
+            Rarity.C => 50,
+            Rarity.D => 40,
+            _ => 30,
+        };
 
-                case Rarity.E:
-                default: return 1;
-            }
-        }
-
-        public static int GetHealthMin(this Rarity rarity)
+        public static int GetAttackMax(this Rarity rarity) => rarity switch
         {
-            switch (rarity)
-            {
-                case Rarity.SSS: return 100;
-                case Rarity.SS: return 90;
-                case Rarity.S: return 80;
-                case Rarity.A: return 70;
-                case Rarity.B: return 60;
-                case Rarity.C: return 50;
-                case Rarity.D: return 40;
+            Rarity.SSS => 130,
+            Rarity.SS => 100,
+            Rarity.S => 96,
+            Rarity.A => 87,
+            Rarity.B => 84,
+            Rarity.C => 68,
+            Rarity.D => 50,
+            _ => 35,
+        };
 
-                case Rarity.E:
-                default: return 30;
-            }
-        }
-
-        public static int GetAttackMax(this Rarity rarity)
+        public static int GetDefenceMax(this Rarity rarity) => rarity switch
         {
-            switch (rarity)
-            {
-                case Rarity.SSS: return 130;
-                case Rarity.SS: return 100;
-                case Rarity.S: return 96;
-                case Rarity.A: return 87;
-                case Rarity.B: return 84;
-                case Rarity.C: return 68;
-                case Rarity.D: return 50;
-
-                case Rarity.E:
-                default: return 35;
-            }
-        }
-
-        public static int GetDefenceMax(this Rarity rarity)
-        {
-            switch (rarity)
-            {
-                case Rarity.SSS: return 96;
-                case Rarity.SS: return 91;
-                case Rarity.S: return 79;
-                case Rarity.A: return 75;
-                case Rarity.B: return 70;
-                case Rarity.C: return 65;
-                case Rarity.D: return 53;
-
-                case Rarity.E:
-                default: return 38;
-            }
-        }
+            Rarity.SSS => 96,
+            Rarity.SS => 91,
+            Rarity.S => 79,
+            Rarity.A => 75,
+            Rarity.B => 70,
+            Rarity.C => 65,
+            Rarity.D => 53,
+            _ => 38,
+        };
     }
 }

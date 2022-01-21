@@ -352,7 +352,7 @@ namespace Sanakan.Game
                     { EventType.MoreExperience,    (-3,   -4)},
                     { EventType.IncreaseAttack,     (0,    2499)},
                     { EventType.IncreaseDefence,     (2500, 4999)},
-                    { EventType.IncreaseDefence,   (-5,   -6)},
+                    { EventType.AddReset,   (-5,   -6)},
                     { EventType.Fight,      (-7,   -8)},
                     { EventType.ChangeDere, (-9,   -10)},
                     { EventType.DecreaseAttack,     (5000, 7499)},

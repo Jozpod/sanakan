@@ -36,6 +36,7 @@ namespace Sanakan.Game.Tests.IntegrationTests.ImageProcessorTests
             var duelCardImage = await _imageProcessor.GetDuelCardImageAsync(duelInfo, duelImage, win, los);
             duelCardImage.Should().NotBeNull();
 
+            await SaveImageAsync(duelCardImage, "actual-duel-card.png");
             await ShouldBeEqual("expected-duel-card.png", duelCardImage);
         }
     }

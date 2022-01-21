@@ -25,6 +25,7 @@ namespace Sanakan.Game.Tests.IntegrationTests.ImageProcessorTests
             var waifuInProfile = await _imageProcessor.GetWaifuInProfileCardAsync(card);
             waifuInProfile.Should().NotBeNull();
 
+            await SaveImageAsync(waifuInProfile, "actual-profile-card.png");
             await ShouldBeEqual("expected-profile-card.png", waifuInProfile);
         }
     }

@@ -7,6 +7,7 @@ using Sanakan.DiscordBot.Modules;
 using Sanakan.Game.Models;
 using Sanakan.Tests.Shared;
 using System;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace DiscordBot.ModulesTests.FunModuleTests
@@ -49,6 +50,10 @@ namespace DiscordBot.ModulesTests.FunModuleTests
 
             _cacheManagerMock
                 .Setup(pr => pr.ExpireTag(It.IsAny<string[]>()));
+
+            _fileSystemMock
+               .Setup(pr => pr.OpenRead(It.IsAny<string>()))
+               .Returns(new MemoryStream());
 
             SetupSendMessage((message, embed) =>
             {

@@ -334,7 +334,7 @@ namespace Sanakan.DAL.Models
 
             time = (time < 0.1) ? 0.1 : time;
 
-            return TimeSpan.FromMinutes(time);
+            return double.IsNaN(time) ? TimeSpan.Zero : TimeSpan.FromMinutes(time);
         }
 
         public double GetCostOfExpeditionPerMinute(ExpeditionCardType expeditionCardType = ExpeditionCardType.None)

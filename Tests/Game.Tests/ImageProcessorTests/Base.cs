@@ -9,6 +9,7 @@ namespace Sanakan.Game.Tests
 {
     public abstract class Base
     {
+        private static readonly ImagingConfiguration _imagingConfiguration;
         protected static IImageProcessor _imageProcessor;
         protected static Mock<IImageResolver> _imageResolverMock = new(MockBehavior.Strict);
         protected static Mock<IOptionsMonitor<ImagingConfiguration>> _imagingConfigurationMock = new(MockBehavior.Strict);
@@ -17,17 +18,19 @@ namespace Sanakan.Game.Tests
 
         static Base()
         {
+            _imagingConfiguration = new ImagingConfiguration
+            {
+                CharacterImageWidth = 600,
+                CharacterImageHeight = 600,
+                StatsImageHeight = 100,
+                StatsImageWidth = 100,
+                ProfileImageWidth = 300,
+                ProfileImageHeight = 270,
+            };
+
             _imagingConfigurationMock
                 .Setup(pr => pr.CurrentValue)
-                .Returns(new ImagingConfiguration
-                {
-                    CharacterImageWidth = 600,
-                    CharacterImageHeight = 600,
-                    StatsImageHeight = 100,
-                    StatsImageWidth = 100,
-                    ProfileImageWidth = 300,
-                    ProfileImageHeight = 270,
-                });
+                .Returns(_imagingConfiguration);
 
             var assembly = typeof(IImageProcessor).Assembly;
 

@@ -17,7 +17,6 @@ namespace Sanakan.Game.Tests.ImageProcessorTests
     [TestClass]
     public class GetUserProfileAsyncTests : Base
     {
-
         public static IEnumerable<object[]> EnumerateAllProfileTypes
         {
             get
@@ -41,7 +40,7 @@ namespace Sanakan.Game.Tests.ImageProcessorTests
                 Rank = "test ranga",
                 ReadedStatus = new ReadWatchStatuses
                 {
-                    Total = 50,
+                    Total = 160,
                     Completed = 10,
                     Dropped = 20,
                     Hold = 30,
@@ -86,6 +85,7 @@ namespace Sanakan.Game.Tests.ImageProcessorTests
                 MessagesCount = 1488,
                 ProfileType = profileType,
                 ShowWaifuInProfile = showWaifuInProfile,
+                StatsReplacementProfileUri = "statsReplacementProfile.png",
             };
             var card1 = new Card(1ul, "test card 1", "test card 1", 100, 50, Rarity.SSS, Dere.Dandere, DateTime.UtcNow);
             card1.Quality = Quality.Zeta;
@@ -105,13 +105,43 @@ namespace Sanakan.Game.Tests.ImageProcessorTests
             var nickname = "test user";
             var color = Discord.Color.DarkerGrey;
 
+            //_imagingConfiguration.
+
             _fileSystemMock
                 .Setup(pr => pr.Exists(It.IsAny<string>()))
                 .Returns(true);
 
             _fileSystemMock
-                .Setup(pr => pr.OpenRead(It.IsAny<string>()))
-                .Returns(Utils.CreateFakeImage);
+                .Setup(pr => pr.OpenRead("./Pictures/profileBody.png"))
+                .Returns(() => Utils.CreateFakeImage(300, 450));
+
+            _fileSystemMock
+                .Setup(pr => pr.OpenRead("./Pictures/defBg.png"))
+                .Returns(() => Utils.CreateFakeImage(150, 150));
+
+            _fileSystemMock
+                .Setup(pr => pr.OpenRead("./Pictures/PW/empty.png"))
+                .Returns(() => Utils.CreateFakeImage(150, 150));
+
+            _fileSystemMock
+                .Setup(pr => pr.OpenRead("./Pictures/PW/SSS.png"))
+                .Returns(() => Utils.CreateFakeImage(150, 150));
+
+            _fileSystemMock
+                .Setup(pr => pr.OpenRead("./Pictures/PW/CG/Zeta/Stats.png"))
+                .Returns(() => Utils.CreateFakeImage(150, 150));
+
+            _fileSystemMock
+                .Setup(pr => pr.OpenRead("./Pictures/statsAnime.png"))
+                .Returns(() => Utils.CreateFakeImage(150, 150));
+
+            _fileSystemMock
+                .Setup(pr => pr.OpenRead("./Pictures/statsManga.png"))
+                .Returns(() => Utils.CreateFakeImage(150, 150));
+
+            _fileSystemMock
+                .Setup(pr => pr.OpenRead("statsReplacementProfile.png"))
+                .Returns(() => Utils.CreateFakeImage(150, 150));
 
             _imageResolverMock
                 .Setup(pr => pr.GetAsync(It.IsAny<Uri>()))

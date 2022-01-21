@@ -1196,7 +1196,9 @@ namespace Sanakan.Game.Services
 
             if (imageUrl != null)
             {
-                var message = await trashChannel.SendFileAsync(imageUrl);
+                var stream = _fileSystem.OpenRead(imageUrl);
+                var fileName = Path.GetFileName(imageUrl);
+                var message = await trashChannel.SendFileAsync(stream, fileName);
                 imageUrl = message.Attachments.First().Url;
             }
 
@@ -1627,47 +1629,62 @@ namespace Sanakan.Game.Services
             switch (type)
             {
                 case ExpeditionCardType.UltimateEasy:
-                    if (num < 3000) return Quality.Delta;
-                    if (num < 25000) return Quality.Gamma;
-                    if (num < 45000) return Quality.Beta;
-                    return Quality.Alpha;
+                    return num switch
+                    {
+                        var _ when num < 3000 => Quality.Delta,
+                        var _ when num < 25000 => Quality.Gamma,
+                        var _ when num < 45000 => Quality.Beta,
+                        _ => Quality.Alpha,
+                    };
 
                 case ExpeditionCardType.UltimateMedium:
-                    if (num < 1000) return Quality.Zeta;
-                    if (num < 2000) return Quality.Epsilon;
-                    if (num < 5000) return Quality.Delta;
-                    if (num < 35000) return Quality.Gamma;
-                    if (num < 55000) return Quality.Beta;
-                    return Quality.Alpha;
+                    return num switch
+                    {
+                        var _ when num < 1000 => Quality.Zeta,
+                        var _ when num < 2000 => Quality.Epsilon,
+                        var _ when num < 5000 => Quality.Delta,
+                        var _ when num < 35000 => Quality.Gamma,
+                        var _ when num < 55000 => Quality.Beta,
+                        _ => Quality.Alpha,
+                    };
 
                 case ExpeditionCardType.UltimateHard:
-                    if (num < 50) return Quality.Sigma;
-                    if (num < 200) return Quality.Lambda;
-                    if (num < 600) return Quality.Theta;
-                    if (num < 1500) return Quality.Zeta;
-                    if (num < 5000) return Quality.Epsilon;
-                    if (num < 12000) return Quality.Delta;
-                    if (num < 25000) return Quality.Gamma;
-                    if (num < 45000) return Quality.Beta;
-                    return Quality.Alpha;
+                    return num switch
+                    {
+                        var _ when num < 50 => Quality.Sigma,
+                        var _ when num < 200 => Quality.Lambda,
+                        var _ when num < 600 => Quality.Theta,
+                        var _ when num < 1500 => Quality.Zeta,
+                        var _ when num < 5000 => Quality.Epsilon,
+                        var _ when num < 12000 => Quality.Delta,
+                        var _ when num < 25000 => Quality.Gamma,
+                        var _ when num < 45000 => Quality.Beta,
+                        _ => Quality.Alpha,
+                    };
 
                 case ExpeditionCardType.UltimateHardcore:
-                    if (num < 50) return Quality.Omega;
-                    if (num < 150) return Quality.Sigma;
-                    if (num < 2000) return Quality.Lambda;
-                    if (num < 5000) return Quality.Theta;
-                    if (num < 10000) return Quality.Zeta;
-                    if (num < 20000) return Quality.Epsilon;
-                    if (num < 30000) return Quality.Delta;
-                    if (num < 50000) return Quality.Gamma;
-                    if (num < 80000) return Quality.Beta;
-                    return Quality.Alpha;
+                    return num switch
+                    {
+                        var _ when num < 50 => Quality.Omega,
+                        var _ when num < 150 => Quality.Sigma,
+                        var _ when num < 2000 => Quality.Lambda,
+                        var _ when num < 5000 => Quality.Theta,
+                        var _ when num < 10000 => Quality.Zeta,
+                        var _ when num < 20000 => Quality.Epsilon,
+                        var _ when num < 30000 => Quality.Delta,
+                        var _ when num < 50000 => Quality.Gamma,
+                        var _ when num < 80000 => Quality.Beta,
+                        _ => Quality.Alpha,
+                    };
 
                 default:
-                    if (num < 5) return Quality.Omega;
-                    if (num < 50) return Quality.Sigma;
-                    if (num < 200) return Quality.Lambda;
-                    return Quality.Broken;
+                    return num switch
+                    {
+                        var _ when num < 50 => Quality.Omega,
+                        var _ when num < 50 => Quality.Sigma,
+                        var _ when num < 200 => Quality.Lambda,
+                        _ => Quality.Broken,
+                    };
             }
         }
 
@@ -1678,7 +1695,6 @@ namespace Sanakan.Game.Services
             var quality = Quality.Broken;
             if (expedition.HasDifferentQualitiesOnExpedition())
             {
-                var number = _randomNumberGenerator.GetRandomValue(100000);
                 quality = RandomizeItemQualityFromExpedition(expedition);
             }
 

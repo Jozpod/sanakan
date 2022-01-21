@@ -1,7 +1,9 @@
 ﻿using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 using Sanakan.Game.Services.Abstractions;
 using Sanakan.ShindenApi.Models;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -23,7 +25,7 @@ namespace Sanakan.Game.Tests
                 Name = "test",
                 ReadedStatus = new ReadWatchStatuses
                 {
-                    Total = 50,
+                    Total = 160,
                     Completed = 10,
                     Dropped = 20,
                     Hold = 30,
@@ -71,6 +73,22 @@ namespace Sanakan.Game.Tests
                     TitleCoverId = 1,
                 }
             };
+
+            _fileSystemMock
+                .Setup(pr => pr.OpenRead("./Pictures/siteStatsBody.png"))
+                .Returns(() => Utils.CreateFakeImage(150, 150));
+
+            _fileSystemMock
+                .Setup(pr => pr.OpenRead("./Pictures/statsAnime.png"))
+                .Returns(() => Utils.CreateFakeImage(150, 150));
+
+            _fileSystemMock
+                .Setup(pr => pr.OpenRead("./Pictures/statsManga.png"))
+                .Returns(() => Utils.CreateFakeImage(150, 150));
+
+            _imageResolverMock
+                .Setup(pr => pr.GetAsync(It.IsAny<Uri>()))
+                .ReturnsAsync(() => Utils.CreateFakeImage(150, 150));
 
             var siteStatistics = await _imageProcessor.GetSiteStatisticAsync(shindenInfo, color, lastRead, lastWatch);
             siteStatistics.Should().NotBeNull();

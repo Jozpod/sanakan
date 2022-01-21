@@ -13,28 +13,28 @@ namespace Sanakan.ShindenApi
 
         public static string ToQuery(this MangaRateType type)
         {
-            switch (type)
+            return type switch
             {
-                case MangaRateType.Characters: return "titlecahracters";
-                case MangaRateType.Story: return "story";
-                case MangaRateType.Total: return "total";
-                case MangaRateType.Art: return "lines";
-                default: return "total";
-            }
+                MangaRateType.Characters => "titlecahracters",
+                MangaRateType.Story => "story",
+                MangaRateType.Total => "total",
+                MangaRateType.Art => "lines",
+                _ => "total",
+            };
         }
 
         public static string ToQuery(this ListType type)
         {
-            switch (type)
+            return type switch
             {
-                case ListType.Skip: return "skip";
-                case ListType.Hold: return "hold";
-                case ListType.Plan: return "plan";
-                case ListType.Dropped: return "dropped";
-                case ListType.Completed: return "completed";
-                case ListType.InProgress: return "in progress";
-                default: return "in progress";
-            }
+                ListType.Skip => "skip",
+                ListType.Hold => "hold",
+                ListType.Plan => "plan",
+                ListType.Dropped => "dropped",
+                ListType.Completed => "completed",
+                ListType.InProgress => "in progress",
+                _ => "in progress",
+            };
         }
 
         public static EpisodeType Parse(this EpisodeType type, string str)

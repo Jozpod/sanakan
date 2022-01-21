@@ -88,6 +88,7 @@ namespace Sanakan.Game.Tests.IntegrationTests.ImageProcessorTests
                 color);
             userProfileImage.Should().NotBeNull();
 
+            //await SaveImageAsync(userProfileImage, "actual-user-profile.png");
             await ShouldBeEqual("expected-user-profile.png", userProfileImage);
         }
     }

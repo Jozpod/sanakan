@@ -379,7 +379,8 @@ namespace Sanakan.DiscordBot.Tests.CommandHandlerTests
                     It.IsAny<MessageComponent>(),
                     It.IsAny<ISticker[]>(),
                     It.IsAny<Embed[]>()))
-                .Callback<Stream, string, string, bool, Embed, RequestOptions, bool, AllowedMentions, MessageReference>(VerifyMessage)
+                .Callback<Stream, string, string, bool, Embed, RequestOptions, bool,
+                AllowedMentions, MessageReference, MessageComponent, ISticker[], Embed[]>(VerifyMessage)
                 .ReturnsAsync(_userMessageMock.Object);
 
             _resourceManagerMock
@@ -398,7 +399,10 @@ namespace Sanakan.DiscordBot.Tests.CommandHandlerTests
                 RequestOptions options,
                 bool isSpoiler,
                 AllowedMentions allowedMentions,
-                MessageReference messageReference)
+                MessageReference messageReference,
+                MessageComponent messageComponent,
+                ISticker[] stickers,
+                Embed[] embeds)
             {
                 stream.Should().NotBeNull();
                 embed.Image.Should().NotBeNull();

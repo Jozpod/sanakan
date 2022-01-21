@@ -37,6 +37,7 @@ namespace Sanakan.DiscordBot.Modules
         private readonly IRandomNumberGenerator _randomNumberGenerator;
         private readonly ISlotMachine _slotMachine;
         private readonly ITaskManager _taskManager;
+        private readonly IFileSystem _fileSystem;
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly IServiceScope _serviceScope;
 
@@ -48,6 +49,7 @@ namespace Sanakan.DiscordBot.Modules
             IRandomNumberGenerator randomNumberGenerator,
             ISlotMachine slotMachine,
             ITaskManager taskManager,
+            IFileSystem fileSystem,
             IServiceScopeFactory serviceScopeFactory)
         {
             _iconConfiguration = iconConfiguration;
@@ -57,6 +59,7 @@ namespace Sanakan.DiscordBot.Modules
             _randomNumberGenerator = randomNumberGenerator;
             _slotMachine = slotMachine;
             _taskManager = taskManager;
+            _fileSystem = fileSystem;
             _serviceScopeFactory = serviceScopeFactory;
 
             _serviceScope = _serviceScopeFactory.CreateScope();
@@ -282,21 +285,22 @@ namespace Sanakan.DiscordBot.Modules
             var thrown = (CoinSide)_randomNumberGenerator.GetRandomValue(2);
             var embed = $"{mention} pudło! Obecnie posiadasz {databaseUser.ScCount} SC.".ToEmbedMessage(EMType.Error);
 
-            databaseUser.Stats.Tail += (thrown == CoinSide.Tail) ? 1 : 0;
-            databaseUser.Stats.Head += (thrown == CoinSide.Head) ? 1 : 0;
+            var stats = databaseUser.Stats;
+            stats.Tail += (thrown == CoinSide.Tail) ? 1 : 0;
+            stats.Head += (thrown == CoinSide.Head) ? 1 : 0;
 
             if (thrown == coinSide)
             {
-                ++databaseUser.Stats.Hit;
+                ++stats.Hit;
                 databaseUser.ScCount += amount * 2;
-                databaseUser.Stats.IncomeInSc += amount;
+                stats.IncomeInSc += amount;
                 embed = $"{mention} trafiony zatopiony! Obecnie posiadasz {databaseUser.ScCount} SC.".ToEmbedMessage(EMType.Success);
             }
             else
             {
-                ++databaseUser.Stats.Misd;
-                databaseUser.Stats.ScLost += amount;
-                databaseUser.Stats.IncomeInSc -= amount;
+                ++stats.Misd;
+                stats.ScLost += amount;
+                stats.IncomeInSc -= amount;
             }
 
             await _userRepository.SaveChangesAsync();
@@ -304,7 +308,9 @@ namespace Sanakan.DiscordBot.Modules
             _cacheManager.ExpireTag(CacheKeys.User(databaseUser.Id), CacheKeys.Users);
 
             await ReplyAsync(embed: embed.Build());
-            await Context.Channel.SendFileAsync(string.Format(Paths.CoinPicture, (int)thrown));
+            var filePath = string.Format(Paths.CoinPicture, (int)thrown);
+            using var stream = _fileSystem.OpenRead(filePath);
+            await Context.Channel.SendFileAsync(stream, "coin.png");
         }
 
         [Command("ustaw automat")]

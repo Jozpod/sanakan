@@ -25,7 +25,7 @@ namespace Sanakan.Game.Tests.IntegrationTests.ImageProcessorTests
                 Name = "test",
                 ReadedStatus = new ReadWatchStatuses
                 {
-                    Total = 50,
+                    Total = 160,
                     Completed = 10,
                     Dropped = 20,
                     Hold = 30,
@@ -79,6 +79,7 @@ namespace Sanakan.Game.Tests.IntegrationTests.ImageProcessorTests
             var siteStatistics = await _imageProcessor.GetSiteStatisticAsync(shindenInfo, color, lastRead, lastWatch);
             siteStatistics.Should().NotBeNull();
 
+            //await SaveImageAsync(siteStatistics, "actual-site-statistics.png");
             await ShouldBeEqual("expected-site-statistics.png", siteStatistics);
         }
     }

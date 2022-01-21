@@ -7,6 +7,7 @@ using Sanakan.Game.Services.Abstractions;
 using Sanakan.Tests.Shared;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace Sanakan.Game.Tests.WaifuServiceTests
@@ -39,6 +40,10 @@ namespace Sanakan.Game.Tests.WaifuServiceTests
                 .Returns(DateTime.UtcNow);
 
             _fileSystemMock
+               .Setup(pr => pr.OpenRead(It.IsAny<string>()))
+               .Returns(new MemoryStream());
+
+            _fileSystemMock
                  .Setup(pr => pr.Exists(It.IsAny<string>()))
                  .Returns(true);
 
@@ -50,7 +55,7 @@ namespace Sanakan.Game.Tests.WaifuServiceTests
 
             attachmentMock
                 .Setup(pr => pr.Url)
-                .Returns("url");
+                .Returns("https://test.com/image.png");
 
             guildUserMock
                 .Setup(pr => pr.Nickname)

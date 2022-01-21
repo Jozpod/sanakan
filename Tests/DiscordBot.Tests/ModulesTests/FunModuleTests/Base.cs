@@ -26,6 +26,7 @@ namespace DiscordBot.ModulesTests.FunModuleTests
         protected readonly Mock<IRandomNumberGenerator> _randomNumberGeneratorMock = new(MockBehavior.Strict);
         protected readonly Mock<ISlotMachine> _slotMachineMock = new(MockBehavior.Strict);
         protected readonly Mock<ITaskManager> _taskManagerMock = new(MockBehavior.Strict);
+        protected readonly Mock<IFileSystem> _fileSystemMock = new(MockBehavior.Strict);
 
         public Base()
         {
@@ -44,6 +45,7 @@ namespace DiscordBot.ModulesTests.FunModuleTests
                 _randomNumberGeneratorMock.Object,
                 _slotMachineMock.Object,
                 _taskManagerMock.Object,
+                _fileSystemMock.Object,
                 serviceScopeFactory);
             Initialize(_module);
         }

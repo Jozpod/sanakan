@@ -636,16 +636,8 @@
       },
       "SixLabors.Fonts": {
         "type": "Transitive",
-        "resolved": "1.0.0-beta15",
-        "contentHash": "Gk4KMoJtbsA5/bp40kIr82NpBuNPQqFVz0RcwhFDDGCwdGZrDAV2q/pq3b14eJ/kQzVYBYQZ9hc5h9jbH2rURA==",
-        "dependencies": {
-          "System.IO.Compression": "4.3.0",
-          "System.IO.UnmanagedMemoryStream": "4.3.0",
-          "System.Numerics.Vectors": "4.5.0",
-          "System.Runtime.CompilerServices.Unsafe": "4.7.0",
-          "System.Threading.Tasks.Parallel": "4.3.0",
-          "System.ValueTuple": "4.5.0"
-        }
+        "resolved": "1.0.0-beta15.24",
+        "contentHash": "yrsZovsqaTtyHUcTn/nGPjUmrJn0JUjeTcQibcQjr1zzorQTJO/PtoJkwDZV1NzUJeVRgCRK/Z3ngzvgJWGeGA=="
       },
       "SQLitePCLRaw.bundle_e_sqlite3": {
         "type": "Transitive",
@@ -1009,22 +1001,6 @@
           "System.Runtime": "4.3.0"
         }
       },
-      "System.IO.UnmanagedMemoryStream": {
-        "type": "Transitive",
-        "resolved": "4.3.0",
-        "contentHash": "tS89nK7pw8ebkkEfWujA05+ZReHKzz39W+bcX1okVR0GJCJuzPyfYfQZyiLSrjp121BB5J4uewZQiUTKri2pSQ==",
-        "dependencies": {
-          "System.Buffers": "4.3.0",
-          "System.Diagnostics.Debug": "4.3.0",
-          "System.IO": "4.3.0",
-          "System.IO.FileSystem.Primitives": "4.3.0",
-          "System.Resources.ResourceManager": "4.3.0",
-          "System.Runtime": "4.3.0",
-          "System.Runtime.InteropServices": "4.3.0",
-          "System.Threading": "4.3.0",
-          "System.Threading.Tasks": "4.3.0"
-        }
-      },
       "System.Linq": {
         "type": "Transitive",
         "resolved": "4.3.0",
@@ -1127,11 +1103,6 @@
           "System.Runtime": "4.3.0",
           "System.Threading.Tasks": "4.3.0"
         }
-      },
-      "System.Numerics.Vectors": {
-        "type": "Transitive",
-        "resolved": "4.5.0",
-        "contentHash": "QQTlPTl06J/iiDbJCiepZ4H//BVraReU4O4EoRw1U02H5TLUIT7xn3GnDp9AXPSlJUDyFs4uWjWafNX6WrAojQ=="
       },
       "System.ObjectModel": {
         "type": "Transitive",
@@ -1550,21 +1521,6 @@
         "resolved": "4.5.4",
         "contentHash": "zteT+G8xuGu6mS+mzDzYXbzS7rd3K6Fjb9RiZlYlJPam2/hU7JCBZBVEcywNuR+oZ1ncTvc/cq0faRr3P01OVg=="
       },
-      "System.Threading.Tasks.Parallel": {
-        "type": "Transitive",
-        "resolved": "4.3.0",
-        "contentHash": "cbjBNZHf/vQCfcdhzx7knsiygoCKgxL8mZOeocXZn5gWhCdzHIq6bYNKWX0LAJCWYP7bds4yBK8p06YkP0oa0g==",
-        "dependencies": {
-          "System.Collections.Concurrent": "4.3.0",
-          "System.Diagnostics.Debug": "4.3.0",
-          "System.Diagnostics.Tracing": "4.3.0",
-          "System.Resources.ResourceManager": "4.3.0",
-          "System.Runtime": "4.3.0",
-          "System.Runtime.Extensions": "4.3.0",
-          "System.Threading": "4.3.0",
-          "System.Threading.Tasks": "4.3.0"
-        }
-      },
       "System.Threading.Timer": {
         "type": "Transitive",
         "resolved": "4.3.0",
@@ -1689,8 +1645,8 @@
           "Sanakan.DAL": "0.0.1",
           "Sanakan.DiscordBot.Abstractions": "0.0.1",
           "Shinden.NET": "0.0.1",
-          "SixLabors.ImageSharp": "2.0.0-alpha.0.156",
-          "SixLabors.ImageSharp.Drawing": "1.0.0-beta13"
+          "SixLabors.ImageSharp": "2.0.0-alpha.0.158",
+          "SixLabors.ImageSharp.Drawing": "1.0.0-beta13.19"
         }
       },
       "Sanakan.Tests.Shared": {
@@ -1892,21 +1848,21 @@
       },
       "SixLabors.ImageSharp": {
         "type": "CentralTransitive",
-        "requested": "[2.0.0-alpha.0.156, )",
-        "resolved": "2.0.0-alpha.0.156",
-        "contentHash": "G6A+5yxGYCAOQQ0M7VxWOLBsJmYLbtUWQZF2yzQxWLLR0X5aL0DhRy8cMuxpKQsXbpObnDOqfG6A4/V6TQUyug==",
+        "requested": "[2.0.0-alpha.0.158, )",
+        "resolved": "2.0.0-alpha.0.158",
+        "contentHash": "29YrLbLk+K8lZv6xbcZQMdtexNQU3Zeoy3/D3VC/0sy6VS3GTwx2DXZkHd7nNeBZijvOVQugahIkAWieDXxqYw==",
         "dependencies": {
           "System.Runtime.CompilerServices.Unsafe": "5.0.0"
         }
       },
       "SixLabors.ImageSharp.Drawing": {
         "type": "CentralTransitive",
-        "requested": "[1.0.0-beta13, )",
-        "resolved": "1.0.0-beta13",
-        "contentHash": "YvGptEWWc9o6V8NMJ99x1283pH9T50zIvckSfdGr/apbIDlI2/VuBEHuhUY5MHTqCQyeSiaAG/t2uXk3Vff/7g==",
+        "requested": "[1.0.0-beta13.19, )",
+        "resolved": "1.0.0-beta13.19",
+        "contentHash": "PTYQly1qo6imWcETC2e2PgTMPFc86r6F0e/O0vBnHyL8+jyrnbldHw5ygNP0TBB2JMPUzqsvWbOh57wQaVvDcg==",
         "dependencies": {
-          "SixLabors.Fonts": "1.0.0-beta15",
-          "SixLabors.ImageSharp": "1.0.3"
+          "SixLabors.Fonts": "1.0.0-beta15.24",
+          "SixLabors.ImageSharp": "2.0.0-alpha.0.156"
         }
       },
       "System.Collections.Concurrent": {

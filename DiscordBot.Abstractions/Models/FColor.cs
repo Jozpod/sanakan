@@ -68,15 +68,11 @@ namespace DiscordBot.Services
 
         public static bool IsOption(this FColor color)
         {
-            switch (color)
+            return color switch
             {
-                case FColor.None:
-                case FColor.CleanColor:
-                    return true;
-
-                default:
-                    return false;
-            }
+                FColor.None or FColor.CleanColor => true,
+                _ => false,
+            };
         }
 
         public static int Price(this FColor color, SCurrency currency)

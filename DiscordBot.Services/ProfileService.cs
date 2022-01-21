@@ -226,63 +226,35 @@ namespace Sanakan.DiscordBot.Services
 
         private List<User> OrderUsersByTop(IEnumerable<User> list, TopType type, DateTime date)
         {
-            switch (type)
+            return type switch
             {
-                default:
-                case TopType.Level:
-                    return list.OrderByDescending(x => x.ExperienceCount).ToList();
-
-                case TopType.ScCount:
-                    return list.OrderByDescending(x => x.ScCount).ToList();
-
-                case TopType.TcCount:
-                    return list.OrderByDescending(x => x.TcCount).ToList();
-
-                case TopType.AcCount:
-                    return list.OrderByDescending(x => x.AcCount).ToList();
-
-                case TopType.PcCount:
-                    return list.OrderByDescending(x => x.GameDeck.PVPCoins).ToList();
-
-                case TopType.Posts:
-                    return list.OrderByDescending(x => x.MessagesCount).ToList();
-
-                case TopType.PostsMonthly:
-                    return list.Where(x => x.IsCharCounterActive(date))
-                        .OrderByDescending(x => x.MessagesCount - x.MessagesCountAtDate).ToList();
-
-                case TopType.PostsMonthlyCharacter:
-                    return list
-                        .Where(x => x.IsCharCounterActive(date) && x.HasSentAnyMessagesInMonth())
-                        .OrderByDescending(x => x.CharacterCountFromDate / (x.MessagesCount - x.MessagesCountAtDate)).ToList();
-
-                case TopType.Commands:
-                    return list.OrderByDescending(x => x.CommandsCount).ToList();
-
-                case TopType.Card:
-                    return list.OrderByDescending(x => x.GameDeck.GetStrongestCardPower()).ToList();
-
-                case TopType.Cards:
-                    return list.OrderByDescending(x => x.GameDeck.Cards.Count).ToList();
-
-                case TopType.CardsPower:
-                    return list.OrderByDescending(x => x.GameDeck.Cards.Sum(c => c.CardPower)).ToList();
-
-                case TopType.Karma:
-                    return list.OrderByDescending(x => x.GameDeck.Karma).ToList();
-
-                case TopType.KarmaNegative:
-                    return list.OrderBy(x => x.GameDeck.Karma).ToList();
-
-                case TopType.Pvp:
-                    return list.Where(x => x.GameDeck.GlobalPVPRank > 0)
-                        .OrderByDescending(x => x.GameDeck.GlobalPVPRank).ToList();
-
-                case TopType.PvpSeason:
-                    return list.Where(x => x.IsPVPSeasonalRankActive(date)
+                TopType.ScCount => list.OrderByDescending(x => x.ScCount).ToList(),
+                TopType.TcCount => list.OrderByDescending(x => x.TcCount).ToList(),
+                TopType.AcCount => list.OrderByDescending(x => x.AcCount).ToList(),
+                TopType.PcCount => list.OrderByDescending(x => x.GameDeck.PVPCoins).ToList(),
+                TopType.Posts => list.OrderByDescending(x => x.MessagesCount).ToList(),
+                TopType.PostsMonthly => list.Where(x => x.IsCharCounterActive(date))
+                    .OrderByDescending(x => x.MessagesCount - x.MessagesCountAtDate).ToList(),
+                TopType.PostsMonthlyCharacter => list
+                    .Where(x => x.IsCharCounterActive(date) && x.HasSentAnyMessagesInMonth())
+                    .OrderByDescending(x => x.CharacterCountFromDate / (x.MessagesCount - x.MessagesCountAtDate))
+                    .ToList(),
+                TopType.Commands => list.OrderByDescending(x => x.CommandsCount).ToList(),
+                TopType.Card => list.OrderByDescending(x => x.GameDeck.GetStrongestCardPower()).ToList(),
+                TopType.Cards => list.OrderByDescending(x => x.GameDeck.Cards.Count).ToList(),
+                TopType.CardsPower => list.OrderByDescending(x => x.GameDeck.Cards.Sum(c => c.CardPower)).ToList(),
+                TopType.Karma => list.OrderByDescending(x => x.GameDeck.Karma).ToList(),
+                TopType.KarmaNegative => list.OrderBy(x => x.GameDeck.Karma).ToList(),
+                TopType.Pvp => list.Where(x => x.GameDeck.GlobalPVPRank > 0)
+                    .OrderByDescending(x => x.GameDeck.GlobalPVPRank)
+                    .ToList(),
+                TopType.PvpSeason => list
+                    .Where(x => x.IsPVPSeasonalRankActive(date)
                         && x.GameDeck.SeasonalPVPRank > 0)
-                        .OrderByDescending(x => x.GameDeck.SeasonalPVPRank).ToList();
-            }
+                    .OrderByDescending(x => x.GameDeck.SeasonalPVPRank)
+                    .ToList(),
+                _ => list.OrderByDescending(x => x.ExperienceCount).ToList(),
+            };
         }
 
         private List<T> GetRangeMax<T>(List<T> list, int range)
