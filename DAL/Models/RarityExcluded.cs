@@ -13,8 +13,6 @@ namespace Sanakan.DAL.Models
             Rarity = rarity;
         }
 
-        public ulong Id { get; set; }
-
         public Rarity Rarity { get; set; }
 
         public ulong BoosterPackId { get; set; }

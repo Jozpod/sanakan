@@ -21,7 +21,7 @@ namespace DiscordBot.ModulesTests.ProfileModuleTests
         [DataRow(SCurrency.Tc)]
         public async Task Should_Send_Error_Message_No_Coins(SCurrency currency)
         {
-            var imageUrl = "image.png";
+            var imageUrl = new Uri("https://test.com/image.png");
             var user = new User(1ul, DateTime.UtcNow);
 
             _userMock
@@ -47,7 +47,7 @@ namespace DiscordBot.ModulesTests.ProfileModuleTests
         [TestMethod]
         public async Task Should_Send_Error_Message_Bad_Url()
         {
-            var imageUrl = "image.png";
+            var imageUrl = new Uri("https://test.com/image.png");
             var user = new User(1ul, DateTime.UtcNow)
             {
                 ScCount = 5000,
@@ -88,7 +88,7 @@ namespace DiscordBot.ModulesTests.ProfileModuleTests
         [DataRow(SCurrency.Tc)]
         public async Task Should_Change_Background_And_Send_Confirm_Message(SCurrency currency)
         {
-            var imageUrl = "image.png";
+            var imageUrl = new Uri("https://test.com/image.png");
             var user = new User(1ul, DateTime.UtcNow)
             {
                 ScCount = 5000,

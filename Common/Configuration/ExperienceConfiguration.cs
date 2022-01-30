@@ -21,5 +21,10 @@
         /// The maximum amount of experience from one Discord message.
         /// </summary>
         public double MaxPerMessage { get; set; }
+
+        /// <summary>
+        /// The minimum amount of accumulated experience which can be persisted.
+        /// </summary>
+        public double SaveThreshold { get; set; }
     }
 }

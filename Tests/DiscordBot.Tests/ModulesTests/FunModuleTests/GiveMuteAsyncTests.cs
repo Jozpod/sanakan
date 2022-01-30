@@ -67,7 +67,7 @@ namespace DiscordBot.ModulesTests.FunModuleTests
                 .Returns(roleIds);
             
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildOptions.Id))
+                .Setup(pr => pr.GetCachedById(guildOptions.Id))
                 .ReturnsAsync(guildOptions);
 
             _randomNumberGeneratorMock

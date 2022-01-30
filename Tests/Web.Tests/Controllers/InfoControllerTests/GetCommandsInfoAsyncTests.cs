@@ -47,7 +47,7 @@ namespace Sanakan.Web.Tests.Controllers.InfoControllerTests
 
             var result = _controller.GetCommandsInfo();
             var okObjectResult = result.Should().BeOfType<OkObjectResult>().Subject;
-            var command = (Commands)okObjectResult.Value;
+            var command = (Commands)okObjectResult.Value!;
             command.Should().NotBeNull();
             command.Prefix.Should().Be(_configuration.Prefix);
             var module = command.Modules.First();

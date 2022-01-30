@@ -1,9 +1,12 @@
 ﻿using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 namespace Sanakan.Common.Configuration
 {
     public class DiscordConfiguration
     {
+        private static Regex? _commandRegex;
+
         /// <summary>
         /// Run commands on Discord only when they start with given prefix.
         /// </summary>
@@ -68,5 +71,16 @@ namespace Sanakan.Common.Configuration
         /// The collection of icons to use.
         /// </summary>
         public string IconTheme { get; set; } = string.Empty;
+
+        public bool IsCommand(string message)
+        {
+            if (_commandRegex == null)
+            {
+                var prefix = Prefix.Replace(".", @"\.").Replace("?", @"\?");
+                _commandRegex = new Regex($@"^{prefix}\w+", RegexOptions.Compiled);
+            }
+
+            return _commandRegex.Matches(message).Count > 0;
+        }
     }
 }

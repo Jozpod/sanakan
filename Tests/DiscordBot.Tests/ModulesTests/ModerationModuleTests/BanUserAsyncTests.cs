@@ -27,7 +27,7 @@ namespace DiscordBot.ModulesTests.ModerationModuleTests
                 .Returns(1ul);
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetCachedGuildFullConfigAsync(1ul))
+                .Setup(pr => pr.GetCachedById(1ul))
                 .ReturnsAsync(null as GuildOptions);
 
             SetupSendMessage((message, embed) =>
@@ -61,7 +61,7 @@ namespace DiscordBot.ModulesTests.ModerationModuleTests
             var penaltyInfo = new PenaltyInfo();
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildConfig.Id))
+                .Setup(pr => pr.GetCachedById(guildConfig.Id))
                 .ReturnsAsync(guildConfig);
 
             _guildConfigRepositoryMock

@@ -25,7 +25,7 @@ namespace Sanakan.Web.Tests.Controllers.UserControllerTests
             var tokenData = new TokenData();
 
             _userRepositoryMock
-                .Setup(pr => pr.GetCachedFullUserByShindenIdAsync(shindenUserId))
+                .Setup(pr => pr.GetCachedByShindenIdAsync(shindenUserId))
                 .ReturnsAsync(user);
 
             _userContextMock

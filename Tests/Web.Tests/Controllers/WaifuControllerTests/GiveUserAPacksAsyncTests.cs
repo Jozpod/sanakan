@@ -34,7 +34,7 @@ namespace Sanakan.Web.Tests.Controllers.WaifuControllerTests
             var user = new User(discordUserId, DateTime.UtcNow);
 
             _userRepositoryMock
-                .Setup(pr => pr.GetCachedFullUserAsync(discordUserId))
+                .Setup(pr => pr.GetCachedAsync(discordUserId))
                 .ReturnsAsync(user);
 
             _blockingPriorityQueueMock

@@ -30,7 +30,7 @@ namespace Sanakan.Web.Tests.Controllers.WaifuControllerTests
             };
 
             _userRepositoryMock
-                .Setup(pr => pr.GetCachedFullUserAsync(shindenUserId))
+                .Setup(pr => pr.GetCachedAsync(shindenUserId))
                 .ReturnsAsync(user);
 
             _cardRepositoryMock

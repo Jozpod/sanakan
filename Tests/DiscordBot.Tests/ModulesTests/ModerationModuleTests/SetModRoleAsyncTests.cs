@@ -46,7 +46,7 @@ namespace DiscordBot.ModulesTests.ModerationModuleTests
                 .Returns(guildConfig.Id);
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetGuildConfigOrCreateAsync(guildConfig.Id))
+                .Setup(pr => pr.GetOrCreateAsync(guildConfig.Id))
                 .ReturnsAsync(guildConfig);
 
             _guildConfigRepositoryMock
@@ -83,7 +83,7 @@ namespace DiscordBot.ModulesTests.ModerationModuleTests
                 .Returns(guildConfig.Id);
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetGuildConfigOrCreateAsync(guildConfig.Id))
+                .Setup(pr => pr.GetOrCreateAsync(guildConfig.Id))
                 .ReturnsAsync(guildConfig);
 
             _guildConfigRepositoryMock

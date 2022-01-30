@@ -7,6 +7,7 @@ using Sanakan.Common;
 using Sanakan.Common.Configuration;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot;
+using Sanakan.DiscordBot.Abstractions;
 using Sanakan.DiscordBot.Abstractions.Extensions;
 using System;
 using System.Collections.Generic;
@@ -22,7 +23,7 @@ namespace Sanakan.Daemon.HostedService
     internal class ChaosHostedService : BackgroundService
     {
         private readonly ILogger _logger;
-        private readonly IDiscordClientAccessor _discordSocketClientAccessor;
+        private readonly IDiscordClientAccessor _discordClientAccessor;
         private readonly IOptionsMonitor<DiscordConfiguration> _discordConfiguration;
         private readonly IOptionsMonitor<DaemonsConfiguration> _daemonsConfiguration;
         private readonly IServiceScopeFactory _serviceScopeFactory;
@@ -37,7 +38,7 @@ namespace Sanakan.Daemon.HostedService
             ILogger<ChaosHostedService> logger,
             IOptionsMonitor<DiscordConfiguration> discordConfiguration,
             IOptionsMonitor<DaemonsConfiguration> daemonsConfiguration,
-            IDiscordClientAccessor discordSocketClientAccessor,
+            IDiscordClientAccessor discordClientAccessor,
             IServiceScopeFactory serviceScopeFactory,
             IRandomNumberGenerator randomNumberGenerator,
             ITimer timer,
@@ -46,15 +47,15 @@ namespace Sanakan.Daemon.HostedService
             _logger = logger;
             _discordConfiguration = discordConfiguration;
             _daemonsConfiguration = daemonsConfiguration;
-            _discordSocketClientAccessor = discordSocketClientAccessor;
+            _discordClientAccessor = discordClientAccessor;
             _serviceScopeFactory = serviceScopeFactory;
             _randomNumberGenerator = randomNumberGenerator;
             _timer = timer;
             _taskManager = taskManager;
             _usersWithSwappedNicknames = new HashSet<ulong>();
-            _discordSocketClientAccessor.LoggedIn += LoggedIn;
-            _discordSocketClientAccessor.LoggedOut += LoggedOut;
-            _discordSocketClientAccessor.Disconnected += DisconnectedAsync;
+            _discordClientAccessor.LoggedIn += LoggedIn;
+            _discordClientAccessor.LoggedOut += LoggedOut;
+            _discordClientAccessor.Disconnected += DisconnectedAsync;
         }
 
         internal async Task HandleMessageAsync(IMessage message)
@@ -92,7 +93,7 @@ namespace Sanakan.Daemon.HostedService
             using var serviceScope = _serviceScopeFactory.CreateScope();
             var serviceProvider = serviceScope.ServiceProvider;
             var guildConfigRepository = serviceProvider.GetRequiredService<IGuildConfigRepository>();
-            var guildConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(guildId);
+            var guildConfig = await guildConfigRepository.GetCachedById(guildId);
 
             if (guildConfig == null)
             {
@@ -167,7 +168,7 @@ namespace Sanakan.Daemon.HostedService
 
         private Task LoggedIn()
         {
-            _discordSocketClientAccessor.MessageReceived += HandleMessageAsync;
+            _discordClientAccessor.MessageReceived += HandleMessageAsync;
             _timer.Start(
                 _daemonsConfiguration.CurrentValue.ChaosDueTime,
                 _daemonsConfiguration.CurrentValue.ChaosPeriod);

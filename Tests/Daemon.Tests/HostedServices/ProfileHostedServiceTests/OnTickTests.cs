@@ -41,7 +41,7 @@ namespace Sanakan.Daemon.Tests.HostedServices.ProfileHostedServiceTests
                 .Verifiable();
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildId))
+                .Setup(pr => pr.GetCachedById(guildId))
                 .ReturnsAsync(guildOption)
                 .Verifiable();
 
@@ -121,7 +121,7 @@ namespace Sanakan.Daemon.Tests.HostedServices.ProfileHostedServiceTests
                 .Verifiable();
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildId))
+                .Setup(pr => pr.GetCachedById(guildId))
                 .ReturnsAsync(guildOption)
                 .Verifiable();
 

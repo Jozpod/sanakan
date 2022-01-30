@@ -7,6 +7,7 @@ using Sanakan.Common;
 using Sanakan.Common.Configuration;
 using Sanakan.DAL.Models.Configuration;
 using Sanakan.DAL.Repositories.Abstractions;
+using Sanakan.DiscordBot.Abstractions;
 using Sanakan.DiscordBot.Abstractions.Configuration;
 using Sanakan.DiscordBot.Abstractions.Extensions;
 using Sanakan.DiscordBot.Abstractions.Models;
@@ -73,14 +74,9 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("wyświetla listę poleceń")]
         [Remarks("odcinki"), RequireAnyCommandChannel, RequireGuildUser]
         public async Task GiveHelpAsync(
-            [Summary("nazwa polecenia (opcjonalne)")][Remainder] string? command = null)
+            [Summary(ParameterInfo.CommandOptional)][Remainder] string? command = null)
         {
-            var guildUser = Context.User as IGuildUser;
-
-            if (guildUser == null)
-            {
-                return;
-            }
+            var guildUser = (IGuildUser)Context.User;
 
             if (command == null)
             {
@@ -99,7 +95,7 @@ namespace Sanakan.DiscordBot.Modules
 
                 if (guild != null)
                 {
-                    var gConfig = await _guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
+                    var gConfig = await _guildConfigRepository.GetCachedById(guild.Id);
 
                     if (gConfig?.Prefix != null)
                     {
@@ -126,7 +122,7 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("wyświetla informacje o użytkowniku")]
         [Remarks("User"), RequireCommandChannel]
         public async Task GiveUserInfoAsync(
-            [Summary("nazwa użytkownika (opcjonalne)")] IUser? user = null)
+            [Summary(ParameterInfo.UserOptional)] IUser? user = null)
         {
             var effectiveUser = (user ?? Context.User) as IGuildUser;
 
@@ -193,7 +189,7 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("wyświetla awatar użytkownika")]
         [Remarks("User"), RequireCommandChannel]
         public async Task ShowUserAvatarAsync(
-            [Summary("nazwa użytkownika (opcjonalne)")] IUser? user = null)
+            [Summary(ParameterInfo.UserOptional)] IUser? user = null)
         {
             var effectiveUser = user ?? Context.User;
             var embedBuilder = new EmbedBuilder
@@ -224,17 +220,19 @@ namespace Sanakan.DiscordBot.Modules
         [Command("zgłoś", RunMode = RunMode.Async)]
         [Alias("raport", "report", "zgłos", "zglos", "zgloś")]
         [Summary("zgłasza wiadomość użytkownika")]
-        [Remarks("63312335634561 Tak nie wolno!"), RequireUserRole]
+        [Remarks("63312335634561 Tak nie wolno!"), RequireUserRole, RequireGuildUser]
         public async Task ReportUserAsync(
-            [Summary("id wiadomości")] ulong messageId,
-            [Summary("powód")][Remainder] string reason)
+            [Summary(ParameterInfo.MessageId)] ulong messageId,
+            [Summary(ParameterInfo.Reason)][Remainder] string reason)
         {
             var guild = Context.Guild;
-            var guildConfig = await _guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
+            var guildConfig = await _guildConfigRepository.GetCachedById(guild.Id);
+            Embed embed;
 
             if (guildConfig == null)
             {
-                await ReplyAsync(embed: Strings.ServerNotConfigured.ToEmbedMessage(EMType.Bot).Build());
+                embed = Strings.ServerNotConfigured.ToEmbedMessage(EMType.Bot).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
@@ -242,7 +240,8 @@ namespace Sanakan.DiscordBot.Modules
 
             if (raportChannel == null)
             {
-                await ReplyAsync(embed: "Serwer nie ma skonfigurowanych raportów.".ToEmbedMessage(EMType.Bot).Build());
+                embed = Strings.ReportsNotConfigured.ToEmbedMessage(EMType.Bot).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
@@ -251,7 +250,8 @@ namespace Sanakan.DiscordBot.Modules
             var replyMessage = await Context.Channel.GetMessageAsync(messageId);
             if (replyMessage == null)
             {
-                await ReplyAsync(embed: "Nie odnaleziono wiadomości.".ToEmbedMessage(EMType.Error).Build());
+                embed = "Nie odnaleziono wiadomości.".ToEmbedMessage(EMType.Error).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
@@ -259,7 +259,8 @@ namespace Sanakan.DiscordBot.Modules
 
             if (replyUser.IsBotOrWebhook())
             {
-                await ReplyAsync(embed: "Raportować bota? Bez sensu.".ToEmbedMessage(EMType.Bot).Build());
+                embed = "Raportować bota? Bez sensu.".ToEmbedMessage(EMType.Bot).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
@@ -267,43 +268,39 @@ namespace Sanakan.DiscordBot.Modules
 
             if ((utcNow - replyMessage.CreatedAt.DateTime.ToLocalTime()) > _reportExpiry)
             {
-                await ReplyAsync(embed: "Można raportować tylko wiadomości, które nie są starsze od 3h."
-                    .ToEmbedMessage(EMType.Bot).Build());
+                embed = "Można raportować tylko wiadomości, które nie są starsze od 3h."
+                    .ToEmbedMessage(EMType.Bot).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
             var replyAuthorId = replyUser.Id;
-            var user = Context.User;
-            Embed embed;
+            var guildUser = (IGuildUser)Context.User;
 
-            if (replyAuthorId == user.Id)
+            if (replyAuthorId == guildUser.Id)
             {
-                var guildUser = user as IGuildUser;
-
-                if (guildUser == null)
-                {
-                    return;
-                }
-
                 var notificationChannel = (ITextChannel)await guild.GetChannelAsync(guildConfig.NotificationChannelId);
                 var userRole = guild.GetRole(guildConfig.UserRoleId!.Value);
                 var muteRole = guild.GetRole(guildConfig.MuteRoleId);
 
                 if (muteRole == null)
                 {
-                    await ReplyAsync(embed: "Rola wyciszająca nie jest ustawiona.".ToEmbedMessage(EMType.Bot).Build());
+                    embed = "Rola wyciszająca nie jest ustawiona.".ToEmbedMessage(EMType.Bot).Build();
+                    await ReplyAsync(embed: embed);
                     return;
                 }
 
                 if (guildUser.RoleIds.Contains(muteRole.Id))
                 {
-                    await ReplyAsync(embed: $"{guildUser.Mention} już jest wyciszony.".ToEmbedMessage(EMType.Error).Build());
+                    embed = $"{guildUser.Mention} już jest wyciszony.".ToEmbedMessage(EMType.Error).Build();
+                    await ReplyAsync(embed: embed);
                     return;
                 }
 
                 if (_sessionManager.Exists<AcceptSession>(replyAuthorId))
                 {
-                    await ReplyAsync(embed: $"?????????".ToEmbedMessage(EMType.Error).Build());
+                    embed = $"?????????".ToEmbedMessage(EMType.Error).Build();
+                    await ReplyAsync(embed: embed);
                     return;
                 }
 
@@ -328,9 +325,10 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            await ReplyAsync(embed: "Wysłano zgłoszenie.".ToEmbedMessage(EMType.Success).Build());
+            embed = "Wysłano zgłoszenie.".ToEmbedMessage(EMType.Success).Build();
+            await ReplyAsync(embed: embed);
 
-            var userName = $"{user.Username}({user.Id})";
+            var userName = $"{guildUser.Username}({guildUser.Id})";
             embed = "prep".ToEmbedMessage().Build();
             var botMessage = await raportChannel.SendMessageAsync(replyMessage.GetJumpUrl(), embed: embed);
 

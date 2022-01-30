@@ -89,7 +89,7 @@ namespace Sanakan.DiscordBot.Tests.PreconditionsTests
                  .Returns(_guildUserMock.Object);
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildConfig.Id))
+                .Setup(pr => pr.GetCachedById(guildConfig.Id))
                 .ReturnsAsync(guildConfig);
 
             _guildUserMock
@@ -115,7 +115,7 @@ namespace Sanakan.DiscordBot.Tests.PreconditionsTests
                  .Returns(_guildUserMock.Object);
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildConfig.Id))
+                .Setup(pr => pr.GetCachedById(guildConfig.Id))
                 .ReturnsAsync(guildConfig);
 
             _guildUserMock
@@ -136,7 +136,7 @@ namespace Sanakan.DiscordBot.Tests.PreconditionsTests
                 .Returns(_guildUserMock.Object);
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetCachedGuildFullConfigAsync(1ul))
+                .Setup(pr => pr.GetCachedById(1ul))
                 .ReturnsAsync(guildConfig);
 
             _guildUserMock
@@ -164,7 +164,7 @@ namespace Sanakan.DiscordBot.Tests.PreconditionsTests
                 .Returns(_guildUserMock.Object);
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildConfig.Id))
+                .Setup(pr => pr.GetCachedById(guildConfig.Id))
                 .ReturnsAsync(guildConfig);
 
             _guildMock

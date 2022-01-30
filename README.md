@@ -498,6 +498,7 @@ All commands require developer permission.
 | **[`CharPerPoint`](#CharPerPoint)**  | `{Number}` | 60 | The amount of characters per experience point ratio. |
 | **[`MinPerMessage`](#MinPerMessage)**  | `{Number}` | 0.00005 | The minimum amount of experience points user receives per message. |
 | **[`MaxPerMessage`](#MaxPerMessage)** | `{Number}` | 5 | The maximum amount of experience points user receives per message. |
+| **[`SaveThreshold`](#SaveThreshold)** | `{Number}` | 5 | The minimum amount of accumulated experience which can be persisted. |
 
 ### Imaging
 |                   Name                    |         Type         |                 Default                 | Description                                                       |

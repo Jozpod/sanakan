@@ -28,7 +28,7 @@ namespace Sanakan.DAL.Repositories
             _cacheManager = cacheManager;
         }
 
-        public Task<List<ulong>> GetUserShindenIdsByHavingCharacterAsync(ulong characterId)
+        public Task<List<ulong>> GetShindenUserIdsByHavingCharacterAsync(ulong characterId)
         {
             var result = _dbContext.Cards
                .Include(x => x.GameDeck)
@@ -43,7 +43,7 @@ namespace Sanakan.DAL.Repositories
             return result;
         }
 
-        public async Task<User?> GetUserWaifuProfileAsync(ulong shindenUserId)
+        public async Task<User?> GetWithWaifuProfileAsync(ulong shindenUserId)
         {
             var result = await _dbContext.Users
                .AsQueryable()
@@ -61,7 +61,7 @@ namespace Sanakan.DAL.Repositories
             return result;
         }
 
-        public Task<User?> GetBaseUserAndDontTrackAsync(ulong discordUserId)
+        public Task<User?> GetBasicAsync(ulong discordUserId)
         {
             return _dbContext.Users
                 .AsQueryable()
@@ -70,7 +70,7 @@ namespace Sanakan.DAL.Repositories
                 .FirstOrDefaultAsync(x => x.Id == discordUserId)!;
         }
 
-        public async Task<User?> GetCachedFullUserAsync(ulong discordUserId)
+        public async Task<User?> GetCachedAsync(ulong discordUserId)
         {
             var key = CacheKeys.User(discordUserId);
 
@@ -118,7 +118,7 @@ namespace Sanakan.DAL.Repositories
             return result;
         }
 
-        public async Task<User?> GetCachedFullUserByShindenIdAsync(ulong shindenUserId)
+        public async Task<User?> GetCachedByShindenIdAsync(ulong shindenUserId)
         {
             var key = CacheKeys.User(shindenUserId);
 
@@ -239,7 +239,7 @@ namespace Sanakan.DAL.Repositories
             return user;
         }
 
-        public async Task<IEnumerable<User>> GetCachedAllUsersAsync()
+        public async Task<IEnumerable<User>> GetAllCachedAsync()
         {
             var cacheResult = _cacheManager.Get<List<User>>(CacheKeys.Users);
 

@@ -55,7 +55,7 @@ namespace Sanakan.DAL.Repositories
             return result;
         }
 
-        public async Task<GameDeck?> GetCachedUserGameDeckAsync(ulong userId)
+        public async Task<GameDeck?> GetCachedByUserIdAsync(ulong userId)
         {
             var key = string.Format(CacheKeys.GameDeckUser, userId);
 

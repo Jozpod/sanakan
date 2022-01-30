@@ -52,7 +52,7 @@ namespace Sanakan.DiscordBot.Tests.PreconditionsTests
                 .Verifiable();
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildId))
+                .Setup(pr => pr.GetCachedById(guildId))
                 .ReturnsAsync(guildConfig)
                 .Verifiable();
         }

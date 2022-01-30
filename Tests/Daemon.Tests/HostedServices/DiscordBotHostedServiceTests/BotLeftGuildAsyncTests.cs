@@ -34,7 +34,7 @@ namespace Sanakan.Daemon.Tests.HostedServices.DiscordBotHostedServiceTests
                 .Verifiable();
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetGuildConfigOrCreateAsync(guildId))
+                .Setup(pr => pr.GetOrCreateAsync(guildId))
                 .ReturnsAsync(guildOptions)
                 .Verifiable();
 
@@ -70,7 +70,7 @@ namespace Sanakan.Daemon.Tests.HostedServices.DiscordBotHostedServiceTests
                 .Returns(Task.CompletedTask)
                 .Verifiable();
 
-            _discordSocketClientAccessorMock.Raise(pr => pr.LeftGuild += null, guildMock.Object);
+            _discordClientAccessorMock.Raise(pr => pr.LeftGuild += null, guildMock.Object);
 
             _guildConfigRepositoryMock.Verify();
             _timeStatusRepositoryMock.Verify();

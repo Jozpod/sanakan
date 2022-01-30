@@ -190,7 +190,7 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("wyświetla statystyki użytkownika z strony")]
         [Remarks("karna")]
         public async Task ShowSiteStatisticAsync(
-            [Summary("użytkownik (opcjonalne)")] IGuildUser? guildUser = null)
+            [Summary(ParameterInfo.UserOptional)] IGuildUser? guildUser = null)
         {
             var user = guildUser ?? Context.User as IGuildUser;
 
@@ -199,7 +199,7 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            var databaseUser = await _userRepository.GetCachedFullUserAsync(user.Id);
+            var databaseUser = await _userRepository.GetCachedAsync(user.Id);
 
             if (databaseUser == null)
             {

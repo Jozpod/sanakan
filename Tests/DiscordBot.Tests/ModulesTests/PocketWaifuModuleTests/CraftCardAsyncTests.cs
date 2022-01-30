@@ -71,7 +71,7 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
                 .Returns(false);
 
             _userRepositoryMock
-                .Setup(pr => pr.GetCachedFullUserAsync(user.Id))
+                .Setup(pr => pr.GetCachedAsync(user.Id))
                 .ReturnsAsync(user);
 
             _systemClockMock

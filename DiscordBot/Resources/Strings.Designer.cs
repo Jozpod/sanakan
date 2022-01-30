@@ -81,6 +81,33 @@ namespace Sanakan.DiscordBot.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0} ta karta została już przeistoczona wcześniej..
+        /// </summary>
+        internal static string CardAlreadyConverted {
+            get {
+                return ResourceManager.GetString("CardAlreadyConverted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} na tej karcie ciąży klątwa!.
+        /// </summary>
+        internal static string CardCursed {
+            get {
+                return ResourceManager.GetString("CardCursed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} ta karta znajduje się w klatce.
+        /// </summary>
+        internal static string CardInCage {
+            get {
+                return ResourceManager.GetString("CardInCage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Nie odnaleziono karty..
         /// </summary>
         internal static string CardNotFound {
@@ -95,6 +122,15 @@ namespace Sanakan.DiscordBot.Resources {
         internal static string CardNotInAnyWishlist {
             get {
                 return ResourceManager.GetString("CardNotInAnyWishlist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} ta karta jest na wyprawie!.
+        /// </summary>
+        internal static string CardOnExpedition {
+            get {
+                return ResourceManager.GetString("CardOnExpedition", resourceCulture);
             }
         }
         
@@ -233,6 +269,15 @@ namespace Sanakan.DiscordBot.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Nie odnaleziono roli członka!.
+        /// </summary>
+        internal static string MemberRoleNotFound {
+            get {
+                return ResourceManager.GetString("MemberRoleNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Wiadomość nie istnieje!\nPamiętaj, że polecenie musi zostać użyte w tym samym kanale, gdzie znajduje się wiadomość!.
         /// </summary>
         internal static string MessageDoesNotExist {
@@ -301,6 +346,15 @@ namespace Sanakan.DiscordBot.Resources {
         internal static string NoSafariImage {
             get {
                 return ResourceManager.GetString("NoSafariImage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} nie odnaleziono nieoznaczonych kart..
+        /// </summary>
+        internal static string NoTaggedCards {
+            get {
+                return ResourceManager.GetString("NoTaggedCards", resourceCulture);
             }
         }
         
@@ -398,6 +452,24 @@ namespace Sanakan.DiscordBot.Resources {
         internal static string ReportId {
             get {
                 return ResourceManager.GetString("ReportId", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Taki raport nie istnieje..
+        /// </summary>
+        internal static string ReportNotFound {
+            get {
+                return ResourceManager.GetString("ReportNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Serwer nie ma skonfigurowanych raportów..
+        /// </summary>
+        internal static string ReportsNotConfigured {
+            get {
+                return ResourceManager.GetString("ReportsNotConfigured", resourceCulture);
             }
         }
         
@@ -574,6 +646,15 @@ namespace Sanakan.DiscordBot.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0} karty **SSS** nie można już ulepszyć!.
+        /// </summary>
+        internal static string SSSCardCantBeUpgraded {
+            get {
+                return ResourceManager.GetString("SSSCardCantBeUpgraded", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Nie odnaleziono tytułu!.
         /// </summary>
         internal static string TitleNotFound {
@@ -588,6 +669,15 @@ namespace Sanakan.DiscordBot.Resources {
         internal static string TitleNotInWishList {
             get {
                 return ResourceManager.GetString("TitleNotInWishList", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Nie skonfigurowany kanal smieciowych polecen..
+        /// </summary>
+        internal static string TrashChannelNotConfigured {
+            get {
+                return ResourceManager.GetString("TrashChannelNotConfigured", resourceCulture);
             }
         }
         
@@ -642,6 +732,15 @@ namespace Sanakan.DiscordBot.Resources {
         internal static string UserNoCards {
             get {
                 return ResourceManager.GetString("UserNoCards", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} nie masz żadnych przemiotów..
+        /// </summary>
+        internal static string UserNoItems {
+            get {
+                return ResourceManager.GetString("UserNoItems", resourceCulture);
             }
         }
         
@@ -716,6 +815,15 @@ namespace Sanakan.DiscordBot.Resources {
         internal static string WalletInfo {
             get {
                 return ResourceManager.GetString("WalletInfo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Nie zarządzasz żadną krainą..
+        /// </summary>
+        internal static string YouDontManageLand {
+            get {
+                return ResourceManager.GetString("YouDontManageLand", resourceCulture);
             }
         }
     }

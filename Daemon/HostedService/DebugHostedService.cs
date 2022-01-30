@@ -7,6 +7,7 @@ using Sanakan.DAL;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot;
+using Sanakan.DiscordBot.Abstractions;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -93,12 +94,12 @@ namespace Sanakan.Daemon.HostedService
                 var serviceProvider = serviceScope.ServiceProvider;
                 var userRepository = serviceProvider.GetRequiredService<IUserRepository>();
                 var guildConfigRepository = serviceProvider.GetRequiredService<IGuildConfigRepository>();
-                var guildConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
+                var guildConfig = await guildConfigRepository.GetCachedById(guild.Id);
                 var userRoleId = guildConfig.UserRoleId;
 
                 if (userRoleId.HasValue)
                 {
-                    var databaseUsers = await userRepository.GetCachedAllUsersAsync();
+                    var databaseUsers = await userRepository.GetAllCachedAsync();
 
                     var combined = users.Join(databaseUsers, pr => pr.Id, pr => pr.Id, (src, dest) => (src, dest));
 
@@ -147,7 +148,7 @@ namespace Sanakan.Daemon.HostedService
                 var serviceProvider = serviceScope.ServiceProvider;
                 var userRepository = serviceProvider.GetRequiredService<IUserRepository>();
 
-                var botUser = await userRepository.GetCachedFullUserAsync(bot.Id);
+                var botUser = await userRepository.GetCachedAsync(bot.Id);
                 Card? card;
 
                 switch (action)

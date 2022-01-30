@@ -30,7 +30,7 @@ namespace DiscordBot.ModulesTests.ModerationModuleTests
                 .Returns("test guild");
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildConfig.Id))
+                .Setup(pr => pr.GetCachedById(guildConfig.Id))
                 .ReturnsAsync(guildConfig);
 
             _moderatorServiceMock
@@ -59,7 +59,7 @@ namespace DiscordBot.ModulesTests.ModerationModuleTests
                 .Returns("test guild");
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildConfig.Id))
+                .Setup(pr => pr.GetCachedById(guildConfig.Id))
                 .ReturnsAsync(guildConfig);
 
             _moderatorServiceMock

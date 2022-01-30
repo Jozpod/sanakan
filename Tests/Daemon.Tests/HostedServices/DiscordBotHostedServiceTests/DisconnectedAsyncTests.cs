@@ -34,7 +34,7 @@ namespace Sanakan.Daemon.Tests.HostedServices.DiscordBotHostedServiceTests
                 .Returns(Task.CompletedTask)
                 .Verifiable();
 
-            _discordSocketClientAccessorMock.Raise(pr => pr.Disconnected += null, exception);
+            _discordClientAccessorMock.Raise(pr => pr.Disconnected += null, exception);
 
             _taskManagerMock.Verify();
             _discordClientMock.Verify();

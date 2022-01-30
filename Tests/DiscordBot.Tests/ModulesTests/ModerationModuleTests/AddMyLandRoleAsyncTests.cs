@@ -45,7 +45,7 @@ namespace DiscordBot.ModulesTests.ModerationModuleTests
                 .Returns("underling");
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetGuildConfigOrCreateAsync(guildId))
+                .Setup(pr => pr.GetOrCreateAsync(guildId))
                 .ReturnsAsync(guildOptions);
 
             _guildConfigRepositoryMock

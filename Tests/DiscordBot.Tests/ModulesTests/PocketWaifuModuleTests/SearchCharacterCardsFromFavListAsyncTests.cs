@@ -30,7 +30,7 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
                 .Returns("user mention");
 
             _userRepositoryMock
-                .Setup(pr => pr.GetCachedFullUserAsync(1ul))
+                .Setup(pr => pr.GetCachedAsync(1ul))
                 .ReturnsAsync(null as User);
 
             SetupSendMessage((message, embed) =>
@@ -74,7 +74,7 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
                 .Returns("user mention");
 
             _userRepositoryMock
-                .Setup(pr => pr.GetCachedFullUserAsync(user.Id))
+                .Setup(pr => pr.GetCachedAsync(user.Id))
                 .ReturnsAsync(user);
 
             _shindenClientMock

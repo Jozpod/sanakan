@@ -61,7 +61,7 @@ namespace DiscordBot.ModulesTests.ProfileModuleTests
                 .ReturnsAsync(user);
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetCachedGuildFullConfigAsync(user.Id))
+                .Setup(pr => pr.GetCachedById(user.Id))
                 .ReturnsAsync(guildOptions);
 
             _systemClockMock

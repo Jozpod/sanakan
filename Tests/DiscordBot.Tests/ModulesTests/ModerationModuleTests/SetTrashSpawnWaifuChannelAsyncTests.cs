@@ -32,7 +32,7 @@ namespace DiscordBot.ModulesTests.ModerationModuleTests
                 .Returns("channel name");
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetGuildConfigOrCreateAsync(guildOptions.Id))
+                .Setup(pr => pr.GetOrCreateAsync(guildOptions.Id))
                 .ReturnsAsync(guildOptions);
 
             _guildConfigRepositoryMock

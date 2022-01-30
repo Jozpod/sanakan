@@ -113,7 +113,7 @@ namespace Sanakan.DAL.Configuration
 
         public void Configure(EntityTypeBuilder<RarityExcluded> builder)
         {
-            builder.HasKey(e => e.Id);
+            builder.HasKey(pr => new { pr.Rarity, pr.BoosterPackId });
 
             builder.HasOne(e => e.BoosterPack)
                 .WithMany(p => p.RarityExcludedFromPack);

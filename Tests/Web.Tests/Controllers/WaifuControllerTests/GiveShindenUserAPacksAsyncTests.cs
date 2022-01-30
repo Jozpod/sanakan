@@ -48,7 +48,7 @@ namespace Sanakan.Web.Tests.Controllers.WaifuControllerTests
             };
 
             _userRepositoryMock
-                .Setup(pr => pr.GetCachedFullUserByShindenIdAsync(shindenUserId))
+                .Setup(pr => pr.GetCachedByShindenIdAsync(shindenUserId))
                 .ReturnsAsync(user);
 
             _blockingPriorityQueueMock

@@ -33,6 +33,10 @@ namespace DiscordBot.ModulesTests.DebugModuleTests
                 .Setup(pr => pr.Id)
                 .Returns(user.Id);
 
+            _userMock
+                .Setup(pr => pr.Mention)
+                .Returns("mention");
+
             _userRepositoryMock
                 .Setup(pr => pr.ExistsByDiscordIdAsync(user.Id))
                 .ReturnsAsync(false);
@@ -60,6 +64,10 @@ namespace DiscordBot.ModulesTests.DebugModuleTests
             guildUserMock
                 .Setup(pr => pr.Id)
                 .Returns(user.Id);
+
+            _userMock
+                .Setup(pr => pr.Mention)
+                .Returns("mention");
 
             _userRepositoryMock
                 .Setup(pr => pr.ExistsByDiscordIdAsync(user.Id))
@@ -94,6 +102,10 @@ namespace DiscordBot.ModulesTests.DebugModuleTests
             guildUserMock
                 .Setup(pr => pr.Id)
                 .Returns(user.Id);
+
+            _userMock
+                .Setup(pr => pr.Mention)
+                .Returns("mention");
 
             _userRepositoryMock
                 .Setup(pr => pr.ExistsByDiscordIdAsync(user.Id))

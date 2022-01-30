@@ -7,8 +7,11 @@ using Sanakan.Tests.Shared;
 using System;
 using System.Threading.Tasks;
 
-namespace Sanakan.Daemon.Tests.HostedServices.DiscordBotHostedServiceTests
+namespace DiscordBot.ServicesTests.AuditServiceTests
 {
+    /// <summary>
+    /// Defines tests for <see cref="AuditService.HandleUpdatedMessageAsync"/> event handler.
+    /// </summary>
     [TestClass]
     public class HandleUpdatedMessageAsyncTests : Base
     {
@@ -30,10 +33,8 @@ namespace Sanakan.Daemon.Tests.HostedServices.DiscordBotHostedServiceTests
         }
 
         [TestMethod]
-        public async Task Should_Exit_Not_User_Message()
+        public void Should_Exit_Not_User_Message()
         {
-            await StartAsync();
-
             var oldMessageMock = new Mock<IMessage>(MockBehavior.Strict);
             var cachedMessage = CacheableExtensions.CreateCacheable(oldMessageMock.Object, 1ul);
             var newMessageMock = new Mock<IMessage>(MockBehavior.Strict);
@@ -111,7 +112,7 @@ namespace Sanakan.Daemon.Tests.HostedServices.DiscordBotHostedServiceTests
                 .Returns(guildId);
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildId))
+                .Setup(pr => pr.GetCachedById(guildId))
                 .ReturnsAsync(guildOptions);
 
             guildMock
@@ -122,8 +123,7 @@ namespace Sanakan.Daemon.Tests.HostedServices.DiscordBotHostedServiceTests
 
             messageChannelMock.SetupSendMessageAsync(null);
 
-            _discordSocketClientAccessorMock.Raise(pr => pr.LoggedIn += null);
-            _discordSocketClientAccessorMock.Raise(pr => pr.MessageUpdated += null,
+            _discordClientAccessorMock.Raise(pr => pr.MessageUpdated += null,
                 cachedMessage,
                 newMessageMock.Object,
                 socketMessageChannelMock.Object);

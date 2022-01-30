@@ -42,11 +42,11 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
                 .Returns("target mention");
 
             _userRepositoryMock
-                .Setup(pr => pr.GetCachedFullUserAsync(sourceUser.Id))
+                .Setup(pr => pr.GetCachedAsync(sourceUser.Id))
                 .ReturnsAsync(sourceUser);
 
             _userRepositoryMock
-                .Setup(pr => pr.GetCachedFullUserAsync(destinationUser.Id))
+                .Setup(pr => pr.GetCachedAsync(destinationUser.Id))
                 .ReturnsAsync(destinationUser);
 
             _systemClockMock
@@ -91,11 +91,11 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
                 .Returns("target mention");
 
             _userRepositoryMock
-                .Setup(pr => pr.GetCachedFullUserAsync(sourceUser.Id))
+                .Setup(pr => pr.GetCachedAsync(sourceUser.Id))
                 .ReturnsAsync(sourceUser);
 
             _userRepositoryMock
-                .Setup(pr => pr.GetCachedFullUserAsync(destinationUser.Id))
+                .Setup(pr => pr.GetCachedAsync(destinationUser.Id))
                 .ReturnsAsync(destinationUser);
 
             _systemClockMock

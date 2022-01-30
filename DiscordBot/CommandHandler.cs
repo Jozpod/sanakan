@@ -7,6 +7,7 @@ using Sanakan.Common;
 using Sanakan.Common.Configuration;
 using Sanakan.DAL.Models.Analytics;
 using Sanakan.DAL.Repositories.Abstractions;
+using Sanakan.DiscordBot.Abstractions;
 using Sanakan.DiscordBot.Abstractions.Extensions;
 using Sanakan.DiscordBot.Abstractions.Models;
 using Sanakan.DiscordBot.Builder;
@@ -114,7 +115,7 @@ namespace Sanakan.DiscordBot
                 var serviceProvider = serviceScope.ServiceProvider;
                 var guildConfigRepository = serviceProvider.GetRequiredService<IGuildConfigRepository>();
                 var commandsAnalyticsRepository = serviceProvider.GetRequiredService<ICommandsAnalyticsRepository>();
-                var guildConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(guildId);
+                var guildConfig = await guildConfigRepository.GetCachedById(guildId);
 
                 if (guildConfig?.Prefix != null)
                 {
@@ -130,7 +131,7 @@ namespace Sanakan.DiscordBot
 
                 var userId = guildUser.Id;
                 var isDev = config.AllowedToDebug.Any(x => x == userId);
-                var isOnBlacklist = config.BlacklistedGuilds.Any(x => x == guild.Id);
+                var isOnBlacklist = config.BlacklistedGuilds.Contains(guild.Id);
 
                 if (isOnBlacklist && !isDev)
                 {

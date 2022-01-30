@@ -20,8 +20,8 @@ namespace Sanakan.Daemon.Tests.HostedServices.ChaosHostedServiceTests
         {
             var messageMock = new Mock<IMessage>(MockBehavior.Strict);
 
-            _discordSocketClientAccessorMock.Raise(pr => pr.LoggedIn += null);
-            _discordSocketClientAccessorMock.Raise(pr => pr.MessageReceived += null, messageMock.Object);
+            _discordClientAccessorMock.Raise(pr => pr.LoggedIn += null);
+            _discordClientAccessorMock.Raise(pr => pr.MessageReceived += null, messageMock.Object);
         }
 
         [TestMethod]
@@ -38,8 +38,8 @@ namespace Sanakan.Daemon.Tests.HostedServices.ChaosHostedServiceTests
                 .Setup(pr => pr.IsBot)
                 .Returns(true);
 
-            _discordSocketClientAccessorMock.Raise(pr => pr.LoggedIn += null);
-            _discordSocketClientAccessorMock.Raise(pr => pr.MessageReceived += null, userMessageMock.Object);
+            _discordClientAccessorMock.Raise(pr => pr.LoggedIn += null);
+            _discordClientAccessorMock.Raise(pr => pr.MessageReceived += null, userMessageMock.Object);
 
             userMock.Verify();
         }
@@ -59,8 +59,8 @@ namespace Sanakan.Daemon.Tests.HostedServices.ChaosHostedServiceTests
                 .Returns(false)
                 .Verifiable();
 
-            _discordSocketClientAccessorMock.Raise(pr => pr.LoggedIn += null);
-            _discordSocketClientAccessorMock.Raise(pr => pr.MessageReceived += null, userMessageMock.Object);
+            _discordClientAccessorMock.Raise(pr => pr.LoggedIn += null);
+            _discordClientAccessorMock.Raise(pr => pr.MessageReceived += null, userMessageMock.Object);
         }
 
         [TestMethod]
@@ -94,8 +94,8 @@ namespace Sanakan.Daemon.Tests.HostedServices.ChaosHostedServiceTests
 
             _discordConfiguration.BlacklistedGuilds.Add(1ul);
 
-            _discordSocketClientAccessorMock.Raise(pr => pr.LoggedIn += null);
-            _discordSocketClientAccessorMock.Raise(pr => pr.MessageReceived += null, userMessageMock.Object);
+            _discordClientAccessorMock.Raise(pr => pr.LoggedIn += null);
+            _discordClientAccessorMock.Raise(pr => pr.MessageReceived += null, userMessageMock.Object);
 
             guildUserMock.Verify();
         }
@@ -145,7 +145,7 @@ namespace Sanakan.Daemon.Tests.HostedServices.ChaosHostedServiceTests
                 .Verifiable();
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildId))
+                .Setup(pr => pr.GetCachedById(guildId))
                 .ReturnsAsync(guildConfig)
                 .Verifiable();
 
@@ -169,8 +169,8 @@ namespace Sanakan.Daemon.Tests.HostedServices.ChaosHostedServiceTests
                 .Returns(Task.CompletedTask)
                 .Verifiable();
 
-            _discordSocketClientAccessorMock.Raise(pr => pr.LoggedIn += null);
-            _discordSocketClientAccessorMock.Raise(pr => pr.MessageReceived += null, userMessageMock.Object);
+            _discordClientAccessorMock.Raise(pr => pr.LoggedIn += null);
+            _discordClientAccessorMock.Raise(pr => pr.MessageReceived += null, userMessageMock.Object);
 
             guildUserMock.Verify();
             guildMock.Verify();

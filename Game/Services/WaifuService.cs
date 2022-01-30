@@ -1477,16 +1477,16 @@ namespace Sanakan.Game.Services
         {
             var items = new Dictionary<string, int>();
             var gameDeck = user.GameDeck;
-            var duration = GetRealTimeOnExpedition(card, gameDeck.Karma);
+            var (normalizedDuration, actualDuration) = GetRealTimeOnExpedition(card, gameDeck.Karma);
             var baseExp = GetBaseExpPerMinuteFromExpedition(card.Expedition, card.Rarity);
             var baseItemsCnt = GetBaseItemsPerMinuteFromExpedition(card.Expedition, card.Rarity);
-            var multiplier = (duration.Item2 < _hour) ? ((duration.Item2 < _halfAnHour) ? 5d : 3d) : 1d;
+            var multiplier = (actualDuration < _hour) ? ((actualDuration < _halfAnHour) ? 5d : 3d) : 1d;
 
-            var totalExperience = GetProgressiveValueFromExpedition(baseExp, duration.Item1.TotalMinutes, 15d);
-            var totalItemsCount = (int)GetProgressiveValueFromExpedition(baseItemsCnt, duration.Item1.TotalMinutes, 25d);
+            var totalExperience = GetProgressiveValueFromExpedition(baseExp, normalizedDuration.TotalMinutes, 15d);
+            var totalItemsCount = (int)GetProgressiveValueFromExpedition(baseItemsCnt, normalizedDuration.TotalMinutes, 25d);
 
-            var karmaCost = card.GetKarmaCostInExpeditionPerMinute() * duration.Item1.TotalMinutes;
-            var affectionCost = card.GetCostOfExpeditionPerMinute() * duration.Item1.TotalMinutes * multiplier;
+            var karmaCost = card.GetKarmaCostInExpeditionPerMinute() * normalizedDuration.TotalMinutes;
+            var affectionCost = card.GetCostOfExpeditionPerMinute() * normalizedDuration.TotalMinutes * multiplier;
 
             if (card.Curse == CardCurse.LoweredExperience)
             {
@@ -1495,15 +1495,15 @@ namespace Sanakan.Game.Services
 
             var expeditionSummary = new StringBuilder();
             var allowItems = true;
-            if (duration.Item2 < _halfAnHour)
+            if (actualDuration < _halfAnHour)
             {
                 expeditionSummary.Append("Wyprawa? Chyba po bułki do sklepu.\n\n");
                 affectionCost += 3.3;
             }
 
-            if (CheckEventInExpedition(card.Expedition, (duration.Item1.TotalMinutes, duration.Item2.TotalMinutes)))
+            if (CheckEventInExpedition(card.Expedition, (normalizedDuration.TotalMinutes, actualDuration.TotalMinutes)))
             {
-                var @event = _eventsService.RandomizeEvent(card.Expedition, (duration.Item1.TotalMinutes, duration.Item2.TotalMinutes));
+                var @event = _eventsService.RandomizeEvent(card.Expedition, (normalizedDuration.TotalMinutes, actualDuration.TotalMinutes));
                 allowItems = _eventsService.ExecuteEvent(
                     @event,
                     user,
@@ -1519,18 +1519,18 @@ namespace Sanakan.Game.Services
                 }
             }
 
-            if (duration.Item1 <= TimeSpan.FromMinutes(3))
+            if (normalizedDuration <= TimeSpan.FromMinutes(3))
             {
                 totalItemsCount = 0;
                 totalExperience /= 2;
             }
 
-            if (duration.Item1 <= TimeSpan.FromMinutes(1) || gameDeck.CanCreateDemon())
+            if (normalizedDuration <= TimeSpan.FromMinutes(1) || gameDeck.CanCreateDemon())
             {
                 karmaCost /= 2.5;
             }
 
-            if (duration.Item1 >= TimeSpan.FromHours(36) || gameDeck.CanCreateAngel())
+            if (normalizedDuration >= TimeSpan.FromHours(36) || gameDeck.CanCreateAngel())
             {
                 karmaCost *= 2.5;
             }
@@ -1582,7 +1582,7 @@ namespace Sanakan.Game.Services
             {
                 expeditionSummary.AppendFormat(
                     "\n\nRT: {0:F} E: {1:F} AI: {2:F} A: {3:F} K: {4:F} MI: {5}",
-                    duration.Item1,
+                    normalizedDuration,
                     totalExperience,
                     minAff,
                     affectionCost,
@@ -1796,51 +1796,35 @@ namespace Sanakan.Game.Services
 
         private bool CheckEventInExpedition(ExpeditionCardType expedition, (double, double) duration)
         {
-            switch (expedition)
+            return expedition switch
             {
-                case ExpeditionCardType.NormalItemWithExp:
-                    return _randomNumberGenerator.TakeATry(10);
-
-                case ExpeditionCardType.ExtremeItemWithExp:
-                    if (duration.Item1 > 60 || duration.Item2 > 600)
-                    {
-                        return true;
-                    }
-
-                    return !_randomNumberGenerator.TakeATry(5);
-
-                case ExpeditionCardType.LightItemWithExp:
-                case ExpeditionCardType.DarkItemWithExp:
-                    return _randomNumberGenerator.TakeATry(10);
-
-                case ExpeditionCardType.DarkItems:
-                case ExpeditionCardType.LightItems:
-                case ExpeditionCardType.LightExp:
-                case ExpeditionCardType.DarkExp:
-                    return _randomNumberGenerator.TakeATry(5);
-
-                case ExpeditionCardType.UltimateMedium:
-                    return _randomNumberGenerator.TakeATry(6);
-
-                case ExpeditionCardType.UltimateHard:
-                    return _randomNumberGenerator.TakeATry(2);
-
-                case ExpeditionCardType.UltimateHardcore:
-                    return _randomNumberGenerator.TakeATry(4);
-
-                default:
-                case ExpeditionCardType.UltimateEasy:
-                    return false;
-            }
+                ExpeditionCardType.NormalItemWithExp => _randomNumberGenerator.TakeATry(10),
+                ExpeditionCardType.ExtremeItemWithExp => 
+                    duration.Item1 > 60
+                    || duration.Item2 > 600
+                    || !_randomNumberGenerator.TakeATry(5),
+                ExpeditionCardType.LightItemWithExp
+                    or ExpeditionCardType.DarkItemWithExp => _randomNumberGenerator.TakeATry(10),
+                ExpeditionCardType.DarkItems
+                    or ExpeditionCardType.LightItems
+                    or ExpeditionCardType.LightExp
+                    or ExpeditionCardType.DarkExp => _randomNumberGenerator.TakeATry(5),
+                ExpeditionCardType.UltimateMedium => _randomNumberGenerator.TakeATry(6),
+                ExpeditionCardType.UltimateHard => _randomNumberGenerator.TakeATry(2),
+                ExpeditionCardType.UltimateHardcore => _randomNumberGenerator.TakeATry(4),
+                _ => false,
+            };
         }
 
-        private async Task<string> GetCardUrlIfExistAsync(Card card, bool defaultStr = false, bool force = false)
+        private async Task<string> GetCardUrlIfExistAsync(Card card, bool defaultStr = false, bool forceCreateCard = false)
         {
             var imageUrl = null as string;
             var imageLocation = $"{Paths.Cards}/{card.Id}.png";
             var sImageLocation = $"{Paths.CardsMiniatures}/{card.Id}.png";
 
-            if (!_fileSystem.Exists(imageLocation) || !_fileSystem.Exists(sImageLocation) || force)
+            if (!_fileSystem.Exists(imageLocation) 
+                || !_fileSystem.Exists(sImageLocation) 
+                || forceCreateCard)
             {
                 if (card.Id != 0)
                 {

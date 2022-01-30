@@ -21,7 +21,7 @@ namespace Sanakan.DAL.Models
         /// <summary>
         /// The shinden character identifier.
         /// </summary>
-        /// <remarks>Link to character in shinden: https://shinden.pl/character/TitleId</remarks>
+        /// <remarks>Link to character in shinden: https://shinden.pl/character/TitleId.</remarks>
         public ulong? TitleId { get; set; }
 
         public uint CardCount { get; set; }

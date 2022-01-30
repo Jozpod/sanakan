@@ -66,7 +66,7 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
                 .ReturnsAsync(guildUserMock.Object);
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildOptions.Id))
+                .Setup(pr => pr.GetCachedById(guildOptions.Id))
                 .ReturnsAsync(guildOptions);
 
             SetupSendMessage((message, embed) =>
@@ -110,7 +110,7 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
                 .ReturnsAsync(guildUserMock.Object);
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildOptions.Id))
+                .Setup(pr => pr.GetCachedById(guildOptions.Id))
                 .ReturnsAsync(guildOptions);
 
             _guildMock

@@ -2,8 +2,11 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Threading.Tasks;
 
-namespace Sanakan.Daemon.Tests.HostedServices.DiscordBotHostedServiceTests
+namespace DiscordBot.ServicesTests.AuditServiceTests
 {
+    /// <summary>
+    /// Defines tests for <see cref="AuditService.onLog"/> event handler.
+    /// </summary>
     [TestClass]
     public class onLogTests : Base
     {
@@ -14,12 +17,11 @@ namespace Sanakan.Daemon.Tests.HostedServices.DiscordBotHostedServiceTests
         [DataRow(LogSeverity.Info)]
         [DataRow(LogSeverity.Verbose)]
         [DataRow(LogSeverity.Warning)]
-        public async Task Should_Log_Message(LogSeverity logSeverity)
+        public void Should_Log_Message(LogSeverity logSeverity)
         {
-            await StartAsync();
             var logMessage = new LogMessage(logSeverity, "source", "message");
 
-            _discordSocketClientAccessorMock.Raise(pr => pr.Log += null, logMessage);
+            _discordClientAccessorMock.Raise(pr => pr.Log += null, logMessage);
         }
 
     }

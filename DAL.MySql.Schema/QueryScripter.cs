@@ -77,9 +77,9 @@ namespace Sanakan.DAL.MySql.Schema
             await Utils.StubSelectAsync(connection);
             executed.Add($"{nameof(IUserRepository)}_{nameof(IUserRepository.GetByShindenIdAsync)}");
 
-            await cardRepository.GetCardsByCharacterIdAsync(1ul);
+            await cardRepository.GetByCharacterIdAsync(1ul);
             await Utils.StubSelectAsync(connection);
-            executed.Add($"{nameof(ICardRepository)}_{nameof(ICardRepository.GetCardsByCharacterIdAsync)}");
+            executed.Add($"{nameof(ICardRepository)}_{nameof(ICardRepository.GetByCharacterIdAsync)}");
 
             await cardRepository.GetByCharactersAndNotInUserGameDeckAsync(1ul, new[] { 1ul });
             await Utils.StubSelectAsync(connection);
@@ -97,9 +97,9 @@ namespace Sanakan.DAL.MySql.Schema
             await Utils.StubSelectAsync(connection);
             executed.Add($"{nameof(IGameDeckRepository)}_{nameof(IGameDeckRepository.GetCachedPlayersForPVP)}");
 
-            await guildConfigRepository.GetCachedGuildFullConfigAsync(1ul);
+            await guildConfigRepository.GetCachedById(1ul);
             await Utils.StubSelectAsync(connection);
-            executed.Add($"{nameof(IGuildConfigRepository)}_{nameof(IGuildConfigRepository.GetCachedGuildFullConfigAsync)}");
+            executed.Add($"{nameof(IGuildConfigRepository)}_{nameof(IGuildConfigRepository.GetCachedById)}");
 
             await penaltyInfoRepository.GetByGuildIdAsync(1ul);
             await Utils.StubSelectAsync(connection);

@@ -8,7 +8,7 @@ namespace Sanakan.DAL.Repositories.Abstractions
     {
         Task<List<GameDeck>> GetCachedPlayersForPVP(ulong discordUserId, double minDeckPower, double maxDeckPower);
 
-        Task<GameDeck?> GetCachedUserGameDeckAsync(ulong userId);
+        Task<GameDeck?> GetCachedByUserIdAsync(ulong userId);
 
         Task<List<GameDeck>> GetByCardIdAndCharacterAsync(ulong cardId, ulong characterId);
 

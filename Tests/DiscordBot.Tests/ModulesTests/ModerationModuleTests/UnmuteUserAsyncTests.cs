@@ -49,7 +49,7 @@ namespace DiscordBot.ModulesTests.ModerationModuleTests
                 .Returns(guildConfig.Id);
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildConfig.Id))
+                .Setup(pr => pr.GetCachedById(guildConfig.Id))
                 .ReturnsAsync(guildConfig);
 
             _moderatorServiceMock

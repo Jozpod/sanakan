@@ -29,7 +29,7 @@ namespace DiscordBot.ModulesTests.HelperModuleTests
                 .Returns(guildid);
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildid))
+                .Setup(pr => pr.GetCachedById(guildid))
                 .ReturnsAsync(null as GuildOptions);
 
             SetupSendMessage();
@@ -66,7 +66,7 @@ namespace DiscordBot.ModulesTests.HelperModuleTests
                 .ReturnsAsync(guildChannelMock.Object);
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildOption.Id))
+                .Setup(pr => pr.GetCachedById(guildOption.Id))
                 .ReturnsAsync(guildOption);
 
             _contextMessageMock
@@ -200,7 +200,7 @@ namespace DiscordBot.ModulesTests.HelperModuleTests
                 .ReturnsAsync(guildChannelMock.Object);
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildOption.Id))
+                .Setup(pr => pr.GetCachedById(guildOption.Id))
                 .ReturnsAsync(guildOption);
 
             _contextMessageMock

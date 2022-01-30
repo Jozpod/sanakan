@@ -80,11 +80,13 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks(""), RequireCommandChannel]
         public async Task GiveDailyScAsync()
         {
-            var databaseUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
-            var mention = Context.User.Mention;
+            var user = Context.User;
+            var databaseUser = await _userRepository.GetUserOrCreateAsync(user.Id);
+            var mention = user.Mention;
             var timeStatuses = databaseUser.TimeStatuses;
             var timeStatus = timeStatuses.FirstOrDefault(x => x.Type == StatusType.Daily);
             var statusType = StatusType.Daily;
+            Embed embed;
 
             if (timeStatus == null)
             {
@@ -98,9 +100,9 @@ namespace Sanakan.DiscordBot.Modules
             {
                 var remainingTime = timeStatus.RemainingTime(utcNow);
                 var remainingTimeFriendly = remainingTime.Humanize(4);
-                var content = $"{mention} następne drobne możesz otrzymać dopiero za {remainingTimeFriendly}!"
+                embed = $"{mention} następne drobne możesz otrzymać dopiero za {remainingTimeFriendly}!"
                     .ToEmbedMessage(EMType.Error).Build();
-                await ReplyAsync(embed: content);
+                await ReplyAsync(embed: embed);
                 return;
             }
 
@@ -121,7 +123,8 @@ namespace Sanakan.DiscordBot.Modules
 
             _cacheManager.ExpireTag(CacheKeys.User(databaseUser.Id));
 
-            await ReplyAsync(embed: $"{mention} łap drobne na waciki!".ToEmbedMessage(EMType.Success).Build());
+            embed = $"{mention} łap drobne na waciki!".ToEmbedMessage(EMType.Success).Build();
+            await ReplyAsync(embed: embed);
         }
 
         [Command("chce muta", RunMode = RunMode.Async)]
@@ -139,7 +142,7 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            var config = await _guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
+            var config = await _guildConfigRepository.GetCachedById(guild.Id);
 
             if (config == null)
             {
@@ -191,9 +194,11 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks(""), RequireCommandChannel]
         public async Task GiveHourlyScAsync()
         {
-            var databaseUser = await _userRepository.GetUserOrCreateAsync(Context.User.Id);
+            var user = Context.User;
+            var databaseUser = await _userRepository.GetUserOrCreateAsync(user.Id);
             var hourly = databaseUser.TimeStatuses.FirstOrDefault(x => x.Type == StatusType.Hourly);
-            var mention = Context.User.Mention;
+            var mention = user.Mention;
+            Embed embed;
 
             if (hourly == null)
             {
@@ -207,8 +212,9 @@ namespace Sanakan.DiscordBot.Modules
             {
                 var remainingTime = hourly.RemainingTime(utcNow);
                 var remainingTimeFriendly = remainingTime.Humanize(4);
-                await ReplyAsync(embed: $"{mention} następne zaskórniaki możesz otrzymać dopiero za {remainingTime}"
-                    .ToEmbedMessage(EMType.Error).Build());
+                embed = $"{mention} następne zaskórniaki możesz otrzymać dopiero za {remainingTime}"
+                    .ToEmbedMessage(EMType.Error).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
@@ -229,7 +235,8 @@ namespace Sanakan.DiscordBot.Modules
 
             _cacheManager.ExpireTag(CacheKeys.User(databaseUser.Id), CacheKeys.Users);
 
-            await ReplyAsync(embed: $"{mention} łap piątaka!".ToEmbedMessage(EMType.Success).Build());
+            embed = $"{mention} łap piątaka!".ToEmbedMessage(EMType.Success).Build();
+            await ReplyAsync(embed: embed);
         }
 
         [Command("wylosuj", RunMode = RunMode.Async)]
@@ -239,9 +246,12 @@ namespace Sanakan.DiscordBot.Modules
         public async Task GetOneFromManyAsync(
             [Summary("opcje z których bot losuje")] params string[] options)
         {
+            Embed embed;
+
             if (options.Count() < 2)
             {
-                await ReplyAsync(embed: "Podano zbyt mało opcji do wylosowania.".ToEmbedMessage(EMType.Error).Build());
+                embed = "Podano zbyt mało opcji do wylosowania.".ToEmbedMessage(EMType.Error).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
@@ -250,11 +260,11 @@ namespace Sanakan.DiscordBot.Modules
             var delay = _randomNumberGenerator.GetRandomValue(100, 500);
             await _taskManager.Delay(TimeSpan.FromMilliseconds(delay));
 
-            var content = $"{Emotes.PinkArrow} {_randomNumberGenerator.GetOneRandomFrom(allOptions)}"
+            embed = $"{Emotes.PinkArrow} {_randomNumberGenerator.GetOneRandomFrom(allOptions)}"
                 .ToEmbedMessage(EMType.Success).WithAuthor(new EmbedAuthorBuilder()
                 .WithUser(Context.User))
                 .Build();
-            await ReplyAsync(embed: content);
+            await ReplyAsync(embed: embed);
         }
 
         [Command("rzut")]
@@ -266,10 +276,12 @@ namespace Sanakan.DiscordBot.Modules
             [Summary("ilość SC")] int amount)
         {
             var mention = Context.User.Mention;
+            Embed embed;
 
             if (amount <= 0)
             {
-                await ReplyAsync(embed: $"{mention} na minusie?!".ToEmbedMessage(EMType.Error).Build());
+                embed = $"{mention} na minusie?!".ToEmbedMessage(EMType.Error).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
@@ -277,24 +289,31 @@ namespace Sanakan.DiscordBot.Modules
 
             if (databaseUser.ScCount < amount)
             {
-                await ReplyAsync(embed: $"{mention} nie posiadasz wystarczającej liczby SC!".ToEmbedMessage(EMType.Error).Build());
+                embed = $"{mention} nie posiadasz wystarczającej liczby SC!".ToEmbedMessage(EMType.Error).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
             databaseUser.ScCount -= amount;
             var thrown = (CoinSide)_randomNumberGenerator.GetRandomValue(2);
-            var embed = $"{mention} pudło! Obecnie posiadasz {databaseUser.ScCount} SC.".ToEmbedMessage(EMType.Error);
+            embed = $"{mention} pudło! Obecnie posiadasz {databaseUser.ScCount} SC.".ToEmbedMessage(EMType.Error).Build();
 
             var stats = databaseUser.Stats;
-            stats.Tail += (thrown == CoinSide.Tail) ? 1 : 0;
-            stats.Head += (thrown == CoinSide.Head) ? 1 : 0;
+            if(thrown == CoinSide.Tail)
+            {
+                stats.Tail++;
+            }
+            else
+            {
+                stats.Head++;
+            }
 
             if (thrown == coinSide)
             {
                 ++stats.Hit;
                 databaseUser.ScCount += amount * 2;
                 stats.IncomeInSc += amount;
-                embed = $"{mention} trafiony zatopiony! Obecnie posiadasz {databaseUser.ScCount} SC.".ToEmbedMessage(EMType.Success);
+                embed = $"{mention} trafiony zatopiony! Obecnie posiadasz {databaseUser.ScCount} SC.".ToEmbedMessage(EMType.Success).Build();
             }
             else
             {
@@ -307,7 +326,7 @@ namespace Sanakan.DiscordBot.Modules
 
             _cacheManager.ExpireTag(CacheKeys.User(databaseUser.Id), CacheKeys.Users);
 
-            await ReplyAsync(embed: embed.Build());
+            await ReplyAsync(embed: embed);
             var filePath = string.Format(Paths.CoinPicture, (int)thrown);
             using var stream = _fileSystem.OpenRead(filePath);
             await Context.Channel.SendFileAsync(stream, "coin.png");
@@ -322,6 +341,7 @@ namespace Sanakan.DiscordBot.Modules
             [Summary("wartość nastawy")] string value = "info")
         {
             var user = Context.User;
+            Embed embed;
 
             if (setting == SlotMachineSetting.Info)
             {
@@ -333,7 +353,8 @@ namespace Sanakan.DiscordBot.Modules
             var databaseUser = await _userRepository.GetUserOrCreateAsync(user.Id);
             if (!databaseUser!.ApplySlotMachineSetting(setting, value))
             {
-                await ReplyAsync(embed: $"Podano niewłaściwą wartość parametru!".ToEmbedMessage(EMType.Error).Build());
+                embed = $"Podano niewłaściwą wartość parametru!".ToEmbedMessage(EMType.Error).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
@@ -341,7 +362,8 @@ namespace Sanakan.DiscordBot.Modules
 
             _cacheManager.ExpireTag(CacheKeys.User(databaseUser.Id), CacheKeys.Users);
 
-            await ReplyAsync(embed: $"{user.Mention} zmienił nastawy automatu.".ToEmbedMessage(EMType.Success).Build());
+            embed = $"{user.Mention} zmienił nastawy automatu.".ToEmbedMessage(EMType.Success).Build();
+            await ReplyAsync(embed: embed);
         }
 
         [Command("automat")]
@@ -425,12 +447,15 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("dajesz datek innemu graczowi w postaci SC obarczony 40% podatkiem")]
         [Remarks("Karna 2000"), RequireCommandChannel]
         public async Task GiveUserScAsync(
-            [Summary("użytkownik")] IGuildUser user,
+            [Summary(ParameterInfo.User)] IGuildUser user,
             [Summary("liczba SC (min. 1000)")] uint value)
         {
+            Embed embed;
+
             if (value < 1000)
             {
-                await ReplyAsync(embed: "Nie można podarować mniej niż 1000 SC.".ToEmbedMessage(EMType.Error).Build());
+                embed = "Nie można podarować mniej niż 1000 SC.".ToEmbedMessage(EMType.Error).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
@@ -440,7 +465,8 @@ namespace Sanakan.DiscordBot.Modules
 
             if (user.Id == invokingUserId)
             {
-                await ReplyAsync(embed: "Coś tutaj nie gra.".ToEmbedMessage(EMType.Error).Build());
+                embed = "Coś tutaj nie gra.".ToEmbedMessage(EMType.Error).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
@@ -455,7 +481,8 @@ namespace Sanakan.DiscordBot.Modules
 
             if (thisUser.ScCount < value)
             {
-                await ReplyAsync(embed: $"{mention} nie masz wystarczającej ilości SC.".ToEmbedMessage(EMType.Error).Build());
+                embed = $"{mention} nie masz wystarczającej ilości SC.".ToEmbedMessage(EMType.Error).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
@@ -468,7 +495,8 @@ namespace Sanakan.DiscordBot.Modules
 
             _cacheManager.ExpireTag(CacheKeys.User(thisUser.Id), CacheKeys.Users, CacheKeys.User(targetUser.Id));
 
-            await ReplyAsync(embed: $"{mention} podarował {user.Mention} {newScCnt} SC".ToEmbedMessage(EMType.Success).Build());
+            embed = $"{mention} podarował {user.Mention} {newScCnt} SC".ToEmbedMessage(EMType.Success).Build();
+            await ReplyAsync(embed: embed);
         }
 
         [Command("zagadka", RunMode = RunMode.Async)]

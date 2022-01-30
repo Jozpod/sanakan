@@ -13,7 +13,7 @@ namespace Sanakan.DAL.Tests
         public async Task Should_Return_Cached_Guild_Config_By_Id()
         {
             var repository = ServiceProvider.GetRequiredService<IGuildConfigRepository>();
-            var actual = await repository.GetCachedGuildFullConfigAsync(1);
+            var actual = await repository.GetCachedById(1);
             actual.Should().NotBeNull();
         }
     }

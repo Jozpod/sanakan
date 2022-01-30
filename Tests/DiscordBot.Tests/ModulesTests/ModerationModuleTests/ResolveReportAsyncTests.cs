@@ -31,7 +31,7 @@ namespace DiscordBot.ModulesTests.ModerationModuleTests
                 .Returns(guildConfig.Id);
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetGuildConfigOrCreateAsync(guildConfig.Id))
+                .Setup(pr => pr.GetOrCreateAsync(guildConfig.Id))
                 .ReturnsAsync(guildConfig);
    
             SetupSendMessage((message, embed) =>
@@ -59,7 +59,7 @@ namespace DiscordBot.ModulesTests.ModerationModuleTests
                 .Returns(guildConfig.Id);
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetGuildConfigOrCreateAsync(guildConfig.Id))
+                .Setup(pr => pr.GetOrCreateAsync(guildConfig.Id))
                 .ReturnsAsync(guildConfig);
 
             SetupSendMessage((message, embed) =>
@@ -98,7 +98,7 @@ namespace DiscordBot.ModulesTests.ModerationModuleTests
                 .Returns(guildConfig.Id);
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetGuildConfigOrCreateAsync(guildConfig.Id))
+                .Setup(pr => pr.GetOrCreateAsync(guildConfig.Id))
                 .ReturnsAsync(guildConfig);
 
             _guildUserMock
@@ -186,7 +186,7 @@ namespace DiscordBot.ModulesTests.ModerationModuleTests
                 .Returns(guildConfig.Id);
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetGuildConfigOrCreateAsync(guildConfig.Id))
+                .Setup(pr => pr.GetOrCreateAsync(guildConfig.Id))
                 .ReturnsAsync(guildConfig);
 
             _guildUserMock
@@ -295,7 +295,7 @@ namespace DiscordBot.ModulesTests.ModerationModuleTests
                 .Returns(guildConfig.Id);
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetGuildConfigOrCreateAsync(guildConfig.Id))
+                .Setup(pr => pr.GetOrCreateAsync(guildConfig.Id))
                 .ReturnsAsync(guildConfig);
 
             _guildUserMock
@@ -383,7 +383,7 @@ namespace DiscordBot.ModulesTests.ModerationModuleTests
                 .Returns(guildConfig.Id);
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetGuildConfigOrCreateAsync(guildConfig.Id))
+                .Setup(pr => pr.GetOrCreateAsync(guildConfig.Id))
                 .ReturnsAsync(guildConfig);
 
             _guildUserMock

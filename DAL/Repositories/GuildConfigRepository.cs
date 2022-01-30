@@ -20,7 +20,7 @@ namespace Sanakan.DAL.Repositories
             _cacheManager = cacheManager;
         }
 
-        public async Task<GuildOptions?> GetCachedGuildFullConfigAsync(ulong guildId)
+        public async Task<GuildOptions?> GetCachedById(ulong guildId)
         {
             var key = CacheKeys.GuildConfig(guildId);
 
@@ -31,48 +31,14 @@ namespace Sanakan.DAL.Repositories
                 return cacheResult.Value;
             }
 
-            var result = await _dbContext
-                .Guilds
-                .AsQueryable()
-                .Include(x => x.IgnoredChannels)
-                .Include(x => x.ChannelsWithoutExperience)
-                .Include(x => x.ChannelsWithoutSupervision)
-                .Include(x => x.CommandChannels)
-                .Include(x => x.SelfRoles)
-                .Include(x => x.Lands)
-                .Include(x => x.ModeratorRoles)
-                .Include(x => x.RolesPerLevel)
-                .Include(x => x.WaifuConfig)
-                    .ThenInclude(x => x.CommandChannels)
-                    .Include(x => x.Raports)
-                .Include(x => x.WaifuConfig)
-                    .ThenInclude(x => x.FightChannels)
-                .AsNoTracking()
-                .AsSplitQuery()
-                .FirstOrDefaultAsync(x => x.Id == guildId);
+            var result = await GetByIdAsync(guildId);
 
             return result;
         }
 
-        public async Task<GuildOptions?> GetGuildConfigOrCreateAsync(ulong guildId)
+        public async Task<GuildOptions?> GetOrCreateAsync(ulong guildId)
         {
-            var config = await _dbContext.Guilds
-                .AsQueryable()
-                .Include(x => x.IgnoredChannels)
-                .Include(x => x.ChannelsWithoutExperience)
-                .Include(x => x.ChannelsWithoutSupervision)
-                .Include(x => x.CommandChannels)
-                .Include(x => x.SelfRoles)
-                .Include(x => x.Lands)
-                .Include(x => x.ModeratorRoles)
-                .Include(x => x.RolesPerLevel)
-                .Include(x => x.WaifuConfig)
-                    .ThenInclude(x => x.CommandChannels)
-                .Include(x => x.Raports)
-                .Include(x => x.WaifuConfig)
-                    .ThenInclude(x => x.FightChannels)
-                .AsSplitQuery()
-                .FirstOrDefaultAsync(x => x.Id == guildId);
+            var config = await GetByIdAsync(guildId);
 
             if (config == null)
             {
@@ -82,6 +48,27 @@ namespace Sanakan.DAL.Repositories
             }
 
             return config;
+        }
+
+        private Task<GuildOptions>? GetByIdAsync(ulong guildId)
+        {
+            return _dbSet
+              .Include(x => x.IgnoredChannels)
+              .Include(x => x.ChannelsWithoutExperience)
+              .Include(x => x.ChannelsWithoutSupervision)
+              .Include(x => x.CommandChannels)
+              .Include(x => x.SelfRoles)
+              .Include(x => x.Lands)
+              .Include(x => x.ModeratorRoles)
+              .Include(x => x.RolesPerLevel)
+              .Include(x => x.WaifuConfig)
+                  .ThenInclude(x => x.CommandChannels)
+                  .Include(x => x.Raports)
+              .Include(x => x.WaifuConfig)
+                  .ThenInclude(x => x.FightChannels)
+              .AsNoTracking()
+              .AsSplitQuery()
+              .FirstOrDefaultAsync(x => x.Id == guildId)!;
         }
     }
 }

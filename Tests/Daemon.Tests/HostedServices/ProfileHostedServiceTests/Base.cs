@@ -10,6 +10,7 @@ using Sanakan.Common.Configuration;
 using Sanakan.Daemon.HostedService;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot;
+using Sanakan.DiscordBot.Abstractions;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,7 +23,7 @@ namespace Sanakan.Daemon.Tests.HostedServices.ProfileHostedServiceTests
         protected readonly BackgroundService  _service;
         protected readonly Mock<IOptionsMonitor<DaemonsConfiguration>> _daemonsConfigurationMock = new(MockBehavior.Strict);
         protected readonly Mock<ISystemClock> _systemClockMock = new(MockBehavior.Strict);
-        protected readonly Mock<IDiscordClientAccessor> _discordSocketClientAccessorMock = new(MockBehavior.Strict);
+        protected readonly Mock<IDiscordClientAccessor> _discordClientAccessorMock = new(MockBehavior.Strict);
         protected readonly Mock<IDiscordClient> _discordClientMock = new(MockBehavior.Strict);
         protected readonly Mock<ITimer> _timerMock = new(MockBehavior.Strict);
         protected readonly Mock<ITaskManager> _taskManagerMock = new(MockBehavior.Strict);
@@ -49,7 +50,7 @@ namespace Sanakan.Daemon.Tests.HostedServices.ProfileHostedServiceTests
                 .Returns(Task.CompletedTask)
                 .Verifiable();
 
-            _discordSocketClientAccessorMock
+            _discordClientAccessorMock
                 .Setup(pr => pr.Client)
                 .Returns(_discordClientMock.Object);
 
@@ -61,7 +62,7 @@ namespace Sanakan.Daemon.Tests.HostedServices.ProfileHostedServiceTests
             _service = new ProfileHostedService(
                 NullLogger<ProfileHostedService>.Instance,
                 _systemClockMock.Object,
-                _discordSocketClientAccessorMock.Object,
+                _discordClientAccessorMock.Object,
                 _daemonsConfigurationMock.Object,
                 serviceScopeFactory,
                 _timerMock.Object,

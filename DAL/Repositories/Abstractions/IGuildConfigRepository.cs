@@ -8,8 +8,8 @@ namespace Sanakan.DAL.Repositories.Abstractions
         IRemoveRepository<GuildOptions>,
         ISaveRepository
     {
-        Task<GuildOptions?> GetGuildConfigOrCreateAsync(ulong guildId);
+        Task<GuildOptions?> GetOrCreateAsync(ulong guildId);
 
-        Task<GuildOptions?> GetCachedGuildFullConfigAsync(ulong guildId);
+        Task<GuildOptions?> GetCachedById(ulong guildId);
     }
 }

@@ -41,7 +41,7 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
                 .Returns("nickname");
 
             _userRepositoryMock
-                .Setup(pr => pr.GetCachedFullUserAsync(user.Id))
+                .Setup(pr => pr.GetCachedAsync(user.Id))
                 .ReturnsAsync(user);
 
             SetupSendMessage((message, embed) =>

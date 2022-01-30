@@ -9,13 +9,11 @@ namespace Sanakan.DAL.Repositories.Abstractions
         IRemoveRepository<Card>,
         ISaveRepository
     {
-        Task<Card?> GetCardAsync(ulong wid);
+        Task<Card?> GetByIdNoTrackingAsync(ulong wid);
 
         Task<List<Card>> GetCardsWithTagAsync(string tag);
 
-        Task<List<Card>> GetCardsByCharacterIdAsync(ulong characterId);
-
-        Task<User?> GetUserCardsAsync(ulong shindenUserId);
+        Task<User?> GetByShindenUserIdAsync(ulong shindenUserId);
 
         Task<List<Card>> GetByIdsAsync(IEnumerable<ulong> ids);
 
@@ -24,6 +22,8 @@ namespace Sanakan.DAL.Repositories.Abstractions
         Task<List<Card>> GetByCharacterIdAsync(ulong characterId);
 
         Task<List<Card>> GetByCharacterIdAsync(ulong characterId, CardQueryOptions cardQueryOptions);
+
+        Task<List<Card>> GetByCharacterIdsAsync(IEnumerable<ulong> characterIds);
 
         Task<Card?> GetByIdAsync(ulong id);
 
@@ -34,8 +34,6 @@ namespace Sanakan.DAL.Repositories.Abstractions
         Task<int> CountByRarityAndSucceedingIdAsync(Rarity rarity, ulong wid);
 
         Task<List<Card>> GetByCharactersAndNotInUserGameDeckAsync(ulong userId, IEnumerable<ulong> characterIds);
-
-        Task<List<Card>> GetByCharacterIdsAsync(IEnumerable<ulong> characterIds);
 
         Task<List<Card>> GetByGameDeckIdAsync(ulong gameDeckId, int offset, int count);
 

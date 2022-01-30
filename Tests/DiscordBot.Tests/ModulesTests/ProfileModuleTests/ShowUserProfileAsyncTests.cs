@@ -59,7 +59,7 @@ namespace DiscordBot.ModulesTests.ProfileModuleTests
                 .ReturnsAsync(users);
 
             _gameDeckRepositoryMock
-                .Setup(pr => pr.GetCachedUserGameDeckAsync(user.Id))
+                .Setup(pr => pr.GetCachedByUserIdAsync(user.Id))
                 .ReturnsAsync(user.GameDeck);
 
             _profileServiceMock

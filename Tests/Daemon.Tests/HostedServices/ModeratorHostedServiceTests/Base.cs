@@ -11,6 +11,7 @@ using Sanakan.Common.Configuration;
 using Sanakan.Daemon.HostedService;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot;
+using Sanakan.DiscordBot.Abstractions;
 using System;
 using System.Threading;
 using System.Threading.Tasks;

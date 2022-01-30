@@ -23,7 +23,7 @@ namespace Sanakan.Web.Tests.Controllers.UserControllerTests
             var user = new User(discordUserId, DateTime.UtcNow);
 
             _userRepositoryMock
-                .Setup(pr => pr.GetCachedFullUserAsync(discordUserId))
+                .Setup(pr => pr.GetCachedAsync(discordUserId))
                 .ReturnsAsync(user);
 
             var result = await _controller.GetUserByDiscordIdAsync(discordUserId);

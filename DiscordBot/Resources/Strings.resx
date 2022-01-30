@@ -125,11 +125,23 @@
   <data name="CanExecuteOnlyOnServer" xml:space="preserve">
     <value>To polecenie działa tylko z poziomu serwera.</value>
   </data>
+  <data name="CardAlreadyConverted" xml:space="preserve">
+    <value>{0} ta karta została już przeistoczona wcześniej.</value>
+  </data>
+  <data name="CardCursed" xml:space="preserve">
+    <value>{0} na tej karcie ciąży klątwa!</value>
+  </data>
+  <data name="CardInCage" xml:space="preserve">
+    <value>{0} ta karta znajduje się w klatce</value>
+  </data>
   <data name="CardNotFound" xml:space="preserve">
     <value>Nie odnaleziono karty.</value>
   </data>
   <data name="CardNotInAnyWishlist" xml:space="preserve">
     <value>Nikt nie chce tej karty.</value>
+  </data>
+  <data name="CardOnExpedition" xml:space="preserve">
+    <value>{0} ta karta jest na wyprawie!</value>
   </data>
   <data name="CardsNotFound" xml:space="preserve">
     <value>{0} nie odnaleziono kart.</value>
@@ -181,6 +193,9 @@
   <data name="MatchedMultipleUsers" xml:space="preserve">
     <value>Dopasowano wielu użytkowników!</value>
   </data>
+  <data name="MemberRoleNotFound" xml:space="preserve">
+    <value>Nie odnaleziono roli członka!</value>
+  </data>
   <data name="MessageDoesNotExist" xml:space="preserve">
     <value>Wiadomość nie istnieje!\nPamiętaj, że polecenie musi zostać użyte w tym samym kanale, gdzie znajduje się wiadomość!</value>
   </data>
@@ -204,6 +219,9 @@
   </data>
   <data name="NoSafariImage" xml:space="preserve">
     <value>Nie znaleziono obrazkow safari</value>
+  </data>
+  <data name="NoTaggedCards" xml:space="preserve">
+    <value>{0} nie odnaleziono nieoznaczonych kart.</value>
   </data>
   <data name="OnJourney" xml:space="preserve">
     <value>{0}:
@@ -265,6 +283,12 @@ Traci siły po {3} min.</value>
   </data>
   <data name="ReportId" xml:space="preserve">
     <value>Id zgloszenia:</value>
+  </data>
+  <data name="ReportNotFound" xml:space="preserve">
+    <value>Taki raport nie istnieje.</value>
+  </data>
+  <data name="ReportsNotConfigured" xml:space="preserve">
+    <value>Serwer nie ma skonfigurowanych raportów.</value>
   </data>
   <data name="RequiredChannel" xml:space="preserve">
     <value>To polecenie działa na kanale {0}</value>
@@ -380,11 +404,17 @@ Rzędy / `1`, `2`, `3`</value>
 
 **Wygrana:** `{5} SC`</value>
   </data>
+  <data name="SSSCardCantBeUpgraded" xml:space="preserve">
+    <value>{0} karty **SSS** nie można już ulepszyć!</value>
+  </data>
   <data name="TitleNotFound" xml:space="preserve">
     <value>Nie odnaleziono tytułu!</value>
   </data>
   <data name="TitleNotInWishList" xml:space="preserve">
     <value>Nikt nie ma tego tytułu wpisanego na listę życzeń.</value>
+  </data>
+  <data name="TrashChannelNotConfigured" xml:space="preserve">
+    <value>Nie skonfigurowany kanal smieciowych polecen.</value>
   </data>
   <data name="UserAlreadyConnected" xml:space="preserve">
     <value>Wygląda na to, że ktoś już połączył się z tym kontem.</value>
@@ -403,6 +433,9 @@ Rzędy / `1`, `2`, `3`</value>
   </data>
   <data name="UserNoCards" xml:space="preserve">
     <value>{0} nie masz żadnych kart.</value>
+  </data>
+  <data name="UserNoItems" xml:space="preserve">
+    <value>{0} nie masz żadnych przemiotów.</value>
   </data>
   <data name="UserNotConnectedToShinden" xml:space="preserve">
     <value>Ta osoba nie połączyła konta bota z kontem na stronie.</value>
@@ -441,5 +474,8 @@ Dzienne misje odświeżają się o północy, a tygodniowe co niedzielę.</value
 **PW**:
 {4} **CT**
 {5} **PC**</value>
+  </data>
+  <data name="YouDontManageLand" xml:space="preserve">
+    <value>Nie zarządzasz żadną krainą.</value>
   </data>
 </root>

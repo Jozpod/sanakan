@@ -8,7 +8,7 @@ namespace Sanakan.Tests.Shared
     {
         public static void SetupSendMessageAsync(
             this Mock<IDMChannel> dmChannelMock,
-            IUserMessage? userMessage)
+            IUserMessage? userMessage = null)
         {
             dmChannelMock
                 .Setup(pr => pr.SendMessageAsync(
@@ -26,7 +26,7 @@ namespace Sanakan.Tests.Shared
 
         public static void SetupSendMessageAsync(
             this Mock<ITextChannel> textChannelMock,
-            IUserMessage? userMessage)
+            IUserMessage? userMessage = null)
         {
             textChannelMock
             .Setup(pr => pr.SendMessageAsync(
@@ -44,7 +44,7 @@ namespace Sanakan.Tests.Shared
 
         public static void SetupSendFileAsync(
           this Mock<ITextChannel> messageChannelMock,
-          IUserMessage? userMessage)
+          IUserMessage? userMessage = null)
         {
             messageChannelMock
                 .Setup(pr => pr.SendFileAsync(
@@ -65,7 +65,7 @@ namespace Sanakan.Tests.Shared
 
         public static void SetupSendMessageAsync(
             this Mock<IMessageChannel> messageChannelMock,
-            IUserMessage? userMessage)
+            IUserMessage? userMessage = null)
         {
             messageChannelMock
                 .Setup(pr => pr.SendMessageAsync(
@@ -83,7 +83,7 @@ namespace Sanakan.Tests.Shared
 
         public static void SetupSendFileAsync(
             this Mock<IMessageChannel> messageChannelMock,
-            IUserMessage? userMessage)
+            IUserMessage? userMessage = null)
         {
             messageChannelMock
                 .Setup(pr => pr.SendFileAsync(

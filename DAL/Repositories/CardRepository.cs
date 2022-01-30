@@ -23,23 +23,21 @@ namespace Sanakan.DAL.Repositories
             _cacheManager = cacheManager;
         }
 
-        public async Task<Card?> GetCardAsync(ulong wid)
+        public async Task<Card?> GetByIdNoTrackingAsync(ulong cardId)
         {
-            var result = await _dbContext
-                .Cards
+            var result = await _dbSet
                 .Include(x => x.GameDeck)
                 .Include(x => x.ArenaStats)
                 .Include(x => x.Tags)
                 .AsNoTracking()
-                .FirstOrDefaultAsync(x => x.Id == wid);
+                .FirstOrDefaultAsync(x => x.Id == cardId);
 
             return result;
         }
 
         public async Task<List<Card>> GetCardsWithTagAsync(string tag)
         {
-            var result = await _dbContext
-                .Cards
+            var result = await _dbSet
                .Include(x => x.ArenaStats)
                .Include(x => x.Tags)
                .Where(x => x.Tags
@@ -50,19 +48,18 @@ namespace Sanakan.DAL.Repositories
             return result;
         }
 
-        public async Task<List<Card>> GetCardsByCharacterIdAsync(ulong characterId)
+        public Task<List<Card>> GetByCharacterIdAsync(ulong characterId)
         {
-            var cards = await _dbContext
+            var cards = _dbContext
                 .Cards
                 .AsQueryable()
-                .AsSplitQuery()
                 .Where(x => x.CharacterId == characterId)
                 .ToListAsync();
 
             return cards;
         }
 
-        public async Task<User?> GetUserCardsAsync(ulong shindenUserId)
+        public async Task<User?> GetByShindenUserIdAsync(ulong shindenUserId)
         {
             var result = await _dbContext
                 .Users
@@ -132,18 +129,6 @@ namespace Sanakan.DAL.Repositories
             }
 
             return result;
-        }
-
-        public Task<List<Card>> GetByCharacterIdAsync(ulong characterId)
-        {
-            var cards = _dbContext
-                .Cards
-                .AsQueryable()
-                .AsSplitQuery()
-                .Where(x => x.CharacterId == characterId)
-                .ToListAsync();
-
-            return cards;
         }
 
         public Task<List<Card>> GetByCharacterIdAsync(ulong characterId, CardQueryOptions cardQueryOptions)

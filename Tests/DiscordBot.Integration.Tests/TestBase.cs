@@ -14,6 +14,7 @@ using Sanakan.Common.Configuration;
 using Sanakan.Daemon.HostedService;
 using Sanakan.DAL;
 using Sanakan.DAL.Builder;
+using Sanakan.DiscordBot.Abstractions;
 using Sanakan.DiscordBot.Builder;
 using Sanakan.DiscordBot.Services.Builder;
 using Sanakan.DiscordBot.Session.Builder;

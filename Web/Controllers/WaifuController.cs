@@ -77,7 +77,7 @@ namespace Sanakan.Web.Controllers
         [ProducesResponseType(typeof(IEnumerable<ulong>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetUserIdsOwningCharacterCardAsync(ulong id)
         {
-            var shindenIds = await _userRepository.GetUserShindenIdsByHavingCharacterAsync(id);
+            var shindenIds = await _userRepository.GetShindenUserIdsByHavingCharacterAsync(id);
 
             if (shindenIds.Any())
             {
@@ -96,7 +96,7 @@ namespace Sanakan.Web.Controllers
         [ProducesResponseType(typeof(IEnumerable<Card>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetUserCardsAsync(ulong shindenUserId)
         {
-            var user = await _cardRepository.GetUserCardsAsync(shindenUserId);
+            var user = await _cardRepository.GetByShindenUserIdAsync(shindenUserId);
 
             if (user == null)
             {
@@ -215,7 +215,7 @@ namespace Sanakan.Web.Controllers
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetUserWaifuProfileAsync(ulong shindenUserId)
         {
-            var user = await _userRepository.GetUserWaifuProfileAsync(shindenUserId);
+            var user = await _userRepository.GetWithWaifuProfileAsync(shindenUserId);
 
             if (user == null)
             {
@@ -388,7 +388,7 @@ namespace Sanakan.Web.Controllers
         [ProducesResponseType(typeof(ShindenPayload), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetUserWishlistAsync(ulong id)
         {
-            var user = await _userRepository.GetCachedFullUserAsync(id);
+            var user = await _userRepository.GetCachedAsync(id);
             var gameDeck = user.GameDeck;
 
             if (user == null)
@@ -437,7 +437,7 @@ namespace Sanakan.Web.Controllers
         [ProducesResponseType(typeof(IEnumerable<Card>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetShindenUserWishlistAsync(ulong shindenUserId)
         {
-            var user = await _userRepository.GetCachedFullUserByShindenIdAsync(shindenUserId);
+            var user = await _userRepository.GetCachedByShindenIdAsync(shindenUserId);
 
             if (user == null)
             {
@@ -560,7 +560,7 @@ namespace Sanakan.Web.Controllers
                 return ShindenInternalServerError("Data is Invalid");
             }
 
-            var user = await _userRepository.GetCachedFullUserAsync(discordUserId);
+            var user = await _userRepository.GetCachedAsync(discordUserId);
 
             if (user == null)
             {
@@ -611,7 +611,7 @@ namespace Sanakan.Web.Controllers
                 return ShindenInternalServerError("Data is Invalid");
             }
 
-            var user = await _userRepository.GetCachedFullUserByShindenIdAsync(shindenUserId);
+            var user = await _userRepository.GetCachedByShindenIdAsync(shindenUserId);
 
             if (user == null)
             {
@@ -747,7 +747,7 @@ namespace Sanakan.Web.Controllers
                 };
             }
 
-            var databaseUser = await _userRepository.GetCachedFullUserAsync(discordId.Value);
+            var databaseUser = await _userRepository.GetCachedAsync(discordId.Value);
 
             if (databaseUser == null)
             {
@@ -819,7 +819,7 @@ namespace Sanakan.Web.Controllers
                 return ShindenForbidden(Strings.ClaimNotFound);
             }
 
-            var databaseUser = await _userRepository.GetCachedFullUserAsync(discordId.Value);
+            var databaseUser = await _userRepository.GetCachedAsync(discordId.Value);
 
             if (databaseUser == null)
             {

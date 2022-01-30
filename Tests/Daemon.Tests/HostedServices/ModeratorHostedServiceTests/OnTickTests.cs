@@ -56,7 +56,7 @@ namespace Sanakan.Daemon.Tests.HostedServices.ModeratorHostedServiceTests
                 .Returns(guildId);
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildId))
+                .Setup(pr => pr.GetCachedById(guildId))
                 .ReturnsAsync(guildOption);
 
             guildMock
@@ -136,7 +136,7 @@ namespace Sanakan.Daemon.Tests.HostedServices.ModeratorHostedServiceTests
                 .ReturnsAsync(guildUserMock.Object);
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildId))
+                .Setup(pr => pr.GetCachedById(guildId))
                 .ReturnsAsync(guildOption);
 
             guildMock
@@ -221,7 +221,7 @@ namespace Sanakan.Daemon.Tests.HostedServices.ModeratorHostedServiceTests
                 .Verifiable();
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildId))
+                .Setup(pr => pr.GetCachedById(guildId))
                 .ReturnsAsync(guildOption)
                 .Verifiable();
 
@@ -300,7 +300,7 @@ namespace Sanakan.Daemon.Tests.HostedServices.ModeratorHostedServiceTests
                .Setup(pr => pr.Remove(penalty));
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildId))
+                .Setup(pr => pr.GetCachedById(guildId))
                 .ReturnsAsync(guildOption);
 
             _penaltyInfoRepositoryMock
@@ -392,7 +392,7 @@ namespace Sanakan.Daemon.Tests.HostedServices.ModeratorHostedServiceTests
                .Setup(pr => pr.Remove(penalty));
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildId))
+                .Setup(pr => pr.GetCachedById(guildId))
                 .ReturnsAsync(guildOption);
 
             _penaltyInfoRepositoryMock

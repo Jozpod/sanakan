@@ -32,7 +32,7 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
                 .Returns("mention");
 
             _userRepositoryMock
-                .Setup(pr => pr.GetCachedFullUserAsync(user.Id))
+                .Setup(pr => pr.GetCachedAsync(user.Id))
                 .ReturnsAsync(user);
 
             _userRepositoryMock
@@ -66,7 +66,7 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
                 .Returns("mention");
 
             _userRepositoryMock
-                .Setup(pr => pr.GetCachedFullUserAsync(user.Id))
+                .Setup(pr => pr.GetCachedAsync(user.Id))
                 .ReturnsAsync(user);
 
             _userRepositoryMock
@@ -99,7 +99,7 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
                 .Returns("mention");
 
             _userRepositoryMock
-                .Setup(pr => pr.GetCachedFullUserAsync(user.Id))
+                .Setup(pr => pr.GetCachedAsync(user.Id))
                 .ReturnsAsync(user);
 
             SetupSendMessage((message, embed) =>
@@ -130,7 +130,7 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
                 .Returns("mention");
 
             _userRepositoryMock
-                .Setup(pr => pr.GetCachedFullUserAsync(user.Id))
+                .Setup(pr => pr.GetCachedAsync(user.Id))
                 .ReturnsAsync(user);
 
             _userMock
@@ -174,7 +174,7 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
                 .Returns("mention");
 
             _userRepositoryMock
-                .Setup(pr => pr.GetCachedFullUserAsync(user.Id))
+                .Setup(pr => pr.GetCachedAsync(user.Id))
                 .ReturnsAsync(user);
 
             _userRepositoryMock
@@ -214,7 +214,7 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
                 .Returns("mention");
 
             _userRepositoryMock
-                .Setup(pr => pr.GetCachedFullUserAsync(user.Id))
+                .Setup(pr => pr.GetCachedAsync(user.Id))
                 .ReturnsAsync(user);
 
             _userRepositoryMock

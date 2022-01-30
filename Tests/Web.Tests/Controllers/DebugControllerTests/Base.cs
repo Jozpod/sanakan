@@ -3,6 +3,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.Common;
 using Sanakan.DiscordBot;
+using Sanakan.DiscordBot.Abstractions;
 using Sanakan.Web.Controllers;
 
 namespace Sanakan.Web.Tests.Controllers.DebugControllerTests

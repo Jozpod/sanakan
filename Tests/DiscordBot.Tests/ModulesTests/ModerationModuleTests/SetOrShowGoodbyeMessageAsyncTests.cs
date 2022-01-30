@@ -25,7 +25,7 @@ namespace DiscordBot.ModulesTests.ModerationModuleTests
                 .Returns(guildOptions.Id);
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetGuildConfigOrCreateAsync(guildOptions.Id))
+                .Setup(pr => pr.GetOrCreateAsync(guildOptions.Id))
                 .ReturnsAsync(guildOptions);
 
             SetupSendMessage((message, embed) =>
@@ -48,7 +48,7 @@ namespace DiscordBot.ModulesTests.ModerationModuleTests
                 .Returns(guildOptions.Id);
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetGuildConfigOrCreateAsync(guildOptions.Id))
+                .Setup(pr => pr.GetOrCreateAsync(guildOptions.Id))
                 .ReturnsAsync(guildOptions);
 
             _guildConfigRepositoryMock
@@ -77,7 +77,7 @@ namespace DiscordBot.ModulesTests.ModerationModuleTests
                 .Returns(guildOptions.Id);
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetGuildConfigOrCreateAsync(guildOptions.Id))
+                .Setup(pr => pr.GetOrCreateAsync(guildOptions.Id))
                 .ReturnsAsync(guildOptions);
 
             _guildConfigRepositoryMock

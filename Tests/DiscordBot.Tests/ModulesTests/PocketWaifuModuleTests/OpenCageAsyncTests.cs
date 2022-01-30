@@ -18,21 +18,6 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
     public class OpenCageAsyncTests : Base
     {
         [TestMethod]
-        public async Task Should_Return_Error_Message_No_User()
-        {
-            _commandContextMock
-                .Setup(pr => pr.User)
-                .Returns<IUser>(null);
-
-            SetupSendMessage((message, embed) =>
-            {
-                embed.Description.Should().NotBeNull();
-            });
-
-            await _module.OpenCageAsync();
-        }
-
-        [TestMethod]
         public async Task Should_Return_Error_Message_No_Cards()
         {
             var utcNow = DateTime.UtcNow;

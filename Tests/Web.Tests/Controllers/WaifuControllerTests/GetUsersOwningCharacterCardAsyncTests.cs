@@ -22,7 +22,7 @@ namespace Sanakan.Web.Tests.Controllers.WaifuControllerTests
             var expected = new List<ulong>();
 
             _userRepositoryMock
-                .Setup(pr => pr.GetUserShindenIdsByHavingCharacterAsync(userId))
+                .Setup(pr => pr.GetShindenUserIdsByHavingCharacterAsync(userId))
                 .ReturnsAsync(expected);
 
             var result = await _controller.GetUserIdsOwningCharacterCardAsync(userId);
@@ -37,7 +37,7 @@ namespace Sanakan.Web.Tests.Controllers.WaifuControllerTests
             var expected = new List<ulong>() { 0ul };
 
             _userRepositoryMock
-                .Setup(pr => pr.GetUserShindenIdsByHavingCharacterAsync(userId))
+                .Setup(pr => pr.GetShindenUserIdsByHavingCharacterAsync(userId))
                 .ReturnsAsync(expected);
 
             var result = await _controller.GetUserIdsOwningCharacterCardAsync(userId);

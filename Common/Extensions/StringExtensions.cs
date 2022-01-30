@@ -22,7 +22,6 @@ namespace Sanakan.Extensions
             "u", "color", "size"
         };
 
-        private static Regex? _commandRegex;
         private static Regex _replaceBBCodesRegex = new($@"\[/?({string.Join('|', _bbCodes)})(=[^\]]*)?\]", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         public static string ElipseTrimToLength(this string str, int length)
@@ -110,16 +109,5 @@ namespace Sanakan.Extensions
         public static int CountLinkTextLength(this string message) => _linkRegex.Matches(message).Sum(x => x.Length);
 
         public static bool IsHexTriplet(this string message) => _hexRegex.IsMatch(message);
-
-        public static bool IsCommand(this DiscordConfiguration configuration, string message)
-        {
-            if (_commandRegex == null)
-            {
-                var prefix = configuration.Prefix.Replace(".", @"\.").Replace("?", @"\?");
-                _commandRegex = new Regex($@"^{prefix}\w+", RegexOptions.Compiled);
-            }
-
-            return _commandRegex.Matches(message).Count > 0;
-        }
     }
 }

@@ -79,7 +79,7 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("wyświetla portfel użytkownika")]
         [Remarks("")]
         public async Task ShowWalletAsync(
-            [Summary("użytkownik (opcjonalne)")] IUser? user = null)
+            [Summary(ParameterInfo.UserOptional)] IUser? user = null)
         {
             var effectiveUser = user ?? Context.User;
 
@@ -88,7 +88,7 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            var databaseUser = await _userRepository.GetCachedFullUserAsync(effectiveUser.Id);
+            var databaseUser = await _userRepository.GetCachedAsync(effectiveUser.Id);
 
             if (databaseUser == null)
             {
@@ -122,7 +122,7 @@ namespace Sanakan.DiscordBot.Modules
         public async Task ShowSubscriptionsAsync()
         {
             var user = Context.User;
-            var databaseUser = await _userRepository.GetCachedFullUserAsync(user.Id);
+            var databaseUser = await _userRepository.GetCachedAsync(user.Id);
             var timeStatuses = databaseUser.TimeStatuses.Where(x => x.Type.IsSubType());
 
             var stringBuilder = new StringBuilder($"**Subskrypcje** {user.Mention}:\n\n", 50);
@@ -161,7 +161,7 @@ namespace Sanakan.DiscordBot.Modules
             }
 
             var guild = Context.Guild;
-            var config = await _guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
+            var config = await _guildConfigRepository.GetCachedById(guild.Id);
             var selfRole = config.SelfRoles.FirstOrDefault(x => x.Name == name);
             var guildRole = selfRole?.RoleId == null ? null : guild.GetRole(selfRole.RoleId);
             Embed embed;
@@ -185,18 +185,13 @@ namespace Sanakan.DiscordBot.Modules
         [Command("zdejmij role", RunMode = RunMode.Async)]
         [Alias("remove role")]
         [Summary("zdejmuje samo zarządzaną role")]
-        [Remarks("newsy"), RequireCommandChannel]
+        [Remarks("newsy"), RequireCommandChannel, RequireGuildUser]
         public async Task RemoveRoleAsync([Summary("nazwa roli z wypisz role")] string name)
         {
-            var user = Context.User as IGuildUser;
-
-            if (user == null)
-            {
-                return;
-            }
+            var user = (IGuildUser)Context.User;
 
             var guild = Context.Guild;
-            var config = await _guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
+            var config = await _guildConfigRepository.GetCachedById(guild.Id);
             var selfRole = config.SelfRoles.FirstOrDefault(x => x.Name == name);
             var guildRole = selfRole?.RoleId == null ? null : guild.GetRole(selfRole.RoleId);
             Embed embed;
@@ -223,7 +218,7 @@ namespace Sanakan.DiscordBot.Modules
         public async Task ShowRolesAsync()
         {
             var guild = Context.Guild;
-            var config = await _guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
+            var config = await _guildConfigRepository.GetCachedById(guild.Id);
 
             if (config.SelfRoles.Count < 1)
             {
@@ -248,7 +243,7 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("wyświetla statystyki użytkownika")]
         [Remarks("karna")]
         public async Task ShowUserStatsAsync(
-            [Summary("użytkownik (opcjonalne)")] IUser? user = null)
+            [Summary(ParameterInfo.UserOptional)] IUser? user = null)
         {
             var effectiveUser = user ?? Context.User;
             Embed embed;
@@ -258,7 +253,7 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            var databaseUser = await _userRepository.GetCachedFullUserAsync(effectiveUser.Id);
+            var databaseUser = await _userRepository.GetCachedAsync(effectiveUser.Id);
 
             if (databaseUser == null)
             {
@@ -302,7 +297,7 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("wyświetla ile pozostało punktów doświadczenia do następnego poziomu")]
         [Remarks("karna")]
         public async Task ShowHowMuchToLevelUpAsync(
-            [Summary("użytkownik(opcjonalne)")] IUser? user = null)
+            [Summary(ParameterInfo.UserOptional)] IUser? user = null)
         {
             var effectiveUser = user ?? Context.User;
 
@@ -341,7 +336,7 @@ namespace Sanakan.DiscordBot.Modules
             _sessionManager.RemoveIfExists<ListSession>(discordUserId);
 
             var building = await ReplyAsync(embed: $"🔨 Trwa budowanie topki...".ToEmbedMessage(EMType.Bot).Build());
-            var users = await _userRepository.GetCachedAllUsersAsync();
+            var users = await _userRepository.GetAllCachedAsync();
             var topUsers = _profileService.GetTopUsers(users, topType, utcNow);
             var items = await _profileService.BuildListViewAsync(topUsers, topType, Context.Guild);
 
@@ -394,7 +389,7 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("wyświetla profil użytkownika")]
         [Remarks("karna")]
         public async Task ShowUserProfileAsync(
-            [Summary("użytkownik (opcjonalne)")] IGuildUser? guildUser = null)
+            [Summary(ParameterInfo.UserOptional)] IGuildUser? guildUser = null)
         {
             var user = guildUser ?? Context.User as IGuildUser;
 
@@ -413,7 +408,7 @@ namespace Sanakan.DiscordBot.Modules
                 return;
             }
 
-            var gameDeck = await _gameDeckRepository.GetCachedUserGameDeckAsync(user.Id);
+            var gameDeck = await _gameDeckRepository.GetCachedByUserIdAsync(user.Id);
             databaseUser.GameDeck = gameDeck!;
             var topPosition = allUsers
                 .OrderByDescending(x => x.ExperienceCount)
@@ -510,7 +505,7 @@ namespace Sanakan.DiscordBot.Modules
         public async Task ChangeStyleAsync(
             [Summary("typ stylu (statystyki(0), obrazek(1), brzydkie(2), karcianka(3))")] ProfileType profileType,
             [Summary("bezpośredni adres do obrazka gdy wybrany styl 1 lub 2 (325 x 272)")] string? imageUrl = null,
-            [Summary("waluta (SC/TC)")] SCurrency currency = SCurrency.Sc)
+            [Summary(ParameterInfo.Currency)] SCurrency currency = SCurrency.Sc)
         {
             var scCost = 3000;
             var tcCost = 1000;
@@ -590,8 +585,8 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("zmienia obrazek tła profilu (koszt 5000 SC/2500 TC)")]
         [Remarks("https://i.imgur.com/LjVxiv8.png"), RequireCommandChannel]
         public async Task ChangeBackgroundAsync(
-            [Summary("bezpośredni adres do obrazka (450 x 145)")] string imageUrl,
-            [Summary("waluta (SC/TC)")] SCurrency currency = SCurrency.Sc)
+            [Summary("bezpośredni adres do obrazka (450 x 145)")] Uri imageUrl,
+            [Summary(ParameterInfo.Currency)] SCurrency currency = SCurrency.Sc)
         {
             var tcCost = 2500;
             var scCost = 5000;
@@ -616,7 +611,7 @@ namespace Sanakan.DiscordBot.Modules
             }
 
             var savePath = $"{Paths.SavedData}/BG{databaseUser.Id}.png";
-            var saveResult = await _profileService.SaveProfileImageAsync(imageUrl, savePath, 450, 145, true);
+            var saveResult = await _profileService.SaveProfileImageAsync(imageUrl.ToString(), savePath, 450, 145, true);
 
             if (saveResult == SaveResult.Success)
             {
@@ -655,18 +650,13 @@ namespace Sanakan.DiscordBot.Modules
         [Command("globalki")]
         [Alias("global")]
         [Summary("nadaje na miesiąc rangę od globalnych emotek (1000 TC)")]
-        [Remarks(""), RequireCommandChannel]
+        [Remarks(""), RequireCommandChannel, RequireGuildUser]
         public async Task AddGlobalEmotesAsync()
         {
             var cost = 1000;
-            var user = Context.User as IGuildUser;
+            var user = (IGuildUser)Context.User;
             var mention = user.Mention;
             Embed embed;
-
-            if (user == null)
-            {
-                return;
-            }
 
             var databaseUser = await _userRepository.GetUserOrCreateAsync(user.Id);
             if (databaseUser.TcCount < cost)
@@ -678,7 +668,7 @@ namespace Sanakan.DiscordBot.Modules
 
             var guild = Context.Guild;
             var guildid = guild.Id;
-            var guildConfig = await _guildConfigRepository.GetCachedGuildFullConfigAsync(guildid);
+            var guildConfig = await _guildConfigRepository.GetCachedById(guildid);
             var globalRole = guild.GetRole(guildConfig.GlobalEmotesRoleId);
 
             if (globalRole == null)
@@ -721,20 +711,16 @@ namespace Sanakan.DiscordBot.Modules
         [Command("kolor")]
         [Alias("color", "colour")]
         [Summary("zmienia kolor użytkownika (koszt TC/SC na liście)")]
-        [Remarks("pink"), RequireCommandChannel]
+        [Remarks("pink"), RequireCommandChannel, RequireGuildUser]
         public async Task ToggleColorRoleAsync(
             [Summary("kolor z listy (none - lista)")] FColor color = FColor.None,
-            [Summary("waluta (SC/TC)")] SCurrency currency = SCurrency.Tc)
+            [Summary(ParameterInfo.Currency)] SCurrency currency = SCurrency.Tc)
         {
-            var user = Context.User as IGuildUser;
+            var user = (IGuildUser)Context.User;
             var guild = Context.Guild;
             var guildId = guild.Id;
+            var mention = user.Mention;
             Embed embed;
-
-            if (user == null)
-            {
-                return;
-            }
 
             if (color == FColor.None)
             {
@@ -784,12 +770,13 @@ namespace Sanakan.DiscordBot.Modules
                     colorTimeStatus.EndsOn = utcNow.AddMonths(1);
                 }
 
-                var gConfig = await _guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
+                var gConfig = await _guildConfigRepository.GetCachedById(guild.Id);
                 var adminRoleId = gConfig.AdminRoleId!.Value;
 
                 if (!await _profileService.SetUserColorAsync(user, adminRoleId, color))
                 {
-                    await ReplyAsync(embed: $"Coś poszło nie tak!".ToEmbedMessage(EMType.Error).Build());
+                    embed = string.Format(Strings.ErrorOccurred, mention).ToEmbedMessage(EMType.Error).Build();
+                    await ReplyAsync(embed: embed);
                     return;
                 }
 

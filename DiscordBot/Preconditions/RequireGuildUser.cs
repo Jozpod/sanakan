@@ -16,7 +16,7 @@ namespace Sanakan.Preconditions
         {
             var guildUser = context.User as IGuildUser;
 
-            if(guildUser == null)
+            if (guildUser == null)
             {
                 var result = new PreconditionErrorPayload();
                 result.Message = Strings.CanExecuteOnlyOnServer;

@@ -6,6 +6,7 @@ using Moq;
 using Sanakan.Common.Configuration;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot;
+using Sanakan.DiscordBot.Abstractions;
 using Sanakan.ShindenApi;
 using Sanakan.TaskQueue;
 using Sanakan.Web.Controllers;

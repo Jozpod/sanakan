@@ -27,7 +27,7 @@ namespace Sanakan.TaskQueue.MessageHandlers
         public override async Task HandleAsync(UpdateCardMessage message)
         {
             var userRelease = new List<string>() { CacheKeys.Users };
-            var cards = await _cardRepository.GetCardsByCharacterIdAsync(message.CharacterId);
+            var cards = await _cardRepository.GetByCharacterIdAsync(message.CharacterId);
 
             foreach (var card in cards)
             {

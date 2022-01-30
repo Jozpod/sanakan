@@ -112,7 +112,7 @@ namespace Sanakan.TaskQueue.MessageHandlers
                 await _userAnalyticsRepository.SaveChangesAsync();
             }
 
-            var config = await _guildConfigRepository.GetCachedGuildFullConfigAsync(message.GuildId);
+            var config = await _guildConfigRepository.GetCachedById(message.GuildId);
 
             if (config == null)
             {

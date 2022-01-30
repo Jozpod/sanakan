@@ -2,6 +2,7 @@ using Discord;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Sanakan.DiscordBot.Modules;
+using Sanakan.Tests.Shared;
 using System.Threading.Tasks;
 
 namespace DiscordBot.ModulesTests.DebugModuleTests
@@ -35,9 +36,14 @@ namespace DiscordBot.ModulesTests.DebugModuleTests
                 .ReturnsAsync(_userMessageMock.Object);
 
             _userMessageMock
+                .Setup(pr => pr.Id)
+                .Returns(messageId);
+
+            _userMessageMock
                 .Setup(pr => pr.Channel)
                 .Returns(messageChannelMock.Object);
 
+            messageChannelMock.SetupSendMessageAsync();
             SetupSendMessage();
 
             await _module.SendResponseMsgToChannelInGuildAsync(guildId, channelId, messageId, messageContent);

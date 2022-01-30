@@ -28,6 +28,10 @@ namespace DiscordBot.ModulesTests.DebugModuleTests
                 .Setup(pr => pr.Id)
                 .Returns(userId);
 
+            _userMock
+                .Setup(pr => pr.Mention)
+                .Returns("mention");
+
             guildUserMock
                 .Setup(pr => pr.Id)
                 .Returns(userId);
@@ -57,6 +61,10 @@ namespace DiscordBot.ModulesTests.DebugModuleTests
             _userMock
                 .Setup(pr => pr.Id)
                 .Returns(userId);
+
+            _userMock
+                .Setup(pr => pr.Mention)
+                .Returns("mention");
 
             guildUserMock
                 .Setup(pr => pr.Id)

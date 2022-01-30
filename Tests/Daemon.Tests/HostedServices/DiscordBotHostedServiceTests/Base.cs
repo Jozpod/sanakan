@@ -11,6 +11,8 @@ using Sanakan.Daemon.HostedService;
 using Sanakan.DAL;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot;
+using Sanakan.DiscordBot.Abstractions;
+using Sanakan.DiscordBot.Services;
 using Sanakan.TaskQueue;
 using System;
 using System.IO;
@@ -25,10 +27,11 @@ namespace Sanakan.Daemon.Tests.HostedServices.DiscordBotHostedServiceTests
         protected readonly BackgroundService _service;
         protected readonly Mock<IFileSystem> _fileSystemMock = new(MockBehavior.Strict);
         protected readonly Mock<IBlockingPriorityQueue> _blockingPriorityQueueMock = new(MockBehavior.Strict);
-        protected readonly Mock<IDiscordClientAccessor> _discordSocketClientAccessorMock = new(MockBehavior.Strict);
+        protected readonly Mock<IDiscordClientAccessor> _discordClientAccessorMock = new(MockBehavior.Strict);
         protected readonly Mock<IDiscordClient> _discordClientMock = new(MockBehavior.Strict);
         protected readonly Mock<IOptionsMonitor<DiscordConfiguration>> _discordConfigurationMock = new(MockBehavior.Strict);
-        protected readonly Mock<IOptionsMonitor<ExperienceConfiguration>> _experienceConfigurationMock = new(MockBehavior.Strict);
+        protected readonly Mock<ExperienceManager> _experienceManagerMock = new(MockBehavior.Strict);
+        protected readonly Mock<AuditService> _auditServiceMock = new(MockBehavior.Strict);
         protected readonly Mock<ISystemClock> _systemClockMock = new(MockBehavior.Strict);
         protected readonly Mock<ICommandHandler> _commandHandlerMock = new(MockBehavior.Strict);
         protected readonly Mock<ITaskManager> _taskManagerMock = new(MockBehavior.Strict);
@@ -42,18 +45,18 @@ namespace Sanakan.Daemon.Tests.HostedServices.DiscordBotHostedServiceTests
 
         public Base()
         {
-            _discordSocketClientAccessorMock
+            _discordClientAccessorMock
                 .Setup(pr => pr.Client)
                 .Returns(_discordClientMock.Object);
 
-            _experienceConfigurationMock
-                .Setup(pr => pr.CurrentValue)
-                .Returns(new ExperienceConfiguration
-                {
-                    CharPerPoint = 100,
-                    MinPerMessage = 50,
-                    MaxPerMessage = 25,
-                });
+            //_experienceConfigurationMock
+            //    .Setup(pr => pr.CurrentValue)
+            //    .Returns(new ExperienceConfiguration
+            //    {
+            //        CharPerPoint = 100,
+            //        MinPerMessage = 50,
+            //        MaxPerMessage = 25,
+            //    });
 
             _discordConfigurationMock
                 .Setup(pr => pr.CurrentValue)
@@ -75,19 +78,19 @@ namespace Sanakan.Daemon.Tests.HostedServices.DiscordBotHostedServiceTests
             serviceCollection.AddSingleton(_userRepositoryMock.Object);
             var serviceProvider = serviceCollection.BuildServiceProvider();
             var serviceScopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
-
+            
             _service = new DiscordBotHostedService(
                 _fileSystemMock.Object,
                 _blockingPriorityQueueMock.Object,
                 NullLogger<DiscordBotHostedService>.Instance,
                 serviceScopeFactory,
-                _discordSocketClientAccessorMock.Object,
+                _discordClientAccessorMock.Object,
                 _discordConfigurationMock.Object,
-                _experienceConfigurationMock.Object,
-                _systemClockMock.Object,
                 _commandHandlerMock.Object,
                 _taskManagerMock.Object,
                 _databaseFacadeMock.Object,
+                _experienceManagerMock.Object,
+                _auditServiceMock.Object,
                 _hostApplicationLifetimeMock.Object);
         }
 
@@ -105,11 +108,11 @@ namespace Sanakan.Daemon.Tests.HostedServices.DiscordBotHostedServiceTests
                 .Setup(pr => pr.CreateDirectory(It.IsAny<string>()))
                 .Returns(fakeDirectory);
 
-            _discordSocketClientAccessorMock
+            _discordClientAccessorMock
                 .Setup(pr => pr.LoginAsync(TokenType.Bot, It.IsAny<string>(), true))
                 .Returns(Task.CompletedTask);
 
-            _discordSocketClientAccessorMock
+            _discordClientAccessorMock
                 .Setup(pr => pr.SetGameAsync(It.IsAny<string>(), null, ActivityType.Playing))
                 .Returns(Task.CompletedTask);
 

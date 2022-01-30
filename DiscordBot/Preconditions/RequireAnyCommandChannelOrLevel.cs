@@ -32,7 +32,7 @@ namespace Sanakan.Preconditions
                 return PreconditionResult.FromSuccess();
             }
 
-            var guildConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
+            var guildConfig = await guildConfigRepository.GetCachedById(guild.Id);
 
             if (guildConfig == null)
             {
@@ -58,7 +58,7 @@ namespace Sanakan.Preconditions
                 return PreconditionResult.FromSuccess();
             }
 
-            var databaseUser = await userRepository.GetBaseUserAndDontTrackAsync(user.Id);
+            var databaseUser = await userRepository.GetBasicAsync(user.Id);
 
             if (databaseUser != null)
             {

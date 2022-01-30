@@ -37,7 +37,7 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
             card.GameDeck = user.GameDeck;
 
             _cardRepositoryMock
-                .Setup(pr => pr.GetCardAsync(card.Id))
+                .Setup(pr => pr.GetByIdNoTrackingAsync(card.Id))
                 .ReturnsAsync(card);
 
             _guildMock
@@ -49,7 +49,7 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
                 .ReturnsAsync(guildUserMock.Object);
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildOptions.Id))
+                .Setup(pr => pr.GetCachedById(guildOptions.Id))
                 .ReturnsAsync(guildOptions);
 
             _guildMock

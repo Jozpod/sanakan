@@ -36,7 +36,7 @@ namespace DiscordBot.ModulesTests.ModerationModuleTests
                 .Returns("role mention");
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetGuildConfigOrCreateAsync(guildId))
+                .Setup(pr => pr.GetOrCreateAsync(guildId))
                 .ReturnsAsync(guildOption);
 
             _guildConfigRepositoryMock

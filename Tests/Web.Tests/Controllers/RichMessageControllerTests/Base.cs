@@ -5,6 +5,7 @@ using Moq;
 using Sanakan.Common;
 using Sanakan.Common.Configuration;
 using Sanakan.DiscordBot;
+using Sanakan.DiscordBot.Abstractions;
 using Sanakan.Web.Controllers;
 using System.Collections.Generic;
 

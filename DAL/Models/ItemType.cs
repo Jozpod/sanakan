@@ -54,51 +54,29 @@ namespace Sanakan.DAL.Models
 
     public static class ItemTypeExtensions
     {
-        public static ItemType RandomizeItemFromMarket(int number)
+        public static ItemType RandomizeItemFromMarket(int number) => number switch
         {
-            switch (number)
-            {
-                case var _ when number < 2:
-                    return ItemType.IncreaseExpSmall;
-                case var _ when number < 15:
-                    return ItemType.IncreaseUpgradeCount;
-                case var _ when number < 80:
-                    return ItemType.AffectionRecoveryBig;
-                case var _ when number < 145:
-                    return ItemType.CardParamsReRoll;
-                case var _ when number < 230:
-                    return ItemType.DereReRoll;
-                case var _ when number < 480:
-                    return ItemType.AffectionRecoveryNormal;
-                default:
-                    return ItemType.AffectionRecoverySmall;
-            }
-        }
+            var _ when number < 2 => ItemType.IncreaseExpSmall,
+            var _ when number < 15 => ItemType.IncreaseUpgradeCount,
+            var _ when number < 80 => ItemType.AffectionRecoveryBig,
+            var _ when number < 145 => ItemType.CardParamsReRoll,
+            var _ when number < 230 => ItemType.DereReRoll,
+            var _ when number < 480 => ItemType.AffectionRecoveryNormal,
+            _ => ItemType.AffectionRecoverySmall,
+        };
 
-        public static ItemType RandomizeItemFromBlackMarket(int number)
+        public static ItemType RandomizeItemFromBlackMarket(int number) => number switch
         {
-            switch (number)
-            {
-                case var _ when number < 2:
-                    return ItemType.IncreaseExpSmall;
-                case var _ when number < 12:
-                    return ItemType.BetterIncreaseUpgradeCnt;
-                case var _ when number < 25:
-                    return ItemType.IncreaseUpgradeCount;
-                case var _ when number < 70:
-                    return ItemType.AffectionRecoveryGreat;
-                case var _ when number < 120:
-                    return ItemType.AffectionRecoveryBig;
-                case var _ when number < 180:
-                    return ItemType.CardParamsReRoll;
-                case var _ when number < 250:
-                    return ItemType.DereReRoll;
-                case var _ when number < 780:
-                    return ItemType.AffectionRecoveryNormal;
-                default:
-                    return ItemType.AffectionRecoverySmall;
-            }
-        }
+            var _ when number < 2 => ItemType.IncreaseExpSmall,
+            var _ when number < 12 => ItemType.BetterIncreaseUpgradeCnt,
+            var _ when number < 25 => ItemType.IncreaseUpgradeCount,
+            var _ when number < 70 => ItemType.AffectionRecoveryGreat,
+            var _ when number < 120 => ItemType.AffectionRecoveryBig,
+            var _ when number < 180 => ItemType.CardParamsReRoll,
+            var _ when number < 250 => ItemType.DereReRoll,
+            var _ when number < 780 => ItemType.AffectionRecoveryNormal,
+            _ => ItemType.AffectionRecoverySmall,
+        };
 
         public static Figure? ToPAFigure(this ItemType type, DateTime date)
         {
@@ -137,433 +115,258 @@ namespace Sanakan.DAL.Models
             };
         }
 
-        public static bool HasDifferentQualities(this ItemType type)
+        public static bool HasDifferentQualities(this ItemType type) => type switch
         {
-            switch (type)
-            {
-                case ItemType.AffectionRecoveryGreat:
-                case ItemType.AffectionRecoveryBig:
-                case ItemType.AffectionRecoveryNormal:
-                case ItemType.AffectionRecoverySmall:
-                case ItemType.IncreaseExpSmall:
-                case ItemType.IncreaseExpBig:
-                case ItemType.FigureSkeleton:
-                case ItemType.FigureUniversalPart:
-                case ItemType.FigureHeadPart:
-                case ItemType.FigureBodyPart:
-                case ItemType.FigureClothesPart:
-                case ItemType.FigureLeftArmPart:
-                case ItemType.FigureLeftLegPart:
-                case ItemType.FigureRightArmPart:
-                case ItemType.FigureRightLegPart:
-                    return true;
+            ItemType.AffectionRecoveryGreat
+                or ItemType.AffectionRecoveryBig
+                or ItemType.AffectionRecoveryNormal
+                or ItemType.AffectionRecoverySmall
+                or ItemType.IncreaseExpSmall
+                or ItemType.IncreaseExpBig
+                or ItemType.FigureSkeleton
+                or ItemType.FigureUniversalPart
+                or ItemType.FigureHeadPart
+                or ItemType.FigureBodyPart
+                or ItemType.FigureClothesPart
+                or ItemType.FigureLeftArmPart
+                or ItemType.FigureLeftLegPart
+                or ItemType.FigureRightArmPart
+                or ItemType.FigureRightLegPart => true,
+            _ => false,
+        };
 
-                default:
-                    return false;
-            }
-        }
-
-        public static long CValue(this ItemType type)
+        public static long CValue(this ItemType type) => type switch
         {
-            switch (type)
-            {
-                case ItemType.AffectionRecoveryGreat:
-                    return 180;
-                case ItemType.AffectionRecoveryBig:
-                    return 140;
-                case ItemType.AffectionRecoveryNormal:
-                    return 15;
-                case ItemType.BetterIncreaseUpgradeCnt:
-                    return 500;
-                case ItemType.IncreaseUpgradeCount:
-                    return 200;
-                case ItemType.DereReRoll:
-                    return 10;
-                case ItemType.CardParamsReRoll:
-                    return 15;
-                case ItemType.CheckAffection:
-                    return 15;
-                case ItemType.SetCustomImage:
-                    return 300;
-                case ItemType.IncreaseExpSmall:
-                    return 100;
-                case ItemType.IncreaseExpBig:
-                    return 400;
-                case ItemType.ChangeStarType:
-                    return 50;
-                case ItemType.SetCustomBorder:
-                    return 80;
-                case ItemType.ChangeCardImage:
-                    return 10;
-                case ItemType.ResetCardValue:
-                    return 5;
-                default:
-                    return 1;
-            }
-        }
+            ItemType.AffectionRecoveryGreat => 180,
+            ItemType.AffectionRecoveryBig => 140,
+            ItemType.AffectionRecoveryNormal => 15,
+            ItemType.BetterIncreaseUpgradeCnt => 500,
+            ItemType.IncreaseUpgradeCount => 200,
+            ItemType.DereReRoll => 10,
+            ItemType.CardParamsReRoll => 15,
+            ItemType.CheckAffection => 15,
+            ItemType.SetCustomImage => 300,
+            ItemType.IncreaseExpSmall => 100,
+            ItemType.IncreaseExpBig => 400,
+            ItemType.ChangeStarType => 50,
+            ItemType.SetCustomBorder => 80,
+            ItemType.ChangeCardImage => 10,
+            ItemType.ResetCardValue => 5,
+            _ => 1,
+        };
 
-        public static bool IsBoosterPack(this ItemType type)
+        public static bool IsBoosterPack(this ItemType type) => type switch
         {
-            switch (type)
-            {
-                case ItemType.RandomBoosterPackSingleE:
-                case ItemType.RandomTitleBoosterPackSingleE:
-                case ItemType.RandomNormalBoosterPackB:
-                case ItemType.RandomNormalBoosterPackA:
-                case ItemType.RandomNormalBoosterPackS:
-                case ItemType.RandomNormalBoosterPackSS:
-                case ItemType.BigRandomBoosterPackE:
-                    return true;
+            ItemType.RandomBoosterPackSingleE
+                or ItemType.RandomTitleBoosterPackSingleE
+                or ItemType.RandomNormalBoosterPackB
+                or ItemType.RandomNormalBoosterPackA
+                or ItemType.RandomNormalBoosterPackS
+                or ItemType.RandomNormalBoosterPackSS
+                or ItemType.BigRandomBoosterPackE => true,
+            _ => false,
+        };
 
-                default:
-                    return false;
-            }
-        }
-
-        public static bool IsPreAssembledFigure(this ItemType type)
+        public static bool IsPreAssembledFigure(this ItemType type) => type switch
         {
-            switch (type)
-            {
-                case ItemType.PreAssembledAsuna:
-                case ItemType.PreAssembledGintoki:
-                case ItemType.PreAssembledMegumin:
-                    return true;
+            ItemType.PreAssembledAsuna
+                or ItemType.PreAssembledGintoki
+                or ItemType.PreAssembledMegumin => true,
+            _ => false,
+        };
 
-                default:
-                    return false;
-            }
-        }
-
-        public static uint Count(this ItemType type)
+        public static uint Count(this ItemType type) => type switch
         {
-            switch (type)
-            {
-                case ItemType.RandomNormalBoosterPackB:
-                case ItemType.RandomNormalBoosterPackA:
-                case ItemType.RandomNormalBoosterPackS:
-                case ItemType.RandomNormalBoosterPackSS:
-                    return 3;
+            ItemType.RandomNormalBoosterPackB
+                or ItemType.RandomNormalBoosterPackA
+                or ItemType.RandomNormalBoosterPackS
+                or ItemType.RandomNormalBoosterPackSS => 3,
+            ItemType.BigRandomBoosterPackE => 20,
+            _ => 2,
+        };
 
-                case ItemType.BigRandomBoosterPackE:
-                    return 20;
-
-                default:
-                    return 2;
-            }
-        }
-
-        public static Rarity MinRarity(this ItemType type)
+        public static Rarity MinRarity(this ItemType type) => type switch
         {
-            switch (type)
-            {
-                case ItemType.RandomNormalBoosterPackSS:
-                    return Rarity.SS;
+            ItemType.RandomNormalBoosterPackSS => Rarity.SS,
+            ItemType.RandomNormalBoosterPackS => Rarity.S,
+            ItemType.RandomNormalBoosterPackA => Rarity.A,
+            ItemType.RandomNormalBoosterPackB => Rarity.B,
+            _ => Rarity.E,
+        };
 
-                case ItemType.RandomNormalBoosterPackS:
-                    return Rarity.S;
-
-                case ItemType.RandomNormalBoosterPackA:
-                    return Rarity.A;
-
-                case ItemType.RandomNormalBoosterPackB:
-                    return Rarity.B;
-
-                default:
-                    return Rarity.E;
-            }
-        }
-
-        public static bool IsTradable(this ItemType type)
+        public static bool IsTradable(this ItemType type) => type switch
         {
-            switch (type)
-            {
-                case ItemType.RandomTitleBoosterPackSingleE:
-                    return false;
+            ItemType.RandomTitleBoosterPackSingleE => false,
+            _ => true,
+        };
 
-                default:
-                    return true;
-            }
-        }
-
-        public static CardSource GetSource(this ItemType type)
+        public static CardSource GetSource(this ItemType type) => type switch
         {
-            switch (type)
-            {
-                case ItemType.RandomBoosterPackSingleE:
-                case ItemType.RandomNormalBoosterPackB:
-                case ItemType.RandomNormalBoosterPackA:
-                case ItemType.RandomNormalBoosterPackS:
-                case ItemType.RandomNormalBoosterPackSS:
-                case ItemType.RandomTitleBoosterPackSingleE:
-                case ItemType.BigRandomBoosterPackE:
-                    return CardSource.Shop;
+            ItemType.RandomBoosterPackSingleE
+                or ItemType.RandomNormalBoosterPackB
+                or ItemType.RandomNormalBoosterPackA
+                or ItemType.RandomNormalBoosterPackS
+                or ItemType.RandomNormalBoosterPackSS
+                or ItemType.RandomTitleBoosterPackSingleE
+                or ItemType.BigRandomBoosterPackE => CardSource.Shop,
+            _ => CardSource.Other,
+        };
 
-                default:
-                    return CardSource.Other;
-            }
-        }
-
-        public static bool CanUseWithoutCard(this ItemType type)
+        public static bool CanUseWithoutCard(this ItemType type) => type switch
         {
-            switch (type)
-            {
-                case ItemType.FigureHeadPart:
-                case ItemType.FigureBodyPart:
-                case ItemType.FigureClothesPart:
-                case ItemType.FigureLeftArmPart:
-                case ItemType.FigureLeftLegPart:
-                case ItemType.FigureRightArmPart:
-                case ItemType.FigureRightLegPart:
-                case ItemType.FigureUniversalPart:
-                    return true;
+            ItemType.FigureHeadPart
+                or ItemType.FigureBodyPart
+                or ItemType.FigureClothesPart
+                or ItemType.FigureLeftArmPart
+                or ItemType.FigureLeftLegPart
+                or ItemType.FigureRightArmPart
+                or ItemType.FigureRightLegPart
+                or ItemType.FigureUniversalPart => true,
+            _ => false,
+        };
 
-                default:
-                    return false;
-            }
-        }
-
-        public static double BaseAffection(this ItemType type)
+        public static double BaseAffection(this ItemType type) => type switch
         {
-            switch (type)
-            {
-                case ItemType.AffectionRecoveryGreat: return 1.6;
-                case ItemType.AffectionRecoveryBig: return 1;
-                case ItemType.AffectionRecoveryNormal: return 0.12;
-                case ItemType.AffectionRecoverySmall: return 0.02;
-                case ItemType.BetterIncreaseUpgradeCnt: return 1.7;
-                case ItemType.IncreaseUpgradeCount: return 0.7;
-                case ItemType.DereReRoll: return 0.1;
-                case ItemType.CardParamsReRoll: return 0.2;
-                case ItemType.CheckAffection: return 0.2;
-                case ItemType.SetCustomImage: return 0.5;
-                case ItemType.IncreaseExpSmall: return 0.15;
-                case ItemType.IncreaseExpBig: return 0.25;
-                case ItemType.ChangeStarType: return 0.3;
-                case ItemType.SetCustomBorder: return 0.4;
-                case ItemType.ChangeCardImage: return 0.1;
-                case ItemType.ResetCardValue: return 0.1;
+            ItemType.AffectionRecoveryGreat => 1.6,
+            ItemType.AffectionRecoveryBig => 1,
+            ItemType.AffectionRecoveryNormal => 0.12,
+            ItemType.AffectionRecoverySmall => 0.02,
+            ItemType.BetterIncreaseUpgradeCnt => 1.7,
+            ItemType.IncreaseUpgradeCount => 0.7,
+            ItemType.DereReRoll => 0.1,
+            ItemType.CardParamsReRoll => 0.2,
+            ItemType.CheckAffection => 0.2,
+            ItemType.SetCustomImage => 0.5,
+            ItemType.IncreaseExpSmall => 0.15,
+            ItemType.IncreaseExpBig => 0.25,
+            ItemType.ChangeStarType => 0.3,
+            ItemType.SetCustomBorder => 0.4,
+            ItemType.ChangeCardImage => 0.1,
+            ItemType.ResetCardValue => 0.1,
+            _ => 0,
+        };
 
-                default: return 0;
-            }
-        }
-
-        public static string Desc(this ItemType type)
+        public static string Desc(this ItemType type) => type switch
         {
-            switch (type)
-            {
-                case ItemType.AffectionRecoveryGreat:
-                    return "Poprawia relacje z kartą w dużym stopniu.";
-                case ItemType.AffectionRecoveryBig:
-                    return "Poprawia relacje z kartą w znacznym stopniu.";
-                case ItemType.AffectionRecoveryNormal:
-                    return "Poprawia relacje z kartą.";
-                case ItemType.BetterIncreaseUpgradeCnt:
-                    return "Może zwiększyć znacznie liczbę ulepszeń karty, tylko kto by chciał twoją krew?";
-                case ItemType.IncreaseUpgradeCount:
-                    return "Dodaje dodatkowy punkt ulepszenia do karty.";
-                case ItemType.DereReRoll:
-                    return "Pozwala zmienić charakter karty.";
-                case ItemType.CardParamsReRoll:
-                    return "Pozwala wylosować na nowo parametry karty.";
-                case ItemType.RandomBoosterPackSingleE:
-                    return "Dodaje nowy pakiet z dwiema losowymi kartami.\n\nWykluczone jakości to: SS, S i A.";
-                case ItemType.BigRandomBoosterPackE:
-                    return "Dodaje nowy pakiet z dwudziestoma losowymi kartami.\n\nWykluczone jakości to: SS, S i A.";
-                case ItemType.RandomTitleBoosterPackSingleE:
-                    return "Dodaje nowy pakiet z dwiema losowymi, niewymienialnymi kartami z tytułu podanego przez kupującego.\n\nWykluczone jakości to: SS i S.";
-                case ItemType.AffectionRecoverySmall:
-                    return "Poprawia odrobinę relacje z kartą.";
-                case ItemType.RandomNormalBoosterPackB:
-                    return "Dodaje nowy pakiet z trzema losowymi kartami, w tym jedną o gwarantowanej jakości B.\n\nWykluczone jakości to: SS.";
-                case ItemType.RandomNormalBoosterPackA:
-                    return "Dodaje nowy pakiet z trzema losowymi kartami, w tym jedną o gwarantowanej jakości A.\n\nWykluczone jakości to: SS.";
-                case ItemType.RandomNormalBoosterPackS:
-                    return "Dodaje nowy pakiet z trzema losowymi kartami, w tym jedną o gwarantowanej jakości S.\n\nWykluczone jakości to: SS.";
-                case ItemType.RandomNormalBoosterPackSS:
-                    return "Dodaje nowy pakiet z trzema losowymi kartami, w tym jedną o gwarantowanej jakości SS.";
-                case ItemType.CheckAffection:
-                    return "Pozwala sprawdzić dokładny poziom relacji z kartą.";
-                case ItemType.SetCustomImage:
-                    return "Pozwala ustawić własny obrazek karcie. Zalecany wymiary 448x650.";
-                case ItemType.IncreaseExpSmall:
-                    return "Dodaje odrobinę punktów doświadczenia do karty.";
-                case ItemType.IncreaseExpBig:
-                    return "Dodaje punkty doświadczenia do karty.";
-                case ItemType.ChangeStarType:
-                    return "Pozwala zmienić typ gwiazdek na karcie.";
-                case ItemType.SetCustomBorder:
-                    return "Pozwala ustawić ramkę karcie kiedy jest wyświetlana w profilu.";
-                case ItemType.ChangeCardImage:
-                    return "Pozwala wybrać inny obrazek z shindena.";
-                case ItemType.PreAssembledAsuna:
-                case ItemType.PreAssembledGintoki:
-                case ItemType.PreAssembledMegumin:
-                    return "Gotowy szkielet nie wymagający użycia karty SSS.";
-                case ItemType.FigureSkeleton:
-                    return $"Szkielet pozwalający rozpoczęcie tworzenia figurki.";
-                case ItemType.FigureUniversalPart:
-                    return $"Uniwersalna część, którą można zamontować jako dowolną część ciała figurki.";
-                case ItemType.FigureHeadPart:
-                    return $"Część, którą można zamontować jako głowę figurki.";
-                case ItemType.FigureBodyPart:
-                    return $"Część, którą można zamontować jako tułów figurki.";
-                case ItemType.FigureClothesPart:
-                    return $"Część, którą można zamontować jako ciuchy figurki.";
-                case ItemType.FigureLeftArmPart:
-                    return $"Część, którą można zamontować jako lewą rękę figurki.";
-                case ItemType.FigureLeftLegPart:
-                    return $"Część, którą można zamontować jako lewą nogę figurki.";
-                case ItemType.FigureRightArmPart:
-                    return $"Część, którą można zamontować jako prawą rękę figurki.";
-                case ItemType.FigureRightLegPart:
-                    return $"Część, którą można zamontować jako prawą nogę figurki.";
-                case ItemType.ResetCardValue:
-                    return $"Resetuje warość karty do początkowego poziomu.";
-                default:
-                    return "Brak opisu.";
-            }
-        }
+            ItemType.AffectionRecoveryGreat => "Poprawia relacje z kartą w dużym stopniu.",
+            ItemType.AffectionRecoveryBig => "Poprawia relacje z kartą w znacznym stopniu.",
+            ItemType.AffectionRecoveryNormal => "Poprawia relacje z kartą.",
+            ItemType.BetterIncreaseUpgradeCnt => "Może zwiększyć znacznie liczbę ulepszeń karty, tylko kto by chciał twoją krew?",
+            ItemType.IncreaseUpgradeCount => "Dodaje dodatkowy punkt ulepszenia do karty.",
+            ItemType.DereReRoll => "Pozwala zmienić charakter karty.",
+            ItemType.CardParamsReRoll => "Pozwala wylosować na nowo parametry karty.",
+            ItemType.RandomBoosterPackSingleE => "Dodaje nowy pakiet z dwiema losowymi kartami.\n\nWykluczone jakości to: SS, S i A.",
+            ItemType.BigRandomBoosterPackE => "Dodaje nowy pakiet z dwudziestoma losowymi kartami.\n\nWykluczone jakości to: SS, S i A.",
+            ItemType.RandomTitleBoosterPackSingleE => "Dodaje nowy pakiet z dwiema losowymi, niewymienialnymi kartami z tytułu podanego przez kupującego.\n\nWykluczone jakości to: SS i S.",
+            ItemType.AffectionRecoverySmall => "Poprawia odrobinę relacje z kartą.",
+            ItemType.RandomNormalBoosterPackB => "Dodaje nowy pakiet z trzema losowymi kartami, w tym jedną o gwarantowanej jakości B.\n\nWykluczone jakości to: SS.",
+            ItemType.RandomNormalBoosterPackA => "Dodaje nowy pakiet z trzema losowymi kartami, w tym jedną o gwarantowanej jakości A.\n\nWykluczone jakości to: SS.",
+            ItemType.RandomNormalBoosterPackS => "Dodaje nowy pakiet z trzema losowymi kartami, w tym jedną o gwarantowanej jakości S.\n\nWykluczone jakości to: SS.",
+            ItemType.RandomNormalBoosterPackSS => "Dodaje nowy pakiet z trzema losowymi kartami, w tym jedną o gwarantowanej jakości SS.",
+            ItemType.CheckAffection => "Pozwala sprawdzić dokładny poziom relacji z kartą.",
+            ItemType.SetCustomImage => "Pozwala ustawić własny obrazek karcie. Zalecany wymiary 448x650.",
+            ItemType.IncreaseExpSmall => "Dodaje odrobinę punktów doświadczenia do karty.",
+            ItemType.IncreaseExpBig => "Dodaje punkty doświadczenia do karty.",
+            ItemType.ChangeStarType => "Pozwala zmienić typ gwiazdek na karcie.",
+            ItemType.SetCustomBorder => "Pozwala ustawić ramkę karcie kiedy jest wyświetlana w profilu.",
+            ItemType.ChangeCardImage => "Pozwala wybrać inny obrazek z shindena.",
+            ItemType.PreAssembledAsuna or ItemType.PreAssembledGintoki or ItemType.PreAssembledMegumin => "Gotowy szkielet nie wymagający użycia karty SSS.",
+            ItemType.FigureSkeleton => $"Szkielet pozwalający rozpoczęcie tworzenia figurki.",
+            ItemType.FigureUniversalPart => $"Uniwersalna część, którą można zamontować jako dowolną część ciała figurki.",
+            ItemType.FigureHeadPart => $"Część, którą można zamontować jako głowę figurki.",
+            ItemType.FigureBodyPart => $"Część, którą można zamontować jako tułów figurki.",
+            ItemType.FigureClothesPart => $"Część, którą można zamontować jako ciuchy figurki.",
+            ItemType.FigureLeftArmPart => $"Część, którą można zamontować jako lewą rękę figurki.",
+            ItemType.FigureLeftLegPart => $"Część, którą można zamontować jako lewą nogę figurki.",
+            ItemType.FigureRightArmPart => $"Część, którą można zamontować jako prawą rękę figurki.",
+            ItemType.FigureRightLegPart => $"Część, którą można zamontować jako prawą nogę figurki.",
+            ItemType.ResetCardValue => $"Resetuje warość karty do początkowego poziomu.",
+            _ => "Brak opisu.",
+        };
 
-        public static string ToString(this ItemType type, string quality = "")
+        public static string ToString(this ItemType type, string? quality = null)
         {
             if (!string.IsNullOrEmpty(quality))
             {
                 quality = $" {quality}";
             }
 
-            switch (type)
+            return type switch
             {
-                case ItemType.AffectionRecoveryGreat:
-                    return $"Wielka fontanna czekolady{quality}";
-                case ItemType.AffectionRecoveryBig:
-                    return $"Tort czekoladowy{quality}";
-                case ItemType.AffectionRecoveryNormal:
-                    return $"Ciasto truskawkowe{quality}";
-                case ItemType.BetterIncreaseUpgradeCnt:
-                    return "Kropla twojej krwi";
-                case ItemType.IncreaseUpgradeCount:
-                    return "Pierścionek zaręczynowy";
-                case ItemType.DereReRoll:
-                    return "Bukiet kwiatów";
-                case ItemType.CardParamsReRoll:
-                    return "Naszyjnik z diamentem";
-                case ItemType.RandomBoosterPackSingleE:
-                    return "Tani pakiet losowych kart";
-                case ItemType.BigRandomBoosterPackE:
-                    return "Może i nie tani ale za to duży pakiet kart";
-                case ItemType.RandomTitleBoosterPackSingleE:
-                    return "Pakiet losowych kart z tytułu";
-                case ItemType.AffectionRecoverySmall:
-                    return $"Banan w czekoladzie{quality}";
-                case ItemType.RandomNormalBoosterPackB:
-                    return "Fioletowy pakiet losowych kart";
-                case ItemType.RandomNormalBoosterPackA:
-                    return "Pomarańczowy pakiet losowych kart";
-                case ItemType.RandomNormalBoosterPackS:
-                    return "Złoty pakiet losowych kart";
-                case ItemType.RandomNormalBoosterPackSS:
-                    return "Różowy pakiet losowych kart";
-                case ItemType.CheckAffection:
-                    return "Kryształowa kula";
-                case ItemType.SetCustomImage:
-                    return "Skalpel";
-                case ItemType.IncreaseExpSmall:
-                    return $"Mleko truskawkowe{quality}";
-                case ItemType.IncreaseExpBig:
-                    return $"Gorąca czekolada{quality}";
-                case ItemType.ChangeStarType:
-                    return "Stempel";
-                case ItemType.SetCustomBorder:
-                    return "Nożyczki";
-                case ItemType.ChangeCardImage:
-                    return "Plastelina";
-                case ItemType.PreAssembledAsuna:
-                    return "Szkielet Asuny (SAO)";
-                case ItemType.PreAssembledGintoki:
-                    return "Szkielet Gintokiego (Gintama)";
-                case ItemType.PreAssembledMegumin:
-                    return "Szkielet Megumin (Konosuba)";
-                case ItemType.FigureSkeleton:
-                    return $"Szkielet{quality}";
-                case ItemType.FigureUniversalPart:
-                    return $"Uniwersalna część figurki{quality}";
-                case ItemType.FigureHeadPart:
-                    return $"Głowa figurki{quality}";
-                case ItemType.FigureBodyPart:
-                    return $"Tułów figurki{quality}";
-                case ItemType.FigureClothesPart:
-                    return $"Ciuchy figurki{quality}";
-                case ItemType.FigureLeftArmPart:
-                    return $"Lewa ręka{quality}";
-                case ItemType.FigureLeftLegPart:
-                    return $"Lewa noga{quality}";
-                case ItemType.FigureRightArmPart:
-                    return $"Prawa ręka{quality}";
-                case ItemType.FigureRightLegPart:
-                    return $"Prawa noga{quality}";
-                case ItemType.ResetCardValue:
-                    return $"Marker";
-                default:
-                    return "Brak";
-            }
+                ItemType.AffectionRecoveryGreat => $"Wielka fontanna czekolady{quality}",
+                ItemType.AffectionRecoveryBig => $"Tort czekoladowy{quality}",
+                ItemType.AffectionRecoveryNormal => $"Ciasto truskawkowe{quality}",
+                ItemType.BetterIncreaseUpgradeCnt => "Kropla twojej krwi",
+                ItemType.IncreaseUpgradeCount => "Pierścionek zaręczynowy",
+                ItemType.DereReRoll => "Bukiet kwiatów",
+                ItemType.CardParamsReRoll => "Naszyjnik z diamentem",
+                ItemType.RandomBoosterPackSingleE => "Tani pakiet losowych kart",
+                ItemType.BigRandomBoosterPackE => "Może i nie tani ale za to duży pakiet kart",
+                ItemType.RandomTitleBoosterPackSingleE => "Pakiet losowych kart z tytułu",
+                ItemType.AffectionRecoverySmall => $"Banan w czekoladzie{quality}",
+                ItemType.RandomNormalBoosterPackB => "Fioletowy pakiet losowych kart",
+                ItemType.RandomNormalBoosterPackA => "Pomarańczowy pakiet losowych kart",
+                ItemType.RandomNormalBoosterPackS => "Złoty pakiet losowych kart",
+                ItemType.RandomNormalBoosterPackSS => "Różowy pakiet losowych kart",
+                ItemType.CheckAffection => "Kryształowa kula",
+                ItemType.SetCustomImage => "Skalpel",
+                ItemType.IncreaseExpSmall => $"Mleko truskawkowe{quality}",
+                ItemType.IncreaseExpBig => $"Gorąca czekolada{quality}",
+                ItemType.ChangeStarType => "Stempel",
+                ItemType.SetCustomBorder => "Nożyczki",
+                ItemType.ChangeCardImage => "Plastelina",
+                ItemType.PreAssembledAsuna => "Szkielet Asuny (SAO)",
+                ItemType.PreAssembledGintoki => "Szkielet Gintokiego (Gintama)",
+                ItemType.PreAssembledMegumin => "Szkielet Megumin (Konosuba)",
+                ItemType.FigureSkeleton => $"Szkielet{quality}",
+                ItemType.FigureUniversalPart => $"Uniwersalna część figurki{quality}",
+                ItemType.FigureHeadPart => $"Głowa figurki{quality}",
+                ItemType.FigureBodyPart => $"Tułów figurki{quality}",
+                ItemType.FigureClothesPart => $"Ciuchy figurki{quality}",
+                ItemType.FigureLeftArmPart => $"Lewa ręka{quality}",
+                ItemType.FigureLeftLegPart => $"Lewa noga{quality}",
+                ItemType.FigureRightArmPart => $"Prawa ręka{quality}",
+                ItemType.FigureRightLegPart => $"Prawa noga{quality}",
+                ItemType.ResetCardValue => $"Marker",
+                _ => "Brak",
+            };
         }
 
-        public static FigurePart GetPartType(this ItemType type)
+        public static FigurePart GetPartType(this ItemType type) => type switch
         {
-            switch (type)
-            {
-                case ItemType.FigureUniversalPart:
-                    return FigurePart.All;
-                case ItemType.FigureHeadPart:
-                    return FigurePart.Head;
-                case ItemType.FigureBodyPart:
-                    return FigurePart.Body;
-                case ItemType.FigureClothesPart:
-                    return FigurePart.Clothes;
-                case ItemType.FigureLeftArmPart:
-                    return FigurePart.LeftArm;
-                case ItemType.FigureLeftLegPart:
-                    return FigurePart.LeftLeg;
-                case ItemType.FigureRightArmPart:
-                    return FigurePart.RightArm;
-                case ItemType.FigureRightLegPart:
-                    return FigurePart.RightLeg;
+            ItemType.FigureUniversalPart => FigurePart.All,
+            ItemType.FigureHeadPart => FigurePart.Head,
+            ItemType.FigureBodyPart => FigurePart.Body,
+            ItemType.FigureClothesPart => FigurePart.Clothes,
+            ItemType.FigureLeftArmPart => FigurePart.LeftArm,
+            ItemType.FigureLeftLegPart => FigurePart.LeftLeg,
+            ItemType.FigureRightArmPart => FigurePart.RightArm,
+            ItemType.FigureRightLegPart => FigurePart.RightLeg,
+            _ => FigurePart.None,
+        };
 
-                default:
-                    return FigurePart.None;
-            }
-        }
-
-        public static List<RarityExcluded> RarityExcluded(this ItemType type)
+        public static ICollection<RarityExcluded> RarityExcluded(this ItemType type) => type switch
         {
-            var result = new List<RarityExcluded>();
-
-            switch (type)
-            {
-                case ItemType.RandomTitleBoosterPackSingleE:
-                case ItemType.BigRandomBoosterPackE:
-                    result.Add(new RarityExcluded(Rarity.SS));
-                    result.Add(new RarityExcluded(Rarity.S));
-                    break;
-
-                case ItemType.RandomNormalBoosterPackB:
-                case ItemType.RandomNormalBoosterPackA:
-                case ItemType.RandomNormalBoosterPackS:
-                    result.Add(new RarityExcluded(Rarity.SS));
-                    break;
-
-                case ItemType.RandomBoosterPackSingleE:
-                    result.Add(new RarityExcluded(Rarity.SS));
-                    result.Add(new RarityExcluded(Rarity.S));
-                    result.Add(new RarityExcluded(Rarity.A));
-                    break;
-
-                default:
-                    break;
-            }
-
-            return result;
-        }
+            ItemType.RandomTitleBoosterPackSingleE
+                or ItemType.BigRandomBoosterPackE => new[]
+                {
+                    new RarityExcluded(Rarity.SS),
+                    new RarityExcluded(Rarity.S),
+                },
+            ItemType.RandomNormalBoosterPackB
+                or ItemType.RandomNormalBoosterPackA
+                or ItemType.RandomNormalBoosterPackS => new[]
+                {
+                    new RarityExcluded(Rarity.SS)
+                },
+            ItemType.RandomBoosterPackSingleE => new[]
+                {
+                    new RarityExcluded(Rarity.SS),
+                    new RarityExcluded(Rarity.S),
+                    new RarityExcluded(Rarity.A),
+                },
+            _ => Array.Empty<RarityExcluded>(),
+        };
 
         public static Item ToItem(this ItemType type, long count = 1, Quality quality = Quality.Broken)
         {
@@ -581,21 +384,13 @@ namespace Sanakan.DAL.Models
             };
         }
 
-        public static PreAssembledFigure ToPASType(this ItemType type)
+        public static PreAssembledFigure ToPASType(this ItemType type) => type switch
         {
-            switch (type)
-            {
-                case ItemType.PreAssembledAsuna:
-                    return PreAssembledFigure.Asuna;
-                case ItemType.PreAssembledGintoki:
-                    return PreAssembledFigure.Gintoki;
-                case ItemType.PreAssembledMegumin:
-                    return PreAssembledFigure.Megumin;
-
-                default:
-                    return PreAssembledFigure.None;
-            }
-        }
+            ItemType.PreAssembledAsuna => PreAssembledFigure.Asuna,
+            ItemType.PreAssembledGintoki => PreAssembledFigure.Gintoki,
+            ItemType.PreAssembledMegumin => PreAssembledFigure.Megumin,
+            _ => PreAssembledFigure.None,
+        };
 
         public static BoosterPack? ToBoosterPack(this ItemType type)
         {

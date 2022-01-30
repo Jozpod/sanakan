@@ -9,6 +9,7 @@ using Sanakan.DAL.Models;
 using Sanakan.DAL.Repositories;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot;
+using Sanakan.DiscordBot.Abstractions;
 using Sanakan.DiscordBot.Abstractions.Extensions;
 using Sanakan.DiscordBot.Abstractions.Models;
 using Sanakan.Extensions;
@@ -37,13 +38,13 @@ namespace Sanakan.Web.Controllers
         private readonly IUserRepository _userRepository;
         private readonly IBlockingPriorityQueue _blockingPriorityQueue;
         private readonly IShindenClient _shindenClient;
-        private readonly IDiscordClientAccessor _discordSocketClientAccessor;
+        private readonly IDiscordClientAccessor _discordClientAccessor;
         private readonly IUserContext _userContext;
         private readonly IJwtBuilder _jwtBuilder;
         private readonly IRequestBodyReader _requestBodyReader;
 
         public UserController(
-            IDiscordClientAccessor discordSocketClientAccessor,
+            IDiscordClientAccessor discordClientAccessor,
             IOptionsMonitor<SanakanConfiguration> config,
             IUserRepository userRepository,
             IBlockingPriorityQueue blockingPriorityQueue,
@@ -53,7 +54,7 @@ namespace Sanakan.Web.Controllers
             IJwtBuilder jwtBuilder,
             IRequestBodyReader requestBodyReader)
         {
-            _discordSocketClientAccessor = discordSocketClientAccessor;
+            _discordClientAccessor = discordClientAccessor;
             _config = config;
             _userRepository = userRepository;
             _blockingPriorityQueue = blockingPriorityQueue;
@@ -72,7 +73,7 @@ namespace Sanakan.Web.Controllers
         [ProducesResponseType(typeof(User), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetUserByDiscordIdAsync(ulong discordUserId)
         {
-            var result = await _userRepository.GetCachedFullUserAsync(discordUserId);
+            var result = await _userRepository.GetCachedAsync(discordUserId);
             return Ok(result);
         }
 
@@ -125,7 +126,7 @@ namespace Sanakan.Web.Controllers
         [ProducesResponseType(typeof(UserWithToken), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetUserByShindenIdAsync(ulong id)
         {
-            var user = await _userRepository.GetCachedFullUserByShindenIdAsync(id);
+            var user = await _userRepository.GetCachedByShindenIdAsync(id);
 
             if (user == null)
             {
@@ -205,7 +206,7 @@ namespace Sanakan.Web.Controllers
                 return ShindenNotFound(Strings.UserNotFound);
             }
 
-            var client = _discordSocketClientAccessor.Client;
+            var client = _discordClientAccessor.Client;
 
             if (client == null)
             {
@@ -252,7 +253,7 @@ namespace Sanakan.Web.Controllers
                 return ShindenInternalServerError(Strings.ModelIsInvalid);
             }
 
-            var client = _discordSocketClientAccessor.Client;
+            var client = _discordClientAccessor.Client;
 
             if (client == null)
             {

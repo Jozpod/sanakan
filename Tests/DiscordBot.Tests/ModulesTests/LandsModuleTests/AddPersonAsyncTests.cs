@@ -31,7 +31,7 @@ namespace DiscordBot.ModulesTests.LandsModuleTests
                 .Returns(roleIds);
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildOptions.Id))
+                .Setup(pr => pr.GetCachedById(guildOptions.Id))
                 .ReturnsAsync(guildOptions);
 
             _landManagerMock
@@ -79,7 +79,7 @@ namespace DiscordBot.ModulesTests.LandsModuleTests
                   .Returns("mention");
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildOptions.Id))
+                .Setup(pr => pr.GetCachedById(guildOptions.Id))
                 .ReturnsAsync(guildOptions);
 
             _landManagerMock

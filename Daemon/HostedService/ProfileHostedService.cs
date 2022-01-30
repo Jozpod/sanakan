@@ -9,6 +9,7 @@ using Sanakan.Common.Configuration;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot;
+using Sanakan.DiscordBot.Abstractions;
 using System;
 using System.Linq;
 using System.Threading;
@@ -129,7 +130,7 @@ namespace Sanakan.Daemon.HostedService
                     switch (timeStatus.Type)
                     {
                         case StatusType.Globals:
-                            var guildConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(guildId);
+                            var guildConfig = await guildConfigRepository.GetCachedById(guildId);
                             var roleId = guildConfig?.GlobalEmotesRoleId;
 
                             if (roleId.HasValue)

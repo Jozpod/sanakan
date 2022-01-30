@@ -29,7 +29,7 @@ namespace Sanakan.Web.Tests.Controllers.WaifuControllerTests
             user.GameDeck.Wishes.Add(new WishlistObject { Type = WishlistObjectType.Character, ObjectId = 1ul });
 
             _userRepositoryMock
-                .Setup(pr => pr.GetCachedFullUserByShindenIdAsync(shindenUserId))
+                .Setup(pr => pr.GetCachedByShindenIdAsync(shindenUserId))
                 .ReturnsAsync(user);
 
             _cardRepositoryMock

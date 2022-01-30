@@ -44,7 +44,7 @@ namespace DiscordBot.ModulesTests.HelperModuleTests
                 .Returns(guildId);
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildId))
+                .Setup(pr => pr.GetCachedById(guildId))
                 .ReturnsAsync(guildOption);
 
             _guildUserMock

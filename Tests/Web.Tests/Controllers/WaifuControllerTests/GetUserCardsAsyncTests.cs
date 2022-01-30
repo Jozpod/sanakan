@@ -23,7 +23,7 @@ namespace Sanakan.Web.Tests.Controllers.WaifuControllerTests
             User? expected = null;
 
             _cardRepositoryMock
-                .Setup(pr => pr.GetUserCardsAsync(shindenUserId))
+                .Setup(pr => pr.GetByShindenUserIdAsync(shindenUserId))
                 .ReturnsAsync(expected);
 
             var result = await _controller.GetUserCardsAsync(shindenUserId);
@@ -40,7 +40,7 @@ namespace Sanakan.Web.Tests.Controllers.WaifuControllerTests
             expected.ShindenId = shindenUserId;
 
             _cardRepositoryMock
-                .Setup(pr => pr.GetUserCardsAsync(shindenUserId))
+                .Setup(pr => pr.GetByShindenUserIdAsync(shindenUserId))
                 .ReturnsAsync(expected);
 
             var result = await _controller.GetUserCardsAsync(shindenUserId);

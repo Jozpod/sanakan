@@ -1,7 +1,6 @@
 ﻿using Discord;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using Sanakan.Daemon.HostedService;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Models.Configuration;
 using Sanakan.TaskQueue.Messages;
@@ -10,7 +9,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Sanakan.Daemon.Tests.HostedServices.DiscordBotHostedServiceTests
+namespace DiscordBot.ServicesTests.ExperienceManagerTests
 {
     /// <summary>
     /// Defines tests for <see cref="DiscordBotHostedService.HandleMessageAsync"/> event handler.
@@ -26,8 +25,6 @@ namespace Sanakan.Daemon.Tests.HostedServices.DiscordBotHostedServiceTests
             Mock<IGuildUser> guildUserMock = null,
             Mock<IMessageChannel> messageChannelMock = null)
         {
-            await StartAsync();
-
             guildMock ??= new Mock<IGuild>(MockBehavior.Strict);
             guildUserMock ??= new Mock<IGuildUser>(MockBehavior.Strict);
             messageChannelMock ??= new Mock<IMessageChannel>(MockBehavior.Strict);
@@ -69,7 +66,7 @@ namespace Sanakan.Daemon.Tests.HostedServices.DiscordBotHostedServiceTests
                .Verifiable();
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildOptions.Id))
+                .Setup(pr => pr.GetCachedById(guildOptions.Id))
                 .ReturnsAsync(guildOptions)
                 .Verifiable();
 
@@ -117,7 +114,7 @@ namespace Sanakan.Daemon.Tests.HostedServices.DiscordBotHostedServiceTests
         {
             var guildOptions = new GuildOptions(1ul, 50);
             await SetupAsync(guildOptions);
-            _discordSocketClientAccessorMock.Raise(pr => pr.MessageReceived += null, _messageMock.Object);
+            _discordClientAccessorMock.Raise(pr => pr.MessageReceived += null, _messageMock.Object);
 
             _guildConfigRepositoryMock.Verify();
             _userRepositoryMock.Verify();
@@ -145,7 +142,7 @@ namespace Sanakan.Daemon.Tests.HostedServices.DiscordBotHostedServiceTests
                .Setup(pr => pr.RoleIds)
                .Returns(new List<ulong>());
 
-            _discordSocketClientAccessorMock.Raise(pr => pr.MessageReceived += null, _messageMock.Object);
+            _discordClientAccessorMock.Raise(pr => pr.MessageReceived += null, _messageMock.Object);
         }
 
         [TestMethod]
@@ -161,7 +158,7 @@ namespace Sanakan.Daemon.Tests.HostedServices.DiscordBotHostedServiceTests
                 .Setup(pr => pr.Id)
                 .Returns(channelId);
 
-            _discordSocketClientAccessorMock.Raise(pr => pr.MessageReceived += null, _messageMock.Object);
+            _discordClientAccessorMock.Raise(pr => pr.MessageReceived += null, _messageMock.Object);
         }
 
         [TestMethod]
@@ -177,7 +174,7 @@ namespace Sanakan.Daemon.Tests.HostedServices.DiscordBotHostedServiceTests
                 .Setup(pr => pr.Id)
                 .Returns(channelId);
 
-            _discordSocketClientAccessorMock.Raise(pr => pr.MessageReceived += null, _messageMock.Object);
+            _discordClientAccessorMock.Raise(pr => pr.MessageReceived += null, _messageMock.Object);
         }
 
         [TestMethod]
@@ -186,8 +183,8 @@ namespace Sanakan.Daemon.Tests.HostedServices.DiscordBotHostedServiceTests
             var guildOptions = new GuildOptions(1ul, 50);
             await SetupAsync(guildOptions);
 
-            _discordSocketClientAccessorMock.Raise(pr => pr.MessageReceived += null, _messageMock.Object);
-            _discordSocketClientAccessorMock.Raise(pr => pr.MessageReceived += null, _messageMock.Object);
+            _discordClientAccessorMock.Raise(pr => pr.MessageReceived += null, _messageMock.Object);
+            _discordClientAccessorMock.Raise(pr => pr.MessageReceived += null, _messageMock.Object);
         }
     }
 }

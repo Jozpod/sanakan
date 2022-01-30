@@ -33,7 +33,7 @@ namespace DiscordBot.ModulesTests.ShindenModuleTests
                 .Returns(userId);
 
             _userRepositoryMock
-                .Setup(pr => pr.GetCachedFullUserAsync(userId))
+                .Setup(pr => pr.GetCachedAsync(userId))
                 .ReturnsAsync(null as User);
 
             SetupSendMessage((message, embed) =>
@@ -74,7 +74,7 @@ namespace DiscordBot.ModulesTests.ShindenModuleTests
                 .Returns(1ul);
 
             _userRepositoryMock
-                .Setup(pr => pr.GetCachedFullUserAsync(user.Id))
+                .Setup(pr => pr.GetCachedAsync(user.Id))
                 .ReturnsAsync(user);
 
             _shindenClientMock

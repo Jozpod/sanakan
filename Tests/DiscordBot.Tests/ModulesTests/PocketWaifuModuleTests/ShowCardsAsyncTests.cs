@@ -32,7 +32,7 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
             var cards = new List<Card> { };
 
             _userRepositoryMock
-                .Setup(pr => pr.GetCachedFullUserAsync(user.Id))
+                .Setup(pr => pr.GetCachedAsync(user.Id))
                 .ReturnsAsync(user);
 
             _userMock
@@ -69,7 +69,7 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
             var cards = new List<Card> { };
 
             _userRepositoryMock
-                .Setup(pr => pr.GetCachedFullUserAsync(user.Id))
+                .Setup(pr => pr.GetCachedAsync(user.Id))
                 .ReturnsAsync(user);
 
             _userMock
@@ -111,7 +111,7 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
             var cards = new List<Card> { card };
 
             _userRepositoryMock
-                .Setup(pr => pr.GetCachedFullUserAsync(user.Id))
+                .Setup(pr => pr.GetCachedAsync(user.Id))
                 .ReturnsAsync(user);
 
             _userMock

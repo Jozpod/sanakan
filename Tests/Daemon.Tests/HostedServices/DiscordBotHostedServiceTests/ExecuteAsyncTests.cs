@@ -32,41 +32,29 @@ namespace Sanakan.Daemon.Tests.HostedServices.DiscordBotHostedServiceTests
                 .Returns(fakeDirectory)
                 .Verifiable();
 
-            _discordSocketClientAccessorMock
+            _discordClientAccessorMock
                 .Setup(pr => pr.LoginAsync(TokenType.Bot, It.IsAny<string>(), true))
-                .Returns(Task.CompletedTask)
-                .Verifiable();
+                .Returns(Task.CompletedTask);
 
-            _discordSocketClientAccessorMock
+            _discordClientAccessorMock
                 .Setup(pr => pr.SetGameAsync(It.IsAny<string>(), null, ActivityType.Playing))
-                .Returns(Task.CompletedTask)
-                .Verifiable();
+                .Returns(Task.CompletedTask);
 
             _discordClientMock
                 .Setup(pr => pr.StartAsync())
-                .Returns(Task.CompletedTask)
-                .Verifiable();
+                .Returns(Task.CompletedTask);
 
             _commandHandlerMock
                 .Setup(pr => pr.InitializeAsync())
-                .Returns(Task.CompletedTask)
-                .Verifiable();
+                .Returns(Task.CompletedTask);
 
             _taskManagerMock
                 .Setup(pr => pr.Delay(
                     It.IsAny<TimeSpan>(),
                     It.IsAny<CancellationToken>()))
-                .Returns(Task.CompletedTask)
-                .Verifiable();
+                .Returns(Task.CompletedTask);
 
             await _service.StartAsync(cancellationTokenSource.Token);
-
-            _databaseFacadeMock.Verify();
-            _fileSystemMock.Verify();
-            _discordSocketClientAccessorMock.Verify();
-            _discordClientMock.Verify();
-            _commandHandlerMock.Verify();
-            _taskManagerMock.Verify();
         }
     }
 }

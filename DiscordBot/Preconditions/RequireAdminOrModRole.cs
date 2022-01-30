@@ -29,7 +29,7 @@ namespace Sanakan.Preconditions
 
             var guildPermissions = user.GuildPermissions;
 
-            var guildConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
+            var guildConfig = await guildConfigRepository.GetCachedById(guild.Id);
 
             if (guildConfig == null)
             {

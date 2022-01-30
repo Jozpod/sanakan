@@ -7,11 +7,11 @@ namespace Sanakan.DAL.Repositories.Abstractions
     public interface IUserRepository :
         ICreateRepository<User>, IRemoveRepository<User>, ISaveRepository
     {
-        Task<List<ulong>> GetUserShindenIdsByHavingCharacterAsync(ulong id);
+        Task<List<ulong>> GetShindenUserIdsByHavingCharacterAsync(ulong id);
 
-        Task<User?> GetUserWaifuProfileAsync(ulong shindenUserId);
+        Task<User?> GetWithWaifuProfileAsync(ulong shindenUserId);
 
-        Task<User?> GetBaseUserAndDontTrackAsync(ulong discordUserId);
+        Task<User?> GetBasicAsync(ulong discordUserId);
 
         Task<User?> GetUserAndDontTrackAsync(ulong discordUserId);
 
@@ -21,13 +21,13 @@ namespace Sanakan.DAL.Repositories.Abstractions
 
         Task<User?> GetByShindenIdAsync(ulong shindenUserId, UserQueryOptions userQueryOptions);
 
-        Task<User?> GetCachedFullUserAsync(ulong shindenUserId);
+        Task<User?> GetCachedAsync(ulong shindenUserId);
 
-        Task<User?> GetCachedFullUserByShindenIdAsync(ulong shindenUserId);
+        Task<User?> GetCachedByShindenIdAsync(ulong shindenUserId);
 
         Task<List<User>> GetCachedAllUsersLiteAsync();
 
-        Task<IEnumerable<User>> GetCachedAllUsersAsync();
+        Task<IEnumerable<User>> GetAllCachedAsync();
 
         Task<bool> ExistsByDiscordIdAsync(ulong discordUserId);
 

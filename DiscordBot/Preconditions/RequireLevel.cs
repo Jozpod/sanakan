@@ -39,7 +39,7 @@ namespace Sanakan.Preconditions
                 return PreconditionResult.FromSuccess();
             }
 
-            var guildConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
+            var guildConfig = await guildConfigRepository.GetCachedById(guild.Id);
 
             if (guildConfig != null)
             {
@@ -58,7 +58,7 @@ namespace Sanakan.Preconditions
                 }
             }
 
-            var databaseUser = await userRepository.GetBaseUserAndDontTrackAsync(user.Id);
+            var databaseUser = await userRepository.GetBasicAsync(user.Id);
             var result = new PreconditionErrorPayload();
             result.ImageUrl = ImageResources.WomenMagnifyingGlass;
             result.Message = string.Format(Strings.RequiredLevelToExecuteCommand, _level);

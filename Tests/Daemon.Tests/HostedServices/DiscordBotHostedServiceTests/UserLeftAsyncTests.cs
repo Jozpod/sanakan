@@ -53,7 +53,7 @@ namespace Sanakan.Daemon.Tests.HostedServices.DiscordBotHostedServiceTests
                 .Returns(guildId);
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildId))
+                .Setup(pr => pr.GetCachedById(guildId))
                 .ReturnsAsync(guildOptions);
 
             guildMock
@@ -76,8 +76,8 @@ namespace Sanakan.Daemon.Tests.HostedServices.DiscordBotHostedServiceTests
                 .Setup(pr => pr.TryEnqueue(It.IsAny<DeleteUserMessage>()))
                 .Returns(true);
 
-            _discordSocketClientAccessorMock.Raise(pr => pr.LoggedIn += null);
-            _discordSocketClientAccessorMock.Raise(pr => pr.UserLeft += null, guildUserMock.Object);
+            _discordClientAccessorMock.Raise(pr => pr.LoggedIn += null);
+            _discordClientAccessorMock.Raise(pr => pr.UserLeft += null, guildUserMock.Object);
         }
 
     }

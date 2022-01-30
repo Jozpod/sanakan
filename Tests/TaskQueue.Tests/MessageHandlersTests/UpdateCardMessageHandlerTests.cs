@@ -46,7 +46,7 @@ namespace Sanakan.TaskQueue.Tests.MessageHandlersTests
             };
 
             _cardRepositoryMock
-                .Setup(pr => pr.GetCardsByCharacterIdAsync(message.CharacterId))
+                .Setup(pr => pr.GetByCharacterIdAsync(message.CharacterId))
                 .ReturnsAsync(cards);
 
             _waifuServiceMock

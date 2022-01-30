@@ -47,16 +47,17 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("wyświetla użytkowników należących do krainy")]
         [Remarks("Kotleciki")]
         public async Task ShowPeopleAsync(
-            [Summary("nazwa krainy (opcjonalne)")][Remainder]string? name = null)
+            [Summary(ParameterInfo.Land)][Remainder]string? name = null)
         {
             var guild = Context.Guild;
-            var config = await _guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
-
+            var config = await _guildConfigRepository.GetCachedById(guild.Id);
             var user = Context.User as IGuildUser;
+            Embed embed;
 
             if (user == null)
             {
-                await ReplyAsync(embed: Strings.UserNotFound.ToEmbedMessage(EMType.Error).Build());
+                embed = Strings.UserNotFound.ToEmbedMessage(EMType.Error).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
@@ -64,13 +65,14 @@ namespace Sanakan.DiscordBot.Modules
 
             if (land == null)
             {
-                await ReplyAsync(embed: "Nie zarządzasz żadną krainą.".ToEmbedMessage(EMType.Error).Build());
+                embed = Strings.YouDontManageLand.ToEmbedMessage(EMType.Error).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
-            foreach (var embed in await _landManager.GetMembersList(land, guild))
+            foreach (var embedIt in await _landManager.GetMembersList(land, guild))
             {
-                await ReplyAsync(embed: embed);
+                await ReplyAsync(embed: embedIt);
                 await _taskManager.Delay(TimeSpan.FromSeconds(2));
             }
         }
@@ -80,57 +82,13 @@ namespace Sanakan.DiscordBot.Modules
         [Summary("dodaje użytkownika do krainy")]
         [Remarks("Karna Kotleciki")]
         public async Task AddPersonAsync(
-            [Summary("użytkownik")] IGuildUser userToAdd,
-            [Summary("nazwa krainy (opcjonalne)")][Remainder]string? name = null)
+            [Summary(ParameterInfo.User)] IGuildUser userToAdd,
+            [Summary(ParameterInfo.Land)][Remainder]string? name = null)
         {
             var guild = Context.Guild;
-            var config = await _guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
-
+            var config = await _guildConfigRepository.GetCachedById(guild.Id);
             var user = Context.User as IGuildUser;
-
-            if(user == null)
-            {
-                await ReplyAsync(embed: Strings.UserNotFound.ToEmbedMessage(EMType.Error).Build());
-                return;
-            }
-
-            var land = _landManager.DetermineLand(config.Lands, user.RoleIds, name);
-
-            if (land == null)
-            {
-                await ReplyAsync(embed: "Nie zarządzasz żadną krainą.".ToEmbedMessage(EMType.Error).Build());
-                return;
-            }
-
-            var role = guild.GetRole(land.UnderlingId);
-
-            if (role == null)
-            {
-                await ReplyAsync(embed: "Nie odnaleziono roli członka!".ToEmbedMessage(EMType.Error).Build());
-                return;
-            }
-
-            if (!userToAdd.RoleIds.Contains(role.Id))
-            {
-                await userToAdd.AddRoleAsync(role);
-            }
-
-            var content = $"{userToAdd.Mention} dołącza do `{land.Name}`.".ToEmbedMessage(EMType.Success).Build();
-            await ReplyAsync(embed: content);
-        }
-
-        [Command("kraina usuń", RunMode = RunMode.Async)]
-        [Alias("land remove", "kraina usun")]
-        [Summary("usuwa użytkownika z krainy")]
-        [Remarks("Karna")]
-        public async Task RemovePersonAsync(
-            [Summary("użytkownik")] IGuildUser userToRemove,
-            [Summary("nazwa krainy (opcjonalne)")][Remainder]string? name = null)
-        {
-            var guild = Context.Guild;
-            var config = await _guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
-
-            var user = Context.User as IGuildUser;
+            Embed embed;
 
             if (user == null)
             {
@@ -142,14 +100,63 @@ namespace Sanakan.DiscordBot.Modules
 
             if (land == null)
             {
-                await ReplyAsync(embed: "Nie zarządzasz żadną krainą.".ToEmbedMessage(EMType.Error).Build());
+                embed = Strings.YouDontManageLand.ToEmbedMessage(EMType.Error).Build();
+                await ReplyAsync(embed: embed);
+                return;
+            }
+
+            var role = guild.GetRole(land.UnderlingId);
+
+            if (role == null)
+            {
+                embed = Strings.MemberRoleNotFound.ToEmbedMessage(EMType.Error).Build();
+                await ReplyAsync(embed: embed);
+                return;
+            }
+
+            if (!userToAdd.RoleIds.Contains(role.Id))
+            {
+                await userToAdd.AddRoleAsync(role);
+            }
+
+            embed = $"{userToAdd.Mention} dołącza do `{land.Name}`.".ToEmbedMessage(EMType.Success).Build();
+            await ReplyAsync(embed: embed);
+        }
+
+        [Command("kraina usuń", RunMode = RunMode.Async)]
+        [Alias("land remove", "kraina usun")]
+        [Summary("usuwa użytkownika z krainy")]
+        [Remarks("Karna")]
+        public async Task RemovePersonAsync(
+            [Summary(ParameterInfo.User)] IGuildUser userToRemove,
+            [Summary(ParameterInfo.Land)][Remainder]string? name = null)
+        {
+            var guild = Context.Guild;
+            var config = await _guildConfigRepository.GetCachedById(guild.Id);
+            var user = Context.User as IGuildUser;
+            Embed embed;
+
+            if (user == null)
+            {
+                embed = Strings.UserNotFound.ToEmbedMessage(EMType.Error).Build();
+                await ReplyAsync(embed: embed);
+                return;
+            }
+
+            var land = _landManager.DetermineLand(config.Lands, user.RoleIds, name);
+
+            if (land == null)
+            {
+                embed = Strings.YouDontManageLand.ToEmbedMessage(EMType.Error).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
             var role = guild.GetRole(land.UnderlingId);
             if (role == null)
             {
-                await ReplyAsync(embed: "Nie odnaleziono roli członka!".ToEmbedMessage(EMType.Error).Build());
+                embed = Strings.MemberRoleNotFound.ToEmbedMessage(EMType.Error).Build();
+                await ReplyAsync(embed: embed);
                 return;
             }
 
@@ -158,8 +165,8 @@ namespace Sanakan.DiscordBot.Modules
                 await userToRemove.RemoveRoleAsync(role);
             }
 
-            var content = $"{userToRemove.Mention} odchodzi z `{land.Name}`.".ToEmbedMessage(EMType.Success).Build();
-            await ReplyAsync(embed: content);
+            embed = $"{userToRemove.Mention} odchodzi z `{land.Name}`.".ToEmbedMessage(EMType.Success).Build();
+            await ReplyAsync(embed: embed);
         }
     }
 }

@@ -29,7 +29,7 @@ namespace DiscordBot.ModulesTests.ProfileModuleTests
                 .Returns("mention");
 
             _userRepositoryMock
-                .Setup(pr => pr.GetCachedFullUserAsync(databaseUser.Id))
+                .Setup(pr => pr.GetCachedAsync(databaseUser.Id))
                 .ReturnsAsync(databaseUser);
 
             SetupSendMessage((message, embed) =>

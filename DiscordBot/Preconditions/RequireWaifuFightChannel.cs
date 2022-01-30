@@ -30,7 +30,7 @@ namespace Sanakan.Preconditions
                 return PreconditionResult.FromError(Strings.CanExecuteOnlyOnServer);
             }
 
-            var guildConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
+            var guildConfig = await guildConfigRepository.GetCachedById(guild.Id);
 
             if (guildConfig == null)
             {

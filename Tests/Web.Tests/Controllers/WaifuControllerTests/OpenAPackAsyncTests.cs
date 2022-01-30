@@ -33,7 +33,7 @@ namespace Sanakan.Web.Tests.Controllers.WaifuControllerTests
                 .Returns(discordUserId);
 
             _userRepositoryMock
-                .Setup(pr => pr.GetCachedFullUserAsync(discordUserId))
+                .Setup(pr => pr.GetCachedAsync(discordUserId))
                 .ReturnsAsync(user);
 
             _waifuServiceMock

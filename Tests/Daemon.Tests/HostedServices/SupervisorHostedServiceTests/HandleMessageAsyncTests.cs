@@ -70,7 +70,7 @@ namespace Sanakan.Daemon.Tests.HostedServices.SupervisorHostedServiceTests
                 .Returns(guildMock.Object);
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildId))
+                .Setup(pr => pr.GetCachedById(guildId))
                 .ReturnsAsync(null as GuildOptions);
 
             var cancellationTokenSource = new CancellationTokenSource();
@@ -132,7 +132,7 @@ namespace Sanakan.Daemon.Tests.HostedServices.SupervisorHostedServiceTests
                 .Returns(guildMock.Object);
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildId))
+                .Setup(pr => pr.GetCachedById(guildId))
                 .ReturnsAsync(guildOptions);
 
             var cancellationTokenSource = new CancellationTokenSource();
@@ -210,7 +210,7 @@ namespace Sanakan.Daemon.Tests.HostedServices.SupervisorHostedServiceTests
                 .Returns(guildMock.Object);
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildId))
+                .Setup(pr => pr.GetCachedById(guildId))
                 .ReturnsAsync(guildOptions);
 
             _userMessageSupervisorMock

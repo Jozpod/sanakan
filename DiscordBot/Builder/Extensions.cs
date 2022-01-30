@@ -5,6 +5,7 @@ using Sanakan.Common.Builder;
 using Sanakan.Common.Configuration;
 using Sanakan.Common.Models;
 using Sanakan.DAL.Models;
+using Sanakan.DiscordBot.Abstractions;
 using Sanakan.DiscordBot.Abstractions.Configuration;
 using Sanakan.DiscordBot.Services;
 using Sanakan.Game.Models;

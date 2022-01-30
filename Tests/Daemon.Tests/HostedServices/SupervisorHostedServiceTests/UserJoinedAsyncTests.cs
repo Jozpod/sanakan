@@ -70,7 +70,7 @@ namespace Sanakan.Daemon.Tests.HostedServices.SupervisorHostedServiceTests
                 .Returns(guildMock.Object);
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildOptions.Id))
+                .Setup(pr => pr.GetCachedById(guildOptions.Id))
                 .ReturnsAsync(guildOptions);
 
             _userJoinedGuildSupervisorMock

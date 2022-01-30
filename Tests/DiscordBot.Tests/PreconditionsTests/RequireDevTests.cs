@@ -49,13 +49,10 @@ namespace Sanakan.DiscordBot.Tests.PreconditionsTests
 
             _discordConfigurationMock
                 .Setup(pr => pr.CurrentValue)
-                .Returns(configuration)
-                .Verifiable();
+                .Returns(configuration);
 
             var result = await _preconditionAttribute.CheckPermissionsAsync(_commandContextMock.Object, null, _serviceProvider);
             result.IsSuccess.Should().BeTrue();
-
-            _discordConfigurationMock.Verify();
         }
 
         [TestMethod]
@@ -69,14 +66,11 @@ namespace Sanakan.DiscordBot.Tests.PreconditionsTests
 
             _discordConfigurationMock
                 .Setup(pr => pr.CurrentValue)
-                .Returns(configuration)
-                .Verifiable();
+                .Returns(configuration);
 
             var result = await _preconditionAttribute.CheckPermissionsAsync(_commandContextMock.Object, null, _serviceProvider);
             result.IsSuccess.Should().BeFalse();
             result.ErrorReason.Should().NotBeNullOrEmpty();
-
-            _discordConfigurationMock.Verify();
         }
     }
 }

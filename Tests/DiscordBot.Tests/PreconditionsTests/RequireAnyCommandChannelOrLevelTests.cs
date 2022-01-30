@@ -57,7 +57,7 @@ namespace Sanakan.DiscordBot.Tests.PreconditionsTests
                 .Verifiable();
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildId))
+                .Setup(pr => pr.GetCachedById(guildId))
                 .ReturnsAsync(guildConfig)
                 .Verifiable();
         }
@@ -175,7 +175,7 @@ namespace Sanakan.DiscordBot.Tests.PreconditionsTests
                 .Returns(user.Id);
 
             _userRepositoryMock
-                .Setup(pr => pr.GetBaseUserAndDontTrackAsync(user.Id))
+                .Setup(pr => pr.GetBasicAsync(user.Id))
                 .ReturnsAsync(user);
 
             var result = await _preconditionAttribute.CheckPermissionsAsync(_commandContextMock.Object, null, _serviceProvider);
@@ -208,7 +208,7 @@ namespace Sanakan.DiscordBot.Tests.PreconditionsTests
                 .Returns(user.Id);
 
             _userRepositoryMock
-                .Setup(pr => pr.GetBaseUserAndDontTrackAsync(user.Id))
+                .Setup(pr => pr.GetBasicAsync(user.Id))
                 .ReturnsAsync(user);
 
             _guildMock

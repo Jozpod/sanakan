@@ -18,22 +18,6 @@ namespace DiscordBot.ModulesTests.ProfileModuleTests
     public class RemoveRoleAsyncTests : Base
     {
         [TestMethod]
-        public async Task Should_Send_Error_Message_No_User()
-        {
-            _commandContextMock
-                .Setup(pr => pr.User)
-                .Returns<IUser>(null);
-
-            SetupSendMessage((message, embed) =>
-            {
-                embed.Should().NotBeNull();
-                embed.Description.Should().NotBeNullOrEmpty();
-            });
-
-            await _module.RemoveRoleAsync(null);
-        }
-
-        [TestMethod]
         public async Task Should_Send_Error_Message_No_Role()
         {
             var roleName = "test role";
@@ -62,7 +46,7 @@ namespace DiscordBot.ModulesTests.ProfileModuleTests
                 .Returns(guildOptions.Id);
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildOptions.Id))
+                .Setup(pr => pr.GetCachedById(guildOptions.Id))
                 .ReturnsAsync(guildOptions);
 
             _guildMock
@@ -115,7 +99,7 @@ namespace DiscordBot.ModulesTests.ProfileModuleTests
                 .Returns(guildOptions.Id);
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildOptions.Id))
+                .Setup(pr => pr.GetCachedById(guildOptions.Id))
                 .ReturnsAsync(guildOptions);
 
             _guildMock

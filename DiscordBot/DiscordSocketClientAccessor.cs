@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using Sanakan.DiscordBot.Abstractions;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;

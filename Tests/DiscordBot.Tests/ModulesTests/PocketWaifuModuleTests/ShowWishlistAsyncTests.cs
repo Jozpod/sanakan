@@ -42,7 +42,7 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
                 .Returns("mention");
 
             _userRepositoryMock
-                .Setup(pr => pr.GetCachedFullUserAsync(user.Id))
+                .Setup(pr => pr.GetCachedAsync(user.Id))
                 .ReturnsAsync(user);
 
             _waifuServiceMock

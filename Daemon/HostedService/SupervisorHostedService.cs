@@ -7,6 +7,7 @@ using Sanakan.Common;
 using Sanakan.Common.Configuration;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot;
+using Sanakan.DiscordBot.Abstractions;
 using Sanakan.DiscordBot.Abstractions.Extensions;
 using Sanakan.DiscordBot.Abstractions.Models;
 using Sanakan.DiscordBot.Services.Abstractions;
@@ -21,7 +22,7 @@ namespace Sanakan.Daemon.HostedService
     internal class SupervisorHostedService : BackgroundService
     {
         private readonly ILogger _logger;
-        private readonly IDiscordClientAccessor _discordSocketClientAccessor;
+        private readonly IDiscordClientAccessor _discordClientAccessor;
         private readonly IOptionsMonitor<DaemonsConfiguration> _daemonsConfiguration;
         private readonly IOptionsMonitor<DiscordConfiguration> _discordConfiguration;
         private readonly IServiceScopeFactory _serviceScopeFactory;
@@ -44,14 +45,14 @@ namespace Sanakan.Daemon.HostedService
             IUserJoinedGuildSupervisor userJoinedGuildSupervisor)
         {
             _logger = logger;
-            _discordSocketClientAccessor = discordSocketClientAccessor;
+            _discordClientAccessor = discordSocketClientAccessor;
             _serviceScopeFactory = serviceScopeFactory;
             _daemonsConfiguration = daemonsConfiguration;
             _discordConfiguration = discordConfiguration;
             _taskManager = taskManager;
             _timer = timer;
 
-            _discordSocketClientAccessor.LoggedIn += LoggedIn;
+            _discordClientAccessor.LoggedIn += LoggedIn;
             _userMessageSupervisor = userMessageSupervisor;
             _userJoinedGuildSupervisor = userJoinedGuildSupervisor;
         }
@@ -126,7 +127,7 @@ namespace Sanakan.Daemon.HostedService
 
             var guild = user.Guild;
 
-            if (_discordConfiguration.CurrentValue.BlacklistedGuilds.Any(x => x == guild.Id))
+            if (_discordConfiguration.CurrentValue.BlacklistedGuilds.Contains(guild.Id))
             {
                 return;
             }
@@ -135,7 +136,7 @@ namespace Sanakan.Daemon.HostedService
             var serviceProvider = serviceScope.ServiceProvider;
             var guildConfigRepository = serviceProvider.GetRequiredService<IGuildConfigRepository>();
 
-            var guildConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
+            var guildConfig = await guildConfigRepository.GetCachedById(guild.Id);
 
             if (guildConfig == null)
             {
@@ -191,7 +192,7 @@ namespace Sanakan.Daemon.HostedService
 
             var guild = user.Guild;
 
-            if (_discordConfiguration.CurrentValue.BlacklistedGuilds.Any(x => x == guild.Id))
+            if (_discordConfiguration.CurrentValue.BlacklistedGuilds.Contains(guild.Id))
             {
                 return;
             }
@@ -200,7 +201,7 @@ namespace Sanakan.Daemon.HostedService
             var serviceProvider = serviceScope.ServiceProvider;
             var guildConfigRepository = serviceProvider.GetRequiredService<IGuildConfigRepository>();
 
-            var guildConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
+            var guildConfig = await guildConfigRepository.GetCachedById(guild.Id);
 
             if (guildConfig == null)
             {
@@ -287,8 +288,8 @@ namespace Sanakan.Daemon.HostedService
 
         private Task LoggedIn()
         {
-            _discordSocketClientAccessor.MessageReceived += HandleMessageAsync;
-            _discordSocketClientAccessor.UserJoined += UserJoinedAsync;
+            _discordClientAccessor.MessageReceived += HandleMessageAsync;
+            _discordClientAccessor.UserJoined += UserJoinedAsync;
             return Task.CompletedTask;
         }
     }

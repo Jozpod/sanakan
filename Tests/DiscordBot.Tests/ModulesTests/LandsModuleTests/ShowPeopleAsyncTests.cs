@@ -26,7 +26,7 @@ namespace DiscordBot.ModulesTests.LandsModuleTests
                 .Returns(guildId);
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildId))
+                .Setup(pr => pr.GetCachedById(guildId))
                 .ReturnsAsync(null as GuildOptions);
 
             _commandContextMock
@@ -52,7 +52,7 @@ namespace DiscordBot.ModulesTests.LandsModuleTests
                 .Returns(guildOptions.Id);
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildOptions.Id))
+                .Setup(pr => pr.GetCachedById(guildOptions.Id))
                 .ReturnsAsync(guildOptions);
 
             _landManagerMock
@@ -92,7 +92,7 @@ namespace DiscordBot.ModulesTests.LandsModuleTests
                 .Returns(guildOptions.Id);
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildOptions.Id))
+                .Setup(pr => pr.GetCachedById(guildOptions.Id))
                 .ReturnsAsync(guildOptions);
 
             _landManagerMock

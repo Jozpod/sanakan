@@ -115,7 +115,7 @@ namespace Sanakan.Daemon.Tests.HostedServices.SpawnHostedServiceTests
                 .Verifiable();
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildId))
+                .Setup(pr => pr.GetCachedById(guildId))
                 .ReturnsAsync(guildOptions);
 
             _blockingPriorityQueueMock
@@ -170,7 +170,7 @@ namespace Sanakan.Daemon.Tests.HostedServices.SpawnHostedServiceTests
               .Returns(guildUserMock.Object);
 
             _userRepositoryMock
-                .Setup(pr => pr.GetCachedFullUserAsync(userId))
+                .Setup(pr => pr.GetCachedAsync(userId))
                 .ReturnsAsync(databaseUser);
 
             var cancellationTokenSource = new CancellationTokenSource();

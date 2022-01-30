@@ -10,6 +10,7 @@ using Sanakan.Common.Configuration;
 using Sanakan.Daemon.HostedService;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot;
+using Sanakan.DiscordBot.Abstractions;
 using Sanakan.Game.Services.Abstractions;
 using Sanakan.TaskQueue;
 using System;

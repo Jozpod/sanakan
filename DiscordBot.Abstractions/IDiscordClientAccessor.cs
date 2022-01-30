@@ -4,7 +4,7 @@ using Discord.WebSocket;
 using System;
 using System.Threading.Tasks;
 
-namespace Sanakan.DiscordBot
+namespace Sanakan.DiscordBot.Abstractions
 {
     public interface IDiscordClientAccessor
     {

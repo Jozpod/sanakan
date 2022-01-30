@@ -124,7 +124,7 @@ namespace Sanakan.Daemon.HostedService
             var guildId = user.Guild.Id;
             var guild = user.Guild;
 
-            if (_discordConfiguration.CurrentValue.BlacklistedGuilds.Any(x => x == guildId))
+            if (_discordConfiguration.CurrentValue.BlacklistedGuilds.Contains(guildId))
             {
                 return;
             }
@@ -132,7 +132,7 @@ namespace Sanakan.Daemon.HostedService
             using var serviceScope = _serviceScopeFactory.CreateScope();
             var serviceProvider = serviceScope.ServiceProvider;
             var guildConfigRepository = serviceProvider.GetRequiredService<IGuildConfigRepository>();
-            var guildConfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(guildId);
+            var guildConfig = await guildConfigRepository.GetCachedById(guildId);
 
             if (guildConfig == null)
             {
@@ -271,7 +271,7 @@ namespace Sanakan.Daemon.HostedService
                                 }
                             }
 
-                            var databaseUser = await userRepository.GetCachedFullUserAsync(selected.Id);
+                            var databaseUser = await userRepository.GetCachedAsync(selected.Id);
                             var gameDeck = databaseUser.GameDeck;
 
                             if (databaseUser != null && !isUserMuted)

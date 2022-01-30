@@ -7,6 +7,7 @@ using Microsoft.Extensions.Options;
 using Sanakan.Common;
 using Sanakan.Common.Configuration;
 using Sanakan.DiscordBot;
+using Sanakan.DiscordBot.Abstractions;
 using Sanakan.DiscordBot.Abstractions.Extensions;
 using Sanakan.DiscordBot.Session.Abstractions;
 using Sanakan.TaskQueue;

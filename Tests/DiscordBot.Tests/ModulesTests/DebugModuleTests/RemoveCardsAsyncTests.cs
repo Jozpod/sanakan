@@ -25,6 +25,10 @@ namespace DiscordBot.ModulesTests.DebugModuleTests
             var card = new Card(1ul, "title", "name", 100, 50, Rarity.E, Dere.Bodere, DateTime.UtcNow);
             var cards = new List<Card> { card };
 
+            _userMock
+                .Setup(pr => pr.Mention)
+                .Returns("mention");
+
             _cardRepositoryMock
                 .Setup(pr => pr.GetByIdsAsync(It.IsAny<ulong[]>(), It.IsAny<CardQueryOptions>()))
                 .ReturnsAsync(cards);

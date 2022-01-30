@@ -5,6 +5,7 @@ using Microsoft.Extensions.Hosting;
 using Sanakan.Common;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot;
+using Sanakan.DiscordBot.Abstractions;
 using Sanakan.DiscordBot.Abstractions.Configuration;
 using System;
 using System.Diagnostics.CodeAnalysis;
@@ -135,7 +136,7 @@ namespace Sanakan.Daemon.HostedService
             var serviceProvider = serviceScope.ServiceProvider;
             var userRepository = serviceProvider.GetRequiredService<IUserRepository>();
 
-            var botUser = await userRepository.GetCachedFullUserAsync(_botUserId);
+            var botUser = await userRepository.GetCachedAsync(_botUserId);
 
             var randomCard = _randomNumberGenerator.GetOneRandomFrom(botUser.GameDeck.Cards);
 

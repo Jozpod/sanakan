@@ -158,7 +158,7 @@ namespace Sanakan.TaskQueue.Tests.MessageHandlersTests
             _messageChannelMock.SetupSendFileAsync(null);
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetCachedGuildFullConfigAsync(message.GuildId))
+                .Setup(pr => pr.GetCachedById(message.GuildId))
                 .ReturnsAsync(guildOptions);
             
             _userRepositoryMock

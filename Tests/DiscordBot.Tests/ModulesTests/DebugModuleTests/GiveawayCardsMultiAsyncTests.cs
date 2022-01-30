@@ -65,7 +65,7 @@ namespace DiscordBot.ModulesTests.DebugModuleTests
                 .Returns(roleIds);
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildOptions.Id))
+                .Setup(pr => pr.GetCachedById(guildOptions.Id))
                 .ReturnsAsync(guildOptions);
 
             _userMessageMock
@@ -93,7 +93,7 @@ namespace DiscordBot.ModulesTests.DebugModuleTests
                 .Returns(_guildUserMock.Object);
 
             _userRepositoryMock
-                .Setup(pr => pr.GetCachedFullUserAsync(user.Id))
+                .Setup(pr => pr.GetCachedAsync(user.Id))
                 .ReturnsAsync(user);
 
             _blockingPriorityQueueMock

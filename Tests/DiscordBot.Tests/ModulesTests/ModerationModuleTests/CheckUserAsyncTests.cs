@@ -73,7 +73,7 @@ namespace DiscordBot.ModulesTests.ModerationModuleTests
                 .Returns(roles);
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildOptions.Id))
+                .Setup(pr => pr.GetCachedById(guildOptions.Id))
                 .ReturnsAsync(guildOptions);
 
             _userRepositoryMock
@@ -152,7 +152,7 @@ namespace DiscordBot.ModulesTests.ModerationModuleTests
                 .Returns(roles);
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildOptions.Id))
+                .Setup(pr => pr.GetCachedById(guildOptions.Id))
                 .ReturnsAsync(guildOptions);
 
             _userRepositoryMock
@@ -227,7 +227,7 @@ namespace DiscordBot.ModulesTests.ModerationModuleTests
                 .Returns(roles);
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildOptions.Id))
+                .Setup(pr => pr.GetCachedById(guildOptions.Id))
                 .ReturnsAsync(guildOptions);
 
             _userRepositoryMock
@@ -301,7 +301,7 @@ namespace DiscordBot.ModulesTests.ModerationModuleTests
                 .Returns(roles);
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildOptions.Id))
+                .Setup(pr => pr.GetCachedById(guildOptions.Id))
                 .ReturnsAsync(guildOptions);
 
             _userRepositoryMock

@@ -7,7 +7,7 @@ using Moq;
 using Sanakan.Common;
 using Sanakan.Common.Configuration;
 using Sanakan.DAL.Repositories.Abstractions;
-using Sanakan.DiscordBot;
+using Sanakan.DiscordBot.Abstractions;
 using Sanakan.DiscordBot.Abstractions.Configuration;
 using Sanakan.DiscordBot.Modules;
 using Sanakan.DiscordBot.Services.Abstractions;

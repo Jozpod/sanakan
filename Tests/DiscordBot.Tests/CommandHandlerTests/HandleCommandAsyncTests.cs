@@ -78,7 +78,7 @@ namespace Sanakan.DiscordBot.Tests.CommandHandlerTests
                 .ReturnsAsync(_messageChannelMock.Object);
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetCachedGuildFullConfigAsync(_guildId))
+                .Setup(pr => pr.GetCachedById(_guildId))
                 .ReturnsAsync(guildConfig);
 
             _discordClientAccessorMock
@@ -199,7 +199,7 @@ namespace Sanakan.DiscordBot.Tests.CommandHandlerTests
                 .Returns(guildId);
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildId))
+                .Setup(pr => pr.GetCachedById(guildId))
                 .ReturnsAsync(guildConfig);
 
             _discordClientAccessorMock
@@ -254,7 +254,7 @@ namespace Sanakan.DiscordBot.Tests.CommandHandlerTests
                 .Returns(guildId);
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildId))
+                .Setup(pr => pr.GetCachedById(guildId))
                 .ReturnsAsync(guildConfig);
 
             _discordClientAccessorMock
@@ -498,7 +498,7 @@ namespace Sanakan.DiscordBot.Tests.CommandHandlerTests
                 .Returns(guildId);
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildId))
+                .Setup(pr => pr.GetCachedById(guildId))
                 .ReturnsAsync(guildConfig);
 
             _systemClockMock
@@ -591,7 +591,7 @@ namespace Sanakan.DiscordBot.Tests.CommandHandlerTests
                 .Returns(guildId);
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildId))
+                .Setup(pr => pr.GetCachedById(guildId))
                 .ReturnsAsync(guildConfig);
 
             _systemClockMock

@@ -17,13 +17,13 @@ namespace Sanakan.Web.Integration.Tests.AutomationTests
     {
         private static HttpClient _client = null;
         private static ChromeDriver _driver = null;
-        private static SHA1Managed _sha = null;
+        private static SHA1 _sha = null;
         private static TestWebApplicationFactory<Startup> _factory = null;
 
         [ClassInitialize]
         public static void Setup(TestContext context)
         {
-            _sha = new SHA1Managed();
+            _sha = SHA1.Create();
             _factory = new TestWebApplicationFactory<Startup>(true);
             var options = new WebApplicationFactoryClientOptions
             {

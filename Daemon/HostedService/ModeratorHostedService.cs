@@ -9,6 +9,7 @@ using Sanakan.Common.Configuration;
 using Sanakan.DAL.Models.Management;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot;
+using Sanakan.DiscordBot.Abstractions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -131,7 +132,7 @@ namespace Sanakan.Daemon.HostedService
                         await RemovePenalty(penaltyInfoRepository, penalty);
                     }
 
-                    var gconfig = await guildConfigRepository.GetCachedGuildFullConfigAsync(guild.Id);
+                    var gconfig = await guildConfigRepository.GetCachedById(guild.Id);
                     var muteModRole = guild.GetRole(gconfig.ModMuteRoleId);
                     var muteRole = guild.GetRole(gconfig.MuteRoleId);
 

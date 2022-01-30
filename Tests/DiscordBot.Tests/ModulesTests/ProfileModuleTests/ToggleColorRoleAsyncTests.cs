@@ -36,6 +36,10 @@ namespace DiscordBot.ModulesTests.ProfileModuleTests
                 .Setup(pr => pr.Id)
                 .Returns(user.Id);
 
+            _userMock
+                .Setup(pr => pr.Mention)
+                .Returns("user mention");
+
             _guildMock
                 .Setup(pr => pr.Id)
                 .Returns(guildOptions.Id);
@@ -118,7 +122,7 @@ namespace DiscordBot.ModulesTests.ProfileModuleTests
                 .ReturnsAsync(user);
 
             _guildConfigRepositoryMock
-                .Setup(pr => pr.GetCachedGuildFullConfigAsync(guildOptions.Id))
+                .Setup(pr => pr.GetCachedById(guildOptions.Id))
                 .ReturnsAsync(guildOptions);
 
             _profileServiceMock

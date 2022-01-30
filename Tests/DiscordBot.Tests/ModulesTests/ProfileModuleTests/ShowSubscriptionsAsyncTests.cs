@@ -29,7 +29,7 @@ namespace DiscordBot.ModulesTests.ProfileModuleTests
                 .Returns("user mention");
 
             _userRepositoryMock
-                .Setup(pr => pr.GetCachedFullUserAsync(databaseUser.Id))
+                .Setup(pr => pr.GetCachedAsync(databaseUser.Id))
                 .ReturnsAsync(databaseUser);
 
             _systemClockMock
@@ -62,7 +62,7 @@ namespace DiscordBot.ModulesTests.ProfileModuleTests
                 .Returns("user mention");
 
             _userRepositoryMock
-                .Setup(pr => pr.GetCachedFullUserAsync(databaseUser.Id))
+                .Setup(pr => pr.GetCachedAsync(databaseUser.Id))
                 .ReturnsAsync(databaseUser);
 
             _systemClockMock

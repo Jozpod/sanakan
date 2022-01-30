@@ -9,6 +9,7 @@ using Sanakan.Common.Configuration;
 using Sanakan.Daemon.HostedService;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot;
+using Sanakan.DiscordBot.Abstractions;
 
 namespace Sanakan.Daemon.Tests.HostedServices.ChaosHostedServiceTests
 {
@@ -18,7 +19,7 @@ namespace Sanakan.Daemon.Tests.HostedServices.ChaosHostedServiceTests
         protected readonly BackgroundService _service;
         protected readonly Mock<IOptionsMonitor<DaemonsConfiguration>> _daemonsConfigurationMock = new(MockBehavior.Strict);
         protected readonly Mock<IOptionsMonitor<DiscordConfiguration>> _discordConfigurationMock = new(MockBehavior.Strict);
-        protected readonly Mock<IDiscordClientAccessor> _discordSocketClientAccessorMock = new(MockBehavior.Strict);
+        protected readonly Mock<IDiscordClientAccessor> _discordClientAccessorMock = new(MockBehavior.Strict);
         protected readonly Mock<IRandomNumberGenerator> _randomNumberGeneratorMock = new(MockBehavior.Strict);
         protected readonly FakeTimer _fakeTimer = new();
         protected readonly Mock<ITaskManager> _taskManagerMock = new(MockBehavior.Strict);
@@ -51,7 +52,7 @@ namespace Sanakan.Daemon.Tests.HostedServices.ChaosHostedServiceTests
                 NullLogger<ChaosHostedService>.Instance,
                 _discordConfigurationMock.Object,
                 _daemonsConfigurationMock.Object,
-                _discordSocketClientAccessorMock.Object,
+                _discordClientAccessorMock.Object,
                 serviceScopeFactory,
                 _randomNumberGeneratorMock.Object,
                 _fakeTimer,

@@ -22,7 +22,7 @@ namespace Sanakan.Web.Tests.Controllers.WaifuControllerTests
             var user = new User(1ul, DateTime.UtcNow);
 
             _userRepositoryMock
-                .Setup(pr => pr.GetUserWaifuProfileAsync(shindenUserId))
+                .Setup(pr => pr.GetWithWaifuProfileAsync(shindenUserId))
                 .ReturnsAsync(user);
 
             var result = await _controller.GetUserWaifuProfileAsync(shindenUserId);

@@ -30,7 +30,7 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
                 .Returns("mention");
 
             _userRepositoryMock
-                .Setup(pr => pr.GetCachedFullUserAsync(userId))
+                .Setup(pr => pr.GetCachedAsync(userId))
                 .ReturnsAsync(null as User);
 
             SetupSendMessage((message, embed) =>
@@ -55,7 +55,7 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
                 .Returns("mention");
 
             _userRepositoryMock
-                .Setup(pr => pr.GetCachedFullUserAsync(user.Id))
+                .Setup(pr => pr.GetCachedAsync(user.Id))
                 .ReturnsAsync(user);
 
             SetupSendMessage((message, embed) =>
@@ -81,7 +81,7 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
                 .Returns("mention");
 
             _userRepositoryMock
-                .Setup(pr => pr.GetCachedFullUserAsync(user.Id))
+                .Setup(pr => pr.GetCachedAsync(user.Id))
                 .ReturnsAsync(user);
 
             SetupSendMessage((message, embed) =>
@@ -115,7 +115,7 @@ namespace DiscordBot.ModulesTests.PocketWaifuModuleTests
                 .Returns("mention");
 
             _userRepositoryMock
-                .Setup(pr => pr.GetCachedFullUserAsync(user.Id))
+                .Setup(pr => pr.GetCachedAsync(user.Id))
                 .ReturnsAsync(user);
 
             _waifuServiceMock
