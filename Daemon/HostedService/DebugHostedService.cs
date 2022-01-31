@@ -126,6 +126,7 @@ namespace Sanakan.Daemon.HostedService
             _timer.Start(TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
         }
 
+        [SuppressMessage("Microsoft.Analyzers.ManagedCodeAnalysis", "CA1502:AvoidExcessiveComplexity", Justification = "Resolved")]
         private async void OnTick(object sender, TimerEventArgs eventArgs)
         {
             if (_isRunning)

@@ -182,7 +182,7 @@ sh RunDebug.sh
 ### Windows ###
 
 ```console
-dotnet publish Web/Web.csproj --configuration Release --runtime win-x64 /p:PublishSingleFile=true /p:DebugType=None /p:DebugSymbols=false --output ./publish
+dotnet publish Web/Web.csproj --configuration Release --runtime win10-x64 /p:PublishSingleFile=true /p:DebugType=None /p:DebugSymbols=false --output ./publish
 
 ```
 

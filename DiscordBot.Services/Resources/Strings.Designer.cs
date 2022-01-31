@@ -107,6 +107,19 @@ namespace Sanakan.DiscordBot.Services.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Elo! Zostałeś ukarany mutem na {0}.
+        ///
+        ///Podany powód: {1}
+        ///
+        ///Pozdrawiam serdecznie!.
+        /// </summary>
+        internal static string MuteTemplate {
+            get {
+                return ResourceManager.GetString("MuteTemplate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {0}:
         ///Od {1} na {2} wyprawie.
         ///Traci siły po {3} min..

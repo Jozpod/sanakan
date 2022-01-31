@@ -1,5 +1,6 @@
-﻿
-namespace Sanakan.DiscordBot.Services.Abstractions
+﻿namespace Sanakan.DiscordBot.Services.Abstractions
 {
-    public interface IExperienceManager { }
+    public interface IExperienceManager
+    {
+    }
 }

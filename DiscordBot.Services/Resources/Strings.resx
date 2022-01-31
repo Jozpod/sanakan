@@ -139,6 +139,13 @@
 
 3-5x{0} - tryb psaja (podwójne wygrane)</value>
   </data>
+  <data name="MuteTemplate" xml:space="preserve">
+    <value>Elo! Zostałeś ukarany mutem na {0}.
+
+Podany powód: {1}
+
+Pozdrawiam serdecznie!</value>
+  </data>
   <data name="OnJourney" xml:space="preserve">
     <value>{0}:
 Od {1} na {2} wyprawie.

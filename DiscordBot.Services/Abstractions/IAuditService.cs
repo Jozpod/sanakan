@@ -1,4 +1,6 @@
 ﻿namespace Sanakan.DiscordBot.Services.Abstractions
 {
-    public interface IAuditService { }
+    public interface IAuditService
+    {
+    }
 }

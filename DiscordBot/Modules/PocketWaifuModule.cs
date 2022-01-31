@@ -466,9 +466,9 @@ namespace Sanakan.DiscordBot.Modules
             var card = gameDeck.Cards.FirstOrDefault(x => x.Id == wid);
             var karmaChange = 0d;
             var consumeItem = true;
-            var itemCounttSummary = (itemCount > 1) ? $"x{itemCount}" : "";
-            var textRelation = noCardOperation ? "" : card.GetAffectionString();
-            var cardString = noCardOperation ? "" : " na " + card.GetString(false, false, true);
+            var itemCounttSummary = itemCount > 1 ? $"x{itemCount}" : string.Empty;
+            var textRelation = noCardOperation ? string.Empty : card.GetAffectionString();
+            var cardString = noCardOperation ? string.Empty : $" na {card!.GetString(false, false, true)}";
             var affectionInc = item.Type.BaseAffection() * itemCount;
             var embedBuilder = new EmbedBuilder
             {
@@ -2793,7 +2793,7 @@ namespace Sanakan.DiscordBot.Modules
                 usersStr = string.Join("\n", wishlists.Select(x => MentionUtils.MentionUser(x.Id)));
             }
 
-            var title = HttpUtility.HtmlDecode(animeMangaInfoResult.Value.Title.Title);
+            var title = animeMangaInfoResult.Value.Title.Title;
             embed = $"**Karty z {title} chcą:**\n\n {usersStr}".ElipseTrimToLength(2000)
                 .ToEmbedMessage(EMType.Info)
                 .Build();

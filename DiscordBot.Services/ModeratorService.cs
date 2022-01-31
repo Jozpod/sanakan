@@ -40,48 +40,23 @@ namespace Sanakan.DiscordBot.Services
             _serviceScopeFactory = serviceScopeFactory;
         }
 
-        public async Task<EmbedBuilder> GetConfigurationAsync(
+        public Task<EmbedBuilder> GetConfigurationAsync(
             GuildOptions config,
             IGuild guild,
-            ConfigType type)
-        {
-            switch (type)
+            ConfigType type) => type switch
             {
-                case ConfigType.NonExpChannels:
-                    return await GetNonExpChannelsConfig(config, guild);
-
-                case ConfigType.IgnoredChannels:
-                    return await GetIgnoredChannelsConfig(config, guild);
-
-                case ConfigType.NonSupChannels:
-                    return await GetNonSupChannelsConfig(config, guild);
-
-                case ConfigType.WaifuCmdChannels:
-                    return await GetWaifuCmdChannelsConfig(config, guild);
-
-                case ConfigType.WaifuFightChannels:
-                    return await GetWaifuFightChannelsConfig(config, guild);
-
-                case ConfigType.CommandChannels:
-                    return await GetCmdChannelsConfig(config, guild);
-
-                case ConfigType.LevelRoles:
-                    return GetLevelRolesConfig(config, guild);
-
-                case ConfigType.Lands:
-                    return GetLandsConfig(config, guild);
-
-                case ConfigType.ModeratorRoles:
-                    return GetModRolesConfig(config, guild);
-
-                case ConfigType.SelfRoles:
-                    return GetSelfRolesConfig(config, guild);
-
-                default:
-                case ConfigType.Global:
-                    return await GetFullConfigurationAsync(config, guild);
-            }
-        }
+                ConfigType.NonExpChannels => GetNonExpChannelsConfig(config, guild),
+                ConfigType.IgnoredChannels => GetIgnoredChannelsConfig(config, guild),
+                ConfigType.NonSupChannels => GetNonSupChannelsConfig(config, guild),
+                ConfigType.WaifuCmdChannels => GetWaifuCmdChannelsConfig(config, guild),
+                ConfigType.WaifuFightChannels => GetWaifuFightChannelsConfig(config, guild),
+                ConfigType.CommandChannels => GetCmdChannelsConfig(config, guild),
+                ConfigType.LevelRoles => Task.FromResult(GetLevelRolesConfig(config, guild)),
+                ConfigType.Lands => Task.FromResult(GetLandsConfig(config, guild)),
+                ConfigType.ModeratorRoles => Task.FromResult(GetModRolesConfig(config, guild)),
+                ConfigType.SelfRoles => Task.FromResult(GetSelfRolesConfig(config, guild)),
+                _ => GetFullConfigurationAsync(config, guild),
+            };
 
         public async Task NotifyUserAsync(IUser user, string reason)
         {
@@ -97,7 +72,7 @@ namespace Sanakan.DiscordBot.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error occurred when sending warning notification", ex);
+                _logger.LogError(ex, "Error occurred when sending warning notification");
             }
         }
 
@@ -109,12 +84,14 @@ namespace Sanakan.DiscordBot.Services
         {
             var durationFriendly = penaltyInfo.Duration.Humanize(4);
             var color = (penaltyInfo.Type == PenaltyType.Mute) ? EMType.Warning.Color() : EMType.Error.Color();
+            var startedOn = penaltyInfo.StartedOn;
+            var reason = penaltyInfo.Reason;
 
             var embed = new EmbedBuilder
             {
                 Color = color,
                 Footer = new EmbedFooterBuilder().WithText($"Przez: {byWho}"),
-                Description = $"Powód: {penaltyInfo.Reason}".ElipseTrimToLength(1800),
+                Description = $"Powód: {reason}".ElipseTrimToLength(1800),
                 Author = new EmbedAuthorBuilder().WithUser(user),
                 Fields = new List<EmbedFieldBuilder>
                 {
@@ -134,7 +111,7 @@ namespace Sanakan.DiscordBot.Services
                     {
                         IsInline = true,
                         Name = "Kiedy:",
-                        Value = $"{penaltyInfo.StartedOn.ToShortDateString()} {penaltyInfo.StartedOn.ToShortTimeString()}"
+                        Value = $"{startedOn.ToShortDateString()} {startedOn.ToShortTimeString()}"
                     },
                     new EmbedFieldBuilder
                     {
@@ -155,15 +132,14 @@ namespace Sanakan.DiscordBot.Services
                 var directMessageChannel = await user.CreateDMChannelAsync();
                 if (directMessageChannel != null)
                 {
-                    var content = $"Elo! Zostałeś ukarany mutem na {durationFriendly}.\n\nPodany powód: {penaltyInfo.Reason}\n\nPozdrawiam serdecznie!"
-                        .ElipseTrimToLength(2000);
+                    var content = string.Format(Strings.MuteTemplate, durationFriendly, reason);
                     await directMessageChannel.SendMessageAsync(content);
                     await directMessageChannel.CloseAsync();
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogInformation($"in mute: {ex}");
+                _logger.LogError(ex, "Error occured while muting user");
             }
         }
 
@@ -402,35 +378,36 @@ namespace Sanakan.DiscordBot.Services
 
         private async Task<EmbedBuilder> GetFullConfigurationAsync(GuildOptions config, IGuild guild)
         {
+            const string placeholder = "--";
             var modsRolesCnt = config.ModeratorRoles?.Count;
-            var mods = (modsRolesCnt > 0) ? $"({modsRolesCnt}) `config mods`" : "--";
+            var mods = (modsRolesCnt > 0) ? $"({modsRolesCnt}) `config mods`" : placeholder;
 
             var wExpCnt = config.ChannelsWithoutExperience?.Count;
-            var wExp = (wExpCnt > 0) ? $"({wExpCnt}) `config wexp`" : "--";
+            var wExp = (wExpCnt > 0) ? $"({wExpCnt}) `config wexp`" : placeholder;
 
             var wCntCnt = config.IgnoredChannels?.Count;
-            var wCnt = (wCntCnt > 0) ? $"({wCntCnt}) `config ignch`" : "--";
+            var wCnt = (wCntCnt > 0) ? $"({wCntCnt}) `config ignch`" : placeholder;
 
             var wSupCnt = config.ChannelsWithoutSupervision?.Count;
-            var wSup = (wSupCnt > 0) ? $"({wSupCnt}) `config wsup`" : "--";
+            var wSup = (wSupCnt > 0) ? $"({wSupCnt}) `config wsup`" : placeholder;
 
             var cmdChCnt = config.CommandChannels?.Count;
-            var cmdCh = (cmdChCnt > 0) ? $"({cmdChCnt}) `config cmd`" : "--";
+            var cmdCh = (cmdChCnt > 0) ? $"({cmdChCnt}) `config cmd`" : placeholder;
 
             var rolPerLvlCnt = config.RolesPerLevel?.Count;
-            var roles = (rolPerLvlCnt > 0) ? $"({rolPerLvlCnt}) `config role`" : "--";
+            var roles = (rolPerLvlCnt > 0) ? $"({rolPerLvlCnt}) `config role`" : placeholder;
 
             var selfRolesCnt = config.SelfRoles?.Count;
-            var selfRoles = (selfRolesCnt > 0) ? $"({selfRolesCnt}) `config selfrole`" : "--";
+            var selfRoles = (selfRolesCnt > 0) ? $"({selfRolesCnt}) `config selfrole`" : placeholder;
 
             var landsCnt = config.Lands?.Count;
-            var lands = (landsCnt > 0) ? $"({landsCnt}) `config lands`" : "--";
+            var lands = (landsCnt > 0) ? $"({landsCnt}) `config lands`" : placeholder;
 
             var wCmdCnt = config.WaifuConfig?.CommandChannels?.Count;
-            var wcmd = (wCmdCnt > 0) ? $"({wCmdCnt}) `config wcmd`" : "--";
+            var wcmd = (wCmdCnt > 0) ? $"({wCmdCnt}) `config wcmd`" : placeholder;
 
             var wFightCnt = config.WaifuConfig?.FightChannels?.Count;
-            var wfCh = (wFightCnt > 0) ? $"({wFightCnt}) `config wfight`" : "--";
+            var wfCh = (wFightCnt > 0) ? $"({wFightCnt}) `config wfight`" : placeholder;
 
             var channels = await guild.GetTextChannelsAsync();
             var waifuConfiguration = config.WaifuConfig;
@@ -441,28 +418,28 @@ namespace Sanakan.DiscordBot.Services
 
             var parameters = new object[]
             {
-                config.Prefix ?? "--",
+                config.Prefix ?? placeholder,
                 config.SupervisionEnabled.GetYesNo(),
                 config.ChaosModeEnabled.GetYesNo(),
-                adminRoleId.HasValue ? guild.GetRole(adminRoleId.Value)?.Mention! : "--",
-                userRoleId.HasValue ? guild.GetRole(userRoleId.Value)?.Mention! : "--",
-                guild.GetRole(config.MuteRoleId)?.Mention ?? "--",
-                guild.GetRole(config.ModMuteRoleId)?.Mention ?? "--",
-                guild.GetRole(config.GlobalEmotesRoleId)?.Mention ?? "--",
-                waifuRoleId.HasValue ? guild.GetRole(waifuRoleId.Value)?.Mention! : "--",
-                channels.FirstOrDefault(pr => pr.Id == waifuConfiguration?.MarketChannelId)?.Mention ?? "--",
-                channels.FirstOrDefault(pr => pr.Id == waifuConfiguration?.SpawnChannelId)?.Mention ?? "--",
-                channels.FirstOrDefault(pr => pr.Id == waifuConfiguration?.DuelChannelId)?.Mention ?? "--",
-                channels.FirstOrDefault(pr => pr.Id == waifuConfiguration?.TrashFightChannelId)?.Mention ?? "--",
-                channels.FirstOrDefault(pr => pr.Id == waifuConfiguration?.TrashSpawnChannelId)?.Mention ?? "--",
-                channels.FirstOrDefault(pr => pr.Id == waifuConfiguration?.TrashCommandsChannelId)?.Mention ?? "--",
-                channels.FirstOrDefault(pr => pr.Id == config.NotificationChannelId)?.Mention ?? "--",
-                channels.FirstOrDefault(pr => pr.Id == config.GreetingChannelId)?.Mention ?? "--",
-                channels.FirstOrDefault(pr => pr.Id == config.RaportChannelId)?.Mention ?? "--",
-                channels.FirstOrDefault(pr => pr.Id == config.ToDoChannelId)?.Mention ?? "--",
-                channels.FirstOrDefault(pr => pr.Id == config.QuizChannelId)?.Mention ?? "--",
-                channels.FirstOrDefault(pr => pr.Id == config.NsfwChannelId)?.Mention ?? "--",
-                channels.FirstOrDefault(pr => pr.Id == config.LogChannelId)?.Mention ?? "--",
+                adminRoleId.HasValue ? guild.GetRole(adminRoleId.Value)?.Mention! : placeholder,
+                userRoleId.HasValue ? guild.GetRole(userRoleId.Value)?.Mention! : placeholder,
+                guild.GetRole(config.MuteRoleId)?.Mention ?? placeholder,
+                guild.GetRole(config.ModMuteRoleId)?.Mention ?? placeholder,
+                guild.GetRole(config.GlobalEmotesRoleId)?.Mention ?? placeholder,
+                waifuRoleId.HasValue ? guild.GetRole(waifuRoleId.Value)?.Mention! : placeholder,
+                channels.FirstOrDefault(pr => pr.Id == waifuConfiguration?.MarketChannelId)?.Mention ?? placeholder,
+                channels.FirstOrDefault(pr => pr.Id == waifuConfiguration?.SpawnChannelId)?.Mention ?? placeholder,
+                channels.FirstOrDefault(pr => pr.Id == waifuConfiguration?.DuelChannelId)?.Mention ?? placeholder,
+                channels.FirstOrDefault(pr => pr.Id == waifuConfiguration?.TrashFightChannelId)?.Mention ?? placeholder,
+                channels.FirstOrDefault(pr => pr.Id == waifuConfiguration?.TrashSpawnChannelId)?.Mention ?? placeholder,
+                channels.FirstOrDefault(pr => pr.Id == waifuConfiguration?.TrashCommandsChannelId)?.Mention ?? placeholder,
+                channels.FirstOrDefault(pr => pr.Id == config.NotificationChannelId)?.Mention ?? placeholder,
+                channels.FirstOrDefault(pr => pr.Id == config.GreetingChannelId)?.Mention ?? placeholder,
+                channels.FirstOrDefault(pr => pr.Id == config.RaportChannelId)?.Mention ?? placeholder,
+                channels.FirstOrDefault(pr => pr.Id == config.ToDoChannelId)?.Mention ?? placeholder,
+                channels.FirstOrDefault(pr => pr.Id == config.QuizChannelId)?.Mention ?? placeholder,
+                channels.FirstOrDefault(pr => pr.Id == config.NsfwChannelId)?.Mention ?? placeholder,
+                channels.FirstOrDefault(pr => pr.Id == config.LogChannelId)?.Mention ?? placeholder,
                 wcmd,
                 wfCh,
                 mods,
@@ -648,8 +625,9 @@ namespace Sanakan.DiscordBot.Services
             {
                 foreach (var ignoredChannel in config.IgnoredChannels)
                 {
-                    var channel = await guild.GetTextChannelAsync(ignoredChannel.ChannelId);
-                    var mention = channel?.Mention ?? ignoredChannel.ChannelId.ToString();
+                    var channelId = ignoredChannel.ChannelId;
+                    var channel = await guild.GetTextChannelAsync(channelId);
+                    var mention = channel?.Mention ?? channelId.ToString();
                     stringBuilder.AppendFormat("{0}\n", mention);
                 }
             }
@@ -670,8 +648,9 @@ namespace Sanakan.DiscordBot.Services
             {
                 foreach (var channelWithoutExperience in config.ChannelsWithoutExperience)
                 {
-                    var channel = await guild.GetTextChannelAsync(channelWithoutExperience.ChannelId);
-                    var mention = channel?.Mention ?? channelWithoutExperience.ChannelId.ToString();
+                    var channelId = channelWithoutExperience.ChannelId;
+                    var channel = await guild.GetTextChannelAsync(channelId);
+                    var mention = channel?.Mention ?? channelId.ToString();
                     stringBuilder.AppendFormat("{0}\n", mention);
                 }
             }
@@ -692,8 +671,9 @@ namespace Sanakan.DiscordBot.Services
             {
                 foreach (var channelWithoutSupervision in config.ChannelsWithoutSupervision)
                 {
-                    var channel = await guild.GetTextChannelAsync(channelWithoutSupervision.ChannelId);
-                    var mention = channel?.Mention ?? channelWithoutSupervision.ChannelId.ToString();
+                    var channelId = channelWithoutSupervision.ChannelId;
+                    var channel = await guild.GetTextChannelAsync(channelId);
+                    var mention = channel?.Mention ?? channelId.ToString();
                     stringBuilder.AppendFormat("{0}\n", mention);
                 }
             }

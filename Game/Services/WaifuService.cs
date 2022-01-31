@@ -320,10 +320,23 @@ namespace Sanakan.Game.Services
                 }.Build();
             }
 
-            int itemCount = 0;
-            if (!int.TryParse(specialCommand, out itemCount))
+            if (!int.TryParse(specialCommand, out int itemCount))
             {
                 return $"{mention} liczbę poproszę, a nie jakieś bohomazy.".ToEmbedMessage(EMType.Error).Build();
+            }
+
+            var realCost = itemCount * thisItem.Cost;
+
+            using var serviceScope = _serviceScopeFactory.CreateScope();
+            var serviceProvider = serviceScope.ServiceProvider;
+            var userRepository = serviceProvider.GetRequiredService<IUserRepository>();
+            var databaseUser = await userRepository.GetUserOrCreateAsync(discordUser.Id);
+            var gameDeck = databaseUser.GameDeck;
+
+            if (!CheckIfUserCanBuy(shopType, databaseUser, realCost))
+            {
+                return $"{mention} nie posiadasz wystarczającej liczby {shopType.GetShopCurrencyName()}!"
+                    .ToEmbedMessage(EMType.Error).Build();
             }
 
             var boosterPackTitleId = 0ul;
@@ -366,11 +379,9 @@ namespace Sanakan.Game.Services
                         return $"{mention} nie można kupić pakietu z tytułu z mniejszą liczbą postaci jak 8.".ToEmbedMessage(EMType.Error).Build();
                     }
 
-                    var title = HttpUtility.HtmlDecode(animeMangaInfo.Title);
-
+                    var title = animeMangaInfo.Title;
                     boosterPackTitleName = $" ({title})";
                     boosterPackTitleId = animeMangaInfo.TitleId;
-                    itemCount = 1;
                     break;
 
                 case ItemType.PreAssembledAsuna:
@@ -386,6 +397,18 @@ namespace Sanakan.Game.Services
                         itemCount = 1;
                     }
 
+                    if (gameDeck.Figures.Any(x => x.PAS == itemType.ToPASType()))
+                    {
+                        return $"{mention} masz już taką figurkę.".ToEmbedMessage(EMType.Error).Build();
+                    }
+
+                    var figure = itemType.ToPAFigure(_systemClock.UtcNow);
+                    if (figure != null)
+                    {
+                        gameDeck.Figures.Add(figure);
+                    }
+
+                    IncreaseMoneySpentOnCards(shopType, databaseUser, realCost);
                     break;
 
                 default:
@@ -397,23 +420,12 @@ namespace Sanakan.Game.Services
                     break;
             }
 
-            var realCost = itemCount * thisItem.Cost;
             var count = (itemCount > 1) ? $" x{itemCount}" : string.Empty;
-
-            using var serviceScope = _serviceScopeFactory.CreateScope();
-            var serviceProvider = serviceScope.ServiceProvider;
-            var userRepository = serviceProvider.GetRequiredService<IUserRepository>();
-            var databaseUser = await userRepository.GetUserOrCreateAsync(discordUser.Id);
-            var gameDeck = databaseUser.GameDeck;
-
-            if (!CheckIfUserCanBuy(shopType, databaseUser, realCost))
-            {
-                return $"{mention} nie posiadasz wystarczającej liczby {shopType.GetShopCurrencyName()}!"
-                    .ToEmbedMessage(EMType.Error).Build();
-            }
 
             if (itemType.IsBoosterPack())
             {
+                itemCount = 1;
+
                 for (var i = 0; i < itemCount; i++)
                 {
                     var booster = itemType.ToBoosterPack();
@@ -432,22 +444,7 @@ namespace Sanakan.Game.Services
 
                 databaseUser.Stats.WastedPuzzlesOnCards += realCost;
             }
-            else if (itemType.IsPreAssembledFigure())
-            {
-                if (gameDeck.Figures.Any(x => x.PAS == itemType.ToPASType()))
-                {
-                    return $"{mention} masz już taką figurkę.".ToEmbedMessage(EMType.Error).Build();
-                }
-
-                var figure = itemType.ToPAFigure(_systemClock.UtcNow);
-                if (figure != null)
-                {
-                    gameDeck.Figures.Add(figure);
-                }
-
-                IncreaseMoneySpentOnCards(shopType, databaseUser, realCost);
-            }
-            else
+            else if (!itemType.IsPreAssembledFigure())
             {
                 var inUserItem = gameDeck.Items
                     .FirstOrDefault(x => x.Type == itemType

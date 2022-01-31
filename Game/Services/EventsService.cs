@@ -32,58 +32,34 @@ namespace Sanakan.Game.Services
 
             var chance = Constants.ChanceOfEvent[expedition];
 
-            switch (_randomNumberGenerator.GetRandomValue(10000))
+            return _randomNumberGenerator.GetRandomValue(10000) switch
             {
-                case int n when n < chance[EventType.MoreItems].Item2
-                                && n >= chance[EventType.MoreItems].Item1:
-                    return EventType.MoreItems;
-
-                case int n when n < chance[EventType.MoreExperience].Item2
-                                && n >= chance[EventType.MoreExperience].Item1:
-                    return EventType.MoreExperience;
-
-                case int n when n < chance[EventType.IncreaseAttack].Item2
-                                && n >= chance[EventType.IncreaseAttack].Item1:
-                    return EventType.IncreaseAttack;
-
-                case int n when n < chance[EventType.IncreaseDefence].Item2
-                                && n >= chance[EventType.IncreaseDefence].Item1:
-                    return EventType.IncreaseDefence;
-
-                case int n when n < chance[EventType.AddReset].Item2
-                                && n >= chance[EventType.AddReset].Item1:
-                    return EventType.AddReset;
-
-                case int n when n < chance[EventType.NewCard].Item2
-                                && n >= chance[EventType.NewCard].Item1:
-                    return EventType.NewCard;
-
-                case int n when n < chance[EventType.ChangeDere].Item2
-                                && n >= chance[EventType.ChangeDere].Item1:
-                    return EventType.ChangeDere;
-
-                case int n when n < chance[EventType.DecreaseAttack].Item2
-                                && n >= chance[EventType.DecreaseAttack].Item1:
-                    return EventType.DecreaseAttack;
-
-                case int n when n < chance[EventType.DecreaseDefence].Item2
-                                && n >= chance[EventType.DecreaseDefence].Item1:
-                    return EventType.DecreaseDefence;
-
-                case int n when n < chance[EventType.DecreaseAffection].Item2
-                                && n >= chance[EventType.DecreaseAffection].Item1:
-                    return EventType.DecreaseAffection;
-
-                case int n when n < chance[EventType.LoseCard].Item2
-                                && n >= chance[EventType.LoseCard].Item1:
-                    return EventType.LoseCard;
-
-                case int n when n < chance[EventType.Fight].Item2
-                                && n >= chance[EventType.Fight].Item1:
-                    return EventType.Fight;
-
-                default: return EventType.None;
-            }
+                int n when n < chance[EventType.MoreItems].Item2
+                    && n >= chance[EventType.MoreItems].Item1 => EventType.MoreItems,
+                int n when n < chance[EventType.MoreExperience].Item2
+                    && n >= chance[EventType.MoreExperience].Item1 => EventType.MoreExperience,
+                int n when n < chance[EventType.IncreaseAttack].Item2
+                    && n >= chance[EventType.IncreaseAttack].Item1 => EventType.IncreaseAttack,
+                int n when n < chance[EventType.IncreaseDefence].Item2
+                    && n >= chance[EventType.IncreaseDefence].Item1 => EventType.IncreaseDefence,
+                int n when n < chance[EventType.AddReset].Item2
+                    && n >= chance[EventType.AddReset].Item1 => EventType.AddReset,
+                int n when n < chance[EventType.NewCard].Item2
+                    && n >= chance[EventType.NewCard].Item1 => EventType.NewCard,
+                int n when n < chance[EventType.ChangeDere].Item2
+                    && n >= chance[EventType.ChangeDere].Item1 => EventType.ChangeDere,
+                int n when n < chance[EventType.DecreaseAttack].Item2
+                    && n >= chance[EventType.DecreaseAttack].Item1 => EventType.DecreaseAttack,
+                int n when n < chance[EventType.DecreaseDefence].Item2
+                    && n >= chance[EventType.DecreaseDefence].Item1 => EventType.DecreaseDefence,
+                int n when n < chance[EventType.DecreaseAffection].Item2
+                    && n >= chance[EventType.DecreaseAffection].Item1 => EventType.DecreaseAffection,
+                int n when n < chance[EventType.LoseCard].Item2
+                    && n >= chance[EventType.LoseCard].Item1 => EventType.LoseCard,
+                int n when n < chance[EventType.Fight].Item2
+                    && n >= chance[EventType.Fight].Item1 => EventType.Fight,
+                _ => EventType.None,
+            };
         }
 
         public bool ExecuteEvent(

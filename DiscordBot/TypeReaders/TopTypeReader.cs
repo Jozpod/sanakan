@@ -1,6 +1,7 @@
 ﻿using Discord.Commands;
 using Sanakan.Game.Models;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 
 namespace Sanakan.TypeReaders
@@ -8,6 +9,7 @@ namespace Sanakan.TypeReaders
     /// <inheritdoc/>
     public class TopTypeReader : TypeReader
     {
+        [SuppressMessage("Microsoft.Analyzers.ManagedCodeAnalysis", "CA1502:AvoidExcessiveComplexity", Justification = "Resolved")]
         public override Task<TypeReaderResult> ReadAsync(ICommandContext context, string input, IServiceProvider services)
         {
             switch (input.ToLower())
