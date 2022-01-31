@@ -347,7 +347,8 @@ namespace Sanakan.DiscordBot.Session
             player.CustomString = BuildProposition(player);
 
             await _userMessage.AddReactionAsync(Emojis.OutboxTray);
-            await _userMessage.ModifyAsync(x => x.Embed = BuildEmbed());
+            var embed = BuildEmbed();
+            await _userMessage.ModifyAsync(x => x.Embed = embed);
         }
 
         private string BuildProposition(PlayerInfo player)

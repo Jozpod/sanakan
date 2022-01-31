@@ -98,54 +98,30 @@ namespace Sanakan.DAL.Models
         [JsonIgnore]
         public virtual User User { get; set; } = null!;
 
-        public string GetUserNameStatus()
+        public string GetUserNameStatus() => Karma switch
         {
-            switch (Karma)
-            {
-                case var _ when Karma >= 2000:
-                    return "Papaj";
-                case var _ when Karma >= 1600:
-                    return "Miłościwy kumpel";
-                case var _ when Karma >= 1200:
-                    return "Oślepiony bugiem";
-                case var _ when Karma >= 800:
-                    return "Pan pokoiku";
-                case var _ when Karma >= 400:
-                    return "Błogosławiony rycerz";
-                case var _ when Karma >= 200:
-                    return "Pionek buga";
-                case var _ when Karma >= 100:
-                    return "Sługa buga";
-                case var _ when Karma >= 50:
-                    return "Biały koleś";
-                case var _ when Karma >= 10:
-                    return "Pantofel";
-                case var _ when Karma >= 5:
-                    return "Lizus";
-                case var _ when Karma <= -2000:
-                    return "Mroczny panocek";
-                case var _ when Karma <= -1600:
-                    return "Nienawistny koleżka";
-                case var _ when Karma <= -1200:
-                    return "Mściwy ślepiec";
-                case var _ when Karma <= -800:
-                    return "Pan wojenki";
-                case var _ when Karma <= -400:
-                    return "Przeklęty rycerz";
-                case var _ when Karma <= -200:
-                    return "Ciemny pionek";
-                case var _ when Karma <= -100:
-                    return "Sługa mroku";
-                case var _ when Karma <= -50:
-                    return "Murzynek";
-                case var _ when Karma <= -10:
-                    return "Rzezimieszek";
-                case var _ when Karma <= -5:
-                    return "Buntownik";
-                default:
-                    return "Wieśniak";
-            }
-        }
+            var _ when Karma >= 2000 => "Papaj",
+            var _ when Karma >= 1600 => "Miłościwy kumpel",
+            var _ when Karma >= 1200 => "Oślepiony bugiem",
+            var _ when Karma >= 800 => "Pan pokoiku",
+            var _ when Karma >= 400 => "Błogosławiony rycerz",
+            var _ when Karma >= 200 => "Pionek buga",
+            var _ when Karma >= 100 => "Sługa buga",
+            var _ when Karma >= 50 => "Biały koleś",
+            var _ when Karma >= 10 => "Pantofel",
+            var _ when Karma >= 5 => "Lizus",
+            var _ when Karma <= -2000 => "Mroczny panocek",
+            var _ when Karma <= -1600 => "Nienawistny koleżka",
+            var _ when Karma <= -1200 => "Mściwy ślepiec",
+            var _ when Karma <= -800 => "Pan wojenki",
+            var _ when Karma <= -400 => "Przeklęty rycerz",
+            var _ when Karma <= -200 => "Ciemny pionek",
+            var _ when Karma <= -100 => "Sługa mroku",
+            var _ when Karma <= -50 => "Murzynek",
+            var _ when Karma <= -10 => "Rzezimieszek",
+            var _ when Karma <= -5 => "Buntownik",
+            _ => "Wieśniak",
+        };
 
         public bool ReachedDailyMaxPVPCount() => PVPDailyGamesPlayed >= 10;
 
@@ -292,34 +268,26 @@ namespace Sanakan.DAL.Models
                 .ToList();
         }
 
-        public string GetRankName(ulong experience)
+        public string GetRankName(ulong experience) => experience switch
         {
-            switch (experience)
-            {
-                case var n when n >= 17:
-                    return "Konsul";
-
-                case 16: return "Praetor";
-                case 15: return "Legatus";
-                case 14: return "Preafectus classis";
-                case 13: return "Praefectus praetoria";
-                case 12: return "Tribunus laticavius";
-                case 11: return "Prefectus";
-                case 10: return "Tribunus angusticlavius";
-                case 9: return "Praefectus castorium";
-                case 8: return "Primus pilus";
-                case 7: return "Primi ordines";
-                case 6: return "Centurio";
-                case 5: return "Decurio";
-                case 4: return "Tesserarius";
-                case 3: return "Optio";
-                case 2: return "Aquilifier";
-                case 1: return "Signifer";
-
-                default:
-                    // (in ancient Rome) A common soldier; soldier of the ranks.
-                    return "Miles gregarius";
-            }
-        }
+            var n when n >= 17 => "Konsul",
+            16 => "Praetor",
+            15 => "Legatus",
+            14 => "Preafectus classis",
+            13 => "Praefectus praetoria",
+            12 => "Tribunus laticavius",
+            11 => "Prefectus",
+            10 => "Tribunus angusticlavius",
+            9 => "Praefectus castorium",
+            8 => "Primus pilus",
+            7 => "Primi ordines",
+            6 => "Centurio",
+            5 => "Decurio",
+            4 => "Tesserarius",
+            3 => "Optio",
+            2 => "Aquilifier",
+            1 => "Signifer",
+            _ => "Miles gregarius",// (in ancient Rome) A common soldier; soldier of the ranks.
+        };
     }
 }

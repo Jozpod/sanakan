@@ -22,30 +22,12 @@ namespace Sanakan.ShindenApi.Tests
                 {
                     TagCategories = new AnimeMangaInfoTags
                     {
-                        Entity = new AnimeMangaInfoEntity
-                        {
-
-                        },
-                        Genre = new AnimeMangaInfoEntity
-                        {
-
-                        },
-                        Place = new AnimeMangaInfoEntity
-                        {
-
-                        },
-                        Source = new AnimeMangaInfoEntity
-                        {
-
-                        },
-                        Studio = new AnimeMangaInfoEntity
-                        {
-
-                        },
-                        Tag = new AnimeMangaInfoEntity
-                        {
-                            
-                        },
+                        Entity = new AnimeMangaInfoEntity(),
+                        Genre = new AnimeMangaInfoEntity(),
+                        Place = new AnimeMangaInfoEntity(),
+                        Source = new AnimeMangaInfoEntity(),
+                        Studio = new AnimeMangaInfoEntity(),
+                        Tag = new AnimeMangaInfoEntity(),
                     },
                     RatingTotalSum = 1,
                     RatingStoryCnt = 1,
