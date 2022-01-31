@@ -26,7 +26,6 @@ namespace Sanakan.DiscordBot.Services
         private readonly IDiscordClientAccessor _discordClientAccessor;
         private readonly ISystemClock _systemClock;
         private readonly IServiceScopeFactory _serviceScopeFactory;
-        private readonly TimeSpan _halfAnHour;
 
         public ExperienceManager(
             IBlockingPriorityQueue blockingPriorityQueue,
@@ -44,7 +43,6 @@ namespace Sanakan.DiscordBot.Services
             _systemClock = systemClock;
             _discordClientAccessor.MessageReceived += HandleMessageAsync;
             _userStatsMap = new Dictionary<ulong, UserStat>();
-            _halfAnHour = TimeSpan.FromMinutes(30);
         }
 
         private async Task HandleMessageAsync(IMessage message)
@@ -56,9 +54,7 @@ namespace Sanakan.DiscordBot.Services
                 return;
             }
 
-            var guildUser = user as IGuildUser;
-
-            if (guildUser == null)
+            if (user is not IGuildUser guildUser)
             {
                 return;
             }
@@ -121,9 +117,10 @@ namespace Sanakan.DiscordBot.Services
                 _userStatsMap[userId] = userExperienceStat;
             }
 
+            var content = message.Content;
             if (countMessages)
             {
-                var isCommand = _discordConfiguration.CurrentValue.IsCommand(message.Content);
+                var isCommand = _discordConfiguration.CurrentValue.IsCommand(content);
                 userExperienceStat.MessagesCount++;
 
                 if (isCommand)
@@ -136,11 +133,13 @@ namespace Sanakan.DiscordBot.Services
                 userExperienceStat,
                 guildUser,
                 guild.Id,
-                message,
+                content,
+                message.Tags,
+                message.Channel,
                 calculateExperience);
         }
 
-        private double GetExpPointBasedOnCharCount(double charCount)
+        private double GetExperiencePointBasedOnCharCount(double charCount)
         {
             var experienceConfiguration = _experienceConfiguration.CurrentValue;
             var charPerPoint = experienceConfiguration.CharPerPoint;
@@ -166,12 +165,13 @@ namespace Sanakan.DiscordBot.Services
             UserStat userExperienceStat,
             IGuildUser user,
             ulong guildId,
-            IMessage message,
+            string content,
+            IEnumerable<ITag> tags,
+            IMessageChannel messageChannel,
             bool calculateExperience)
         {
             var experienceConfiguration = _experienceConfiguration.CurrentValue;
-            var content = message.Content;
-            var emoteChars = message.Tags.CountEmotesTextLength();
+            var emoteChars = tags.CountEmotesTextLength();
             var linkChars = content.CountLinkTextLength();
             var nonWhiteSpaceChars = content.Count(character => !char.IsWhiteSpace(character));
             var quotedChars = content.CountQuotedTextLength();
@@ -179,7 +179,7 @@ namespace Sanakan.DiscordBot.Services
 
             var effectiveCharacters = (ulong)(charsThatMatters < 1 ? 1 : charsThatMatters);
             userExperienceStat.CharacterCount += effectiveCharacters;
-            var experience = GetExpPointBasedOnCharCount(charsThatMatters);
+            var experience = GetExperiencePointBasedOnCharCount(charsThatMatters);
 
             if (!calculateExperience)
             {
@@ -201,7 +201,7 @@ namespace Sanakan.DiscordBot.Services
                 userExperienceStat.SavedOn = utcNow;
             }
 
-            var halfAnHourElapsed = (utcNow - userExperienceStat.SavedOn.Value) > _halfAnHour;
+            var halfAnHourElapsed = (utcNow - userExperienceStat.SavedOn.Value) > Durations.HalfAnHour;
 
             if (userExperienceStat.Experience < experienceConfiguration.SaveThreshold && !halfAnHourElapsed)
             {
@@ -222,13 +222,13 @@ namespace Sanakan.DiscordBot.Services
             {
                 Experience = effectiveExperience,
                 DiscordUserId = user.Id,
-                CommandCount = userExperienceStat.CharacterCount,
+                CommandCount = userExperienceStat.CommandsCount,
                 CharacterCount = userExperienceStat.CharacterCount,
                 MessageCount = userExperienceStat.MessagesCount,
                 CalculateExperience = calculateExperience,
                 GuildId = guildId,
                 User = user,
-                Channel = message.Channel,
+                Channel = messageChannel,
             });
 
             userExperienceStat.CharacterCount = 0;

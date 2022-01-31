@@ -37,7 +37,7 @@ namespace Sanakan.DiscordBot.Session
             : base(
                 ownerId,
                 createdOn,
-                TimeSpan.FromMinutes(2),
+                Durations.TwoMinutes,
                 Discord.Commands.RunMode.Sync,
                 SessionExecuteCondition.AllEvents)
         {

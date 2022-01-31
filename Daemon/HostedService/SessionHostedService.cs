@@ -140,7 +140,9 @@ namespace Sanakan.Daemon.HostedService
                 return;
             }
 
-            var reactionUser = await channel.Value.GetUserAsync(userId.Value);
+            var messageChannel = channel.HasValue ? channel.Value : await channel.GetOrDownloadAsync();
+
+            var reactionUser = await messageChannel.GetUserAsync(userId.Value);
 
             if (reactionUser == null)
             {

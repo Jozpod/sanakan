@@ -27,6 +27,15 @@ namespace DiscordBot.ServicesTests.ExperienceManagerTests
 
         public Base()
         {
+            _experienceConfigurationMock
+                .Setup(pr => pr.CurrentValue)
+                .Returns(new ExperienceConfiguration
+                {
+                    CharPerPacket = 12,
+                    CharPerPoint = 5, 
+                    SaveThreshold = 5,
+                });
+
             _discordConfigurationMock
                 .Setup(pr => pr.CurrentValue)
                 .Returns(new DiscordConfiguration

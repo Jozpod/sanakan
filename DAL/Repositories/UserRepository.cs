@@ -183,7 +183,7 @@ namespace Sanakan.DAL.Repositories
 
             _cacheManager.Add(CacheKeys.UsersLite, result, new MemoryCacheEntryOptions
             {
-                AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1)
+                AbsoluteExpirationRelativeToNow = Durations.Hour
             });
 
             return result;

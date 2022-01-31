@@ -11,7 +11,6 @@ namespace Sanakan.DAL.MySql.Migrator.TableEnumerators
 
         public override RarityExcluded Current => new()
         {
-            Id = _reader.GetUInt64(0),
             Rarity = (Rarity)_reader.GetInt32(1),
             BoosterPackId = _reader.GetUInt64(2),
         };

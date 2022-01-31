@@ -188,7 +188,7 @@ namespace Sanakan.Daemon.HostedService
             try
             {
                 _timer.Tick += OnResetCounter;
-                _timer.Start(TimeSpan.Zero, TimeSpan.FromHours(1));
+                _timer.Start(TimeSpan.Zero, Durations.Hour);
                 await _taskManager.Delay(Timeout.InfiniteTimeSpan, stoppingToken);
             }
             catch (OperationCanceledException)

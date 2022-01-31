@@ -20,9 +20,11 @@ namespace Sanakan.DiscordBot.Abstractions.Extensions
         public static string GetLocalCreatedAtShortDateTime(this IMessage message)
            => message.CreatedAt.DateTime.ToLocalTime().ToString("dd/MM/yyyy HH:mm");
 
-        public static int CountEmotesTextLength(this IReadOnlyCollection<Discord.ITag> tags)
+        public static int CountEmotesTextLength(this IEnumerable<ITag> tags)
         {
-            return tags.Where(tag => tag.Type == TagType.Emoji).Sum(x => x.Value.ToString().Length);
+            return tags
+                .Where(tag => tag.Type == TagType.Emoji)
+                .Sum(x => x.Value.ToString().Length);
         }
 
         public static string GetUserOrDefaultAvatarUrl(this IUser user)

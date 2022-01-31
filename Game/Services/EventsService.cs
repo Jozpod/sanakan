@@ -218,13 +218,11 @@ namespace Sanakan.Game.Services
             switch (expedition)
             {
                 case ExpeditionCardType.ExtremeItemWithExp:
-                    if (duration.Item1 > TimeSpan.FromMinutes(45).TotalMinutes
-                        || duration.Item2 > TimeSpan.FromHours(4).TotalMinutes)
+                    if ((duration.Item1 > TimeSpan.FromMinutes(45).TotalMinutes
+                        || duration.Item2 > Durations.FourHours.TotalMinutes)
+                        && _randomNumberGenerator.TakeATry(2))
                     {
-                        if (_randomNumberGenerator.TakeATry(2))
-                        {
-                            return EventType.LoseCard;
-                        }
+                        return EventType.LoseCard;
                     }
 
                     return EventType.None;

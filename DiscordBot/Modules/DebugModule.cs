@@ -133,9 +133,10 @@ namespace Sanakan.DiscordBot.Modules
                 var character = (await _shindenClient.GetCharacterInfoAsync(2)).Value!;
                 var channel = (ITextChannel)Context.Channel;
                 var card = _waifuService.GenerateNewCard(null, character);
+                var image = images[imageIndex];
 
                 _ = await _waifuService.GetSafariViewAsync(
-                    images[imageIndex],
+                    image,
                     card,
                     channel);
             }
@@ -416,7 +417,7 @@ namespace Sanakan.DiscordBot.Modules
             IUser? winner = null;
 
             var cancellationTokenSource = new CancellationTokenSource();
-            cancellationTokenSource.CancelAfter(TimeSpan.FromMinutes(1));
+            cancellationTokenSource.CancelAfter(Durations.Minute);
             var cancellationToken = cancellationTokenSource.Token;
 
             try

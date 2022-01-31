@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Microsoft.Extensions.DependencyInjection;
+using Sanakan.Common;
 using Sanakan.DAL.Models;
 using Sanakan.DiscordBot.Abstractions.Configuration;
 using Sanakan.DiscordBot.Session.Abstractions;
@@ -93,7 +94,7 @@ namespace Sanakan.DiscordBot.Session
             : base(
                 ownerId,
                 createdOn,
-                TimeSpan.FromMinutes(1),
+                Durations.Minute,
                 Discord.Commands.RunMode.Sync,
                 executeCondition)
         {

@@ -1,5 +1,6 @@
 using Discord;
 using Microsoft.Extensions.DependencyInjection;
+using Sanakan.Common;
 using Sanakan.DiscordBot.Session.Abstractions;
 using Sanakan.Extensions;
 using Sanakan.ShindenApi;
@@ -27,7 +28,7 @@ namespace Sanakan.DiscordBot.Session
             : base(
                 ownerId,
                 createdOn,
-                TimeSpan.FromMinutes(2),
+                Durations.TwoMinutes,
                 Discord.Commands.RunMode.Async,
                 SessionExecuteCondition.AllEvents)
         {

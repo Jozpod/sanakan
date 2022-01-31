@@ -39,9 +39,6 @@ namespace Sanakan.Game.Services
         private readonly IResourceManager _resourceManager;
         private readonly ITaskManager _taskManager;
         private readonly IServiceScopeFactory _serviceScopeFactory;
-        private readonly TimeSpan _halfAnHour = TimeSpan.FromMinutes(30);
-        private readonly TimeSpan _hour = TimeSpan.FromHours(1);
-        private readonly TimeSpan _day = TimeSpan.FromDays(1);
         private DateTime _charactersUpdatedOn = DateTime.MinValue;
         private IEnumerable<ulong> _ids = Enumerable.Empty<ulong>();
 
@@ -776,7 +773,7 @@ namespace Sanakan.Game.Services
         {
             int check = 2;
             var utcNow = _systemClock.UtcNow;
-            var shouldUpdateCharacters = (utcNow - _charactersUpdatedOn) > _day;
+            var shouldUpdateCharacters = (utcNow - _charactersUpdatedOn) > Durations.Day;
 
             if (shouldUpdateCharacters)
             {
@@ -1123,9 +1120,20 @@ namespace Sanakan.Game.Services
 
             var defaultX = 884;
             var defaultY = 198;
+            var url = GetSafariUri(safariImage, safariImageType);
+            int getX;
+            int getY;
 
-            var getX = _fileSystem.Exists(ThisUri(safariImage, safariImageType)) ? safariImage.X : defaultX;
-            var getY = _fileSystem.Exists(ThisUri(safariImage, safariImageType)) ? safariImage.Y : defaultY;
+            if (_fileSystem.Exists(url))
+            {
+                getX = safariImage.X;
+                getY = safariImage.Y;
+            }
+            else
+            {
+                getX = defaultX;
+                getY = defaultY;
+            }
 
             using var cardImage = await _imageProcessor.GetWaifuCardImageAsync(card);
             var xPosition = safariImage != null ? getX : defaultX;
@@ -1480,7 +1488,7 @@ namespace Sanakan.Game.Services
             var (normalizedDuration, actualDuration) = GetRealTimeOnExpedition(card, gameDeck.Karma);
             var baseExp = GetBaseExpPerMinuteFromExpedition(card.Expedition, card.Rarity);
             var baseItemsCnt = GetBaseItemsPerMinuteFromExpedition(card.Expedition, card.Rarity);
-            var multiplier = (actualDuration < _hour) ? ((actualDuration < _halfAnHour) ? 5d : 3d) : 1d;
+            var multiplier = (actualDuration < Durations.Hour) ? ((actualDuration < Durations.HalfAnHour) ? 5d : 3d) : 1d;
 
             var totalExperience = GetProgressiveValueFromExpedition(baseExp, normalizedDuration.TotalMinutes, 15d);
             var totalItemsCount = (int)GetProgressiveValueFromExpedition(baseItemsCnt, normalizedDuration.TotalMinutes, 25d);
@@ -1495,7 +1503,7 @@ namespace Sanakan.Game.Services
 
             var expeditionSummary = new StringBuilder();
             var allowItems = true;
-            if (actualDuration < _halfAnHour)
+            if (actualDuration < Durations.HalfAnHour)
             {
                 expeditionSummary.Append("Wyprawa? Chyba po bułki do sklepu.\n\n");
                 affectionCost += 3.3;
@@ -1525,7 +1533,7 @@ namespace Sanakan.Game.Services
                 totalExperience /= 2;
             }
 
-            if (normalizedDuration <= TimeSpan.FromMinutes(1) || gameDeck.CanCreateDemon())
+            if (normalizedDuration <= Durations.Minute || gameDeck.CanCreateDemon())
             {
                 karmaCost /= 2.5;
             }
@@ -1704,117 +1712,70 @@ namespace Sanakan.Game.Services
                 case ExpeditionCardType.UltimateMedium:
                 case ExpeditionCardType.UltimateHard:
                 case ExpeditionCardType.UltimateHardcore:
-                    var item = _randomNumberGenerator
+                    return _randomNumberGenerator
                         .GetOneRandomFrom(Constants.UltimateExpeditionItems)
                         .ToItem(1, quality);
-                    return item;
-
-                default:
-                    break;
             }
 
-
-            switch (_randomNumberGenerator.GetRandomValue(10000))
+            return _randomNumberGenerator.GetRandomValue(10000) switch
             {
-                case int n when n < chanceOfItems[ItemType.AffectionRecoverySmall].Item2
-                                && n >= chanceOfItems[ItemType.AffectionRecoverySmall].Item1:
-                    return ItemType.AffectionRecoverySmall.ToItem(1, quality);
-
-                case int n when n < chanceOfItems[ItemType.AffectionRecoveryNormal].Item2
-                                && n >= chanceOfItems[ItemType.AffectionRecoveryNormal].Item1:
-                    return ItemType.AffectionRecoveryNormal.ToItem(1, quality);
-
-                case int n when n < chanceOfItems[ItemType.DereReRoll].Item2
-                                && n >= chanceOfItems[ItemType.DereReRoll].Item1:
-                    return ItemType.DereReRoll.ToItem(1, quality);
-
-                case int n when n < chanceOfItems[ItemType.CardParamsReRoll].Item2
-                                && n >= chanceOfItems[ItemType.CardParamsReRoll].Item1:
-                    return ItemType.CardParamsReRoll.ToItem(1, quality);
-
-                case int n when n < chanceOfItems[ItemType.AffectionRecoveryBig].Item2
-                                && n >= chanceOfItems[ItemType.AffectionRecoveryBig].Item1:
-                    return ItemType.AffectionRecoveryBig.ToItem(1, quality);
-
-                case int n when n < chanceOfItems[ItemType.AffectionRecoveryGreat].Item2
-                                && n >= chanceOfItems[ItemType.AffectionRecoveryGreat].Item1:
-                    return ItemType.AffectionRecoveryGreat.ToItem(1, quality);
-
-                case int n when n < chanceOfItems[ItemType.IncreaseUpgradeCount].Item2
-                                && n >= chanceOfItems[ItemType.IncreaseUpgradeCount].Item1:
-                    return ItemType.IncreaseUpgradeCount.ToItem(1, quality);
-
-                case int n when n < chanceOfItems[ItemType.IncreaseExpSmall].Item2
-                                && n >= chanceOfItems[ItemType.IncreaseExpSmall].Item1:
-                    return ItemType.IncreaseExpSmall.ToItem(1, quality);
-
-                case int n when n < chanceOfItems[ItemType.IncreaseExpBig].Item2
-                                && n >= chanceOfItems[ItemType.IncreaseExpBig].Item1:
-                    return ItemType.IncreaseExpBig.ToItem(1, quality);
-
-                case int n when n < chanceOfItems[ItemType.BetterIncreaseUpgradeCnt].Item2
-                                && n >= chanceOfItems[ItemType.BetterIncreaseUpgradeCnt].Item1:
-                    return ItemType.BetterIncreaseUpgradeCnt.ToItem(1, quality);
-
-                default:
-                    return null;
-            }
-        }
-
-        private bool CheckChanceForItemInExpedition(int currItem, int maxItem, ExpeditionCardType expedition)
-        {
-            switch (expedition)
-            {
-                case ExpeditionCardType.NormalItemWithExp:
-                    return !_randomNumberGenerator.TakeATry(10);
-
-                case ExpeditionCardType.LightItemWithExp:
-                case ExpeditionCardType.DarkItemWithExp:
-                    return !_randomNumberGenerator.TakeATry(15);
-
-                case ExpeditionCardType.DarkItems:
-                case ExpeditionCardType.LightItems:
-                case ExpeditionCardType.ExtremeItemWithExp:
-                    return true;
-
-                case ExpeditionCardType.UltimateEasy:
-                    return !_randomNumberGenerator.TakeATry(15);
-
-                case ExpeditionCardType.UltimateMedium:
-                    return !_randomNumberGenerator.TakeATry(20);
-
-                case ExpeditionCardType.UltimateHard:
-                case ExpeditionCardType.UltimateHardcore:
-                    return true;
-
-                default:
-                case ExpeditionCardType.LightExp:
-                case ExpeditionCardType.DarkExp:
-                    return false;
-            }
-        }
-
-        private bool CheckEventInExpedition(ExpeditionCardType expedition, (double, double) duration)
-        {
-            return expedition switch
-            {
-                ExpeditionCardType.NormalItemWithExp => _randomNumberGenerator.TakeATry(10),
-                ExpeditionCardType.ExtremeItemWithExp => 
-                    duration.Item1 > 60
-                    || duration.Item2 > 600
-                    || !_randomNumberGenerator.TakeATry(5),
-                ExpeditionCardType.LightItemWithExp
-                    or ExpeditionCardType.DarkItemWithExp => _randomNumberGenerator.TakeATry(10),
-                ExpeditionCardType.DarkItems
-                    or ExpeditionCardType.LightItems
-                    or ExpeditionCardType.LightExp
-                    or ExpeditionCardType.DarkExp => _randomNumberGenerator.TakeATry(5),
-                ExpeditionCardType.UltimateMedium => _randomNumberGenerator.TakeATry(6),
-                ExpeditionCardType.UltimateHard => _randomNumberGenerator.TakeATry(2),
-                ExpeditionCardType.UltimateHardcore => _randomNumberGenerator.TakeATry(4),
-                _ => false,
+                int n when n < chanceOfItems[ItemType.AffectionRecoverySmall].Item2
+                    && n >= chanceOfItems[ItemType.AffectionRecoverySmall].Item1 => ItemType.AffectionRecoverySmall.ToItem(1, quality),
+                int n when n < chanceOfItems[ItemType.AffectionRecoveryNormal].Item2
+                    && n >= chanceOfItems[ItemType.AffectionRecoveryNormal].Item1 => ItemType.AffectionRecoveryNormal.ToItem(1, quality),
+                int n when n < chanceOfItems[ItemType.DereReRoll].Item2
+                    && n >= chanceOfItems[ItemType.DereReRoll].Item1 => ItemType.DereReRoll.ToItem(1, quality),
+                int n when n < chanceOfItems[ItemType.CardParamsReRoll].Item2
+                    && n >= chanceOfItems[ItemType.CardParamsReRoll].Item1 => ItemType.CardParamsReRoll.ToItem(1, quality),
+                int n when n < chanceOfItems[ItemType.AffectionRecoveryBig].Item2
+                    && n >= chanceOfItems[ItemType.AffectionRecoveryBig].Item1 => ItemType.AffectionRecoveryBig.ToItem(1, quality),
+                int n when n < chanceOfItems[ItemType.AffectionRecoveryGreat].Item2
+                    && n >= chanceOfItems[ItemType.AffectionRecoveryGreat].Item1 => ItemType.AffectionRecoveryGreat.ToItem(1, quality),
+                int n when n < chanceOfItems[ItemType.IncreaseUpgradeCount].Item2
+                    && n >= chanceOfItems[ItemType.IncreaseUpgradeCount].Item1 => ItemType.IncreaseUpgradeCount.ToItem(1, quality),
+                int n when n < chanceOfItems[ItemType.IncreaseExpSmall].Item2
+                    && n >= chanceOfItems[ItemType.IncreaseExpSmall].Item1 => ItemType.IncreaseExpSmall.ToItem(1, quality),
+                int n when n < chanceOfItems[ItemType.IncreaseExpBig].Item2
+                    && n >= chanceOfItems[ItemType.IncreaseExpBig].Item1 => ItemType.IncreaseExpBig.ToItem(1, quality),
+                int n when n < chanceOfItems[ItemType.BetterIncreaseUpgradeCnt].Item2
+                        && n >= chanceOfItems[ItemType.BetterIncreaseUpgradeCnt].Item1 => ItemType.BetterIncreaseUpgradeCnt.ToItem(1, quality),
+                _ => null,
             };
         }
+
+        private bool CheckChanceForItemInExpedition(int currItem, int maxItem, ExpeditionCardType expedition) => expedition switch
+        {
+            ExpeditionCardType.NormalItemWithExp => !_randomNumberGenerator.TakeATry(10),
+            ExpeditionCardType.LightItemWithExp
+                or ExpeditionCardType.DarkItemWithExp => !_randomNumberGenerator.TakeATry(15),
+            ExpeditionCardType.DarkItems
+                or ExpeditionCardType.LightItems
+                    or ExpeditionCardType.ExtremeItemWithExp => true,
+            ExpeditionCardType.UltimateEasy => !_randomNumberGenerator.TakeATry(15),
+            ExpeditionCardType.UltimateMedium => !_randomNumberGenerator.TakeATry(20),
+            ExpeditionCardType.UltimateHard
+                or ExpeditionCardType.UltimateHardcore => true,
+            _ => false,
+        };
+
+        private bool CheckEventInExpedition(ExpeditionCardType expedition, (double, double) duration) => expedition switch
+        {
+            ExpeditionCardType.NormalItemWithExp => _randomNumberGenerator.TakeATry(10),
+            ExpeditionCardType.ExtremeItemWithExp =>
+                duration.Item1 > 60
+                || duration.Item2 > 600
+                || !_randomNumberGenerator.TakeATry(5),
+            ExpeditionCardType.LightItemWithExp
+                or ExpeditionCardType.DarkItemWithExp => _randomNumberGenerator.TakeATry(10),
+            ExpeditionCardType.DarkItems
+                or ExpeditionCardType.LightItems
+                or ExpeditionCardType.LightExp
+                or ExpeditionCardType.DarkExp => _randomNumberGenerator.TakeATry(5),
+            ExpeditionCardType.UltimateMedium => _randomNumberGenerator.TakeATry(6),
+            ExpeditionCardType.UltimateHard => _randomNumberGenerator.TakeATry(2),
+            ExpeditionCardType.UltimateHardcore => _randomNumberGenerator.TakeATry(4),
+            _ => false,
+        };
 
         private async Task<string> GetCardUrlIfExistAsync(Card card, bool defaultStr = false, bool forceCreateCard = false)
         {
@@ -1822,8 +1783,8 @@ namespace Sanakan.Game.Services
             var imageLocation = $"{Paths.Cards}/{card.Id}.png";
             var sImageLocation = $"{Paths.CardsMiniatures}/{card.Id}.png";
 
-            if (!_fileSystem.Exists(imageLocation) 
-                || !_fileSystem.Exists(sImageLocation) 
+            if (!_fileSystem.Exists(imageLocation)
+                || !_fileSystem.Exists(sImageLocation)
                 || forceCreateCard)
             {
                 if (card.Id != 0)
@@ -1836,7 +1797,7 @@ namespace Sanakan.Game.Services
                 imageUrl = imageLocation;
                 var fileTime = _systemClock.UtcNow - _fileSystem.GetCreationTime(imageLocation);
 
-                if (fileTime > TimeSpan.FromHours(4))
+                if (fileTime > Durations.FourHours)
                 {
                     imageUrl = await GenerateAndSaveCardAsync(card);
                 }
@@ -1855,17 +1816,10 @@ namespace Sanakan.Game.Services
             return (int)((m * value) - c);
         }
 
-        private string ThisUri(SafariImage safariImage, SafariImageType type)
+        private string GetSafariUri(SafariImage safariImage, SafariImageType type) => type switch
         {
-            switch (type)
-            {
-                case SafariImageType.Mystery:
-                    return string.Format(Paths.PokePicture, safariImage.Index);
-
-                default:
-                case SafariImageType.Truth:
-                    return string.Format(Paths.PokePicture, safariImage.Index + "a");
-            }
-        }
+            SafariImageType.Mystery => string.Format(Paths.PokePicture, safariImage.Index),
+            _ => string.Format(Paths.PokePicture, safariImage.Index + "a"),
+        };
     }
 }

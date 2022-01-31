@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Sanakan.Common;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -228,43 +229,27 @@ namespace Sanakan.DAL.Models
                 return false;
             }
 
-            if (CalculateMaxTimeOnExpedition(karma, expedition) < TimeSpan.FromMinutes(1))
+            if (CalculateMaxTimeOnExpedition(karma, expedition) < Durations.Minute)
             {
                 return false;
             }
 
-            switch (expedition)
+            return expedition switch
             {
-                case ExpeditionCardType.ExtremeItemWithExp:
-                    return !FromFigure && !HasTag(Common.Tags.Favourite);
-
-                case ExpeditionCardType.NormalItemWithExp:
-                    return !FromFigure;
-
-                case ExpeditionCardType.UltimateEasy:
-                case ExpeditionCardType.UltimateHard:
-                case ExpeditionCardType.UltimateMedium:
-                    return Rarity == Rarity.SSS;
-
-                case ExpeditionCardType.UltimateHardcore:
-                    return Rarity == Rarity.SSS && !HasTag(Common.Tags.Favourite);
-
-                case ExpeditionCardType.LightExp:
-                case ExpeditionCardType.LightItems:
-                    return (karma > 1000) && !FromFigure;
-                case ExpeditionCardType.LightItemWithExp:
-                    return (karma > 400) && !FromFigure;
-
-                case ExpeditionCardType.DarkExp:
-                case ExpeditionCardType.DarkItems:
-                    return (karma < -1000) && !FromFigure;
-                case ExpeditionCardType.DarkItemWithExp:
-                    return (karma < -400) && !FromFigure;
-
-                default:
-                case ExpeditionCardType.None:
-                    return false;
-            }
+                ExpeditionCardType.ExtremeItemWithExp => !FromFigure && !HasTag(Common.Tags.Favourite),
+                ExpeditionCardType.NormalItemWithExp => !FromFigure,
+                ExpeditionCardType.UltimateEasy
+                    or ExpeditionCardType.UltimateHard
+                    or ExpeditionCardType.UltimateMedium => Rarity == Rarity.SSS,
+                ExpeditionCardType.UltimateHardcore => Rarity == Rarity.SSS && !HasTag(Common.Tags.Favourite),
+                ExpeditionCardType.LightExp
+                    or ExpeditionCardType.LightItems => (karma > 1000) && !FromFigure,
+                ExpeditionCardType.LightItemWithExp => (karma > 400) && !FromFigure,
+                ExpeditionCardType.DarkExp
+                    or ExpeditionCardType.DarkItems => (karma < -1000) && !FromFigure,
+                ExpeditionCardType.DarkItemWithExp => (karma < -400) && !FromFigure,
+                _ => false,
+            };
         }
 
         public TimeSpan CalculateMaxTimeOnExpedition(double karma, ExpeditionCardType expedition = ExpeditionCardType.None)

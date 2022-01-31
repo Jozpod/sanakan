@@ -10,30 +10,16 @@ namespace Sanakan.Game.Models
 
     public static class SafariImageTypeExtensions
     {
-        public static string ToUri(this SafariImageType type, int index)
+        public static string ToUri(this SafariImageType type, int index) => type switch
         {
-            switch (type)
-            {
-                case SafariImageType.Mystery:
-                    return string.Format(Paths.PokePicture, index);
+            SafariImageType.Mystery => string.Format(Paths.PokePicture, index),
+            _ => string.Format(Paths.PokePicture, index + "a"),
+        };
 
-                default:
-                case SafariImageType.Truth:
-                    return string.Format(Paths.PokePicture, index + "a");
-            }
-        }
-
-        public static string DefaultUri(this SafariImageType type)
+        public static string DefaultUri(this SafariImageType type) => type switch
         {
-            switch (type)
-            {
-                case SafariImageType.Mystery:
-                    return Paths.DefaultPokePicture;
-
-                default:
-                case SafariImageType.Truth:
-                    return Paths.DefaultPokePicture;
-            }
-        }
+            SafariImageType.Mystery => Paths.DefaultPokePicture,
+            _ => Paths.DefaultPokePicture,
+        };
     }
 }

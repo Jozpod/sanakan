@@ -12,123 +12,105 @@ using System.Threading.Tasks;
 namespace DiscordBot.ServicesTests.ExperienceManagerTests
 {
     /// <summary>
-    /// Defines tests for <see cref="DiscordBotHostedService.HandleMessageAsync"/> event handler.
+    /// Defines tests for <see cref="ExperienceManager.HandleMessageAsync"/> event handler.
     /// </summary>
     [TestClass]
     public class HandleMessageAsyncTests : Base
     {
         protected readonly Mock<IMessage> _messageMock = new(MockBehavior.Strict);
+        protected readonly Mock<IMessageChannel> _messageChannelMock = new(MockBehavior.Strict);
+        protected readonly Mock<IGuild> _guildMock = new(MockBehavior.Strict);
+        protected readonly Mock<IGuildUser> _guildUserMock = new(MockBehavior.Strict);
 
-        public async Task SetupAsync(
-            GuildOptions guildOptions,
-            Mock<IGuild> guildMock = null,
-            Mock<IGuildUser> guildUserMock = null,
-            Mock<IMessageChannel> messageChannelMock = null)
+        public HandleMessageAsyncTests()
         {
-            guildMock ??= new Mock<IGuild>(MockBehavior.Strict);
-            guildUserMock ??= new Mock<IGuildUser>(MockBehavior.Strict);
-            messageChannelMock ??= new Mock<IMessageChannel>(MockBehavior.Strict);
-
-            var userId = 1ul;
-
-            _messageMock
-                .Setup(pr => pr.Author)
-                .Returns(guildUserMock.Object)
-                .Verifiable();
-
             _messageMock
                 .Setup(pr => pr.Content)
-                .Returns("test message");
-
-            guildUserMock
-                .Setup(pr => pr.Id)
-                .Returns(userId)
-                .Verifiable();
-
-            guildUserMock
-                .Setup(pr => pr.IsBot)
-                .Returns(false)
-                .Verifiable();
-
-            guildUserMock
-                .Setup(pr => pr.IsWebhook)
-                .Returns(false)
-                .Verifiable();
-
-            guildUserMock
-               .Setup(pr => pr.Guild)
-               .Returns(guildMock.Object)
-               .Verifiable();
-
-            guildMock
-               .Setup(pr => pr.Id)
-               .Returns(guildOptions.Id)
-               .Verifiable();
-
-            _guildConfigRepositoryMock
-                .Setup(pr => pr.GetCachedById(guildOptions.Id))
-                .ReturnsAsync(guildOptions)
-                .Verifiable();
-
-            _messageMock
-                .Setup(pr => pr.Channel)
-                .Returns(messageChannelMock.Object);
-
-            messageChannelMock
-                .Setup(pr => pr.Id)
-                .Returns(1ul);
-
-            _userRepositoryMock
-               .Setup(pr => pr.ExistsByDiscordIdAsync(userId))
-               .ReturnsAsync(false)
-               .Verifiable();
-
-            _userRepositoryMock
-                .Setup(pr => pr.Add(It.IsAny<User>()))
-                .Verifiable();
-
-            _userRepositoryMock
-                .Setup(pr => pr.SaveChangesAsync(It.IsAny<CancellationToken>()))
-                .Returns(Task.CompletedTask)
-                .Verifiable();
-
-            _systemClockMock
-                .Setup(pr => pr.UtcNow)
-                .Returns(DateTime.UtcNow);
-
-            _systemClockMock
-                .Setup(pr => pr.StartOfMonth)
-                .Returns(DateTime.UtcNow);
-
-            _blockingPriorityQueueMock
-                .Setup(pr => pr.TryEnqueue(It.IsAny<AddExperienceMessage>()))
-                .Returns(true);
+                .Returns("message content");
 
             _messageMock
                 .Setup(pr => pr.Tags)
                 .Returns(new List<ITag>());
+
+            _messageMock
+                .Setup(pr => pr.Author)
+                .Returns(_guildUserMock.Object);
+
+            _messageMock
+                .Setup(pr => pr.Channel)
+                .Returns(_messageChannelMock.Object);
+
+            _messageChannelMock
+               .Setup(pr => pr.Id)
+               .Returns(1ul);
+
+            _guildUserMock
+               .Setup(pr => pr.Guild)
+               .Returns(_guildMock.Object);
+
+            _guildMock
+                .Setup(pr => pr.Id)
+                .Returns(1ul);
         }
 
         [TestMethod]
-        public async Task Should_Handle_New_Message()
+        public void Should_Handle_New_Message_Create_User()
         {
             var guildOptions = new GuildOptions(1ul, 50);
-            await SetupAsync(guildOptions);
-            _discordClientAccessorMock.Raise(pr => pr.MessageReceived += null, _messageMock.Object);
 
-            _guildConfigRepositoryMock.Verify();
-            _userRepositoryMock.Verify();
+            _guildUserMock
+                .Setup(pr => pr.Id)
+                .Returns(1ul);
+
+            _guildUserMock
+                .Setup(pr => pr.IsBot)
+                .Returns(false);
+
+            _guildUserMock
+                .Setup(pr => pr.IsWebhook)
+                .Returns(false);
+
+            _guildConfigRepositoryMock
+                .Setup(pr => pr.GetCachedById(1ul))
+                .ReturnsAsync(guildOptions);
+
+            _userRepositoryMock
+                .Setup(pr => pr.ExistsByDiscordIdAsync(1ul))
+                .ReturnsAsync(false);
+
+            _systemClockMock
+                .Setup(pr => pr.StartOfMonth)
+                .Returns(DateTime.UtcNow.Date);
+
+            _userRepositoryMock
+                .Setup(pr => pr.Add(It.IsAny<User>()));
+
+            _userRepositoryMock
+                .Setup(pr => pr.SaveChangesAsync(It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
+
+            _discordClientAccessorMock.Raise(pr => pr.MessageReceived += null, _messageMock.Object);
         }
 
         [TestMethod]
-        public async Task Should_Quit_No_User_Role()
+        public void Should_Quit_No_User_Role()
         {
             var guildMock = new Mock<IGuild>(MockBehavior.Strict);
             var roleMock = new Mock<IRole>(MockBehavior.Strict);
-            var guildUserMock = new Mock<IGuildUser>(MockBehavior.Strict);
             var guildOptions = new GuildOptions(1ul, 50);
             guildOptions.UserRoleId = 1ul;
-            await SetupAsync(guildOptions, guildMock, guildUserMock);
+
+            _guildUserMock
+                .Setup(pr => pr.Id)
+                .Returns(1ul);
+
+            _guildUserMock
+                .Setup(pr => pr.IsBot)
+                .Returns(false);
+
+            _guildUserMock
+                .Setup(pr => pr.IsWebhook)
+                .Returns(false);
 
             guildMock
                .Setup(pr => pr.GetRole(guildOptions.UserRoleId.Value))
@@ -138,7 +120,7 @@ namespace DiscordBot.ServicesTests.ExperienceManagerTests
                .Setup(pr => pr.Id)
                .Returns(1ul);
 
-            guildUserMock
+            _guildUserMock
                .Setup(pr => pr.RoleIds)
                .Returns(new List<ulong>());
 
@@ -146,13 +128,25 @@ namespace DiscordBot.ServicesTests.ExperienceManagerTests
         }
 
         [TestMethod]
-        public async Task Should_Not_Calculate_Experience()
+        public void Should_Not_Calculate_Experience()
         {
             var channelId = 1ul;
             var messageChannelMock = new Mock<IMessageChannel>(MockBehavior.Strict);
             var guildOptions = new GuildOptions(1ul, 50);
+            var guildUserMock = new Mock<IGuildUser>(MockBehavior.Strict);
             guildOptions.ChannelsWithoutExperience.Add(new WithoutExpChannel { ChannelId = channelId });
-            await SetupAsync(guildOptions, messageChannelMock: messageChannelMock);
+
+            guildUserMock
+                .Setup(pr => pr.Id)
+                .Returns(1ul);
+
+            guildUserMock
+                .Setup(pr => pr.IsBot)
+                .Returns(false);
+
+            guildUserMock
+                .Setup(pr => pr.IsWebhook)
+                .Returns(false);
 
             messageChannelMock
                 .Setup(pr => pr.Id)
@@ -162,13 +156,25 @@ namespace DiscordBot.ServicesTests.ExperienceManagerTests
         }
 
         [TestMethod]
-        public async Task Should_Not_Count_Messages()
+        public void Should_Not_Count_Messages()
         {
             var channelId = 1ul;
             var messageChannelMock = new Mock<IMessageChannel>(MockBehavior.Strict);
             var guildOptions = new GuildOptions(1ul, 50);
+            var guildUserMock = new Mock<IGuildUser>(MockBehavior.Strict);
             guildOptions.IgnoredChannels.Add(new WithoutMessageCountChannel { ChannelId = channelId });
-            await SetupAsync(guildOptions, messageChannelMock: messageChannelMock);
+
+            guildUserMock
+                .Setup(pr => pr.Id)
+                .Returns(1ul);
+
+            guildUserMock
+                .Setup(pr => pr.IsBot)
+                .Returns(false);
+
+            guildUserMock
+                .Setup(pr => pr.IsWebhook)
+                .Returns(false);
 
             messageChannelMock
                 .Setup(pr => pr.Id)
@@ -178,10 +184,22 @@ namespace DiscordBot.ServicesTests.ExperienceManagerTests
         }
 
         [TestMethod]
-        public async Task Should_Enqueue_Add_Experience_Task()
+        public void Should_Enqueue_Add_Experience_Task()
         {
             var guildOptions = new GuildOptions(1ul, 50);
-            await SetupAsync(guildOptions);
+            var guildUserMock = new Mock<IGuildUser>(MockBehavior.Strict);
+
+            guildUserMock
+                .Setup(pr => pr.Id)
+                .Returns(1ul);
+
+            guildUserMock
+                .Setup(pr => pr.IsBot)
+                .Returns(false);
+
+            guildUserMock
+                .Setup(pr => pr.IsWebhook)
+                .Returns(false);
 
             _discordClientAccessorMock.Raise(pr => pr.MessageReceived += null, _messageMock.Object);
             _discordClientAccessorMock.Raise(pr => pr.MessageReceived += null, _messageMock.Object);

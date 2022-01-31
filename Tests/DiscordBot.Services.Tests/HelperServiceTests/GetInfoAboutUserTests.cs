@@ -38,43 +38,35 @@ namespace DiscordBot.ServicesTests.HelperServiceTests
 
             roleMock
                 .Setup(pr => pr.Id)
-                .Returns(roleId)
-                .Verifiable();
+                .Returns(roleId);
 
             roleMock
                 .Setup(pr => pr.Position)
-                .Returns(0)
-                .Verifiable();
+                .Returns(0);
 
             guildMock
                 .Setup(pr => pr.Id)
-                .Returns(guildId)
-                .Verifiable();
+                .Returns(guildId);
 
             guildMock
                 .Setup(pr => pr.Roles)
-                .Returns(roles)
-                .Verifiable();
+                .Returns(roles);
 
             guildUserMock
                 .Setup(pr => pr.Id)
-                .Returns(userId)
-                .Verifiable();
+                .Returns(userId);
 
             guildUserMock
                 .Setup(pr => pr.Guild)
-                .Returns(guildMock.Object)
-                .Verifiable();
+                .Returns(guildMock.Object);
 
             guildUserMock
                 .Setup(pr => pr.GetAvatarUrl(ImageFormat.Auto, 128))
-                .Returns(avatarUrl)
-                .Verifiable();
+                .Returns(avatarUrl);
 
             guildUserMock
                 .Setup(pr => pr.Nickname)
-                .Returns(nickname)
-                .Verifiable();
+                .Returns(nickname);
 
             guildUserMock
                 .Setup(pr => pr.RoleIds)
@@ -83,33 +75,25 @@ namespace DiscordBot.ServicesTests.HelperServiceTests
 
             guildUserMock
                 .Setup(pr => pr.CreatedAt)
-                .Returns(createdAt)
-                .Verifiable();
+                .Returns(createdAt);
 
             guildUserMock
                 .Setup(pr => pr.JoinedAt)
-                .Returns(joinedAt)
-                .Verifiable();
+                .Returns(joinedAt);
 
             guildUserMock
                 .Setup(pr => pr.IsBot)
-                .Returns(false)
-                .Verifiable();
+                .Returns(false);
 
             guildUserMock
                .Setup(pr => pr.Status)
-               .Returns(UserStatus.Online)
-               .Verifiable();
+               .Returns(UserStatus.Online);
 
             var result = _helperService.GetInfoAboutUser(guildUserMock.Object);
             result.Should().NotBeNull();
             result.Fields.Should().HaveCount(7);
             result.Fields[0].Name.Should().NotBeNullOrEmpty();
             result.Fields[0].Value.Should().NotBeNullOrEmpty();
-
-            roleMock.Verify();
-            guildMock.Verify();
-            guildUserMock.Verify();
         }
     }
 }

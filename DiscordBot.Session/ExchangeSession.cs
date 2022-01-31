@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Microsoft.Extensions.DependencyInjection;
+using Sanakan.Common;
 using Sanakan.Common.Cache;
 using Sanakan.DAL.Models;
 using Sanakan.DAL.Repositories.Abstractions;
@@ -43,7 +44,7 @@ namespace Sanakan.DiscordBot.Session
         : base(
           new[] { ownerId, participantId },
           createdOn,
-          TimeSpan.FromMinutes(2),
+          Durations.TwoMinutes,
           Discord.Commands.RunMode.Sync,
           SessionExecuteCondition.AllEvents)
         {
