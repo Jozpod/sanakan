@@ -7,6 +7,7 @@ using Sanakan.DAL.Models;
 using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot.Abstractions;
 using Sanakan.DiscordBot.Abstractions.Extensions;
+using Sanakan.DiscordBot.Services.Abstractions;
 using Sanakan.Extensions;
 using Sanakan.TaskQueue;
 using Sanakan.TaskQueue.Messages;
@@ -17,7 +18,7 @@ using System.Threading.Tasks;
 
 namespace Sanakan.DiscordBot.Services
 {
-    public class ExperienceManager
+    public class ExperienceManager : IExperienceManager
     {
         private readonly IDictionary<ulong, UserStat> _userStatsMap;
         private readonly IOptionsMonitor<DiscordConfiguration> _discordConfiguration;

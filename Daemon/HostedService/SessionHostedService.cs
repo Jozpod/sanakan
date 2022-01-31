@@ -94,9 +94,7 @@ namespace Sanakan.Daemon.HostedService
 
         internal async Task HandleMessageAsync(IMessage message)
         {
-            var userMessage = message as IUserMessage;
-
-            if (userMessage == null)
+            if (message is not IUserMessage userMessage)
             {
                 return;
             }
@@ -115,136 +113,30 @@ namespace Sanakan.Daemon.HostedService
                 return;
             }
 
-            var client = _discordClientAccessor.Client;
-
-            var sessionPayload = new SessionContext
-            {
-                Client = client,
-                Channel = message.Channel,
-                Message = userMessage,
-                UserId = userMessage.Author.Id,
-            };
-
-            await RunSessions(userSessions, sessionPayload).ConfigureAwait(false);
+            await HandleAsync(
+                SessionExecuteCondition.Message,
+                userSessions,
+                userMessage,
+                user.Id).ConfigureAwait(false);
         }
 
-        internal async Task HandleReactionAddedAsync(
-            Cacheable<IUserMessage, ulong> userMessage,
-            Cacheable<IMessageChannel, ulong> channel,
-            IReaction reaction)
-        {
-            var userId = reaction.GetUserId();
+        internal Task HandleReactionAddedAsync(
+            Cacheable<IUserMessage, ulong> cachedMessage,
+            Cacheable<IMessageChannel, ulong> cachedChannel,
+            IReaction reaction) => HandleReactionAsync(
+                SessionExecuteCondition.ReactionAdded,
+                cachedMessage,
+                cachedChannel,
+                reaction);
 
-            if (!userId.HasValue)
-            {
-                return;
-            }
-
-            var messageChannel = channel.HasValue ? channel.Value : await channel.GetOrDownloadAsync();
-
-            var reactionUser = await messageChannel.GetUserAsync(userId.Value);
-
-            if (reactionUser == null)
-            {
-                return;
-            }
-
-            if (reactionUser.IsBotOrWebhook())
-            {
-                return;
-            }
-
-            var userSessions = _sessionManager.GetByOwnerId(userId.Value, SessionExecuteCondition.ReactionAdded);
-
-            if (!userSessions.Any())
-            {
-                return;
-            }
-
-            var message = await channel.Value.GetMessageAsync(userMessage.Id);
-            if (message == null)
-            {
-                return;
-            }
-
-            var uuserMessage = message as IUserMessage;
-
-            if (uuserMessage == null)
-            {
-                return;
-            }
-
-            var client = _discordClientAccessor.Client;
-
-            var sessionPayload = new SessionContext
-            {
-                Client = client,
-                Channel = uuserMessage.Channel,
-                Message = uuserMessage,
-                UserId = reactionUser.Id,
-                AddReaction = reaction,
-            };
-
-            await RunSessions(userSessions, sessionPayload).ConfigureAwait(false);
-        }
-
-        internal async Task HandleReactionRemovedAsync(
-            Cacheable<IUserMessage, ulong> userMessage,
-            Cacheable<IMessageChannel, ulong> channel,
-            IReaction reaction)
-        {
-            var userId = reaction.GetUserId();
-
-            if (!userId.HasValue)
-            {
-                return;
-            }
-
-            var reactionUser = await channel.Value.GetUserAsync(userId.Value);
-
-            if (reactionUser == null)
-            {
-                return;
-            }
-
-            if (reactionUser.IsBotOrWebhook())
-            {
-                return;
-            }
-
-            var userSessions = _sessionManager.GetByOwnerId(userId.Value, SessionExecuteCondition.ReactionRemoved);
-
-            if (!userSessions.Any())
-            {
-                return;
-            }
-
-            var client = _discordClientAccessor.Client;
-
-            var message = await channel.Value.GetMessageAsync(userMessage.Id);
-            if (message == null)
-            {
-                return;
-            }
-
-            var socketUserMessage = message as IUserMessage;
-
-            if (socketUserMessage == null)
-            {
-                return;
-            }
-
-            var sessionPayload = new SessionContext
-            {
-                Client = client,
-                Channel = socketUserMessage.Channel,
-                Message = socketUserMessage,
-                UserId = reactionUser.Id,
-                RemoveReaction = reaction,
-            };
-
-            await RunSessions(userSessions, sessionPayload).ConfigureAwait(false);
-        }
+        internal Task HandleReactionRemovedAsync(
+            Cacheable<IUserMessage, ulong> cachedMessage,
+            Cacheable<IMessageChannel, ulong> cachedChannel,
+            IReaction reaction) => HandleReactionAsync(
+                SessionExecuteCondition.ReactionRemoved,
+                cachedMessage,
+                cachedChannel,
+                reaction);
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
@@ -270,6 +162,90 @@ namespace Sanakan.Daemon.HostedService
             _discordClientAccessor.ReactionAdded += HandleReactionAddedAsync;
             _discordClientAccessor.ReactionRemoved += HandleReactionRemovedAsync;
             return Task.CompletedTask;
+        }
+
+        private async Task HandleReactionAsync(
+            SessionExecuteCondition sessionExecuteCondition,
+            Cacheable<IUserMessage, ulong> cachedMessage,
+            Cacheable<IMessageChannel, ulong> cachedChannel,
+            IReaction reaction)
+        {
+            var userId = reaction.GetUserId();
+
+            if (!userId.HasValue)
+            {
+                return;
+            }
+
+            var messageChannel = await cachedChannel.GetOrDownloadAsync();
+
+            var reactionUser = await messageChannel.GetUserAsync(userId.Value);
+
+            if (reactionUser == null)
+            {
+                return;
+            }
+
+            if (reactionUser.IsBotOrWebhook())
+            {
+                return;
+            }
+
+            var userSessions = _sessionManager.GetByOwnerId(userId.Value, sessionExecuteCondition);
+
+            if (!userSessions.Any())
+            {
+                return;
+            }
+
+            var message = await messageChannel.GetMessageAsync(cachedMessage.Id);
+
+            if (message == null)
+            {
+                return;
+            }
+
+            if (message is not IUserMessage userMessage)
+            {
+                return;
+            }
+
+            await HandleAsync(
+                sessionExecuteCondition,
+                userSessions,
+                userMessage,
+                reactionUser.Id,
+                reaction).ConfigureAwait(false);
+        }
+
+        private Task HandleAsync(
+            SessionExecuteCondition sessionExecuteCondition,
+            IEnumerable<IInteractionSession> userSessions,
+            IUserMessage userMessage,
+            ulong userId,
+            IReaction? reaction = null)
+        {
+            var client = _discordClientAccessor.Client;
+
+            var sessionPayload = new SessionContext
+            {
+                Client = client,
+                Channel = userMessage.Channel,
+                Message = userMessage,
+                UserId = userId,
+            };
+
+            switch (sessionExecuteCondition)
+            {
+                case SessionExecuteCondition.ReactionAdded:
+                    sessionPayload.AddReaction = reaction;
+                    break;
+                case SessionExecuteCondition.ReactionRemoved:
+                    sessionPayload.RemoveReaction = reaction;
+                    break;
+            }
+
+            return RunSessions(userSessions, sessionPayload);
         }
 
         private async Task RunSessions(IEnumerable<IInteractionSession> sessions, SessionContext sessionContext)

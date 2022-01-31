@@ -8,6 +8,7 @@ using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot.Abstractions;
 using Sanakan.DiscordBot.Abstractions.Extensions;
 using Sanakan.DiscordBot.Abstractions.Models;
+using Sanakan.DiscordBot.Services.Abstractions;
 using Sanakan.Extensions;
 using System;
 using System.Collections.Generic;
@@ -17,7 +18,7 @@ using System.Threading.Tasks;
 
 namespace Sanakan.DiscordBot.Services
 {
-    public class AuditService
+    public class AuditService : IAuditService
     {
         private readonly ILogger _logger;
         private readonly IDiscordClientAccessor _discordClientAccessor;

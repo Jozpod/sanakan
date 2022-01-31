@@ -45,17 +45,17 @@ namespace Sanakan.DAL.Repositories
 
         public async Task<User?> GetWithWaifuProfileAsync(ulong shindenUserId)
         {
-            var result = await _dbContext.Users
-               .AsQueryable()
-               .AsSplitQuery()
-               .Where(x => x.ShindenId == shindenUserId)
+            var result = await _dbSet
                .Include(x => x.GameDeck)
                    .ThenInclude(x => x.Cards)
                    .ThenInclude(x => x.ArenaStats)
                .Include(x => x.GameDeck)
                    .ThenInclude(x => x.Cards)
                    .ThenInclude(x => x.Tags)
+                .Where(x => x.ShindenId == shindenUserId)
                .AsNoTracking()
+               .AsQueryable()
+               .AsSplitQuery()
                .FirstOrDefaultAsync();
 
             return result;
@@ -63,8 +63,7 @@ namespace Sanakan.DAL.Repositories
 
         public Task<User?> GetBasicAsync(ulong discordUserId)
         {
-            return _dbContext.Users
-                .AsQueryable()
+            return _dbSet
                 .AsNoTracking()
                 .AsSplitQuery()
                 .FirstOrDefaultAsync(x => x.Id == discordUserId)!;
@@ -81,37 +80,7 @@ namespace Sanakan.DAL.Repositories
                 return cacheResult.Value;
             }
 
-            var result = await _dbContext.Users
-                .AsQueryable()
-                .Where(x => x.Id == discordUserId)
-                .Include(x => x.Stats)
-                .Include(x => x.SMConfig)
-                .Include(x => x.TimeStatuses)
-                .Include(x => x.GameDeck)
-                    .ThenInclude(x => x.PvPStats)
-                .Include(x => x.GameDeck)
-                    .ThenInclude(x => x.Items)
-                .Include(x => x.GameDeck)
-                    .ThenInclude(x => x.Cards)
-                    .ThenInclude(x => x.ArenaStats)
-                .Include(x => x.GameDeck)
-                    .ThenInclude(x => x.BoosterPacks)
-                    .ThenInclude(x => x.Characters)
-                .Include(x => x.GameDeck)
-                    .ThenInclude(x => x.BoosterPacks)
-                    .ThenInclude(x => x.RarityExcludedFromPack)
-                .Include(x => x.GameDeck)
-                    .ThenInclude(x => x.ExperienceContainer)
-                .Include(x => x.GameDeck)
-                    .ThenInclude(x => x.Wishes)
-                .Include(x => x.GameDeck)
-                    .ThenInclude(x => x.Cards)
-                    .ThenInclude(x => x.Tags)
-                .Include(x => x.GameDeck)
-                .ThenInclude(x => x.Figures)
-                .AsNoTracking()
-                .AsSplitQuery()
-                .FirstOrDefaultAsync();
+            var result = await Get().FirstOrDefaultAsync();
 
             _cacheManager.Add(key, result);
 
@@ -129,37 +98,7 @@ namespace Sanakan.DAL.Repositories
                 return cacheResult.Value;
             }
 
-            var result = await _dbContext.Users
-                .AsQueryable()
-                .Where(x => x.ShindenId == shindenUserId)
-                .Include(x => x.Stats)
-                .Include(x => x.SMConfig)
-                .Include(x => x.TimeStatuses)
-                .Include(x => x.GameDeck)
-                    .ThenInclude(x => x.PvPStats)
-                .Include(x => x.GameDeck)
-                    .ThenInclude(x => x.Items)
-                .Include(x => x.GameDeck)
-                    .ThenInclude(x => x.Cards)
-                    .ThenInclude(x => x.ArenaStats)
-                .Include(x => x.GameDeck)
-                    .ThenInclude(x => x.BoosterPacks)
-                    .ThenInclude(x => x.Characters)
-                .Include(x => x.GameDeck)
-                    .ThenInclude(x => x.BoosterPacks)
-                    .ThenInclude(x => x.RarityExcludedFromPack)
-                .Include(x => x.GameDeck)
-                    .ThenInclude(x => x.ExperienceContainer)
-                .Include(x => x.GameDeck)
-                    .ThenInclude(x => x.Wishes)
-                .Include(x => x.GameDeck)
-                    .ThenInclude(x => x.Cards)
-                    .ThenInclude(x => x.Tags)
-                .Include(x => x.GameDeck)
-                    .ThenInclude(x => x.Figures)
-                .AsNoTracking()
-                .AsSplitQuery()
-                .FirstOrDefaultAsync();
+            var result = await Get().FirstOrDefaultAsync();
 
             _cacheManager.Add(key, result);
 
@@ -175,8 +114,7 @@ namespace Sanakan.DAL.Repositories
                 return cacheResult.Value ?? new();
             }
 
-            var result = await _dbContext.Users
-                .AsQueryable()
+            var result = await _dbSet
                 .AsNoTracking()
                 .AsSplitQuery()
                 .ToListAsync();
@@ -191,44 +129,14 @@ namespace Sanakan.DAL.Repositories
 
         public Task<User?> GetByShindenIdAsync(ulong shindenUserId)
         {
-            var user = _dbContext.Users
-                .FirstOrDefaultAsync(x => x.ShindenId == shindenUserId);
+            var user = _dbSet.FirstOrDefaultAsync(x => x.ShindenId == shindenUserId);
 
             return user!;
         }
 
         public async Task<User?> GetUserOrCreateAsync(ulong discordUserId)
         {
-            var user = await _dbContext.Users
-               .AsQueryable()
-               .Where(x => x.Id == discordUserId)
-               .Include(x => x.Stats)
-               .Include(x => x.SMConfig)
-               .Include(x => x.TimeStatuses)
-               .Include(x => x.GameDeck)
-                   .ThenInclude(x => x.PvPStats)
-               .Include(x => x.GameDeck)
-                   .ThenInclude(x => x.Wishes)
-               .Include(x => x.GameDeck)
-                   .ThenInclude(x => x.Items)
-               .Include(x => x.GameDeck)
-                   .ThenInclude(x => x.Cards)
-                   .ThenInclude(x => x.ArenaStats)
-               .Include(x => x.GameDeck)
-                   .ThenInclude(x => x.ExperienceContainer)
-               .Include(x => x.GameDeck)
-                   .ThenInclude(x => x.BoosterPacks)
-               .ThenInclude(x => x.Characters)
-                   .Include(x => x.GameDeck)
-                   .ThenInclude(x => x.BoosterPacks)
-                   .ThenInclude(x => x.RarityExcludedFromPack)
-               .Include(x => x.GameDeck)
-                   .ThenInclude(x => x.Cards)
-                   .ThenInclude(x => x.Tags)
-               .Include(x => x.GameDeck)
-                   .ThenInclude(x => x.Figures)
-               .AsSplitQuery()
-               .FirstOrDefaultAsync();
+            var user = await Get().FirstOrDefaultAsync();
 
             if (user == null)
             {
@@ -248,36 +156,7 @@ namespace Sanakan.DAL.Repositories
                 return cacheResult.Value ?? new List<User>();
             }
 
-            var result = await _dbContext.Users
-               .AsQueryable()
-               .Include(x => x.Stats)
-               .Include(x => x.SMConfig)
-               .Include(x => x.TimeStatuses)
-               .Include(x => x.GameDeck)
-                   .ThenInclude(x => x.PvPStats)
-               .Include(x => x.GameDeck)
-                   .ThenInclude(x => x.Wishes)
-               .Include(x => x.GameDeck)
-                   .ThenInclude(x => x.Items)
-               .Include(x => x.GameDeck)
-                   .ThenInclude(x => x.ExperienceContainer)
-               .Include(x => x.GameDeck)
-                   .ThenInclude(x => x.Cards)
-                   .ThenInclude(x => x.ArenaStats)
-               .Include(x => x.GameDeck)
-                   .ThenInclude(x => x.BoosterPacks)
-                   .ThenInclude(x => x.Characters)
-               .Include(x => x.GameDeck)
-                   .ThenInclude(x => x.BoosterPacks)
-                   .ThenInclude(x => x.RarityExcludedFromPack)
-               .Include(x => x.GameDeck)
-                   .ThenInclude(x => x.Cards)
-                   .ThenInclude(x => x.Tags)
-               .Include(x => x.GameDeck)
-                   .ThenInclude(x => x.Figures)
-               .AsNoTracking()
-               .AsSplitQuery()
-               .ToListAsync();
+            var result = await Get().ToListAsync();
 
             _cacheManager.Add(CacheKeys.Users, result, new MemoryCacheEntryOptions
             {
@@ -336,37 +215,7 @@ namespace Sanakan.DAL.Repositories
 
         public Task<User?> GetUserAndDontTrackAsync(ulong discordUserId)
         {
-            var result = _dbContext
-              .Users
-              .AsQueryable()
-              .Include(x => x.Stats)
-              .Include(x => x.SMConfig)
-              .Include(x => x.TimeStatuses)
-              .Include(x => x.GameDeck)
-                  .ThenInclude(x => x.PvPStats)
-              .Include(x => x.GameDeck)
-                  .ThenInclude(x => x.Wishes)
-              .Include(x => x.GameDeck)
-                  .ThenInclude(x => x.Items)
-              .Include(x => x.GameDeck)
-                  .ThenInclude(x => x.Cards)
-                  .ThenInclude(x => x.ArenaStats)
-              .Include(x => x.GameDeck)
-                  .ThenInclude(x => x.ExperienceContainer)
-              .Include(x => x.GameDeck)
-                  .ThenInclude(x => x.BoosterPacks)
-                  .ThenInclude(x => x.Characters)
-              .Include(x => x.GameDeck)
-                  .ThenInclude(x => x.BoosterPacks)
-                  .ThenInclude(x => x.RarityExcludedFromPack)
-              .Include(x => x.GameDeck)
-                  .ThenInclude(x => x.Cards)
-                  .ThenInclude(x => x.Tags)
-              .Include(x => x.GameDeck)
-                  .ThenInclude(x => x.Figures)
-              .AsNoTracking()
-              .AsSplitQuery()
-              .FirstOrDefaultAsync(x => x.Id == discordUserId);
+            var result = Get().FirstOrDefaultAsync(x => x.Id == discordUserId);
 
             return result!;
         }
@@ -386,6 +235,38 @@ namespace Sanakan.DAL.Repositories
                 .Where(x => !discordUserIds.Any(id => id == x.Id))
                 .Select(x => x.Id)
                 .ToListAsync();
+        }
+
+        private IQueryable<User> Get()
+        {
+            return _dbSet
+                .Include(x => x.Stats)
+                .Include(x => x.SMConfig)
+                .Include(x => x.TimeStatuses)
+                .Include(x => x.GameDeck)
+                    .ThenInclude(x => x.PvPStats)
+                .Include(x => x.GameDeck)
+                    .ThenInclude(x => x.Wishes)
+                .Include(x => x.GameDeck)
+                    .ThenInclude(x => x.Items)
+                .Include(x => x.GameDeck)
+                    .ThenInclude(x => x.Cards)
+                    .ThenInclude(x => x.ArenaStats)
+                .Include(x => x.GameDeck)
+                    .ThenInclude(x => x.ExperienceContainer)
+                .Include(x => x.GameDeck)
+                    .ThenInclude(x => x.BoosterPacks)
+                    .ThenInclude(x => x.Characters)
+                .Include(x => x.GameDeck)
+                    .ThenInclude(x => x.BoosterPacks)
+                    .ThenInclude(x => x.RarityExcludedFromPack)
+                .Include(x => x.GameDeck)
+                    .ThenInclude(x => x.Cards)
+                    .ThenInclude(x => x.Tags)
+                .Include(x => x.GameDeck)
+                    .ThenInclude(x => x.Figures)
+                .AsNoTracking()
+                .AsSplitQuery();
         }
     }
 }

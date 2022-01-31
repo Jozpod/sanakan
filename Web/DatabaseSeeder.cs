@@ -37,6 +37,7 @@ namespace Sanakan.Web
             _configuration = configuration.Value;
         }
 
+        [SuppressMessage("Microsoft.Analyzers.ManagedCodeAnalysis", "CA1502:AvoidExcessiveComplexity", Justification = "Resolved")]
         public async Task RunAsync()
         {
             if (!_configuration.Enabled)

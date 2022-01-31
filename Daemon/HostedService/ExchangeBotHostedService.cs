@@ -66,7 +66,7 @@ namespace Sanakan.Daemon.HostedService
             Cacheable<IMessageChannel, ulong> messageChannel,
             IReaction reaction)
         {
-            var message = cachedMessage.HasValue ? cachedMessage.Value : await cachedMessage.GetOrDownloadAsync();
+            var message = await cachedMessage.GetOrDownloadAsync();
 
             if (message.Author.Id != _botUserId)
             {

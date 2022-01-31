@@ -24,7 +24,7 @@ namespace Sanakan.Daemon.Tests.HostedServices.SessionHostedServiceTests
         {
             var userMessageMock = new Mock<IUserMessage>(MockBehavior.Strict);
             var userMock = new Mock<IUser>(MockBehavior.Strict);
-            var socketMessageChannel = new Mock<ISocketMessageChannel>(MockBehavior.Strict);
+            var messageChannelMock = new Mock<IMessageChannel>(MockBehavior.Strict);
             var userId = 1ul;
             var sessionMock = new Mock<IInteractionSession>(MockBehavior.Strict);
             var sessions = new[]
@@ -33,13 +33,8 @@ namespace Sanakan.Daemon.Tests.HostedServices.SessionHostedServiceTests
             };
 
             var cachedMessage = CacheableExtensions.CreateCacheable(userMessageMock.Object, 1ul);
-            var reaction = ReactionExtensions.CreateReaction(
-                socketMessageChannel.Object,
-                1ul,
-                Optional<SocketUserMessage>.Unspecified,
-                userId,
-                Optional<IUser>.Unspecified,
-                Emotes.GreenChecked);
+            var cachedChannel = CacheableExtensions.CreateCacheable(messageChannelMock.Object, 1ul);
+            var reaction = ReactionExtensions.CreateReaction(userId, Emotes.GreenChecked);
 
             var utcNow = DateTime.UtcNow;
 
@@ -55,7 +50,7 @@ namespace Sanakan.Daemon.Tests.HostedServices.SessionHostedServiceTests
                 .Setup(pr => pr.IsWebhook)
                 .Returns(false);
 
-            socketMessageChannel
+            messageChannelMock
                 .Setup(pr => pr.GetUserAsync(
                     userId,
                     It.IsAny<CacheMode>(),
@@ -72,9 +67,9 @@ namespace Sanakan.Daemon.Tests.HostedServices.SessionHostedServiceTests
 
             userMessageMock
                 .Setup(pr => pr.Channel)
-                .Returns(socketMessageChannel.Object);
+                .Returns(messageChannelMock.Object);
 
-            socketMessageChannel
+            messageChannelMock
                 .Setup(pr => pr.GetMessageAsync(1ul, CacheMode.AllowDownload, null))
                 .ReturnsAsync(userMessageMock.Object);
 
@@ -108,7 +103,7 @@ namespace Sanakan.Daemon.Tests.HostedServices.SessionHostedServiceTests
                 .Returns(ValueTask.CompletedTask);
 
             _discordClientAccessorMock.Raise(pr => pr.LoggedIn += null);
-            _discordClientAccessorMock.Raise(pr => pr.ReactionAdded += null, cachedMessage, socketMessageChannel.Object, reaction);
+            _discordClientAccessorMock.Raise(pr => pr.ReactionAdded += null, cachedMessage, cachedChannel, reaction);
 
             sessionMock.Verify();
         }

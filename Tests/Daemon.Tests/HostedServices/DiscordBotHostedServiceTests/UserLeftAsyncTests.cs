@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 
 namespace Sanakan.Daemon.Tests.HostedServices.DiscordBotHostedServiceTests
 {
+    /// <summary>
+    /// Defines tests for <see cref="DiscordBotHostedService.UserLeftAsync"/> event handler.
+    /// </summary>
     [TestClass]
     public class UserLeftAsyncTests : Base
     {
@@ -77,7 +80,7 @@ namespace Sanakan.Daemon.Tests.HostedServices.DiscordBotHostedServiceTests
                 .Returns(true);
 
             _discordClientAccessorMock.Raise(pr => pr.LoggedIn += null);
-            _discordClientAccessorMock.Raise(pr => pr.UserLeft += null, guildUserMock.Object);
+            _discordClientAccessorMock.Raise(pr => pr.UserLeft += null, guildMock.Object, guildUserMock.Object);
         }
 
     }

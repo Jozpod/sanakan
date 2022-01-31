@@ -22,8 +22,8 @@ namespace Sanakan.DiscordBot.Services.Builder
                 });
             });
 
-            services.AddSingleton<ExperienceManager>();
-            services.AddSingleton<AuditService>();
+            services.AddSingleton<IExperienceManager, ExperienceManager>();
+            services.AddSingleton<IAuditService, AuditService>();
             services.AddSingleton<IEventIdsImporter, EventIdsImporter>();
             services.AddSingleton<ILandManager, LandManager>();
             services.AddSingleton<IModeratorService, ModeratorService>();

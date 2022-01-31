@@ -36,65 +36,34 @@ namespace Sanakan.DAL.Repositories
         /// </summary>
         public FilterTagsMethodType FilterTagsMethod { get; set; }
 
-        public static IQueryable<Card> QueryOrderBy(OrderType type, IQueryable<Card> query)
+        public static IQueryable<Card> QueryOrderBy(OrderType type, IQueryable<Card> query) => type switch
         {
-            switch (type)
-            {
-                case OrderType.Atack:
-                    return query.OrderBy(x => x.Attack + x.AttackBonus + (x.RestartCount * 2d));
-                case OrderType.AtackDes:
-                    return query.OrderByDescending(x => x.Attack + x.AttackBonus + (x.RestartCount * 2d));
-                case OrderType.Exp:
-                    return query.OrderBy(x => x.ExperienceCount);
-                case OrderType.ExpDes:
-                    return query.OrderByDescending(x => x.ExperienceCount);
-                case OrderType.Dere:
-                    return query.OrderBy(x => x.Dere);
-                case OrderType.DereDes:
-                    return query.OrderByDescending(x => x.Dere);
-                case OrderType.Defence:
-                    return query.OrderBy(x => x.Defence + x.DefenceBonus + x.RestartCount);
-                case OrderType.DefenceDes:
-                    return query.OrderByDescending(x => x.Defence + x.DefenceBonus + x.RestartCount);
-                case OrderType.Health:
-                    return query.OrderBy(x => x.Health + ((x.Health * (x.Affection * 5d / 100d)) + x.HealthBonus));
-                case OrderType.HealthDes:
-                    return query.OrderByDescending(x => x.Health + ((x.Health * (x.Affection * 5d / 100d)) + x.HealthBonus));
-                case OrderType.HealthBase:
-                    return query.OrderBy(x => x.Health);
-                case OrderType.HealthBaseDes:
-                    return query.OrderByDescending(x => x.Health);
-                case OrderType.CardPower:
-                    return query.OrderBy(x => x.CardPower);
-                case OrderType.CardPowerDes:
-                    return query.OrderByDescending(x => x.CardPower);
-                case OrderType.Relation:
-                    return query.OrderBy(x => x.Affection);
-                case OrderType.RelationDes:
-                    return query.OrderByDescending(x => x.Affection);
-                case OrderType.Title:
-                    return query.OrderBy(x => x.Title);
-                case OrderType.TitleDes:
-                    return query.OrderByDescending(x => x.Title);
-                case OrderType.RarityDes:
-                    return query.OrderBy(x => x.Rarity).ThenByDescending(x => x.Quality);
-                case OrderType.Rarity:
-                    return query.OrderByDescending(x => x.Rarity).ThenBy(x => x.Quality);
-                case OrderType.Name:
-                    return query.OrderBy(x => x.Name);
-                case OrderType.NameDes:
-                    return query.OrderByDescending(x => x.Name);
-                case OrderType.Picture:
-                    return query.OrderBy(x => (x.CustomImageUrl == null ? (x.ImageUrl == null ? 0 : 1) : 2));
-                case OrderType.PictureDes:
-                    return query.OrderByDescending(x => (x.CustomImageUrl == null ? (x.ImageUrl == null ? 0 : 1) : 2));
-                case OrderType.IdDes:
-                    return query.OrderByDescending(x => x.Id);
-
-                default:
-                case OrderType.Id:
-                    return query;
-            }
-        }
+            OrderType.Atack => query.OrderBy(x => x.Attack + x.AttackBonus + (x.RestartCount * 2d)),
+            OrderType.AtackDes => query.OrderByDescending(x => x.Attack + x.AttackBonus + (x.RestartCount * 2d)),
+            OrderType.Exp => query.OrderBy(x => x.ExperienceCount),
+            OrderType.ExpDes => query.OrderByDescending(x => x.ExperienceCount),
+            OrderType.Dere => query.OrderBy(x => x.Dere),
+            OrderType.DereDes => query.OrderByDescending(x => x.Dere),
+            OrderType.Defence => query.OrderBy(x => x.Defence + x.DefenceBonus + x.RestartCount),
+            OrderType.DefenceDes => query.OrderByDescending(x => x.Defence + x.DefenceBonus + x.RestartCount),
+            OrderType.Health => query.OrderBy(x => x.Health + ((x.Health * (x.Affection * 5d / 100d)) + x.HealthBonus)),
+            OrderType.HealthDes => query.OrderByDescending(x => x.Health + ((x.Health * (x.Affection * 5d / 100d)) + x.HealthBonus)),
+            OrderType.HealthBase => query.OrderBy(x => x.Health),
+            OrderType.HealthBaseDes => query.OrderByDescending(x => x.Health),
+            OrderType.CardPower => query.OrderBy(x => x.CardPower),
+            OrderType.CardPowerDes => query.OrderByDescending(x => x.CardPower),
+            OrderType.Relation => query.OrderBy(x => x.Affection),
+            OrderType.RelationDes => query.OrderByDescending(x => x.Affection),
+            OrderType.Title => query.OrderBy(x => x.Title),
+            OrderType.TitleDes => query.OrderByDescending(x => x.Title),
+            OrderType.RarityDes => query.OrderBy(x => x.Rarity).ThenByDescending(x => x.Quality),
+            OrderType.Rarity => query.OrderByDescending(x => x.Rarity).ThenBy(x => x.Quality),
+            OrderType.Name => query.OrderBy(x => x.Name),
+            OrderType.NameDes => query.OrderByDescending(x => x.Name),
+            OrderType.Picture => query.OrderBy(x => (x.CustomImageUrl == null ? (x.ImageUrl == null ? 0 : 1) : 2)),
+            OrderType.PictureDes => query.OrderByDescending(x => (x.CustomImageUrl == null ? (x.ImageUrl == null ? 0 : 1) : 2)),
+            OrderType.IdDes => query.OrderByDescending(x => x.Id),
+            _ => query,
+        };
     }
 }

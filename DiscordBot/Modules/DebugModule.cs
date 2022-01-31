@@ -120,13 +120,16 @@ namespace Sanakan.DiscordBot.Modules
         [Remarks("1")]
         public async Task GeneratePokeImageAsync([Summary("nr grafiki")] int imageIndex)
         {
+            Embed embed;
+
             try
             {
                 var images = await _resourceManager.ReadFromJsonAsync<List<SafariImage>>(Paths.PokeList);
 
                 if (images == null)
                 {
-                    await ReplyAsync(embed: Strings.NoSafariImage.ToEmbedMessage(EMType.Error).Build());
+                    embed = Strings.NoSafariImage.ToEmbedMessage(EMType.Error).Build();
+                    await ReplyAsync(embed: embed);
                     return;
                 }
 
@@ -143,7 +146,8 @@ namespace Sanakan.DiscordBot.Modules
             catch (Exception ex)
             {
                 var message = string.Format(Strings.ErrorOccurred, ex.Message);
-                await ReplyAsync(embed: message.ToEmbedMessage(EMType.Error).Build());
+                embed = message.ToEmbedMessage(EMType.Error).Build();
+                await ReplyAsync(embed: embed);
             }
         }
 

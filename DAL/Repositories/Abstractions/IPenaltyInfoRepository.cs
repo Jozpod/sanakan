@@ -9,11 +9,11 @@ namespace Sanakan.DAL.Repositories.Abstractions
         IRemoveRepository<PenaltyInfo>,
         ISaveRepository
     {
-        Task<List<PenaltyInfo>> GetByGuildIdAsync(ulong id);
+        Task<IEnumerable<PenaltyInfo>> GetByGuildIdAsync(ulong id);
 
         Task<IEnumerable<PenaltyInfo>> GetMutedPenaltiesAsync(ulong discordGuildId);
 
-        Task<PenaltyInfo> GetPenaltyAsync(
+        Task<PenaltyInfo?> GetPenaltyAsync(
             ulong discordUserId,
             ulong discordGuildId,
             PenaltyType penaltyType);

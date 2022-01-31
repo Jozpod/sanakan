@@ -22,10 +22,9 @@ namespace Sanakan.DAL.Repositories
             _cacheManager = cacheManager;
         }
 
-        public Task<List<PenaltyInfo>> GetByGuildIdAsync(ulong discordGuildId)
+        public async Task<IEnumerable<PenaltyInfo>> GetByGuildIdAsync(ulong discordGuildId)
         {
-            return _dbContext.Penalties
-                .AsQueryable()
+            return await _dbSet
                 .AsSplitQuery()
                 .Where(x => x.GuildId == discordGuildId)
                 .ToListAsync();
@@ -40,9 +39,7 @@ namespace Sanakan.DAL.Repositories
                 return cacheResult.Value!;
             }
 
-            var result = await _dbContext
-                .Penalties
-                .AsQueryable()
+            var result = await _dbSet
                 .Include(x => x.Roles)
                 .AsNoTracking()
                 .AsSplitQuery()
@@ -62,8 +59,7 @@ namespace Sanakan.DAL.Repositories
                 return cacheResult.Value ?? Enumerable.Empty<PenaltyInfo>();
             }
 
-            var list = await _dbContext
-                .Penalties
+            var list = await _dbSet
                 .Include(x => x.Roles)
                 .Where(x => x.GuildId == discordGuildId
                     && x.Type == PenaltyType.Mute)
@@ -74,12 +70,12 @@ namespace Sanakan.DAL.Repositories
             return list;
         }
 
-        public Task<PenaltyInfo> GetPenaltyAsync(
+        public Task<PenaltyInfo?> GetPenaltyAsync(
             ulong discordUserId,
             ulong discordGuildId,
             PenaltyType penaltyType)
         {
-            return _dbContext.Penalties
+            return _dbSet
                 .Include(x => x.Roles)
                 .FirstOrDefaultAsync(x => x.UserId == discordUserId
                     && x.Type == penaltyType

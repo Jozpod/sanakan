@@ -346,10 +346,10 @@ namespace Sanakan.Game
                     { EventType.NewCard,             (-9,   -10) },
                 }
             },
-             { ExpeditionCardType.UltimateMedium, new Dictionary<EventType, (int, int)>
+            { ExpeditionCardType.UltimateMedium, new Dictionary<EventType, (int, int)>
                 {
-                    { EventType.MoreItems,  (-1,   -2)},
-                    { EventType.MoreExperience,    (-3,   -4)},
+                    { EventType.MoreItems,  (-1,   -2) },
+                    { EventType.MoreExperience,    (-3,   -4) },
                     { EventType.IncreaseAttack,     (0,    2499)},
                     { EventType.IncreaseDefence,     (2500, 4999)},
                     { EventType.AddReset,   (-5,   -6)},
@@ -368,9 +368,9 @@ namespace Sanakan.Game
                     { EventType.MoreExperience,    (-3,   -4)},
                     { EventType.IncreaseAttack,     (-5,   -6)},
                     { EventType.IncreaseDefence,     (-7,   -8)},
-                    { EventType.AddReset,   (-9,   -10)},
-                    { EventType.Fight,      (-11,  -12)},
-                    { EventType.ChangeDere, (-13,  -14)},
+                    { EventType.AddReset,   (-9,   -10) },
+                    { EventType.Fight,      (-11,  -12) },
+                    { EventType.ChangeDere, (-13,  -14) },
                     { EventType.DecreaseAttack,     (0,    4999)},
                     { EventType.DecreaseDefence,     (5000, 10000)},
                     { EventType.DecreaseAffection,     (-15,  -16)},
@@ -380,18 +380,18 @@ namespace Sanakan.Game
             },
             { ExpeditionCardType.UltimateHardcore, new Dictionary<EventType, (int, int)>
                 {
-                    { EventType.MoreItems,  (-1,   -2)},
-                    { EventType.MoreExperience,    (-3,   -4)},
-                    { EventType.IncreaseAttack,     (-5,   -6)},
-                    { EventType.IncreaseDefence,     (-7,   -8)},
-                    { EventType.AddReset,   (-9,   -10)},
-                    { EventType.Fight,      (-11,  -12)},
-                    { EventType.ChangeDere, (-13,  -14)},
-                    { EventType.DecreaseAttack,     (0,    1999)},
-                    { EventType.DecreaseDefence,     (2000, 3999)},
-                    { EventType.DecreaseAffection,     (4000, 8999)},
-                    { EventType.LoseCard,   (9000, 10000)},
-                    { EventType.NewCard,    (-15,  -16)},
+                    { EventType.MoreItems,  (-1,   -2) },
+                    { EventType.MoreExperience,    (-3,   -4) },
+                    { EventType.IncreaseAttack,     (-5,   -6) },
+                    { EventType.IncreaseDefence,     (-7,   -8) },
+                    { EventType.AddReset,   (-9,   -10) },
+                    { EventType.Fight,      (-11,  -12) },
+                    { EventType.ChangeDere, (-13,  -14) },
+                    { EventType.DecreaseAttack,     (0,    1999) },
+                    { EventType.DecreaseDefence,     (2000, 3999) },
+                    { EventType.DecreaseAffection,     (4000, 8999) },
+                    { EventType.LoseCard,   (9000, 10000) },
+                    { EventType.NewCard,    (-15,  -16) },
                 }
             }
        };

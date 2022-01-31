@@ -13,6 +13,7 @@ using Sanakan.DAL.Repositories.Abstractions;
 using Sanakan.DiscordBot;
 using Sanakan.DiscordBot.Abstractions;
 using Sanakan.DiscordBot.Services;
+using Sanakan.DiscordBot.Services.Abstractions;
 using Sanakan.TaskQueue;
 using System;
 using System.IO;
@@ -30,8 +31,8 @@ namespace Sanakan.Daemon.Tests.HostedServices.DiscordBotHostedServiceTests
         protected readonly Mock<IDiscordClientAccessor> _discordClientAccessorMock = new(MockBehavior.Strict);
         protected readonly Mock<IDiscordClient> _discordClientMock = new(MockBehavior.Strict);
         protected readonly Mock<IOptionsMonitor<DiscordConfiguration>> _discordConfigurationMock = new(MockBehavior.Strict);
-        protected readonly Mock<ExperienceManager> _experienceManagerMock = new(MockBehavior.Strict);
-        protected readonly Mock<AuditService> _auditServiceMock = new(MockBehavior.Strict);
+        protected readonly Mock<IExperienceManager> _experienceManagerMock = new(MockBehavior.Strict);
+        protected readonly Mock<IAuditService> _auditServiceMock = new(MockBehavior.Strict);
         protected readonly Mock<ISystemClock> _systemClockMock = new(MockBehavior.Strict);
         protected readonly Mock<ICommandHandler> _commandHandlerMock = new(MockBehavior.Strict);
         protected readonly Mock<ITaskManager> _taskManagerMock = new(MockBehavior.Strict);
