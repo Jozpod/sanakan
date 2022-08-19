@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>Sanakan.DiscordBot.Supervisor.Tests</RootNamespace>
+    <AssemblyName>Sanakan.DiscordBot.Supervisor.Tests</AssemblyName>
+    <Configurations>Debug;Release;Test</Configurations>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentAssertions" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="Moq" />
+    <PackageReference Include="Appveyor.TestLogger" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\DiscordBot.Supervisor\DiscordBot.Supervisor.csproj" />
+  </ItemGroup>
+
+</Project>

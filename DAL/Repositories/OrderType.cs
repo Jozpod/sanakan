@@ -1,0 +1,32 @@
+﻿namespace Sanakan.DAL.Repositories
+{
+    public enum OrderType : byte
+    {
+        Id,
+        IdDes,
+        Name,
+        NameDes,
+        Rarity,
+        RarityDes,
+        Title,
+        TitleDes,
+        Health,
+        HealthDes,
+        HealthBase,
+        HealthBaseDes,
+        Atack,
+        AtackDes,
+        Defence,
+        DefenceDes,
+        Exp,
+        ExpDes,
+        Dere,
+        DereDes,
+        Picture,
+        PictureDes,
+        Relation,
+        RelationDes,
+        CardPower,
+        CardPowerDes
+    }
+}

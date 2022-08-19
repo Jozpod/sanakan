@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>Sanakan.DAL.MySql.Migrator</AssemblyName>
+    <RootNamespace>Sanakan.DAL.MySql.Migrator</RootNamespace>
+    <Configurations>Debug;Release;Test</Configurations>
+    <SelfContained>false</SelfContained>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="TableEnumerators\CardMigrator.cs" />
+    <Compile Remove="TableEnumerators\CardTagsMigrator.cs" />
+    <Compile Remove="TableEnumerators\FiguresMigrator.cs" />
+    <Compile Remove="TableEnumerators\GameDecksMigrator.cs" />
+    <Compile Remove="TableEnumerators\SelfRolesMigrator.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="appsettings.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Configuration" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DAL.MySql\DAL.MySql.csproj" />
+    <ProjectReference Include="..\DAL\DAL.csproj" />
+  </ItemGroup>
+
+</Project>

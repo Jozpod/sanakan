@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "DAL.MySql.Schema": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AssemblyName>Sanakan.Game</AssemblyName>
+    <RootNamespace>Sanakan.Game</RootNamespace>
+    <Configurations>Debug;Release;Test</Configurations>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Fonts\Digital.ttf" />
+    <None Remove="Fonts\Lato-Bold.ttf" />
+    <None Remove="Fonts\Lato-Light.ttf" />
+    <None Remove="Fonts\Lato-Regular.ttf" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Fonts\Digital.ttf" />
+    <EmbeddedResource Include="Fonts\Lato-Bold.ttf" />
+    <EmbeddedResource Include="Fonts\Lato-Light.ttf" />
+    <EmbeddedResource Include="Fonts\Lato-Regular.ttf" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Discord.Net" />
+    <PackageReference Include="Microsoft.Extensions.Options" />
+	  <PackageReference Include="SixLabors.ImageSharp" />
+    <PackageReference Include="SixLabors.ImageSharp.Drawing" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DAL\DAL.csproj" />
+    <ProjectReference Include="..\DiscordBot.Abstractions\DiscordBot.Abstractions.csproj" />
+    <ProjectReference Include="..\ShindenApi\ShindenApi.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="..\Pictures\**" LinkBase="Pictures">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+</Project>

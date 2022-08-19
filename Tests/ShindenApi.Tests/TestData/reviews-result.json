@@ -1,0 +1,16 @@
+{
+  "reviews": [
+    {
+      "review_id": 1,
+      "rating": 1,
+      "rate_count": 1,
+      "is_abstract": true,
+      "review": "",
+      "name": "",
+      "user_id": 1,
+      "avatar": 1,
+      "enter_cnt": 1,
+      "read_cnt": 1
+    }
+  ]
+}

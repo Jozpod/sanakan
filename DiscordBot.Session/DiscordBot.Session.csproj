@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AssemblyName>Sanakan.DiscordBot.Session</AssemblyName>
+    <RootNamespace>Sanakan.DiscordBot.Session</RootNamespace>
+    <Configurations>Debug;Release;Test</Configurations>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Discord.Net" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Common\Common.csproj" />
+    <ProjectReference Include="..\DAL\DAL.csproj" />
+    <ProjectReference Include="..\DiscordBot.Abstractions\DiscordBot.Abstractions.csproj" />
+    <ProjectReference Include="..\DiscordBot.Services\DiscordBot.Services.csproj" />
+    <ProjectReference Include="..\DiscordBot.Session.Abstractions\DiscordBot.Session.Abstractions.csproj" />
+    <ProjectReference Include="..\Game\Game.csproj" />
+  </ItemGroup>
+
+</Project>

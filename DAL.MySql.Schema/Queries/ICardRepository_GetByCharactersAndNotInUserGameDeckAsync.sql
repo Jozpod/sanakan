@@ -1,0 +1,7 @@
+SELECT `c`.`Id`, `c`.`Active`, `c`.`Affection`, `c`.`Attack`, `c`.`AttackBonus`, `c`.`CardPower`, `c`.`CharacterId`, `c`.`CreatedOn`, `c`.`Curse`, `c`.`CustomBorderUrl`, `c`.`CustomImageUrl`, `c`.`Defence`, `c`.`DefenceBonus`, `c`.`Dere`, `c`.`EnhanceCount`, `c`.`Expedition`, `c`.`ExpeditionDate`, `c`.`ExperienceCount`, `c`.`FirstOwnerId`, `c`.`FromFigure`, `c`.`GameDeckId`, `c`.`Health`, `c`.`HealthBonus`, `c`.`ImageUrl`, `c`.`InCage`, `c`.`IsTradable`, `c`.`IsUnique`, `c`.`LastOwnerId`, `c`.`MarketValue`, `c`.`Name`, `c`.`PAS`, `c`.`Quality`, `c`.`QualityOnStart`, `c`.`Rarity`, `c`.`RarityOnStart`, `c`.`RestartCount`, `c`.`Source`, `c`.`StarStyle`, `c`.`Title`, `c`.`UpgradesCount`, `g`.`Id`, `g`.`BackgroundImageUrl`, `g`.`BackgroundPosition`, `g`.`CTCount`, `g`.`CardsInGalleryCount`, `g`.`DeckPower`, `g`.`ExchangeConditions`, `g`.`FavouriteWaifuId`, `g`.`ForegroundColor`, `g`.`ForegroundImageUrl`, `g`.`ForegroundPosition`, `g`.`GlobalPVPRank`, `g`.`ItemsDropped`, `g`.`Karma`, `g`.`MatchMakingRatio`, `g`.`MaxNumberOfCards`, `g`.`PVPCoins`, `g`.`PVPDailyGamesPlayed`, `g`.`PVPSeasonBeginDate`, `g`.`PVPWinStreak`, `g`.`SeasonalPVPRank`, `g`.`UserId`, `g`.`WishlistIsPrivate`, `c0`.`Name`, `c0`.`CardId`
+FROM `Cards` AS `c`
+INNER JOIN `GameDecks` AS `g` ON `c`.`GameDeckId` = `g`.`Id`
+LEFT JOIN `CardTags` AS `c0` ON `c`.`Id` = `c0`.`CardId`
+WHERE (`c`.`GameDeckId` <> 1) AND (`c`.`CharacterId` = 1)
+ORDER BY `c`.`Id`, `g`.`Id`, `c0`.`Name`
+

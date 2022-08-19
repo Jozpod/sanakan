@@ -1,0 +1,33 @@
+<Project>
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <LangVersion>10.0</LangVersion>
+        <RuntimeIdentifiers>win10-x64;linux-x64</RuntimeIdentifiers>  
+        <Nullable>enable</Nullable>
+        <Copyright>Jotpe</Copyright>
+        <Product>Sanakan</Product>
+        <Authors>Jotpe</Authors>
+        <Version>0.0.1</Version>
+        <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+        <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <GenerateDocumentationFromFile>true</GenerateDocumentationFromFile>
+        <CodeAnalysisRuleSet>$(MSBuildThisFileDirectory)stylecop.ruleset</CodeAnalysisRuleSet>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+        <DebugType>None</DebugType>
+        <DebugSymbols>false</DebugSymbols>
+        <PublishSingleFile>true</PublishSingleFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <AdditionalFiles Include="$(MSBuildThisFileDirectory)stylecop.json" Link="stylecop.json" />
+    </ItemGroup>
+</Project>

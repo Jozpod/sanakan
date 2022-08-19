@@ -1,0 +1,30 @@
+{
+  "character_id": 1,
+  "first_name": "",
+  "last_name": "",
+  "is_real": true,
+  "birth_date": "",
+  "age": "",
+  "death_date": "",
+  "gender": "",
+  "bloodtype": "",
+  "height": "",
+  "weight": "",
+  "bust": "",
+  "waist": "",
+  "hips": "",
+  "picture_artifact_id": 1,
+  "bio": {},
+  "fav_stats": {
+    "fav": "",
+    "unfav": "",
+    "avg_pos": "",
+    "1_pos": "",
+    "under_3_pos": "",
+    "under_10_pos": "",
+    "under_50_pos": ""
+  },
+  "points": [],
+  "relations": [],
+  "pictures": []
+}

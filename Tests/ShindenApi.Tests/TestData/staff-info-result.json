@@ -1,0 +1,19 @@
+{
+  "staff_id": 1,
+  "first_name": "",
+  "last_name": "",
+  "staff_type": "",
+  "birth_date": "",
+  "birth_place": "",
+  "death_date": "",
+  "gender": "",
+  "nationality": "",
+  "picture_artifact_id": 1,
+  "bio": {
+    "staff_biography_id": "",
+    "staff_id": "",
+    "biography": "",
+    "lang": ""
+  },
+  "relations": []
+}

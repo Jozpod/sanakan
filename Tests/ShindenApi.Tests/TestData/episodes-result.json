@@ -1,0 +1,27 @@
+{
+  "episodes": [
+    {
+      "episode_id": 1,
+      "episode_title": "",
+      "type": "",
+      "is_filer": true,
+      "is_special": false,
+      "title_id": 1,
+      "title_main_id": "",
+      "episode_time": 40,
+      "episode_no": 1,
+      "air_date": "",
+      "air_channell": "",
+      "is_accepted": true,
+      "episode_title_id": 1,
+      "title_type": "",
+      "title": "",
+      "lang": "",
+      "langs": [],
+      "has_online": false
+    }
+  ],
+  "connected_episodes": [
+
+  ]
+}

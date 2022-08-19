@@ -1,0 +1,48 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Copyright>Copyright 2021 © Jotpe. All rights reserved.</Copyright>
+    <PackageTags>Shinden REST API .NET shinden.pl wrapper</PackageTags>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Description>An unofficial asynchronous .NET API Wrapper for the Shinden APIs.</Description>
+    <PackageId>Shinden.NET</PackageId>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RootNamespace>Sanakan.ShindenApi</RootNamespace>
+    <Configurations>Debug;Release;Test</Configurations>
+    <AssemblyName>Sanakan.ShindenApi</AssemblyName>
+
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Models\Entities\**" />
+    <Compile Remove="Models\Helpers\**" />
+    <Compile Remove="Models\Initializers\**" />
+    <Compile Remove="Models\Interfaces\**" />
+    <EmbeddedResource Remove="Models\Entities\**" />
+    <EmbeddedResource Remove="Models\Helpers\**" />
+    <EmbeddedResource Remove="Models\Initializers\**" />
+    <EmbeddedResource Remove="Models\Interfaces\**" />
+    <None Remove="Models\Entities\**" />
+    <None Remove="Models\Helpers\**" />
+    <None Remove="Models\Initializers\**" />
+    <None Remove="Models\Interfaces\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" />
+    <PackageReference Include="Microsoft.Extensions.Http" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Options" />
+    <PackageReference Include="System.Net.Http.Json"/>
+
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Configuration\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Common\Common.csproj" />
+  </ItemGroup>
+
+</Project>
